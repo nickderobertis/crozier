@@ -116,12 +116,15 @@ jobs:
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - name: Lint changed files
         env:
-          HARNESS_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # oneharness drives the `claude` CLI, which reads CLAUDE_CODE_OAUTH_TOKEN
+          # from the environment for non-interactive auth. Sync it (and the
+          # publishing tokens) from Bitwarden with `gh-secrets sync`; see gh-secrets.json.
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
         run: |
-          if [ -z "${HARNESS_KEY:-}" ]; then
-            echo "::error::llmlint needs a harness credential. Add ANTHROPIC_API_KEY" \
-                 "(Settings → Secrets and variables → Actions). Fork PRs are gated by" \
-                 "the require-approval-for-fork-workflows setting; see AGENTS.md." >&2
+          if [ -z "${CLAUDE_CODE_OAUTH_TOKEN:-}" ]; then
+            echo "::error::llmlint needs a Claude Code credential. Add CLAUDE_CODE_OAUTH_TOKEN" \
+                 "(Settings → Secrets and variables → Actions; sync it via gh-secrets). Fork PRs" \
+                 "are gated by the require-approval-for-fork-workflows setting; see AGENTS.md." >&2
             exit 1
           fi
           just lint-llm-diff origin/main

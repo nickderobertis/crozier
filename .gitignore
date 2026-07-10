@@ -6,6 +6,10 @@
 .oneharness/
 llmlint.buildout.yml
 
+# gh-secrets local sync state (machine-local hashes; the manifest is committed,
+# this is not). See gh-secrets.json.
+/.gh-secrets-state.json
+
 # Scratch output from local generation runs
 /out
 /.crozier-tmp
