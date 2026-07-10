@@ -336,6 +336,38 @@ fn wide_string_enum_wraps_like_ruff() {
 }
 
 #[test]
+fn emits_endpoint_package_markers_with_fern_module_names() {
+    // The client module name comes from the operationId's group prefix:
+    // snake_cased when the prefix has an underscore, else lowercased; an
+    // operationId with no underscore falls back to lowercasing the whole id.
+    let spec = "\
+openapi: 3.0.0
+info:
+  title: E
+paths:
+  /a:
+    post:
+      operationId: my_group_doThing
+      tags: [MyGroup]
+  /b:
+    get:
+      operationId: soloThing_doOther
+      tags: [Solo]
+  /c:
+    get:
+      operationId: bareid
+      tags: [Bare]
+";
+    let files = render(spec);
+    for module in ["my_group", "solothing", "bareid"] {
+        let init = files
+            .get(&format!("src/acme/{module}/__init__.py"))
+            .unwrap_or_else(|| panic!("expected {module}/__init__.py; got {:?}", files.keys()));
+        assert_eq!(init, "\n\n\n\n", "{module} marker");
+    }
+}
+
+#[test]
 fn emits_core_runtime_with_substituted_sdk_name() {
     let files = render(RICH_SPEC);
     // The static core runtime is emitted alongside the type layer.

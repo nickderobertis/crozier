@@ -24,6 +24,59 @@ pub struct OpenApi {
     /// Reusable components; crozier reads `components.schemas`.
     #[serde(default)]
     pub components: Components,
+    /// API operations, keyed by URL path, in document order.
+    #[serde(default)]
+    pub paths: IndexMap<String, PathItem>,
+}
+
+/// One path's operations, keyed by HTTP method. Only the methods crozier
+/// generates are modeled.
+#[derive(Debug, Default, Deserialize)]
+pub struct PathItem {
+    /// `GET` operation.
+    #[serde(default)]
+    pub get: Option<Operation>,
+    /// `POST` operation.
+    #[serde(default)]
+    pub post: Option<Operation>,
+    /// `PUT` operation.
+    #[serde(default)]
+    pub put: Option<Operation>,
+    /// `DELETE` operation.
+    #[serde(default)]
+    pub delete: Option<Operation>,
+    /// `PATCH` operation.
+    #[serde(default)]
+    pub patch: Option<Operation>,
+}
+
+impl PathItem {
+    /// The operations present on this path, paired with their HTTP method (in a
+    /// stable method order).
+    #[must_use]
+    pub fn operations(&self) -> Vec<(&'static str, &Operation)> {
+        [
+            ("GET", &self.get),
+            ("POST", &self.post),
+            ("PUT", &self.put),
+            ("DELETE", &self.delete),
+            ("PATCH", &self.patch),
+        ]
+        .into_iter()
+        .filter_map(|(method, op)| op.as_ref().map(|o| (method, o)))
+        .collect()
+    }
+}
+
+/// A single API operation.
+#[derive(Debug, Deserialize)]
+pub struct Operation {
+    /// The operation identifier, `{group}_{camelMethodName}`.
+    #[serde(rename = "operationId", default)]
+    pub operation_id: String,
+    /// Tags; the first groups the operation into a client.
+    #[serde(default)]
+    pub tags: Vec<String>,
 }
 
 /// The `info` block.
@@ -167,6 +220,20 @@ pub fn load(path: &Path) -> Result<OpenApi> {
                 doc.openapi
             ),
         });
+    }
+    // crozier derives each client's module and method names from `operationId`,
+    // so require it on every operation rather than emitting a malformed path.
+    for (url, item) in &doc.paths {
+        for (method, op) in item.operations() {
+            if op.operation_id.trim().is_empty() {
+                return Err(Error::InvalidSpec {
+                    path: path.to_path_buf(),
+                    message: format!(
+                        "operation `{method} {url}` has no `operationId`; crozier requires one to name the client"
+                    ),
+                });
+            }
+        }
     }
 
     Ok(doc)
