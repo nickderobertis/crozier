@@ -54,6 +54,9 @@ pub struct ObjectType {
     pub name: String,
     /// Module (file stem).
     pub module: String,
+    /// Base classes. Empty means `UniversalBaseModel`; non-empty comes from an
+    /// `allOf` whose `$ref` members become superclasses.
+    pub bases: Vec<String>,
     /// Fields, in document order.
     pub fields: Vec<Field>,
     /// Optional class docstring.
@@ -139,67 +142,231 @@ pub enum Prim {
 /// Build the IR from a parsed document and config.
 #[must_use]
 pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
-    let mut types = Vec::new();
+    let mut builder = Builder { types: Vec::new() };
     for (key, schema) in &doc.components.schemas {
-        types.push(build_type(key, schema));
+        builder.add_named(&naming::class_name(key), schema);
     }
     Ir {
         package_name: config.package_name.clone(),
         project_name: config.project_name.clone(),
-        types,
+        types: builder.types,
     }
 }
 
-/// Classify and build one named schema into a top-level type.
-fn build_type(key: &str, schema: &Schema) -> TypeDecl {
-    let name = naming::class_name(key);
-    let module = naming::module_name(&name);
-    let docstring = clean_doc(schema.description.as_deref());
+/// Accumulates generated types. Some schemas produce more than one type: an
+/// inline schema (a `oneOf` object variant, or an inline enum property) is
+/// *hoisted* into its own named type and referenced by name, matching Fern.
+struct Builder {
+    types: Vec<TypeDecl>,
+}
 
-    // An object with `additionalProperties` but no declared properties is a map,
-    // which Fern emits as a `Dict[..]` alias rather than an empty model.
-    let is_map = is_object_type(schema)
+impl Builder {
+    /// Classify one named schema and push it (plus any hoisted types).
+    fn add_named(&mut self, name: &str, schema: &Schema) {
+        let module = naming::module_name(name);
+        let docstring = clean_doc(schema.description.as_deref());
+
+        // A `oneOf`/`anyOf` with an inline-object variant: hoist each such
+        // variant to `{Name}{Ordinal}` and alias to the union of variant types.
+        if schema.properties.is_empty() && !is_map(schema) {
+            if let Some(variants) = schema.one_of.as_ref().or(schema.any_of.as_ref()) {
+                if variants.iter().any(is_inline_object) {
+                    let target = TypeRef::Union(
+                        variants
+                            .iter()
+                            .enumerate()
+                            .map(|(i, v)| self.variant_ref(name, i, v))
+                            .collect(),
+                    );
+                    self.push_alias(name, module, target, docstring);
+                    return;
+                }
+            }
+        }
+
+        // An object with `additionalProperties` but no declared properties is a
+        // map, which Fern emits as a `Dict[..]` alias rather than an empty model.
+        if is_map(schema) {
+            self.push_alias(name, module, full_type_ref(schema), docstring);
+            return;
+        }
+
+        // Object with properties, an `allOf`, or an explicit `type: object`.
+        if !schema.properties.is_empty() || schema.all_of.is_some() || is_object_type(schema) {
+            self.add_object(name, module, schema, docstring);
+            return;
+        }
+
+        // Everything else is an alias: a union, an extensible enum, a scalar, or
+        // an unknown type. `full_type_ref` carries any `Optional` wrapping.
+        self.push_alias(name, module, full_type_ref(schema), docstring);
+    }
+
+    /// Build an object model. `allOf` `$ref` members become base classes and
+    /// their inline object members contribute fields, alongside the schema's own
+    /// `properties`.
+    fn add_object(
+        &mut self,
+        name: &str,
+        module: String,
+        schema: &Schema,
+        docstring: Option<String>,
+    ) {
+        // `allOf` merges members: `$ref`s become base classes, inline members
+        // contribute properties, and `required` applies across the whole set.
+        let required: Vec<&str> = schema
+            .required
+            .iter()
+            .chain(schema.all_of.iter().flatten().flat_map(|m| &m.required))
+            .map(String::as_str)
+            .collect();
+        let mut bases = Vec::new();
+        let mut fields = Vec::new();
+        for member in schema.all_of.iter().flatten() {
+            if let Some(reference) = &member.reference {
+                bases.push(ref_to_class(reference));
+            } else {
+                self.collect_fields(name, member, &required, &mut fields);
+            }
+        }
+        self.collect_fields(name, schema, &required, &mut fields);
+        self.types.push(TypeDecl::Object(ObjectType {
+            name: name.to_string(),
+            module,
+            bases,
+            fields,
+            docstring,
+        }));
+    }
+
+    /// Append `schema`'s properties to `fields`, hoisting inline property types.
+    /// `required` is the effective required set (merged across any `allOf`).
+    fn collect_fields(
+        &mut self,
+        owner: &str,
+        schema: &Schema,
+        required: &[&str],
+        fields: &mut Vec<Field>,
+    ) {
+        for (prop, prop_schema) in &schema.properties {
+            let optional = is_optional(prop_schema) || !required.contains(&prop.as_str());
+            fields.push(Field {
+                wire_name: prop.clone(),
+                py_name: naming::field_name(prop),
+                type_ref: self.field_type_ref(owner, prop, prop_schema),
+                optional,
+                docstring: clean_doc(prop_schema.description.as_deref()),
+            });
+        }
+    }
+
+    /// The type of a property, hoisting an inline string enum to a named
+    /// extensible-enum type `{Owner}{Prop}` (as Fern does for `typesAnimal`).
+    fn field_type_ref(&mut self, owner: &str, prop: &str, prop_schema: &Schema) -> TypeRef {
+        if prop_schema.reference.is_none() {
+            if let Some(values) = string_enum_values(prop_schema) {
+                let hoisted = format!("{owner}{}", naming::class_name(prop));
+                let module = naming::module_name(&hoisted);
+                let target = extensible_enum(values);
+                self.push_alias(
+                    &hoisted,
+                    module,
+                    target,
+                    clean_doc(prop_schema.description.as_deref()),
+                );
+                return TypeRef::Named(hoisted);
+            }
+        }
+        base_type_ref(prop_schema)
+    }
+
+    /// Resolve one `oneOf`/`anyOf` variant, hoisting an inline object to a
+    /// `{parent}{Ordinal(index)}` model and returning a reference to it.
+    fn variant_ref(&mut self, parent: &str, index: usize, variant: &Schema) -> TypeRef {
+        if let Some(reference) = &variant.reference {
+            return TypeRef::Named(ref_to_class(reference));
+        }
+        if is_inline_object(variant) {
+            let name = format!("{parent}{}", ordinal_word(index));
+            let module = naming::module_name(&name);
+            self.add_object(
+                &name,
+                module,
+                variant,
+                clean_doc(variant.description.as_deref()),
+            );
+            return TypeRef::Named(name);
+        }
+        base_type_ref(variant)
+    }
+
+    fn push_alias(
+        &mut self,
+        name: &str,
+        module: String,
+        target: TypeRef,
+        docstring: Option<String>,
+    ) {
+        self.types.push(TypeDecl::Alias(AliasType {
+            name: name.to_string(),
+            module,
+            target,
+            docstring,
+        }));
+    }
+}
+
+/// Fern's extensible-enum rendering of a string enum: `Union[Literal[..], Any]`.
+fn extensible_enum(values: Vec<String>) -> TypeRef {
+    TypeRef::Union(vec![
+        TypeRef::Literal(values),
+        TypeRef::Primitive(Prim::Any),
+    ])
+}
+
+/// An object with `additionalProperties` but no declared properties — a map.
+fn is_map(schema: &Schema) -> bool {
+    is_object_type(schema)
         && schema.properties.is_empty()
         && matches!(
             schema.additional_properties,
             Some(AdditionalProperties::Schema(_))
-        );
-
-    // Object with properties (and not a bare map).
-    if !is_map && (!schema.properties.is_empty() || is_object_type(schema)) {
-        let fields = schema
-            .properties
-            .iter()
-            .map(|(prop, prop_schema)| build_field(prop, prop_schema, schema))
-            .collect();
-        return TypeDecl::Object(ObjectType {
-            name,
-            module,
-            fields,
-            docstring,
-        });
-    }
-
-    // Everything else is an alias: a union, an extensible enum, a map, a scalar,
-    // or an unknown type. `full_type_ref` carries any `Optional` wrapping.
-    TypeDecl::Alias(AliasType {
-        name,
-        module,
-        target: full_type_ref(schema),
-        docstring,
-    })
+        )
 }
 
-/// Build one field from a property schema.
-fn build_field(prop: &str, prop_schema: &Schema, parent: &Schema) -> Field {
-    let optional = is_optional(prop_schema) || !parent.required.iter().any(|r| r == prop);
-    Field {
-        wire_name: prop.to_string(),
-        py_name: naming::field_name(prop),
-        type_ref: base_type_ref(prop_schema),
-        optional,
-        docstring: clean_doc(prop_schema.description.as_deref()),
-    }
+/// An inline (not `$ref`) object-shaped schema that Fern hoists into its own
+/// named type when it appears as a union variant.
+fn is_inline_object(schema: &Schema) -> bool {
+    schema.reference.is_none()
+        && (!schema.properties.is_empty() || schema.all_of.is_some() || is_object_type(schema))
+}
+
+/// The English word for a small ordinal, used to name hoisted union variants
+/// (`TypesAnimalZero`, `TypesAnimalOne`, ...), matching Fern.
+fn ordinal_word(n: usize) -> &'static str {
+    const WORDS: [&str; 20] = [
+        "Zero",
+        "One",
+        "Two",
+        "Three",
+        "Four",
+        "Five",
+        "Six",
+        "Seven",
+        "Eight",
+        "Nine",
+        "Ten",
+        "Eleven",
+        "Twelve",
+        "Thirteen",
+        "Fourteen",
+        "Fifteen",
+        "Sixteen",
+        "Seventeen",
+        "Eighteen",
+        "Nineteen",
+    ];
+    WORDS.get(n).copied().unwrap_or("N")
 }
 
 /// Map a schema to its full type expression, wrapping in `Optional` when the
@@ -221,12 +388,8 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
         return TypeRef::Named(ref_to_class(reference));
     }
     if let Some(values) = string_enum_values(schema) {
-        // Fern renders an OpenAPI string enum as an extensible enum:
-        // `Union[Literal["a", "b", ...], Any]`.
-        return TypeRef::Union(vec![
-            TypeRef::Literal(values),
-            TypeRef::Primitive(Prim::Any),
-        ]);
+        // Fern renders an OpenAPI string enum as an extensible enum.
+        return extensible_enum(values);
     }
     if let Some(variants) = union_variants(schema) {
         return TypeRef::Union(variants);

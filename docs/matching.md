@@ -52,10 +52,10 @@ Currently matched for `query-parameters-openapi`:
 - `src/seed/types/nested_user.py`
 
 Matched for `exhaustive` (the OpenAPI-derived fixture from
-`scripts/generate-fern-fixture.sh`): `version.py`, `py.typed`, and 23 of the 24
-`types/` modules — the whole type layer except `types_animal`, which needs
-inline-schema hoisting. See the `EXHAUSTIVE` `matched` list in `tests/e2e.rs`
-for the exact set.
+`scripts/generate-fern-fixture.sh`): `version.py`, `py.typed`, and the **entire
+type layer** — every `types/*.py` module (including the hoisted `typesAnimal`
+variants) except `types/__init__.py`, the lazy-loader over the full type set.
+See the `EXHAUSTIVE` `matched` list in `tests/e2e.rs` for the exact set.
 
 The full expected tree is committed under `expected/` even where not yet matched,
 so the finish line is explicit and progress is measurable.
@@ -76,6 +76,9 @@ Named `components.schemas` → the Python type layer:
 - **Aliases** — unions (`oneOf`/`anyOf`), maps (`type: object` +
   `additionalProperties`, no properties → `Dict[..]`), nullable scalars
   (`Optional[..]`), and unknown/untyped schemas (`Optional[Any]`).
+- **Hoisted inline schemas** — a `oneOf` object variant becomes a named model
+  `{Name}{Ordinal}` (`TypesAnimalZero`), an `allOf`'s `$ref` members become its
+  base classes, and an inline enum property becomes a named `{Owner}{Prop}` type.
 
 Type mapping follows Fern's OpenAPI importer: `format: uuid`/`byte` → `str`,
 `date-time` → `dt.datetime`, `date` → `dt.date`, integer formats → `int`, etc.
@@ -91,12 +94,13 @@ element per line with a trailing comma.
 
 ## Known gaps (roadmap)
 
-1. **Inline-schema hoisting.** Fern names and hoists inline schemas — e.g.
-   `typesAnimal`'s `oneOf`/`allOf` variants become `TypesAnimalZero`/`One` plus
-   their inline `*Animal` literals, and request/response bodies like
-   `SearchResponse`. crozier only emits named component schemas, so
-   `types/__init__.py` and the hoisted types are not yet matched.
-2. **The client, core, and error layers.** `client.py`/`raw_client.py`, the
+1. **`types/__init__.py`.** Fern's package `__init__` is a lazy loader
+   (`__getattr__` over a `_dynamic_imports` map) re-exporting every type. crozier
+   emits the type modules but not yet this aggregator.
+2. **Request/response inline-schema hoisting.** Component-schema hoisting is done;
+   Fern also hoists inline request/response bodies (e.g. `SearchResponse`,
+   `SearchRequestNeighbor`), which arrive with the endpoint layer.
+3. **The client, core, and error layers.** `client.py`/`raw_client.py`, the
    `core/` runtime, and generated errors are not yet emitted. The `core/` files
    are near-static Fern boilerplate and will be reproduced as attributed template
    assets.
