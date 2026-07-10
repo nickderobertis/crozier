@@ -11,10 +11,11 @@
 # licenses/fern-APACHE-2.0.txt — this script preserves them; do not remove them.
 #
 # The offline corpus needs NO Docker (Fern's output is already committed in the
-# Fern repo). For the exhaustive spec, which is NOT committed as OpenAPI-derived
-# output, use scripts/generate-fern-fixture.sh (needs Docker) instead.
+# Fern repo). The exhaustive spec is NOT committed as OpenAPI-derived output, so
+# passing `exhaustive` ALSO runs Fern's container generator for it via
+# scripts/generate-fern-fixture.sh (needs Docker + the fern CLI).
 #
-# Usage:  scripts/fixtures-refresh.sh
+# Usage:  scripts/fixtures-refresh.sh [exhaustive]
 set -euo pipefail
 
 # Pin the Fern commit the fixtures were generated from — reproducibility and a
@@ -63,6 +64,16 @@ for entry in "${CORPUS[@]}"; do
       *)    cp "$workdir/$seed/$rel" "$api_dir/expected/$rel" ;;
     esac
   done
+done
+
+# The exhaustive fixture is not committed by Fern as OpenAPI-derived output, so
+# it is regenerated on demand behind an explicit arg (it needs Docker + fern,
+# which the offline corpus does not).
+for arg in "$@"; do
+  if [ "$arg" = "exhaustive" ]; then
+    echo "fixtures-refresh: exhaustive (container generator)..." >&2
+    "$repo_root/scripts/generate-fern-fixture.sh"
+  fi
 done
 
 echo "fixtures-refresh: done. Review the diff; update the e2e manifest for any new matched files." >&2

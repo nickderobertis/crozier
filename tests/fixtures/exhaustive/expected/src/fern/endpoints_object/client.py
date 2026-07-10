@@ -1,0 +1,988 @@
+
+
+import datetime as dt
+import typing
+
+from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from ..core.request_options import RequestOptions
+from ..types.types_documented_unknown_type import TypesDocumentedUnknownType
+from ..types.types_map_of_documented_unknown_type import TypesMapOfDocumentedUnknownType
+from ..types.types_nested_object_with_optional_field import TypesNestedObjectWithOptionalField
+from ..types.types_nested_object_with_required_field import TypesNestedObjectWithRequiredField
+from ..types.types_object_with_datetime_like_string import TypesObjectWithDatetimeLikeString
+from ..types.types_object_with_documented_unknown_type import TypesObjectWithDocumentedUnknownType
+from ..types.types_object_with_map_of_map import TypesObjectWithMapOfMap
+from ..types.types_object_with_optional_field import TypesObjectWithOptionalField
+from ..types.types_object_with_required_field import TypesObjectWithRequiredField
+from ..types.types_object_with_unknown_field import TypesObjectWithUnknownField
+from .raw_client import AsyncRawEndpointsObjectClient, RawEndpointsObjectClient
+
+
+OMIT = typing.cast(typing.Any, ...)
+
+
+class EndpointsObjectClient:
+    def __init__(self, *, client_wrapper: SyncClientWrapper):
+        self._raw_client = RawEndpointsObjectClient(client_wrapper=client_wrapper)
+
+    @property
+    def with_raw_response(self) -> RawEndpointsObjectClient:
+        """
+        Retrieves a raw implementation of this client that returns raw responses.
+
+        Returns
+        -------
+        RawEndpointsObjectClient
+        """
+        return self._raw_client
+
+    def endpoints_object_get_and_return_with_optional_field(
+        self,
+        *,
+        string: typing.Optional[str] = OMIT,
+        integer: typing.Optional[int] = OMIT,
+        long_: typing.Optional[int] = OMIT,
+        double: typing.Optional[float] = OMIT,
+        bool_: typing.Optional[bool] = OMIT,
+        datetime: typing.Optional[dt.datetime] = OMIT,
+        date: typing.Optional[dt.date] = OMIT,
+        uuid_: typing.Optional[str] = OMIT,
+        base64: typing.Optional[str] = OMIT,
+        list_: typing.Optional[typing.Sequence[str]] = OMIT,
+        set_: typing.Optional[typing.Sequence[str]] = OMIT,
+        map_: typing.Optional[typing.Dict[str, typing.Optional[str]]] = OMIT,
+        bigint: typing.Optional[int] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> TypesObjectWithOptionalField:
+        """
+        Parameters
+        ----------
+        string : typing.Optional[str]
+            This is a rather long descriptor of this single field in a more complex type. If you ask me I think this is a pretty good description for this field all things considered.
+
+        integer : typing.Optional[int]
+
+        long_ : typing.Optional[int]
+
+        double : typing.Optional[float]
+
+        bool_ : typing.Optional[bool]
+
+        datetime : typing.Optional[dt.datetime]
+
+        date : typing.Optional[dt.date]
+
+        uuid_ : typing.Optional[str]
+
+        base64 : typing.Optional[str]
+
+        list_ : typing.Optional[typing.Sequence[str]]
+
+        set_ : typing.Optional[typing.Sequence[str]]
+
+        map_ : typing.Optional[typing.Dict[str, typing.Optional[str]]]
+
+        bigint : typing.Optional[int]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        TypesObjectWithOptionalField
+
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            token="YOUR_TOKEN",
+            base_url="https://yourhost.com/path/to/api",
+        )
+        client.endpoints_object.endpoints_object_get_and_return_with_optional_field()
+        """
+        _response = self._raw_client.endpoints_object_get_and_return_with_optional_field(
+            string=string,
+            integer=integer,
+            long_=long_,
+            double=double,
+            bool_=bool_,
+            datetime=datetime,
+            date=date,
+            uuid_=uuid_,
+            base64=base64,
+            list_=list_,
+            set_=set_,
+            map_=map_,
+            bigint=bigint,
+            request_options=request_options,
+        )
+        return _response.data
+
+    def endpoints_object_get_and_return_with_required_field(
+        self, *, string: str, request_options: typing.Optional[RequestOptions] = None
+    ) -> TypesObjectWithRequiredField:
+        """
+        Parameters
+        ----------
+        string : str
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        TypesObjectWithRequiredField
+
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            token="YOUR_TOKEN",
+            base_url="https://yourhost.com/path/to/api",
+        )
+        client.endpoints_object.endpoints_object_get_and_return_with_required_field(
+            string="string",
+        )
+        """
+        _response = self._raw_client.endpoints_object_get_and_return_with_required_field(
+            string=string, request_options=request_options
+        )
+        return _response.data
+
+    def endpoints_object_get_and_return_with_map_of_map(
+        self, *, map_: typing.Dict[str, typing.Dict[str, str]], request_options: typing.Optional[RequestOptions] = None
+    ) -> TypesObjectWithMapOfMap:
+        """
+        Parameters
+        ----------
+        map_ : typing.Dict[str, typing.Dict[str, str]]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        TypesObjectWithMapOfMap
+
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            token="YOUR_TOKEN",
+            base_url="https://yourhost.com/path/to/api",
+        )
+        client.endpoints_object.endpoints_object_get_and_return_with_map_of_map(
+            map_={"key": {"key": "value"}},
+        )
+        """
+        _response = self._raw_client.endpoints_object_get_and_return_with_map_of_map(
+            map_=map_, request_options=request_options
+        )
+        return _response.data
+
+    def endpoints_object_get_and_return_nested_with_optional_field(
+        self,
+        *,
+        string: typing.Optional[str] = OMIT,
+        nested_object: typing.Optional[TypesObjectWithOptionalField] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> TypesNestedObjectWithOptionalField:
+        """
+        Parameters
+        ----------
+        string : typing.Optional[str]
+
+        nested_object : typing.Optional[TypesObjectWithOptionalField]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        TypesNestedObjectWithOptionalField
+
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            token="YOUR_TOKEN",
+            base_url="https://yourhost.com/path/to/api",
+        )
+        client.endpoints_object.endpoints_object_get_and_return_nested_with_optional_field()
+        """
+        _response = self._raw_client.endpoints_object_get_and_return_nested_with_optional_field(
+            string=string, nested_object=nested_object, request_options=request_options
+        )
+        return _response.data
+
+    def endpoints_object_get_and_return_nested_with_required_field(
+        self,
+        string_: str,
+        *,
+        string: str,
+        nested_object: TypesObjectWithOptionalField,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> TypesNestedObjectWithRequiredField:
+        """
+        Parameters
+        ----------
+        string_ : str
+
+        string : str
+
+        nested_object : TypesObjectWithOptionalField
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        TypesNestedObjectWithRequiredField
+
+
+        Examples
+        --------
+        from fern import FernApi, TypesObjectWithOptionalField
+
+        client = FernApi(
+            token="YOUR_TOKEN",
+            base_url="https://yourhost.com/path/to/api",
+        )
+        client.endpoints_object.endpoints_object_get_and_return_nested_with_required_field(
+            string_="string",
+            string="string",
+            nested_object=TypesObjectWithOptionalField(),
+        )
+        """
+        _response = self._raw_client.endpoints_object_get_and_return_nested_with_required_field(
+            string_, string=string, nested_object=nested_object, request_options=request_options
+        )
+        return _response.data
+
+    def endpoints_object_get_and_return_nested_with_required_field_as_list(
+        self,
+        *,
+        request: typing.Sequence[TypesNestedObjectWithRequiredField],
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> TypesNestedObjectWithRequiredField:
+        """
+        Parameters
+        ----------
+        request : typing.Sequence[TypesNestedObjectWithRequiredField]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        TypesNestedObjectWithRequiredField
+
+
+        Examples
+        --------
+        from fern import (
+            FernApi,
+            TypesNestedObjectWithRequiredField,
+            TypesObjectWithOptionalField,
+        )
+
+        client = FernApi(
+            token="YOUR_TOKEN",
+            base_url="https://yourhost.com/path/to/api",
+        )
+        client.endpoints_object.endpoints_object_get_and_return_nested_with_required_field_as_list(
+            request=[
+                TypesNestedObjectWithRequiredField(
+                    string="string",
+                    nested_object=TypesObjectWithOptionalField(),
+                )
+            ],
+        )
+        """
+        _response = self._raw_client.endpoints_object_get_and_return_nested_with_required_field_as_list(
+            request=request, request_options=request_options
+        )
+        return _response.data
+
+    def endpoints_object_get_and_return_with_unknown_field(
+        self, *, unknown: typing.Optional[typing.Any] = OMIT, request_options: typing.Optional[RequestOptions] = None
+    ) -> TypesObjectWithUnknownField:
+        """
+        Parameters
+        ----------
+        unknown : typing.Optional[typing.Any]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        TypesObjectWithUnknownField
+
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            token="YOUR_TOKEN",
+            base_url="https://yourhost.com/path/to/api",
+        )
+        client.endpoints_object.endpoints_object_get_and_return_with_unknown_field(
+            unknown={"key": "value"},
+        )
+        """
+        _response = self._raw_client.endpoints_object_get_and_return_with_unknown_field(
+            unknown=unknown, request_options=request_options
+        )
+        return _response.data
+
+    def endpoints_object_get_and_return_with_documented_unknown_type(
+        self,
+        *,
+        documented_unknown_type: TypesDocumentedUnknownType,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> TypesObjectWithDocumentedUnknownType:
+        """
+        Parameters
+        ----------
+        documented_unknown_type : TypesDocumentedUnknownType
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        TypesObjectWithDocumentedUnknownType
+
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            token="YOUR_TOKEN",
+            base_url="https://yourhost.com/path/to/api",
+        )
+        client.endpoints_object.endpoints_object_get_and_return_with_documented_unknown_type(
+            documented_unknown_type={"key": "value"},
+        )
+        """
+        _response = self._raw_client.endpoints_object_get_and_return_with_documented_unknown_type(
+            documented_unknown_type=documented_unknown_type, request_options=request_options
+        )
+        return _response.data
+
+    def endpoints_object_get_and_return_map_of_documented_unknown_type(
+        self, *, request: TypesMapOfDocumentedUnknownType, request_options: typing.Optional[RequestOptions] = None
+    ) -> TypesMapOfDocumentedUnknownType:
+        """
+        Parameters
+        ----------
+        request : TypesMapOfDocumentedUnknownType
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        TypesMapOfDocumentedUnknownType
+
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            token="YOUR_TOKEN",
+            base_url="https://yourhost.com/path/to/api",
+        )
+        client.endpoints_object.endpoints_object_get_and_return_map_of_documented_unknown_type(
+            request={},
+        )
+        """
+        _response = self._raw_client.endpoints_object_get_and_return_map_of_documented_unknown_type(
+            request=request, request_options=request_options
+        )
+        return _response.data
+
+    def endpoints_object_get_and_return_with_datetime_like_string(
+        self,
+        *,
+        datetime_like_string: str,
+        actual_datetime: dt.datetime,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> TypesObjectWithDatetimeLikeString:
+        """
+        Tests that string fields containing datetime-like values are NOT reformatted.
+        The datetimeLikeString field should preserve its exact value "2023-08-31T14:15:22Z"
+        without being converted to "2023-08-31T14:15:22.000Z".
+
+        Parameters
+        ----------
+        datetime_like_string : str
+            A string field that happens to contain a datetime-like value
+
+        actual_datetime : dt.datetime
+            An actual datetime field for comparison
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        TypesObjectWithDatetimeLikeString
+
+
+        Examples
+        --------
+        import datetime
+
+        from fern import FernApi
+
+        client = FernApi(
+            token="YOUR_TOKEN",
+            base_url="https://yourhost.com/path/to/api",
+        )
+        client.endpoints_object.endpoints_object_get_and_return_with_datetime_like_string(
+            datetime_like_string="datetimeLikeString",
+            actual_datetime=datetime.datetime.fromisoformat(
+                "2024-01-15 09:30:00+00:00",
+            ),
+        )
+        """
+        _response = self._raw_client.endpoints_object_get_and_return_with_datetime_like_string(
+            datetime_like_string=datetime_like_string, actual_datetime=actual_datetime, request_options=request_options
+        )
+        return _response.data
+
+
+class AsyncEndpointsObjectClient:
+    def __init__(self, *, client_wrapper: AsyncClientWrapper):
+        self._raw_client = AsyncRawEndpointsObjectClient(client_wrapper=client_wrapper)
+
+    @property
+    def with_raw_response(self) -> AsyncRawEndpointsObjectClient:
+        """
+        Retrieves a raw implementation of this client that returns raw responses.
+
+        Returns
+        -------
+        AsyncRawEndpointsObjectClient
+        """
+        return self._raw_client
+
+    async def endpoints_object_get_and_return_with_optional_field(
+        self,
+        *,
+        string: typing.Optional[str] = OMIT,
+        integer: typing.Optional[int] = OMIT,
+        long_: typing.Optional[int] = OMIT,
+        double: typing.Optional[float] = OMIT,
+        bool_: typing.Optional[bool] = OMIT,
+        datetime: typing.Optional[dt.datetime] = OMIT,
+        date: typing.Optional[dt.date] = OMIT,
+        uuid_: typing.Optional[str] = OMIT,
+        base64: typing.Optional[str] = OMIT,
+        list_: typing.Optional[typing.Sequence[str]] = OMIT,
+        set_: typing.Optional[typing.Sequence[str]] = OMIT,
+        map_: typing.Optional[typing.Dict[str, typing.Optional[str]]] = OMIT,
+        bigint: typing.Optional[int] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> TypesObjectWithOptionalField:
+        """
+        Parameters
+        ----------
+        string : typing.Optional[str]
+            This is a rather long descriptor of this single field in a more complex type. If you ask me I think this is a pretty good description for this field all things considered.
+
+        integer : typing.Optional[int]
+
+        long_ : typing.Optional[int]
+
+        double : typing.Optional[float]
+
+        bool_ : typing.Optional[bool]
+
+        datetime : typing.Optional[dt.datetime]
+
+        date : typing.Optional[dt.date]
+
+        uuid_ : typing.Optional[str]
+
+        base64 : typing.Optional[str]
+
+        list_ : typing.Optional[typing.Sequence[str]]
+
+        set_ : typing.Optional[typing.Sequence[str]]
+
+        map_ : typing.Optional[typing.Dict[str, typing.Optional[str]]]
+
+        bigint : typing.Optional[int]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        TypesObjectWithOptionalField
+
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            token="YOUR_TOKEN",
+            base_url="https://yourhost.com/path/to/api",
+        )
+
+
+        async def main() -> None:
+            await client.endpoints_object.endpoints_object_get_and_return_with_optional_field()
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.endpoints_object_get_and_return_with_optional_field(
+            string=string,
+            integer=integer,
+            long_=long_,
+            double=double,
+            bool_=bool_,
+            datetime=datetime,
+            date=date,
+            uuid_=uuid_,
+            base64=base64,
+            list_=list_,
+            set_=set_,
+            map_=map_,
+            bigint=bigint,
+            request_options=request_options,
+        )
+        return _response.data
+
+    async def endpoints_object_get_and_return_with_required_field(
+        self, *, string: str, request_options: typing.Optional[RequestOptions] = None
+    ) -> TypesObjectWithRequiredField:
+        """
+        Parameters
+        ----------
+        string : str
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        TypesObjectWithRequiredField
+
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            token="YOUR_TOKEN",
+            base_url="https://yourhost.com/path/to/api",
+        )
+
+
+        async def main() -> None:
+            await client.endpoints_object.endpoints_object_get_and_return_with_required_field(
+                string="string",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.endpoints_object_get_and_return_with_required_field(
+            string=string, request_options=request_options
+        )
+        return _response.data
+
+    async def endpoints_object_get_and_return_with_map_of_map(
+        self, *, map_: typing.Dict[str, typing.Dict[str, str]], request_options: typing.Optional[RequestOptions] = None
+    ) -> TypesObjectWithMapOfMap:
+        """
+        Parameters
+        ----------
+        map_ : typing.Dict[str, typing.Dict[str, str]]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        TypesObjectWithMapOfMap
+
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            token="YOUR_TOKEN",
+            base_url="https://yourhost.com/path/to/api",
+        )
+
+
+        async def main() -> None:
+            await client.endpoints_object.endpoints_object_get_and_return_with_map_of_map(
+                map_={"key": {"key": "value"}},
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.endpoints_object_get_and_return_with_map_of_map(
+            map_=map_, request_options=request_options
+        )
+        return _response.data
+
+    async def endpoints_object_get_and_return_nested_with_optional_field(
+        self,
+        *,
+        string: typing.Optional[str] = OMIT,
+        nested_object: typing.Optional[TypesObjectWithOptionalField] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> TypesNestedObjectWithOptionalField:
+        """
+        Parameters
+        ----------
+        string : typing.Optional[str]
+
+        nested_object : typing.Optional[TypesObjectWithOptionalField]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        TypesNestedObjectWithOptionalField
+
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            token="YOUR_TOKEN",
+            base_url="https://yourhost.com/path/to/api",
+        )
+
+
+        async def main() -> None:
+            await client.endpoints_object.endpoints_object_get_and_return_nested_with_optional_field()
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.endpoints_object_get_and_return_nested_with_optional_field(
+            string=string, nested_object=nested_object, request_options=request_options
+        )
+        return _response.data
+
+    async def endpoints_object_get_and_return_nested_with_required_field(
+        self,
+        string_: str,
+        *,
+        string: str,
+        nested_object: TypesObjectWithOptionalField,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> TypesNestedObjectWithRequiredField:
+        """
+        Parameters
+        ----------
+        string_ : str
+
+        string : str
+
+        nested_object : TypesObjectWithOptionalField
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        TypesNestedObjectWithRequiredField
+
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi, TypesObjectWithOptionalField
+
+        client = AsyncFernApi(
+            token="YOUR_TOKEN",
+            base_url="https://yourhost.com/path/to/api",
+        )
+
+
+        async def main() -> None:
+            await client.endpoints_object.endpoints_object_get_and_return_nested_with_required_field(
+                string_="string",
+                string="string",
+                nested_object=TypesObjectWithOptionalField(),
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.endpoints_object_get_and_return_nested_with_required_field(
+            string_, string=string, nested_object=nested_object, request_options=request_options
+        )
+        return _response.data
+
+    async def endpoints_object_get_and_return_nested_with_required_field_as_list(
+        self,
+        *,
+        request: typing.Sequence[TypesNestedObjectWithRequiredField],
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> TypesNestedObjectWithRequiredField:
+        """
+        Parameters
+        ----------
+        request : typing.Sequence[TypesNestedObjectWithRequiredField]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        TypesNestedObjectWithRequiredField
+
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import (
+            AsyncFernApi,
+            TypesNestedObjectWithRequiredField,
+            TypesObjectWithOptionalField,
+        )
+
+        client = AsyncFernApi(
+            token="YOUR_TOKEN",
+            base_url="https://yourhost.com/path/to/api",
+        )
+
+
+        async def main() -> None:
+            await client.endpoints_object.endpoints_object_get_and_return_nested_with_required_field_as_list(
+                request=[
+                    TypesNestedObjectWithRequiredField(
+                        string="string",
+                        nested_object=TypesObjectWithOptionalField(),
+                    )
+                ],
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.endpoints_object_get_and_return_nested_with_required_field_as_list(
+            request=request, request_options=request_options
+        )
+        return _response.data
+
+    async def endpoints_object_get_and_return_with_unknown_field(
+        self, *, unknown: typing.Optional[typing.Any] = OMIT, request_options: typing.Optional[RequestOptions] = None
+    ) -> TypesObjectWithUnknownField:
+        """
+        Parameters
+        ----------
+        unknown : typing.Optional[typing.Any]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        TypesObjectWithUnknownField
+
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            token="YOUR_TOKEN",
+            base_url="https://yourhost.com/path/to/api",
+        )
+
+
+        async def main() -> None:
+            await client.endpoints_object.endpoints_object_get_and_return_with_unknown_field(
+                unknown={"key": "value"},
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.endpoints_object_get_and_return_with_unknown_field(
+            unknown=unknown, request_options=request_options
+        )
+        return _response.data
+
+    async def endpoints_object_get_and_return_with_documented_unknown_type(
+        self,
+        *,
+        documented_unknown_type: TypesDocumentedUnknownType,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> TypesObjectWithDocumentedUnknownType:
+        """
+        Parameters
+        ----------
+        documented_unknown_type : TypesDocumentedUnknownType
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        TypesObjectWithDocumentedUnknownType
+
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            token="YOUR_TOKEN",
+            base_url="https://yourhost.com/path/to/api",
+        )
+
+
+        async def main() -> None:
+            await client.endpoints_object.endpoints_object_get_and_return_with_documented_unknown_type(
+                documented_unknown_type={"key": "value"},
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.endpoints_object_get_and_return_with_documented_unknown_type(
+            documented_unknown_type=documented_unknown_type, request_options=request_options
+        )
+        return _response.data
+
+    async def endpoints_object_get_and_return_map_of_documented_unknown_type(
+        self, *, request: TypesMapOfDocumentedUnknownType, request_options: typing.Optional[RequestOptions] = None
+    ) -> TypesMapOfDocumentedUnknownType:
+        """
+        Parameters
+        ----------
+        request : TypesMapOfDocumentedUnknownType
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        TypesMapOfDocumentedUnknownType
+
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            token="YOUR_TOKEN",
+            base_url="https://yourhost.com/path/to/api",
+        )
+
+
+        async def main() -> None:
+            await client.endpoints_object.endpoints_object_get_and_return_map_of_documented_unknown_type(
+                request={},
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.endpoints_object_get_and_return_map_of_documented_unknown_type(
+            request=request, request_options=request_options
+        )
+        return _response.data
+
+    async def endpoints_object_get_and_return_with_datetime_like_string(
+        self,
+        *,
+        datetime_like_string: str,
+        actual_datetime: dt.datetime,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> TypesObjectWithDatetimeLikeString:
+        """
+        Tests that string fields containing datetime-like values are NOT reformatted.
+        The datetimeLikeString field should preserve its exact value "2023-08-31T14:15:22Z"
+        without being converted to "2023-08-31T14:15:22.000Z".
+
+        Parameters
+        ----------
+        datetime_like_string : str
+            A string field that happens to contain a datetime-like value
+
+        actual_datetime : dt.datetime
+            An actual datetime field for comparison
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        TypesObjectWithDatetimeLikeString
+
+
+        Examples
+        --------
+        import asyncio
+        import datetime
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            token="YOUR_TOKEN",
+            base_url="https://yourhost.com/path/to/api",
+        )
+
+
+        async def main() -> None:
+            await client.endpoints_object.endpoints_object_get_and_return_with_datetime_like_string(
+                datetime_like_string="datetimeLikeString",
+                actual_datetime=datetime.datetime.fromisoformat(
+                    "2024-01-15 09:30:00+00:00",
+                ),
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.endpoints_object_get_and_return_with_datetime_like_string(
+            datetime_like_string=datetime_like_string, actual_datetime=actual_datetime, request_options=request_options
+        )
+        return _response.data
