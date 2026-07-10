@@ -1454,6 +1454,60 @@ mod tests {
     }
 
     #[test]
+    fn raw_type_str_request_context_uses_sequence() {
+        use super::raw_type_str_ctx;
+        let mut i = Imports::default();
+        // In request context, both list and set collapse to `typing.Sequence`.
+        assert_eq!(
+            raw_type_str_ctx(
+                &TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
+                &mut i,
+                true
+            ),
+            "typing.Sequence[str]"
+        );
+        assert_eq!(
+            raw_type_str_ctx(
+                &TypeRef::Set(Box::new(TypeRef::Primitive(Prim::Int))),
+                &mut i,
+                true
+            ),
+            "typing.Sequence[int]"
+        );
+        // Optionals, dicts, and unions recurse in the same context.
+        assert_eq!(
+            raw_type_str_ctx(
+                &TypeRef::Optional(Box::new(TypeRef::Set(Box::new(TypeRef::Primitive(
+                    Prim::Str
+                ))))),
+                &mut i,
+                true
+            ),
+            "typing.Optional[typing.Sequence[str]]"
+        );
+        assert_eq!(
+            raw_type_str_ctx(
+                &TypeRef::Union(vec![
+                    TypeRef::Primitive(Prim::Str),
+                    TypeRef::List(Box::new(TypeRef::Primitive(Prim::Int))),
+                ]),
+                &mut i,
+                true
+            ),
+            "typing.Union[str, typing.Sequence[int]]"
+        );
+        // Without request context, list and set keep their concrete forms.
+        assert_eq!(
+            raw_type_str_ctx(
+                &TypeRef::Set(Box::new(TypeRef::Primitive(Prim::Str))),
+                &mut i,
+                false
+            ),
+            "typing.Set[str]"
+        );
+    }
+
+    #[test]
     fn raw_method_streams_a_bytes_body_and_raises_errors() {
         let mut i = Imports::default();
         let mut ep = endpoint(
