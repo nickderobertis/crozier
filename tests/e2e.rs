@@ -36,9 +36,9 @@ const QUERY_PARAMETERS: Corpus = Corpus {
 };
 
 /// The broad `exhaustive` target: Fern's Python output regenerated from the
-/// vendored OpenAPI document (see scripts/generate-fern-fixture.sh). All 24
-/// `types/` modules match except `types_animal`, which needs inline-schema
-/// hoisting; see docs/matching.md.
+/// vendored OpenAPI document (see scripts/generate-fern-fixture.sh). Every
+/// `types/` module matches; only `types/__init__.py` (a lazy-loader over the
+/// full type set) is still pending. See docs/matching.md.
 const EXHAUSTIVE: Corpus = Corpus {
     api: "exhaustive",
     package_name: "fern",
@@ -52,6 +52,11 @@ const EXHAUSTIVE: Corpus = Corpus {
         "src/fern/types/endpoints_error_code.py",
         "src/fern/types/endpoints_paginated_response.py",
         "src/fern/types/endpoints_put_response.py",
+        "src/fern/types/types_animal.py",
+        "src/fern/types/types_animal_one.py",
+        "src/fern/types/types_animal_one_animal.py",
+        "src/fern/types/types_animal_zero.py",
+        "src/fern/types/types_animal_zero_animal.py",
         "src/fern/types/types_cat.py",
         "src/fern/types/types_documented_unknown_type.py",
         "src/fern/types/types_dog.py",

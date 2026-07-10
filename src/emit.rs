@@ -366,7 +366,17 @@ fn render_type_decl(env: &Environment<'static>, decl: &TypeDecl) -> Result<Strin
             imports.add_plain("typing");
             imports.add_plain("pydantic");
             imports.add_from("..core.pydantic_utilities", "IS_PYDANTIC_V2");
-            imports.add_from("..core.pydantic_utilities", "UniversalBaseModel");
+            // Bases come from an `allOf`'s `$ref` members; with none, the model
+            // extends Fern's `UniversalBaseModel`.
+            let bases = if obj.bases.is_empty() {
+                imports.add_from("..core.pydantic_utilities", "UniversalBaseModel");
+                "UniversalBaseModel".to_string()
+            } else {
+                for base in &obj.bases {
+                    imports.add_from(&format!(".{}", naming::module_name(base)), base);
+                }
+                obj.bases.join(", ")
+            };
             let fields: Vec<RenderedField> = obj
                 .fields
                 .iter()
@@ -380,6 +390,7 @@ fn render_type_decl(env: &Environment<'static>, decl: &TypeDecl) -> Result<Strin
                     header => HEADER,
                     imports => imports.render(),
                     class_name => obj.name,
+                    bases => bases,
                     body => object_body(obj.docstring.as_deref(), &fields),
                 },
             )

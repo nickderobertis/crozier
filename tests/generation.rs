@@ -336,6 +336,62 @@ fn wide_string_enum_wraps_like_ruff() {
 }
 
 #[test]
+fn oneof_hoists_inline_object_variants() {
+    // A oneOf with inline-object variants: each is hoisted to `{Name}{Ordinal}`.
+    // Variant 0 uses allOf (a $ref base + an inline enum property); variant 1 is
+    // a plain inline object.
+    let spec = "\
+openapi: 3.0.0
+info:
+  title: H
+components:
+  schemas:
+    Dog:
+      type: object
+      properties:
+        name:
+          type: string
+    Pet:
+      oneOf:
+        - type: object
+          required:
+            - kind
+          allOf:
+            - type: object
+              properties:
+                kind:
+                  type: string
+                  enum:
+                    - dog
+            - $ref: \"#/components/schemas/Dog\"
+        - type: object
+          properties:
+            meow:
+              type: boolean
+        - $ref: \"#/components/schemas/Dog\"
+        - type: string
+";
+    let files = render(spec);
+    // Inline-object variants are hoisted; a $ref variant and a scalar variant
+    // stay inline in the union.
+    assert!(
+        files["src/acme/types/pet.py"].contains("Pet = typing.Union[PetZero, PetOne, Dog, str]"),
+        "{}",
+        files["src/acme/types/pet.py"]
+    );
+    // Variant 0: inherits its $ref base, with the inline enum hoisted and required.
+    let zero = &files["src/acme/types/pet_zero.py"];
+    assert!(zero.contains("class PetZero(Dog):"), "{zero}");
+    assert!(zero.contains("    kind: PetZeroKind\n"), "{zero}");
+    assert!(files["src/acme/types/pet_zero_kind.py"]
+        .contains("PetZeroKind = typing.Union[typing.Literal[\"dog\"], typing.Any]"));
+    // Variant 1: no base, so it extends UniversalBaseModel; its field is optional.
+    let one = &files["src/acme/types/pet_one.py"];
+    assert!(one.contains("class PetOne(UniversalBaseModel):"), "{one}");
+    assert!(one.contains("meow: typing.Optional[bool] = None"), "{one}");
+}
+
+#[test]
 fn object_with_only_additional_properties_is_a_dict_alias() {
     // A `type: object` with `additionalProperties` and no declared properties is
     // a map alias, not an (empty) model.
