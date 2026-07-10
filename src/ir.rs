@@ -110,16 +110,22 @@ pub enum RequestBody {
     /// keyword-only `= OMIT` argument and a `json={...}` entry mapping its wire
     /// name to the argument. Always carries the content-type header.
     Inline(Vec<BodyField>),
+    /// A raw `application/octet-stream` body: a `request` argument typed
+    /// `Union[bytes, Iterator[bytes], AsyncIterator[bytes]]`, sent as `content=`
+    /// with a `content-type: application/octet-stream` header.
+    Bytes,
 }
 
 impl RequestBody {
     /// Whether the request emits the `content-type: application/json` header.
-    /// Inlined object bodies always do; a single body carries its own flag.
+    /// Inlined object bodies always do; a single body carries its own flag; a raw
+    /// bytes body carries its own (octet-stream) header instead, handled at emit.
     #[must_use]
     pub fn content_type_header(&self) -> bool {
         match self {
             RequestBody::Single(s) => s.content_type,
             RequestBody::Inline(_) => true,
+            RequestBody::Bytes => false,
         }
     }
 }
@@ -457,16 +463,13 @@ fn build_endpoint(
 
     // Today's subset: a supported (or absent) body, path/query/header params only,
     // at least one response, every non-2xx response mappable to a generated error,
-    // and a success response crozier knows how to render — a named model, a scalar,
-    // or no content (a 2xx without a JSON body).
+    // and a success response crozier knows how to render (any resolved shape but an
+    // un-hoisted inline object).
     let emittable = body_ok
         && errors_ok
         && !has_unsupported_params
         && !op.responses.is_empty()
-        && matches!(
-            response,
-            None | Some(TypeRef::Named(_) | TypeRef::Primitive(_))
-        );
+        && response_supported(op);
 
     Endpoint {
         module,
@@ -551,6 +554,11 @@ fn resolve_request_body(
     types: &[TypeDecl],
     rb: &crate::openapi::RequestBody,
 ) -> Option<RequestBody> {
+    // A raw `application/octet-stream` body is a bytes stream, independent of its
+    // schema — Fern types it as a fixed `Union[bytes, ...]` and sends `content=`.
+    if rb.content.contains_key("application/octet-stream") {
+        return Some(RequestBody::Bytes);
+    }
     let schema = rb.content.get("application/json")?.schema.as_ref()?;
     let required = rb.required == Some(true);
     if let Some(reference) = &schema.reference {
@@ -581,6 +589,14 @@ fn resolve_request_body(
     // inlined field-by-field, exactly like a `$ref` object.
     if !schema.properties.is_empty() {
         return hoist_inline_object(schema, types).map(RequestBody::Inline);
+    }
+    // An inline map body (`type: object` + `additionalProperties`): a single
+    // `request` argument, convert-wrapped when its values are objects/unions. Like
+    // any inline container, it carries no content-type header.
+    if is_map(schema) {
+        let type_ref = base_type_ref(schema);
+        let convert = type_needs_convert(&type_ref, types);
+        return Some(single(type_ref, required, convert, false));
     }
     // An inline array body: a single `request` argument. A container of objects
     // serializes through the convert wrapper; either way, no content-type header.
@@ -708,13 +724,30 @@ fn resolve_ref<'a>(doc: &'a OpenApi, reference: &str) -> Option<&'a Schema> {
 
 /// The success (2xx) response's `application/json` body type, if any.
 fn success_response(op: &Operation) -> Option<TypeRef> {
+    success_response_schema(op).map(base_type_ref)
+}
+
+/// The success (2xx) response's `application/json` body schema, if any.
+fn success_response_schema(op: &Operation) -> Option<&Schema> {
     let response = op
         .responses
         .iter()
         .find(|(code, _)| code.starts_with('2'))
         .map(|(_, r)| r)?;
-    let schema = response.content.get("application/json")?.schema.as_ref()?;
-    Some(base_type_ref(schema))
+    response.content.get("application/json")?.schema.as_ref()
+}
+
+/// Whether crozier can render an operation's success response. Any resolved shape
+/// works (a named model, a scalar, a container) *except* an inline object with
+/// declared properties, which Fern would hoist into its own named response type —
+/// not yet supported (see the request/response hoisting gap in `docs/matching.md`).
+fn response_supported(op: &Operation) -> bool {
+    match success_response_schema(op) {
+        None => true,
+        Some(schema) => {
+            schema.reference.is_some() || (schema.properties.is_empty() && schema.all_of.is_none())
+        }
+    }
 }
 
 /// The generated Python method name for an operation. Mirrors the module rule

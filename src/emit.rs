@@ -767,6 +767,19 @@ fn raw_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> String {
         .query_params
         .iter()
         .map(|qp| {
+            // An array query parameter allows multiple values: Fern types it
+            // `Optional[Union[T, Sequence[T]]]` and always defaults it to `None`.
+            if let TypeRef::List(inner) = &qp.type_ref {
+                let item = raw_type_str(inner, imports);
+                return DocParam {
+                    name: qp.py_name.clone(),
+                    annotation: format!(
+                        "typing.Optional[typing.Union[{item}, typing.Sequence[{item}]]]"
+                    ),
+                    default: Some("None".to_string()),
+                    description: qp.docstring.clone(),
+                };
+            }
             optional_arg(
                 raw_type_str(&qp.type_ref, imports),
                 qp.required,
@@ -819,6 +832,13 @@ fn raw_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> String {
                 }
             })
             .collect(),
+        Some(RequestBody::Bytes) => vec![DocParam {
+            name: "request".to_string(),
+            annotation: "typing.Union[bytes, typing.Iterator[bytes], typing.AsyncIterator[bytes]]"
+                .to_string(),
+            default: None,
+            description: None,
+        }],
     };
 
     // A keyword-only argument atom: `name: annotation`, plus ` = <default>` when set.
@@ -1025,19 +1045,28 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
             }
             lines.push("            },".to_string());
         }
+        // A raw bytes body is streamed via `content=` rather than serialized.
+        Some(RequestBody::Bytes) => lines.push("            content=request,".to_string()),
     }
-    // The `headers` dict carries `content-type: application/json` for named or
-    // complex bodies (and whenever header params accompany a body) plus each
-    // header parameter, rendered as `str(x) if x is not None else None`.
-    let content_type = ep
-        .request_body
-        .as_ref()
-        .is_some_and(RequestBody::content_type_header)
-        || (ep.request_body.is_some() && !ep.header_params.is_empty());
-    if content_type || !ep.header_params.is_empty() {
+    // The `headers` dict carries a `content-type`: `application/octet-stream` for a
+    // raw bytes body, else `application/json` when the body intrinsically needs it
+    // or is accompanied by path/header parameters. Header parameters follow,
+    // rendered as `str(x) if x is not None else None`.
+    let content_type: Option<&str> = match &ep.request_body {
+        Some(RequestBody::Bytes) => Some("application/octet-stream"),
+        Some(body)
+            if body.content_type_header()
+                || !ep.header_params.is_empty()
+                || !ep.path_params.is_empty() =>
+        {
+            Some("application/json")
+        }
+        _ => None,
+    };
+    if content_type.is_some() || !ep.header_params.is_empty() {
         lines.push("            headers={".to_string());
-        if content_type {
-            lines.push("                \"content-type\": \"application/json\",".to_string());
+        if let Some(value) = content_type {
+            lines.push(format!("                \"content-type\": \"{value}\","));
         }
         for hp in &ep.header_params {
             lines.push(format!(
@@ -1221,7 +1250,7 @@ pub fn write_files(root: &std::path::Path, files: &[GeneratedFile]) -> Result<()
 #[cfg(test)]
 mod tests {
     use super::{raw_method, raw_type_str, url_arg, Imports};
-    use crate::ir::{BodyField, Endpoint, PathParam, Prim, RequestBody, TypeRef};
+    use crate::ir::{BodyField, Endpoint, ErrorResponse, PathParam, Prim, RequestBody, TypeRef};
 
     fn endpoint(path: &str, params: Vec<PathParam>, response: Option<TypeRef>) -> Endpoint {
         Endpoint {
@@ -1392,6 +1421,68 @@ mod tests {
             out.contains("\"content-type\": \"application/json\","),
             "{out}"
         );
+    }
+
+    #[test]
+    fn raw_method_streams_a_bytes_body_and_raises_errors() {
+        let mut i = Imports::default();
+        let mut ep = endpoint(
+            "/upload/{id}",
+            vec![PathParam {
+                wire_name: "id".to_string(),
+                py_name: "id".to_string(),
+                type_ref: TypeRef::Primitive(Prim::Str),
+            }],
+            Some(TypeRef::Named("Resp".to_string())),
+        );
+        ep.method_name = "upload".to_string();
+        ep.http_method = "POST";
+        ep.request_body = Some(RequestBody::Bytes);
+        ep.errors = vec![ErrorResponse {
+            status_code: 400,
+            class_name: "BadRequestError".to_string(),
+            body_type: TypeRef::Named("BadInfo".to_string()),
+        }];
+        let out = raw_method(&ep, false, &mut i);
+        // A bytes body streams via `content=` under the octet-stream content type.
+        assert!(
+            out.contains(
+                "request: typing.Union[bytes, typing.Iterator[bytes], typing.AsyncIterator[bytes]]"
+            ),
+            "{out}"
+        );
+        assert!(out.contains("content=request,"), "{out}");
+        assert!(
+            out.contains("\"content-type\": \"application/octet-stream\","),
+            "{out}"
+        );
+        // The declared 400 raises the generated exception, parsing its body.
+        assert!(out.contains("if _response.status_code == 400:"), "{out}");
+        assert!(out.contains("raise BadRequestError("), "{out}");
+        assert!(i
+            .render()
+            .contains("from ..errors.bad_request_error import BadRequestError"));
+    }
+
+    #[test]
+    fn raw_method_renders_array_query_params_as_allow_multiple() {
+        use crate::ir::QueryParam;
+        let mut i = Imports::default();
+        let mut ep = endpoint("/q", vec![], None);
+        ep.query_params = vec![QueryParam {
+            wire_name: "tag".to_string(),
+            py_name: "tag".to_string(),
+            type_ref: TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
+            required: true,
+            docstring: None,
+        }];
+        let out = raw_method(&ep, false, &mut i);
+        // An array query param allows multiple values and is always optional.
+        assert!(
+            out.contains("tag: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None"),
+            "{out}"
+        );
+        assert!(out.contains("\"tag\": tag,"), "{out}");
     }
 
     #[test]

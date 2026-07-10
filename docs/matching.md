@@ -54,19 +54,22 @@ Currently matched for `query-parameters-openapi`:
 Matched for `exhaustive` (the OpenAPI-derived fixture from
 `scripts/generate-fern-fixture.sh`): `version.py`, `py.typed`, the **entire type
 layer** (every `types/*.py` module including the hoisted `typesAnimal` variants,
-except `types/__init__.py`), the **entire `core/` runtime** (19 files), each
-endpoint client's package marker (`<tag>/__init__.py`), and the per-tag
-`raw_client.py` for the tags crozier fully supports: the **no-request-body tags**
-(`endpoints_put`, `endpoints_urls`, `noreqbody`), the **query-parameter tag**
-(`endpoints_pagination`), the **enum-body tag** (`endpoints_enum`, a named `$ref`
-request body), the **union-body tag** (`endpoints_union`, a `$ref` union body
-via the `convert_and_respect_annotation_metadata` wrapper), the **scalar-body tag**
-(`endpoints_primitive`, incl. the `uuid`/`byte` content-type nuance), the
-**header tag** (`reqwithheaders`, a header parameter plus a scalar body and a 204
-response), and the **inlined-object-body tags** (`endpoints_object`,
-`endpoints_http_methods`, `endpoints_content_type` — a plain-object `$ref` body
-whose fields Fern hoists into keyword-only arguments). See the `EXHAUSTIVE`
-`matched` list in `tests/e2e.rs` for the exact set.
+except `types/__init__.py`), the **entire `core/` runtime** (19 files), the
+**`errors/` package** (a generated exception class per declared error plus its
+lazy-loading `__init__.py`), each endpoint client's package marker
+(`<tag>/__init__.py`), and the per-tag `raw_client.py` for **every one of the 15
+endpoint tags**. That spans the no-request-body tags (`endpoints_put`,
+`endpoints_urls`, `noreqbody`), query parameters (`endpoints_pagination`,
+incl. array/allow-multiple params in `endpoints_params`), scalar/enum/union `$ref`
+bodies via the `convert_and_respect_annotation_metadata` wrapper where needed
+(`endpoints_primitive`, `endpoints_enum`, `endpoints_union`), header params
+(`reqwithheaders`), inlined object bodies — both `$ref` and inline — hoisted
+field-by-field (`endpoints_object`, `endpoints_http_methods`,
+`endpoints_content_type`, `inlinedrequests`), container bodies
+(`endpoints_container`), unknown (`{}`) and `application/octet-stream` bytes bodies
+plus mixed path/query/body operations (`endpoints_params`, `noauth`), and declared
+4xx error responses that raise generated exceptions (`noauth`, `inlinedrequests`).
+See the `EXHAUSTIVE` `matched` list in `tests/e2e.rs` for the exact set.
 
 The full expected tree is committed under `expected/` even where not yet matched,
 so the finish line is explicit and progress is measurable.
@@ -145,13 +148,13 @@ element per line with a trailing comma.
    serialize through `convert_and_respect_annotation_metadata`, and a path param
    colliding with a body field is suffixed with `_`. A `$ref` map body passes
    straight through (`json=request`); an inline array of objects goes through the
-   convert wrapper with no content-type header. Still to come, tag by
-   tag: the remaining request bodies (inline optional bodies and containers of
-   primitives — `endpoints_container`; mixed path/query/body and octet-stream —
-   `endpoints_params`), error responses (the generated `errors/`, which
-   `inlinedrequests`/`noauth` need),
+   convert wrapper with no content-type header. Container bodies (lists/sets/maps
+   of primitives or objects) and inline/`$ref`/unknown/`octet-stream` bodies are
+   covered, as are declared 4xx responses (each raising a generated `errors/`
+   exception) and mixed path/query/body operations. **Every raw client now
+   matches**, so the remaining endpoint-layer work is the higher-level wrappers:
    the per-tag `client.py` (whose docstrings need a byte-exact example-value
-   generator), and the root `client.py`. The two `__init__.py` aggregators'
+   generator) and the root `client.py`. The two `__init__.py` aggregators'
    import order and gap #2 both depend on the endpoint IR.
 
 ## Coverage note

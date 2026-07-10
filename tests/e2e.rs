@@ -141,6 +141,13 @@ const EXHAUSTIVE: Corpus = Corpus {
         "src/fern/errors/__init__.py",
         "src/fern/noauth/raw_client.py",
         "src/fern/inlinedrequests/raw_client.py",
+        // Container request/response bodies: lists, sets, and maps of primitives
+        // (plain `json=request`) and of objects/unions (the convert wrapper), plus
+        // an inline optional object body.
+        "src/fern/endpoints_container/raw_client.py",
+        // Mixed path/query/body, `application/octet-stream` (bytes) bodies, and
+        // array (allow-multiple) query parameters.
+        "src/fern/endpoints_params/raw_client.py",
     ],
 };
 
