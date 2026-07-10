@@ -54,9 +54,11 @@ Currently matched for `query-parameters-openapi`:
 Matched for `exhaustive` (the OpenAPI-derived fixture from
 `scripts/generate-fern-fixture.sh`): `version.py`, `py.typed`, the **entire type
 layer** (every `types/*.py` module including the hoisted `typesAnimal` variants,
-except `types/__init__.py`), the **entire `core/` runtime** (19 files), and each
-endpoint client's package marker (`<tag>/__init__.py`). See the `EXHAUSTIVE`
-`matched` list in `tests/e2e.rs` for the exact set.
+except `types/__init__.py`), the **entire `core/` runtime** (19 files), each
+endpoint client's package marker (`<tag>/__init__.py`), and the per-tag
+`raw_client.py` for the **no-request-body tags** (`endpoints_put`,
+`endpoints_urls`, `noreqbody`). See the `EXHAUSTIVE` `matched` list in
+`tests/e2e.rs` for the exact set.
 
 The full expected tree is committed under `expected/` even where not yet matched,
 so the finish line is explicit and progress is measurable.
@@ -107,13 +109,20 @@ element per line with a trailing comma.
 2. **Request/response inline-schema hoisting.** Component-schema hoisting is done;
    Fern also hoists inline request/response bodies (e.g. `SearchResponse`,
    `SearchRequestNeighbor`), which arrive with the endpoint layer.
-3. **The endpoint layer.** `paths` are now read far enough to emit each client's
-   package marker (`<tag>/__init__.py`) — the module name comes from the
-   operationId group prefix (`endpoints_content_type`, `inlinedrequests`). Still
-   to come: the per-tag `client.py`/`raw_client.py`, the root `client.py`, and the
-   generated `errors/`. This is the largest remaining capability; the two
-   `__init__.py` aggregators' import order and gap #2 both depend on it. The
-   `client.py` docstrings additionally need a byte-exact example-value generator.
+3. **The endpoint layer.** `paths` are now read into an operation IR
+   ([`ir::Endpoint`]): module, method name, HTTP method, URL, path params, and
+   the success response type. crozier emits each client's package marker
+   (`<tag>/__init__.py`) and the per-tag `raw_client.py` for the subset it fully
+   supports today — operations with **no request body**, only path parameters,
+   and a single JSON 2xx response (a named model or a scalar). A whole module is
+   emitted only when every one of its operations is in that subset
+   (`Endpoint::emittable`), so output stays honest as coverage widens. Still to
+   come, tag by tag: request bodies (`json=request` / inline / the
+   `convert_and_respect_annotation_metadata` wrapper and the `content-type`
+   header rule), query/header params, error responses (the generated `errors/`),
+   the per-tag `client.py` (whose docstrings need a byte-exact example-value
+   generator), and the root `client.py`. The two `__init__.py` aggregators'
+   import order and gap #2 both depend on the endpoint IR.
 
 ## Coverage note
 

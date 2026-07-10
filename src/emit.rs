@@ -11,7 +11,7 @@ use std::path::PathBuf;
 use minijinja::{context, Environment};
 
 use crate::error::{Error, Result};
-use crate::ir::{Field, Ir, Prim, TypeDecl, TypeRef};
+use crate::ir::{Endpoint, Field, Ir, Prim, TypeDecl, TypeRef};
 use crate::naming;
 use crate::wrap::{self, Doc};
 
@@ -257,6 +257,11 @@ fn environment() -> Environment<'static> {
         .expect("object template compiles");
     env.add_template("alias.py", include_str!("../templates/alias.py.j2"))
         .expect("alias template compiles");
+    env.add_template(
+        "raw_client.py",
+        include_str!("../templates/raw_client.py.j2"),
+    )
+    .expect("raw_client template compiles");
     env
 }
 
@@ -303,6 +308,20 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             path: PathBuf::from(format!("src/{pkg}/{module}/__init__.py")),
             contents: "\n\n\n\n".to_string(),
         });
+    }
+
+    // Per-tag `raw_client.py`, but only for modules whose every operation is
+    // within the subset crozier emits today (see `Endpoint::emittable`); the
+    // rest await wider endpoint support.
+    for module in &ir.endpoint_modules {
+        let eps: Vec<&Endpoint> = ir
+            .endpoints
+            .iter()
+            .filter(|e| &e.module == module)
+            .collect();
+        if !eps.is_empty() && eps.iter().all(|e| e.emittable) {
+            files.push(raw_client_file(&env, pkg, module, &eps)?);
+        }
     }
 
     Ok(files)
@@ -519,6 +538,293 @@ fn render_type_decl(env: &Environment<'static>, decl: &TypeDecl) -> Result<Strin
     }
 }
 
+/// Render a resolved type to its flat Python expression for the raw client,
+/// registering imports relative to the package root (named types live under
+/// `..types`). Only the shapes reachable in an emittable endpoint are exercised;
+/// the rest are rendered structurally for completeness.
+fn raw_type_str(t: &TypeRef, imports: &mut Imports) -> String {
+    match t {
+        TypeRef::Primitive(Prim::Str) => "str".to_string(),
+        TypeRef::Primitive(Prim::Int) => "int".to_string(),
+        TypeRef::Primitive(Prim::Float) => "float".to_string(),
+        TypeRef::Primitive(Prim::Bool) => "bool".to_string(),
+        TypeRef::Primitive(Prim::Any) => {
+            imports.add_plain("typing");
+            "typing.Any".to_string()
+        }
+        TypeRef::Primitive(Prim::Datetime) => {
+            imports.add_plain_as("datetime", "dt");
+            "dt.datetime".to_string()
+        }
+        TypeRef::Primitive(Prim::Date) => {
+            imports.add_plain_as("datetime", "dt");
+            "dt.date".to_string()
+        }
+        TypeRef::Named(class) => {
+            imports.add_from(&format!("..types.{}", naming::module_name(class)), class);
+            class.clone()
+        }
+        TypeRef::Optional(inner) => {
+            imports.add_plain("typing");
+            format!("typing.Optional[{}]", raw_type_str(inner, imports))
+        }
+        TypeRef::List(inner) => {
+            imports.add_plain("typing");
+            format!("typing.List[{}]", raw_type_str(inner, imports))
+        }
+        TypeRef::Set(inner) => {
+            imports.add_plain("typing");
+            format!("typing.Set[{}]", raw_type_str(inner, imports))
+        }
+        TypeRef::Dict(k, v) => {
+            imports.add_plain("typing");
+            format!(
+                "typing.Dict[{}, {}]",
+                raw_type_str(k, imports),
+                raw_type_str(v, imports)
+            )
+        }
+        TypeRef::Union(variants) => {
+            imports.add_plain("typing");
+            let inner = variants
+                .iter()
+                .map(|v| raw_type_str(v, imports))
+                .collect::<Vec<_>>()
+                .join(", ");
+            format!("typing.Union[{inner}]")
+        }
+        TypeRef::Literal(values) => {
+            imports.add_plain("typing");
+            let inner = values
+                .iter()
+                .map(|v| format!("\"{v}\""))
+                .collect::<Vec<_>>()
+                .join(", ");
+            format!("typing.Literal[{inner}]")
+        }
+    }
+}
+
+/// The request's URL argument: the document path with its leading slash stripped,
+/// rendered as an f-string interpolating `jsonable_encoder(param)` for each path
+/// placeholder, or a plain string literal when there are none.
+fn url_arg(ep: &Endpoint) -> String {
+    let stripped = ep.path.strip_prefix('/').unwrap_or(&ep.path);
+    if stripped.contains('{') {
+        let mut rendered = stripped.to_string();
+        for pp in &ep.path_params {
+            rendered = rendered.replace(
+                &format!("{{{}}}", pp.wire_name),
+                &format!("{{jsonable_encoder({})}}", pp.py_name),
+            );
+        }
+        format!("f\"{rendered}\"")
+    } else {
+        format!("\"{stripped}\"")
+    }
+}
+
+/// Build one raw-client method (sync or async), registering its imports.
+fn raw_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> String {
+    imports.add_plain("typing");
+    imports.add_from("..core.request_options", "RequestOptions");
+
+    let wrapper = if is_async {
+        "AsyncHttpResponse"
+    } else {
+        "HttpResponse"
+    };
+    let inner = ep
+        .response
+        .as_ref()
+        .map_or_else(|| "None".to_string(), |t| raw_type_str(t, imports));
+    let return_type = format!("{wrapper}[{inner}]");
+
+    // Path-parameter annotations (registers any imports they need).
+    let param_types: Vec<(String, String)> = ep
+        .path_params
+        .iter()
+        .map(|pp| (pp.py_name.clone(), raw_type_str(&pp.type_ref, imports)))
+        .collect();
+
+    // Signature: `self`, positional path params, `*`, then keyword-only
+    // `request_options`. Laid out with ruff's right-hand-split.
+    let mut args: Vec<Doc> = vec![Doc::atom("self")];
+    for (name, ty) in &param_types {
+        args.push(Doc::atom(format!("{name}: {ty}")));
+    }
+    args.push(Doc::atom("*"));
+    args.push(Doc::atom(
+        "request_options: typing.Optional[RequestOptions] = None",
+    ));
+    let sig_open = format!(
+        "    {}def {}(",
+        if is_async { "async " } else { "" },
+        ep.method_name
+    );
+    let signature = wrap::layout(
+        "",
+        &Doc::group(sig_open, args, ")"),
+        &format!(" -> {return_type}:"),
+        4,
+    );
+
+    let docstring = raw_docstring(ep, &param_types, &return_type);
+    let body = raw_body(ep, is_async, &inner, imports);
+    format!("{signature}\n{docstring}\n{body}")
+}
+
+/// The method docstring (indent 8): an optional summary line, a `Parameters`
+/// section (path params then `request_options`), and a `Returns` section.
+fn raw_docstring(ep: &Endpoint, param_types: &[(String, String)], return_type: &str) -> String {
+    let mut lines: Vec<String> = vec!["        \"\"\"".to_string()];
+    if let Some(summary) = &ep.docstring {
+        lines.push(format!("        {summary}"));
+        lines.push(String::new());
+    }
+    lines.push("        Parameters".to_string());
+    lines.push("        ----------".to_string());
+    for (name, ty) in param_types {
+        lines.push(format!("        {name} : {ty}"));
+        lines.push(String::new());
+    }
+    lines.push("        request_options : typing.Optional[RequestOptions]".to_string());
+    lines.push("            Request-specific configuration.".to_string());
+    lines.push(String::new());
+    lines.push("        Returns".to_string());
+    lines.push("        -------".to_string());
+    lines.push(format!("        {return_type}"));
+    // A concrete response type is followed by a blank line before the closing
+    // quotes; a `None` return closes immediately.
+    if ep.response.is_some() {
+        lines.push(String::new());
+    }
+    lines.push("        \"\"\"".to_string());
+    lines.join("\n")
+}
+
+/// The method body (indent 8): the `httpx_client.request(...)` call and the
+/// response-handling block.
+fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -> String {
+    imports.add_plain("typing");
+    imports.add_from("json.decoder", "JSONDecodeError");
+    imports.add_from("..core.api_error", "ApiError");
+    if !ep.path_params.is_empty() {
+        imports.add_from("..core.jsonable_encoder", "jsonable_encoder");
+    }
+
+    let await_ = if is_async { "await " } else { "" };
+    let wrapper = if is_async {
+        "AsyncHttpResponse"
+    } else {
+        "HttpResponse"
+    };
+    let mut lines: Vec<String> = vec![
+        format!("        _response = {await_}self._client_wrapper.httpx_client.request("),
+        format!("            {},", url_arg(ep)),
+        format!("            method=\"{}\",", ep.http_method),
+        "            request_options=request_options,".to_string(),
+        "        )".to_string(),
+        "        try:".to_string(),
+        "            if 200 <= _response.status_code < 300:".to_string(),
+    ];
+    if ep.response.is_some() {
+        imports.add_from("..core.pydantic_utilities", "parse_obj_as");
+        lines.extend([
+            "                _data = typing.cast(".to_string(),
+            format!("                    {inner},"),
+            "                    parse_obj_as(".to_string(),
+            format!("                        type_={inner},"),
+            "                        object_=_response.json(),".to_string(),
+            "                    ),".to_string(),
+            "                )".to_string(),
+            format!("                return {wrapper}(response=_response, data=_data)"),
+        ]);
+    } else {
+        lines.push(format!(
+            "                return {wrapper}(response=_response, data=None)"
+        ));
+    }
+    lines.extend([
+        "            _response_json = _response.json()".to_string(),
+        "        except JSONDecodeError:".to_string(),
+        "            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)".to_string(),
+        "        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)".to_string(),
+    ]);
+    lines.join("\n")
+}
+
+/// Assemble the `raw_client.py` file for one client module: the sync and async
+/// raw client classes, each wrapping every operation.
+fn raw_client_file(
+    env: &Environment<'static>,
+    pkg: &str,
+    module: &str,
+    endpoints: &[&Endpoint],
+) -> Result<GeneratedFile> {
+    let mut imports = Imports::default();
+    // Imports every raw client needs regardless of operation shape.
+    imports.add_plain("typing");
+    imports.add_from("json.decoder", "JSONDecodeError");
+    imports.add_from("..core.api_error", "ApiError");
+    imports.add_from("..core.client_wrapper", "AsyncClientWrapper");
+    imports.add_from("..core.client_wrapper", "SyncClientWrapper");
+    imports.add_from("..core.http_response", "AsyncHttpResponse");
+    imports.add_from("..core.http_response", "HttpResponse");
+    imports.add_from("..core.request_options", "RequestOptions");
+
+    let class_stem = naming::to_pascal_case(module);
+    let sync = raw_client_class(
+        &format!("Raw{class_stem}Client"),
+        "SyncClientWrapper",
+        endpoints,
+        false,
+        &mut imports,
+    );
+    let async_class = raw_client_class(
+        &format!("AsyncRaw{class_stem}Client"),
+        "AsyncClientWrapper",
+        endpoints,
+        true,
+        &mut imports,
+    );
+    let body = format!("{sync}\n\n\n{async_class}");
+
+    let contents = render(
+        env,
+        "raw_client.py",
+        module,
+        context! {
+            header => HEADER,
+            imports => imports.render(),
+            body => body,
+        },
+    )?;
+    Ok(GeneratedFile {
+        path: PathBuf::from(format!("src/{pkg}/{module}/raw_client.py")),
+        contents,
+    })
+}
+
+/// Render one raw-client class: the `__init__` binding the client wrapper, then
+/// one method per operation separated by a blank line.
+fn raw_client_class(
+    class_name: &str,
+    wrapper_type: &str,
+    endpoints: &[&Endpoint],
+    is_async: bool,
+    imports: &mut Imports,
+) -> String {
+    let mut out = format!(
+        "class {class_name}:\n    def __init__(self, *, client_wrapper: {wrapper_type}):\n        self._client_wrapper = client_wrapper"
+    );
+    for ep in endpoints {
+        out.push_str("\n\n");
+        out.push_str(&raw_method(ep, is_async, imports));
+    }
+    out
+}
+
 /// Render a named template with a context, mapping errors to [`Error::Render`].
 fn render(
     env: &Environment<'static>,
@@ -550,4 +856,130 @@ pub fn write_files(root: &std::path::Path, files: &[GeneratedFile]) -> Result<()
         })?;
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{raw_method, raw_type_str, url_arg, Imports};
+    use crate::ir::{Endpoint, PathParam, Prim, TypeRef};
+
+    fn endpoint(path: &str, params: Vec<PathParam>, response: Option<TypeRef>) -> Endpoint {
+        Endpoint {
+            module: "m".to_string(),
+            method_name: "op".to_string(),
+            http_method: "GET",
+            path: path.to_string(),
+            path_params: params,
+            response,
+            docstring: None,
+            emittable: true,
+        }
+    }
+
+    #[test]
+    fn raw_type_str_renders_every_shape() {
+        let mut i = Imports::default();
+        let str_of = |t: &TypeRef, i: &mut Imports| raw_type_str(t, i);
+        assert_eq!(str_of(&TypeRef::Primitive(Prim::Str), &mut i), "str");
+        assert_eq!(str_of(&TypeRef::Primitive(Prim::Int), &mut i), "int");
+        assert_eq!(str_of(&TypeRef::Primitive(Prim::Float), &mut i), "float");
+        assert_eq!(str_of(&TypeRef::Primitive(Prim::Bool), &mut i), "bool");
+        assert_eq!(str_of(&TypeRef::Primitive(Prim::Any), &mut i), "typing.Any");
+        assert_eq!(
+            str_of(&TypeRef::Primitive(Prim::Datetime), &mut i),
+            "dt.datetime"
+        );
+        assert_eq!(str_of(&TypeRef::Primitive(Prim::Date), &mut i), "dt.date");
+        assert_eq!(
+            str_of(&TypeRef::Named("FooBar".to_string()), &mut i),
+            "FooBar"
+        );
+        assert_eq!(
+            str_of(
+                &TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Str))),
+                &mut i
+            ),
+            "typing.Optional[str]"
+        );
+        assert_eq!(
+            str_of(
+                &TypeRef::List(Box::new(TypeRef::Primitive(Prim::Int))),
+                &mut i
+            ),
+            "typing.List[int]"
+        );
+        assert_eq!(
+            str_of(
+                &TypeRef::Set(Box::new(TypeRef::Primitive(Prim::Str))),
+                &mut i
+            ),
+            "typing.Set[str]"
+        );
+        assert_eq!(
+            str_of(
+                &TypeRef::Dict(
+                    Box::new(TypeRef::Primitive(Prim::Str)),
+                    Box::new(TypeRef::Named("Owner".to_string()))
+                ),
+                &mut i
+            ),
+            "typing.Dict[str, Owner]"
+        );
+        assert_eq!(
+            str_of(
+                &TypeRef::Union(vec![
+                    TypeRef::Primitive(Prim::Str),
+                    TypeRef::Primitive(Prim::Int)
+                ]),
+                &mut i
+            ),
+            "typing.Union[str, int]"
+        );
+        assert_eq!(
+            str_of(
+                &TypeRef::Literal(vec!["a".to_string(), "b".to_string()]),
+                &mut i
+            ),
+            "typing.Literal[\"a\", \"b\"]"
+        );
+        let rendered = i.render();
+        assert!(rendered.contains("from ..types.foo_bar import FooBar"));
+        assert!(rendered.contains("import datetime as dt"));
+    }
+
+    #[test]
+    fn url_arg_is_plain_or_interpolated() {
+        let plain = endpoint(
+            "/urls/MixedCase",
+            vec![],
+            Some(TypeRef::Primitive(Prim::Str)),
+        );
+        assert_eq!(url_arg(&plain), "\"urls/MixedCase\"");
+        let interp = endpoint(
+            "/things/{id}",
+            vec![PathParam {
+                wire_name: "id".to_string(),
+                py_name: "id".to_string(),
+                type_ref: TypeRef::Primitive(Prim::Str),
+            }],
+            Some(TypeRef::Primitive(Prim::Str)),
+        );
+        assert_eq!(url_arg(&interp), "f\"things/{jsonable_encoder(id)}\"");
+    }
+
+    #[test]
+    fn raw_method_handles_a_none_response_and_a_summary() {
+        let mut i = Imports::default();
+        let mut ep = endpoint("/x", vec![], None);
+        ep.docstring = Some("Does a thing.".to_string());
+        let out = raw_method(&ep, false, &mut i);
+        // Summary line, a `None` return with no parse, and no dangling parser import.
+        assert!(out.contains("Does a thing."), "{out}");
+        assert!(out.contains("-> HttpResponse[None]:"), "{out}");
+        assert!(
+            out.contains("return HttpResponse(response=_response, data=None)"),
+            "{out}"
+        );
+        assert!(!out.contains("parse_obj_as"), "{out}");
+    }
 }

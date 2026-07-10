@@ -77,6 +77,83 @@ pub struct Operation {
     /// Tags; the first groups the operation into a client.
     #[serde(default)]
     pub tags: Vec<String>,
+    /// A human description; becomes the method docstring's summary line.
+    #[serde(default)]
+    pub description: Option<String>,
+    /// Path/query/header parameters, in document order.
+    #[serde(default)]
+    pub parameters: Vec<Parameter>,
+    /// The request body, if any.
+    #[serde(rename = "requestBody", default)]
+    pub request_body: Option<RequestBody>,
+    /// Responses, keyed by status code (or `default`), in document order.
+    #[serde(default)]
+    pub responses: IndexMap<String, Response>,
+}
+
+/// An operation parameter (path/query/header/cookie). Only inline parameters are
+/// modeled; a `$ref` parameter deserializes with an empty name and no location.
+#[derive(Debug, Default, Deserialize)]
+pub struct Parameter {
+    /// Parameter name (the wire name; also the path placeholder for `in: path`).
+    #[serde(default)]
+    pub name: String,
+    /// Location (`in`). `None` when absent (e.g. a `$ref` parameter).
+    #[serde(rename = "in", default)]
+    pub location: Option<ParameterLocation>,
+    /// Whether the parameter is required.
+    #[serde(default)]
+    pub required: Option<bool>,
+    /// The parameter's value schema.
+    #[serde(default)]
+    pub schema: Option<Schema>,
+}
+
+/// A parameter's location, per OpenAPI's closed `in` vocabulary. Modeling it as
+/// an enum (rather than a bare string) makes an invalid location unrepresentable
+/// and forces exhaustive handling downstream; an unknown or non-standard value
+/// deserializes to [`ParameterLocation::Other`] so a malformed spec still parses.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum ParameterLocation {
+    /// `in: path`.
+    Path,
+    /// `in: query`.
+    Query,
+    /// `in: header`.
+    Header,
+    /// `in: cookie`.
+    Cookie,
+    /// Any other/unrecognized location.
+    #[serde(other)]
+    Other,
+}
+
+/// A request body: a content-type → media-type map plus a required flag.
+#[derive(Debug, Default, Deserialize)]
+pub struct RequestBody {
+    /// Whether the body is required.
+    #[serde(default)]
+    pub required: Option<bool>,
+    /// Content, keyed by media type (e.g. `application/json`).
+    #[serde(default)]
+    pub content: IndexMap<String, MediaType>,
+}
+
+/// One response entry.
+#[derive(Debug, Default, Deserialize)]
+pub struct Response {
+    /// Content, keyed by media type.
+    #[serde(default)]
+    pub content: IndexMap<String, MediaType>,
+}
+
+/// A media-type object carrying the body/response schema.
+#[derive(Debug, Default, Deserialize)]
+pub struct MediaType {
+    /// The schema for this media type.
+    #[serde(default)]
+    pub schema: Option<Schema>,
 }
 
 /// The `info` block.
