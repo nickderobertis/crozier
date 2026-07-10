@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.5](https://github.com/nickderobertis/crozier/compare/v0.0.4...v0.0.5) - 2026-07-10
+
+### Added
+
+- complete the client layer, aggregators, and docs (exhaustive fully matches Fern) ([#25](https://github.com/nickderobertis/crozier/pull/25))
+
 ## [0.0.4](https://github.com/nickderobertis/crozier/compare/v0.0.3...v0.0.4) - 2026-07-10
 
 ### Added
