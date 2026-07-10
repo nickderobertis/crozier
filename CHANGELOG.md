@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.4](https://github.com/nickderobertis/crozier/compare/v0.0.3...v0.0.4) - 2026-07-10
+
+### Added
+
+- complete the raw-client endpoint layer, errors, and scaffolding ([#23](https://github.com/nickderobertis/crozier/pull/23))
+
 ## [0.0.3](https://github.com/nickderobertis/crozier/compare/v0.0.2...v0.0.3) - 2026-07-10
 
 ### Added
