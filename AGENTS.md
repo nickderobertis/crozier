@@ -78,7 +78,8 @@ Use the `just` recipes; do not hand-roll equivalents.
   force-push/branch-deletion. **Required secrets:** `CLAUDE_CODE_OAUTH_TOKEN`
   (llmlint's Claude Code harness) and `RELEASE_PLZ_TOKEN` (a PAT for releases)
   must be set in repo settings, or those checks fail fast by design. Sync them
-  from Bitwarden via `gh-secrets sync` — the manifest is `gh-secrets.json`.
+  (with the crates.io/PyPI publishing tokens) from Bitwarden via
+  `gh-secrets sync` — the manifest is `gh-secrets.json`.
 - **PRs follow `.github/pull_request_template.md`** (What / Why); it becomes the
   squash body.
 - **Releases:** `release-plz` opens a release PR from merged Conventional Commits;
