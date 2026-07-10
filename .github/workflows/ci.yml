@@ -49,16 +49,32 @@ jobs:
   # every gate + install leg succeeded (a skipped/failed `needs` is not success).
   gate:
     name: gate
-    needs: [check, install]
+    needs: [check, install, package]
     if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Require all gate jobs to have succeeded
         run: |
-          if [ "${{ needs.check.result }}" != "success" ] || [ "${{ needs.install.result }}" != "success" ]; then
-            echo "::error::a required gate job did not succeed (check=${{ needs.check.result }}, install=${{ needs.install.result }})" >&2
+          if [ "${{ needs.check.result }}" != "success" ] || [ "${{ needs.install.result }}" != "success" ] || [ "${{ needs.package.result }}" != "success" ]; then
+            echo "::error::a required gate job did not succeed (check=${{ needs.check.result }}, install=${{ needs.install.result }}, package=${{ needs.package.result }})" >&2
             exit 1
           fi
+
+  # Prove the PUBLISHED crate builds: `cargo publish --dry-run` packages the crate
+  # (honoring Cargo.toml's `include`) and compiles from that tarball. This is the
+  # only check that catches an include-list gap — e.g. an `include_str!` asset dir
+  # left unshipped — which otherwise stays green everywhere (source builds see the
+  # full tree) and only breaks the real publish-crate job at release time.
+  package:
+    name: package
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # cargo is preinstalled and honors rust-toolchain.toml on first use (as the
+      # install job and the release crate jobs do); no explicit toolchain step.
+      - name: Verify the published crate tarball builds
+        run: cargo publish --dry-run --locked
 
   # Prove the end-user install path (cargo install) and smoke-test the installed
   # binary — separate from the dev bootstrap. This is the path the README tells
