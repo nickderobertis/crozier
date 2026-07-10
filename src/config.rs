@@ -1,7 +1,9 @@
 //! Generation configuration. Deliberately small: the OpenAPI document plus a few
 //! naming knobs are the entire input — there is no per-project config file.
 
-use std::path::PathBuf;
+use std::path::{Component, Path, PathBuf};
+
+use crate::error::{Error, Result};
 
 /// Everything a generation run needs.
 #[derive(Debug, Clone)]
@@ -36,6 +38,28 @@ impl GenerateConfig {
             package_name,
             project_name,
         }
+    }
+}
+
+/// Validate the effective package name before it is used as a directory under
+/// `src/` and — on regeneration — as the target of a destructive `remove_dir_all`
+/// (see [`crate::emit::clean_package_tree`]). It must be a single, ordinary path
+/// segment: not empty, not `.`/`..`, and free of path separators, so a crafted
+/// `--package-name` (e.g. `../..`) cannot escape the generated tree and delete
+/// elsewhere. The auto-derived default is snake_case, which never contains a
+/// separator, so it always passes.
+pub fn validate_package_name(name: &str) -> Result<()> {
+    let mut components = Path::new(name).components();
+    let single_segment =
+        matches!(components.next(), Some(Component::Normal(_))) && components.next().is_none();
+    // Also reject `/` and `\` explicitly, so a name that is a traversal on *any*
+    // platform is rejected everywhere — not only on the OS whose separator it is.
+    if single_segment && !name.contains(['/', '\\']) {
+        Ok(())
+    } else {
+        Err(Error::InvalidPackageName {
+            name: name.to_string(),
+        })
     }
 }
 

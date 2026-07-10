@@ -30,6 +30,35 @@ fn generate_succeeds_and_writes() {
 }
 
 #[test]
+fn traversal_package_name_is_rejected_before_any_delete() {
+    // A crafted --package-name must not reach the regeneration `remove_dir_all`.
+    // The output dir holds a sentinel; a rejected run must leave it untouched.
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.yml");
+    std::fs::write(&spec, SPEC).unwrap();
+    let out = dir.path().join("out");
+    std::fs::create_dir_all(&out).unwrap();
+    let sentinel = out.join("keep.txt");
+    std::fs::write(&sentinel, "do not delete").unwrap();
+
+    for bad in ["../evil", "..", "a/b", "/etc"] {
+        let err = run_from([
+            "crozier",
+            "generate",
+            "--spec",
+            spec.to_str().unwrap(),
+            "--output",
+            out.to_str().unwrap(),
+            "--package-name",
+            bad,
+        ])
+        .unwrap_err();
+        assert!(err.contains("invalid package name"), "{bad}: {err}");
+    }
+    assert!(sentinel.is_file(), "a rejected run must not touch the filesystem");
+}
+
+#[test]
 fn regeneration_prunes_stale_modules() {
     // Regenerating into a populated output dir clears the crozier-owned package
     // tree first, so a schema removed from the spec does not leave an orphan.

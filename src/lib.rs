@@ -57,6 +57,9 @@ pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
         args.project_name,
         &doc.info.title,
     );
+    // Validate before anything touches the filesystem: the package name becomes a
+    // directory and, on regeneration, the target of a destructive delete.
+    config::validate_package_name(&config.package_name)?;
     let ir = ir::build(&doc, &config);
     let files = emit::generate(&ir)?;
     // Regeneration is idempotent: clear the crozier-owned package tree first so a
@@ -77,6 +80,7 @@ pub fn render_files(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
         args.project_name,
         &doc.info.title,
     );
+    config::validate_package_name(&config.package_name)?;
     let ir = ir::build(&doc, &config);
     emit::generate(&ir)
 }
