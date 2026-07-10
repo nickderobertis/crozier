@@ -412,30 +412,35 @@ fn resolve_request_body(doc: &OpenApi, rb: &crate::openapi::RequestBody) -> Opti
         // argument) — not yet supported.
         return None;
     }
-    scalar_body(schema).map(|type_ref| RequestBody {
+    scalar_body(schema).map(|(type_ref, content_type_header)| RequestBody {
         type_ref,
         required,
-        content_type_header: false,
+        content_type_header,
         convert: false,
     })
 }
 
-/// A bare scalar request-body type Fern serializes with a plain `json=request`
-/// and no content-type header. `uuid`/`byte` string formats are excluded (Fern
-/// adds a content-type header for them), as are all non-scalar shapes.
-fn scalar_body(schema: &Schema) -> Option<TypeRef> {
-    match schema.ty.as_ref().and_then(|t| t.primary())? {
+/// A bare scalar request-body type Fern serializes with a plain `json=request`,
+/// paired with whether Fern adds the `content-type: application/json` header for
+/// it. Plain scalars and the date formats omit the header; the `uuid`/`byte`
+/// string formats (still rendered as `str`) carry it. Non-scalar shapes and other
+/// string formats return `None`.
+fn scalar_body(schema: &Schema) -> Option<(TypeRef, bool)> {
+    let type_ref = match schema.ty.as_ref().and_then(|t| t.primary())? {
         "string" => match schema.format.as_deref() {
-            None => Some(TypeRef::Primitive(Prim::Str)),
-            Some("date-time") => Some(TypeRef::Primitive(Prim::Datetime)),
-            Some("date") => Some(TypeRef::Primitive(Prim::Date)),
-            _ => None,
+            None => TypeRef::Primitive(Prim::Str),
+            Some("date-time") => TypeRef::Primitive(Prim::Datetime),
+            Some("date") => TypeRef::Primitive(Prim::Date),
+            // `uuid`/`byte` render as `str` but carry a content-type header.
+            Some("uuid" | "byte") => return Some((TypeRef::Primitive(Prim::Str), true)),
+            _ => return None,
         },
-        "integer" => Some(TypeRef::Primitive(Prim::Int)),
-        "number" => Some(TypeRef::Primitive(Prim::Float)),
-        "boolean" => Some(TypeRef::Primitive(Prim::Bool)),
-        _ => None,
-    }
+        "integer" => TypeRef::Primitive(Prim::Int),
+        "number" => TypeRef::Primitive(Prim::Float),
+        "boolean" => TypeRef::Primitive(Prim::Bool),
+        _ => return None,
+    };
+    Some((type_ref, false))
 }
 
 /// Resolve a local `#/components/schemas/{key}` reference to its schema.
@@ -851,7 +856,7 @@ mod tests {
     use super::{endpoint_method_name, endpoint_module, scalar_body, Prim, TypeRef};
     use crate::openapi::{Schema, TypeField};
 
-    fn scalar(ty: &str, format: Option<&str>) -> Option<TypeRef> {
+    fn scalar(ty: &str, format: Option<&str>) -> Option<(TypeRef, bool)> {
         let schema = Schema {
             ty: Some(TypeField::Single(ty.to_string())),
             format: format.map(str::to_string),
@@ -861,28 +866,35 @@ mod tests {
     }
 
     #[test]
-    fn scalar_body_accepts_plain_primitives_and_gates_uuid_and_byte() {
-        // Plain scalars and the date formats serialize as a bare `json=request`.
+    fn scalar_body_maps_primitives_and_flags_uuid_and_byte_content_type() {
+        // Plain scalars and the date formats serialize with no content-type header.
         assert!(matches!(
             scalar("string", None),
-            Some(TypeRef::Primitive(Prim::Str))
+            Some((TypeRef::Primitive(Prim::Str), false))
         ));
         assert!(matches!(
             scalar("string", Some("date-time")),
-            Some(TypeRef::Primitive(Prim::Datetime))
+            Some((TypeRef::Primitive(Prim::Datetime), false))
         ));
         assert!(matches!(
             scalar("integer", None),
-            Some(TypeRef::Primitive(Prim::Int))
+            Some((TypeRef::Primitive(Prim::Int), false))
         ));
         assert!(matches!(
             scalar("boolean", None),
-            Some(TypeRef::Primitive(Prim::Bool))
+            Some((TypeRef::Primitive(Prim::Bool), false))
         ));
-        // `uuid`/`byte` need Fern's content-type nuance and are excluded, as are
-        // non-scalar shapes.
-        assert!(scalar("string", Some("uuid")).is_none());
-        assert!(scalar("string", Some("byte")).is_none());
+        // `uuid`/`byte` render as `str` but carry the content-type header.
+        assert!(matches!(
+            scalar("string", Some("uuid")),
+            Some((TypeRef::Primitive(Prim::Str), true))
+        ));
+        assert!(matches!(
+            scalar("string", Some("byte")),
+            Some((TypeRef::Primitive(Prim::Str), true))
+        ));
+        // Other string formats and non-scalar shapes are excluded.
+        assert!(scalar("string", Some("binary")).is_none());
         assert!(scalar("object", None).is_none());
         assert!(scalar("array", None).is_none());
     }

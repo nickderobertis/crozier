@@ -604,7 +604,7 @@ paths:
 "##;
 
 #[test]
-fn named_enum_body_carries_content_type_and_uuid_body_is_gated() {
+fn named_enum_and_uuid_bodies_carry_content_type() {
     let files = render(BODY_SPEC);
 
     // A `$ref` enum body: `request: Weather`, `json=request`, and the
@@ -643,13 +643,17 @@ fn named_enum_body_carries_content_type_and_uuid_body_is_gated() {
         "{union}"
     );
 
-    // A `format: uuid` body needs Fern's content-type nuance crozier does not yet
-    // reproduce, so the module stays unemitted (marker only).
+    // A `format: uuid` body renders as `str` but — unlike a plain scalar — carries
+    // the content-type header.
+    let uid = files
+        .get("src/acme/uid/raw_client.py")
+        .expect("uid raw_client");
+    assert!(uid.contains("*, request: str,"), "{uid}");
+    assert!(uid.contains("json=request,"), "{uid}");
     assert!(
-        !files.contains_key("src/acme/uid/raw_client.py"),
-        "uuid body should gate the module out"
+        uid.contains("\"content-type\": \"application/json\","),
+        "{uid}"
     );
-    assert!(files.contains_key("src/acme/uid/__init__.py"));
 }
 
 /// A header parameter (with the `X-` custom-header prefix) plus a scalar body and
