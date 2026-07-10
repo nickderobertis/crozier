@@ -221,6 +221,20 @@ pub fn load(path: &Path) -> Result<OpenApi> {
             ),
         });
     }
+    // crozier derives each client's module and method names from `operationId`,
+    // so require it on every operation rather than emitting a malformed path.
+    for (url, item) in &doc.paths {
+        for (method, op) in item.operations() {
+            if op.operation_id.trim().is_empty() {
+                return Err(Error::InvalidSpec {
+                    path: path.to_path_buf(),
+                    message: format!(
+                        "operation `{method} {url}` has no `operationId`; crozier requires one to name the client"
+                    ),
+                });
+            }
+        }
+    }
 
     Ok(doc)
 }

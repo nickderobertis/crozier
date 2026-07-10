@@ -161,6 +161,27 @@ fn missing_openapi_field_errors() {
 }
 
 #[test]
+fn operation_without_operation_id_errors() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.yml");
+    std::fs::write(
+        &spec,
+        "openapi: 3.0.0\ninfo:\n  title: X\npaths:\n  /thing:\n    get:\n      tags: [Thing]\n",
+    )
+    .unwrap();
+    let err = run_from([
+        "crozier",
+        "generate",
+        "--spec",
+        spec.to_str().unwrap(),
+        "--output",
+        dir.path().join("out").to_str().unwrap(),
+    ])
+    .unwrap_err();
+    assert!(err.contains("operationId"), "{err}");
+}
+
+#[test]
 fn unsupported_version_errors() {
     let dir = tempfile::tempdir().unwrap();
     let spec = dir.path().join("api.yml");
