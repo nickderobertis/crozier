@@ -54,8 +54,9 @@ Currently matched for `query-parameters-openapi`:
 Matched for `exhaustive` (the OpenAPI-derived fixture from
 `scripts/generate-fern-fixture.sh`): `version.py`, `py.typed`, the **entire type
 layer** (every `types/*.py` module including the hoisted `typesAnimal` variants,
-except `types/__init__.py`), and the **entire `core/` runtime** (19 files). See
-the `EXHAUSTIVE` `matched` list in `tests/e2e.rs` for the exact set.
+except `types/__init__.py`), the **entire `core/` runtime** (19 files), and each
+endpoint client's package marker (`<tag>/__init__.py`). See the `EXHAUSTIVE`
+`matched` list in `tests/e2e.rs` for the exact set.
 
 The full expected tree is committed under `expected/` even where not yet matched,
 so the finish line is explicit and progress is measurable.
@@ -106,11 +107,13 @@ element per line with a trailing comma.
 2. **Request/response inline-schema hoisting.** Component-schema hoisting is done;
    Fern also hoists inline request/response bodies (e.g. `SearchResponse`,
    `SearchRequestNeighbor`), which arrive with the endpoint layer.
-3. **The endpoint layer.** `paths` are not yet read, so the per-tag
-   `client.py`/`raw_client.py`, the root `client.py`, and the generated `errors/`
-   are not emitted. This is the largest remaining capability; the two
-   `__init__.py` aggregators' import order and gap #2 both depend on it. (The
-   `core/` runtime it relies on is already emitted — see above.)
+3. **The endpoint layer.** `paths` are now read far enough to emit each client's
+   package marker (`<tag>/__init__.py`) — the module name comes from the
+   operationId group prefix (`endpoints_content_type`, `inlinedrequests`). Still
+   to come: the per-tag `client.py`/`raw_client.py`, the root `client.py`, and the
+   generated `errors/`. This is the largest remaining capability; the two
+   `__init__.py` aggregators' import order and gap #2 both depend on it. The
+   `client.py` docstrings additionally need a byte-exact example-value generator.
 
 ## Coverage note
 

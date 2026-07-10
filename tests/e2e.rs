@@ -94,6 +94,22 @@ const EXHAUSTIVE: Corpus = Corpus {
         "src/fern/types/types_object_with_unknown_field.py",
         "src/fern/types/types_optional_alias.py",
         "src/fern/types/types_weather_report.py",
+        // Endpoint client package markers (one per operation group).
+        "src/fern/endpoints_container/__init__.py",
+        "src/fern/endpoints_content_type/__init__.py",
+        "src/fern/endpoints_enum/__init__.py",
+        "src/fern/endpoints_http_methods/__init__.py",
+        "src/fern/endpoints_object/__init__.py",
+        "src/fern/endpoints_pagination/__init__.py",
+        "src/fern/endpoints_params/__init__.py",
+        "src/fern/endpoints_primitive/__init__.py",
+        "src/fern/endpoints_put/__init__.py",
+        "src/fern/endpoints_union/__init__.py",
+        "src/fern/endpoints_urls/__init__.py",
+        "src/fern/inlinedrequests/__init__.py",
+        "src/fern/noauth/__init__.py",
+        "src/fern/noreqbody/__init__.py",
+        "src/fern/reqwithheaders/__init__.py",
     ],
 };
 

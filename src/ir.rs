@@ -15,6 +15,9 @@ pub struct Ir {
     pub project_name: String,
     /// Generated types, in document order.
     pub types: Vec<TypeDecl>,
+    /// Endpoint client module (directory) names, one per operation group, in
+    /// first-seen order.
+    pub endpoint_modules: Vec<String>,
 }
 
 /// A generated top-level type.
@@ -150,6 +153,39 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         package_name: config.package_name.clone(),
         project_name: config.project_name.clone(),
         types: builder.types,
+        endpoint_modules: endpoint_modules(doc),
+    }
+}
+
+/// Collect the endpoint client module names, one per operation group, in the
+/// order groups first appear across the document's paths.
+fn endpoint_modules(doc: &OpenApi) -> Vec<String> {
+    let mut modules = Vec::new();
+    let mut seen = std::collections::HashSet::new();
+    for item in doc.paths.values() {
+        for (_, op) in item.operations() {
+            let module = endpoint_module(&op.operation_id);
+            if seen.insert(module.clone()) {
+                modules.push(module);
+            }
+        }
+    }
+    modules
+}
+
+/// The client module (directory) name for an operation, derived from its
+/// operationId's group prefix (everything before the final `_`): `snake_case`d
+/// when the prefix itself contains an underscore, otherwise just lowercased.
+/// This reproduces Fern's directory names (`endpoints_content_type`,
+/// `inlinedrequests`).
+fn endpoint_module(operation_id: &str) -> String {
+    let prefix = operation_id
+        .rsplit_once('_')
+        .map_or(operation_id, |(prefix, _)| prefix);
+    if prefix.contains('_') {
+        naming::to_snake_case(prefix)
+    } else {
+        prefix.to_lowercase()
     }
 }
 

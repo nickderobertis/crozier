@@ -296,6 +296,15 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     // Fern's static core runtime, emitted verbatim (see assets/README.md).
     files.extend(core_files(pkg, &ir.project_name));
 
+    // One package marker per endpoint client module. Fern's `__init__.py` here is
+    // a comment-only header, so the comment-stripped form is four blank lines.
+    for module in &ir.endpoint_modules {
+        files.push(GeneratedFile {
+            path: PathBuf::from(format!("src/{pkg}/{module}/__init__.py")),
+            contents: "\n\n\n\n".to_string(),
+        });
+    }
+
     Ok(files)
 }
 
