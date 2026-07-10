@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.6](https://github.com/nickderobertis/crozier/compare/v0.0.5...v0.0.6) - 2026-07-10
+
+### Fixed
+
+- stop emitting an empty errors import and prune stale modules on regeneration ([#28](https://github.com/nickderobertis/crozier/pull/28))
+
 ## [0.0.5](https://github.com/nickderobertis/crozier/compare/v0.0.4...v0.0.5) - 2026-07-10
 
 ### Added
