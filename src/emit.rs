@@ -13,6 +13,7 @@ use minijinja::{context, Environment};
 use crate::error::{Error, Result};
 use crate::ir::{Field, Ir, Prim, TypeDecl, TypeRef};
 use crate::naming;
+use crate::wrap::{self, Doc};
 
 /// The header comment crozier writes atop every generated file. It differs from
 /// Fern's by design; the comment-stripping normalizer removes it before any
@@ -119,65 +120,65 @@ impl Imports {
     }
 }
 
-/// Render a resolved type to a Python expression, registering needed imports.
-fn render_type(t: &TypeRef, imports: &mut Imports) -> String {
+/// Render a resolved type to a [`Doc`] expression, registering needed imports.
+/// The `Doc` tree lets [`wrap::layout`] reproduce ruff's line wrapping.
+fn render_type(t: &TypeRef, imports: &mut Imports) -> Doc {
     match t {
         TypeRef::Primitive(p) => match p {
-            Prim::Str => "str".to_string(),
-            Prim::Int => "int".to_string(),
-            Prim::Float => "float".to_string(),
-            Prim::Bool => "bool".to_string(),
+            Prim::Str => Doc::atom("str"),
+            Prim::Int => Doc::atom("int"),
+            Prim::Float => Doc::atom("float"),
+            Prim::Bool => Doc::atom("bool"),
             Prim::Any => {
                 imports.add_plain("typing");
-                "typing.Any".to_string()
+                Doc::atom("typing.Any")
             }
             Prim::Datetime => {
                 imports.add_plain_as("datetime", "dt");
-                "dt.datetime".to_string()
+                Doc::atom("dt.datetime")
             }
             Prim::Date => {
                 imports.add_plain_as("datetime", "dt");
-                "dt.date".to_string()
+                Doc::atom("dt.date")
             }
         },
         TypeRef::Named(class) => {
             let module = naming::module_name(class);
             imports.add_from(&format!(".{module}"), class);
-            class.clone()
+            Doc::atom(class.clone())
         }
         TypeRef::Optional(inner) => {
             imports.add_plain("typing");
-            format!("typing.Optional[{}]", render_type(inner, imports))
+            Doc::group("typing.Optional[", vec![render_type(inner, imports)], "]")
         }
         TypeRef::Literal(values) => {
             imports.add_plain("typing");
-            let joined = values
+            let items = values
                 .iter()
-                .map(|v| format!("\"{v}\""))
-                .collect::<Vec<_>>()
-                .join(", ");
-            format!("typing.Literal[{joined}]")
+                .map(|v| Doc::atom(format!("\"{v}\"")))
+                .collect();
+            Doc::group("typing.Literal[", items, "]")
         }
         TypeRef::List(inner) => {
             imports.add_plain("typing");
-            format!("typing.List[{}]", render_type(inner, imports))
+            Doc::group("typing.List[", vec![render_type(inner, imports)], "]")
         }
         TypeRef::Set(inner) => {
             imports.add_plain("typing");
-            format!("typing.Set[{}]", render_type(inner, imports))
+            Doc::group("typing.Set[", vec![render_type(inner, imports)], "]")
         }
         TypeRef::Dict(k, v) => {
             imports.add_plain("typing");
-            format!(
-                "typing.Dict[{}, {}]",
-                render_type(k, imports),
-                render_type(v, imports)
+            Doc::group(
+                "typing.Dict[",
+                vec![render_type(k, imports), render_type(v, imports)],
+                "]",
             )
         }
         TypeRef::Union(variants) => {
             imports.add_plain("typing");
-            let rendered: Vec<String> = variants.iter().map(|v| render_type(v, imports)).collect();
-            format!("typing.Union[{}]", rendered.join(", "))
+            let items = variants.iter().map(|v| render_type(v, imports)).collect();
+            Doc::group("typing.Union[", items, "]")
         }
     }
 }
@@ -186,7 +187,7 @@ fn render_type(t: &TypeRef, imports: &mut Imports) -> String {
 /// `= <default>` suffix, and an optional docstring.
 struct RenderedField {
     py_name: String,
-    annotation: String,
+    annotation: Doc,
     default: String,
     docstring: Option<String>,
 }
@@ -196,7 +197,7 @@ fn render_field(field: &Field, imports: &mut Imports) -> RenderedField {
     let inner = render_type(&field.type_ref, imports);
     let typ = if field.optional {
         imports.add_plain("typing");
-        format!("typing.Optional[{inner}]")
+        Doc::group("typing.Optional[", vec![inner], "]")
     } else {
         inner
     };
@@ -206,9 +207,13 @@ fn render_field(field: &Field, imports: &mut Imports) -> RenderedField {
     let annotation = if field.needs_alias() {
         imports.add_plain("typing_extensions");
         imports.add_from("..core.serialization", "FieldMetadata");
-        format!(
-            "typing_extensions.Annotated[{typ}, FieldMetadata(alias=\"{}\")]",
-            field.wire_name
+        Doc::group(
+            "typing_extensions.Annotated[",
+            vec![
+                typ,
+                Doc::atom(format!("FieldMetadata(alias=\"{}\")", field.wire_name)),
+            ],
+            "]",
         )
     } else {
         typ
@@ -329,11 +334,13 @@ fn object_body(class_docstring: Option<&str>, fields: &[RenderedField]) -> Strin
         body.push_str("\n\n");
     }
     for (i, field) in fields.iter().enumerate() {
-        body.push_str("    ");
-        body.push_str(&field.py_name);
-        body.push_str(": ");
-        body.push_str(&field.annotation);
-        body.push_str(&field.default);
+        let line = wrap::layout(
+            &format!("    {}: ", field.py_name),
+            &field.annotation,
+            &field.default,
+            4,
+        );
+        body.push_str(&line);
         body.push('\n');
         if let Some(doc) = &field.docstring {
             body.push_str(&render_docstring(doc, 4));
@@ -380,6 +387,7 @@ fn render_type_decl(env: &Environment<'static>, decl: &TypeDecl) -> Result<Strin
         TypeDecl::Alias(alias) => {
             let mut imports = Imports::default();
             let target = render_type(&alias.target, &mut imports);
+            let assignment = wrap::layout(&format!("{} = ", alias.name), &target, "", 0);
             render(
                 env,
                 "alias.py",
@@ -387,8 +395,7 @@ fn render_type_decl(env: &Environment<'static>, decl: &TypeDecl) -> Result<Strin
                 context! {
                     header => HEADER,
                     imports => imports.render(),
-                    name => alias.name,
-                    target => target,
+                    assignment => assignment,
                 },
             )
         }

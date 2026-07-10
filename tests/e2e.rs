@@ -36,9 +36,9 @@ const QUERY_PARAMETERS: Corpus = Corpus {
 };
 
 /// The broad `exhaustive` target: Fern's Python output regenerated from the
-/// vendored OpenAPI document (see scripts/generate-fern-fixture.sh). Files that
-/// need ruff line-wrapping or inline-schema hoisting are not yet matched; see
-/// docs/matching.md.
+/// vendored OpenAPI document (see scripts/generate-fern-fixture.sh). All 24
+/// `types/` modules match except `types_animal`, which needs inline-schema
+/// hoisting; see docs/matching.md.
 const EXHAUSTIVE: Corpus = Corpus {
     api: "exhaustive",
     package_name: "fern",
@@ -48,17 +48,23 @@ const EXHAUSTIVE: Corpus = Corpus {
         "src/fern/py.typed",
         "src/fern/types/bad_object_request_info.py",
         "src/fern/types/endpoints_error.py",
+        "src/fern/types/endpoints_error_category.py",
+        "src/fern/types/endpoints_error_code.py",
         "src/fern/types/endpoints_paginated_response.py",
         "src/fern/types/endpoints_put_response.py",
         "src/fern/types/types_cat.py",
         "src/fern/types/types_documented_unknown_type.py",
         "src/fern/types/types_dog.py",
+        "src/fern/types/types_double_optional.py",
         "src/fern/types/types_map_of_documented_unknown_type.py",
         "src/fern/types/types_mixed_type.py",
+        "src/fern/types/types_nested_object_with_optional_field.py",
         "src/fern/types/types_nested_object_with_required_field.py",
         "src/fern/types/types_object_with_datetime_like_string.py",
         "src/fern/types/types_object_with_docs.py",
+        "src/fern/types/types_object_with_documented_unknown_type.py",
         "src/fern/types/types_object_with_map_of_map.py",
+        "src/fern/types/types_object_with_optional_field.py",
         "src/fern/types/types_object_with_required_field.py",
         "src/fern/types/types_object_with_unknown_field.py",
         "src/fern/types/types_optional_alias.py",
