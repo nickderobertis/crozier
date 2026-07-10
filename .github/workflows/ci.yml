@@ -107,6 +107,9 @@ jobs:
       - name: Fetch main (diff base)
         run: git fetch --no-tags --depth=2147483647 origin main
       - uses: extractions/setup-just@v2
+      # setup-llmlint.sh installs the llmlint toolchain via `uv tool`; uv is not
+      # preinstalled on GitHub runners, so provide it before that step runs.
+      - uses: astral-sh/setup-uv@v8
       - name: Install oneharness + llmlint
         run: |
           ./scripts/setup-llmlint.sh
