@@ -7,10 +7,11 @@
 # (build + attest archives, publish the crate to crates.io, publish PyPI wheels).
 # See AGENTS.md.
 #
-# We drive the pinned release-plz BINARY rather than release-plz/action: the
+# We install the pinned release-plz BINARY via taiki-e/install-action (verified
+# prebuilt binaries, already used in ci.yml) rather than release-plz/action: the
 # action's floating `@v0` major tag stopped resolving (breaking every release),
-# and pinning the binary keeps the release process reproducible and independent
-# of the action's tag scheme. This mirrors nickderobertis/llmlint.
+# and pinning the tool version keeps the release process reproducible and
+# independent of the action's tag scheme.
 
 name: release-plz
 
@@ -22,10 +23,6 @@ permissions:
   contents: write
   pull-requests: write
 
-env:
-  # Pin release-plz so the release process is reproducible; bump deliberately.
-  RELEASE_PLZ_VERSION: "0.3.158"
-
 jobs:
   # RELEASE_PLZ_TOKEN is required (a PAT, so the tag/release it creates fires
   # release.yml). `secrets` cannot be read in a job `if:`, so read it into an env
@@ -33,6 +30,8 @@ jobs:
   # it is set, this workflow stays dormant instead of failing every push.
   guard:
     runs-on: ubuntu-latest
+    # Needs no repo access — it only tests a secret's presence — so grant nothing.
+    permissions: {}
     outputs:
       enabled: ${{ steps.check.outputs.enabled }}
     steps:
@@ -65,11 +64,15 @@ jobs:
       # No explicit toolchain step: the runner ships cargo, and rustup honors
       # rust-toolchain.toml on first cargo use, so any lockfile update release-plz
       # performs uses the pinned channel (matching ci.yml's cargo jobs).
+      #
+      # install-action fetches a checksum-verified prebuilt release-plz — no raw
+      # curl of an unverified binary — pinned to an exact version for a
+      # reproducible release process.
       - name: Install release-plz
-        run: |
-          curl -fsSL "https://github.com/release-plz/release-plz/releases/download/release-plz-v${RELEASE_PLZ_VERSION}/release-plz-x86_64-unknown-linux-gnu.tar.gz" \
-            | tar -xz -C /usr/local/bin release-plz
-          release-plz --version
+        uses: taiki-e/install-action@v2
+        with:
+          tool: release-plz@0.3.158
+      - run: release-plz --version
 
       - name: Tag and publish a merged version bump
         env:
