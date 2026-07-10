@@ -91,8 +91,12 @@ pub fn field_name(wire_name: &str) -> String {
     }
 }
 
-/// Python keywords plus the builtins/soft-keywords Fern reserves for Python SDKs.
-/// Names here are suffixed with `_` (their wire name is kept as an alias).
+/// Names Fern suffixes with `_` (keeping the wire name as an alias): Python hard
+/// keywords (syntactically un-usable as identifiers) plus the specific builtins
+/// observed in Fern's output. The builtin set is deliberately evidence-based —
+/// only names confirmed against a Fern fixture belong here, since over-munging a
+/// name Fern leaves alone would break the byte-for-byte match. Expand it as new
+/// fixtures confirm more.
 #[must_use]
 pub fn is_reserved(name: &str) -> bool {
     const RESERVED: &[&str] = &[
@@ -101,11 +105,8 @@ pub fn is_reserved(name: &str) -> bool {
         "continue", "def", "del", "elif", "else", "except", "finally", "for", "from", "global",
         "if", "import", "in", "is", "lambda", "nonlocal", "not", "or", "pass", "raise", "return",
         "try", "while", "with", "yield",
-        // Soft keywords.
-        "match", "case",
-        // Reserved builtins / conflicts Fern munges.
-        "bool", "bytes", "dict", "float", "int", "list", "long", "map", "object", "set", "str",
-        "type", "uuid", "id", "filter", "format", "property", "self",
+        // Builtins/module names Fern munges (confirmed in the exhaustive fixture).
+        "bool", "list", "long", "map", "set", "uuid",
     ];
     RESERVED.contains(&name)
 }

@@ -74,7 +74,11 @@ pub fn strip_python_comments(source: &str) -> String {
                         i += 3;
                         continue;
                     }
-                    in_string = Some(if c == '"' { Quote::Double } else { Quote::Single });
+                    in_string = Some(if c == '"' {
+                        Quote::Double
+                    } else {
+                        Quote::Single
+                    });
                 }
                 current.push(c);
                 i += 1;
@@ -102,7 +106,11 @@ pub fn strip_python_comments(source: &str) -> String {
                         i += 1;
                     }
                     Quote::TripleSingle | Quote::TripleDouble => {
-                        let closer = if quote == Quote::TripleSingle { '\'' } else { '"' };
+                        let closer = if quote == Quote::TripleSingle {
+                            '\''
+                        } else {
+                            '"'
+                        };
                         if c == closer && starts_triple(&chars, i, closer) {
                             current.push(closer);
                             current.push(closer);
@@ -145,10 +153,7 @@ mod tests {
 
     #[test]
     fn removes_full_line_comment_keeping_blank_line() {
-        assert_eq!(
-            strip_python_comments("# header\n\nx = 1\n"),
-            "\n\nx = 1\n"
-        );
+        assert_eq!(strip_python_comments("# header\n\nx = 1\n"), "\n\nx = 1\n");
     }
 
     #[test]
@@ -169,10 +174,7 @@ mod tests {
 
     #[test]
     fn strips_comment_after_string_on_same_line() {
-        assert_eq!(
-            strip_python_comments("a = \"x\"  # c\n"),
-            "a = \"x\"\n"
-        );
+        assert_eq!(strip_python_comments("a = \"x\"  # c\n"), "a = \"x\"\n");
     }
 
     #[test]

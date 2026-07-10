@@ -122,14 +122,6 @@ pub enum AdditionalProperties {
     Schema(Box<Schema>),
 }
 
-impl Schema {
-    /// Is this node a `$ref`?
-    #[must_use]
-    pub fn is_ref(&self) -> bool {
-        self.reference.is_some()
-    }
-}
-
 /// Load and parse an OpenAPI document, dispatching on the file extension.
 pub fn load(path: &Path) -> Result<OpenApi> {
     let text = std::fs::read_to_string(path).map_err(|source| Error::ReadSpec {
@@ -143,12 +135,10 @@ pub fn load(path: &Path) -> Result<OpenApi> {
         .map(str::to_ascii_lowercase);
 
     let doc: OpenApi = match ext.as_deref() {
-        Some("yml" | "yaml") => {
-            serde_yaml_ng::from_str(&text).map_err(|e| Error::ParseSpec {
-                path: path.to_path_buf(),
-                message: e.to_string(),
-            })?
-        }
+        Some("yml" | "yaml") => serde_yaml_ng::from_str(&text).map_err(|e| Error::ParseSpec {
+            path: path.to_path_buf(),
+            message: e.to_string(),
+        })?,
         Some("json") => serde_json::from_str(&text).map_err(|e| Error::ParseSpec {
             path: path.to_path_buf(),
             message: e.to_string(),

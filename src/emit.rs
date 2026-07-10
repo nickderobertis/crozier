@@ -32,8 +32,18 @@ pub struct GeneratedFile {
 /// Python standard-library top-level modules crozier may import. Used to split
 /// imports into Fern's two ordered groups (stdlib first, everything else second).
 const STDLIB_MODULES: &[&str] = &[
-    "typing", "datetime", "uuid", "importlib", "enum", "os", "sys", "json", "base64",
-    "collections", "decimal", "abc",
+    "typing",
+    "datetime",
+    "uuid",
+    "importlib",
+    "enum",
+    "os",
+    "sys",
+    "json",
+    "base64",
+    "collections",
+    "decimal",
+    "abc",
 ];
 
 /// Collects imports and renders them in Fern's order: group 1 is stdlib
@@ -283,8 +293,11 @@ fn render_type_decl(env: &Environment<'static>, decl: &TypeDecl) -> Result<Strin
             imports.add_plain("pydantic");
             imports.add_from("..core.pydantic_utilities", "IS_PYDANTIC_V2");
             imports.add_from("..core.pydantic_utilities", "UniversalBaseModel");
-            let fields: Vec<RenderedField> =
-                obj.fields.iter().map(|f| render_field(f, &mut imports)).collect();
+            let fields: Vec<RenderedField> = obj
+                .fields
+                .iter()
+                .map(|f| render_field(f, &mut imports))
+                .collect();
             render(
                 env,
                 "object.py",

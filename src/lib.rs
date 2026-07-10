@@ -5,6 +5,7 @@
 //! [`emit::generate`] renders that IR to Python files with minijinja. The CLI
 //! (`src/main.rs`) is a thin shell over [`generate`].
 
+pub mod cli;
 pub mod config;
 pub mod emit;
 pub mod error;

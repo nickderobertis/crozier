@@ -1,0 +1,31 @@
+# Versioning half of releasing (decoupled from building). On push to main,
+# release-plz opens/updates a release PR from the merged Conventional Commits;
+# when that PR merges, it bumps the version, writes CHANGELOG.md, commits
+# `chore(release): X.Y.Z`, and pushes the `vX.Y.Z` tag. The tag then triggers
+# release.yml (build + upload). It must run under a PAT (RELEASE_PLZ_TOKEN): a tag
+# pushed by the default GITHUB_TOKEN does NOT fire release.yml. See AGENTS.md.
+
+name: release-plz
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-plz:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.RELEASE_PLZ_TOKEN }}
+      - name: Install Rust
+        run: rustup show active-toolchain || rustup toolchain install
+      - name: Run release-plz
+        uses: release-plz/action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN }}

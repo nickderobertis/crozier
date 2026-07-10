@@ -40,15 +40,6 @@ pub enum Error {
         message: String,
     },
 
-    /// A `$ref` pointed at a schema the document does not define.
-    #[error("unresolved reference {reference}: {message}")]
-    UnresolvedRef {
-        /// The `$ref` string that could not be resolved.
-        reference: String,
-        /// Detail about why resolution failed.
-        message: String,
-    },
-
     /// Writing a generated file failed.
     #[error("could not write {path}: {source}")]
     WriteOutput {

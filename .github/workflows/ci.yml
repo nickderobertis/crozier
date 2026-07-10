@@ -1,0 +1,108 @@
+# Prove the artifact from a clean checkout: bootstrap, then the full gate, on the
+# real platform matrix. See docs/matching.md and AGENTS.md.
+
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: check (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install just
+        uses: extractions/setup-just@v2
+
+      # rustup honors rust-toolchain.toml (channel + components) on first cargo
+      # use, so the pinned toolchain is the single source of truth. Pre-install
+      # the dev cargo subcommands as fast prebuilt binaries so `just bootstrap`
+      # finds them and skips building from source.
+      - name: Install cargo tools
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest,cargo-llvm-cov,cargo-deny,cargo-machete
+
+      - name: Bootstrap
+        run: just bootstrap
+
+      - name: Check
+        run: just check
+
+  # Prove the end-user install path (cargo install) and smoke-test the installed
+  # binary — separate from the dev bootstrap. This is the path the README tells
+  # users to run.
+  install:
+    name: install (${{ matrix.os }})
+    needs: check
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install crozier (recommended end-user method)
+        run: cargo install --path . --locked
+      - name: Smoke-test the installed binary
+        run: crozier --version
+
+  # PR-title lint: under squash-merge the PR title becomes the release-driving
+  # commit, so it must be a valid Conventional Commit. Required check.
+  commitlint:
+    name: commitlint
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    steps:
+      - uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # LLM-judge tier (llmlint) — a blocking PR check, SEPARATE from `just check`.
+  # Non-deterministic and harness-backed, so it never runs inside the gate. Scoped
+  # to the merge-base diff. It REQUIRES its credential and fails fast without it;
+  # fork PRs are gated by the repo's require-approval-for-fork-workflows setting.
+  llmlint:
+    name: llmlint (changed files)
+    if: github.event_name == 'pull_request' && github.event.action != 'edited'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - name: Fetch main (diff base)
+        run: git fetch --no-tags --depth=2147483647 origin main
+      - uses: extractions/setup-just@v2
+      - name: Install oneharness + llmlint
+        run: |
+          ./scripts/setup-llmlint.sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Lint changed files
+        env:
+          HARNESS_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -z "${HARNESS_KEY:-}" ]; then
+            echo "::error::llmlint needs a harness credential. Add ANTHROPIC_API_KEY" \
+                 "(Settings → Secrets and variables → Actions). Fork PRs are gated by" \
+                 "the require-approval-for-fork-workflows setting; see AGENTS.md." >&2
+            exit 1
+          fi
+          just lint-llm-diff origin/main

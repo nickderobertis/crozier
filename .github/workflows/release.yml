@@ -1,0 +1,46 @@
+# Building half of releasing (decoupled from versioning). Fired by the `vX.Y.Z`
+# tag release-plz pushes: build a per-platform archive on a native runner for
+# each target and upload it (with a sha256) to the GitHub release. Every install
+# surface must construct the SAME archive/.sha256 name this produces
+# (crozier-<tag>-<target>.tar.gz); see the README install section.
+
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  upload:
+    name: ${{ matrix.target }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-24.04-arm
+          - target: x86_64-apple-darwin
+            os: macos-13
+          - target: aarch64-apple-darwin
+            os: macos-latest
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust target
+        run: rustup target add ${{ matrix.target }}
+      - name: Build and upload archive
+        uses: taiki-e/upload-rust-binary-action@v1
+        with:
+          bin: crozier
+          target: ${{ matrix.target }}
+          archive: crozier-$tag-$target
+          checksum: sha256
+          include: README.md,LICENSE,NOTICE,CHANGELOG.md
+          token: ${{ secrets.GITHUB_TOKEN }}
