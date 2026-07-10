@@ -56,9 +56,10 @@ Matched for `exhaustive` (the OpenAPI-derived fixture from
 layer** (every `types/*.py` module including the hoisted `typesAnimal` variants,
 except `types/__init__.py`), the **entire `core/` runtime** (19 files), each
 endpoint client's package marker (`<tag>/__init__.py`), and the per-tag
-`raw_client.py` for the **no-request-body tags** (`endpoints_put`,
-`endpoints_urls`, `noreqbody`). See the `EXHAUSTIVE` `matched` list in
-`tests/e2e.rs` for the exact set.
+`raw_client.py` for the tags crozier fully supports: the **no-request-body tags**
+(`endpoints_put`, `endpoints_urls`, `noreqbody`) and the **query-parameter tag**
+(`endpoints_pagination`). See the `EXHAUSTIVE` `matched` list in `tests/e2e.rs`
+for the exact set.
 
 The full expected tree is committed under `expected/` even where not yet matched,
 so the finish line is explicit and progress is measurable.
@@ -113,13 +114,14 @@ element per line with a trailing comma.
    ([`ir::Endpoint`]): module, method name, HTTP method, URL, path params, and
    the success response type. crozier emits each client's package marker
    (`<tag>/__init__.py`) and the per-tag `raw_client.py` for the subset it fully
-   supports today — operations with **no request body**, only path parameters,
-   and a single JSON 2xx response (a named model or a scalar). A whole module is
-   emitted only when every one of its operations is in that subset
-   (`Endpoint::emittable`), so output stays honest as coverage widens. Still to
-   come, tag by tag: request bodies (`json=request` / inline / the
-   `convert_and_respect_annotation_metadata` wrapper and the `content-type`
-   header rule), query/header params, error responses (the generated `errors/`),
+   supports today — operations with **no request body**, only path and query
+   parameters, and a single JSON 2xx response (a named model or a scalar). Query
+   parameters render as keyword-only optional arguments and a `params={...}` entry
+   (`endpoints_pagination`). A whole module is emitted only when every one of its
+   operations is in that subset (`Endpoint::emittable`), so output stays honest as
+   coverage widens. Still to come, tag by tag: request bodies (`json=request` /
+   inline / the `convert_and_respect_annotation_metadata` wrapper and the
+   `content-type` header rule), header params, error responses (the generated `errors/`),
    the per-tag `client.py` (whose docstrings need a byte-exact example-value
    generator), and the root `client.py`. The two `__init__.py` aggregators'
    import order and gap #2 both depend on the endpoint IR.

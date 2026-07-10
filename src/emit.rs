@@ -647,13 +647,42 @@ fn raw_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> String {
         .map(|pp| (pp.py_name.clone(), raw_type_str(&pp.type_ref, imports)))
         .collect();
 
-    // Signature: `self`, positional path params, `*`, then keyword-only
-    // `request_options`. Laid out with ruff's right-hand-split.
+    // Query parameters become keyword-only arguments; each carries the type used
+    // in its annotation and docstring (`Optional[..]` unless required) and its
+    // description.
+    let query_params: Vec<DocParam> = ep
+        .query_params
+        .iter()
+        .map(|qp| {
+            let base = raw_type_str(&qp.type_ref, imports);
+            let doc_type = if qp.required {
+                base
+            } else {
+                format!("typing.Optional[{base}]")
+            };
+            DocParam {
+                name: qp.py_name.clone(),
+                doc_type,
+                required: qp.required,
+                description: qp.docstring.clone(),
+            }
+        })
+        .collect();
+
+    // Signature: `self`, positional path params, `*`, keyword-only query params,
+    // then `request_options`. Laid out with ruff's right-hand-split.
     let mut args: Vec<Doc> = vec![Doc::atom("self")];
     for (name, ty) in &param_types {
         args.push(Doc::atom(format!("{name}: {ty}")));
     }
     args.push(Doc::atom("*"));
+    for qp in &query_params {
+        args.push(Doc::atom(if qp.required {
+            format!("{}: {}", qp.name, qp.doc_type)
+        } else {
+            format!("{}: {} = None", qp.name, qp.doc_type)
+        }));
+    }
     args.push(Doc::atom(
         "request_options: typing.Optional[RequestOptions] = None",
     ));
@@ -669,14 +698,30 @@ fn raw_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> String {
         4,
     );
 
-    let docstring = raw_docstring(ep, &param_types, &return_type);
+    let docstring = raw_docstring(ep, &param_types, &query_params, &return_type);
     let body = raw_body(ep, is_async, &inner, imports);
     format!("{signature}\n{docstring}\n{body}")
 }
 
+/// A parameter as it appears in a method docstring / signature: its Python name,
+/// the type shown in the annotation and docstring, whether it is required, and an
+/// optional description.
+struct DocParam {
+    name: String,
+    doc_type: String,
+    required: bool,
+    description: Option<String>,
+}
+
 /// The method docstring (indent 8): an optional summary line, a `Parameters`
-/// section (path params then `request_options`), and a `Returns` section.
-fn raw_docstring(ep: &Endpoint, param_types: &[(String, String)], return_type: &str) -> String {
+/// section (path params, query params, then `request_options`), and a `Returns`
+/// section.
+fn raw_docstring(
+    ep: &Endpoint,
+    param_types: &[(String, String)],
+    query_params: &[DocParam],
+    return_type: &str,
+) -> String {
     let mut lines: Vec<String> = vec!["        \"\"\"".to_string()];
     if let Some(summary) = &ep.docstring {
         lines.push(format!("        {summary}"));
@@ -686,6 +731,13 @@ fn raw_docstring(ep: &Endpoint, param_types: &[(String, String)], return_type: &
     lines.push("        ----------".to_string());
     for (name, ty) in param_types {
         lines.push(format!("        {name} : {ty}"));
+        lines.push(String::new());
+    }
+    for qp in query_params {
+        lines.push(format!("        {} : {}", qp.name, qp.doc_type));
+        if let Some(desc) = &qp.description {
+            lines.push(format!("            {desc}"));
+        }
         lines.push(String::new());
     }
     lines.push("        request_options : typing.Optional[RequestOptions]".to_string());
@@ -723,11 +775,24 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
         format!("        _response = {await_}self._client_wrapper.httpx_client.request("),
         format!("            {},", url_arg(ep)),
         format!("            method=\"{}\",", ep.http_method),
+    ];
+    // Query parameters map wire name to the Python argument in a `params` dict.
+    if !ep.query_params.is_empty() {
+        lines.push("            params={".to_string());
+        for qp in &ep.query_params {
+            lines.push(format!(
+                "                \"{}\": {},",
+                qp.wire_name, qp.py_name
+            ));
+        }
+        lines.push("            },".to_string());
+    }
+    lines.extend([
         "            request_options=request_options,".to_string(),
         "        )".to_string(),
         "        try:".to_string(),
         "            if 200 <= _response.status_code < 300:".to_string(),
-    ];
+    ]);
     if ep.response.is_some() {
         imports.add_from("..core.pydantic_utilities", "parse_obj_as");
         lines.extend([
@@ -870,6 +935,7 @@ mod tests {
             http_method: "GET",
             path: path.to_string(),
             path_params: params,
+            query_params: Vec::new(),
             response,
             docstring: None,
             emittable: true,

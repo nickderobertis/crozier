@@ -465,18 +465,28 @@ paths:
 fn emits_raw_client_only_for_supported_modules() {
     let files = render(ENDPOINTS_SPEC);
 
-    // The supported module emits a raw client; the others (query param, request
-    // body, non-2xx response, empty response) do not — only their package marker.
+    // The supported modules emit a raw client; the others (request body, non-2xx
+    // response, empty response) do not — only their package marker.
     let raw = files
         .get("src/acme/things/raw_client.py")
         .expect("things raw_client");
-    for module in ["query", "body", "err", "noresp"] {
+    for module in ["body", "err", "noresp"] {
         assert!(
             !files.contains_key(&format!("src/acme/{module}/raw_client.py")),
             "{module} should not emit a raw_client yet"
         );
         assert!(files.contains_key(&format!("src/acme/{module}/__init__.py")));
     }
+
+    // A query-parameter-only operation is now supported: the param becomes a
+    // keyword-only optional argument and a `params={...}` entry.
+    let query = files
+        .get("src/acme/query/raw_client.py")
+        .expect("query raw_client");
+    assert!(query.contains("def run("), "{query}");
+    assert!(query.contains("q: typing.Optional[str] = None,"), "{query}");
+    assert!(query.contains("params={"), "{query}");
+    assert!(query.contains("\"q\": q,"), "{query}");
 
     // Sync + async classes, both operations, the path-param f-string URL and the
     // response-type import, and the scalar return.

@@ -115,6 +115,8 @@ const EXHAUSTIVE: Corpus = Corpus {
         "src/fern/endpoints_put/raw_client.py",
         "src/fern/endpoints_urls/raw_client.py",
         "src/fern/noreqbody/raw_client.py",
+        // Query-parameter-only tag (no request body, no headers).
+        "src/fern/endpoints_pagination/raw_client.py",
     ],
 };
 

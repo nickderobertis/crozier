@@ -35,6 +35,8 @@ pub struct Endpoint {
     pub path: String,
     /// Path parameters, in declaration order.
     pub path_params: Vec<PathParam>,
+    /// Query parameters, in declaration order.
+    pub query_params: Vec<QueryParam>,
     /// The success response body type, or `None` when the endpoint returns no
     /// content.
     pub response: Option<TypeRef>,
@@ -54,6 +56,22 @@ pub struct PathParam {
     pub py_name: String,
     /// The parameter's type.
     pub type_ref: TypeRef,
+}
+
+/// A resolved query parameter, rendered as a keyword-only method argument and a
+/// `params={...}` entry.
+#[derive(Debug)]
+pub struct QueryParam {
+    /// The wire name (the `params` dict key).
+    pub wire_name: String,
+    /// The Python parameter identifier.
+    pub py_name: String,
+    /// The parameter's base type (optionality is carried by `required`).
+    pub type_ref: TypeRef,
+    /// Whether the parameter is required; optional params get `Optional[..] = None`.
+    pub required: bool,
+    /// Optional description, shown under the parameter in the docstring.
+    pub docstring: Option<String>,
 }
 
 /// A generated top-level type.
@@ -225,18 +243,36 @@ fn build_endpoint(path: &str, http_method: &'static str, op: &Operation) -> Endp
         })
         .collect();
 
-    // Today crozier only handles path parameters; any other kind (query, header,
-    // cookie, an unknown location, or a `$ref` with no location) puts the
-    // operation outside the emittable subset.
-    let has_unsupported_params = op
+    let query_params: Vec<QueryParam> = op
         .parameters
         .iter()
-        .any(|p| p.location != Some(ParameterLocation::Path));
+        .filter(|p| p.location == Some(ParameterLocation::Query))
+        .map(|p| QueryParam {
+            wire_name: p.name.clone(),
+            py_name: naming::field_name(&p.name),
+            type_ref: p
+                .schema
+                .as_ref()
+                .map_or(TypeRef::Primitive(Prim::Any), base_type_ref),
+            required: p.required == Some(true),
+            docstring: clean_doc(p.description.as_deref()),
+        })
+        .collect();
+
+    // Today crozier handles path and query parameters; any other kind (header,
+    // cookie, an unknown location, or a `$ref` with no location) puts the
+    // operation outside the emittable subset.
+    let has_unsupported_params = op.parameters.iter().any(|p| {
+        !matches!(
+            p.location,
+            Some(ParameterLocation::Path | ParameterLocation::Query)
+        )
+    });
     let only_success =
         !op.responses.is_empty() && op.responses.keys().all(|code| code.starts_with('2'));
     let response = success_response(op);
 
-    // Today's subset: no body, path params only, only 2xx responses, and a
+    // Today's subset: no body, path/query params only, only 2xx responses, and a
     // response type crozier knows how to render (named model or scalar).
     let emittable = op.request_body.is_none()
         && !has_unsupported_params
@@ -249,6 +285,7 @@ fn build_endpoint(path: &str, http_method: &'static str, op: &Operation) -> Endp
         http_method,
         path: path.to_string(),
         path_params,
+        query_params,
         response,
         docstring: clean_doc(op.description.as_deref()),
         emittable,
