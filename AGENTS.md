@@ -100,8 +100,12 @@ Use the `just` recipes; do not hand-roll equivalents.
   (`bindings = "bin"`, `pyproject.toml`) exposing a `crozier` console script — the
   ruff/uv model; `pip install crozier` needs no Rust toolchain. The crate,
   the PyPI project, and the console script are all named `crozier`; keep them in
-  sync. Each publish is proven installable by a `verify-crate` / `verify-pypi`
-  smoke test against the live registry. **First publish reserves the name:** an
+  sync. Every published surface is proven end to end against the REAL artifact:
+  `verify-crate` installs from crates.io, `verify-pypi` installs the PyPI wheel,
+  and `verify-install-script` runs `scripts/install.sh` against the GitHub
+  Release — each then runs `scripts/smoke.sh`, which asserts the version and
+  drives a real `crozier generate`, so "published" means "installs AND runs," not
+  just "the version string is right." **First publish reserves the name:** an
   early `0.0.x`/`0.1.0` release claims `crozier` on both registries.
 
 ## Invariants (non-negotiable)

@@ -192,6 +192,36 @@ jobs:
             "${base}.tar.gz"
           echo "sigstore-python verified ${base}.tar.gz."
 
+  # Prove the `curl | sh` install path end to end against the REAL GitHub
+  # Release: run scripts/install.sh exactly as a user would — it downloads the
+  # just-published archive and verifies it against a trust root independent of
+  # the download (the Sigstore bundle via `gh`, which is present on runners, else
+  # the canonical checksum) — then smoke-test the installed binary with a real
+  # generation. Runs on the platforms the one-line installer targets
+  # (Linux/macOS, x86_64 + arm64); Windows installs via cargo/pip (see README).
+  verify-install-script:
+    name: verify-install-script (${{ matrix.os }})
+    needs: upload
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install via scripts/install.sh and smoke-test
+        env:
+          # install.sh prefers the `gh` verifier (present on runners); it reads a
+          # token to reach the attestation trust root. A soft failure there falls
+          # back to the canonical checksum, so the token only strengthens the check.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ver="${GITHUB_REF_NAME#v}"
+          ./scripts/install.sh --version "$GITHUB_REF_NAME" --to "$RUNNER_TEMP/bin"
+          export PATH="$RUNNER_TEMP/bin:$PATH"
+          ./scripts/smoke.sh "$ver"
+          echo "install.sh install + smoke test passed for crozier $ver on ${{ matrix.os }}"
+
   # crates.io publishing: runs whenever CARGO_REGISTRY_TOKEN is set (see `guard`).
   # Gated on the same `test` job as the binary upload (so a crate version never
   # publishes without a green gate) but NOT on `upload` — a flaky per-platform
@@ -218,6 +248,7 @@ jobs:
     if: ${{ needs.guard.outputs.crates == 'true' }}
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - name: Wait for the version to land on crates.io
         run: |
@@ -235,18 +266,12 @@ jobs:
           echo "::error::crozier $ver did not appear on crates.io within ~5 minutes"
           exit 1
       - name: Install from crates.io and smoke-test
+        shell: bash
         run: |
           ver="${GITHUB_REF_NAME#v}"
           cargo install crozier --version "$ver" --locked --root "$RUNNER_TEMP/cargo-install"
           export PATH="$RUNNER_TEMP/cargo-install/bin:$PATH"
-          installed="$(crozier --version)"
-          echo "installed: $installed"
-          case "$installed" in
-            *"$ver"*) ;;
-            *) echo "::error::installed version mismatch: '$installed' does not contain '$ver'"; exit 1 ;;
-          esac
-          crozier --help >/dev/null
-          echo "crates.io install + smoke test passed for crozier $ver"
+          ./scripts/smoke.sh "$ver"
 
   # PyPI wheels: maturin's `bin` bindings wrap the prebuilt binary in per-platform
   # wheels (the ruff/uv pattern), so `pip install crozier` is a seconds-fast
@@ -335,6 +360,7 @@ jobs:
     if: ${{ needs.guard.outputs.pypi == 'true' }}
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -354,14 +380,9 @@ jobs:
           echo "::error::crozier $ver did not appear on PyPI within ~5 minutes"
           exit 1
       - name: Install from PyPI and smoke-test
+        shell: bash
         run: |
           ver="${GITHUB_REF_NAME#v}"
           pip install "crozier==${ver}"
-          installed="$(crozier --version)"
-          echo "installed: $installed"
-          case "$installed" in
-            *"$ver"*) ;;
-            *) echo "::error::installed version mismatch: '$installed' does not contain '$ver'"; exit 1 ;;
-          esac
-          crozier --help >/dev/null
+          ./scripts/smoke.sh "$ver"
           echo "PyPI install + smoke test passed for crozier $ver"

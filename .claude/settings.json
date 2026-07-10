@@ -43,6 +43,7 @@
       "Bash(cargo publish:*)",
       "Bash(maturin:*)",
       "Bash(./scripts/install.sh:*)",
+      "Bash(./scripts/smoke.sh:*)",
       "Bash(git status)",
       "Bash(git diff:*)",
       "Bash(git log:*)",
