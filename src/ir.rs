@@ -22,9 +22,8 @@ pub struct Ir {
 pub enum TypeDecl {
     /// A pydantic model.
     Object(ObjectType),
-    /// A string enum.
-    Enum(EnumType),
-    /// A type alias (`Name = <expr>`), e.g. a union or a scalar alias.
+    /// A type alias (`Name = <expr>`), e.g. a union, an extensible enum, or a
+    /// scalar alias.
     Alias(AliasType),
 }
 
@@ -34,7 +33,6 @@ impl TypeDecl {
     pub fn name(&self) -> &str {
         match self {
             TypeDecl::Object(o) => &o.name,
-            TypeDecl::Enum(e) => &e.name,
             TypeDecl::Alias(a) => &a.name,
         }
     }
@@ -44,7 +42,6 @@ impl TypeDecl {
     pub fn module(&self) -> &str {
         match self {
             TypeDecl::Object(o) => &o.module,
-            TypeDecl::Enum(e) => &e.module,
             TypeDecl::Alias(a) => &a.module,
         }
     }
@@ -86,19 +83,6 @@ impl Field {
     }
 }
 
-/// A string enum.
-#[derive(Debug)]
-pub struct EnumType {
-    /// Class name.
-    pub name: String,
-    /// Module (file stem).
-    pub module: String,
-    /// Enum members: (python member value string, wire value).
-    pub variants: Vec<String>,
-    /// Optional docstring.
-    pub docstring: Option<String>,
-}
-
 /// A type alias declaration.
 #[derive(Debug)]
 pub struct AliasType {
@@ -119,6 +103,8 @@ pub enum TypeRef {
     Primitive(Prim),
     /// A reference to another generated type, by class name.
     Named(String),
+    /// `typing.Optional[..]`.
+    Optional(Box<TypeRef>),
     /// `typing.List[..]`.
     List(Box<TypeRef>),
     /// `typing.Set[..]`.
@@ -127,6 +113,8 @@ pub enum TypeRef {
     Dict(Box<TypeRef>, Box<TypeRef>),
     /// `typing.Union[..]`.
     Union(Vec<TypeRef>),
+    /// `typing.Literal["a", "b", ...]`.
+    Literal(Vec<String>),
 }
 
 /// Primitive leaf types.
@@ -144,8 +132,6 @@ pub enum Prim {
     Datetime,
     /// `dt.date`.
     Date,
-    /// `uuid.UUID`.
-    Uuid,
     /// `typing.Any`.
     Any,
 }
@@ -170,36 +156,17 @@ fn build_type(key: &str, schema: &Schema) -> TypeDecl {
     let module = naming::module_name(&name);
     let docstring = clean_doc(schema.description.as_deref());
 
-    // Enum: a string schema with enum values.
-    if let Some(values) = &schema.enum_values {
-        if is_string_type(schema) {
-            let variants = values
-                .iter()
-                .filter_map(|v| v.as_str().map(str::to_string))
-                .collect();
-            return TypeDecl::Enum(EnumType {
-                name,
-                module,
-                variants,
-                docstring,
-            });
-        }
-    }
+    // An object with `additionalProperties` but no declared properties is a map,
+    // which Fern emits as a `Dict[..]` alias rather than an empty model.
+    let is_map = is_object_type(schema)
+        && schema.properties.is_empty()
+        && matches!(
+            schema.additional_properties,
+            Some(AdditionalProperties::Schema(_))
+        );
 
-    // Union alias: oneOf/anyOf without object properties.
-    if schema.properties.is_empty() {
-        if let Some(variants) = union_variants(schema) {
-            return TypeDecl::Alias(AliasType {
-                name,
-                module,
-                target: TypeRef::Union(variants),
-                docstring,
-            });
-        }
-    }
-
-    // Object with properties.
-    if !schema.properties.is_empty() || is_object_type(schema) {
+    // Object with properties (and not a bare map).
+    if !is_map && (!schema.properties.is_empty() || is_object_type(schema)) {
         let fields = schema
             .properties
             .iter()
@@ -213,30 +180,53 @@ fn build_type(key: &str, schema: &Schema) -> TypeDecl {
         });
     }
 
-    // Fallback: a scalar alias to the mapped type.
+    // Everything else is an alias: a union, an extensible enum, a map, a scalar,
+    // or an unknown type. `full_type_ref` carries any `Optional` wrapping.
     TypeDecl::Alias(AliasType {
         name,
         module,
-        target: schema_to_type_ref(schema),
+        target: full_type_ref(schema),
         docstring,
     })
 }
 
 /// Build one field from a property schema.
 fn build_field(prop: &str, prop_schema: &Schema, parent: &Schema) -> Field {
+    let optional = is_optional(prop_schema) || !parent.required.iter().any(|r| r == prop);
     Field {
         wire_name: prop.to_string(),
         py_name: naming::field_name(prop),
-        type_ref: schema_to_type_ref(prop_schema),
-        optional: !parent.required.iter().any(|r| r == prop),
+        type_ref: base_type_ref(prop_schema),
+        optional,
         docstring: clean_doc(prop_schema.description.as_deref()),
     }
 }
 
-/// Map a schema node to a resolved [`TypeRef`].
-fn schema_to_type_ref(schema: &Schema) -> TypeRef {
+/// Map a schema to its full type expression, wrapping in `Optional` when the
+/// schema is nullable or an unknown (untyped) schema. Used for aliases, where
+/// optionality lives in the type itself rather than a separate field flag.
+fn full_type_ref(schema: &Schema) -> TypeRef {
+    let base = base_type_ref(schema);
+    if is_optional(schema) {
+        TypeRef::Optional(Box::new(base))
+    } else {
+        base
+    }
+}
+
+/// Map a schema to its base type expression, never adding a top-level
+/// `Optional` (the caller decides optionality for fields).
+fn base_type_ref(schema: &Schema) -> TypeRef {
     if let Some(reference) = &schema.reference {
         return TypeRef::Named(ref_to_class(reference));
+    }
+    if let Some(values) = string_enum_values(schema) {
+        // Fern renders an OpenAPI string enum as an extensible enum:
+        // `Union[Literal["a", "b", ...], Any]`.
+        return TypeRef::Union(vec![
+            TypeRef::Literal(values),
+            TypeRef::Primitive(Prim::Any),
+        ]);
     }
     if let Some(variants) = union_variants(schema) {
         return TypeRef::Union(variants);
@@ -245,7 +235,8 @@ fn schema_to_type_ref(schema: &Schema) -> TypeRef {
         Some("string") => match schema.format.as_deref() {
             Some("date-time") => TypeRef::Primitive(Prim::Datetime),
             Some("date") => TypeRef::Primitive(Prim::Date),
-            Some("uuid") => TypeRef::Primitive(Prim::Uuid),
+            // Fern's OpenAPI importer maps other string formats (uuid, byte, ...)
+            // to plain `str`.
             _ => TypeRef::Primitive(Prim::Str),
         },
         Some("integer") => TypeRef::Primitive(Prim::Int),
@@ -255,7 +246,7 @@ fn schema_to_type_ref(schema: &Schema) -> TypeRef {
             let item = schema
                 .items
                 .as_ref()
-                .map_or(TypeRef::Primitive(Prim::Any), |i| schema_to_type_ref(i));
+                .map_or(TypeRef::Primitive(Prim::Any), |i| base_type_ref(i));
             if schema.unique_items == Some(true) {
                 TypeRef::Set(Box::new(item))
             } else {
@@ -265,7 +256,7 @@ fn schema_to_type_ref(schema: &Schema) -> TypeRef {
         Some("object") => match &schema.additional_properties {
             Some(AdditionalProperties::Schema(value)) => TypeRef::Dict(
                 Box::new(TypeRef::Primitive(Prim::Str)),
-                Box::new(schema_to_type_ref(value)),
+                Box::new(base_type_ref(value)),
             ),
             _ => TypeRef::Primitive(Prim::Any),
         },
@@ -273,10 +264,45 @@ fn schema_to_type_ref(schema: &Schema) -> TypeRef {
     }
 }
 
+/// Is a schema optional? A schema is optional when it is explicitly `nullable`
+/// or when it is an unknown (untyped) schema, which Fern always renders as
+/// `Optional[Any]`.
+fn is_optional(schema: &Schema) -> bool {
+    schema.nullable == Some(true) || is_unknown(schema)
+}
+
+/// A schema that carries nothing to determine a type — Fern treats it as an
+/// unknown value (`Optional[Any]`).
+fn is_unknown(schema: &Schema) -> bool {
+    schema.reference.is_none()
+        && schema.ty.is_none()
+        && schema.one_of.is_none()
+        && schema.any_of.is_none()
+        && schema.all_of.is_none()
+        && schema.enum_values.is_none()
+        && schema.properties.is_empty()
+        && schema.additional_properties.is_none()
+        && schema.items.is_none()
+}
+
+/// The string values of a `type: string` enum schema, if it is one.
+fn string_enum_values(schema: &Schema) -> Option<Vec<String>> {
+    if !is_string_type(schema) {
+        return None;
+    }
+    let values = schema.enum_values.as_ref()?;
+    Some(
+        values
+            .iter()
+            .filter_map(|v| v.as_str().map(str::to_string))
+            .collect(),
+    )
+}
+
 /// Extract union variants from a `oneOf`/`anyOf` schema, if present.
 fn union_variants(schema: &Schema) -> Option<Vec<TypeRef>> {
     let variants = schema.one_of.as_ref().or(schema.any_of.as_ref())?;
-    Some(variants.iter().map(schema_to_type_ref).collect())
+    Some(variants.iter().map(base_type_ref).collect())
 }
 
 /// Resolve a `$ref` to the class name it points at.

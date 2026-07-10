@@ -51,49 +51,60 @@ Currently matched for `query-parameters-openapi`:
 - `src/seed/types/user.py`
 - `src/seed/types/nested_user.py`
 
-Currently matched for `exhaustive` (the OpenAPI-derived fixture from
-`scripts/generate-fern-fixture.sh`):
-
-- `src/fern/version.py`
-- `src/fern/py.typed`
-- `src/fern/types/bad_object_request_info.py`
-- `src/fern/types/endpoints_error.py`
-- `src/fern/types/endpoints_paginated_response.py`
-- `src/fern/types/endpoints_put_response.py`
-- `src/fern/types/types_mixed_type.py`
-- `src/fern/types/types_object_with_required_field.py`
+Matched for `exhaustive` (the OpenAPI-derived fixture from
+`scripts/generate-fern-fixture.sh`): `version.py`, `py.typed`, and 17 of the 24
+`types/` modules — every type layer file except the six that need ruff line
+wrapping (`endpoints_error_category`, `endpoints_error_code`,
+`types_double_optional`, `types_nested_object_with_optional_field`,
+`types_object_with_documented_unknown_type`, `types_object_with_optional_field`)
+and `types_animal`, which needs inline-schema hoisting. See the `EXHAUSTIVE`
+`matched` list in `tests/e2e.rs` for the exact set.
 
 The full expected tree is committed under `expected/` even where not yet matched,
 so the finish line is explicit and progress is measurable.
 
 ## What generates today
 
-Named `components.schemas` → the Python type layer: pydantic **objects**
-(optional/required fields, `= None` vs `pydantic.Field(default=None)` for
-described fields, reserved-name aliasing via `typing_extensions.Annotated` +
-`FieldMetadata`), string **enums**, and **union/scalar aliases**. Imports are
-emitted in Fern's exact two-group order (stdlib `import`s/`from`s, then
-everything else). `version.py` and `py.typed` are complete.
+Named `components.schemas` → the Python type layer:
+
+- **Objects** — pydantic models with Fern's field conventions: required vs
+  optional (`nullable` or absent from `required`), `= None` /
+  `pydantic.Field(default=None)` / `pydantic.Field()` defaults driven by
+  optionality and whether the field is documented, reserved-name aliasing via
+  `typing_extensions.Annotated[T, FieldMetadata(alias="wire")]`, and class/field
+  docstrings (backslash-escaped, indented).
+- **Extensible enums** — an OpenAPI string `enum` becomes
+  `typing.Union[typing.Literal[...], typing.Any]`, matching Fern (not an
+  `enum.Enum` class).
+- **Aliases** — unions (`oneOf`/`anyOf`), maps (`type: object` +
+  `additionalProperties`, no properties → `Dict[..]`), nullable scalars
+  (`Optional[..]`), and unknown/untyped schemas (`Optional[Any]`).
+
+Type mapping follows Fern's OpenAPI importer: `format: uuid`/`byte` → `str`,
+`date-time` → `dt.datetime`, `date` → `dt.date`, integer formats → `int`, etc.
+Imports are emitted in Fern's exact two-group order (stdlib `import`s/`from`s,
+then everything else). `version.py` and `py.typed` are complete.
 
 ## Known gaps (roadmap)
 
 1. **ruff-formatted line wrapping.** Fern runs `ruff format` over its output, so
-   long lines (e.g. aliased `Annotated` fields, wide unions) are wrapped. crozier
-   emits unwrapped lines that match only when short. Matching the wide cases needs
-   a ruff-compatible line-wrapper (in Rust — no runtime Python dependency). The
-   exhaustive objects that fit on one line already match; the ones with a wrapped
-   line do not. Until the wrapper lands, keep matched files to those with no
-   wrapping.
-2. **Inline-schema hoisting.** Fern names and hoists inline request/response
-   schemas (e.g. `SearchResponse`, `SearchRequestNeighbor`). crozier only emits
-   named component schemas, so `types/__init__.py` and the hoisted types are not
-   yet matched.
+   long lines (aliased `Annotated` fields, wide unions, long `Literal` lists) are
+   wrapped. crozier emits unwrapped lines, which match only where ruff would also
+   leave them unwrapped (its rule is not a simple length cutoff — some 100–120
+   char lines stay on one line while shorter ones split). Matching the wrapped
+   cases needs a ruff-compatible line-wrapper in Rust (no runtime Python
+   dependency). Until it lands, files with a wrapped line stay out of the
+   manifest. This also blocks the map-value-optional detail
+   (`Dict[str, Optional[str]]`), which only appears on already-wrapped fields.
+2. **Inline-schema hoisting.** Fern names and hoists inline schemas — e.g.
+   `typesAnimal`'s `oneOf`/`allOf` variants become `TypesAnimalZero`/`One` plus
+   their inline `*Animal` literals, and request/response bodies like
+   `SearchResponse`. crozier only emits named component schemas, so
+   `types/__init__.py` and the hoisted types are not yet matched.
 3. **The client, core, and error layers.** `client.py`/`raw_client.py`, the
    `core/` runtime, and generated errors are not yet emitted. The `core/` files
    are near-static Fern boilerplate and will be reproduced as attributed template
    assets.
-4. **Enum member naming / `x-fern-enum`.** The enum template is a first
-   approximation and is not in the manifest.
 
 ## Coverage note
 

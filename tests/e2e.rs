@@ -36,8 +36,9 @@ const QUERY_PARAMETERS: Corpus = Corpus {
 };
 
 /// The broad `exhaustive` target: Fern's Python output regenerated from the
-/// vendored OpenAPI document (see scripts/generate-fern-fixture.sh). Only files
-/// with no ruff line-wrapping match today; see docs/matching.md gap #1.
+/// vendored OpenAPI document (see scripts/generate-fern-fixture.sh). Files that
+/// need ruff line-wrapping or inline-schema hoisting are not yet matched; see
+/// docs/matching.md.
 const EXHAUSTIVE: Corpus = Corpus {
     api: "exhaustive",
     package_name: "fern",
@@ -49,8 +50,19 @@ const EXHAUSTIVE: Corpus = Corpus {
         "src/fern/types/endpoints_error.py",
         "src/fern/types/endpoints_paginated_response.py",
         "src/fern/types/endpoints_put_response.py",
+        "src/fern/types/types_cat.py",
+        "src/fern/types/types_documented_unknown_type.py",
+        "src/fern/types/types_dog.py",
+        "src/fern/types/types_map_of_documented_unknown_type.py",
         "src/fern/types/types_mixed_type.py",
+        "src/fern/types/types_nested_object_with_required_field.py",
+        "src/fern/types/types_object_with_datetime_like_string.py",
+        "src/fern/types/types_object_with_docs.py",
+        "src/fern/types/types_object_with_map_of_map.py",
         "src/fern/types/types_object_with_required_field.py",
+        "src/fern/types/types_object_with_unknown_field.py",
+        "src/fern/types/types_optional_alias.py",
+        "src/fern/types/types_weather_report.py",
     ],
 };
 
