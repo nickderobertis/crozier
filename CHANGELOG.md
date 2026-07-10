@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.1](https://github.com/nickderobertis/crozier/compare/v0.0.0...v0.0.1) - 2026-07-10
+
+### Fixed
+
+- ship assets/ in the published crate so cargo publish builds ([#15](https://github.com/nickderobertis/crozier/pull/15))
+
 ## [0.0.0](https://github.com/nickderobertis/crozier/releases/tag/v0.0.0) - 2026-07-10
 
 ### Added
