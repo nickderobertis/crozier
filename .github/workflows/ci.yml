@@ -44,6 +44,22 @@ jobs:
       - name: Check
         run: just check
 
+  # Single stable required-status context aggregating the matrix, so branch
+  # protection lists one `gate` name instead of every per-OS leg. Fails unless
+  # every gate + install leg succeeded (a skipped/failed `needs` is not success).
+  gate:
+    name: gate
+    needs: [check, install]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require all gate jobs to have succeeded
+        run: |
+          if [ "${{ needs.check.result }}" != "success" ] || [ "${{ needs.install.result }}" != "success" ]; then
+            echo "::error::a required gate job did not succeed (check=${{ needs.check.result }}, install=${{ needs.install.result }})" >&2
+            exit 1
+          fi
+
   # Prove the end-user install path (cargo install) and smoke-test the installed
   # binary — separate from the dev bootstrap. This is the path the README tells
   # users to run.
@@ -80,7 +96,7 @@ jobs:
   # to the merge-base diff. It REQUIRES its credential and fails fast without it;
   # fork PRs are gated by the repo's require-approval-for-fork-workflows setting.
   llmlint:
-    name: llmlint (changed files)
+    name: llmlint
     if: github.event_name == 'pull_request' && github.event.action != 'edited'
     runs-on: ubuntu-latest
     steps:

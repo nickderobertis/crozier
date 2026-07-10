@@ -72,9 +72,12 @@ Use the `just` recipes; do not hand-roll equivalents.
   protected: merge/rebase disabled, so one PR is one squash commit whose subject
   is the PR title. Queue with `gh pr merge --auto --squash`; merged branches
   auto-delete. Admins may break-glass.
-- **All gating checks required:** `check` (the e2e-inclusive gate), `commitlint`
-  (PR-title Conventional Commits), and `llmlint` — plus linear history,
-  conversation resolution, no force-push/branch-deletion.
+- **All gating checks required:** `gate` (aggregates the e2e-inclusive `check`
+  and `install` matrix legs), `commitlint` (PR-title Conventional Commits), and
+  `llmlint` — plus linear history, conversation resolution, no
+  force-push/branch-deletion. **Required secrets:** `ANTHROPIC_API_KEY` (llmlint)
+  and `RELEASE_PLZ_TOKEN` (a PAT for releases) must be set in repo settings, or
+  those checks fail fast by design.
 - **PRs follow `.github/pull_request_template.md`** (What / Why); it becomes the
   squash body.
 - **Releases:** `release-plz` opens a release PR from merged Conventional Commits;
