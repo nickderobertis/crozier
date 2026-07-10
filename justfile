@@ -29,7 +29,7 @@ lint:
 # enforced. 95% line coverage is the gate; lower it only with a reason in AGENTS.md.
 test:
     cargo llvm-cov --locked --fail-under-lines 95 \
-        --ignore-filename-regex 'src/main\.rs' \
+        --ignore-filename-regex 'main\.rs$' \
         nextest -E 'not binary(e2e)'
 
 # End-to-end: drive the compiled binary the way a user runs it (assert_cmd),

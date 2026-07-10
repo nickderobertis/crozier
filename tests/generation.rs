@@ -213,6 +213,34 @@ fn default_package_name_derives_from_title() {
 }
 
 #[test]
+fn unique_items_array_maps_to_set() {
+    let files = render(
+        "openapi: 3.0.0\ninfo:\n  title: S\ncomponents:\n  schemas:\n    Obj:\n      type: object\n      properties:\n        tags:\n          type: array\n          uniqueItems: true\n          items:\n            type: string\n",
+    );
+    assert!(
+        files["src/acme/types/obj.py"].contains("tags: typing.Optional[typing.Set[str]] = None")
+    );
+}
+
+#[test]
+fn any_of_named_schema_renders_union_alias() {
+    let files = render(
+        "openapi: 3.0.0\ninfo:\n  title: U\ncomponents:\n  schemas:\n    Leaf:\n      type: object\n      properties:\n        v:\n          type: string\n    Either:\n      anyOf:\n        - $ref: \"#/components/schemas/Leaf\"\n        - type: integer\n",
+    );
+    assert!(files["src/acme/types/either.py"].contains("Either = typing.Union[Leaf, int]"));
+}
+
+#[test]
+fn enum_with_non_string_type_is_not_an_enum_class() {
+    // An enum on a non-string type falls through to the scalar/alias path rather
+    // than an enum class.
+    let files = render(
+        "openapi: 3.0.0\ninfo:\n  title: E\ncomponents:\n  schemas:\n    Level:\n      type: integer\n      enum: [1, 2, 3]\n",
+    );
+    assert!(!files["src/acme/types/level.py"].contains("enum.Enum"));
+}
+
+#[test]
 fn openapi_31_nullable_type_list_uses_primary() {
     // OpenAPI 3.1 `type: [string, "null"]` — the primary type is `string`.
     let files = render(

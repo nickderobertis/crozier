@@ -84,6 +84,24 @@ fn generate_json_spec_supported() {
 }
 
 #[test]
+fn generate_malformed_json_errors() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    std::fs::write(&spec, "{ not valid json").unwrap();
+    let out = dir.path().join("out");
+    let err = run_from([
+        "crozier",
+        "generate",
+        "--spec",
+        spec.to_str().unwrap(),
+        "--output",
+        out.to_str().unwrap(),
+    ])
+    .unwrap_err();
+    assert!(err.contains("could not parse OpenAPI document"), "{err}");
+}
+
+#[test]
 fn generate_malformed_yaml_errors() {
     let dir = tempfile::tempdir().unwrap();
     let spec = dir.path().join("api.yml");

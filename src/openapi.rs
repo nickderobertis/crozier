@@ -68,6 +68,9 @@ pub struct Schema {
     /// Array item schema.
     #[serde(default)]
     pub items: Option<Box<Schema>>,
+    /// `uniqueItems` — a `true` array maps to `typing.Set` rather than `List`.
+    #[serde(rename = "uniqueItems", default)]
+    pub unique_items: Option<bool>,
     /// `additionalProperties` — a bool or a schema.
     #[serde(rename = "additionalProperties", default)]
     pub additional_properties: Option<AdditionalProperties>,

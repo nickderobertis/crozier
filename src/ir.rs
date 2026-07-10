@@ -256,7 +256,11 @@ fn schema_to_type_ref(schema: &Schema) -> TypeRef {
                 .items
                 .as_ref()
                 .map_or(TypeRef::Primitive(Prim::Any), |i| schema_to_type_ref(i));
-            TypeRef::List(Box::new(item))
+            if schema.unique_items == Some(true) {
+                TypeRef::Set(Box::new(item))
+            } else {
+                TypeRef::List(Box::new(item))
+            }
         }
         Some("object") => match &schema.additional_properties {
             Some(AdditionalProperties::Schema(value)) => TypeRef::Dict(
