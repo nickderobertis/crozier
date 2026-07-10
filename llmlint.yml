@@ -12,9 +12,8 @@ files:
   exclude:
     - "**/.git/**"
     # Vendored Fern output — the golden target, not crozier's own code, so it is
-    # never LLM-judged. NOTE: a bundled rule scoped to `**/tests/**` currently
-    # overrides this top-level exclude (llmlint#128), so scripts/lint-llm-diff.sh
-    # also drops these paths; keep the two in sync until that bug is fixed.
+    # never LLM-judged. This top-level exclude is the single source of truth (the
+    # diff-scoped run self-discovers files and honors it; needs llmlint >= 0.3.12).
     - "tests/fixtures/**"
 rationales: true
 agents:

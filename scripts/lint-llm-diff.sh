@@ -6,9 +6,10 @@
 # after the branch started are never linted, and a stale branch still checks
 # exactly what it introduced. This is the `origin/main...HEAD` three-dot set.
 #
-# Scoped twice over: to the changed *files* (the args llmlint gets) and, via
-# `--diff --diff-base`, to the changed *lines* within them (the judge reviews the
-# fork-point diff, not the whole file) — so a PR is judged on what it introduced.
+# `--diff --diff-base` scopes both the *files* (llmlint self-discovers the ones
+# changed since the fork point, honoring llmlint.yml's `files.exclude`) and the
+# *lines* (the judge reviews each file's fork-point diff, not the whole file) — so
+# a PR is judged on exactly what it introduced.
 #
 # This is what the blocking `llmlint` CI check runs (diff-scoped, so a PR pays for
 # its own changes, not a full-repo sweep). Run it locally before pushing.
@@ -48,24 +49,10 @@ merge_base="$(git merge-base "$base_ref" HEAD)" || {
   exit 2
 }
 
-# Changed, still-present files (drop deletions: linting a deleted path errors).
-# Drop the vendored Fern fixtures here, not just via llmlint.yml's `files.exclude`:
-# a bundled rule scoped to `**/tests/**` re-includes them, so a top-level exclude
-# doesn't stick in diff mode (llmlint#128). Enumerating hundreds of golden files
-# is both meaningless to judge and overflows the oneharness argv. `:(exclude)` is
-# git pathspec magic. Keep this list in sync with llmlint.yml's fixture exclude.
-mapfile -t files < <(git diff --name-only --diff-filter=ACMR "$merge_base" HEAD -- . ':(exclude)tests/fixtures/**')
-present=()
-for f in "${files[@]}"; do [ -f "$f" ] && present+=("$f"); done
-
-if [ "${#present[@]}" -eq 0 ]; then
-  echo "lint-llm-diff: no changed files to lint (base ${base_ref} @ ${merge_base:0:9})" >&2
-  exit 0
-fi
-
-echo "lint-llm-diff: linting ${#present[@]} changed file(s) vs ${base_ref} @ ${merge_base:0:9}" >&2
-# `--diff --diff-base "$merge_base"` puts each file's fork-point diff in the judge
-# prompt so it reviews only the *changed lines*, not the whole file — the judge
-# stops flagging pre-existing code a PR merely sits near, and can't wander into
-# lines the branch never touched.
-exec llmlint --diff --diff-base "$merge_base" "${extra[@]}" "${present[@]}"
+echo "lint-llm-diff: linting the diff vs ${base_ref} @ ${merge_base:0:9}" >&2
+# Let llmlint discover the changed files itself (`--diff git --diff-base`): it
+# scopes to the fork-point diff and applies llmlint.yml's `files.exclude`, so the
+# vendored Fern fixtures are dropped in one place (not duplicated here). It reviews
+# only the changed *lines*, skips empty-diff/deleted files, and exits 0 when
+# nothing is left to lint.
+exec llmlint --diff git --diff-base "$merge_base" "${extra[@]}"
