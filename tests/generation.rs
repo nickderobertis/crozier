@@ -465,18 +465,54 @@ paths:
 fn emits_raw_client_only_for_supported_modules() {
     let files = render(ENDPOINTS_SPEC);
 
-    // The supported module emits a raw client; the others (query param, request
-    // body, non-2xx response, empty response) do not — only their package marker.
+    // The supported modules emit a raw client; `err` (a non-2xx response) does
+    // not — only its package marker.
     let raw = files
         .get("src/acme/things/raw_client.py")
         .expect("things raw_client");
-    for module in ["query", "body", "err", "noresp"] {
-        assert!(
-            !files.contains_key(&format!("src/acme/{module}/raw_client.py")),
-            "{module} should not emit a raw_client yet"
-        );
-        assert!(files.contains_key(&format!("src/acme/{module}/__init__.py")));
-    }
+    assert!(
+        !files.contains_key("src/acme/err/raw_client.py"),
+        "err should not emit a raw_client yet"
+    );
+    assert!(files.contains_key("src/acme/err/__init__.py"));
+
+    // A 2xx response with no content (204) is supported and returns `None`.
+    let noresp = files
+        .get("src/acme/noresp/raw_client.py")
+        .expect("noresp raw_client");
+    assert!(noresp.contains("-> HttpResponse[None]:"), "{noresp}");
+    assert!(
+        noresp.contains("return HttpResponse(response=_response, data=None)"),
+        "{noresp}"
+    );
+
+    // A query-parameter-only operation is now supported: the param becomes a
+    // keyword-only optional argument and a `params={...}` entry.
+    let query = files
+        .get("src/acme/query/raw_client.py")
+        .expect("query raw_client");
+    assert!(query.contains("def run("), "{query}");
+    assert!(query.contains("q: typing.Optional[str] = None,"), "{query}");
+    assert!(query.contains("params={"), "{query}");
+    assert!(query.contains("\"q\": q,"), "{query}");
+
+    // A bare scalar request body serializes as `json=request` with the `OMIT`
+    // sentinel and — being a scalar — no content-type header.
+    let body = files
+        .get("src/acme/body/raw_client.py")
+        .expect("body raw_client");
+    assert!(
+        body.contains("OMIT = typing.cast(typing.Any, ...)"),
+        "{body}"
+    );
+    // The body is not marked required, so it is an optional keyword argument.
+    assert!(
+        body.contains("request: typing.Optional[str] = None"),
+        "{body}"
+    );
+    assert!(body.contains("json=request,"), "{body}");
+    assert!(body.contains("omit=OMIT,"), "{body}");
+    assert!(!body.contains("content-type"), "{body}");
 
     // Sync + async classes, both operations, the path-param f-string URL and the
     // response-type import, and the scalar return.
@@ -496,6 +532,179 @@ fn emits_raw_client_only_for_supported_modules() {
     assert!(raw.contains("\"things\""), "{raw}");
     assert!(raw.contains("-> HttpResponse[int]:"), "{raw}");
     assert!(raw.contains("Count the things."), "{raw}");
+}
+
+/// A `$ref` enum body (content-type header) plus a `uuid` scalar body (gated out,
+/// so its module never emits).
+const BODY_SPEC: &str = r##"
+openapi: 3.0.0
+info:
+  title: Body API
+components:
+  schemas:
+    Weather:
+      type: string
+      enum: [SUNNY, RAINING]
+    Pet:
+      oneOf:
+        - type: object
+          properties: {bark: {type: string}}
+        - type: object
+          properties: {meow: {type: string}}
+paths:
+  /enum:
+    post:
+      operationId: enum_send
+      tags: [Enum]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Weather"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: string
+  /union:
+    post:
+      operationId: union_send
+      tags: [Union]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Pet"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: string
+  /uid:
+    post:
+      operationId: uid_send
+      tags: [Uid]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: string
+"##;
+
+#[test]
+fn named_enum_and_uuid_bodies_carry_content_type() {
+    let files = render(BODY_SPEC);
+
+    // A `$ref` enum body: `request: Weather`, `json=request`, and the
+    // content-type header (named types get it, unlike bare scalars).
+    let enum_client = files
+        .get("src/acme/enum/raw_client.py")
+        .expect("enum raw_client");
+    assert!(
+        enum_client.contains("*, request: Weather,"),
+        "{enum_client}"
+    );
+    assert!(
+        enum_client.contains("from ..types.weather import Weather"),
+        "{enum_client}"
+    );
+    assert!(enum_client.contains("json=request,"), "{enum_client}");
+    assert!(
+        enum_client.contains("\"content-type\": \"application/json\","),
+        "{enum_client}"
+    );
+
+    // A `$ref` union body serializes through the convert wrapper (write
+    // direction), with the annotation naming the union type.
+    let union = files
+        .get("src/acme/union/raw_client.py")
+        .expect("union raw_client");
+    assert!(union.contains("*, request: Pet,"), "{union}");
+    assert!(
+        union.contains(
+            "json=convert_and_respect_annotation_metadata(object_=request, annotation=Pet, direction=\"write\"),"
+        ),
+        "{union}"
+    );
+    assert!(
+        union.contains("from ..core.serialization import convert_and_respect_annotation_metadata"),
+        "{union}"
+    );
+
+    // A `format: uuid` body renders as `str` but — unlike a plain scalar — carries
+    // the content-type header.
+    let uid = files
+        .get("src/acme/uid/raw_client.py")
+        .expect("uid raw_client");
+    assert!(uid.contains("*, request: str,"), "{uid}");
+    assert!(uid.contains("json=request,"), "{uid}");
+    assert!(
+        uid.contains("\"content-type\": \"application/json\","),
+        "{uid}"
+    );
+}
+
+/// A header parameter (with the `X-` custom-header prefix) plus a scalar body and
+/// a 204 response.
+const HEADER_SPEC: &str = r##"
+openapi: 3.0.0
+info:
+  title: Header API
+paths:
+  /h:
+    post:
+      operationId: hdr_send
+      tags: [Hdr]
+      parameters:
+        - name: X-My-Header
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        "204":
+          description: ""
+"##;
+
+#[test]
+fn header_param_strips_x_prefix_and_forces_content_type() {
+    let files = render(HEADER_SPEC);
+    let hdr = files
+        .get("src/acme/hdr/raw_client.py")
+        .expect("hdr raw_client");
+
+    // The `X-` prefix is dropped for the Python name; the wire name stays the key.
+    assert!(hdr.contains("my_header: str,"), "{hdr}");
+    assert!(
+        hdr.contains("\"X-My-Header\": str(my_header) if my_header is not None else None,"),
+        "{hdr}"
+    );
+    // A scalar body would normally omit the content-type header, but an
+    // accompanying header param forces it on.
+    assert!(
+        hdr.contains("\"content-type\": \"application/json\","),
+        "{hdr}"
+    );
+    // The 204 response returns `None`.
+    assert!(hdr.contains("-> HttpResponse[None]:"), "{hdr}");
 }
 
 #[test]

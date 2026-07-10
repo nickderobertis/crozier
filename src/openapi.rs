@@ -104,6 +104,9 @@ pub struct Parameter {
     /// Whether the parameter is required.
     #[serde(default)]
     pub required: Option<bool>,
+    /// Human-readable description, surfaced in the method docstring.
+    #[serde(default)]
+    pub description: Option<String>,
     /// The parameter's value schema.
     #[serde(default)]
     pub schema: Option<Schema>,

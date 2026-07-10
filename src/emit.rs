@@ -647,13 +647,86 @@ fn raw_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> String {
         .map(|pp| (pp.py_name.clone(), raw_type_str(&pp.type_ref, imports)))
         .collect();
 
-    // Signature: `self`, positional path params, `*`, then keyword-only
-    // `request_options`. Laid out with ruff's right-hand-split.
+    // Query parameters become keyword-only arguments; each carries the type used
+    // in its annotation and docstring (`Optional[..]` unless required) and its
+    // description.
+    let query_params: Vec<DocParam> = ep
+        .query_params
+        .iter()
+        .map(|qp| {
+            let base = raw_type_str(&qp.type_ref, imports);
+            let doc_type = if qp.required {
+                base
+            } else {
+                format!("typing.Optional[{base}]")
+            };
+            DocParam {
+                name: qp.py_name.clone(),
+                doc_type,
+                required: qp.required,
+                description: qp.docstring.clone(),
+            }
+        })
+        .collect();
+
+    // Header parameters become keyword-only arguments, same shape as query params.
+    let header_params: Vec<DocParam> = ep
+        .header_params
+        .iter()
+        .map(|hp| {
+            let base = raw_type_str(&hp.type_ref, imports);
+            let doc_type = if hp.required {
+                base
+            } else {
+                format!("typing.Optional[{base}]")
+            };
+            DocParam {
+                name: hp.py_name.clone(),
+                doc_type,
+                required: hp.required,
+                description: hp.docstring.clone(),
+            }
+        })
+        .collect();
+
+    // The request body renders as a keyword-only `request` argument, carrying the
+    // type used in its annotation and docstring (`Optional[..]` unless required).
+    let request_param = ep.request_body.as_ref().map(|rb| {
+        let base = raw_type_str(&rb.type_ref, imports);
+        let doc_type = if rb.required {
+            base
+        } else {
+            format!("typing.Optional[{base}]")
+        };
+        DocParam {
+            name: "request".to_string(),
+            doc_type,
+            required: rb.required,
+            description: None,
+        }
+    });
+
+    // A keyword-only argument atom: `name: type`, or `name: type = None` when the
+    // parameter is optional.
+    let arg = |dp: &DocParam| {
+        Doc::atom(if dp.required {
+            format!("{}: {}", dp.name, dp.doc_type)
+        } else {
+            format!("{}: {} = None", dp.name, dp.doc_type)
+        })
+    };
+
+    // Signature: `self`, positional path params, `*`, keyword-only query params,
+    // header params, the request body, then `request_options`. Laid out with
+    // ruff's right-hand-split.
     let mut args: Vec<Doc> = vec![Doc::atom("self")];
     for (name, ty) in &param_types {
         args.push(Doc::atom(format!("{name}: {ty}")));
     }
     args.push(Doc::atom("*"));
+    args.extend(query_params.iter().map(arg));
+    args.extend(header_params.iter().map(arg));
+    args.extend(request_param.iter().map(arg));
     args.push(Doc::atom(
         "request_options: typing.Optional[RequestOptions] = None",
     ));
@@ -669,14 +742,39 @@ fn raw_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> String {
         4,
     );
 
-    let docstring = raw_docstring(ep, &param_types, &return_type);
+    let docstring = raw_docstring(
+        ep,
+        &param_types,
+        &query_params,
+        &header_params,
+        request_param.as_ref(),
+        &return_type,
+    );
     let body = raw_body(ep, is_async, &inner, imports);
     format!("{signature}\n{docstring}\n{body}")
 }
 
+/// A parameter as it appears in a method docstring / signature: its Python name,
+/// the type shown in the annotation and docstring, whether it is required, and an
+/// optional description.
+struct DocParam {
+    name: String,
+    doc_type: String,
+    required: bool,
+    description: Option<String>,
+}
+
 /// The method docstring (indent 8): an optional summary line, a `Parameters`
-/// section (path params then `request_options`), and a `Returns` section.
-fn raw_docstring(ep: &Endpoint, param_types: &[(String, String)], return_type: &str) -> String {
+/// section (path params, query params, the request body, then `request_options`),
+/// and a `Returns` section.
+fn raw_docstring(
+    ep: &Endpoint,
+    param_types: &[(String, String)],
+    query_params: &[DocParam],
+    header_params: &[DocParam],
+    request_param: Option<&DocParam>,
+    return_type: &str,
+) -> String {
     let mut lines: Vec<String> = vec!["        \"\"\"".to_string()];
     if let Some(summary) = &ep.docstring {
         lines.push(format!("        {summary}"));
@@ -688,6 +786,18 @@ fn raw_docstring(ep: &Endpoint, param_types: &[(String, String)], return_type: &
         lines.push(format!("        {name} : {ty}"));
         lines.push(String::new());
     }
+    // Query params, header params, then the request body, each: a `name : type`
+    // line, an optional indented description, and a trailing blank line.
+    let mut push_param = |dp: &DocParam| {
+        lines.push(format!("        {} : {}", dp.name, dp.doc_type));
+        if let Some(desc) = &dp.description {
+            lines.push(format!("            {desc}"));
+        }
+        lines.push(String::new());
+    };
+    query_params.iter().for_each(&mut push_param);
+    header_params.iter().for_each(&mut push_param);
+    request_param.into_iter().for_each(&mut push_param);
     lines.push("        request_options : typing.Optional[RequestOptions]".to_string());
     lines.push("            Request-specific configuration.".to_string());
     lines.push(String::new());
@@ -723,11 +833,77 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
         format!("        _response = {await_}self._client_wrapper.httpx_client.request("),
         format!("            {},", url_arg(ep)),
         format!("            method=\"{}\",", ep.http_method),
-        "            request_options=request_options,".to_string(),
+    ];
+    // Query parameters map wire name to the Python argument in a `params` dict.
+    if !ep.query_params.is_empty() {
+        lines.push("            params={".to_string());
+        for qp in &ep.query_params {
+            lines.push(format!(
+                "                \"{}\": {},",
+                qp.wire_name, qp.py_name
+            ));
+        }
+        lines.push("            },".to_string());
+    }
+    // The request body serializes as `json=request`, or through the convert
+    // wrapper for types carrying field aliases; named bodies also carry a
+    // `content-type: application/json` header.
+    if let Some(rb) = &ep.request_body {
+        if rb.encoding.is_convert() {
+            imports.add_from(
+                "..core.serialization",
+                "convert_and_respect_annotation_metadata",
+            );
+            let annotation = raw_type_str(&rb.type_ref, imports);
+            let call = Doc::group(
+                "            json=convert_and_respect_annotation_metadata(",
+                vec![
+                    Doc::atom("object_=request"),
+                    Doc::atom(format!("annotation={annotation}")),
+                    Doc::atom("direction=\"write\""),
+                ],
+                ")",
+            );
+            lines.extend(
+                wrap::layout("", &call, ",", 12)
+                    .split('\n')
+                    .map(String::from),
+            );
+        } else {
+            lines.push("            json=request,".to_string());
+        }
+    }
+    // The `headers` dict carries `content-type: application/json` for named or
+    // complex bodies (and whenever header params accompany a body) plus each
+    // header parameter, rendered as `str(x) if x is not None else None`.
+    let content_type = ep
+        .request_body
+        .as_ref()
+        .is_some_and(|rb| rb.encoding.content_type_header())
+        || (ep.request_body.is_some() && !ep.header_params.is_empty());
+    if content_type || !ep.header_params.is_empty() {
+        lines.push("            headers={".to_string());
+        if content_type {
+            lines.push("                \"content-type\": \"application/json\",".to_string());
+        }
+        for hp in &ep.header_params {
+            lines.push(format!(
+                "                \"{}\": str({}) if {} is not None else None,",
+                hp.wire_name, hp.py_name, hp.py_name
+            ));
+        }
+        lines.push("            },".to_string());
+    }
+    lines.push("            request_options=request_options,".to_string());
+    // A request body passes the `OMIT` sentinel so unset optionals drop out.
+    if ep.request_body.is_some() {
+        lines.push("            omit=OMIT,".to_string());
+    }
+    lines.extend([
         "        )".to_string(),
         "        try:".to_string(),
         "            if 200 <= _response.status_code < 300:".to_string(),
-    ];
+    ]);
     if ep.response.is_some() {
         imports.add_from("..core.pydantic_utilities", "parse_obj_as");
         lines.extend([
@@ -788,7 +964,14 @@ fn raw_client_file(
         true,
         &mut imports,
     );
-    let body = format!("{sync}\n\n\n{async_class}");
+    // A module with any request body declares the `OMIT` sentinel above the
+    // classes; `omit=OMIT` drops unset optional fields from the serialized body.
+    let omit = if endpoints.iter().any(|e| e.request_body.is_some()) {
+        "OMIT = typing.cast(typing.Any, ...)\n\n\n"
+    } else {
+        ""
+    };
+    let body = format!("{omit}{sync}\n\n\n{async_class}");
 
     let contents = render(
         env,
@@ -870,6 +1053,9 @@ mod tests {
             http_method: "GET",
             path: path.to_string(),
             path_params: params,
+            query_params: Vec::new(),
+            header_params: Vec::new(),
+            request_body: None,
             response,
             docstring: None,
             emittable: true,

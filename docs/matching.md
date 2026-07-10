@@ -56,9 +56,14 @@ Matched for `exhaustive` (the OpenAPI-derived fixture from
 layer** (every `types/*.py` module including the hoisted `typesAnimal` variants,
 except `types/__init__.py`), the **entire `core/` runtime** (19 files), each
 endpoint client's package marker (`<tag>/__init__.py`), and the per-tag
-`raw_client.py` for the **no-request-body tags** (`endpoints_put`,
-`endpoints_urls`, `noreqbody`). See the `EXHAUSTIVE` `matched` list in
-`tests/e2e.rs` for the exact set.
+`raw_client.py` for the tags crozier fully supports: the **no-request-body tags**
+(`endpoints_put`, `endpoints_urls`, `noreqbody`), the **query-parameter tag**
+(`endpoints_pagination`), the **enum-body tag** (`endpoints_enum`, a named `$ref`
+request body), the **union-body tag** (`endpoints_union`, a `$ref` union body
+via the `convert_and_respect_annotation_metadata` wrapper), the **scalar-body tag**
+(`endpoints_primitive`, incl. the `uuid`/`byte` content-type nuance), and the
+**header tag** (`reqwithheaders`, a header parameter plus a scalar body and a 204
+response). See the `EXHAUSTIVE` `matched` list in `tests/e2e.rs` for the exact set.
 
 The full expected tree is committed under `expected/` even where not yet matched,
 so the finish line is explicit and progress is measurable.
@@ -113,13 +118,25 @@ element per line with a trailing comma.
    ([`ir::Endpoint`]): module, method name, HTTP method, URL, path params, and
    the success response type. crozier emits each client's package marker
    (`<tag>/__init__.py`) and the per-tag `raw_client.py` for the subset it fully
-   supports today — operations with **no request body**, only path parameters,
-   and a single JSON 2xx response (a named model or a scalar). A whole module is
-   emitted only when every one of its operations is in that subset
-   (`Endpoint::emittable`), so output stays honest as coverage widens. Still to
-   come, tag by tag: request bodies (`json=request` / inline / the
-   `convert_and_respect_annotation_metadata` wrapper and the `content-type`
-   header rule), query/header params, error responses (the generated `errors/`),
+   supports today — operations with only path and query parameters, a single JSON
+   2xx response (a named model or a scalar), and either no request body or a
+   supported one: a `$ref` to a named string enum (`json=request` plus the
+   `content-type` header) or a bare scalar (`json=request`, no header; the
+   `uuid`/`byte` formats are excluded pending Fern's content-type nuance). Query
+   parameters render as keyword-only optional arguments and a `params={...}` entry
+   (`endpoints_pagination`); enum bodies as a `request` argument (`endpoints_enum`);
+   union bodies through the `convert_and_respect_annotation_metadata` wrapper
+   (`endpoints_union`); header params as keyword-only arguments and a `headers={...}`
+   entry (`str(x) if x is not None else None`, the `X-` prefix dropped from the
+   Python name), which also force the `content-type` header on when they accompany
+   a body (`reqwithheaders`). A 2xx response with no content returns `None`. A whole
+   module is emitted only when every one of its operations is in that subset
+   (`Endpoint::emittable`), so output stays honest as coverage widens. Scalar
+   bodies cover every JSON primitive, with `uuid`/`byte` rendered as `str` but
+   carrying the content-type header (`endpoints_primitive`). Still to come, tag by
+   tag: the remaining request bodies (plain objects, which Fern inlines
+   field-by-field; collections of objects via the convert wrapper), error responses
+   (the generated `errors/`),
    the per-tag `client.py` (whose docstrings need a byte-exact example-value
    generator), and the root `client.py`. The two `__init__.py` aggregators'
    import order and gap #2 both depend on the endpoint IR.
