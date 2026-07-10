@@ -133,6 +133,14 @@ const EXHAUSTIVE: Corpus = Corpus {
         // content-type-header tags.
         "src/fern/endpoints_http_methods/raw_client.py",
         "src/fern/endpoints_content_type/raw_client.py",
+        // Declared 4xx error responses raise generated exceptions; the `errors/`
+        // package (a class per error + a lazy-loading `__init__.py`) backs them.
+        // `noauth` also exercises an unknown (`{}`) body; `inlinedrequests` an
+        // inline (non-`$ref`) object body.
+        "src/fern/errors/bad_request_error.py",
+        "src/fern/errors/__init__.py",
+        "src/fern/noauth/raw_client.py",
+        "src/fern/inlinedrequests/raw_client.py",
     ],
 };
 

@@ -20,6 +20,8 @@ pub struct Ir {
     pub endpoint_modules: Vec<String>,
     /// Every operation, in document-traversal order, resolved for emission.
     pub endpoints: Vec<Endpoint>,
+    /// Generated exception classes, one per distinct declared error response.
+    pub errors: Vec<ErrorClass>,
 }
 
 /// One API operation, resolved into the shape the raw client needs.
@@ -44,6 +46,8 @@ pub struct Endpoint {
     /// The success response body type, or `None` when the endpoint returns no
     /// content.
     pub response: Option<TypeRef>,
+    /// Declared error (non-2xx) responses, each raising a generated exception.
+    pub errors: Vec<ErrorResponse>,
     /// A short description shown as the docstring's summary line.
     pub docstring: Option<String>,
     /// Whether crozier can emit this operation's raw client today. A module is
@@ -136,6 +140,29 @@ pub struct SingleBody {
     /// named (`$ref`) enum/union/map bodies and the `uuid`/`byte` scalar formats;
     /// absent for a plain scalar or an inline container.
     pub content_type: bool,
+}
+
+/// A declared error (non-2xx) response, rendered as a `raise` branch keyed on the
+/// status code.
+#[derive(Debug, Clone)]
+pub struct ErrorResponse {
+    /// The HTTP status code that triggers this error.
+    pub status_code: u16,
+    /// The generated exception class name (e.g. `BadRequestError`).
+    pub class_name: String,
+    /// The error body type parsed into the exception (`$ref` to a named type).
+    pub body_type: TypeRef,
+}
+
+/// A generated exception class under `errors/`, one per distinct declared error.
+#[derive(Debug, Clone)]
+pub struct ErrorClass {
+    /// The HTTP status code passed to `ApiError`.
+    pub status_code: u16,
+    /// The exception class name (e.g. `BadRequestError`).
+    pub class_name: String,
+    /// The error body type accepted by the constructor.
+    pub body_type: TypeRef,
 }
 
 /// One field of an inlined (hoisted) object request body, rendered as a
@@ -291,13 +318,35 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
     // body's fields and to decide which of them serialize through the convert
     // wrapper, so it runs after the type layer is built.
     let endpoints = endpoints(doc, &builder.types);
+    let errors = error_classes(&endpoints);
     Ir {
         package_name: config.package_name.clone(),
         project_name: config.project_name.clone(),
         types: builder.types,
         endpoint_modules: endpoint_modules(doc),
         endpoints,
+        errors,
     }
+}
+
+/// Collect the distinct exception classes an SDK needs, one per error class name
+/// used across its (emittable) endpoints, sorted by class name so the `errors/`
+/// package `__init__` aggregator is deterministic.
+fn error_classes(endpoints: &[Endpoint]) -> Vec<ErrorClass> {
+    let mut classes: Vec<ErrorClass> = Vec::new();
+    for ep in endpoints.iter().filter(|e| e.emittable) {
+        for err in &ep.errors {
+            if !classes.iter().any(|c| c.class_name == err.class_name) {
+                classes.push(ErrorClass {
+                    status_code: err.status_code,
+                    class_name: err.class_name.clone(),
+                    body_type: err.body_type.clone(),
+                });
+            }
+        }
+    }
+    classes.sort_by(|a, b| a.class_name.cmp(&b.class_name));
+    classes
 }
 
 /// Resolve every operation into an [`Endpoint`], in document-traversal order
@@ -378,8 +427,12 @@ fn build_endpoint(
             Some(ParameterLocation::Path | ParameterLocation::Query | ParameterLocation::Header)
         )
     });
-    let only_success =
-        !op.responses.is_empty() && op.responses.keys().all(|code| code.starts_with('2'));
+    // Error (non-2xx) responses each become a `raise` branch; `None` means one of
+    // them is outside the subset crozier can render (an unmapped status code, or a
+    // body that is not a `$ref`), which keeps the operation unemittable.
+    let errors = resolve_errors(op);
+    let errors_ok = errors.is_some();
+    let errors = errors.unwrap_or_default();
     let response = success_response(op);
 
     // A request body is either absent, within the subset crozier can render, or
@@ -403,11 +456,13 @@ fn build_endpoint(
     }
 
     // Today's subset: a supported (or absent) body, path/query/header params only,
-    // only 2xx responses, and a response crozier knows how to render — a named
-    // model, a scalar, or no content (a 2xx without a JSON body).
+    // at least one response, every non-2xx response mappable to a generated error,
+    // and a success response crozier knows how to render — a named model, a scalar,
+    // or no content (a 2xx without a JSON body).
     let emittable = body_ok
+        && errors_ok
         && !has_unsupported_params
-        && only_success
+        && !op.responses.is_empty()
         && matches!(
             response,
             None | Some(TypeRef::Named(_) | TypeRef::Primitive(_))
@@ -423,9 +478,48 @@ fn build_endpoint(
         header_params,
         request_body,
         response,
+        errors,
         docstring: clean_doc(op.description.as_deref()),
         emittable,
     }
+}
+
+/// The generated exception class name for an HTTP status code. Deliberately
+/// evidence-based: only codes confirmed against a Fern fixture are mapped, so an
+/// unmapped code keeps its operation unemittable rather than guessing a name.
+/// Extend as new fixtures confirm more.
+fn error_class_name(status: u16) -> Option<&'static str> {
+    match status {
+        400 => Some("BadRequestError"),
+        _ => None,
+    }
+}
+
+/// Resolve an operation's declared error (non-2xx) responses. Returns `None` if any
+/// is outside the subset crozier can render — an unmapped status code, a missing
+/// `application/json` body, or a body that is not a `$ref` to a named type.
+fn resolve_errors(op: &Operation) -> Option<Vec<ErrorResponse>> {
+    let mut out = Vec::new();
+    for (code, resp) in &op.responses {
+        if code.starts_with('2') {
+            continue;
+        }
+        let status: u16 = code.parse().ok()?;
+        let class = error_class_name(status)?;
+        let reference = resp
+            .content
+            .get("application/json")?
+            .schema
+            .as_ref()?
+            .reference
+            .as_ref()?;
+        out.push(ErrorResponse {
+            status_code: status,
+            class_name: class.to_string(),
+            body_type: TypeRef::Named(ref_to_class(reference)),
+        });
+    }
+    Some(out)
 }
 
 /// The stem crozier snake-cases into a header parameter's Python name. Fern drops
@@ -483,6 +577,11 @@ fn resolve_request_body(
         }
         return None;
     }
+    // An inline object body (properties written directly, not behind a `$ref`) is
+    // inlined field-by-field, exactly like a `$ref` object.
+    if !schema.properties.is_empty() {
+        return hoist_inline_object(schema, types).map(RequestBody::Inline);
+    }
     // An inline array body: a single `request` argument. A container of objects
     // serializes through the convert wrapper; either way, no content-type header.
     if schema.ty.as_ref().and_then(|t| t.primary()) == Some("array") {
@@ -495,8 +594,38 @@ fn resolve_request_body(
             false,
         ));
     }
+    // An unknown (empty `{}`) body — Fern renders it as an optional `typing.Any`
+    // argument with a plain `json=request` and no content-type header.
+    if is_unknown(schema) {
+        return Some(single(TypeRef::Primitive(Prim::Any), false, false, false));
+    }
     scalar_body(schema)
         .map(|(type_ref, content_type)| single(type_ref, required, false, content_type))
+}
+
+/// Hoist an inline object body's properties into request [`BodyField`]s. Mirrors
+/// [`hoist_fields`] but resolves an unnamed schema directly. Returns `None` if a
+/// property is an inline string enum (which Fern would hoist into its own named
+/// type — not yet supported for request bodies).
+fn hoist_inline_object(schema: &Schema, types: &[TypeDecl]) -> Option<Vec<BodyField>> {
+    let required: Vec<&str> = schema.required.iter().map(String::as_str).collect();
+    let mut fields = Vec::new();
+    for (prop, prop_schema) in &schema.properties {
+        if prop_schema.reference.is_none() && string_enum_values(prop_schema).is_some() {
+            return None;
+        }
+        let optional = is_optional(prop_schema) || !required.contains(&prop.as_str());
+        let type_ref = base_type_ref(prop_schema);
+        fields.push(BodyField {
+            wire_name: prop.clone(),
+            py_name: naming::field_name(prop),
+            convert: type_needs_convert(&type_ref, types),
+            type_ref,
+            optional,
+            docstring: clean_doc(prop_schema.description.as_deref()),
+        });
+    }
+    Some(fields)
 }
 
 /// A one-argument request body.

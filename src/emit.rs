@@ -11,7 +11,7 @@ use std::path::PathBuf;
 use minijinja::{context, Environment};
 
 use crate::error::{Error, Result};
-use crate::ir::{Endpoint, Field, Ir, Prim, RequestBody, TypeDecl, TypeRef};
+use crate::ir::{Endpoint, ErrorClass, Field, Ir, Prim, RequestBody, TypeDecl, TypeRef};
 use crate::naming;
 use crate::wrap::{self, Doc};
 
@@ -262,6 +262,8 @@ fn environment() -> Environment<'static> {
         include_str!("../templates/raw_client.py.j2"),
     )
     .expect("raw_client template compiles");
+    env.add_template("error.py", include_str!("../templates/error.py.j2"))
+        .expect("error template compiles");
     env
 }
 
@@ -324,7 +326,91 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         }
     }
 
+    // The `errors/` package: one exception class per distinct declared error,
+    // plus the lazy-loading `__init__.py` aggregator. Emitted only when there are
+    // errors to declare.
+    files.extend(error_files(&env, pkg, &ir.errors)?);
+
     Ok(files)
+}
+
+/// Generate the `errors/` package: an exception module per class and the
+/// lazy-loading `__init__.py` re-exporting them. Empty when there are no errors.
+fn error_files(
+    env: &Environment<'static>,
+    pkg: &str,
+    errors: &[ErrorClass],
+) -> Result<Vec<GeneratedFile>> {
+    if errors.is_empty() {
+        return Ok(Vec::new());
+    }
+    let mut files = Vec::new();
+    for err in errors {
+        let mut imports = Imports::default();
+        imports.add_plain("typing");
+        imports.add_from("..core.api_error", "ApiError");
+        // Registers the body type's `..types.<module>` import.
+        let body_type = raw_type_str(&err.body_type, &mut imports);
+        let module = naming::module_name(&err.class_name);
+        let contents = render(
+            env,
+            "error.py",
+            &err.class_name,
+            context! {
+                header => HEADER,
+                imports => imports.render(),
+                class_name => err.class_name,
+                body_type => body_type,
+                status_code => err.status_code,
+            },
+        )?;
+        files.push(GeneratedFile {
+            path: PathBuf::from(format!("src/{pkg}/errors/{module}.py")),
+            contents,
+        });
+    }
+    files.push(GeneratedFile {
+        path: PathBuf::from(format!("src/{pkg}/errors/__init__.py")),
+        contents: lazy_loader_init(errors),
+    });
+    Ok(files)
+}
+
+/// Fern's package-`__init__` lazy loader: a `TYPE_CHECKING` import block, a
+/// `_dynamic_imports` map, the static `__getattr__`/`__dir__` machinery, and
+/// `__all__`. The `_dynamic_imports` map and `__all__` are alphabetical (the
+/// classes arrive pre-sorted). Emitted with crozier's header collapsed to the
+/// four leading blank lines Fern's comment header strips to.
+fn lazy_loader_init(errors: &[ErrorClass]) -> String {
+    let type_checking: String = errors
+        .iter()
+        .map(|e| {
+            format!(
+                "    from .{} import {}\n",
+                naming::module_name(&e.class_name),
+                e.class_name
+            )
+        })
+        .collect();
+    let dynamic: String = errors
+        .iter()
+        .map(|e| {
+            format!(
+                "\"{}\": \".{}\"",
+                e.class_name,
+                naming::module_name(&e.class_name)
+            )
+        })
+        .collect::<Vec<_>>()
+        .join(", ");
+    let all: String = errors
+        .iter()
+        .map(|e| format!("\"{}\"", e.class_name))
+        .collect::<Vec<_>>()
+        .join(", ");
+    format!(
+        "{HEADER}\n\n\n\nimport typing\nfrom importlib import import_module\n\nif typing.TYPE_CHECKING:\n{type_checking}_dynamic_imports: typing.Dict[str, str] = {{{dynamic}}}\n\n\ndef __getattr__(attr_name: str) -> typing.Any:\n    module_name = _dynamic_imports.get(attr_name)\n    if module_name is None:\n        raise AttributeError(f\"No {{attr_name}} found in _dynamic_imports for module name -> {{__name__}}\")\n    try:\n        module = import_module(module_name, __package__)\n        if module_name == f\".{{attr_name}}\":\n            return module\n        else:\n            return getattr(module, attr_name)\n    except ImportError as e:\n        raise ImportError(f\"Failed to import {{attr_name}} from {{module_name}}: {{e}}\") from e\n    except AttributeError as e:\n        raise AttributeError(f\"Failed to get {{attr_name}} from {{module_name}}: {{e}}\") from e\n\n\ndef __dir__():\n    lazy_attrs = list(_dynamic_imports.keys())\n    return sorted(lazy_attrs)\n\n\n__all__ = [{all}]\n"
+    )
 }
 
 /// Fern's SDK runtime, vendored under `assets/core/` and emitted into every SDK.
@@ -988,6 +1074,30 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
             "                return {wrapper}(response=_response, data=None)"
         ));
     }
+    // One `raise <Error>` branch per declared error response, keyed on its status
+    // code, parsing the error body into the generated exception.
+    for err in &ep.errors {
+        imports.add_from("..core.pydantic_utilities", "parse_obj_as");
+        let module = naming::module_name(&err.class_name);
+        imports.add_from(&format!("..errors.{module}"), &err.class_name);
+        let body = raw_type_str(&err.body_type, imports);
+        lines.extend([
+            format!(
+                "            if _response.status_code == {}:",
+                err.status_code
+            ),
+            format!("                raise {}(", err.class_name),
+            "                    headers=dict(_response.headers),".to_string(),
+            "                    body=typing.cast(".to_string(),
+            format!("                        {body},"),
+            "                        parse_obj_as(".to_string(),
+            format!("                            type_={body},"),
+            "                            object_=_response.json(),".to_string(),
+            "                        ),".to_string(),
+            "                    ),".to_string(),
+            "                )".to_string(),
+        ]);
+    }
     lines.extend([
         "            _response_json = _response.json()".to_string(),
         "        except JSONDecodeError:".to_string(),
@@ -1124,6 +1234,7 @@ mod tests {
             header_params: Vec::new(),
             request_body: None,
             response,
+            errors: Vec::new(),
             docstring: None,
             emittable: true,
         }
