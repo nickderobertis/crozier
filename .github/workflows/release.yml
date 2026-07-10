@@ -232,11 +232,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # rustup honors rust-toolchain.toml on first cargo use, so the pinned
-      # channel — not a floating `stable` — is the single source of truth here
-      # too (matching `just bootstrap` and the `test` job).
-      - name: Install the pinned toolchain
-        run: rustup show active-toolchain || rustup toolchain install
+      # No explicit toolchain step: rustup honors rust-toolchain.toml on first
+      # cargo use, so `cargo publish` builds with the pinned channel — the single
+      # source of truth — exactly as ci.yml's `install` job runs `cargo install`.
       - uses: Swatinem/rust-cache@v2
       - run: cargo publish --locked
         env:
@@ -253,8 +251,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install the pinned toolchain
-        run: rustup show active-toolchain || rustup toolchain install
+      # No explicit toolchain step: rustup honors rust-toolchain.toml on first
+      # cargo use, so `cargo install` builds the published crate with the pinned
+      # channel — matching ci.yml's `install` job.
       - name: Wait for the version to land on crates.io
         run: |
           ver="${GITHUB_REF_NAME#v}"
