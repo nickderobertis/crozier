@@ -826,10 +826,33 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
         }
         lines.push("            },".to_string());
     }
-    // The request body serializes as `json=request`; named (`$ref`) bodies also
-    // carry a `content-type: application/json` header.
+    // The request body serializes as `json=request`, or through the convert
+    // wrapper for types carrying field aliases; named bodies also carry a
+    // `content-type: application/json` header.
     if let Some(rb) = &ep.request_body {
-        lines.push("            json=request,".to_string());
+        if rb.convert {
+            imports.add_from(
+                "..core.serialization",
+                "convert_and_respect_annotation_metadata",
+            );
+            let annotation = raw_type_str(&rb.type_ref, imports);
+            let call = Doc::group(
+                "            json=convert_and_respect_annotation_metadata(",
+                vec![
+                    Doc::atom("object_=request"),
+                    Doc::atom(format!("annotation={annotation}")),
+                    Doc::atom("direction=\"write\""),
+                ],
+                ")",
+            );
+            lines.extend(
+                wrap::layout("", &call, ",", 12)
+                    .split('\n')
+                    .map(String::from),
+            );
+        } else {
+            lines.push("            json=request,".to_string());
+        }
         if rb.content_type_header {
             lines.extend([
                 "            headers={".to_string(),

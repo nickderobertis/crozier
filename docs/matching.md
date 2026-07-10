@@ -58,9 +58,10 @@ except `types/__init__.py`), the **entire `core/` runtime** (19 files), each
 endpoint client's package marker (`<tag>/__init__.py`), and the per-tag
 `raw_client.py` for the tags crozier fully supports: the **no-request-body tags**
 (`endpoints_put`, `endpoints_urls`, `noreqbody`), the **query-parameter tag**
-(`endpoints_pagination`), and the **enum-body tag** (`endpoints_enum`, a named
-`$ref` request body). See the `EXHAUSTIVE` `matched` list in `tests/e2e.rs` for
-the exact set.
+(`endpoints_pagination`), the **enum-body tag** (`endpoints_enum`, a named `$ref`
+request body), and the **union-body tag** (`endpoints_union`, a `$ref` union body
+via the `convert_and_respect_annotation_metadata` wrapper). See the `EXHAUSTIVE`
+`matched` list in `tests/e2e.rs` for the exact set.
 
 The full expected tree is committed under `expected/` even where not yet matched,
 so the finish line is explicit and progress is measurable.
@@ -121,12 +122,14 @@ element per line with a trailing comma.
    `content-type` header) or a bare scalar (`json=request`, no header; the
    `uuid`/`byte` formats are excluded pending Fern's content-type nuance). Query
    parameters render as keyword-only optional arguments and a `params={...}` entry
-   (`endpoints_pagination`); enum bodies as a `request` argument (`endpoints_enum`).
-   A whole module is emitted only when every one of its operations is in that
-   subset (`Endpoint::emittable`), so output stays honest as coverage widens. Still
-   to come, tag by tag: the remaining request bodies (objects/unions/collections via
-   the `convert_and_respect_annotation_metadata` wrapper, inline bodies, the
-   `uuid`/`byte` content-type nuance), header params, error responses (the generated `errors/`),
+   (`endpoints_pagination`); enum bodies as a `request` argument (`endpoints_enum`);
+   union bodies through the `convert_and_respect_annotation_metadata` wrapper
+   (`endpoints_union`). A whole module is emitted only when every one of its
+   operations is in that subset (`Endpoint::emittable`), so output stays honest as
+   coverage widens. Still to come, tag by tag: the remaining request bodies (plain
+   objects, which Fern inlines field-by-field; collections of objects via the
+   convert wrapper; the `uuid`/`byte` content-type nuance), header params, error
+   responses (the generated `errors/`),
    the per-tag `client.py` (whose docstrings need a byte-exact example-value
    generator), and the root `client.py`. The two `__init__.py` aggregators'
    import order and gap #2 both depend on the endpoint IR.

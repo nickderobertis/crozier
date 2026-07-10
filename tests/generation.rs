@@ -537,6 +537,12 @@ components:
     Weather:
       type: string
       enum: [SUNNY, RAINING]
+    Pet:
+      oneOf:
+        - type: object
+          properties: {bark: {type: string}}
+        - type: object
+          properties: {meow: {type: string}}
 paths:
   /enum:
     post:
@@ -548,6 +554,22 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/Weather"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: string
+  /union:
+    post:
+      operationId: union_send
+      tags: [Union]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Pet"
       responses:
         "200":
           content:
@@ -594,6 +616,23 @@ fn named_enum_body_carries_content_type_and_uuid_body_is_gated() {
     assert!(
         enum_client.contains("\"content-type\": \"application/json\","),
         "{enum_client}"
+    );
+
+    // A `$ref` union body serializes through the convert wrapper (write
+    // direction), with the annotation naming the union type.
+    let union = files
+        .get("src/acme/union/raw_client.py")
+        .expect("union raw_client");
+    assert!(union.contains("*, request: Pet,"), "{union}");
+    assert!(
+        union.contains(
+            "json=convert_and_respect_annotation_metadata(object_=request, annotation=Pet, direction=\"write\"),"
+        ),
+        "{union}"
+    );
+    assert!(
+        union.contains("from ..core.serialization import convert_and_respect_annotation_metadata"),
+        "{union}"
     );
 
     // A `format: uuid` body needs Fern's content-type nuance crozier does not yet

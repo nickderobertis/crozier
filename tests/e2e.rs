@@ -119,6 +119,8 @@ const EXHAUSTIVE: Corpus = Corpus {
         "src/fern/endpoints_pagination/raw_client.py",
         // Named enum (`$ref`) request body → `json=request` + content-type header.
         "src/fern/endpoints_enum/raw_client.py",
+        // Named union (`$ref`) request body → `convert_and_respect_annotation_metadata`.
+        "src/fern/endpoints_union/raw_client.py",
     ],
 };
 

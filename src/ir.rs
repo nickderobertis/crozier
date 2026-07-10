@@ -87,6 +87,10 @@ pub struct RequestBody {
     /// Whether the request emits the `content-type: application/json` header.
     /// Fern omits it for bare scalar bodies and adds it for named (`$ref`) types.
     pub content_type_header: bool,
+    /// Whether the body serializes through `convert_and_respect_annotation_metadata`
+    /// (Fern's wrapper for types carrying field aliases, e.g. unions of objects)
+    /// rather than a plain `json=request`.
+    pub convert: bool,
 }
 
 /// A generated top-level type.
@@ -334,22 +338,36 @@ fn resolve_request_body(doc: &OpenApi, rb: &crate::openapi::RequestBody) -> Opti
     let schema = rb.content.get("application/json")?.schema.as_ref()?;
     let required = rb.required == Some(true);
     if let Some(reference) = &schema.reference {
-        // Only a `$ref` to an extensible (string) enum serializes as a plain
-        // `json=request`; named objects/unions need the convert wrapper.
         let target = resolve_ref(doc, reference)?;
+        // A `$ref` to an extensible (string) enum serializes as a plain
+        // `json=request`.
         if string_enum_values(target).is_some() {
             return Some(RequestBody {
                 type_ref: TypeRef::Named(ref_to_class(reference)),
                 required,
                 content_type_header: true,
+                convert: false,
             });
         }
+        // A `$ref` to a union goes through the convert wrapper (its object
+        // variants carry field aliases that must be respected on write).
+        if target.one_of.is_some() || target.any_of.is_some() {
+            return Some(RequestBody {
+                type_ref: TypeRef::Named(ref_to_class(reference)),
+                required,
+                content_type_header: true,
+                convert: true,
+            });
+        }
+        // A `$ref` to a plain object is inlined by Fern (each field becomes an
+        // argument) — not yet supported.
         return None;
     }
     scalar_body(schema).map(|type_ref| RequestBody {
         type_ref,
         required,
         content_type_header: false,
+        convert: false,
     })
 }
 
