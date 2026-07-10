@@ -4,7 +4,7 @@
 
 use crate::config::GenerateConfig;
 use crate::naming;
-use crate::openapi::{AdditionalProperties, OpenApi, Operation, Schema};
+use crate::openapi::{AdditionalProperties, OpenApi, Operation, ParameterLocation, Schema};
 
 /// A fully-resolved SDK model ready to emit.
 #[derive(Debug)]
@@ -214,7 +214,7 @@ fn build_endpoint(path: &str, http_method: &'static str, op: &Operation) -> Endp
     let path_params: Vec<PathParam> = op
         .parameters
         .iter()
-        .filter(|p| p.location == "path")
+        .filter(|p| p.location == Some(ParameterLocation::Path))
         .map(|p| PathParam {
             wire_name: p.name.clone(),
             py_name: naming::field_name(&p.name),
@@ -225,18 +225,21 @@ fn build_endpoint(path: &str, http_method: &'static str, op: &Operation) -> Endp
         })
         .collect();
 
-    let has_query_or_header = op
+    // Today crozier only handles path parameters; any other kind (query, header,
+    // cookie, an unknown location, or a `$ref` with no location) puts the
+    // operation outside the emittable subset.
+    let has_unsupported_params = op
         .parameters
         .iter()
-        .any(|p| p.location == "query" || p.location == "header");
+        .any(|p| p.location != Some(ParameterLocation::Path));
     let only_success =
         !op.responses.is_empty() && op.responses.keys().all(|code| code.starts_with('2'));
     let response = success_response(op);
 
-    // Today's subset: no body, no query/header params, only 2xx responses, and a
+    // Today's subset: no body, path params only, only 2xx responses, and a
     // response type crozier knows how to render (named model or scalar).
     let emittable = op.request_body.is_none()
-        && !has_query_or_header
+        && !has_unsupported_params
         && only_success
         && matches!(response, Some(TypeRef::Named(_) | TypeRef::Primitive(_)));
 

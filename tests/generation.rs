@@ -367,6 +367,137 @@ paths:
     }
 }
 
+/// A spec whose paths exercise the raw-client emitter: one emittable module
+/// (`things`, two no-body operations — a path-param GET returning a model and a
+/// described GET returning a scalar) alongside modules that are *not* emittable
+/// (a query param, a request body, a non-2xx response, an empty response), so
+/// only the supported module produces a `raw_client.py`.
+const ENDPOINTS_SPEC: &str = r##"
+openapi: 3.0.0
+info:
+  title: Ep API
+components:
+  schemas:
+    Thing:
+      type: object
+      properties:
+        name:
+          type: string
+paths:
+  /things/{id}:
+    get:
+      operationId: things_getById
+      tags: [Things]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Thing"
+  /things:
+    get:
+      description: Count the things.
+      operationId: things_count
+      tags: [Things]
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: integer
+  /search:
+    get:
+      operationId: query_run
+      tags: [Query]
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: string
+  /create:
+    post:
+      operationId: body_create
+      tags: [Body]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: string
+  /boom:
+    get:
+      operationId: err_get
+      tags: [Err]
+      responses:
+        "404":
+          content:
+            application/json:
+              schema:
+                type: string
+  /ping:
+    get:
+      operationId: noresp_get
+      tags: [Noresp]
+      responses:
+        "204":
+          description: no content
+"##;
+
+#[test]
+fn emits_raw_client_only_for_supported_modules() {
+    let files = render(ENDPOINTS_SPEC);
+
+    // The supported module emits a raw client; the others (query param, request
+    // body, non-2xx response, empty response) do not — only their package marker.
+    let raw = files
+        .get("src/acme/things/raw_client.py")
+        .expect("things raw_client");
+    for module in ["query", "body", "err", "noresp"] {
+        assert!(
+            !files.contains_key(&format!("src/acme/{module}/raw_client.py")),
+            "{module} should not emit a raw_client yet"
+        );
+        assert!(files.contains_key(&format!("src/acme/{module}/__init__.py")));
+    }
+
+    // Sync + async classes, both operations, the path-param f-string URL and the
+    // response-type import, and the scalar return.
+    assert!(raw.contains("class RawThingsClient:"), "{raw}");
+    assert!(raw.contains("class AsyncRawThingsClient:"), "{raw}");
+    assert!(raw.contains("from ..types.thing import Thing"), "{raw}");
+    assert!(raw.contains("from ..core.jsonable_encoder import jsonable_encoder"));
+    // `things_getById`: a single-segment group, so the method name is the
+    // lowercased suffix; the path param drives an f-string URL and `HttpResponse[Thing]`.
+    assert!(raw.contains("def getbyid("), "{raw}");
+    assert!(raw.contains("f\"things/{jsonable_encoder(id)}\""), "{raw}");
+    assert!(raw.contains("-> HttpResponse[Thing]:"), "{raw}");
+    assert!(raw.contains("async def getbyid("), "{raw}");
+    // `things_count`: no params, a scalar `int` response, and its description
+    // becomes the docstring summary line.
+    assert!(raw.contains("def count("), "{raw}");
+    assert!(raw.contains("\"things\""), "{raw}");
+    assert!(raw.contains("-> HttpResponse[int]:"), "{raw}");
+    assert!(raw.contains("Count the things."), "{raw}");
+}
+
 #[test]
 fn emits_core_runtime_with_substituted_sdk_name() {
     let files = render(RICH_SPEC);

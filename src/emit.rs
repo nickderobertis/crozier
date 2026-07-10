@@ -857,3 +857,129 @@ pub fn write_files(root: &std::path::Path, files: &[GeneratedFile]) -> Result<()
     }
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::{raw_method, raw_type_str, url_arg, Imports};
+    use crate::ir::{Endpoint, PathParam, Prim, TypeRef};
+
+    fn endpoint(path: &str, params: Vec<PathParam>, response: Option<TypeRef>) -> Endpoint {
+        Endpoint {
+            module: "m".to_string(),
+            method_name: "op".to_string(),
+            http_method: "GET",
+            path: path.to_string(),
+            path_params: params,
+            response,
+            docstring: None,
+            emittable: true,
+        }
+    }
+
+    #[test]
+    fn raw_type_str_renders_every_shape() {
+        let mut i = Imports::default();
+        let str_of = |t: &TypeRef, i: &mut Imports| raw_type_str(t, i);
+        assert_eq!(str_of(&TypeRef::Primitive(Prim::Str), &mut i), "str");
+        assert_eq!(str_of(&TypeRef::Primitive(Prim::Int), &mut i), "int");
+        assert_eq!(str_of(&TypeRef::Primitive(Prim::Float), &mut i), "float");
+        assert_eq!(str_of(&TypeRef::Primitive(Prim::Bool), &mut i), "bool");
+        assert_eq!(str_of(&TypeRef::Primitive(Prim::Any), &mut i), "typing.Any");
+        assert_eq!(
+            str_of(&TypeRef::Primitive(Prim::Datetime), &mut i),
+            "dt.datetime"
+        );
+        assert_eq!(str_of(&TypeRef::Primitive(Prim::Date), &mut i), "dt.date");
+        assert_eq!(
+            str_of(&TypeRef::Named("FooBar".to_string()), &mut i),
+            "FooBar"
+        );
+        assert_eq!(
+            str_of(
+                &TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Str))),
+                &mut i
+            ),
+            "typing.Optional[str]"
+        );
+        assert_eq!(
+            str_of(
+                &TypeRef::List(Box::new(TypeRef::Primitive(Prim::Int))),
+                &mut i
+            ),
+            "typing.List[int]"
+        );
+        assert_eq!(
+            str_of(
+                &TypeRef::Set(Box::new(TypeRef::Primitive(Prim::Str))),
+                &mut i
+            ),
+            "typing.Set[str]"
+        );
+        assert_eq!(
+            str_of(
+                &TypeRef::Dict(
+                    Box::new(TypeRef::Primitive(Prim::Str)),
+                    Box::new(TypeRef::Named("Owner".to_string()))
+                ),
+                &mut i
+            ),
+            "typing.Dict[str, Owner]"
+        );
+        assert_eq!(
+            str_of(
+                &TypeRef::Union(vec![
+                    TypeRef::Primitive(Prim::Str),
+                    TypeRef::Primitive(Prim::Int)
+                ]),
+                &mut i
+            ),
+            "typing.Union[str, int]"
+        );
+        assert_eq!(
+            str_of(
+                &TypeRef::Literal(vec!["a".to_string(), "b".to_string()]),
+                &mut i
+            ),
+            "typing.Literal[\"a\", \"b\"]"
+        );
+        let rendered = i.render();
+        assert!(rendered.contains("from ..types.foo_bar import FooBar"));
+        assert!(rendered.contains("import datetime as dt"));
+    }
+
+    #[test]
+    fn url_arg_is_plain_or_interpolated() {
+        let plain = endpoint(
+            "/urls/MixedCase",
+            vec![],
+            Some(TypeRef::Primitive(Prim::Str)),
+        );
+        assert_eq!(url_arg(&plain), "\"urls/MixedCase\"");
+        let interp = endpoint(
+            "/things/{id}",
+            vec![PathParam {
+                wire_name: "id".to_string(),
+                py_name: "id".to_string(),
+                type_ref: TypeRef::Primitive(Prim::Str),
+            }],
+            Some(TypeRef::Primitive(Prim::Str)),
+        );
+        assert_eq!(url_arg(&interp), "f\"things/{jsonable_encoder(id)}\"");
+    }
+
+    #[test]
+    fn raw_method_handles_a_none_response_and_a_summary() {
+        let mut i = Imports::default();
+        let mut ep = endpoint("/x", vec![], None);
+        ep.docstring = Some("Does a thing.".to_string());
+        let out = raw_method(&ep, false, &mut i);
+        // Summary line, a `None` return with no parse, and no dangling parser import.
+        assert!(out.contains("Does a thing."), "{out}");
+        assert!(out.contains("-> HttpResponse[None]:"), "{out}");
+        assert!(
+            out.contains("return HttpResponse(response=_response, data=None)"),
+            "{out}"
+        );
+        assert!(!out.contains("parse_obj_as"), "{out}");
+    }
+}

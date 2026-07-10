@@ -91,22 +91,42 @@ pub struct Operation {
     pub responses: IndexMap<String, Response>,
 }
 
-/// An operation parameter (path/query/header). Only inline parameters are
-/// modeled; a `$ref` parameter deserializes with an empty name.
+/// An operation parameter (path/query/header/cookie). Only inline parameters are
+/// modeled; a `$ref` parameter deserializes with an empty name and no location.
 #[derive(Debug, Default, Deserialize)]
 pub struct Parameter {
     /// Parameter name (the wire name; also the path placeholder for `in: path`).
     #[serde(default)]
     pub name: String,
-    /// Location: `path`, `query`, or `header`.
+    /// Location (`in`). `None` when absent (e.g. a `$ref` parameter).
     #[serde(rename = "in", default)]
-    pub location: String,
+    pub location: Option<ParameterLocation>,
     /// Whether the parameter is required.
     #[serde(default)]
     pub required: Option<bool>,
     /// The parameter's value schema.
     #[serde(default)]
     pub schema: Option<Schema>,
+}
+
+/// A parameter's location, per OpenAPI's closed `in` vocabulary. Modeling it as
+/// an enum (rather than a bare string) makes an invalid location unrepresentable
+/// and forces exhaustive handling downstream; an unknown or non-standard value
+/// deserializes to [`ParameterLocation::Other`] so a malformed spec still parses.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum ParameterLocation {
+    /// `in: path`.
+    Path,
+    /// `in: query`.
+    Query,
+    /// `in: header`.
+    Header,
+    /// `in: cookie`.
+    Cookie,
+    /// Any other/unrecognized location.
+    #[serde(other)]
+    Other,
 }
 
 /// A request body: a content-type → media-type map plus a required flag.
