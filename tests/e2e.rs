@@ -10,16 +10,49 @@ use std::path::{Path, PathBuf};
 use assert_cmd::Command;
 use predicates::prelude::*;
 
-/// Repo-relative files that crozier currently reproduces byte-for-byte for the
-/// `query-parameters-openapi` spec (paths under the generated `src/seed/`). This
-/// manifest is the source of truth for what is matched; it grows as generation
+/// A vendored Fern corpus: the spec at `tests/fixtures/<api>/openapi.yml`, the
+/// naming flags crozier is driven with, and the generated files it reproduces
+/// byte-for-byte today (paths relative to the output root). Each `matched` list
+/// is the source of truth for what that corpus matches; it grows as generation
 /// lands. See docs/matching.md.
-const MATCHED: &[&str] = &[
-    "src/seed/version.py",
-    "src/seed/py.typed",
-    "src/seed/types/user.py",
-    "src/seed/types/nested_user.py",
-];
+struct Corpus {
+    api: &'static str,
+    package_name: &'static str,
+    project_name: &'static str,
+    matched: &'static [&'static str],
+}
+
+/// Fern's OpenAPI-sourced `query-parameters-openapi` seed (offline corpus).
+const QUERY_PARAMETERS: Corpus = Corpus {
+    api: "query-parameters-openapi",
+    package_name: "seed",
+    project_name: "fern_query-parameters-openapi",
+    matched: &[
+        "src/seed/version.py",
+        "src/seed/py.typed",
+        "src/seed/types/user.py",
+        "src/seed/types/nested_user.py",
+    ],
+};
+
+/// The broad `exhaustive` target: Fern's Python output regenerated from the
+/// vendored OpenAPI document (see scripts/generate-fern-fixture.sh). Only files
+/// with no ruff line-wrapping match today; see docs/matching.md gap #1.
+const EXHAUSTIVE: Corpus = Corpus {
+    api: "exhaustive",
+    package_name: "fern",
+    project_name: "default_package_name",
+    matched: &[
+        "src/fern/version.py",
+        "src/fern/py.typed",
+        "src/fern/types/bad_object_request_info.py",
+        "src/fern/types/endpoints_error.py",
+        "src/fern/types/endpoints_paginated_response.py",
+        "src/fern/types/endpoints_put_response.py",
+        "src/fern/types/types_mixed_type.py",
+        "src/fern/types/types_object_with_required_field.py",
+    ],
+};
 
 /// Path to a fixture directory under `tests/fixtures/`.
 fn fixture_dir(api: &str) -> PathBuf {
@@ -33,10 +66,10 @@ fn crozier() -> Command {
     Command::cargo_bin("crozier").expect("crozier binary is built for tests")
 }
 
-#[test]
-fn generate_matches_fern_output_byte_for_byte() {
-    let api = "query-parameters-openapi";
-    let fixtures = fixture_dir(api);
+/// Drive the compiled binary over a corpus's spec and require every file in its
+/// `matched` list to equal the committed fixture once comments are stripped.
+fn assert_corpus_matches(c: &Corpus) {
+    let fixtures = fixture_dir(c.api);
     let out = tempfile::tempdir().expect("tempdir");
 
     crozier()
@@ -46,15 +79,15 @@ fn generate_matches_fern_output_byte_for_byte() {
         .arg(out.path())
         .args([
             "--package-name",
-            "seed",
+            c.package_name,
             "--project-name",
-            "fern_query-parameters-openapi",
+            c.project_name,
         ])
         .assert()
         .success()
         .stderr(predicate::str::contains("generated"));
 
-    for rel in MATCHED {
+    for rel in c.matched {
         let generated = std::fs::read_to_string(out.path().join(rel))
             .unwrap_or_else(|e| panic!("crozier did not write {rel}: {e}"));
         let expected = std::fs::read_to_string(fixtures.join("expected").join(rel))
@@ -67,6 +100,16 @@ fn generate_matches_fern_output_byte_for_byte() {
             "generated {rel} does not match the Fern fixture (comments stripped)"
         );
     }
+}
+
+#[test]
+fn query_parameters_matches_fern_output_byte_for_byte() {
+    assert_corpus_matches(&QUERY_PARAMETERS);
+}
+
+#[test]
+fn exhaustive_matches_fern_output_byte_for_byte() {
+    assert_corpus_matches(&EXHAUSTIVE);
 }
 
 #[test]

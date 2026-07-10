@@ -12,6 +12,11 @@ Attribution and statement of changes (per Apache-2.0 sections 4(b) and 4(c)):
     test definitions and (b) the Python SDK output Fern's generator produced from
     them. These are used unmodified as source specs and as golden output that
     crozier is verified against.
+  * The exhaustive fixture's expected output (tests/fixtures/exhaustive/expected/)
+    was produced by running Fern's published Python generator image
+    fernapi/fern-python-sdk:4.34.0 locally over the vendored exhaustive OpenAPI
+    document (see scripts/generate-fern-fixture.sh), rather than copied from the
+    fern repository. It is otherwise treated identically to the vendored output.
   * Change made to the vendored Python output: source-code comments were removed
     (a string-safe strip of `#` comments) so that generator-identifying comment
     text does not affect the byte-for-byte comparison. No other transformation is

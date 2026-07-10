@@ -72,7 +72,9 @@ lint-llm *paths:
     @command -v llmlint >/dev/null 2>&1 || { echo "llmlint not installed — run 'just setup-llmlint'"; exit 1; }
     llmlint {{paths}}
 
-# llmlint scoped to the merge-base diff with main. This is the blocking `llmlint`
-# PR check; run locally before pushing. BASE defaults to origin/main.
-lint-llm-diff base="origin/main":
-    ./scripts/lint-llm-diff.sh {{base}}
+# `--diff` self-discovers the changed files (a three-dot compare against the base
+# that skips files main also touched) and honors llmlint.yml's excludes, so no
+# wrapper script is needed — it lints only what this branch introduced.
+# Blocking `llmlint` PR check; run before pushing. BASE defaults to origin/main.
+lint-llm-diff base="origin/main" *args:
+    llmlint --diff git --diff-base {{base}} {{args}}

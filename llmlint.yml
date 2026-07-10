@@ -11,6 +11,10 @@ files:
   # List committed files that shouldn't be judged (lock files, generated output).
   exclude:
     - "**/.git/**"
+    # Vendored Fern output — the golden target, not crozier's own code, so it is
+    # never LLM-judged. This top-level exclude is the single source of truth (the
+    # diff-scoped run self-discovers files and honors it; needs llmlint >= 0.3.12).
+    - "tests/fixtures/**"
 rationales: true
 agents:
   default:
@@ -20,4 +24,8 @@ plugins:
   - "https://raw.githubusercontent.com/nickderobertis/dero-skills/main/skills/bootstrap/create-repo/assets/llmlint/base.llmlint.yml@1"
   - "https://raw.githubusercontent.com/nickderobertis/dero-skills/main/skills/bootstrap/create-repo/assets/llmlint/shapes/cli.llmlint.yml@1"
   - "https://raw.githubusercontent.com/nickderobertis/dero-skills/main/skills/bootstrap/create-repo/assets/llmlint/languages/rust.llmlint.yml@1"
+  # The repo ships several shell scripts (scripts/*.sh); the bash plugin supplies
+  # their rules (robust_shell, portable_to_target_shell) and the rule names the
+  # scripts' `llmlint: ignore` directives reference.
+  - "https://raw.githubusercontent.com/nickderobertis/dero-skills/main/skills/bootstrap/create-repo/assets/llmlint/languages/bash.llmlint.yml@1"
   - "https://raw.githubusercontent.com/nickderobertis/dero-skills/main/skills/bootstrap/create-repo/assets/llmlint/ci.llmlint.yml@1"

@@ -40,8 +40,9 @@ the committed fixtures (`crozier::strip_python_comments`, exposed as
 
 ## The matched manifest (source of truth)
 
-`MATCHED` in `tests/e2e.rs` lists the files byte-matched today. It grows as
-generation lands; a file is only added once it matches exactly.
+Each `Corpus` in `tests/e2e.rs` carries a `matched` list — the files byte-matched
+today for that spec. It grows as generation lands; a file is only added once it
+matches exactly.
 
 Currently matched for `query-parameters-openapi`:
 
@@ -49,6 +50,18 @@ Currently matched for `query-parameters-openapi`:
 - `src/seed/py.typed`
 - `src/seed/types/user.py`
 - `src/seed/types/nested_user.py`
+
+Currently matched for `exhaustive` (the OpenAPI-derived fixture from
+`scripts/generate-fern-fixture.sh`):
+
+- `src/fern/version.py`
+- `src/fern/py.typed`
+- `src/fern/types/bad_object_request_info.py`
+- `src/fern/types/endpoints_error.py`
+- `src/fern/types/endpoints_paginated_response.py`
+- `src/fern/types/endpoints_put_response.py`
+- `src/fern/types/types_mixed_type.py`
+- `src/fern/types/types_object_with_required_field.py`
 
 The full expected tree is committed under `expected/` even where not yet matched,
 so the finish line is explicit and progress is measurable.
@@ -67,9 +80,10 @@ everything else). `version.py` and `py.typed` are complete.
 1. **ruff-formatted line wrapping.** Fern runs `ruff format` over its output, so
    long lines (e.g. aliased `Annotated` fields, wide unions) are wrapped. crozier
    emits unwrapped lines that match only when short. Matching the wide cases needs
-   a ruff-compatible line-wrapper (in Rust — no runtime Python dependency). This is
-   why the exhaustive object files are not yet matched. Until then, keep matched
-   files to those with no wrapping.
+   a ruff-compatible line-wrapper (in Rust — no runtime Python dependency). The
+   exhaustive objects that fit on one line already match; the ones with a wrapped
+   line do not. Until the wrapper lands, keep matched files to those with no
+   wrapping.
 2. **Inline-schema hoisting.** Fern names and hoists inline request/response
    schemas (e.g. `SearchResponse`, `SearchRequestNeighbor`). crozier only emits
    named component schemas, so `types/__init__.py` and the hoisted types are not
