@@ -50,15 +50,20 @@ pub struct GenerateArgs {
 /// Returns the files written so the caller can report a count.
 pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     let doc = openapi::load(&args.spec)?;
+    // The config constructor validates the package name (a `PackageName`), so an
+    // invalid, traversal-prone value can never reach the filesystem below.
     let config = GenerateConfig::new(
         args.spec.clone(),
         args.output.clone(),
         args.package_name,
         args.project_name,
         &doc.info.title,
-    );
+    )?;
     let ir = ir::build(&doc, &config);
     let files = emit::generate(&ir)?;
+    // Regeneration is idempotent: clear the crozier-owned package tree first so a
+    // schema or endpoint dropped from the spec does not leave an orphaned module.
+    emit::clean_package_tree(&config.output, config.package_name.as_str())?;
     emit::write_files(&config.output, &files)?;
     Ok(files)
 }
@@ -73,7 +78,7 @@ pub fn render_files(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
         args.package_name,
         args.project_name,
         &doc.info.title,
-    );
+    )?;
     let ir = ir::build(&doc, &config);
     emit::generate(&ir)
 }

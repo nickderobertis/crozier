@@ -32,6 +32,18 @@ const QUERY_PARAMETERS: Corpus = Corpus {
         "src/seed/py.typed",
         "src/seed/types/user.py",
         "src/seed/types/nested_user.py",
+        // Static `core/` runtime assets that reproduce across both Fern corpora
+        // (this seed pins a different Fern version than `exhaustive`, so only the
+        // assets that are byte-identical between the two versions are matched
+        // here — locking in that the vendored assets track upstream).
+        "src/seed/core/api_error.py",
+        "src/seed/core/file.py",
+        "src/seed/core/force_multipart.py",
+        "src/seed/core/http_sse/__init__.py",
+        "src/seed/core/http_sse/_exceptions.py",
+        "src/seed/core/http_sse/_models.py",
+        "src/seed/core/query_encoder.py",
+        "src/seed/core/remove_none_from_dict.py",
     ],
 };
 
@@ -323,4 +335,205 @@ fn help_lists_generate() {
         .assert()
         .success()
         .stdout(predicate::str::contains("generate"));
+}
+
+#[test]
+fn version_flag_reports_crate_version() {
+    // The literal first thing a user types. `--version` prints the crate version;
+    // the release smoke test asserts the same string against the published binary.
+    crozier()
+        .arg("--version")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains(env!("CARGO_PKG_VERSION")));
+}
+
+/// A spec that is *not* in the Fern corpus, exercising a schema-only object, an
+/// enum, an array field, and an endpoint — and crucially declaring **no** error
+/// responses, the shape that once emitted an empty `from .errors import` (invalid
+/// Python that byte-matching the two golden corpora never exercised). The title
+/// has spaces so the default-naming path snake_cases it to `my_cool_api`.
+const ARBITRARY_SPEC: &str = "\
+openapi: 3.0.0
+info:
+  title: My Cool API
+  version: 2.3.0
+paths:
+  /widgets/{id}:
+    get:
+      operationId: getWidget
+      tags: [Widgets]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Widget' }
+components:
+  schemas:
+    Widget:
+      type: object
+      properties:
+        id: { type: string }
+        tags:
+          type: array
+          items: { type: string }
+    Color:
+      type: string
+      enum: [red, green, blue]
+";
+
+/// Locate a Python interpreter for the "generated SDK is valid Python" checks.
+/// GitHub's ubuntu/macos/windows runners all ship one, so the gate always runs
+/// it; a sandbox without Python skips (as the coverage tier does — see
+/// docs/matching.md) rather than failing spuriously.
+fn python_interpreter() -> Option<&'static str> {
+    ["python3", "python"].into_iter().find(|candidate| {
+        std::process::Command::new(candidate)
+            .arg("--version")
+            .stdout(std::process::Stdio::null())
+            .stderr(std::process::Stdio::null())
+            .status()
+            .map(|s| s.success())
+            .unwrap_or(false)
+    })
+}
+
+/// Byte-check is text equality; this asserts the generated tree is *valid Python*
+/// by compiling every module (`compileall`). Byte-matching Fern proves the two
+/// corpora; this proves crozier does not emit syntactically broken Python for
+/// specs outside them.
+fn assert_valid_python(out: &Path) {
+    let Some(py) = python_interpreter() else {
+        eprintln!("skipping Python validity check: no python3/python on PATH");
+        return;
+    };
+    let status = std::process::Command::new(py)
+        .args(["-m", "compileall", "-q", "-f"])
+        .arg(out)
+        .status()
+        .expect("run python -m compileall");
+    assert!(
+        status.success(),
+        "generated Python under {} failed to compile with {py}",
+        out.display()
+    );
+}
+
+#[test]
+fn arbitrary_spec_generates_valid_python() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let spec = dir.path().join("api.yml");
+    std::fs::write(&spec, ARBITRARY_SPEC).unwrap();
+    let out = dir.path().join("out");
+    crozier()
+        .args(["generate", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&out)
+        .args(["--package-name", "acme"])
+        .assert()
+        .success();
+    assert_valid_python(&out);
+}
+
+#[test]
+fn exhaustive_output_is_valid_python() {
+    let fixtures = fixture_dir("exhaustive");
+    let out = tempfile::tempdir().expect("tempdir");
+    crozier()
+        .args(["generate", "--spec"])
+        .arg(fixtures.join("openapi.yml"))
+        .arg("--output")
+        .arg(out.path())
+        .args([
+            "--package-name",
+            "fern",
+            "--project-name",
+            "default_package_name",
+        ])
+        .assert()
+        .success();
+    assert_valid_python(out.path());
+}
+
+#[test]
+fn default_naming_derives_package_from_title() {
+    // The most common first invocation: no --package-name / --project-name, so the
+    // package dir is snake_case(title) and version.py records the same name.
+    let dir = tempfile::tempdir().expect("tempdir");
+    let spec = dir.path().join("api.yml");
+    std::fs::write(&spec, ARBITRARY_SPEC).unwrap();
+    let out = dir.path().join("out");
+    crozier()
+        .args(["generate", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&out)
+        .assert()
+        .success()
+        .stderr(predicate::str::contains("generated"));
+
+    let version = out.join("src/my_cool_api/version.py");
+    let body = std::fs::read_to_string(&version)
+        .expect("default package dir should be snake_case of the API title");
+    assert!(
+        body.contains("my_cool_api"),
+        "project name should default from the title: {body}"
+    );
+}
+
+#[test]
+fn regeneration_prunes_stale_modules_and_stays_valid() {
+    // Users regenerate into the same --output constantly. A schema dropped from the
+    // spec must not leave an orphaned module behind, and the result must still be
+    // valid Python.
+    let dir = tempfile::tempdir().expect("tempdir");
+    let out = dir.path().join("out");
+
+    let two = dir.path().join("two.yml");
+    std::fs::write(
+        &two,
+        "openapi: 3.0.0\ninfo:\n  title: Regen\ncomponents:\n  schemas:\n    \
+         Widget:\n      type: object\n      properties:\n        id: { type: string }\n    \
+         Gadget:\n      type: object\n      properties:\n        id: { type: string }\n",
+    )
+    .unwrap();
+    crozier()
+        .args(["generate", "--spec"])
+        .arg(&two)
+        .arg("--output")
+        .arg(&out)
+        .args(["--package-name", "regen"])
+        .assert()
+        .success();
+    assert!(out.join("src/regen/types/widget.py").is_file());
+    assert!(out.join("src/regen/types/gadget.py").is_file());
+
+    let one = dir.path().join("one.yml");
+    std::fs::write(
+        &one,
+        "openapi: 3.0.0\ninfo:\n  title: Regen\ncomponents:\n  schemas:\n    \
+         Widget:\n      type: object\n      properties:\n        id: { type: string }\n",
+    )
+    .unwrap();
+    crozier()
+        .args(["generate", "--spec"])
+        .arg(&one)
+        .arg("--output")
+        .arg(&out)
+        .args(["--package-name", "regen"])
+        .assert()
+        .success();
+    assert!(out.join("src/regen/types/widget.py").is_file());
+    assert!(
+        !out.join("src/regen/types/gadget.py").exists(),
+        "stale module was not pruned on regeneration"
+    );
+    assert_valid_python(&out);
 }

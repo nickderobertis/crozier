@@ -50,6 +50,14 @@ Currently matched for `query-parameters-openapi`:
 - `src/seed/py.typed`
 - `src/seed/types/user.py`
 - `src/seed/types/nested_user.py`
+- eight static `core/` runtime assets (`api_error.py`, `file.py`,
+  `force_multipart.py`, `query_encoder.py`, `remove_none_from_dict.py`, and the
+  three `http_sse/` modules `__init__.py`/`_exceptions.py`/`_models.py`)
+
+This seed pins a **different Fern version** than `exhaustive`, so only the
+`core/` assets that are byte-identical between the two Fern versions are matched
+here — which is exactly what makes them a useful guard that the vendored
+`assets/core/` still tracks upstream.
 
 **`exhaustive` matches all 104 files** — the byte-exact target is reached. This
 covers `version.py`, `py.typed`, the **entire type
@@ -83,6 +91,28 @@ match. See the `EXHAUSTIVE` `matched` list in `tests/e2e.rs` for the exact set.
 Non-Python matched files (the scaffolding) are Fern's verbatim output and compared
 without comment stripping; `.py` files are still comment-stripped before the
 comparison.
+
+## Verifying the tool as a user runs it
+
+Byte-matching proves *equality to Fern* for the two corpora. The e2e also covers
+the journeys a user actually takes, independent of the golden fixtures:
+
+- **The generated SDK is valid Python.** `assert_valid_python` compiles the whole
+  emitted tree with `python -m compileall` — for the `exhaustive` fixture and for
+  an **arbitrary spec outside the corpus**. Byte-matching Fern cannot catch a
+  generation bug on a spec Fern never saw; compiling can (it first caught an empty
+  `from .errors import` emitted when a spec declares no errors). The check skips
+  with a message when no Python interpreter is on `PATH` (same posture as the
+  coverage tier); GitHub's ubuntu/macos/windows runners all ship one, so the gate
+  always runs it.
+- **Default naming.** The common bare invocation (no `--package-name` /
+  `--project-name`) is exercised: the package directory is `snake_case(title)` and
+  `version.py` records the same name.
+- **Idempotent regeneration.** Generating twice into the same `--output` prunes a
+  module whose schema was dropped from the spec (crozier clears its own
+  `src/<package>` tree first) and the result still compiles — no orphaned modules.
+- **`--version`.** Asserted against the crate version, the same string the release
+  smoke test checks against the published binary.
 
 The full expected tree is committed under `expected/` even where not yet matched,
 so the finish line is explicit and progress is measurable.

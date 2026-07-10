@@ -40,6 +40,16 @@ pub enum Error {
         message: String,
     },
 
+    /// The `--package-name` value is not a usable, safe package name.
+    #[error(
+        "invalid package name {name:?}: must be a single directory segment \
+         (no path separators, no `..`); pass a simple name like `my_api`"
+    )]
+    InvalidPackageName {
+        /// The rejected name.
+        name: String,
+    },
+
     /// Writing a generated file failed.
     #[error("could not write {path}: {source}")]
     WriteOutput {

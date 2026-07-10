@@ -342,9 +342,12 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
     let endpoints = endpoints(doc, &builder.types);
     let errors = error_classes(&endpoints);
     Ir {
-        package_name: config.package_name.clone(),
+        package_name: config.package_name.as_str().to_string(),
         project_name: config.project_name.clone(),
-        client_name: format!("{}Api", naming::to_pascal_case(&config.package_name)),
+        client_name: format!(
+            "{}Api",
+            naming::to_pascal_case(config.package_name.as_str())
+        ),
         types: builder.types,
         endpoint_modules: endpoint_modules(doc),
         endpoints,
