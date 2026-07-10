@@ -10,7 +10,7 @@
 #
 # Runnable locally against any crozier on PATH:  scripts/smoke.sh 0.1.0
 # Point it at a specific binary with CROZIER_BIN=/path/to/crozier.
-set -eu
+set -euo pipefail
 
 expected="${1:?usage: smoke.sh <expected-version>}"
 bin="${CROZIER_BIN:-crozier}"

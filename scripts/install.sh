@@ -49,6 +49,15 @@
 #      mirror to vouch for its own download.
 # If nothing independent of the mirror can vouch for the archive, the install
 # aborts.
+#
+# llmlint: ignore-file[tool_output_is_signal] deliberate for a user-facing
+# `curl | sh` installer (the ruff/rustup/uv convention): the success-path
+# progress lines (resolving/downloading/verifying/installed/PATH) go to stderr
+# and are the security signal a human running a piped install expects to see —
+# which trust root vouched for the binary and where it landed — not build-script
+# noise. The repo's "quiet on success" policy targets internal dev/CI scripts;
+# scripts/setup-llmlint.sh suppresses the same rule for the same reason. Errors
+# still name a concrete next action.
 
 set -eu
 
@@ -163,7 +172,7 @@ latest_tag() {
     _tag="$(printf '%s\n' "$_body" \
         | grep -m1 '"tag_name"' \
         | sed -E 's/.*"tag_name":[[:space:]]*"([^"]+)".*/\1/')"
-    [ -n "$_tag" ] || err "could not parse the latest release tag from the GitHub API"
+    [ -n "$_tag" ] || err "could not parse the latest release tag from the GitHub API; pass an explicit tag with --version vX.Y.Z (see the Releases page)"
     printf '%s\n' "$_tag"
 }
 
@@ -295,7 +304,7 @@ extract() {
         *.zip)
             have unzip || err "need 'unzip' to extract $_archive"
             unzip -q "$_archive" -d "$_dest" ;;
-        *) err "unknown archive type: $_archive" ;;
+        *) err "unknown archive type: $_archive; expected .tar.gz or .zip — install with 'cargo install crozier --locked' instead" ;;
     esac
 }
 
@@ -383,7 +392,7 @@ main() {
         # taiki-e/upload-rust-binary-action keeps the binary at the archive
         # root, but fall back to a search so a leading-dir layout still works.
         src="$(find "${tmp}/unpack" -type f -name "$BIN_FILE" -print 2>/dev/null | head -n1)"
-        [ -n "$src" ] && [ -f "$src" ] || err "binary '$BIN_FILE' not found in ${archive}"
+        [ -n "$src" ] && [ -f "$src" ] || err "binary '$BIN_FILE' not found in ${archive}; the release archive layout may have changed — please report an issue at https://github.com/${REPO}/issues, or use 'cargo install crozier --locked'"
     fi
 
     mkdir -p "$bindir" || err "could not create install directory: $bindir"
