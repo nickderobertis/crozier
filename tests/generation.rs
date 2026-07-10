@@ -299,6 +299,43 @@ fn unknown_schema_maps_to_optional_any() {
 }
 
 #[test]
+fn nullable_map_makes_value_type_optional() {
+    // Fern makes a nullable map's value optional too.
+    let files = render(
+        "openapi: 3.0.0\ninfo:\n  title: M\ncomponents:\n  schemas:\n    Obj:\n      type: object\n      properties:\n        m:\n          type: object\n          additionalProperties:\n            type: string\n          nullable: true\n",
+    );
+    assert!(
+        files["src/acme/types/obj.py"]
+            .contains("m: typing.Optional[typing.Dict[str, typing.Optional[str]]] = None"),
+        "{}",
+        files["src/acme/types/obj.py"]
+    );
+}
+
+#[test]
+fn wide_string_enum_wraps_like_ruff() {
+    // A string enum whose one-line form exceeds ruff's 120-col limit is exploded:
+    // the Union onto its own lines and the Literal one value per line.
+    let members: Vec<String> = (0..12)
+        .map(|i| format!("        - VALUE_NUMBER_{i:02}_WITH_PADDING\n"))
+        .collect();
+    let spec = format!(
+        "openapi: 3.0.0\ninfo:\n  title: W\ncomponents:\n  schemas:\n    Big:\n      type: string\n      enum:\n{}",
+        members.concat()
+    );
+    let big = render(&spec)["src/acme/types/big.py"].clone();
+    assert!(
+        big.contains("Big = typing.Union[\n    typing.Literal[\n"),
+        "expected exploded union: {big}"
+    );
+    assert!(
+        big.contains("        \"VALUE_NUMBER_00_WITH_PADDING\",\n"),
+        "{big}"
+    );
+    assert!(big.contains("    ],\n    typing.Any,\n]"), "{big}");
+}
+
+#[test]
 fn object_with_only_additional_properties_is_a_dict_alias() {
     // A `type: object` with `additionalProperties` and no declared properties is
     // a map alias, not an (empty) model.

@@ -13,6 +13,7 @@ pub mod ir;
 pub mod naming;
 pub mod normalize;
 pub mod openapi;
+pub mod wrap;
 
 pub use emit::GeneratedFile;
 pub use error::{Error, Result};

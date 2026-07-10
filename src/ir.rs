@@ -254,10 +254,14 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
             }
         }
         Some("object") => match &schema.additional_properties {
-            Some(AdditionalProperties::Schema(value)) => TypeRef::Dict(
-                Box::new(TypeRef::Primitive(Prim::Str)),
-                Box::new(base_type_ref(value)),
-            ),
+            Some(AdditionalProperties::Schema(value)) => {
+                let mut val = base_type_ref(value);
+                // Fern makes a nullable map's value type optional too.
+                if schema.nullable == Some(true) {
+                    val = TypeRef::Optional(Box::new(val));
+                }
+                TypeRef::Dict(Box::new(TypeRef::Primitive(Prim::Str)), Box::new(val))
+            }
             _ => TypeRef::Primitive(Prim::Any),
         },
         _ => TypeRef::Primitive(Prim::Any),
