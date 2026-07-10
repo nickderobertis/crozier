@@ -1,0 +1,8 @@
+{{ header }}
+
+{{ imports }}
+
+
+class {{ class_name }}(ApiError):
+    def __init__(self, body: {{ body_type }}, headers: typing.Optional[typing.Dict[str, str]] = None):
+        super().__init__(status_code={{ status_code }}, headers=headers, body=body)

@@ -809,3 +809,71 @@ fn empty_title_falls_back_to_client_package() {
     .unwrap();
     assert!(files.iter().any(|f| f.path.starts_with("src/client")));
 }
+
+/// Render the real exhaustive spec in-process so the endpoint/error/scaffolding
+/// branches (exercised only by the binary e2e, which coverage skips) are measured
+/// here too. Byte-exactness is the e2e's job; this asserts the shapes are present.
+#[test]
+fn renders_exhaustive_endpoint_layer_in_process() {
+    let spec = std::fs::read_to_string(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("tests/fixtures/exhaustive/openapi.yml"),
+    )
+    .expect("read exhaustive spec");
+    let files = render(&spec);
+
+    // Errors package + scaffolding.
+    assert!(files.contains_key("src/acme/errors/bad_request_error.py"));
+    let errors_init = &files["src/acme/errors/__init__.py"];
+    assert!(errors_init.contains("_dynamic_imports"));
+    assert!(errors_init.contains("\"BadRequestError\""));
+    assert!(files["pyproject.toml"].contains("name = \"acme\""));
+    assert!(files.contains_key("requirements.txt"));
+    assert!(files.contains_key(".fern/metadata.json"));
+
+    // Inline object body: hoisted fields, `json={...}`, per-field convert.
+    let obj = &files["src/acme/endpoints_object/raw_client.py"];
+    assert!(obj.contains("json={"));
+    assert!(obj.contains("convert_and_respect_annotation_metadata"));
+    assert!(obj.contains("long_: typing.Optional[int] = OMIT"));
+    assert!(obj.contains("typing.Sequence[str]"));
+
+    // Container bodies: plain maps and the convert wrapper for maps of objects.
+    let container = &files["src/acme/endpoints_container/raw_client.py"];
+    assert!(container.contains("json=request,"));
+    assert!(container.contains("annotation=typing.Dict[str, TypesObjectWithRequiredField]"));
+
+    // Mixed path/body: bytes body via `content=` and an array query param.
+    let params = &files["src/acme/endpoints_params/raw_client.py"];
+    assert!(params.contains("content=request,"));
+    assert!(params.contains("\"content-type\": \"application/octet-stream\","));
+    assert!(params.contains("typing.Optional[typing.Union[str, typing.Sequence[str]]]"));
+
+    // Unknown body + a declared 400 raising the generated exception.
+    let noauth = &files["src/acme/noauth/raw_client.py"];
+    assert!(noauth.contains("request: typing.Optional[typing.Any] = None"));
+    assert!(noauth.contains("if _response.status_code == 400:"));
+    assert!(noauth.contains("raise BadRequestError("));
+}
+
+/// A non-2xx status crozier cannot name keeps the operation unemittable (so no
+/// wrong error branch is emitted) — exercising the unmapped-code path.
+#[test]
+fn unmapped_error_status_keeps_the_module_unemittable() {
+    let files = render(
+        "openapi: 3.0.0\ninfo:\n  title: E\npaths:\n  /x:\n    get:\n      operationId: things_get\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema:\n                type: string\n        \"404\":\n          content:\n            application/json:\n              schema:\n                $ref: \"#/components/schemas/Err\"\ncomponents:\n  schemas:\n    Err:\n      type: object\n      properties:\n        message:\n          type: string\n",
+    );
+    // The package marker is emitted, but not a (wrong) raw client.
+    assert!(files.contains_key("src/acme/things/__init__.py"));
+    assert!(!files.contains_key("src/acme/things/raw_client.py"));
+}
+
+/// An inline-object success response (which Fern would hoist into a named type)
+/// is outside the emittable subset — exercising the response-support gate.
+#[test]
+fn inline_object_response_keeps_the_module_unemittable() {
+    let files = render(
+        "openapi: 3.0.0\ninfo:\n  title: E\npaths:\n  /y:\n    get:\n      operationId: widgets_get\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema:\n                type: object\n                properties:\n                  name:\n                    type: string\n",
+    );
+    assert!(!files.contains_key("src/acme/widgets/raw_client.py"));
+}

@@ -54,16 +54,28 @@ Currently matched for `query-parameters-openapi`:
 Matched for `exhaustive` (the OpenAPI-derived fixture from
 `scripts/generate-fern-fixture.sh`): `version.py`, `py.typed`, the **entire type
 layer** (every `types/*.py` module including the hoisted `typesAnimal` variants,
-except `types/__init__.py`), the **entire `core/` runtime** (19 files), each
-endpoint client's package marker (`<tag>/__init__.py`), and the per-tag
-`raw_client.py` for the tags crozier fully supports: the **no-request-body tags**
-(`endpoints_put`, `endpoints_urls`, `noreqbody`), the **query-parameter tag**
-(`endpoints_pagination`), the **enum-body tag** (`endpoints_enum`, a named `$ref`
-request body), the **union-body tag** (`endpoints_union`, a `$ref` union body
-via the `convert_and_respect_annotation_metadata` wrapper), the **scalar-body tag**
-(`endpoints_primitive`, incl. the `uuid`/`byte` content-type nuance), and the
-**header tag** (`reqwithheaders`, a header parameter plus a scalar body and a 204
-response). See the `EXHAUSTIVE` `matched` list in `tests/e2e.rs` for the exact set.
+except `types/__init__.py`), the **entire `core/` runtime** (19 files), the
+**`errors/` package** (a generated exception class per declared error plus its
+lazy-loading `__init__.py`), each endpoint client's package marker
+(`<tag>/__init__.py`), and the per-tag `raw_client.py` for **every one of the 15
+endpoint tags**. That spans the no-request-body tags (`endpoints_put`,
+`endpoints_urls`, `noreqbody`), query parameters (`endpoints_pagination`,
+incl. array/allow-multiple params in `endpoints_params`), scalar/enum/union `$ref`
+bodies via the `convert_and_respect_annotation_metadata` wrapper where needed
+(`endpoints_primitive`, `endpoints_enum`, `endpoints_union`), header params
+(`reqwithheaders`), inlined object bodies — both `$ref` and inline — hoisted
+field-by-field (`endpoints_object`, `endpoints_http_methods`,
+`endpoints_content_type`, `inlinedrequests`), container bodies
+(`endpoints_container`), unknown (`{}`) and `application/octet-stream` bytes bodies
+plus mixed path/query/body operations (`endpoints_params`, `noauth`), and declared
+4xx error responses that raise generated exceptions (`noauth`, `inlinedrequests`).
+The project-root **scaffolding** (`pyproject.toml`, `requirements.txt`,
+`.fern/metadata.json`) is matched too. See the `EXHAUSTIVE` `matched` list in
+`tests/e2e.rs` for the exact set.
+
+Non-Python matched files (the scaffolding) are Fern's verbatim output and compared
+without comment stripping; `.py` files are still comment-stripped before the
+comparison.
 
 The full expected tree is committed under `expected/` even where not yet matched,
 so the finish line is explicit and progress is measurable.
@@ -133,12 +145,22 @@ element per line with a trailing comma.
    module is emitted only when every one of its operations is in that subset
    (`Endpoint::emittable`), so output stays honest as coverage widens. Scalar
    bodies cover every JSON primitive, with `uuid`/`byte` rendered as `str` but
-   carrying the content-type header (`endpoints_primitive`). Still to come, tag by
-   tag: the remaining request bodies (plain objects, which Fern inlines
-   field-by-field; collections of objects via the convert wrapper), error responses
-   (the generated `errors/`),
+   carrying the content-type header (`endpoints_primitive`). A plain-object `$ref`
+   body is *inlined* field-by-field (`endpoints_object`, `endpoints_http_methods`,
+   `endpoints_content_type`): every field becomes a keyword-only `= OMIT` argument,
+   the call sends `json={...}` mapping wire names to args, request-context
+   collections render as `typing.Sequence` (vs `typing.List` in responses),
+   reserved names are munged (`long_`, `bool_`, `set_`), object/union-valued fields
+   serialize through `convert_and_respect_annotation_metadata`, and a path param
+   colliding with a body field is suffixed with `_`. A `$ref` map body passes
+   straight through (`json=request`); an inline array of objects goes through the
+   convert wrapper with no content-type header. Container bodies (lists/sets/maps
+   of primitives or objects) and inline/`$ref`/unknown/`octet-stream` bodies are
+   covered, as are declared 4xx responses (each raising a generated `errors/`
+   exception) and mixed path/query/body operations. **Every raw client now
+   matches**, so the remaining endpoint-layer work is the higher-level wrappers:
    the per-tag `client.py` (whose docstrings need a byte-exact example-value
-   generator), and the root `client.py`. The two `__init__.py` aggregators'
+   generator) and the root `client.py`. The two `__init__.py` aggregators'
    import order and gap #2 both depend on the endpoint IR.
 
 ## Coverage note

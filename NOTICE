@@ -15,6 +15,12 @@ Vendored runtime (shipped and redistributed as product):
     the only changes are comment stripping (as with the fixtures below) and
     templating the SDK name/version header in client_wrapper.py.
 
+  * assets/scaffolding/ is Fern's project-root scaffolding (pyproject.toml,
+    requirements.txt, and the .fern/metadata.json marker), emitted verbatim into
+    every generated SDK. The only change is templating the project/package name
+    and version in pyproject.toml with the same @@CROZIER_...@@ placeholders. See
+    assets/README.md.
+
 Test fixtures (attribution and statement of changes, per Apache-2.0 §4(b), §4(c)):
 
   * Source: fern-api/fern, commit 3a471b03d4778f291849adc03bacfcd40340fc26.

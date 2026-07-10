@@ -125,6 +125,33 @@ const EXHAUSTIVE: Corpus = Corpus {
         "src/fern/endpoints_union/raw_client.py",
         // Header params + a scalar body + a 204 (no-content) response.
         "src/fern/reqwithheaders/raw_client.py",
+        // Inlined plain-object request bodies (fields hoisted to keyword-only
+        // args), per-field convert, request-context `typing.Sequence`, and a
+        // path/body name collision.
+        "src/fern/endpoints_object/raw_client.py",
+        // Also unlocked by inline hoisting: the HTTP-method matrix and the
+        // content-type-header tags.
+        "src/fern/endpoints_http_methods/raw_client.py",
+        "src/fern/endpoints_content_type/raw_client.py",
+        // Declared 4xx error responses raise generated exceptions; the `errors/`
+        // package (a class per error + a lazy-loading `__init__.py`) backs them.
+        // `noauth` also exercises an unknown (`{}`) body; `inlinedrequests` an
+        // inline (non-`$ref`) object body.
+        "src/fern/errors/bad_request_error.py",
+        "src/fern/errors/__init__.py",
+        "src/fern/noauth/raw_client.py",
+        "src/fern/inlinedrequests/raw_client.py",
+        // Container request/response bodies: lists, sets, and maps of primitives
+        // (plain `json=request`) and of objects/unions (the convert wrapper), plus
+        // an inline optional object body.
+        "src/fern/endpoints_container/raw_client.py",
+        // Mixed path/query/body, `application/octet-stream` (bytes) bodies, and
+        // array (allow-multiple) query parameters.
+        "src/fern/endpoints_params/raw_client.py",
+        // Project-root scaffolding (near-static; name/version substituted).
+        "pyproject.toml",
+        "requirements.txt",
+        ".fern/metadata.json",
     ],
 };
 
@@ -166,12 +193,17 @@ fn assert_corpus_matches(c: &Corpus) {
             .unwrap_or_else(|e| panic!("crozier did not write {rel}: {e}"));
         let expected = std::fs::read_to_string(fixtures.join("expected").join(rel))
             .unwrap_or_else(|e| panic!("missing fixture {rel}: {e}"));
-        // Strip comments from crozier's output the same way the fixtures were
-        // produced, then require an exact match.
+        // Python files are compared with comments stripped (the same normalization
+        // that produced the fixtures); non-Python scaffolding (pyproject.toml,
+        // requirements.txt, JSON) is Fern's verbatim output and compared as-is.
+        let actual = if rel.ends_with(".py") {
+            crozier::strip_python_comments(&generated)
+        } else {
+            generated
+        };
         assert_eq!(
-            crozier::strip_python_comments(&generated),
-            expected,
-            "generated {rel} does not match the Fern fixture (comments stripped)"
+            actual, expected,
+            "generated {rel} does not match the Fern fixture"
         );
     }
 }

@@ -11,7 +11,7 @@ use std::path::PathBuf;
 use minijinja::{context, Environment};
 
 use crate::error::{Error, Result};
-use crate::ir::{Endpoint, Field, Ir, Prim, TypeDecl, TypeRef};
+use crate::ir::{Endpoint, ErrorClass, Field, Ir, Prim, RequestBody, TypeDecl, TypeRef};
 use crate::naming;
 use crate::wrap::{self, Doc};
 
@@ -262,6 +262,8 @@ fn environment() -> Environment<'static> {
         include_str!("../templates/raw_client.py.j2"),
     )
     .expect("raw_client template compiles");
+    env.add_template("error.py", include_str!("../templates/error.py.j2"))
+        .expect("error template compiles");
     env
 }
 
@@ -324,7 +326,94 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         }
     }
 
+    // The `errors/` package: one exception class per distinct declared error,
+    // plus the lazy-loading `__init__.py` aggregator. Emitted only when there are
+    // errors to declare.
+    files.extend(error_files(&env, pkg, &ir.errors)?);
+
+    // Project-root scaffolding (pyproject.toml, requirements.txt, metadata).
+    files.extend(scaffolding_files(pkg, &ir.project_name));
+
     Ok(files)
+}
+
+/// Generate the `errors/` package: an exception module per class and the
+/// lazy-loading `__init__.py` re-exporting them. Empty when there are no errors.
+fn error_files(
+    env: &Environment<'static>,
+    pkg: &str,
+    errors: &[ErrorClass],
+) -> Result<Vec<GeneratedFile>> {
+    if errors.is_empty() {
+        return Ok(Vec::new());
+    }
+    let mut files = Vec::new();
+    for err in errors {
+        let mut imports = Imports::default();
+        imports.add_plain("typing");
+        imports.add_from("..core.api_error", "ApiError");
+        // Registers the body type's `..types.<module>` import.
+        let body_type = raw_type_str(&err.body_type, &mut imports);
+        let module = naming::module_name(&err.class_name);
+        let contents = render(
+            env,
+            "error.py",
+            &err.class_name,
+            context! {
+                header => HEADER,
+                imports => imports.render(),
+                class_name => err.class_name,
+                body_type => body_type,
+                status_code => err.status_code,
+            },
+        )?;
+        files.push(GeneratedFile {
+            path: PathBuf::from(format!("src/{pkg}/errors/{module}.py")),
+            contents,
+        });
+    }
+    files.push(GeneratedFile {
+        path: PathBuf::from(format!("src/{pkg}/errors/__init__.py")),
+        contents: lazy_loader_init(errors),
+    });
+    Ok(files)
+}
+
+/// Fern's package-`__init__` lazy loader: a `TYPE_CHECKING` import block, a
+/// `_dynamic_imports` map, the static `__getattr__`/`__dir__` machinery, and
+/// `__all__`. The `_dynamic_imports` map and `__all__` are alphabetical (the
+/// classes arrive pre-sorted). Emitted with crozier's header collapsed to the
+/// four leading blank lines Fern's comment header strips to.
+fn lazy_loader_init(errors: &[ErrorClass]) -> String {
+    let type_checking: String = errors
+        .iter()
+        .map(|e| {
+            format!(
+                "    from .{} import {}\n",
+                naming::module_name(&e.class_name),
+                e.class_name
+            )
+        })
+        .collect();
+    let dynamic: String = errors
+        .iter()
+        .map(|e| {
+            format!(
+                "\"{}\": \".{}\"",
+                e.class_name,
+                naming::module_name(&e.class_name)
+            )
+        })
+        .collect::<Vec<_>>()
+        .join(", ");
+    let all: String = errors
+        .iter()
+        .map(|e| format!("\"{}\"", e.class_name))
+        .collect::<Vec<_>>()
+        .join(", ");
+    format!(
+        "{HEADER}\n\n\n\nimport typing\nfrom importlib import import_module\n\nif typing.TYPE_CHECKING:\n{type_checking}_dynamic_imports: typing.Dict[str, str] = {{{dynamic}}}\n\n\ndef __getattr__(attr_name: str) -> typing.Any:\n    module_name = _dynamic_imports.get(attr_name)\n    if module_name is None:\n        raise AttributeError(f\"No {{attr_name}} found in _dynamic_imports for module name -> {{__name__}}\")\n    try:\n        module = import_module(module_name, __package__)\n        if module_name == f\".{{attr_name}}\":\n            return module\n        else:\n            return getattr(module, attr_name)\n    except ImportError as e:\n        raise ImportError(f\"Failed to import {{attr_name}} from {{module_name}}: {{e}}\") from e\n    except AttributeError as e:\n        raise AttributeError(f\"Failed to get {{attr_name}} from {{module_name}}: {{e}}\") from e\n\n\ndef __dir__():\n    lazy_attrs = list(_dynamic_imports.keys())\n    return sorted(lazy_attrs)\n\n\n__all__ = [{all}]\n"
+    )
 }
 
 /// Fern's SDK runtime, vendored under `assets/core/` and emitted into every SDK.
@@ -400,12 +489,39 @@ const CORE_ASSETS: &[(&str, &str)] = &[
     ),
 ];
 
-/// Placeholders substituted in `client_wrapper.py`.
+/// Placeholders substituted in `client_wrapper.py` and the scaffolding files.
 const SDK_NAME_PLACEHOLDER: &str = "@@CROZIER_SDK_NAME@@";
 const SDK_VERSION_PLACEHOLDER: &str = "@@CROZIER_SDK_VERSION@@";
+/// The import package name (directory under `src/`) placeholder in `pyproject.toml`.
+const PACKAGE_PLACEHOLDER: &str = "@@CROZIER_PACKAGE@@";
 /// Default SDK version stamped into the runtime (Fern uses `0.0.0` when none is
 /// configured). Not yet exposed as a flag.
 const DEFAULT_SDK_VERSION: &str = "0.0.0";
+
+/// Project-root scaffolding Fern emits verbatim apart from the project/package
+/// name and version. `.fern/metadata.json` and `requirements.txt` are fully
+/// static; `pyproject.toml` carries the substitutions. Vendored under
+/// `assets/scaffolding/` (Apache-2.0; see `NOTICE`).
+fn scaffolding_files(pkg: &str, project_name: &str) -> Vec<GeneratedFile> {
+    let pyproject = include_str!("../assets/scaffolding/pyproject.toml")
+        .replace(SDK_NAME_PLACEHOLDER, project_name)
+        .replace(PACKAGE_PLACEHOLDER, pkg)
+        .replace(SDK_VERSION_PLACEHOLDER, DEFAULT_SDK_VERSION);
+    vec![
+        GeneratedFile {
+            path: PathBuf::from("pyproject.toml"),
+            contents: pyproject,
+        },
+        GeneratedFile {
+            path: PathBuf::from("requirements.txt"),
+            contents: include_str!("../assets/scaffolding/requirements.txt").to_string(),
+        },
+        GeneratedFile {
+            path: PathBuf::from(".fern/metadata.json"),
+            contents: include_str!("../assets/scaffolding/metadata.json").to_string(),
+        },
+    ]
+}
 
 /// Emit the vendored core runtime for a package, substituting the SDK name
 /// (project name) and version into `client_wrapper.py`.
@@ -543,6 +659,14 @@ fn render_type_decl(env: &Environment<'static>, decl: &TypeDecl) -> Result<Strin
 /// `..types`). Only the shapes reachable in an emittable endpoint are exercised;
 /// the rest are rendered structurally for completeness.
 fn raw_type_str(t: &TypeRef, imports: &mut Imports) -> String {
+    raw_type_str_ctx(t, imports, false)
+}
+
+/// Like [`raw_type_str`], but in *request context* (`seq = true`) Fern renders
+/// list/set collections as `typing.Sequence` rather than `typing.List`/`Set` —
+/// request inputs accept any sequence. Response and parameter types use `seq =
+/// false`.
+fn raw_type_str_ctx(t: &TypeRef, imports: &mut Imports, seq: bool) -> String {
     match t {
         TypeRef::Primitive(Prim::Str) => "str".to_string(),
         TypeRef::Primitive(Prim::Int) => "int".to_string(),
@@ -566,29 +690,31 @@ fn raw_type_str(t: &TypeRef, imports: &mut Imports) -> String {
         }
         TypeRef::Optional(inner) => {
             imports.add_plain("typing");
-            format!("typing.Optional[{}]", raw_type_str(inner, imports))
+            format!("typing.Optional[{}]", raw_type_str_ctx(inner, imports, seq))
         }
         TypeRef::List(inner) => {
             imports.add_plain("typing");
-            format!("typing.List[{}]", raw_type_str(inner, imports))
+            let kw = if seq { "Sequence" } else { "List" };
+            format!("typing.{kw}[{}]", raw_type_str_ctx(inner, imports, seq))
         }
         TypeRef::Set(inner) => {
             imports.add_plain("typing");
-            format!("typing.Set[{}]", raw_type_str(inner, imports))
+            let kw = if seq { "Sequence" } else { "Set" };
+            format!("typing.{kw}[{}]", raw_type_str_ctx(inner, imports, seq))
         }
         TypeRef::Dict(k, v) => {
             imports.add_plain("typing");
             format!(
                 "typing.Dict[{}, {}]",
-                raw_type_str(k, imports),
-                raw_type_str(v, imports)
+                raw_type_str_ctx(k, imports, seq),
+                raw_type_str_ctx(v, imports, seq)
             )
         }
         TypeRef::Union(variants) => {
             imports.add_plain("typing");
             let inner = variants
                 .iter()
-                .map(|v| raw_type_str(v, imports))
+                .map(|v| raw_type_str_ctx(v, imports, seq))
                 .collect::<Vec<_>>()
                 .join(", ");
             format!("typing.Union[{inner}]")
@@ -647,78 +773,115 @@ fn raw_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> String {
         .map(|pp| (pp.py_name.clone(), raw_type_str(&pp.type_ref, imports)))
         .collect();
 
-    // Query parameters become keyword-only arguments; each carries the type used
-    // in its annotation and docstring (`Optional[..]` unless required) and its
+    // Query and header parameters become keyword-only arguments; each carries an
+    // annotation (`Optional[..]` unless required, `= None` when optional) and its
     // description.
+    let optional_arg = |base: String, required: bool, description: Option<String>, name: String| {
+        if required {
+            DocParam {
+                name,
+                annotation: base,
+                default: None,
+                description,
+            }
+        } else {
+            DocParam {
+                name,
+                annotation: format!("typing.Optional[{base}]"),
+                default: Some("None".to_string()),
+                description,
+            }
+        }
+    };
     let query_params: Vec<DocParam> = ep
         .query_params
         .iter()
         .map(|qp| {
-            let base = raw_type_str(&qp.type_ref, imports);
-            let doc_type = if qp.required {
-                base
-            } else {
-                format!("typing.Optional[{base}]")
-            };
-            DocParam {
-                name: qp.py_name.clone(),
-                doc_type,
-                required: qp.required,
-                description: qp.docstring.clone(),
+            // An array query parameter allows multiple values: Fern types it
+            // `Optional[Union[T, Sequence[T]]]` and always defaults it to `None`.
+            if let TypeRef::List(inner) = &qp.type_ref {
+                let item = raw_type_str(inner, imports);
+                return DocParam {
+                    name: qp.py_name.clone(),
+                    annotation: format!(
+                        "typing.Optional[typing.Union[{item}, typing.Sequence[{item}]]]"
+                    ),
+                    default: Some("None".to_string()),
+                    description: qp.docstring.clone(),
+                };
             }
+            optional_arg(
+                raw_type_str(&qp.type_ref, imports),
+                qp.required,
+                qp.docstring.clone(),
+                qp.py_name.clone(),
+            )
         })
         .collect();
-
-    // Header parameters become keyword-only arguments, same shape as query params.
     let header_params: Vec<DocParam> = ep
         .header_params
         .iter()
         .map(|hp| {
-            let base = raw_type_str(&hp.type_ref, imports);
-            let doc_type = if hp.required {
-                base
-            } else {
-                format!("typing.Optional[{base}]")
-            };
-            DocParam {
-                name: hp.py_name.clone(),
-                doc_type,
-                required: hp.required,
-                description: hp.docstring.clone(),
-            }
+            optional_arg(
+                raw_type_str(&hp.type_ref, imports),
+                hp.required,
+                hp.docstring.clone(),
+                hp.py_name.clone(),
+            )
         })
         .collect();
 
-    // The request body renders as a keyword-only `request` argument, carrying the
-    // type used in its annotation and docstring (`Optional[..]` unless required).
-    let request_param = ep.request_body.as_ref().map(|rb| {
-        let base = raw_type_str(&rb.type_ref, imports);
-        let doc_type = if rb.required {
-            base
-        } else {
-            format!("typing.Optional[{base}]")
-        };
-        DocParam {
-            name: "request".to_string(),
-            doc_type,
-            required: rb.required,
-            description: None,
+    // The request body renders either as a single keyword-only `request` argument
+    // or, for an inlined object, as one keyword-only argument per hoisted field
+    // (`Optional[..] = OMIT` when optional). Collection types render in request
+    // context (`typing.Sequence`).
+    let body_params: Vec<DocParam> = match &ep.request_body {
+        None => Vec::new(),
+        Some(RequestBody::Single(s)) => {
+            let base = raw_type_str_ctx(&s.type_ref, imports, true);
+            vec![optional_arg(base, s.required, None, "request".to_string())]
         }
-    });
+        Some(RequestBody::Inline(fields)) => fields
+            .iter()
+            .map(|f| {
+                let base = raw_type_str_ctx(&f.type_ref, imports, true);
+                if f.optional {
+                    DocParam {
+                        name: f.py_name.clone(),
+                        annotation: format!("typing.Optional[{base}]"),
+                        default: Some("OMIT".to_string()),
+                        description: f.docstring.clone(),
+                    }
+                } else {
+                    DocParam {
+                        name: f.py_name.clone(),
+                        annotation: base,
+                        default: None,
+                        description: f.docstring.clone(),
+                    }
+                }
+            })
+            .collect(),
+        Some(RequestBody::Bytes) => vec![DocParam {
+            name: "request".to_string(),
+            annotation: "typing.Union[bytes, typing.Iterator[bytes], typing.AsyncIterator[bytes]]"
+                .to_string(),
+            default: None,
+            description: None,
+        }],
+    };
 
-    // A keyword-only argument atom: `name: type`, or `name: type = None` when the
-    // parameter is optional.
+    // A keyword-only argument atom: `name: annotation`, plus ` = <default>` when set.
     let arg = |dp: &DocParam| {
-        Doc::atom(if dp.required {
-            format!("{}: {}", dp.name, dp.doc_type)
-        } else {
-            format!("{}: {} = None", dp.name, dp.doc_type)
+        Doc::atom(match &dp.default {
+            Some(d) => format!("{}: {} = {}", dp.name, dp.annotation, d),
+            None => format!("{}: {}", dp.name, dp.annotation),
         })
     };
 
     // Signature: `self`, positional path params, `*`, keyword-only query params,
-    // header params, the request body, then `request_options`. Laid out with
-    // ruff's right-hand-split.
+    // header params, the request body/fields, then `request_options`. Laid out
+    // with ruff's right-hand-split.
     let mut args: Vec<Doc> = vec![Doc::atom("self")];
     for (name, ty) in &param_types {
         args.push(Doc::atom(format!("{name}: {ty}")));
@@ -726,7 +889,7 @@ fn raw_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> String {
     args.push(Doc::atom("*"));
     args.extend(query_params.iter().map(arg));
     args.extend(header_params.iter().map(arg));
-    args.extend(request_param.iter().map(arg));
+    args.extend(body_params.iter().map(arg));
     args.push(Doc::atom(
         "request_options: typing.Optional[RequestOptions] = None",
     ));
@@ -747,7 +910,7 @@ fn raw_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> String {
         &param_types,
         &query_params,
         &header_params,
-        request_param.as_ref(),
+        &body_params,
         &return_type,
     );
     let body = raw_body(ep, is_async, &inner, imports);
@@ -755,12 +918,12 @@ fn raw_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> String {
 }
 
 /// A parameter as it appears in a method docstring / signature: its Python name,
-/// the type shown in the annotation and docstring, whether it is required, and an
-/// optional description.
+/// the annotation (the type shown in the signature and docstring), an optional
+/// `= <default>` RHS, and an optional description.
 struct DocParam {
     name: String,
-    doc_type: String,
-    required: bool,
+    annotation: String,
+    default: Option<String>,
     description: Option<String>,
 }
 
@@ -772,12 +935,15 @@ fn raw_docstring(
     param_types: &[(String, String)],
     query_params: &[DocParam],
     header_params: &[DocParam],
-    request_param: Option<&DocParam>,
+    body_params: &[DocParam],
     return_type: &str,
 ) -> String {
     let mut lines: Vec<String> = vec!["        \"\"\"".to_string()];
     if let Some(summary) = &ep.docstring {
-        lines.push(format!("        {summary}"));
+        // A multi-line summary carries the 8-space docstring indent on every line.
+        for line in summary.split('\n') {
+            lines.push(format!("        {line}"));
+        }
         lines.push(String::new());
     }
     lines.push("        Parameters".to_string());
@@ -786,10 +952,11 @@ fn raw_docstring(
         lines.push(format!("        {name} : {ty}"));
         lines.push(String::new());
     }
-    // Query params, header params, then the request body, each: a `name : type`
-    // line, an optional indented description, and a trailing blank line.
+    // Query params, header params, then the request body/fields, each: a
+    // `name : annotation` line, an optional indented description, and a trailing
+    // blank line.
     let mut push_param = |dp: &DocParam| {
-        lines.push(format!("        {} : {}", dp.name, dp.doc_type));
+        lines.push(format!("        {} : {}", dp.name, dp.annotation));
         if let Some(desc) = &dp.description {
             lines.push(format!("            {desc}"));
         }
@@ -797,7 +964,7 @@ fn raw_docstring(
     };
     query_params.iter().for_each(&mut push_param);
     header_params.iter().for_each(&mut push_param);
-    request_param.into_iter().for_each(&mut push_param);
+    body_params.iter().for_each(&mut push_param);
     lines.push("        request_options : typing.Optional[RequestOptions]".to_string());
     lines.push("            Request-specific configuration.".to_string());
     lines.push(String::new());
@@ -845,16 +1012,18 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
         }
         lines.push("            },".to_string());
     }
-    // The request body serializes as `json=request`, or through the convert
-    // wrapper for types carrying field aliases; named bodies also carry a
-    // `content-type: application/json` header.
-    if let Some(rb) = &ep.request_body {
-        if rb.encoding.is_convert() {
+    // The request body serializes as `json=request`, through the convert wrapper
+    // for types carrying field aliases, or — for an inlined object — as a
+    // `json={...}` dict mapping each field's wire name to its argument (each value
+    // itself convert-wrapped when the field carries aliases).
+    match &ep.request_body {
+        None => {}
+        Some(RequestBody::Single(s)) if s.convert => {
             imports.add_from(
                 "..core.serialization",
                 "convert_and_respect_annotation_metadata",
             );
-            let annotation = raw_type_str(&rb.type_ref, imports);
+            let annotation = raw_type_str_ctx(&s.type_ref, imports, true);
             let call = Doc::group(
                 "            json=convert_and_respect_annotation_metadata(",
                 vec![
@@ -869,22 +1038,65 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
                     .split('\n')
                     .map(String::from),
             );
-        } else {
-            lines.push("            json=request,".to_string());
         }
+        Some(RequestBody::Single(_)) => lines.push("            json=request,".to_string()),
+        Some(RequestBody::Inline(fields)) => {
+            lines.push("            json={".to_string());
+            for f in fields {
+                if f.convert {
+                    imports.add_from(
+                        "..core.serialization",
+                        "convert_and_respect_annotation_metadata",
+                    );
+                    let annotation = raw_type_str_ctx(&f.type_ref, imports, true);
+                    let call = Doc::group(
+                        format!(
+                            "                \"{}\": convert_and_respect_annotation_metadata(",
+                            f.wire_name
+                        ),
+                        vec![
+                            Doc::atom(format!("object_={}", f.py_name)),
+                            Doc::atom(format!("annotation={annotation}")),
+                            Doc::atom("direction=\"write\""),
+                        ],
+                        ")",
+                    );
+                    lines.extend(
+                        wrap::layout("", &call, ",", 16)
+                            .split('\n')
+                            .map(String::from),
+                    );
+                } else {
+                    lines.push(format!(
+                        "                \"{}\": {},",
+                        f.wire_name, f.py_name
+                    ));
+                }
+            }
+            lines.push("            },".to_string());
+        }
+        // A raw bytes body is streamed via `content=` rather than serialized.
+        Some(RequestBody::Bytes) => lines.push("            content=request,".to_string()),
     }
-    // The `headers` dict carries `content-type: application/json` for named or
-    // complex bodies (and whenever header params accompany a body) plus each
-    // header parameter, rendered as `str(x) if x is not None else None`.
-    let content_type = ep
-        .request_body
-        .as_ref()
-        .is_some_and(|rb| rb.encoding.content_type_header())
-        || (ep.request_body.is_some() && !ep.header_params.is_empty());
-    if content_type || !ep.header_params.is_empty() {
+    // The `headers` dict carries a `content-type`: `application/octet-stream` for a
+    // raw bytes body, else `application/json` when the body intrinsically needs it
+    // or is accompanied by path/header parameters. Header parameters follow,
+    // rendered as `str(x) if x is not None else None`.
+    let content_type: Option<&str> = match &ep.request_body {
+        Some(RequestBody::Bytes) => Some("application/octet-stream"),
+        Some(body)
+            if body.content_type_header()
+                || !ep.header_params.is_empty()
+                || !ep.path_params.is_empty() =>
+        {
+            Some("application/json")
+        }
+        _ => None,
+    };
+    if content_type.is_some() || !ep.header_params.is_empty() {
         lines.push("            headers={".to_string());
-        if content_type {
-            lines.push("                \"content-type\": \"application/json\",".to_string());
+        if let Some(value) = content_type {
+            lines.push(format!("                \"content-type\": \"{value}\","));
         }
         for hp in &ep.header_params {
             lines.push(format!(
@@ -920,6 +1132,30 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
         lines.push(format!(
             "                return {wrapper}(response=_response, data=None)"
         ));
+    }
+    // One `raise <Error>` branch per declared error response, keyed on its status
+    // code, parsing the error body into the generated exception.
+    for err in &ep.errors {
+        imports.add_from("..core.pydantic_utilities", "parse_obj_as");
+        let module = naming::module_name(&err.class_name);
+        imports.add_from(&format!("..errors.{module}"), &err.class_name);
+        let body = raw_type_str(&err.body_type, imports);
+        lines.extend([
+            format!(
+                "            if _response.status_code == {}:",
+                err.status_code
+            ),
+            format!("                raise {}(", err.class_name),
+            "                    headers=dict(_response.headers),".to_string(),
+            "                    body=typing.cast(".to_string(),
+            format!("                        {body},"),
+            "                        parse_obj_as(".to_string(),
+            format!("                            type_={body},"),
+            "                            object_=_response.json(),".to_string(),
+            "                        ),".to_string(),
+            "                    ),".to_string(),
+            "                )".to_string(),
+        ]);
     }
     lines.extend([
         "            _response_json = _response.json()".to_string(),
@@ -1044,7 +1280,7 @@ pub fn write_files(root: &std::path::Path, files: &[GeneratedFile]) -> Result<()
 #[cfg(test)]
 mod tests {
     use super::{raw_method, raw_type_str, url_arg, Imports};
-    use crate::ir::{Endpoint, PathParam, Prim, TypeRef};
+    use crate::ir::{BodyField, Endpoint, ErrorResponse, PathParam, Prim, RequestBody, TypeRef};
 
     fn endpoint(path: &str, params: Vec<PathParam>, response: Option<TypeRef>) -> Endpoint {
         Endpoint {
@@ -1057,6 +1293,7 @@ mod tests {
             header_params: Vec::new(),
             request_body: None,
             response,
+            errors: Vec::new(),
             docstring: None,
             emittable: true,
         }
@@ -1151,6 +1388,185 @@ mod tests {
             Some(TypeRef::Primitive(Prim::Str)),
         );
         assert_eq!(url_arg(&interp), "f\"things/{jsonable_encoder(id)}\"");
+    }
+
+    #[test]
+    fn raw_method_inlines_object_body_fields() {
+        let mut i = Imports::default();
+        let mut ep = endpoint(
+            "/req/inline",
+            vec![],
+            Some(TypeRef::Named("Resp".to_string())),
+        );
+        ep.method_name = "inline_body".to_string();
+        ep.http_method = "POST";
+        ep.request_body = Some(RequestBody::Inline(vec![
+            // A required scalar → bare arg, plain json entry.
+            BodyField {
+                wire_name: "string".to_string(),
+                py_name: "string".to_string(),
+                type_ref: TypeRef::Primitive(Prim::Str),
+                optional: false,
+                docstring: None,
+                convert: false,
+            },
+            // An optional list → `Optional[Sequence[..]] = OMIT` in request context.
+            BodyField {
+                wire_name: "list".to_string(),
+                py_name: "list_".to_string(),
+                type_ref: TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
+                optional: true,
+                docstring: None,
+                convert: false,
+            },
+            // A convert field → convert-wrapped json entry keyed by the wire name.
+            BodyField {
+                wire_name: "NestedObject".to_string(),
+                py_name: "nested_object".to_string(),
+                type_ref: TypeRef::Named("Nested".to_string()),
+                optional: false,
+                docstring: None,
+                convert: true,
+            },
+        ]));
+        let out = raw_method(&ep, false, &mut i);
+        // Hoisted keyword-only args, with the reserved-name munge and request-context
+        // `Sequence`, plus the OMIT default on the optional field.
+        assert!(out.contains("string: str"), "{out}");
+        assert!(
+            out.contains("list_: typing.Optional[typing.Sequence[str]] = OMIT"),
+            "{out}"
+        );
+        assert!(out.contains("nested_object: Nested"), "{out}");
+        // The json dict maps wire names to args, convert-wrapping the object field.
+        assert!(out.contains("json={"), "{out}");
+        assert!(out.contains("\"string\": string,"), "{out}");
+        assert!(out.contains("\"list\": list_,"), "{out}");
+        assert!(
+            out.contains("\"NestedObject\": convert_and_respect_annotation_metadata("),
+            "{out}"
+        );
+        // An inlined object body always carries the content-type header.
+        assert!(
+            out.contains("\"content-type\": \"application/json\","),
+            "{out}"
+        );
+    }
+
+    #[test]
+    fn raw_type_str_request_context_uses_sequence() {
+        use super::raw_type_str_ctx;
+        let mut i = Imports::default();
+        // In request context, both list and set collapse to `typing.Sequence`.
+        assert_eq!(
+            raw_type_str_ctx(
+                &TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
+                &mut i,
+                true
+            ),
+            "typing.Sequence[str]"
+        );
+        assert_eq!(
+            raw_type_str_ctx(
+                &TypeRef::Set(Box::new(TypeRef::Primitive(Prim::Int))),
+                &mut i,
+                true
+            ),
+            "typing.Sequence[int]"
+        );
+        // Optionals, dicts, and unions recurse in the same context.
+        assert_eq!(
+            raw_type_str_ctx(
+                &TypeRef::Optional(Box::new(TypeRef::Set(Box::new(TypeRef::Primitive(
+                    Prim::Str
+                ))))),
+                &mut i,
+                true
+            ),
+            "typing.Optional[typing.Sequence[str]]"
+        );
+        assert_eq!(
+            raw_type_str_ctx(
+                &TypeRef::Union(vec![
+                    TypeRef::Primitive(Prim::Str),
+                    TypeRef::List(Box::new(TypeRef::Primitive(Prim::Int))),
+                ]),
+                &mut i,
+                true
+            ),
+            "typing.Union[str, typing.Sequence[int]]"
+        );
+        // Without request context, list and set keep their concrete forms.
+        assert_eq!(
+            raw_type_str_ctx(
+                &TypeRef::Set(Box::new(TypeRef::Primitive(Prim::Str))),
+                &mut i,
+                false
+            ),
+            "typing.Set[str]"
+        );
+    }
+
+    #[test]
+    fn raw_method_streams_a_bytes_body_and_raises_errors() {
+        let mut i = Imports::default();
+        let mut ep = endpoint(
+            "/upload/{id}",
+            vec![PathParam {
+                wire_name: "id".to_string(),
+                py_name: "id".to_string(),
+                type_ref: TypeRef::Primitive(Prim::Str),
+            }],
+            Some(TypeRef::Named("Resp".to_string())),
+        );
+        ep.method_name = "upload".to_string();
+        ep.http_method = "POST";
+        ep.request_body = Some(RequestBody::Bytes);
+        ep.errors = vec![ErrorResponse {
+            status_code: 400,
+            class_name: "BadRequestError".to_string(),
+            body_type: TypeRef::Named("BadInfo".to_string()),
+        }];
+        let out = raw_method(&ep, false, &mut i);
+        // A bytes body streams via `content=` under the octet-stream content type.
+        assert!(
+            out.contains(
+                "request: typing.Union[bytes, typing.Iterator[bytes], typing.AsyncIterator[bytes]]"
+            ),
+            "{out}"
+        );
+        assert!(out.contains("content=request,"), "{out}");
+        assert!(
+            out.contains("\"content-type\": \"application/octet-stream\","),
+            "{out}"
+        );
+        // The declared 400 raises the generated exception, parsing its body.
+        assert!(out.contains("if _response.status_code == 400:"), "{out}");
+        assert!(out.contains("raise BadRequestError("), "{out}");
+        assert!(i
+            .render()
+            .contains("from ..errors.bad_request_error import BadRequestError"));
+    }
+
+    #[test]
+    fn raw_method_renders_array_query_params_as_allow_multiple() {
+        use crate::ir::QueryParam;
+        let mut i = Imports::default();
+        let mut ep = endpoint("/q", vec![], None);
+        ep.query_params = vec![QueryParam {
+            wire_name: "tag".to_string(),
+            py_name: "tag".to_string(),
+            type_ref: TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
+            required: true,
+            docstring: None,
+        }];
+        let out = raw_method(&ep, false, &mut i);
+        // An array query param allows multiple values and is always optional.
+        assert!(
+            out.contains("tag: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None"),
+            "{out}"
+        );
+        assert!(out.contains("\"tag\": tag,"), "{out}");
     }
 
     #[test]
