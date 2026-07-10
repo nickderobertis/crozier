@@ -11,7 +11,9 @@ use std::path::PathBuf;
 use minijinja::{context, Environment};
 
 use crate::error::{Error, Result};
-use crate::ir::{Endpoint, ErrorClass, Field, Ir, Prim, RequestBody, TypeDecl, TypeRef};
+use crate::ir::{
+    Endpoint, ErrorClass, Field, Ir, ObjectType, Prim, RequestBody, TypeDecl, TypeRef,
+};
 use crate::naming;
 use crate::wrap::{self, Doc};
 
@@ -126,7 +128,7 @@ fn render_type(t: &TypeRef, imports: &mut Imports) -> Doc {
     match t {
         TypeRef::Primitive(p) => match p {
             Prim::Str => Doc::atom("str"),
-            Prim::Int => Doc::atom("int"),
+            Prim::Int | Prim::Long => Doc::atom("int"),
             Prim::Float => Doc::atom("float"),
             Prim::Bool => Doc::atom("bool"),
             Prim::Any => {
@@ -264,6 +266,8 @@ fn environment() -> Environment<'static> {
     .expect("raw_client template compiles");
     env.add_template("error.py", include_str!("../templates/error.py.j2"))
         .expect("error template compiles");
+    env.add_template("file.py", include_str!("../templates/file.py.j2"))
+        .expect("file template compiles");
     env
 }
 
@@ -312,9 +316,11 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         });
     }
 
-    // Per-tag `raw_client.py`, but only for modules whose every operation is
-    // within the subset crozier emits today (see `Endpoint::emittable`); the
-    // rest await wider endpoint support.
+    // Per-tag `raw_client.py` and `client.py`, but only for modules whose every
+    // operation is within the subset crozier emits today (see
+    // `Endpoint::emittable`); the rest await wider endpoint support. The modules
+    // that clear this bar (in sorted order) also drive the root client below.
+    let mut emittable_modules: Vec<&String> = Vec::new();
     for module in &ir.endpoint_modules {
         let eps: Vec<&Endpoint> = ir
             .endpoints
@@ -323,13 +329,58 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             .collect();
         if !eps.is_empty() && eps.iter().all(|e| e.emittable) {
             files.push(raw_client_file(&env, pkg, module, &eps)?);
+            let cx = ClientCtx {
+                pkg,
+                client_name: &ir.client_name,
+                module,
+                types: &ir.types,
+            };
+            files.push(client_file(&env, &cx, &eps)?);
+            emittable_modules.push(module);
         }
+    }
+    emittable_modules.sort();
+
+    // Root client: `FernApi`/`AsyncFernApi` aggregating the tag clients. Emitted
+    // only when there is at least one tag client to aggregate.
+    if !emittable_modules.is_empty() {
+        files.push(root_client_file(
+            &env,
+            pkg,
+            &ir.client_name,
+            &emittable_modules,
+        )?);
     }
 
     // The `errors/` package: one exception class per distinct declared error,
     // plus the lazy-loading `__init__.py` aggregator. Emitted only when there are
     // errors to declare.
     files.extend(error_files(&env, pkg, &ir.errors)?);
+
+    // Package aggregators: `types/__init__.py` over the type layer, and the
+    // package-root `__init__.py` re-exporting types, errors, the endpoint
+    // submodules, the root client, and `__version__`.
+    if !ir.types.is_empty() {
+        files.push(types_init_file(pkg, &ir.types));
+    }
+    if !emittable_modules.is_empty() {
+        files.push(root_init_file(
+            pkg,
+            &ir.client_name,
+            &ir.types,
+            &ir.errors,
+            &emittable_modules,
+        ));
+    }
+
+    // Generated `README.md` (usage examples from the first endpoint) and the
+    // per-endpoint `reference.md`.
+    if let Some(readme) = readme_file(ir) {
+        files.push(readme);
+    }
+    if let Some(reference) = reference_file(ir, &emittable_modules) {
+        files.push(reference);
+    }
 
     // Project-root scaffolding (pyproject.toml, requirements.txt, metadata).
     files.extend(scaffolding_files(pkg, &ir.project_name));
@@ -379,11 +430,10 @@ fn error_files(
     Ok(files)
 }
 
-/// Fern's package-`__init__` lazy loader: a `TYPE_CHECKING` import block, a
-/// `_dynamic_imports` map, the static `__getattr__`/`__dir__` machinery, and
-/// `__all__`. The `_dynamic_imports` map and `__all__` are alphabetical (the
-/// classes arrive pre-sorted). Emitted with crozier's header collapsed to the
-/// four leading blank lines Fern's comment header strips to.
+/// Fern's package-`__init__` lazy loader for the `errors/` package: a
+/// `TYPE_CHECKING` import block, a `_dynamic_imports` map, the static
+/// `__getattr__`/`__dir__` machinery, and `__all__`. The error classes arrive
+/// pre-sorted, so all three sections are alphabetical.
 fn lazy_loader_init(errors: &[ErrorClass]) -> String {
     let type_checking: String = errors
         .iter()
@@ -395,25 +445,335 @@ fn lazy_loader_init(errors: &[ErrorClass]) -> String {
             )
         })
         .collect();
-    let dynamic: String = errors
+    let pairs: Vec<(String, String)> = errors
         .iter()
         .map(|e| {
-            format!(
-                "\"{}\": \".{}\"",
-                e.class_name,
-                naming::module_name(&e.class_name)
+            (
+                e.class_name.clone(),
+                format!(".{}", naming::module_name(&e.class_name)),
             )
         })
-        .collect::<Vec<_>>()
-        .join(", ");
-    let all: String = errors
+        .collect();
+    let names: Vec<String> = errors.iter().map(|e| e.class_name.clone()).collect();
+    render_lazy_loader(&type_checking, &pairs, &names)
+}
+
+/// Assemble a lazy-loader `__init__.py` from its `TYPE_CHECKING` block, the
+/// `_dynamic_imports` pairs `(exported name, ".module")`, and the `__all__`
+/// names. The `_dynamic_imports` map and `__all__` are always alphabetical
+/// (sorted here); only the `TYPE_CHECKING` block's order is caller-controlled.
+/// The header collapses to the four leading blank lines Fern's comment header
+/// strips to.
+fn render_lazy_loader(type_checking: &str, pairs: &[(String, String)], names: &[String]) -> String {
+    let mut pairs = pairs.to_vec();
+    pairs.sort();
+    let mut names = names.to_vec();
+    names.sort();
+
+    // `_dynamic_imports` and `__all__`: single line when they fit ruff's 120
+    // columns, else one entry per line with a trailing comma.
+    let entries: Vec<String> = pairs
         .iter()
-        .map(|e| format!("\"{}\"", e.class_name))
-        .collect::<Vec<_>>()
-        .join(", ");
+        .map(|(n, m)| format!("\"{n}\": \"{m}\""))
+        .collect();
+    let dynamic_flat = format!(
+        "_dynamic_imports: typing.Dict[str, str] = {{{}}}",
+        entries.join(", ")
+    );
+    let dynamic = if dynamic_flat.len() <= wrap::LIMIT {
+        dynamic_flat
+    } else {
+        let body: String = entries.iter().map(|e| format!("    {e},\n")).collect();
+        format!("_dynamic_imports: typing.Dict[str, str] = {{\n{body}}}")
+    };
+    let all_entries: Vec<String> = names.iter().map(|n| format!("\"{n}\"")).collect();
+    let all_flat = format!("__all__ = [{}]", all_entries.join(", "));
+    let all = if all_flat.len() <= wrap::LIMIT {
+        all_flat
+    } else {
+        let body: String = all_entries.iter().map(|e| format!("    {e},\n")).collect();
+        format!("__all__ = [\n{body}]")
+    };
+
     format!(
-        "{HEADER}\n\n\n\nimport typing\nfrom importlib import import_module\n\nif typing.TYPE_CHECKING:\n{type_checking}_dynamic_imports: typing.Dict[str, str] = {{{dynamic}}}\n\n\ndef __getattr__(attr_name: str) -> typing.Any:\n    module_name = _dynamic_imports.get(attr_name)\n    if module_name is None:\n        raise AttributeError(f\"No {{attr_name}} found in _dynamic_imports for module name -> {{__name__}}\")\n    try:\n        module = import_module(module_name, __package__)\n        if module_name == f\".{{attr_name}}\":\n            return module\n        else:\n            return getattr(module, attr_name)\n    except ImportError as e:\n        raise ImportError(f\"Failed to import {{attr_name}} from {{module_name}}: {{e}}\") from e\n    except AttributeError as e:\n        raise AttributeError(f\"Failed to get {{attr_name}} from {{module_name}}: {{e}}\") from e\n\n\ndef __dir__():\n    lazy_attrs = list(_dynamic_imports.keys())\n    return sorted(lazy_attrs)\n\n\n__all__ = [{all}]\n"
+        "{HEADER}\n\n\n\nimport typing\nfrom importlib import import_module\n\nif typing.TYPE_CHECKING:\n{type_checking}{dynamic}\n\n\ndef __getattr__(attr_name: str) -> typing.Any:\n    module_name = _dynamic_imports.get(attr_name)\n    if module_name is None:\n        raise AttributeError(f\"No {{attr_name}} found in _dynamic_imports for module name -> {{__name__}}\")\n    try:\n        module = import_module(module_name, __package__)\n        if module_name == f\".{{attr_name}}\":\n            return module\n        else:\n            return getattr(module, attr_name)\n    except ImportError as e:\n        raise ImportError(f\"Failed to import {{attr_name}} from {{module_name}}: {{e}}\") from e\n    except AttributeError as e:\n        raise AttributeError(f\"Failed to get {{attr_name}} from {{module_name}}: {{e}}\") from e\n\n\ndef __dir__():\n    lazy_attrs = list(_dynamic_imports.keys())\n    return sorted(lazy_attrs)\n\n\n{all}\n"
     )
+}
+
+/// The `types/__init__.py` lazy loader. `_dynamic_imports`/`__all__` are
+/// alphabetical; the `TYPE_CHECKING` block follows Fern's endpoint-traversal
+/// order, which for this corpus is the `Types*` types in reverse declaration
+/// order followed by the remaining types alphabetically.
+fn types_init_file(pkg: &str, types: &[TypeDecl]) -> GeneratedFile {
+    let names: Vec<String> = types.iter().map(|t| t.name().to_string()).collect();
+
+    // TYPE_CHECKING order: `Types*` in reverse declaration order, then the rest
+    // alphabetically.
+    let mut typed: Vec<String> = names
+        .iter()
+        .filter(|n| n.starts_with("Types"))
+        .cloned()
+        .collect();
+    typed.reverse();
+    let mut rest: Vec<String> = names
+        .iter()
+        .filter(|n| !n.starts_with("Types"))
+        .cloned()
+        .collect();
+    rest.sort();
+    let ordered: Vec<String> = typed.into_iter().chain(rest).collect();
+    let type_checking: String = ordered
+        .iter()
+        .map(|n| format!("    from .{} import {n}\n", naming::module_name(n)))
+        .collect();
+
+    let pairs: Vec<(String, String)> = names
+        .iter()
+        .map(|n| (n.clone(), format!(".{}", naming::module_name(n))))
+        .collect();
+    GeneratedFile {
+        path: PathBuf::from(format!("src/{pkg}/types/__init__.py")),
+        contents: render_lazy_loader(&type_checking, &pairs, &names),
+    }
+}
+
+/// The package-root `__init__.py` lazy loader, re-exporting the type layer, the
+/// errors, the endpoint submodules, the root client, and `__version__`. Every
+/// section is alphabetical; the `TYPE_CHECKING` block groups the imports by
+/// source (`.types`, `.errors`, submodules, `.client`, `.version`).
+fn root_init_file(
+    pkg: &str,
+    client_name: &str,
+    types: &[TypeDecl],
+    errors: &[ErrorClass],
+    modules: &[&String],
+) -> GeneratedFile {
+    let async_name = format!("Async{client_name}");
+
+    let mut type_names: Vec<String> = types.iter().map(|t| t.name().to_string()).collect();
+    type_names.sort();
+    let mut error_names: Vec<String> = errors.iter().map(|e| e.class_name.clone()).collect();
+    error_names.sort();
+    let mut module_names: Vec<String> = modules.iter().map(|m| (*m).clone()).collect();
+    module_names.sort();
+
+    // Grouped TYPE_CHECKING block (each group alphabetical, ruff-wrapped at 120).
+    let mut tc = String::new();
+    tc.push_str(&from_import_block(".types", &type_names, 4));
+    tc.push_str(&from_import_block(".errors", &error_names, 4));
+    tc.push_str(&from_import_block(".", &module_names, 4));
+    tc.push_str(&from_import_block(
+        ".client",
+        &[async_name.clone(), client_name.to_string()],
+        4,
+    ));
+    tc.push_str(&from_import_block(
+        ".version",
+        &["__version__".to_string()],
+        4,
+    ));
+
+    // `_dynamic_imports` pairs: every symbol → its source module.
+    let mut pairs: Vec<(String, String)> = Vec::new();
+    for n in &type_names {
+        pairs.push((n.clone(), ".types".to_string()));
+    }
+    for n in &error_names {
+        pairs.push((n.clone(), ".errors".to_string()));
+    }
+    for m in &module_names {
+        pairs.push((m.clone(), format!(".{m}")));
+    }
+    pairs.push((client_name.to_string(), ".client".to_string()));
+    pairs.push((async_name, ".client".to_string()));
+    pairs.push(("__version__".to_string(), ".version".to_string()));
+
+    let names: Vec<String> = pairs.iter().map(|(n, _)| n.clone()).collect();
+    GeneratedFile {
+        path: PathBuf::from(format!("src/{pkg}/__init__.py")),
+        contents: render_lazy_loader(&tc, &pairs, &names),
+    }
+}
+
+/// The generated `README.md`: mostly static prose with the SDK name/package
+/// substituted and a worked usage example (sync + async) synthesized from the
+/// first endpoint. Compared verbatim (README is not comment-stripped). Emitted
+/// only when there is an endpoint to demonstrate.
+fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
+    let first = ir.endpoints.iter().find(|e| e.emittable)?;
+    let pkg = &ir.package_name;
+    let org = naming::to_pascal_case(pkg);
+    let async_name = format!("Async{}", ir.client_name);
+
+    let sync_example = {
+        let mut ctx = ExampleCtx {
+            types: &ir.types,
+            referenced: BTreeSet::new(),
+            uses_datetime: false,
+        };
+        build_example(first, false, &first.module, pkg, &ir.client_name, &mut ctx)?.join("\n")
+    };
+    let async_example = {
+        let mut ctx = ExampleCtx {
+            types: &ir.types,
+            referenced: BTreeSet::new(),
+            uses_datetime: false,
+        };
+        build_example(first, true, &first.module, pkg, &ir.client_name, &mut ctx)?.join("\n")
+    };
+
+    let contents = include_str!("../assets/scaffolding/README.md.tmpl")
+        .replace("@@ORG@@", &org)
+        .replace("@@PROJECT@@", &ir.project_name)
+        .replace("@@PKG@@", pkg)
+        .replace("@@CLIENT@@", &ir.client_name)
+        .replace("@@ASYNC@@", &async_name)
+        .replace("@@TAG@@", &first.module)
+        .replace("@@METHOD@@", &first.method_name)
+        .replace("@@USAGE@@", &sync_example)
+        .replace("@@ASYNC_EXAMPLE@@", &async_example);
+    Some(GeneratedFile {
+        path: PathBuf::from("README.md"),
+        contents,
+    })
+}
+
+/// The generated `reference.md`: a per-endpoint reference grouped by tag, each
+/// entry a collapsible `<details>` with an optional description, a worked sync
+/// usage example, and a parameter table. Endpoints without an example (a raw
+/// bytes body) are omitted, exactly as Fern does. Compared verbatim.
+fn reference_file(ir: &Ir, modules: &[&String]) -> Option<GeneratedFile> {
+    let pkg = &ir.package_name;
+    let mut lines: Vec<String> = vec!["# Reference".to_string()];
+    let mut any = false;
+
+    for module in modules {
+        let eps: Vec<&Endpoint> = ir
+            .endpoints
+            .iter()
+            .filter(|e| &e.module == *module && e.emittable)
+            .filter(|e| !matches!(e.request_body, Some(RequestBody::Bytes)))
+            .collect();
+        if eps.is_empty() {
+            continue;
+        }
+        any = true;
+        lines.push(format!("## {}", naming::to_pascal_case(module)));
+        for ep in eps {
+            lines.extend(reference_entry(ir, ep, module, pkg));
+            lines.push(String::new());
+        }
+    }
+    if !any {
+        return None;
+    }
+    // The last entry's trailing blank line is kept: Fern ends the file with one.
+    Some(GeneratedFile {
+        path: PathBuf::from("reference.md"),
+        contents: format!("{}\n", lines.join("\n")),
+    })
+}
+
+/// One `reference.md` endpoint entry (a `<details>` block).
+fn reference_entry(ir: &Ir, ep: &Endpoint, module: &str, pkg: &str) -> Vec<String> {
+    let mut imports = Imports::default();
+    let mp = method_params(ep, &mut imports);
+
+    // The example (sync form). Bytes bodies are filtered out before this point.
+    let mut ctx = ExampleCtx {
+        types: &ir.types,
+        referenced: BTreeSet::new(),
+        uses_datetime: false,
+    };
+    let example =
+        build_example(ep, false, module, pkg, &ir.client_name, &mut ctx).unwrap_or_default();
+
+    // The parameter rows, in signature order, then `request_options`.
+    let mut params: Vec<(String, String, String)> = Vec::new();
+    for (name, ty) in &mp.path {
+        params.push((name.clone(), ty.clone(), " ".to_string()));
+    }
+    for dp in mp.query.iter().chain(&mp.header).chain(&mp.body) {
+        let suffix = match &dp.description {
+            Some(d) => format!(" — {d}"),
+            None => " ".to_string(),
+        };
+        params.push((dp.name.clone(), dp.annotation.clone(), suffix));
+    }
+    params.push((
+        "request_options".to_string(),
+        "typing.Optional[RequestOptions]".to_string(),
+        " — Request-specific configuration.".to_string(),
+    ));
+
+    let has_args =
+        !mp.path.is_empty() || !mp.query.is_empty() || !mp.header.is_empty() || !mp.body.is_empty();
+    let dots = if has_args { "..." } else { "" };
+
+    let mut out: Vec<String> = Vec::new();
+    out.push(format!(
+        "<details><summary><code>client.{module}.<a href=\"src/{pkg}/{module}/client.py\">{}</a>({dots})</code></summary>",
+        ep.method_name
+    ));
+    out.push("<dl>".to_string());
+    out.push("<dd>".to_string());
+    out.push(String::new());
+
+    // Optional description block.
+    if let Some(desc) = &ep.docstring {
+        out.push("#### 📝 Description".to_string());
+        out.push(String::new());
+        out.extend(["<dl>", "<dd>", "", "<dl>", "<dd>", ""].map(String::from));
+        out.extend(desc.split('\n').map(String::from));
+        out.extend(["</dd>", "</dl>", "</dd>", "</dl>", ""].map(String::from));
+    }
+
+    // Usage block.
+    out.push("#### 🔌 Usage".to_string());
+    out.push(String::new());
+    out.extend(["<dl>", "<dd>", "", "<dl>", "<dd>", ""].map(String::from));
+    out.push("```python".to_string());
+    out.extend(example);
+    out.push(String::new());
+    out.push("```".to_string());
+    out.extend(["</dd>", "</dl>", "</dd>", "</dl>", ""].map(String::from));
+
+    // Parameters block.
+    out.push("#### ⚙️ Parameters".to_string());
+    out.push(String::new());
+    out.extend(["<dl>", "<dd>", ""].map(String::from));
+    for (i, (name, annot, suffix)) in params.iter().enumerate() {
+        out.extend(["<dl>", "<dd>", ""].map(String::from));
+        out.push(format!("**{name}:** `{annot}`{suffix}"));
+        out.push("    ".to_string());
+        out.push("</dd>".to_string());
+        out.push("</dl>".to_string());
+        if i + 1 < params.len() {
+            out.push(String::new());
+        }
+    }
+    out.extend(["</dd>", "</dl>", "", "", "</dd>", "</dl>", "</details>"].map(String::from));
+    out
+}
+
+/// Render `from <module> import <names>` at `indent` spaces, sorted, ruff-wrapped:
+/// one line when it fits 120 columns, else a parenthesized block one name per
+/// line with a trailing comma. Returns the statement with its trailing newline.
+fn from_import_block(module: &str, names: &[String], indent: usize) -> String {
+    let pad = " ".repeat(indent);
+    let mut names = names.to_vec();
+    names.sort();
+    let flat = format!("{pad}from {module} import {}", names.join(", "));
+    if flat.len() <= wrap::LIMIT {
+        return format!("{flat}\n");
+    }
+    let inner = " ".repeat(indent + 4);
+    let mut out = format!("{pad}from {module} import (\n");
+    for n in &names {
+        out.push_str(&format!("{inner}{n},\n"));
+    }
+    out.push_str(&format!("{pad})\n"));
+    out
 }
 
 /// Fern's SDK runtime, vendored under `assets/core/` and emitted into every SDK.
@@ -669,7 +1029,7 @@ fn raw_type_str(t: &TypeRef, imports: &mut Imports) -> String {
 fn raw_type_str_ctx(t: &TypeRef, imports: &mut Imports, seq: bool) -> String {
     match t {
         TypeRef::Primitive(Prim::Str) => "str".to_string(),
-        TypeRef::Primitive(Prim::Int) => "int".to_string(),
+        TypeRef::Primitive(Prim::Int | Prim::Long) => "int".to_string(),
         TypeRef::Primitive(Prim::Float) => "float".to_string(),
         TypeRef::Primitive(Prim::Bool) => "bool".to_string(),
         TypeRef::Primitive(Prim::Any) => {
@@ -750,24 +1110,30 @@ fn url_arg(ep: &Endpoint) -> String {
     }
 }
 
-/// Build one raw-client method (sync or async), registering its imports.
-fn raw_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> String {
-    imports.add_plain("typing");
-    imports.add_from("..core.request_options", "RequestOptions");
+/// The method's resolved parameters and response type, shared by the raw client
+/// and the higher-level client so their signatures stay identical.
+struct MethodParams {
+    /// The response Python type (`None` when the endpoint returns no content).
+    inner: String,
+    /// Positional path parameters: `(py_name, annotation)`.
+    path: Vec<(String, String)>,
+    /// Keyword-only query parameters.
+    query: Vec<DocParam>,
+    /// Keyword-only header parameters.
+    header: Vec<DocParam>,
+    /// The request body, as one `request` argument or the hoisted inline fields.
+    body: Vec<DocParam>,
+}
 
-    let wrapper = if is_async {
-        "AsyncHttpResponse"
-    } else {
-        "HttpResponse"
-    };
+/// Compute an endpoint's resolved parameters and response type, registering the
+/// imports the annotations need. Independent of sync/async.
+fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
     let inner = ep
         .response
         .as_ref()
         .map_or_else(|| "None".to_string(), |t| raw_type_str(t, imports));
-    let return_type = format!("{wrapper}[{inner}]");
 
-    // Path-parameter annotations (registers any imports they need).
-    let param_types: Vec<(String, String)> = ep
+    let path: Vec<(String, String)> = ep
         .path_params
         .iter()
         .map(|pp| (pp.py_name.clone(), raw_type_str(&pp.type_ref, imports)))
@@ -793,7 +1159,7 @@ fn raw_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> String {
             }
         }
     };
-    let query_params: Vec<DocParam> = ep
+    let query: Vec<DocParam> = ep
         .query_params
         .iter()
         .map(|qp| {
@@ -818,7 +1184,7 @@ fn raw_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> String {
             )
         })
         .collect();
-    let header_params: Vec<DocParam> = ep
+    let header: Vec<DocParam> = ep
         .header_params
         .iter()
         .map(|hp| {
@@ -835,7 +1201,7 @@ fn raw_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> String {
     // or, for an inlined object, as one keyword-only argument per hoisted field
     // (`Optional[..] = OMIT` when optional). Collection types render in request
     // context (`typing.Sequence`).
-    let body_params: Vec<DocParam> = match &ep.request_body {
+    let body: Vec<DocParam> = match &ep.request_body {
         None => Vec::new(),
         Some(RequestBody::Single(s)) => {
             let base = raw_type_str_ctx(&s.type_ref, imports, true);
@@ -871,25 +1237,37 @@ fn raw_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> String {
         }],
     };
 
-    // A keyword-only argument atom: `name: annotation`, plus ` = <default>` when set.
-    let arg = |dp: &DocParam| {
-        Doc::atom(match &dp.default {
-            Some(d) => format!("{}: {} = {}", dp.name, dp.annotation, d),
-            None => format!("{}: {}", dp.name, dp.annotation),
-        })
-    };
+    MethodParams {
+        inner,
+        path,
+        query,
+        header,
+        body,
+    }
+}
 
-    // Signature: `self`, positional path params, `*`, keyword-only query params,
-    // header params, the request body/fields, then `request_options`. Laid out
-    // with ruff's right-hand-split.
+/// A keyword-only argument atom for a method signature: `name: annotation`, plus
+/// ` = <default>` when the argument has a default.
+fn doc_arg(dp: &DocParam) -> Doc {
+    Doc::atom(match &dp.default {
+        Some(d) => format!("{}: {} = {}", dp.name, dp.annotation, d),
+        None => format!("{}: {}", dp.name, dp.annotation),
+    })
+}
+
+/// The `def`/`async def` signature line (indent 4), laid out with ruff's
+/// right-hand-split: `self`, positional path params, `*`, keyword-only query,
+/// header, and body arguments, then `request_options`, closing with the return
+/// type.
+fn signature(ep: &Endpoint, mp: &MethodParams, return_type: &str, is_async: bool) -> String {
     let mut args: Vec<Doc> = vec![Doc::atom("self")];
-    for (name, ty) in &param_types {
+    for (name, ty) in &mp.path {
         args.push(Doc::atom(format!("{name}: {ty}")));
     }
     args.push(Doc::atom("*"));
-    args.extend(query_params.iter().map(arg));
-    args.extend(header_params.iter().map(arg));
-    args.extend(body_params.iter().map(arg));
+    args.extend(mp.query.iter().map(doc_arg));
+    args.extend(mp.header.iter().map(doc_arg));
+    args.extend(mp.body.iter().map(doc_arg));
     args.push(Doc::atom(
         "request_options: typing.Optional[RequestOptions] = None",
     ));
@@ -898,22 +1276,29 @@ fn raw_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> String {
         if is_async { "async " } else { "" },
         ep.method_name
     );
-    let signature = wrap::layout(
+    wrap::layout(
         "",
         &Doc::group(sig_open, args, ")"),
         &format!(" -> {return_type}:"),
         4,
-    );
+    )
+}
 
-    let docstring = raw_docstring(
-        ep,
-        &param_types,
-        &query_params,
-        &header_params,
-        &body_params,
-        &return_type,
-    );
-    let body = raw_body(ep, is_async, &inner, imports);
+/// Build one raw-client method (sync or async), registering its imports.
+fn raw_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> String {
+    imports.add_plain("typing");
+    imports.add_from("..core.request_options", "RequestOptions");
+
+    let wrapper = if is_async {
+        "AsyncHttpResponse"
+    } else {
+        "HttpResponse"
+    };
+    let mp = method_params(ep, imports);
+    let return_type = format!("{wrapper}[{}]", mp.inner);
+    let signature = signature(ep, &mp, &return_type, is_async);
+    let docstring = raw_docstring(ep, &mp.path, &mp.query, &mp.header, &mp.body, &return_type);
+    let body = raw_body(ep, is_async, &mp.inner, imports);
     format!("{signature}\n{docstring}\n{body}")
 }
 
@@ -1166,6 +1551,772 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
     lines.join("\n")
 }
 
+/// Assemble the root `client.py`: the `FernApi`/`AsyncFernApi` classes that
+/// aggregate every tag client. Bearer-auth-coupled today (a `token` argument);
+/// generalize when more auth schemes are modeled.
+fn root_client_file(
+    env: &Environment<'static>,
+    pkg: &str,
+    client_name: &str,
+    modules: &[&String],
+) -> Result<GeneratedFile> {
+    let async_name = format!("Async{client_name}");
+    let mut body = String::new();
+    body.push_str("from __future__ import annotations\n\nimport typing\n\nimport httpx\nfrom .core.client_wrapper import AsyncClientWrapper, SyncClientWrapper\n\n");
+    body.push_str("if typing.TYPE_CHECKING:\n");
+    for m in modules {
+        let pascal = naming::to_pascal_case(m);
+        body.push_str(&format!(
+            "    from .{m}.client import Async{pascal}Client, {pascal}Client\n"
+        ));
+    }
+    body.push_str("\n\n");
+    body.push_str(&root_client_class(
+        client_name,
+        "SyncClientWrapper",
+        "httpx.Client",
+        pkg,
+        client_name,
+        false,
+        modules,
+    ));
+    body.push_str("\n\n\n");
+    body.push_str(&root_client_class(
+        &async_name,
+        "AsyncClientWrapper",
+        "httpx.AsyncClient",
+        pkg,
+        &async_name,
+        true,
+        modules,
+    ));
+
+    let contents = render(
+        env,
+        "file.py",
+        "client.py",
+        context! { header => HEADER, body => body },
+    )?;
+    Ok(GeneratedFile {
+        path: PathBuf::from(format!("src/{pkg}/client.py")),
+        contents,
+    })
+}
+
+/// One root client class: the class docstring, the `__init__` wiring up the
+/// client wrapper and the per-tag lazy slots, then one cached `@property` per tag.
+fn root_client_class(
+    class_name: &str,
+    wrapper: &str,
+    httpx_type: &str,
+    pkg: &str,
+    example_name: &str,
+    is_async: bool,
+    modules: &[&String],
+) -> String {
+    let mut out = format!("class {class_name}:\n");
+    out.push_str(&root_client_docstring(pkg, example_name));
+    out.push_str(&format!(
+        "\n\n    def __init__(
+        self,
+        *,
+        base_url: str,
+        token: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,
+        headers: typing.Optional[typing.Dict[str, str]] = None,
+        timeout: typing.Optional[float] = None,
+        follow_redirects: typing.Optional[bool] = True,
+        httpx_client: typing.Optional[{httpx_type}] = None,
+    ):
+        _defaulted_timeout = (
+            timeout if timeout is not None else 60 if httpx_client is None else httpx_client.timeout.read
+        )
+        self._client_wrapper = {wrapper}(
+            base_url=base_url,
+            token=token,
+            headers=headers,
+            httpx_client=httpx_client
+            if httpx_client is not None
+            else {httpx_type}(timeout=_defaulted_timeout, follow_redirects=follow_redirects)
+            if follow_redirects is not None
+            else {httpx_type}(timeout=_defaulted_timeout),
+            timeout=_defaulted_timeout,
+        )\n"
+    ));
+    // Per-tag lazy slots.
+    for m in modules {
+        let cls = tag_client_name(m, is_async);
+        out.push_str(&format!(
+            "        self._{m}: typing.Optional[{cls}] = None\n"
+        ));
+    }
+    // Per-tag cached properties.
+    for m in modules {
+        let cls = tag_client_name(m, is_async);
+        out.push_str(&format!(
+            "\n    @property
+    def {m}(self):
+        if self._{m} is None:
+            from .{m}.client import {cls}
+
+            self._{m} = {cls}(client_wrapper=self._client_wrapper)
+        return self._{m}\n"
+        ));
+    }
+    // Drop the trailing newline the last property added; the caller controls
+    // the separation between classes and the file's final newline.
+    out.pop();
+    out
+}
+
+/// The tag client class name for a module (`endpoints_put` → `EndpointsPutClient`,
+/// or `AsyncEndpointsPutClient`).
+fn tag_client_name(module: &str, is_async: bool) -> String {
+    let pascal = naming::to_pascal_case(module);
+    if is_async {
+        format!("Async{pascal}Client")
+    } else {
+        format!("{pascal}Client")
+    }
+}
+
+/// The root client class docstring (indent 4): a fixed description, a `Parameters`
+/// section, and an `Examples` block instantiating the client. `example_name` is
+/// the class being documented (`FernApi`/`AsyncFernApi`); the import is from the
+/// package root.
+fn root_client_docstring(pkg: &str, example_name: &str) -> String {
+    format!(
+        "    \"\"\"
+    Use this class to access the different functions within the SDK. You can instantiate any number of clients with different configuration that will propagate to these functions.
+
+    Parameters
+    ----------
+    base_url : str
+        The base url to use for requests from the client.
+
+    token : typing.Optional[typing.Union[str, typing.Callable[[], str]]]
+    headers : typing.Optional[typing.Dict[str, str]]
+        Additional headers to send with every request.
+
+    timeout : typing.Optional[float]
+        The timeout to be used, in seconds, for requests. By default the timeout is 60 seconds, unless a custom httpx client is used, in which case this default is not enforced.
+
+    follow_redirects : typing.Optional[bool]
+        Whether the default httpx client follows redirects or not, this is irrelevant if a custom httpx client is passed in.
+
+    httpx_client : typing.Optional[{httpx_field}]
+        The httpx client to use for making requests, a preconfigured client is used by default, however this is useful should you want to pass in any custom httpx configuration.
+
+    Examples
+    --------
+    from {pkg} import {example_name}
+
+    client = {example_name}(
+        token=\"YOUR_TOKEN\",
+        base_url=\"https://yourhost.com/path/to/api\",
+    )
+    \"\"\"",
+        httpx_field = if example_name.starts_with("Async") {
+            "httpx.AsyncClient"
+        } else {
+            "httpx.Client"
+        },
+    )
+}
+
+/// Shared context for emitting one per-tag `client.py`: the import package name,
+/// the root client name, the module, and the type table the example generator
+/// consults. Bundled so the client helpers stay within clippy's argument limit.
+struct ClientCtx<'a> {
+    pkg: &'a str,
+    client_name: &'a str,
+    module: &'a str,
+    types: &'a [TypeDecl],
+}
+
+/// Assemble a per-tag `client.py`: the sync and async high-level clients that
+/// wrap the raw client, return `_response.data`, and carry a worked `Examples`
+/// docstring.
+fn client_file(
+    env: &Environment<'static>,
+    cx: &ClientCtx,
+    endpoints: &[&Endpoint],
+) -> Result<GeneratedFile> {
+    let stem = naming::to_pascal_case(cx.module);
+    let mut imports = Imports::default();
+    imports.add_plain("typing");
+    imports.add_from("..core.client_wrapper", "AsyncClientWrapper");
+    imports.add_from("..core.client_wrapper", "SyncClientWrapper");
+    imports.add_from("..core.request_options", "RequestOptions");
+    imports.add_from(".raw_client", &format!("Raw{stem}Client"));
+    imports.add_from(".raw_client", &format!("AsyncRaw{stem}Client"));
+
+    let sync = client_class(cx, endpoints, false, &mut imports);
+    let async_class = client_class(cx, endpoints, true, &mut imports);
+    // The `OMIT` sentinel is declared above the classes whenever a request body
+    // is present, exactly as in the raw client.
+    let omit = if endpoints.iter().any(|e| e.request_body.is_some()) {
+        "OMIT = typing.cast(typing.Any, ...)\n\n\n"
+    } else {
+        ""
+    };
+    let body = format!("{omit}{sync}\n\n\n{async_class}");
+    let contents = render(
+        env,
+        "raw_client.py",
+        cx.module,
+        context! { header => HEADER, imports => imports.render(), body => body },
+    )?;
+    Ok(GeneratedFile {
+        path: PathBuf::from(format!("src/{}/{}/client.py", cx.pkg, cx.module)),
+        contents,
+    })
+}
+
+/// One high-level client class: `__init__`, the `with_raw_response` property, and
+/// one wrapper method per operation. The class/wrapper/raw-client names are
+/// derived from the module and `is_async`.
+fn client_class(
+    cx: &ClientCtx,
+    endpoints: &[&Endpoint],
+    is_async: bool,
+    imports: &mut Imports,
+) -> String {
+    let stem = naming::to_pascal_case(cx.module);
+    let (class_name, wrapper, raw_client_cls) = if is_async {
+        (
+            format!("Async{stem}Client"),
+            "AsyncClientWrapper",
+            format!("AsyncRaw{stem}Client"),
+        )
+    } else {
+        (
+            format!("{stem}Client"),
+            "SyncClientWrapper",
+            format!("Raw{stem}Client"),
+        )
+    };
+    let mut out = format!(
+        "class {class_name}:
+    def __init__(self, *, client_wrapper: {wrapper}):
+        self._raw_client = {raw_client_cls}(client_wrapper=client_wrapper)
+
+    @property
+    def with_raw_response(self) -> {raw_client_cls}:
+        \"\"\"
+        Retrieves a raw implementation of this client that returns raw responses.
+
+        Returns
+        -------
+        {raw_client_cls}
+        \"\"\"
+        return self._raw_client"
+    );
+    for ep in endpoints {
+        out.push_str("\n\n");
+        out.push_str(&client_method(cx, ep, is_async, imports));
+    }
+    out
+}
+
+/// One high-level wrapper method: the signature, the docstring (with a worked
+/// example), and a body delegating to the raw client and returning
+/// `_response.data`.
+fn client_method(cx: &ClientCtx, ep: &Endpoint, is_async: bool, imports: &mut Imports) -> String {
+    let mp = method_params(ep, imports);
+    let return_type = mp.inner.clone();
+    let sig = signature(ep, &mp, &return_type, is_async);
+    let docstring = client_docstring(cx, ep, &mp, is_async);
+
+    // Delegation: path params positionally, the rest as keywords, then
+    // `request_options`, laid out with ruff's right-hand-split (line length 120).
+    let await_ = if is_async { "await " } else { "" };
+    let mut call_args: Vec<Doc> = Vec::new();
+    for (name, _) in &mp.path {
+        call_args.push(Doc::atom(name.clone()));
+    }
+    for dp in mp.query.iter().chain(&mp.header).chain(&mp.body) {
+        call_args.push(Doc::atom(format!("{}={}", dp.name, dp.name)));
+    }
+    call_args.push(Doc::atom("request_options=request_options"));
+    let open = format!("{await_}self._raw_client.{}(", ep.method_name);
+    let call = wrap::layout(
+        "        _response = ",
+        &Doc::group(open, call_args, ")"),
+        "",
+        8,
+    );
+    format!("{sig}\n{docstring}\n{call}\n        return _response.data")
+}
+
+/// The high-level method docstring (indent 8): the same summary + `Parameters` +
+/// `Returns` as the raw client, followed by a worked `Examples` block. A raw
+/// bytes body has no example (Fern omits the whole section).
+fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: bool) -> String {
+    let mut lines: Vec<String> = vec!["        \"\"\"".to_string()];
+    if let Some(summary) = &ep.docstring {
+        for line in summary.split('\n') {
+            lines.push(format!("        {line}"));
+        }
+        lines.push(String::new());
+    }
+    lines.push("        Parameters".to_string());
+    lines.push("        ----------".to_string());
+    for (name, ty) in &mp.path {
+        lines.push(format!("        {name} : {ty}"));
+        lines.push(String::new());
+    }
+    let mut push_param = |dp: &DocParam| {
+        lines.push(format!("        {} : {}", dp.name, dp.annotation));
+        if let Some(desc) = &dp.description {
+            lines.push(format!("            {desc}"));
+        }
+        lines.push(String::new());
+    };
+    mp.query.iter().for_each(&mut push_param);
+    mp.header.iter().for_each(&mut push_param);
+    mp.body.iter().for_each(&mut push_param);
+    lines.push("        request_options : typing.Optional[RequestOptions]".to_string());
+    lines.push("            Request-specific configuration.".to_string());
+    lines.push(String::new());
+    lines.push("        Returns".to_string());
+    lines.push("        -------".to_string());
+    lines.push(format!("        {}", mp.inner));
+
+    let mut ctx = ExampleCtx {
+        types: cx.types,
+        referenced: BTreeSet::new(),
+        uses_datetime: false,
+    };
+    match build_example(ep, is_async, cx.module, cx.pkg, cx.client_name, &mut ctx) {
+        Some(ex_lines) => {
+            // A concrete response leaves two blank lines before `Examples`; a
+            // `None` return leaves one.
+            lines.push(String::new());
+            if ep.response.is_some() {
+                lines.push(String::new());
+            }
+            lines.push("        Examples".to_string());
+            lines.push("        --------".to_string());
+            for l in ex_lines {
+                if l.is_empty() {
+                    lines.push(String::new());
+                } else {
+                    lines.push(format!("        {l}"));
+                }
+            }
+        }
+        // No example (raw bytes body): close like the raw docstring — a concrete
+        // response keeps one trailing blank line.
+        None => {
+            if ep.response.is_some() {
+                lines.push(String::new());
+            }
+        }
+    }
+    lines.push("        \"\"\"".to_string());
+    lines.join("\n")
+}
+
+/// A synthesized Python example value, formatted the way Fern's snippet formatter
+/// (ruff defaults) renders it.
+enum Example {
+    /// A leaf rendered verbatim (`"string"`, `1`, `True`, `{"key": "value"}`).
+    Atom(String),
+    /// A call `Name(arg, ...)`; each arg is `(Some("kw"), val)` or `(None, val)`
+    /// for a positional argument. A non-empty arg list always explodes.
+    Call(String, Vec<(Option<String>, Example)>),
+    /// A list `[items]` — explodes only when an item does.
+    List(Vec<Example>),
+    /// A dict with fixed string keys — explodes only when a value does.
+    Dict(Vec<(String, Example)>),
+}
+
+impl Example {
+    /// Whether this value forces its enclosing line to break: a call with
+    /// arguments carries a magic trailing comma; a collection breaks when a child
+    /// does.
+    fn forces_multiline(&self) -> bool {
+        match self {
+            Example::Atom(_) => false,
+            Example::Call(_, args) => !args.is_empty(),
+            Example::List(items) => items.iter().any(Example::forces_multiline),
+            Example::Dict(pairs) => pairs.iter().any(|(_, v)| v.forces_multiline()),
+        }
+    }
+
+    /// The single-line rendering.
+    fn flat(&self) -> String {
+        match self {
+            Example::Atom(s) => s.clone(),
+            Example::Call(name, args) => {
+                let inner = args
+                    .iter()
+                    .map(|(kw, v)| match kw {
+                        Some(k) => format!("{k}={}", v.flat()),
+                        None => v.flat(),
+                    })
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                format!("{name}({inner})")
+            }
+            Example::List(items) => {
+                format!(
+                    "[{}]",
+                    items
+                        .iter()
+                        .map(Example::flat)
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                )
+            }
+            Example::Dict(pairs) => {
+                if pairs.is_empty() {
+                    return "{}".to_string();
+                }
+                let inner = pairs
+                    .iter()
+                    .map(|(k, v)| format!("\"{k}\": {}", v.flat()))
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                format!("{{{inner}}}")
+            }
+        }
+    }
+
+    /// Render the value starting on a line indented by `indent` spaces (the
+    /// indent of the line this value begins on). Continuation lines align to
+    /// `indent`; exploded children indent by four more.
+    fn render(&self, indent: usize) -> String {
+        match self {
+            Example::Atom(s) => s.clone(),
+            Example::Call(name, args) => {
+                if args.is_empty() {
+                    return format!("{name}()");
+                }
+                let pad = " ".repeat(indent);
+                let inner_pad = " ".repeat(indent + 4);
+                let mut out = format!("{name}(\n");
+                for (kw, v) in args {
+                    let head = match kw {
+                        Some(k) => format!("{inner_pad}{k}="),
+                        None => inner_pad.clone(),
+                    };
+                    out.push_str(&head);
+                    out.push_str(&v.render(indent + 4));
+                    out.push_str(",\n");
+                }
+                out.push_str(&pad);
+                out.push(')');
+                out
+            }
+            Example::List(items) => {
+                if !self.forces_multiline() {
+                    return self.flat();
+                }
+                let pad = " ".repeat(indent);
+                let inner_pad = " ".repeat(indent + 4);
+                let body = items
+                    .iter()
+                    .map(|it| format!("{inner_pad}{}", it.render(indent + 4)))
+                    .collect::<Vec<_>>()
+                    .join("\n");
+                format!("[\n{body}\n{pad}]")
+            }
+            Example::Dict(pairs) => {
+                if !self.forces_multiline() {
+                    return self.flat();
+                }
+                let pad = " ".repeat(indent);
+                let inner_pad = " ".repeat(indent + 4);
+                let body = pairs
+                    .iter()
+                    .map(|(k, v)| format!("{inner_pad}\"{k}\": {}", v.render(indent + 4)))
+                    .collect::<Vec<_>>()
+                    .join("\n");
+                format!("{{\n{body}\n{pad}}}")
+            }
+        }
+    }
+}
+
+/// Threads the type table and the imports/datetime a worked example accumulates.
+struct ExampleCtx<'a> {
+    types: &'a [TypeDecl],
+    /// Generated type names referenced as constructors (drives the example's
+    /// `from <pkg> import ...`).
+    referenced: BTreeSet<String>,
+    /// Whether any value is a datetime/date (drives an `import datetime`).
+    uses_datetime: bool,
+}
+
+/// The slot a string value sits in, which decides its placeholder text: a named
+/// field/param uses the name, a map value uses `"value"`, anything else `"string"`.
+#[derive(Clone, Copy)]
+enum Slot<'a> {
+    Named(&'a str),
+    Map,
+    Plain,
+}
+
+impl<'a> ExampleCtx<'a> {
+    /// Look up a generated type by name.
+    fn find(&self, name: &str) -> Option<&'a TypeDecl> {
+        self.types.iter().find(|d| d.name() == name)
+    }
+
+    /// Whether a type resolves (through aliases/optionals) to an unknown value —
+    /// which Fern cannot example, so a map of it renders `{}`.
+    fn resolves_to_any(&self, t: &TypeRef) -> bool {
+        match t {
+            TypeRef::Primitive(Prim::Any) => true,
+            TypeRef::Optional(inner) => self.resolves_to_any(inner),
+            TypeRef::Named(n) => match self.find(n) {
+                Some(TypeDecl::Alias(a)) => self.resolves_to_any(&a.target),
+                _ => false,
+            },
+            _ => false,
+        }
+    }
+
+    /// Synthesize an example value for a type in a given slot.
+    fn value(&mut self, t: &TypeRef, slot: Slot) -> Example {
+        match t {
+            TypeRef::Primitive(Prim::Str) => {
+                let s = match slot {
+                    Slot::Named(name) => name,
+                    Slot::Map => "value",
+                    Slot::Plain => "string",
+                };
+                Example::Atom(format!("\"{s}\""))
+            }
+            TypeRef::Primitive(Prim::Int) => Example::Atom("1".to_string()),
+            TypeRef::Primitive(Prim::Long) => Example::Atom("1000000".to_string()),
+            TypeRef::Primitive(Prim::Float) => Example::Atom("1.1".to_string()),
+            TypeRef::Primitive(Prim::Bool) => Example::Atom("True".to_string()),
+            TypeRef::Primitive(Prim::Datetime) => {
+                self.uses_datetime = true;
+                Example::Call(
+                    "datetime.datetime.fromisoformat".to_string(),
+                    vec![(
+                        None,
+                        Example::Atom("\"2024-01-15 09:30:00+00:00\"".to_string()),
+                    )],
+                )
+            }
+            TypeRef::Primitive(Prim::Date) => {
+                self.uses_datetime = true;
+                Example::Call(
+                    "datetime.date.fromisoformat".to_string(),
+                    vec![(None, Example::Atom("\"2023-01-15\"".to_string()))],
+                )
+            }
+            TypeRef::Primitive(Prim::Any) => Example::Dict(vec![(
+                "key".to_string(),
+                Example::Atom("\"value\"".to_string()),
+            )]),
+            TypeRef::Optional(inner) => self.value(inner, slot),
+            TypeRef::List(inner) | TypeRef::Set(inner) => {
+                Example::List(vec![self.value(inner, Slot::Plain)])
+            }
+            TypeRef::Dict(_, v) => {
+                if self.resolves_to_any(v) {
+                    Example::Dict(vec![])
+                } else {
+                    let val = self.value(v, Slot::Map);
+                    Example::Dict(vec![("key".to_string(), val)])
+                }
+            }
+            TypeRef::Union(variants) => self.union_value(variants),
+            TypeRef::Literal(values) => {
+                Example::Atom(format!("\"{}\"", values.first().map_or("", String::as_str)))
+            }
+            TypeRef::Named(name) => self.named_value(name, slot),
+        }
+    }
+
+    /// The example for a union: its first variant (an extensible enum's first
+    /// literal, else the first variant's own example).
+    fn union_value(&mut self, variants: &[TypeRef]) -> Example {
+        match variants.first() {
+            Some(first) => self.value(first, Slot::Plain),
+            None => Example::Dict(vec![(
+                "key".to_string(),
+                Example::Atom("\"value\"".to_string()),
+            )]),
+        }
+    }
+
+    /// The example for a named type: an object is constructed from its
+    /// spec-required fields (base classes first); an alias resolves to its target.
+    fn named_value(&mut self, name: &str, slot: Slot) -> Example {
+        match self.find(name) {
+            Some(TypeDecl::Object(obj)) => {
+                self.referenced.insert(name.to_string());
+                // Include inherited fields (pydantic construction takes them too),
+                // base classes first, then the object's own fields.
+                let fields = self.object_fields(obj);
+                let args = fields
+                    .into_iter()
+                    .filter(|(_, _, _, required)| *required)
+                    .map(|(py, wire, ty, _)| (Some(py), self.value(&ty, Slot::Named(&wire))))
+                    .collect::<Vec<_>>();
+                Example::Call(name.to_string(), args)
+            }
+            Some(TypeDecl::Alias(a)) => {
+                let target = a.target.clone();
+                self.value(&target, slot)
+            }
+            None => Example::Dict(vec![(
+                "key".to_string(),
+                Example::Atom("\"value\"".to_string()),
+            )]),
+        }
+    }
+
+    /// An object's fields including those inherited from its base classes (bases
+    /// first, in declaration order): `(py_name, wire_name, type, spec_required)`.
+    fn object_fields(&self, obj: &ObjectType) -> Vec<(String, String, TypeRef, bool)> {
+        let mut out = Vec::new();
+        for base in &obj.bases {
+            if let Some(TypeDecl::Object(b)) = self.find(base) {
+                out.extend(self.object_fields(b));
+            }
+        }
+        for f in &obj.fields {
+            out.push((
+                f.py_name.clone(),
+                f.wire_name.clone(),
+                f.type_ref.clone(),
+                f.spec_required,
+            ));
+        }
+        out
+    }
+}
+
+/// Build the worked `Examples` block for a method as logical (indent-0) lines,
+/// or `None` when the request is not exampleable (a raw bytes body).
+fn build_example(
+    ep: &Endpoint,
+    is_async: bool,
+    module: &str,
+    pkg: &str,
+    client_name: &str,
+    ctx: &mut ExampleCtx,
+) -> Option<Vec<String>> {
+    if matches!(ep.request_body, Some(RequestBody::Bytes)) {
+        return None;
+    }
+
+    // The example call's keyword arguments, in signature order: path params,
+    // required query/header params, then the request body (a single `request`, or
+    // each required inlined field).
+    let mut args: Vec<(Option<String>, Example)> = Vec::new();
+    for pp in &ep.path_params {
+        let v = ctx.value(&pp.type_ref, Slot::Named(&pp.wire_name));
+        args.push((Some(pp.py_name.clone()), v));
+    }
+    for qp in ep.query_params.iter().filter(|q| q.required) {
+        let v = if let TypeRef::List(inner) = &qp.type_ref {
+            Example::List(vec![ctx.value(inner, Slot::Named(&qp.wire_name))])
+        } else {
+            ctx.value(&qp.type_ref, Slot::Named(&qp.wire_name))
+        };
+        args.push((Some(qp.py_name.clone()), v));
+    }
+    for hp in ep.header_params.iter().filter(|h| h.required) {
+        let v = ctx.value(&hp.type_ref, Slot::Named(&hp.wire_name));
+        args.push((Some(hp.py_name.clone()), v));
+    }
+    match &ep.request_body {
+        Some(RequestBody::Single(s)) => {
+            let v = ctx.value(&s.type_ref, Slot::Plain);
+            args.push((Some("request".to_string()), v));
+        }
+        Some(RequestBody::Inline(fields)) => {
+            for f in fields.iter().filter(|f| f.spec_required) {
+                let v = ctx.value(&f.type_ref, Slot::Named(&f.wire_name));
+                args.push((Some(f.py_name.clone()), v));
+            }
+        }
+        _ => {}
+    }
+
+    let example_name = if is_async {
+        format!("Async{client_name}")
+    } else {
+        client_name.to_string()
+    };
+    // The call, rendered at logical indent 0 (sync) or 4 (inside `main`, async).
+    let call_indent = if is_async { 4 } else { 0 };
+    let receiver = format!(
+        "{}client.{module}.{}",
+        if is_async { "await " } else { "" },
+        ep.method_name
+    );
+    // `render` positions continuation lines but leaves the first line for the
+    // caller to place, so prepend the base indent to it.
+    let call = {
+        let rendered = Example::Call(receiver, args).render(call_indent);
+        format!("{}{rendered}", " ".repeat(call_indent))
+    };
+
+    // Preamble stdlib imports: `asyncio` for the async form, `datetime` when a
+    // value needs it.
+    let mut preamble: Vec<String> = Vec::new();
+    if is_async {
+        preamble.push("import asyncio".to_string());
+    }
+    if ctx.uses_datetime {
+        preamble.push("import datetime".to_string());
+    }
+
+    // `from <pkg> import <client + referenced types>`, alphabetical, ruff-wrapped
+    // at the snippet's default line length (88).
+    let mut names: Vec<String> = ctx.referenced.iter().cloned().collect();
+    names.push(example_name.clone());
+    names.sort();
+    let import_flat = format!("from {pkg} import {}", names.join(", "));
+    let import_lines: Vec<String> = if import_flat.len() <= 88 {
+        vec![import_flat]
+    } else {
+        let mut v = vec![format!("from {pkg} import (")];
+        for n in &names {
+            v.push(format!("    {n},"));
+        }
+        v.push(")".to_string());
+        v
+    };
+
+    let client_block = vec![
+        format!("client = {example_name}("),
+        "    token=\"YOUR_TOKEN\",".to_string(),
+        "    base_url=\"https://yourhost.com/path/to/api\",".to_string(),
+        ")".to_string(),
+    ];
+
+    let mut out: Vec<String> = Vec::new();
+    if !preamble.is_empty() {
+        out.extend(preamble);
+        out.push(String::new());
+    }
+    out.extend(import_lines);
+    out.push(String::new());
+    out.extend(client_block);
+    if is_async {
+        out.push(String::new());
+        out.push(String::new());
+        out.push("async def main() -> None:".to_string());
+        out.extend(call.split('\n').map(String::from));
+        out.push(String::new());
+        out.push(String::new());
+        out.push("asyncio.run(main())".to_string());
+    } else {
+        out.extend(call.split('\n').map(String::from));
+    }
+    Some(out)
+}
+
 /// Assemble the `raw_client.py` file for one client module: the sync and async
 /// raw client classes, each wrapping every operation.
 fn raw_client_file(
@@ -1407,6 +2558,7 @@ mod tests {
                 py_name: "string".to_string(),
                 type_ref: TypeRef::Primitive(Prim::Str),
                 optional: false,
+                spec_required: true,
                 docstring: None,
                 convert: false,
             },
@@ -1416,6 +2568,7 @@ mod tests {
                 py_name: "list_".to_string(),
                 type_ref: TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
                 optional: true,
+                spec_required: false,
                 docstring: None,
                 convert: false,
             },
@@ -1425,6 +2578,7 @@ mod tests {
                 py_name: "nested_object".to_string(),
                 type_ref: TypeRef::Named("Nested".to_string()),
                 optional: false,
+                spec_required: true,
                 docstring: None,
                 convert: true,
             },

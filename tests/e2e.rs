@@ -36,9 +36,11 @@ const QUERY_PARAMETERS: Corpus = Corpus {
 };
 
 /// The broad `exhaustive` target: Fern's Python output regenerated from the
-/// vendored OpenAPI document (see scripts/generate-fern-fixture.sh). Every
-/// `types/` module matches; only `types/__init__.py` (a lazy-loader over the
-/// full type set) is still pending. See docs/matching.md.
+/// vendored OpenAPI document (see scripts/generate-fern-fixture.sh). **All 104
+/// files match** — the type layer, the `core/` runtime, the whole endpoint layer
+/// (raw + high-level per-tag clients + root client), the `errors/` package, the
+/// package `__init__.py` aggregators, the generated docs (`README.md`,
+/// `reference.md`), and the project scaffolding. See docs/matching.md.
 const EXHAUSTIVE: Corpus = Corpus {
     api: "exhaustive",
     package_name: "fern",
@@ -148,6 +150,39 @@ const EXHAUSTIVE: Corpus = Corpus {
         // Mixed path/query/body, `application/octet-stream` (bytes) bodies, and
         // array (allow-multiple) query parameters.
         "src/fern/endpoints_params/raw_client.py",
+        // Per-tag high-level `client.py`: the sync+async wrappers that return
+        // `_response.data`, each with a worked `Examples` docstring synthesized by
+        // the example-value generator (objects with required fields, unions, maps,
+        // containers, enums, datetimes, the `long` placeholder, ...).
+        "src/fern/endpoints_container/client.py",
+        "src/fern/endpoints_content_type/client.py",
+        "src/fern/endpoints_enum/client.py",
+        "src/fern/endpoints_http_methods/client.py",
+        "src/fern/endpoints_object/client.py",
+        "src/fern/endpoints_pagination/client.py",
+        "src/fern/endpoints_params/client.py",
+        "src/fern/endpoints_primitive/client.py",
+        "src/fern/endpoints_put/client.py",
+        "src/fern/endpoints_union/client.py",
+        "src/fern/endpoints_urls/client.py",
+        "src/fern/inlinedrequests/client.py",
+        "src/fern/noauth/client.py",
+        "src/fern/noreqbody/client.py",
+        "src/fern/reqwithheaders/client.py",
+        // Root client: `FernApi`/`AsyncFernApi` aggregating the tag clients (bearer
+        // auth). Its class name is `PascalCase(package_name) + "Api"`.
+        "src/fern/client.py",
+        // Package aggregators: lazy loaders re-exporting the type layer and the
+        // whole SDK surface. `_dynamic_imports`/`__all__` are alphabetical; the
+        // `types/__init__.py` `TYPE_CHECKING` block follows Fern's traversal order.
+        "src/fern/types/__init__.py",
+        "src/fern/__init__.py",
+        // Generated `README.md`: static prose plus a worked usage example (sync +
+        // async) synthesized from the first endpoint. Compared verbatim.
+        "README.md",
+        // Generated `reference.md`: a per-endpoint reference grouped by tag, each
+        // a `<details>` block with a worked example and a parameter table.
+        "reference.md",
         // Project-root scaffolding (near-static; name/version substituted).
         "pyproject.toml",
         "requirements.txt",

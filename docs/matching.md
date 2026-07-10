@@ -51,10 +51,10 @@ Currently matched for `query-parameters-openapi`:
 - `src/seed/types/user.py`
 - `src/seed/types/nested_user.py`
 
-Matched for `exhaustive` (the OpenAPI-derived fixture from
-`scripts/generate-fern-fixture.sh`): `version.py`, `py.typed`, the **entire type
-layer** (every `types/*.py` module including the hoisted `typesAnimal` variants,
-except `types/__init__.py`), the **entire `core/` runtime** (19 files), the
+**`exhaustive` matches all 104 files** — the byte-exact target is reached. This
+covers `version.py`, `py.typed`, the **entire type
+layer** (every `types/*.py` module including the hoisted `typesAnimal` variants),
+the **entire `core/` runtime** (19 files), the
 **`errors/` package** (a generated exception class per declared error plus its
 lazy-loading `__init__.py`), each endpoint client's package marker
 (`<tag>/__init__.py`), and the per-tag `raw_client.py` for **every one of the 15
@@ -69,9 +69,16 @@ field-by-field (`endpoints_object`, `endpoints_http_methods`,
 (`endpoints_container`), unknown (`{}`) and `application/octet-stream` bytes bodies
 plus mixed path/query/body operations (`endpoints_params`, `noauth`), and declared
 4xx error responses that raise generated exceptions (`noauth`, `inlinedrequests`).
-The project-root **scaffolding** (`pyproject.toml`, `requirements.txt`,
-`.fern/metadata.json`) is matched too. See the `EXHAUSTIVE` `matched` list in
-`tests/e2e.rs` for the exact set.
+The **high-level per-tag `client.py`** for all 15 tags and the **root `client.py`**
+(`FernApi`/`AsyncFernApi`, bearer auth) match too — each wrapper method returns
+`_response.data` and carries a worked `Examples` docstring produced by a byte-exact
+example-value generator (objects built from their required fields incl. inherited
+ones, unions/enums, containers, maps, datetimes, the `long` placeholder; ruff
+snippet formatting at line length 88). The two package `__init__.py` aggregators
+(`types/__init__.py`, package-root `__init__.py`), the generated **docs**
+(`README.md`, and the per-endpoint `reference.md`), and the project-root
+**scaffolding** (`pyproject.toml`, `requirements.txt`, `.fern/metadata.json`) all
+match. See the `EXHAUSTIVE` `matched` list in `tests/e2e.rs` for the exact set.
 
 Non-Python matched files (the scaffolding) are Fern's verbatim output and compared
 without comment stripping; `.py` files are still comment-stripped before the
@@ -120,13 +127,26 @@ element per line with a trailing comma.
 
 ## Known gaps (roadmap)
 
-1. **`types/__init__.py`.** Fern's package `__init__` is a lazy loader
-   (`__getattr__` over a `_dynamic_imports` map) re-exporting every type. crozier
-   emits the type modules but not yet this aggregator.
-2. **Request/response inline-schema hoisting.** Component-schema hoisting is done;
+The `exhaustive` corpus is fully matched (all 104 files). The items below are
+generalization gaps — shapes the current spec does not exercise — not
+exhaustive-fixture misses:
+
+1. **Auth models beyond bearer.** The root `client.py` and `client_wrapper.py` are
+   coupled to a bearer `token`. Other schemes (api-key, basic, OAuth) need auth
+   modeling in the IR.
+2. **Broader example coverage.** The example-value generator is proven against the
+   corpus (objects, unions, enums, containers, maps, datetimes, `long`). Shapes the
+   corpus lacks — e.g. a required `date` example, a nameless-slot enum — carry
+   plausible-but-unverified placeholders; confirm them as new fixtures land.
+3. **Fern's `TYPE_CHECKING` traversal order** in `types/__init__.py` is reproduced
+   empirically (the `Types*` types in reverse declaration order, then the rest
+   alphabetically). It matches the corpus byte-for-byte; a spec with a different
+   type-namespace layout may need the true endpoint-traversal derivation.
+4. **Request/response inline-schema hoisting.** Component-schema hoisting is done;
    Fern also hoists inline request/response bodies (e.g. `SearchResponse`,
    `SearchRequestNeighbor`), which arrive with the endpoint layer.
-3. **The endpoint layer.** `paths` are now read into an operation IR
+5. **The endpoint layer (implemented — kept as a reference of the covered
+   shapes).** `paths` are read into an operation IR
    ([`ir::Endpoint`]): module, method name, HTTP method, URL, path params, and
    the success response type. crozier emits each client's package marker
    (`<tag>/__init__.py`) and the per-tag `raw_client.py` for the subset it fully
@@ -157,11 +177,14 @@ element per line with a trailing comma.
    convert wrapper with no content-type header. Container bodies (lists/sets/maps
    of primitives or objects) and inline/`$ref`/unknown/`octet-stream` bodies are
    covered, as are declared 4xx responses (each raising a generated `errors/`
-   exception) and mixed path/query/body operations. **Every raw client now
-   matches**, so the remaining endpoint-layer work is the higher-level wrappers:
-   the per-tag `client.py` (whose docstrings need a byte-exact example-value
-   generator) and the root `client.py`. The two `__init__.py` aggregators'
-   import order and gap #2 both depend on the endpoint IR.
+   exception) and mixed path/query/body operations. **Every raw client, every
+   high-level per-tag `client.py`, and the root `client.py` now match** — the
+   per-tag wrappers return `_response.data` and carry a worked `Examples` docstring
+   from a byte-exact example-value generator, and the root `FernApi`/`AsyncFernApi`
+   aggregates the tag clients under bearer auth. The package `__init__.py`
+   aggregators and the generated docs (`README.md`, `reference.md`) all match too,
+   so the endpoint layer — and the whole `exhaustive` corpus — is complete. Gap #4
+   (inline request/response hoisting) is the next generalization step.
 
 ## Coverage note
 
