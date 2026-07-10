@@ -69,7 +69,13 @@ field-by-field (`endpoints_object`, `endpoints_http_methods`,
 (`endpoints_container`), unknown (`{}`) and `application/octet-stream` bytes bodies
 plus mixed path/query/body operations (`endpoints_params`, `noauth`), and declared
 4xx error responses that raise generated exceptions (`noauth`, `inlinedrequests`).
-See the `EXHAUSTIVE` `matched` list in `tests/e2e.rs` for the exact set.
+The project-root **scaffolding** (`pyproject.toml`, `requirements.txt`,
+`.fern/metadata.json`) is matched too. See the `EXHAUSTIVE` `matched` list in
+`tests/e2e.rs` for the exact set.
+
+Non-Python matched files (the scaffolding) are Fern's verbatim output and compared
+without comment stripping; `.py` files are still comment-stripped before the
+comparison.
 
 The full expected tree is committed under `expected/` even where not yet matched,
 so the finish line is explicit and progress is measurable.

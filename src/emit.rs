@@ -331,6 +331,9 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     // errors to declare.
     files.extend(error_files(&env, pkg, &ir.errors)?);
 
+    // Project-root scaffolding (pyproject.toml, requirements.txt, metadata).
+    files.extend(scaffolding_files(pkg, &ir.project_name));
+
     Ok(files)
 }
 
@@ -486,12 +489,39 @@ const CORE_ASSETS: &[(&str, &str)] = &[
     ),
 ];
 
-/// Placeholders substituted in `client_wrapper.py`.
+/// Placeholders substituted in `client_wrapper.py` and the scaffolding files.
 const SDK_NAME_PLACEHOLDER: &str = "@@CROZIER_SDK_NAME@@";
 const SDK_VERSION_PLACEHOLDER: &str = "@@CROZIER_SDK_VERSION@@";
+/// The import package name (directory under `src/`) placeholder in `pyproject.toml`.
+const PACKAGE_PLACEHOLDER: &str = "@@CROZIER_PACKAGE@@";
 /// Default SDK version stamped into the runtime (Fern uses `0.0.0` when none is
 /// configured). Not yet exposed as a flag.
 const DEFAULT_SDK_VERSION: &str = "0.0.0";
+
+/// Project-root scaffolding Fern emits verbatim apart from the project/package
+/// name and version. `.fern/metadata.json` and `requirements.txt` are fully
+/// static; `pyproject.toml` carries the substitutions. Vendored under
+/// `assets/scaffolding/` (Apache-2.0; see `NOTICE`).
+fn scaffolding_files(pkg: &str, project_name: &str) -> Vec<GeneratedFile> {
+    let pyproject = include_str!("../assets/scaffolding/pyproject.toml")
+        .replace(SDK_NAME_PLACEHOLDER, project_name)
+        .replace(PACKAGE_PLACEHOLDER, pkg)
+        .replace(SDK_VERSION_PLACEHOLDER, DEFAULT_SDK_VERSION);
+    vec![
+        GeneratedFile {
+            path: PathBuf::from("pyproject.toml"),
+            contents: pyproject,
+        },
+        GeneratedFile {
+            path: PathBuf::from("requirements.txt"),
+            contents: include_str!("../assets/scaffolding/requirements.txt").to_string(),
+        },
+        GeneratedFile {
+            path: PathBuf::from(".fern/metadata.json"),
+            contents: include_str!("../assets/scaffolding/metadata.json").to_string(),
+        },
+    ]
+}
 
 /// Emit the vendored core runtime for a package, substituting the SDK name
 /// (project name) and version into `client_wrapper.py`.
