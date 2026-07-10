@@ -61,9 +61,12 @@ endpoint client's package marker (`<tag>/__init__.py`), and the per-tag
 (`endpoints_pagination`), the **enum-body tag** (`endpoints_enum`, a named `$ref`
 request body), the **union-body tag** (`endpoints_union`, a `$ref` union body
 via the `convert_and_respect_annotation_metadata` wrapper), the **scalar-body tag**
-(`endpoints_primitive`, incl. the `uuid`/`byte` content-type nuance), and the
+(`endpoints_primitive`, incl. the `uuid`/`byte` content-type nuance), the
 **header tag** (`reqwithheaders`, a header parameter plus a scalar body and a 204
-response). See the `EXHAUSTIVE` `matched` list in `tests/e2e.rs` for the exact set.
+response), and the **inlined-object-body tags** (`endpoints_object`,
+`endpoints_http_methods`, `endpoints_content_type` — a plain-object `$ref` body
+whose fields Fern hoists into keyword-only arguments). See the `EXHAUSTIVE`
+`matched` list in `tests/e2e.rs` for the exact set.
 
 The full expected tree is committed under `expected/` even where not yet matched,
 so the finish line is explicit and progress is measurable.
@@ -133,10 +136,20 @@ element per line with a trailing comma.
    module is emitted only when every one of its operations is in that subset
    (`Endpoint::emittable`), so output stays honest as coverage widens. Scalar
    bodies cover every JSON primitive, with `uuid`/`byte` rendered as `str` but
-   carrying the content-type header (`endpoints_primitive`). Still to come, tag by
-   tag: the remaining request bodies (plain objects, which Fern inlines
-   field-by-field; collections of objects via the convert wrapper), error responses
-   (the generated `errors/`),
+   carrying the content-type header (`endpoints_primitive`). A plain-object `$ref`
+   body is *inlined* field-by-field (`endpoints_object`, `endpoints_http_methods`,
+   `endpoints_content_type`): every field becomes a keyword-only `= OMIT` argument,
+   the call sends `json={...}` mapping wire names to args, request-context
+   collections render as `typing.Sequence` (vs `typing.List` in responses),
+   reserved names are munged (`long_`, `bool_`, `set_`), object/union-valued fields
+   serialize through `convert_and_respect_annotation_metadata`, and a path param
+   colliding with a body field is suffixed with `_`. A `$ref` map body passes
+   straight through (`json=request`); an inline array of objects goes through the
+   convert wrapper with no content-type header. Still to come, tag by
+   tag: the remaining request bodies (inline optional bodies and containers of
+   primitives — `endpoints_container`; mixed path/query/body and octet-stream —
+   `endpoints_params`), error responses (the generated `errors/`, which
+   `inlinedrequests`/`noauth` need),
    the per-tag `client.py` (whose docstrings need a byte-exact example-value
    generator), and the root `client.py`. The two `__init__.py` aggregators'
    import order and gap #2 both depend on the endpoint IR.

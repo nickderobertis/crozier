@@ -11,7 +11,7 @@ use std::path::PathBuf;
 use minijinja::{context, Environment};
 
 use crate::error::{Error, Result};
-use crate::ir::{Endpoint, Field, Ir, Prim, TypeDecl, TypeRef};
+use crate::ir::{Endpoint, Field, Ir, Prim, RequestBody, TypeDecl, TypeRef};
 use crate::naming;
 use crate::wrap::{self, Doc};
 
@@ -543,6 +543,14 @@ fn render_type_decl(env: &Environment<'static>, decl: &TypeDecl) -> Result<Strin
 /// `..types`). Only the shapes reachable in an emittable endpoint are exercised;
 /// the rest are rendered structurally for completeness.
 fn raw_type_str(t: &TypeRef, imports: &mut Imports) -> String {
+    raw_type_str_ctx(t, imports, false)
+}
+
+/// Like [`raw_type_str`], but in *request context* (`seq = true`) Fern renders
+/// list/set collections as `typing.Sequence` rather than `typing.List`/`Set` —
+/// request inputs accept any sequence. Response and parameter types use `seq =
+/// false`.
+fn raw_type_str_ctx(t: &TypeRef, imports: &mut Imports, seq: bool) -> String {
     match t {
         TypeRef::Primitive(Prim::Str) => "str".to_string(),
         TypeRef::Primitive(Prim::Int) => "int".to_string(),
@@ -566,29 +574,31 @@ fn raw_type_str(t: &TypeRef, imports: &mut Imports) -> String {
         }
         TypeRef::Optional(inner) => {
             imports.add_plain("typing");
-            format!("typing.Optional[{}]", raw_type_str(inner, imports))
+            format!("typing.Optional[{}]", raw_type_str_ctx(inner, imports, seq))
         }
         TypeRef::List(inner) => {
             imports.add_plain("typing");
-            format!("typing.List[{}]", raw_type_str(inner, imports))
+            let kw = if seq { "Sequence" } else { "List" };
+            format!("typing.{kw}[{}]", raw_type_str_ctx(inner, imports, seq))
         }
         TypeRef::Set(inner) => {
             imports.add_plain("typing");
-            format!("typing.Set[{}]", raw_type_str(inner, imports))
+            let kw = if seq { "Sequence" } else { "Set" };
+            format!("typing.{kw}[{}]", raw_type_str_ctx(inner, imports, seq))
         }
         TypeRef::Dict(k, v) => {
             imports.add_plain("typing");
             format!(
                 "typing.Dict[{}, {}]",
-                raw_type_str(k, imports),
-                raw_type_str(v, imports)
+                raw_type_str_ctx(k, imports, seq),
+                raw_type_str_ctx(v, imports, seq)
             )
         }
         TypeRef::Union(variants) => {
             imports.add_plain("typing");
             let inner = variants
                 .iter()
-                .map(|v| raw_type_str(v, imports))
+                .map(|v| raw_type_str_ctx(v, imports, seq))
                 .collect::<Vec<_>>()
                 .join(", ");
             format!("typing.Union[{inner}]")
@@ -647,78 +657,95 @@ fn raw_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> String {
         .map(|pp| (pp.py_name.clone(), raw_type_str(&pp.type_ref, imports)))
         .collect();
 
-    // Query parameters become keyword-only arguments; each carries the type used
-    // in its annotation and docstring (`Optional[..]` unless required) and its
+    // Query and header parameters become keyword-only arguments; each carries an
+    // annotation (`Optional[..]` unless required, `= None` when optional) and its
     // description.
+    let optional_arg = |base: String, required: bool, description: Option<String>, name: String| {
+        if required {
+            DocParam {
+                name,
+                annotation: base,
+                default: None,
+                description,
+            }
+        } else {
+            DocParam {
+                name,
+                annotation: format!("typing.Optional[{base}]"),
+                default: Some("None".to_string()),
+                description,
+            }
+        }
+    };
     let query_params: Vec<DocParam> = ep
         .query_params
         .iter()
         .map(|qp| {
-            let base = raw_type_str(&qp.type_ref, imports);
-            let doc_type = if qp.required {
-                base
-            } else {
-                format!("typing.Optional[{base}]")
-            };
-            DocParam {
-                name: qp.py_name.clone(),
-                doc_type,
-                required: qp.required,
-                description: qp.docstring.clone(),
-            }
+            optional_arg(
+                raw_type_str(&qp.type_ref, imports),
+                qp.required,
+                qp.docstring.clone(),
+                qp.py_name.clone(),
+            )
         })
         .collect();
-
-    // Header parameters become keyword-only arguments, same shape as query params.
     let header_params: Vec<DocParam> = ep
         .header_params
         .iter()
         .map(|hp| {
-            let base = raw_type_str(&hp.type_ref, imports);
-            let doc_type = if hp.required {
-                base
-            } else {
-                format!("typing.Optional[{base}]")
-            };
-            DocParam {
-                name: hp.py_name.clone(),
-                doc_type,
-                required: hp.required,
-                description: hp.docstring.clone(),
-            }
+            optional_arg(
+                raw_type_str(&hp.type_ref, imports),
+                hp.required,
+                hp.docstring.clone(),
+                hp.py_name.clone(),
+            )
         })
         .collect();
 
-    // The request body renders as a keyword-only `request` argument, carrying the
-    // type used in its annotation and docstring (`Optional[..]` unless required).
-    let request_param = ep.request_body.as_ref().map(|rb| {
-        let base = raw_type_str(&rb.type_ref, imports);
-        let doc_type = if rb.required {
-            base
-        } else {
-            format!("typing.Optional[{base}]")
-        };
-        DocParam {
-            name: "request".to_string(),
-            doc_type,
-            required: rb.required,
-            description: None,
+    // The request body renders either as a single keyword-only `request` argument
+    // or, for an inlined object, as one keyword-only argument per hoisted field
+    // (`Optional[..] = OMIT` when optional). Collection types render in request
+    // context (`typing.Sequence`).
+    let body_params: Vec<DocParam> = match &ep.request_body {
+        None => Vec::new(),
+        Some(RequestBody::Single(s)) => {
+            let base = raw_type_str_ctx(&s.type_ref, imports, true);
+            vec![optional_arg(base, s.required, None, "request".to_string())]
         }
-    });
+        Some(RequestBody::Inline(fields)) => fields
+            .iter()
+            .map(|f| {
+                let base = raw_type_str_ctx(&f.type_ref, imports, true);
+                if f.optional {
+                    DocParam {
+                        name: f.py_name.clone(),
+                        annotation: format!("typing.Optional[{base}]"),
+                        default: Some("OMIT".to_string()),
+                        description: f.docstring.clone(),
+                    }
+                } else {
+                    DocParam {
+                        name: f.py_name.clone(),
+                        annotation: base,
+                        default: None,
+                        description: f.docstring.clone(),
+                    }
+                }
+            })
+            .collect(),
+    };
 
-    // A keyword-only argument atom: `name: type`, or `name: type = None` when the
-    // parameter is optional.
+    // A keyword-only argument atom: `name: annotation`, plus ` = <default>` when set.
     let arg = |dp: &DocParam| {
-        Doc::atom(if dp.required {
-            format!("{}: {}", dp.name, dp.doc_type)
-        } else {
-            format!("{}: {} = None", dp.name, dp.doc_type)
+        Doc::atom(match &dp.default {
+            Some(d) => format!("{}: {} = {}", dp.name, dp.annotation, d),
+            None => format!("{}: {}", dp.name, dp.annotation),
         })
     };
 
     // Signature: `self`, positional path params, `*`, keyword-only query params,
-    // header params, the request body, then `request_options`. Laid out with
-    // ruff's right-hand-split.
+    // header params, the request body/fields, then `request_options`. Laid out
+    // with ruff's right-hand-split.
     let mut args: Vec<Doc> = vec![Doc::atom("self")];
     for (name, ty) in &param_types {
         args.push(Doc::atom(format!("{name}: {ty}")));
@@ -726,7 +753,7 @@ fn raw_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> String {
     args.push(Doc::atom("*"));
     args.extend(query_params.iter().map(arg));
     args.extend(header_params.iter().map(arg));
-    args.extend(request_param.iter().map(arg));
+    args.extend(body_params.iter().map(arg));
     args.push(Doc::atom(
         "request_options: typing.Optional[RequestOptions] = None",
     ));
@@ -747,7 +774,7 @@ fn raw_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> String {
         &param_types,
         &query_params,
         &header_params,
-        request_param.as_ref(),
+        &body_params,
         &return_type,
     );
     let body = raw_body(ep, is_async, &inner, imports);
@@ -755,12 +782,12 @@ fn raw_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> String {
 }
 
 /// A parameter as it appears in a method docstring / signature: its Python name,
-/// the type shown in the annotation and docstring, whether it is required, and an
-/// optional description.
+/// the annotation (the type shown in the signature and docstring), an optional
+/// `= <default>` RHS, and an optional description.
 struct DocParam {
     name: String,
-    doc_type: String,
-    required: bool,
+    annotation: String,
+    default: Option<String>,
     description: Option<String>,
 }
 
@@ -772,12 +799,15 @@ fn raw_docstring(
     param_types: &[(String, String)],
     query_params: &[DocParam],
     header_params: &[DocParam],
-    request_param: Option<&DocParam>,
+    body_params: &[DocParam],
     return_type: &str,
 ) -> String {
     let mut lines: Vec<String> = vec!["        \"\"\"".to_string()];
     if let Some(summary) = &ep.docstring {
-        lines.push(format!("        {summary}"));
+        // A multi-line summary carries the 8-space docstring indent on every line.
+        for line in summary.split('\n') {
+            lines.push(format!("        {line}"));
+        }
         lines.push(String::new());
     }
     lines.push("        Parameters".to_string());
@@ -786,10 +816,11 @@ fn raw_docstring(
         lines.push(format!("        {name} : {ty}"));
         lines.push(String::new());
     }
-    // Query params, header params, then the request body, each: a `name : type`
-    // line, an optional indented description, and a trailing blank line.
+    // Query params, header params, then the request body/fields, each: a
+    // `name : annotation` line, an optional indented description, and a trailing
+    // blank line.
     let mut push_param = |dp: &DocParam| {
-        lines.push(format!("        {} : {}", dp.name, dp.doc_type));
+        lines.push(format!("        {} : {}", dp.name, dp.annotation));
         if let Some(desc) = &dp.description {
             lines.push(format!("            {desc}"));
         }
@@ -797,7 +828,7 @@ fn raw_docstring(
     };
     query_params.iter().for_each(&mut push_param);
     header_params.iter().for_each(&mut push_param);
-    request_param.into_iter().for_each(&mut push_param);
+    body_params.iter().for_each(&mut push_param);
     lines.push("        request_options : typing.Optional[RequestOptions]".to_string());
     lines.push("            Request-specific configuration.".to_string());
     lines.push(String::new());
@@ -845,16 +876,18 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
         }
         lines.push("            },".to_string());
     }
-    // The request body serializes as `json=request`, or through the convert
-    // wrapper for types carrying field aliases; named bodies also carry a
-    // `content-type: application/json` header.
-    if let Some(rb) = &ep.request_body {
-        if rb.encoding.is_convert() {
+    // The request body serializes as `json=request`, through the convert wrapper
+    // for types carrying field aliases, or — for an inlined object — as a
+    // `json={...}` dict mapping each field's wire name to its argument (each value
+    // itself convert-wrapped when the field carries aliases).
+    match &ep.request_body {
+        None => {}
+        Some(RequestBody::Single(s)) if s.convert => {
             imports.add_from(
                 "..core.serialization",
                 "convert_and_respect_annotation_metadata",
             );
-            let annotation = raw_type_str(&rb.type_ref, imports);
+            let annotation = raw_type_str_ctx(&s.type_ref, imports, true);
             let call = Doc::group(
                 "            json=convert_and_respect_annotation_metadata(",
                 vec![
@@ -869,8 +902,42 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
                     .split('\n')
                     .map(String::from),
             );
-        } else {
-            lines.push("            json=request,".to_string());
+        }
+        Some(RequestBody::Single(_)) => lines.push("            json=request,".to_string()),
+        Some(RequestBody::Inline(fields)) => {
+            lines.push("            json={".to_string());
+            for f in fields {
+                if f.convert {
+                    imports.add_from(
+                        "..core.serialization",
+                        "convert_and_respect_annotation_metadata",
+                    );
+                    let annotation = raw_type_str_ctx(&f.type_ref, imports, true);
+                    let call = Doc::group(
+                        format!(
+                            "                \"{}\": convert_and_respect_annotation_metadata(",
+                            f.wire_name
+                        ),
+                        vec![
+                            Doc::atom(format!("object_={}", f.py_name)),
+                            Doc::atom(format!("annotation={annotation}")),
+                            Doc::atom("direction=\"write\""),
+                        ],
+                        ")",
+                    );
+                    lines.extend(
+                        wrap::layout("", &call, ",", 16)
+                            .split('\n')
+                            .map(String::from),
+                    );
+                } else {
+                    lines.push(format!(
+                        "                \"{}\": {},",
+                        f.wire_name, f.py_name
+                    ));
+                }
+            }
+            lines.push("            },".to_string());
         }
     }
     // The `headers` dict carries `content-type: application/json` for named or
@@ -879,7 +946,7 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
     let content_type = ep
         .request_body
         .as_ref()
-        .is_some_and(|rb| rb.encoding.content_type_header())
+        .is_some_and(RequestBody::content_type_header)
         || (ep.request_body.is_some() && !ep.header_params.is_empty());
     if content_type || !ep.header_params.is_empty() {
         lines.push("            headers={".to_string());
@@ -1044,7 +1111,7 @@ pub fn write_files(root: &std::path::Path, files: &[GeneratedFile]) -> Result<()
 #[cfg(test)]
 mod tests {
     use super::{raw_method, raw_type_str, url_arg, Imports};
-    use crate::ir::{Endpoint, PathParam, Prim, TypeRef};
+    use crate::ir::{BodyField, Endpoint, PathParam, Prim, RequestBody, TypeRef};
 
     fn endpoint(path: &str, params: Vec<PathParam>, response: Option<TypeRef>) -> Endpoint {
         Endpoint {
@@ -1151,6 +1218,69 @@ mod tests {
             Some(TypeRef::Primitive(Prim::Str)),
         );
         assert_eq!(url_arg(&interp), "f\"things/{jsonable_encoder(id)}\"");
+    }
+
+    #[test]
+    fn raw_method_inlines_object_body_fields() {
+        let mut i = Imports::default();
+        let mut ep = endpoint(
+            "/req/inline",
+            vec![],
+            Some(TypeRef::Named("Resp".to_string())),
+        );
+        ep.method_name = "inline_body".to_string();
+        ep.http_method = "POST";
+        ep.request_body = Some(RequestBody::Inline(vec![
+            // A required scalar → bare arg, plain json entry.
+            BodyField {
+                wire_name: "string".to_string(),
+                py_name: "string".to_string(),
+                type_ref: TypeRef::Primitive(Prim::Str),
+                optional: false,
+                docstring: None,
+                convert: false,
+            },
+            // An optional list → `Optional[Sequence[..]] = OMIT` in request context.
+            BodyField {
+                wire_name: "list".to_string(),
+                py_name: "list_".to_string(),
+                type_ref: TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
+                optional: true,
+                docstring: None,
+                convert: false,
+            },
+            // A convert field → convert-wrapped json entry keyed by the wire name.
+            BodyField {
+                wire_name: "NestedObject".to_string(),
+                py_name: "nested_object".to_string(),
+                type_ref: TypeRef::Named("Nested".to_string()),
+                optional: false,
+                docstring: None,
+                convert: true,
+            },
+        ]));
+        let out = raw_method(&ep, false, &mut i);
+        // Hoisted keyword-only args, with the reserved-name munge and request-context
+        // `Sequence`, plus the OMIT default on the optional field.
+        assert!(out.contains("string: str"), "{out}");
+        assert!(
+            out.contains("list_: typing.Optional[typing.Sequence[str]] = OMIT"),
+            "{out}"
+        );
+        assert!(out.contains("nested_object: Nested"), "{out}");
+        // The json dict maps wire names to args, convert-wrapping the object field.
+        assert!(out.contains("json={"), "{out}");
+        assert!(out.contains("\"string\": string,"), "{out}");
+        assert!(out.contains("\"list\": list_,"), "{out}");
+        assert!(
+            out.contains("\"NestedObject\": convert_and_respect_annotation_metadata("),
+            "{out}"
+        );
+        // An inlined object body always carries the content-type header.
+        assert!(
+            out.contains("\"content-type\": \"application/json\","),
+            "{out}"
+        );
     }
 
     #[test]

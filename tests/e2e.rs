@@ -125,6 +125,14 @@ const EXHAUSTIVE: Corpus = Corpus {
         "src/fern/endpoints_union/raw_client.py",
         // Header params + a scalar body + a 204 (no-content) response.
         "src/fern/reqwithheaders/raw_client.py",
+        // Inlined plain-object request bodies (fields hoisted to keyword-only
+        // args), per-field convert, request-context `typing.Sequence`, and a
+        // path/body name collision.
+        "src/fern/endpoints_object/raw_client.py",
+        // Also unlocked by inline hoisting: the HTTP-method matrix and the
+        // content-type-header tags.
+        "src/fern/endpoints_http_methods/raw_client.py",
+        "src/fern/endpoints_content_type/raw_client.py",
     ],
 };
 

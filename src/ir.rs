@@ -94,47 +94,68 @@ pub struct HeaderParam {
     pub docstring: Option<String>,
 }
 
-/// A resolved JSON request body, rendered as the `request` keyword argument and
-/// the `json=` entry in the request call.
+/// A resolved JSON request body. Fern renders a body one of two ways: as a single
+/// `request` keyword argument (a scalar, a named enum/union/map), or — for a
+/// plain-object `$ref` — *inlined*, each field hoisted into its own keyword-only
+/// argument.
 #[derive(Debug)]
-pub struct RequestBody {
-    /// The `request` argument's type.
+pub enum RequestBody {
+    /// A single `request` argument serialized into the `json=` entry.
+    Single(SingleBody),
+    /// A plain-object body inlined field-by-field: each field becomes a
+    /// keyword-only `= OMIT` argument and a `json={...}` entry mapping its wire
+    /// name to the argument. Always carries the content-type header.
+    Inline(Vec<BodyField>),
+}
+
+impl RequestBody {
+    /// Whether the request emits the `content-type: application/json` header.
+    /// Inlined object bodies always do; a single body carries its own flag.
+    #[must_use]
+    pub fn content_type_header(&self) -> bool {
+        match self {
+            RequestBody::Single(s) => s.content_type,
+            RequestBody::Inline(_) => true,
+        }
+    }
+}
+
+/// A request body passed as one `request` argument.
+#[derive(Debug)]
+pub struct SingleBody {
+    /// The `request` argument's type (collections render in request context, i.e.
+    /// `typing.Sequence` rather than `typing.List`).
     pub type_ref: TypeRef,
     /// Whether the body is required; optional bodies get `Optional[..] = None`.
     pub required: bool,
-    /// How the body serializes into the `json=` argument and whether it carries
-    /// the content-type header.
-    pub encoding: BodyEncoding,
+    /// `json=convert_and_respect_annotation_metadata(...)` when true (a union or a
+    /// container of objects, whose members carry field aliases to respect), else
+    /// a plain `json=request`.
+    pub convert: bool,
+    /// Whether Fern emits the `content-type: application/json` header. Present for
+    /// named (`$ref`) enum/union/map bodies and the `uuid`/`byte` scalar formats;
+    /// absent for a plain scalar or an inline container.
+    pub content_type: bool,
 }
 
-/// How a request body serializes into the `json=` argument, and whether Fern
-/// emits the `content-type: application/json` header for it. Modeled as an enum
-/// (rather than independent `content_type` / `convert` flags) so the impossible
-/// "convert without a content-type header" state is unrepresentable.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum BodyEncoding {
-    /// `json=request` with no content-type header — a bare JSON scalar.
-    Scalar,
-    /// `json=request` with the content-type header — a named enum, or a
-    /// `uuid`/`byte` scalar (rendered as `str` but flagged by Fern).
-    Json,
-    /// `convert_and_respect_annotation_metadata(...)` with the content-type
-    /// header — a union whose object variants carry field aliases to respect.
-    Convert,
-}
-
-impl BodyEncoding {
-    /// Whether the request emits the `content-type: application/json` header.
-    #[must_use]
-    pub fn content_type_header(self) -> bool {
-        !matches!(self, BodyEncoding::Scalar)
-    }
-
-    /// Whether the body serializes through `convert_and_respect_annotation_metadata`.
-    #[must_use]
-    pub fn is_convert(self) -> bool {
-        matches!(self, BodyEncoding::Convert)
-    }
+/// One field of an inlined (hoisted) object request body, rendered as a
+/// keyword-only argument and a `json={...}` entry.
+#[derive(Debug)]
+pub struct BodyField {
+    /// The wire (JSON) property name (the `json` dict key).
+    pub wire_name: String,
+    /// The Python argument identifier (snake_case, reserved-munged).
+    pub py_name: String,
+    /// The field's base type (optionality is carried by `optional`); collections
+    /// render in request context (`typing.Sequence`).
+    pub type_ref: TypeRef,
+    /// Whether the field is optional; optional fields get `Optional[..] = OMIT`.
+    pub optional: bool,
+    /// Optional description, shown under the argument in the docstring.
+    pub docstring: Option<String>,
+    /// Whether the field serializes through `convert_and_respect_annotation_metadata`
+    /// (its type references an object or union carrying field aliases).
+    pub convert: bool,
 }
 
 /// A generated top-level type.
@@ -266,22 +287,26 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
     for (key, schema) in &doc.components.schemas {
         builder.add_named(&naming::class_name(key), schema);
     }
+    // Endpoint resolution consults the built types to hoist a plain-object `$ref`
+    // body's fields and to decide which of them serialize through the convert
+    // wrapper, so it runs after the type layer is built.
+    let endpoints = endpoints(doc, &builder.types);
     Ir {
         package_name: config.package_name.clone(),
         project_name: config.project_name.clone(),
         types: builder.types,
         endpoint_modules: endpoint_modules(doc),
-        endpoints: endpoints(doc),
+        endpoints,
     }
 }
 
 /// Resolve every operation into an [`Endpoint`], in document-traversal order
 /// (paths in document order, methods in a stable per-path order).
-fn endpoints(doc: &OpenApi) -> Vec<Endpoint> {
+fn endpoints(doc: &OpenApi, types: &[TypeDecl]) -> Vec<Endpoint> {
     let mut out = Vec::new();
     for (path, item) in &doc.paths {
         for (http_method, op) in item.operations() {
-            out.push(build_endpoint(doc, path, http_method, op));
+            out.push(build_endpoint(doc, types, path, http_method, op));
         }
     }
     out
@@ -292,12 +317,13 @@ fn endpoints(doc: &OpenApi) -> Vec<Endpoint> {
 /// response whose type is a named model or a scalar).
 fn build_endpoint(
     doc: &OpenApi,
+    types: &[TypeDecl],
     path: &str,
     http_method: &'static str,
     op: &Operation,
 ) -> Endpoint {
     let module = endpoint_module(&op.operation_id);
-    let path_params: Vec<PathParam> = op
+    let mut path_params: Vec<PathParam> = op
         .parameters
         .iter()
         .filter(|p| p.location == Some(ParameterLocation::Path))
@@ -356,16 +382,25 @@ fn build_endpoint(
         !op.responses.is_empty() && op.responses.keys().all(|code| code.starts_with('2'));
     let response = success_response(op);
 
-    // A request body is either absent, within the subset crozier can render
-    // (a `$ref` to a named enum, or a bare scalar), or unsupported.
+    // A request body is either absent, within the subset crozier can render, or
+    // unsupported.
     let request_body = op
         .request_body
         .as_ref()
-        .map(|rb| resolve_request_body(doc, rb));
-    let body_ok = match &request_body {
-        None => true,
-        Some(body) => body.is_some(),
-    };
+        .and_then(|rb| resolve_request_body(doc, types, rb));
+    let body_ok = op.request_body.is_none() || request_body.is_some();
+
+    // A path parameter whose Python name collides with a hoisted body field is
+    // suffixed with `_` (the body field keeps the plain name), matching Fern.
+    if let Some(RequestBody::Inline(fields)) = &request_body {
+        let field_names: std::collections::HashSet<&str> =
+            fields.iter().map(|f| f.py_name.as_str()).collect();
+        for pp in &mut path_params {
+            if field_names.contains(pp.py_name.as_str()) {
+                pp.py_name.push('_');
+            }
+        }
+    }
 
     // Today's subset: a supported (or absent) body, path/query/header params only,
     // only 2xx responses, and a response crozier knows how to render — a named
@@ -386,7 +421,7 @@ fn build_endpoint(
         path_params,
         query_params,
         header_params,
-        request_body: request_body.flatten(),
+        request_body,
         response,
         docstring: clean_doc(op.description.as_deref()),
         emittable,
@@ -404,60 +439,128 @@ fn header_param_stem(wire_name: &str) -> &str {
 }
 
 /// Resolve an operation's `application/json` request body into the subset crozier
-/// renders today: a `$ref` to a named string enum (`json=request` plus the
-/// `content-type` header), or a bare scalar (`json=request`, no header). Returns
-/// `None` for any other shape — objects, unions, collections, maps, inline
-/// objects, and the `uuid`/`byte` string formats — which still need the
-/// `convert_and_respect_annotation_metadata` wrapper or the content-type nuance.
-fn resolve_request_body(doc: &OpenApi, rb: &crate::openapi::RequestBody) -> Option<RequestBody> {
+/// renders today. Returns `None` for shapes still outside that subset (which keeps
+/// the whole module unemittable rather than emitting a wrong client).
+///
+/// - A `$ref` to a plain object → [`RequestBody::Inline`]: each field is hoisted
+///   into its own argument (`json={...}`, content-type header).
+/// - A `$ref` to a string enum or a map → a single `request` arg, `json=request`,
+///   content-type header.
+/// - A `$ref` to a union → a single `request` arg through the convert wrapper,
+///   content-type header.
+/// - An inline array → a single `request` arg (`typing.Sequence`), through the
+///   convert wrapper when its items are objects, and *no* content-type header.
+/// - A bare scalar → a single `request` arg, `json=request`; the content-type
+///   header only for the `uuid`/`byte` formats.
+fn resolve_request_body(
+    doc: &OpenApi,
+    types: &[TypeDecl],
+    rb: &crate::openapi::RequestBody,
+) -> Option<RequestBody> {
     let schema = rb.content.get("application/json")?.schema.as_ref()?;
     let required = rb.required == Some(true);
     if let Some(reference) = &schema.reference {
         let target = resolve_ref(doc, reference)?;
+        let class = ref_to_class(reference);
         // A `$ref` to an extensible (string) enum serializes as a plain
         // `json=request` with the content-type header.
         if string_enum_values(target).is_some() {
-            return Some(RequestBody {
-                type_ref: TypeRef::Named(ref_to_class(reference)),
-                required,
-                encoding: BodyEncoding::Json,
-            });
+            return Some(single(TypeRef::Named(class), required, false, true));
         }
         // A `$ref` to a union goes through the convert wrapper (its object
         // variants carry field aliases that must be respected on write).
         if target.one_of.is_some() || target.any_of.is_some() {
-            return Some(RequestBody {
-                type_ref: TypeRef::Named(ref_to_class(reference)),
-                required,
-                encoding: BodyEncoding::Convert,
-            });
+            return Some(single(TypeRef::Named(class), required, true, true));
         }
-        // A `$ref` to a plain object is inlined by Fern (each field becomes an
-        // argument) — not yet supported.
+        // A `$ref` to a map (object with `additionalProperties`, no declared
+        // properties) is passed straight through as `json=request`.
+        if is_map(target) {
+            return Some(single(TypeRef::Named(class), required, false, true));
+        }
+        // A `$ref` to a plain object is inlined field-by-field.
+        if !target.properties.is_empty() || target.all_of.is_some() {
+            return hoist_fields(&class, types).map(RequestBody::Inline);
+        }
         return None;
     }
-    scalar_body(schema).map(|(type_ref, encoding)| RequestBody {
+    // An inline array body: a single `request` argument. A container of objects
+    // serializes through the convert wrapper; either way, no content-type header.
+    if schema.ty.as_ref().and_then(|t| t.primary()) == Some("array") {
+        let item = base_type_ref(schema.items.as_ref()?);
+        let convert = type_needs_convert(&item, types);
+        return Some(single(
+            TypeRef::List(Box::new(item)),
+            required,
+            convert,
+            false,
+        ));
+    }
+    scalar_body(schema)
+        .map(|(type_ref, content_type)| single(type_ref, required, false, content_type))
+}
+
+/// A one-argument request body.
+fn single(type_ref: TypeRef, required: bool, convert: bool, content_type: bool) -> RequestBody {
+    RequestBody::Single(SingleBody {
         type_ref,
         required,
-        encoding,
+        convert,
+        content_type,
     })
 }
 
+/// Hoist a plain object's fields (already resolved in the type layer) into request
+/// [`BodyField`]s, deciding per field whether it serializes through the convert
+/// wrapper. Returns `None` if the object is not among the built types.
+fn hoist_fields(class: &str, types: &[TypeDecl]) -> Option<Vec<BodyField>> {
+    let obj = types.iter().find_map(|d| match d {
+        TypeDecl::Object(o) if o.name == class => Some(o),
+        _ => None,
+    })?;
+    Some(
+        obj.fields
+            .iter()
+            .map(|f| BodyField {
+                wire_name: f.wire_name.clone(),
+                py_name: f.py_name.clone(),
+                type_ref: f.type_ref.clone(),
+                optional: f.optional,
+                docstring: f.docstring.clone(),
+                convert: type_needs_convert(&f.type_ref, types),
+            })
+            .collect(),
+    )
+}
+
+/// Whether a type serializes through `convert_and_respect_annotation_metadata` —
+/// true when it references (through collections/optionals) a generated object or a
+/// union alias, whose members carry field aliases that must be respected on write.
+fn type_needs_convert(t: &TypeRef, types: &[TypeDecl]) -> bool {
+    match t {
+        TypeRef::Named(name) => types.iter().any(|d| match d {
+            TypeDecl::Object(o) => o.name == *name,
+            TypeDecl::Alias(a) => a.name == *name && matches!(a.target, TypeRef::Union(_)),
+        }),
+        TypeRef::Optional(inner) | TypeRef::List(inner) | TypeRef::Set(inner) => {
+            type_needs_convert(inner, types)
+        }
+        TypeRef::Dict(_, value) => type_needs_convert(value, types),
+        _ => false,
+    }
+}
+
 /// A bare scalar request-body type Fern serializes with a plain `json=request`,
-/// paired with its [`BodyEncoding`]. Plain scalars and the date formats omit the
-/// content-type header ([`BodyEncoding::Scalar`]); the `uuid`/`byte` string
-/// formats (still rendered as `str`) carry it ([`BodyEncoding::Json`]). Non-scalar
-/// shapes and other string formats return `None`.
-fn scalar_body(schema: &Schema) -> Option<(TypeRef, BodyEncoding)> {
+/// paired with whether it carries the content-type header. Plain scalars and the
+/// date formats omit it; the `uuid`/`byte` string formats (still rendered as
+/// `str`) carry it. Non-scalar shapes and other string formats return `None`.
+fn scalar_body(schema: &Schema) -> Option<(TypeRef, bool)> {
     let type_ref = match schema.ty.as_ref().and_then(|t| t.primary())? {
         "string" => match schema.format.as_deref() {
             None => TypeRef::Primitive(Prim::Str),
             Some("date-time") => TypeRef::Primitive(Prim::Datetime),
             Some("date") => TypeRef::Primitive(Prim::Date),
             // `uuid`/`byte` render as `str` but carry a content-type header.
-            Some("uuid" | "byte") => {
-                return Some((TypeRef::Primitive(Prim::Str), BodyEncoding::Json))
-            }
+            Some("uuid" | "byte") => return Some((TypeRef::Primitive(Prim::Str), true)),
             _ => return None,
         },
         "integer" => TypeRef::Primitive(Prim::Int),
@@ -465,7 +568,7 @@ fn scalar_body(schema: &Schema) -> Option<(TypeRef, BodyEncoding)> {
         "boolean" => TypeRef::Primitive(Prim::Bool),
         _ => return None,
     };
-    Some((type_ref, BodyEncoding::Scalar))
+    Some((type_ref, false))
 }
 
 /// Resolve a local `#/components/schemas/{key}` reference to its schema.
@@ -878,10 +981,10 @@ fn clean_doc(desc: Option<&str>) -> Option<String> {
 
 #[cfg(test)]
 mod tests {
-    use super::{endpoint_method_name, endpoint_module, scalar_body, BodyEncoding, Prim, TypeRef};
+    use super::{endpoint_method_name, endpoint_module, scalar_body, Prim, TypeRef};
     use crate::openapi::{Schema, TypeField};
 
-    fn scalar(ty: &str, format: Option<&str>) -> Option<(TypeRef, BodyEncoding)> {
+    fn scalar(ty: &str, format: Option<&str>) -> Option<(TypeRef, bool)> {
         let schema = Schema {
             ty: Some(TypeField::Single(ty.to_string())),
             format: format.map(str::to_string),
@@ -895,28 +998,28 @@ mod tests {
         // Plain scalars and the date formats serialize with no content-type header.
         assert!(matches!(
             scalar("string", None),
-            Some((TypeRef::Primitive(Prim::Str), BodyEncoding::Scalar))
+            Some((TypeRef::Primitive(Prim::Str), false))
         ));
         assert!(matches!(
             scalar("string", Some("date-time")),
-            Some((TypeRef::Primitive(Prim::Datetime), BodyEncoding::Scalar))
+            Some((TypeRef::Primitive(Prim::Datetime), false))
         ));
         assert!(matches!(
             scalar("integer", None),
-            Some((TypeRef::Primitive(Prim::Int), BodyEncoding::Scalar))
+            Some((TypeRef::Primitive(Prim::Int), false))
         ));
         assert!(matches!(
             scalar("boolean", None),
-            Some((TypeRef::Primitive(Prim::Bool), BodyEncoding::Scalar))
+            Some((TypeRef::Primitive(Prim::Bool), false))
         ));
         // `uuid`/`byte` render as `str` but carry the content-type header.
         assert!(matches!(
             scalar("string", Some("uuid")),
-            Some((TypeRef::Primitive(Prim::Str), BodyEncoding::Json))
+            Some((TypeRef::Primitive(Prim::Str), true))
         ));
         assert!(matches!(
             scalar("string", Some("byte")),
-            Some((TypeRef::Primitive(Prim::Str), BodyEncoding::Json))
+            Some((TypeRef::Primitive(Prim::Str), true))
         ));
         // Other string formats and non-scalar shapes are excluded.
         assert!(scalar("string", Some("binary")).is_none());
