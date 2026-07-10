@@ -15,13 +15,20 @@ set -euo pipefail
 expected="${1:?usage: smoke.sh <expected-version>}"
 bin="${CROZIER_BIN:-crozier}"
 
-installed="$("$bin" --version)"
+if ! installed="$("$bin" --version 2>&1)"; then
+    echo "error: '$bin --version' did not run — the installed binary is broken or built for the wrong platform/arch; reinstall for this host and retry. Output was:" >&2
+    echo "$installed" >&2
+    exit 1
+fi
 case "$installed" in
     *"$expected"*) ;;
     *) echo "error: '$bin --version' reported '$installed', which does not contain the expected '$expected'; confirm the release tag matches the crate version in Cargo.toml and that the artifact for this tag was published" >&2; exit 1 ;;
 esac
 
-"$bin" --help >/dev/null
+if ! "$bin" --help >/dev/null 2>&1; then
+    echo "error: '$bin --help' did not run cleanly — the installed binary is broken; verify the platform/arch matches the downloaded artifact and reinstall" >&2
+    exit 1
+fi
 
 work="$(mktemp -d 2>/dev/null || mktemp -d -t crozier-smoke)"
 trap 'rm -rf "$work"' EXIT
