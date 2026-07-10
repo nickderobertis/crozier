@@ -55,7 +55,10 @@ fn traversal_package_name_is_rejected_before_any_delete() {
         .unwrap_err();
         assert!(err.contains("invalid package name"), "{bad}: {err}");
     }
-    assert!(sentinel.is_file(), "a rejected run must not touch the filesystem");
+    assert!(
+        sentinel.is_file(),
+        "a rejected run must not touch the filesystem"
+    );
 }
 
 #[test]
