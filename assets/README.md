@@ -38,3 +38,21 @@ these are emitted into every generated SDK.
   `@@CROZIER_PACKAGE@@`, and `@@CROZIER_SDK_VERSION@@` placeholders. These files
   are **not** comment-stripped (they are not Python), so they carry Fern's inline
   TOML comments verbatim.
+
+### `scaffolding/README.md.tmpl` — Fern's generated README (Apache-2.0)
+
+`README.md.tmpl` is the `README.md` Fern writes into a generated SDK: static
+prose (installation, usage, exception handling, the advanced/retries/timeouts
+sections, contributing) that is identical across SDKs apart from the SDK name.
+
+- **License / attribution:** Apache-2.0; the same `../NOTICE` and
+  `../licenses/fern-APACHE-2.0.txt` cover it.
+- **Source:** Fern's Python generator over the exhaustive OpenAPI document, same
+  version as `core/`.
+- **Change made (Apache-2.0 §4(c)):** the SDK/organization name, package, and the
+  worked usage examples are replaced with `@@ORG@@`, `@@PROJECT@@`, `@@PKG@@`,
+  `@@CLIENT@@`, `@@TAG@@`, `@@METHOD@@`, `@@USAGE@@`, and `@@ASYNC_EXAMPLE@@`
+  placeholders, which the emitter fills in per SDK (the usage examples are
+  synthesized by crozier's own example-value generator). The prose is otherwise
+  Fern's output verbatim. `reference.md` is not vendored — it is spec-derived and
+  assembled entirely by the emitter.

@@ -18,8 +18,10 @@ Vendored runtime (shipped and redistributed as product):
   * assets/scaffolding/ is Fern's project-root scaffolding (pyproject.toml,
     requirements.txt, and the .fern/metadata.json marker), emitted verbatim into
     every generated SDK. The only change is templating the project/package name
-    and version in pyproject.toml with the same @@CROZIER_...@@ placeholders. See
-    assets/README.md.
+    and version in pyproject.toml with the same @@CROZIER_...@@ placeholders. It
+    also holds README.md.tmpl, the static prose of Fern's generated README, with
+    the SDK name and worked usage examples replaced by @@...@@ placeholders the
+    emitter fills in. See assets/README.md.
 
 Test fixtures (attribution and statement of changes, per Apache-2.0 §4(b), §4(c)):
 
