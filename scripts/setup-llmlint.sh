@@ -16,7 +16,7 @@
 #      llmlint >= 0.3.7 finds `oneharness` beside its own binary in the tool venv —
 #      so this one install is a complete setup; no separate oneharness install /
 #      PATH entry. `--upgrade` bumps an older cached tool, honouring the floor below
-#      (`lint-llm-diff.sh` needs llmlint's `--diff`/`--diff-base` and `check-ignores`).
+#      (`just lint-llm-diff` needs llmlint's `--diff`/`--diff-base` and `check-ignores`).
 #   2. In a Claude Code session, persists PATH (so the freshly installed binary
 #      resolves) and — TODO — any `ONEHARNESS_*` overrides that select the harness
 #      authenticated in this environment, into CLAUDE_ENV_FILE so later Bash calls
