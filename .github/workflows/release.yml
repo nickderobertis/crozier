@@ -360,6 +360,11 @@ jobs:
         with:
           packages-dir: dist
           password: ${{ secrets.PYPI_TOKEN }}
+          # Idempotent re-publish: if a release partially uploaded (e.g. a later
+          # job failed after some wheels landed) a rerun skips the files already
+          # on PyPI instead of failing the whole job — so a transient hiccup in
+          # one leg never blocks completing the publish.
+          skip-existing: true
 
   # Post-publish gate, mirroring verify-crate: prove the just-published version is
   # actually pip-installable. PyPI propagation is not instant, so poll the JSON
