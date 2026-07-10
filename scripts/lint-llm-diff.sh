@@ -49,7 +49,12 @@ merge_base="$(git merge-base "$base_ref" HEAD)" || {
 }
 
 # Changed, still-present files (drop deletions: linting a deleted path errors).
-mapfile -t files < <(git diff --name-only --diff-filter=ACMR "$merge_base" HEAD)
+# Drop the vendored Fern fixtures here, not just via llmlint.yml's `files.exclude`:
+# a bundled rule scoped to `**/tests/**` re-includes them, so a top-level exclude
+# doesn't stick in diff mode (llmlint#128). Enumerating hundreds of golden files
+# is both meaningless to judge and overflows the oneharness argv. `:(exclude)` is
+# git pathspec magic. Keep this list in sync with llmlint.yml's fixture exclude.
+mapfile -t files < <(git diff --name-only --diff-filter=ACMR "$merge_base" HEAD -- . ':(exclude)tests/fixtures/**')
 present=()
 for f in "${files[@]}"; do [ -f "$f" ] && present+=("$f"); done
 
