@@ -1,0 +1,85 @@
+openapi: 3.0.1
+info:
+  title: form-bodies
+  version: ""
+paths:
+  /upload:
+    post:
+      operationId: forms_upload
+      tags:
+        - Forms
+      parameters: []
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadResponse"
+      security: &ref_0
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                filename:
+                  type: string
+                metadata:
+                  $ref: "#/components/schemas/FileMetadata"
+              required:
+                - file
+  /submit:
+    post:
+      operationId: forms_submit
+      tags:
+        - Forms
+      parameters: []
+      responses:
+        "204":
+          description: ""
+      security: *ref_0
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                age:
+                  type: integer
+                subscribe:
+                  type: boolean
+              required:
+                - name
+components:
+  schemas:
+    FileMetadata:
+      title: FileMetadata
+      type: object
+      properties:
+        content_type:
+          type: string
+        size:
+          type: integer
+      required:
+        - content_type
+    UploadResponse:
+      title: UploadResponse
+      type: object
+      properties:
+        url:
+          type: string
+      required:
+        - url
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer

@@ -1,28 +1,31 @@
 #!/usr/bin/env bash
-# Generate Fern's Python SDK output for the exhaustive OpenAPI spec, strip
-# comments, and install it as the `exhaustive` golden fixture.
+# Generate Fern's Python SDK output for a fixture's OpenAPI spec, strip comments,
+# and install it as that fixture's golden `expected/` tree.
 #
 # Fern's generator only runs under a container runtime (Docker/Podman), which is
 # not available in every environment — so this is a SEPARATE, opt-in script, not
 # part of `just fixtures-refresh`'s default offline path. Run it on a machine
-# with Docker; it produces tests/fixtures/exhaustive/expected/.
+# with Docker; it produces tests/fixtures/<fixture>/expected/.
 #
 # Requirements:
 #   - Docker running (Fern runs the generator image locally)
 #   - fern CLI:  npm i -g fern-api    (invoked as `fern`)
 #   - crozier built (for the comment stripper):  cargo build --release
 #
-# Usage:  scripts/generate-fern-fixture.sh [FERN_PYTHON_VERSION]
-#   FERN_PYTHON_VERSION defaults to the pin below (matches the vendored spec).
+# Usage:  scripts/generate-fern-fixture.sh [FIXTURE] [FERN_PYTHON_VERSION]
+#   FIXTURE             fixture dir under tests/fixtures/ (default: exhaustive).
+#                       e.g. auth-schemes, inline-request-response, integer-enums.
+#   FERN_PYTHON_VERSION defaults to the pin below (matches the vendored specs).
 set -euo pipefail
 
+FIXTURE="${1:-exhaustive}"
 # The fern-python-sdk generator version whose output we target. Bump together
 # with the vendored spec + fixtures so the corpus stays internally consistent.
-FERN_PYTHON_VERSION="${1:-4.34.0}"
+FERN_PYTHON_VERSION="${2:-4.34.0}"
 
 repo_root="$(cd "$(dirname "$0")/.." && pwd)"
-spec="$repo_root/tests/fixtures/exhaustive/openapi.yml"
-dest="$repo_root/tests/fixtures/exhaustive/expected"
+spec="$repo_root/tests/fixtures/$FIXTURE/openapi.yml"
+dest="$repo_root/tests/fixtures/$FIXTURE/expected"
 
 need() { command -v "$1" >/dev/null 2>&1 || { echo "generate-fern-fixture: '$1' not found — $2" >&2; exit 1; }; }
 need fern "install it: npm i -g fern-api"

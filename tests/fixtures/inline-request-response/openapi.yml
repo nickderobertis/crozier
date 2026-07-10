@@ -1,0 +1,112 @@
+openapi: 3.0.1
+info:
+  title: inline-request-response
+  version: ""
+paths:
+  /search:
+    post:
+      operationId: inlined_search
+      tags:
+        - Inlined
+      parameters: []
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                title: SearchResponse
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/SearchResult"
+                  neighbor:
+                    title: SearchRequestNeighbor
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      distance:
+                        type: number
+                        format: double
+                    required:
+                      - id
+                required:
+                  - results
+      security: &ref_0
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              title: SearchRequest
+              type: object
+              properties:
+                query:
+                  type: string
+                limit:
+                  type: integer
+                filter:
+                  title: SearchRequestFilter
+                  type: object
+                  properties:
+                    field:
+                      type: string
+                    value:
+                      type: string
+                  required:
+                    - field
+                    - value
+              required:
+                - query
+  /index:
+    post:
+      operationId: inlined_index
+      tags:
+        - Inlined
+      parameters: []
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  indexed:
+                    type: boolean
+                required:
+                  - indexed
+      security: *ref_0
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                document:
+                  $ref: "#/components/schemas/SearchResult"
+              required:
+                - document
+components:
+  schemas:
+    SearchResult:
+      title: SearchResult
+      type: object
+      properties:
+        id:
+          type: string
+        score:
+          type: number
+          format: double
+      required:
+        - id
+        - score
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
