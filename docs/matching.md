@@ -125,12 +125,11 @@ element per line with a trailing comma.
 
 ## Known gaps (roadmap)
 
-1. **The package `__init__.py` aggregators** (`types/__init__.py`, package-root
-   `__init__.py`). Fern's package `__init__` is a lazy loader (`__getattr__` over a
-   `_dynamic_imports` map) re-exporting every symbol. crozier emits the same
-   machinery for `errors/__init__.py`; the remaining two aggregators need Fern's
-   endpoint-traversal `TYPE_CHECKING` import order. The generated docs (`README.md`,
-   `reference.md`) are the other remaining files.
+1. **The generated docs** (`README.md`, `reference.md`). `README.md` is largely
+   static (a usage example plus the exception/advanced sections); `reference.md`
+   (~3,800 lines) is a spec-derived per-endpoint reference. Both reuse the
+   example-value generator that now backs the per-tag `client.py` docstrings.
+   These are the last two of the 104 exhaustive files.
 2. **Request/response inline-schema hoisting.** Component-schema hoisting is done;
    Fern also hoists inline request/response bodies (e.g. `SearchResponse`,
    `SearchRequestNeighbor`), which arrive with the endpoint layer.

@@ -38,7 +38,7 @@ const QUERY_PARAMETERS: Corpus = Corpus {
 /// The broad `exhaustive` target: Fern's Python output regenerated from the
 /// vendored OpenAPI document (see scripts/generate-fern-fixture.sh). Every
 /// `types/` module, the whole endpoint layer (raw + high-level per-tag clients),
-/// and the root client match; the package `__init__.py` aggregators and the
+/// the root client, and the package `__init__.py` aggregators match; only the
 /// generated docs (`README.md`, `reference.md`) are still pending. See
 /// docs/matching.md.
 const EXHAUSTIVE: Corpus = Corpus {
@@ -172,6 +172,11 @@ const EXHAUSTIVE: Corpus = Corpus {
         // Root client: `FernApi`/`AsyncFernApi` aggregating the tag clients (bearer
         // auth). Its class name is `PascalCase(package_name) + "Api"`.
         "src/fern/client.py",
+        // Package aggregators: lazy loaders re-exporting the type layer and the
+        // whole SDK surface. `_dynamic_imports`/`__all__` are alphabetical; the
+        // `types/__init__.py` `TYPE_CHECKING` block follows Fern's traversal order.
+        "src/fern/types/__init__.py",
+        "src/fern/__init__.py",
         // Project-root scaffolding (near-static; name/version substituted).
         "pyproject.toml",
         "requirements.txt",

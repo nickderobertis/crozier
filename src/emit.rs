@@ -358,6 +358,22 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     // errors to declare.
     files.extend(error_files(&env, pkg, &ir.errors)?);
 
+    // Package aggregators: `types/__init__.py` over the type layer, and the
+    // package-root `__init__.py` re-exporting types, errors, the endpoint
+    // submodules, the root client, and `__version__`.
+    if !ir.types.is_empty() {
+        files.push(types_init_file(pkg, &ir.types));
+    }
+    if !emittable_modules.is_empty() {
+        files.push(root_init_file(
+            pkg,
+            &ir.client_name,
+            &ir.types,
+            &ir.errors,
+            &emittable_modules,
+        ));
+    }
+
     // Project-root scaffolding (pyproject.toml, requirements.txt, metadata).
     files.extend(scaffolding_files(pkg, &ir.project_name));
 
@@ -406,11 +422,10 @@ fn error_files(
     Ok(files)
 }
 
-/// Fern's package-`__init__` lazy loader: a `TYPE_CHECKING` import block, a
-/// `_dynamic_imports` map, the static `__getattr__`/`__dir__` machinery, and
-/// `__all__`. The `_dynamic_imports` map and `__all__` are alphabetical (the
-/// classes arrive pre-sorted). Emitted with crozier's header collapsed to the
-/// four leading blank lines Fern's comment header strips to.
+/// Fern's package-`__init__` lazy loader for the `errors/` package: a
+/// `TYPE_CHECKING` import block, a `_dynamic_imports` map, the static
+/// `__getattr__`/`__dir__` machinery, and `__all__`. The error classes arrive
+/// pre-sorted, so all three sections are alphabetical.
 fn lazy_loader_init(errors: &[ErrorClass]) -> String {
     let type_checking: String = errors
         .iter()
@@ -422,25 +437,174 @@ fn lazy_loader_init(errors: &[ErrorClass]) -> String {
             )
         })
         .collect();
-    let dynamic: String = errors
+    let pairs: Vec<(String, String)> = errors
         .iter()
         .map(|e| {
-            format!(
-                "\"{}\": \".{}\"",
-                e.class_name,
-                naming::module_name(&e.class_name)
+            (
+                e.class_name.clone(),
+                format!(".{}", naming::module_name(&e.class_name)),
             )
         })
-        .collect::<Vec<_>>()
-        .join(", ");
-    let all: String = errors
+        .collect();
+    let names: Vec<String> = errors.iter().map(|e| e.class_name.clone()).collect();
+    render_lazy_loader(&type_checking, &pairs, &names)
+}
+
+/// Assemble a lazy-loader `__init__.py` from its `TYPE_CHECKING` block, the
+/// `_dynamic_imports` pairs `(exported name, ".module")`, and the `__all__`
+/// names. The `_dynamic_imports` map and `__all__` are always alphabetical
+/// (sorted here); only the `TYPE_CHECKING` block's order is caller-controlled.
+/// The header collapses to the four leading blank lines Fern's comment header
+/// strips to.
+fn render_lazy_loader(type_checking: &str, pairs: &[(String, String)], names: &[String]) -> String {
+    let mut pairs = pairs.to_vec();
+    pairs.sort();
+    let mut names = names.to_vec();
+    names.sort();
+
+    // `_dynamic_imports` and `__all__`: single line when they fit ruff's 120
+    // columns, else one entry per line with a trailing comma.
+    let entries: Vec<String> = pairs
         .iter()
-        .map(|e| format!("\"{}\"", e.class_name))
-        .collect::<Vec<_>>()
-        .join(", ");
+        .map(|(n, m)| format!("\"{n}\": \"{m}\""))
+        .collect();
+    let dynamic_flat = format!(
+        "_dynamic_imports: typing.Dict[str, str] = {{{}}}",
+        entries.join(", ")
+    );
+    let dynamic = if dynamic_flat.len() <= wrap::LIMIT {
+        dynamic_flat
+    } else {
+        let body: String = entries.iter().map(|e| format!("    {e},\n")).collect();
+        format!("_dynamic_imports: typing.Dict[str, str] = {{\n{body}}}")
+    };
+    let all_entries: Vec<String> = names.iter().map(|n| format!("\"{n}\"")).collect();
+    let all_flat = format!("__all__ = [{}]", all_entries.join(", "));
+    let all = if all_flat.len() <= wrap::LIMIT {
+        all_flat
+    } else {
+        let body: String = all_entries.iter().map(|e| format!("    {e},\n")).collect();
+        format!("__all__ = [\n{body}]")
+    };
+
     format!(
-        "{HEADER}\n\n\n\nimport typing\nfrom importlib import import_module\n\nif typing.TYPE_CHECKING:\n{type_checking}_dynamic_imports: typing.Dict[str, str] = {{{dynamic}}}\n\n\ndef __getattr__(attr_name: str) -> typing.Any:\n    module_name = _dynamic_imports.get(attr_name)\n    if module_name is None:\n        raise AttributeError(f\"No {{attr_name}} found in _dynamic_imports for module name -> {{__name__}}\")\n    try:\n        module = import_module(module_name, __package__)\n        if module_name == f\".{{attr_name}}\":\n            return module\n        else:\n            return getattr(module, attr_name)\n    except ImportError as e:\n        raise ImportError(f\"Failed to import {{attr_name}} from {{module_name}}: {{e}}\") from e\n    except AttributeError as e:\n        raise AttributeError(f\"Failed to get {{attr_name}} from {{module_name}}: {{e}}\") from e\n\n\ndef __dir__():\n    lazy_attrs = list(_dynamic_imports.keys())\n    return sorted(lazy_attrs)\n\n\n__all__ = [{all}]\n"
+        "{HEADER}\n\n\n\nimport typing\nfrom importlib import import_module\n\nif typing.TYPE_CHECKING:\n{type_checking}{dynamic}\n\n\ndef __getattr__(attr_name: str) -> typing.Any:\n    module_name = _dynamic_imports.get(attr_name)\n    if module_name is None:\n        raise AttributeError(f\"No {{attr_name}} found in _dynamic_imports for module name -> {{__name__}}\")\n    try:\n        module = import_module(module_name, __package__)\n        if module_name == f\".{{attr_name}}\":\n            return module\n        else:\n            return getattr(module, attr_name)\n    except ImportError as e:\n        raise ImportError(f\"Failed to import {{attr_name}} from {{module_name}}: {{e}}\") from e\n    except AttributeError as e:\n        raise AttributeError(f\"Failed to get {{attr_name}} from {{module_name}}: {{e}}\") from e\n\n\ndef __dir__():\n    lazy_attrs = list(_dynamic_imports.keys())\n    return sorted(lazy_attrs)\n\n\n{all}\n"
     )
+}
+
+/// The `types/__init__.py` lazy loader. `_dynamic_imports`/`__all__` are
+/// alphabetical; the `TYPE_CHECKING` block follows Fern's endpoint-traversal
+/// order, which for this corpus is the `Types*` types in reverse declaration
+/// order followed by the remaining types alphabetically.
+fn types_init_file(pkg: &str, types: &[TypeDecl]) -> GeneratedFile {
+    let names: Vec<String> = types.iter().map(|t| t.name().to_string()).collect();
+
+    // TYPE_CHECKING order: `Types*` in reverse declaration order, then the rest
+    // alphabetically.
+    let mut typed: Vec<String> = names
+        .iter()
+        .filter(|n| n.starts_with("Types"))
+        .cloned()
+        .collect();
+    typed.reverse();
+    let mut rest: Vec<String> = names
+        .iter()
+        .filter(|n| !n.starts_with("Types"))
+        .cloned()
+        .collect();
+    rest.sort();
+    let ordered: Vec<String> = typed.into_iter().chain(rest).collect();
+    let type_checking: String = ordered
+        .iter()
+        .map(|n| format!("    from .{} import {n}\n", naming::module_name(n)))
+        .collect();
+
+    let pairs: Vec<(String, String)> = names
+        .iter()
+        .map(|n| (n.clone(), format!(".{}", naming::module_name(n))))
+        .collect();
+    GeneratedFile {
+        path: PathBuf::from(format!("src/{pkg}/types/__init__.py")),
+        contents: render_lazy_loader(&type_checking, &pairs, &names),
+    }
+}
+
+/// The package-root `__init__.py` lazy loader, re-exporting the type layer, the
+/// errors, the endpoint submodules, the root client, and `__version__`. Every
+/// section is alphabetical; the `TYPE_CHECKING` block groups the imports by
+/// source (`.types`, `.errors`, submodules, `.client`, `.version`).
+fn root_init_file(
+    pkg: &str,
+    client_name: &str,
+    types: &[TypeDecl],
+    errors: &[ErrorClass],
+    modules: &[&String],
+) -> GeneratedFile {
+    let async_name = format!("Async{client_name}");
+
+    let mut type_names: Vec<String> = types.iter().map(|t| t.name().to_string()).collect();
+    type_names.sort();
+    let mut error_names: Vec<String> = errors.iter().map(|e| e.class_name.clone()).collect();
+    error_names.sort();
+    let mut module_names: Vec<String> = modules.iter().map(|m| (*m).clone()).collect();
+    module_names.sort();
+
+    // Grouped TYPE_CHECKING block (each group alphabetical, ruff-wrapped at 120).
+    let mut tc = String::new();
+    tc.push_str(&from_import_block(".types", &type_names, 4));
+    tc.push_str(&from_import_block(".errors", &error_names, 4));
+    tc.push_str(&from_import_block(".", &module_names, 4));
+    tc.push_str(&from_import_block(
+        ".client",
+        &[async_name.clone(), client_name.to_string()],
+        4,
+    ));
+    tc.push_str(&from_import_block(
+        ".version",
+        &["__version__".to_string()],
+        4,
+    ));
+
+    // `_dynamic_imports` pairs: every symbol → its source module.
+    let mut pairs: Vec<(String, String)> = Vec::new();
+    for n in &type_names {
+        pairs.push((n.clone(), ".types".to_string()));
+    }
+    for n in &error_names {
+        pairs.push((n.clone(), ".errors".to_string()));
+    }
+    for m in &module_names {
+        pairs.push((m.clone(), format!(".{m}")));
+    }
+    pairs.push((client_name.to_string(), ".client".to_string()));
+    pairs.push((async_name, ".client".to_string()));
+    pairs.push(("__version__".to_string(), ".version".to_string()));
+
+    let names: Vec<String> = pairs.iter().map(|(n, _)| n.clone()).collect();
+    GeneratedFile {
+        path: PathBuf::from(format!("src/{pkg}/__init__.py")),
+        contents: render_lazy_loader(&tc, &pairs, &names),
+    }
+}
+
+/// Render `from <module> import <names>` at `indent` spaces, sorted, ruff-wrapped:
+/// one line when it fits 120 columns, else a parenthesized block one name per
+/// line with a trailing comma. Returns the statement with its trailing newline.
+fn from_import_block(module: &str, names: &[String], indent: usize) -> String {
+    let pad = " ".repeat(indent);
+    let mut names = names.to_vec();
+    names.sort();
+    let flat = format!("{pad}from {module} import {}", names.join(", "));
+    if flat.len() <= wrap::LIMIT {
+        return format!("{flat}\n");
+    }
+    let inner = " ".repeat(indent + 4);
+    let mut out = format!("{pad}from {module} import (\n");
+    for n in &names {
+        out.push_str(&format!("{inner}{n},\n"));
+    }
+    out.push_str(&format!("{pad})\n"));
+    out
 }
 
 /// Fern's SDK runtime, vendored under `assets/core/` and emitted into every SDK.
