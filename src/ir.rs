@@ -37,6 +37,8 @@ pub struct Endpoint {
     pub path_params: Vec<PathParam>,
     /// Query parameters, in declaration order.
     pub query_params: Vec<QueryParam>,
+    /// The JSON request body, when the operation has one crozier can emit.
+    pub request_body: Option<RequestBody>,
     /// The success response body type, or `None` when the endpoint returns no
     /// content.
     pub response: Option<TypeRef>,
@@ -72,6 +74,19 @@ pub struct QueryParam {
     pub required: bool,
     /// Optional description, shown under the parameter in the docstring.
     pub docstring: Option<String>,
+}
+
+/// A resolved JSON request body, rendered as the `request` keyword argument and
+/// the `json=` entry in the request call.
+#[derive(Debug)]
+pub struct RequestBody {
+    /// The `request` argument's type.
+    pub type_ref: TypeRef,
+    /// Whether the body is required; optional bodies get `Optional[..] = None`.
+    pub required: bool,
+    /// Whether the request emits the `content-type: application/json` header.
+    /// Fern omits it for bare scalar bodies and adds it for named (`$ref`) types.
+    pub content_type_header: bool,
 }
 
 /// A generated top-level type.
@@ -218,7 +233,7 @@ fn endpoints(doc: &OpenApi) -> Vec<Endpoint> {
     let mut out = Vec::new();
     for (path, item) in &doc.paths {
         for (http_method, op) in item.operations() {
-            out.push(build_endpoint(path, http_method, op));
+            out.push(build_endpoint(doc, path, http_method, op));
         }
     }
     out
@@ -227,7 +242,12 @@ fn endpoints(doc: &OpenApi) -> Vec<Endpoint> {
 /// Resolve one operation, deciding whether it is within the subset crozier can
 /// emit today (no request body, only path parameters, a single JSON success
 /// response whose type is a named model or a scalar).
-fn build_endpoint(path: &str, http_method: &'static str, op: &Operation) -> Endpoint {
+fn build_endpoint(
+    doc: &OpenApi,
+    path: &str,
+    http_method: &'static str,
+    op: &Operation,
+) -> Endpoint {
     let module = endpoint_module(&op.operation_id);
     let path_params: Vec<PathParam> = op
         .parameters
@@ -272,9 +292,20 @@ fn build_endpoint(path: &str, http_method: &'static str, op: &Operation) -> Endp
         !op.responses.is_empty() && op.responses.keys().all(|code| code.starts_with('2'));
     let response = success_response(op);
 
-    // Today's subset: no body, path/query params only, only 2xx responses, and a
-    // response type crozier knows how to render (named model or scalar).
-    let emittable = op.request_body.is_none()
+    // A request body is either absent, within the subset crozier can render
+    // (a `$ref` to a named enum, or a bare scalar), or unsupported.
+    let request_body = op
+        .request_body
+        .as_ref()
+        .map(|rb| resolve_request_body(doc, rb));
+    let body_ok = match &request_body {
+        None => true,
+        Some(body) => body.is_some(),
+    };
+
+    // Today's subset: a supported (or absent) body, path/query params only, only
+    // 2xx responses, and a response type crozier knows how to render.
+    let emittable = body_ok
         && !has_unsupported_params
         && only_success
         && matches!(response, Some(TypeRef::Named(_) | TypeRef::Primitive(_)));
@@ -286,10 +317,64 @@ fn build_endpoint(path: &str, http_method: &'static str, op: &Operation) -> Endp
         path: path.to_string(),
         path_params,
         query_params,
+        request_body: request_body.flatten(),
         response,
         docstring: clean_doc(op.description.as_deref()),
         emittable,
     }
+}
+
+/// Resolve an operation's `application/json` request body into the subset crozier
+/// renders today: a `$ref` to a named string enum (`json=request` plus the
+/// `content-type` header), or a bare scalar (`json=request`, no header). Returns
+/// `None` for any other shape — objects, unions, collections, maps, inline
+/// objects, and the `uuid`/`byte` string formats — which still need the
+/// `convert_and_respect_annotation_metadata` wrapper or the content-type nuance.
+fn resolve_request_body(doc: &OpenApi, rb: &crate::openapi::RequestBody) -> Option<RequestBody> {
+    let schema = rb.content.get("application/json")?.schema.as_ref()?;
+    let required = rb.required == Some(true);
+    if let Some(reference) = &schema.reference {
+        // Only a `$ref` to an extensible (string) enum serializes as a plain
+        // `json=request`; named objects/unions need the convert wrapper.
+        let target = resolve_ref(doc, reference)?;
+        if string_enum_values(target).is_some() {
+            return Some(RequestBody {
+                type_ref: TypeRef::Named(ref_to_class(reference)),
+                required,
+                content_type_header: true,
+            });
+        }
+        return None;
+    }
+    scalar_body(schema).map(|type_ref| RequestBody {
+        type_ref,
+        required,
+        content_type_header: false,
+    })
+}
+
+/// A bare scalar request-body type Fern serializes with a plain `json=request`
+/// and no content-type header. `uuid`/`byte` string formats are excluded (Fern
+/// adds a content-type header for them), as are all non-scalar shapes.
+fn scalar_body(schema: &Schema) -> Option<TypeRef> {
+    match schema.ty.as_ref().and_then(|t| t.primary())? {
+        "string" => match schema.format.as_deref() {
+            None => Some(TypeRef::Primitive(Prim::Str)),
+            Some("date-time") => Some(TypeRef::Primitive(Prim::Datetime)),
+            Some("date") => Some(TypeRef::Primitive(Prim::Date)),
+            _ => None,
+        },
+        "integer" => Some(TypeRef::Primitive(Prim::Int)),
+        "number" => Some(TypeRef::Primitive(Prim::Float)),
+        "boolean" => Some(TypeRef::Primitive(Prim::Bool)),
+        _ => None,
+    }
+}
+
+/// Resolve a local `#/components/schemas/{key}` reference to its schema.
+fn resolve_ref<'a>(doc: &'a OpenApi, reference: &str) -> Option<&'a Schema> {
+    let key = reference.rsplit('/').next()?;
+    doc.components.schemas.get(key)
 }
 
 /// The success (2xx) response's `application/json` body type, if any.
@@ -696,7 +781,44 @@ fn clean_doc(desc: Option<&str>) -> Option<String> {
 
 #[cfg(test)]
 mod tests {
-    use super::{endpoint_method_name, endpoint_module};
+    use super::{endpoint_method_name, endpoint_module, scalar_body, Prim, TypeRef};
+    use crate::openapi::{Schema, TypeField};
+
+    fn scalar(ty: &str, format: Option<&str>) -> Option<TypeRef> {
+        let schema = Schema {
+            ty: Some(TypeField::Single(ty.to_string())),
+            format: format.map(str::to_string),
+            ..Schema::default()
+        };
+        scalar_body(&schema)
+    }
+
+    #[test]
+    fn scalar_body_accepts_plain_primitives_and_gates_uuid_and_byte() {
+        // Plain scalars and the date formats serialize as a bare `json=request`.
+        assert!(matches!(
+            scalar("string", None),
+            Some(TypeRef::Primitive(Prim::Str))
+        ));
+        assert!(matches!(
+            scalar("string", Some("date-time")),
+            Some(TypeRef::Primitive(Prim::Datetime))
+        ));
+        assert!(matches!(
+            scalar("integer", None),
+            Some(TypeRef::Primitive(Prim::Int))
+        ));
+        assert!(matches!(
+            scalar("boolean", None),
+            Some(TypeRef::Primitive(Prim::Bool))
+        ));
+        // `uuid`/`byte` need Fern's content-type nuance and are excluded, as are
+        // non-scalar shapes.
+        assert!(scalar("string", Some("uuid")).is_none());
+        assert!(scalar("string", Some("byte")).is_none());
+        assert!(scalar("object", None).is_none());
+        assert!(scalar("array", None).is_none());
+    }
 
     #[test]
     fn method_name_snakes_whole_id_for_multi_segment_groups() {

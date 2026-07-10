@@ -465,12 +465,12 @@ paths:
 fn emits_raw_client_only_for_supported_modules() {
     let files = render(ENDPOINTS_SPEC);
 
-    // The supported modules emit a raw client; the others (request body, non-2xx
-    // response, empty response) do not — only their package marker.
+    // The supported modules emit a raw client; the others (non-2xx response,
+    // empty response) do not — only their package marker.
     let raw = files
         .get("src/acme/things/raw_client.py")
         .expect("things raw_client");
-    for module in ["body", "err", "noresp"] {
+    for module in ["err", "noresp"] {
         assert!(
             !files.contains_key(&format!("src/acme/{module}/raw_client.py")),
             "{module} should not emit a raw_client yet"
@@ -487,6 +487,24 @@ fn emits_raw_client_only_for_supported_modules() {
     assert!(query.contains("q: typing.Optional[str] = None,"), "{query}");
     assert!(query.contains("params={"), "{query}");
     assert!(query.contains("\"q\": q,"), "{query}");
+
+    // A bare scalar request body serializes as `json=request` with the `OMIT`
+    // sentinel and — being a scalar — no content-type header.
+    let body = files
+        .get("src/acme/body/raw_client.py")
+        .expect("body raw_client");
+    assert!(
+        body.contains("OMIT = typing.cast(typing.Any, ...)"),
+        "{body}"
+    );
+    // The body is not marked required, so it is an optional keyword argument.
+    assert!(
+        body.contains("request: typing.Optional[str] = None"),
+        "{body}"
+    );
+    assert!(body.contains("json=request,"), "{body}");
+    assert!(body.contains("omit=OMIT,"), "{body}");
+    assert!(!body.contains("content-type"), "{body}");
 
     // Sync + async classes, both operations, the path-param f-string URL and the
     // response-type import, and the scalar return.
@@ -506,6 +524,85 @@ fn emits_raw_client_only_for_supported_modules() {
     assert!(raw.contains("\"things\""), "{raw}");
     assert!(raw.contains("-> HttpResponse[int]:"), "{raw}");
     assert!(raw.contains("Count the things."), "{raw}");
+}
+
+/// A `$ref` enum body (content-type header) plus a `uuid` scalar body (gated out,
+/// so its module never emits).
+const BODY_SPEC: &str = r##"
+openapi: 3.0.0
+info:
+  title: Body API
+components:
+  schemas:
+    Weather:
+      type: string
+      enum: [SUNNY, RAINING]
+paths:
+  /enum:
+    post:
+      operationId: enum_send
+      tags: [Enum]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Weather"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: string
+  /uid:
+    post:
+      operationId: uid_send
+      tags: [Uid]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: string
+"##;
+
+#[test]
+fn named_enum_body_carries_content_type_and_uuid_body_is_gated() {
+    let files = render(BODY_SPEC);
+
+    // A `$ref` enum body: `request: Weather`, `json=request`, and the
+    // content-type header (named types get it, unlike bare scalars).
+    let enum_client = files
+        .get("src/acme/enum/raw_client.py")
+        .expect("enum raw_client");
+    assert!(
+        enum_client.contains("*, request: Weather,"),
+        "{enum_client}"
+    );
+    assert!(
+        enum_client.contains("from ..types.weather import Weather"),
+        "{enum_client}"
+    );
+    assert!(enum_client.contains("json=request,"), "{enum_client}");
+    assert!(
+        enum_client.contains("\"content-type\": \"application/json\","),
+        "{enum_client}"
+    );
+
+    // A `format: uuid` body needs Fern's content-type nuance crozier does not yet
+    // reproduce, so the module stays unemitted (marker only).
+    assert!(
+        !files.contains_key("src/acme/uid/raw_client.py"),
+        "uuid body should gate the module out"
+    );
+    assert!(files.contains_key("src/acme/uid/__init__.py"));
 }
 
 #[test]
