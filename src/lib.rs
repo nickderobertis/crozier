@@ -4,6 +4,16 @@
 //! [`ir::build`] resolves it into a generation-ready [`ir::Ir`], and
 //! [`emit::generate`] renders that IR to Python files with minijinja. The CLI
 //! (`src/main.rs`) is a thin shell over [`generate`].
+//!
+//! # Stability
+//!
+//! **The product is the `crozier` binary, not this library.** The crate is
+//! published to crates.io so `cargo install crozier` works and so the binary can
+//! be built from a registry source; the library surface (including
+//! [`strip_python_comments`], which exists to share one comment-stripper between
+//! the CLI's hidden `internal-strip` subcommand and the e2e fixtures) is an
+//! **internal API with no semver guarantee** — it may change in any release.
+//! Depend on the CLI, not on these items.
 
 pub mod cli;
 pub mod config;

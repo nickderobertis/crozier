@@ -45,9 +45,6 @@ and surfacing the rest as follow-ups:
   - **MSRV pin / `just msrv`** — no MSRV is promised yet (pre-1.0, single
     maintainer); `rust-toolchain.toml` pins one stable channel and CI installs
     from it. Add an MSRV when external consumers appear.
-  - **crates.io publish** — binary-only tool; distribution is GitHub Releases +
-    `cargo install --git` / `install.sh` (`publish = false`). crates.io is a
-    later, optional surface.
   - **Bench tier** — performance is a goal, but the informational Criterion/
     hyperfine tier is deferred until there's a hot path worth tracking; it never
     gates, so its absence costs no correctness.
@@ -83,11 +80,29 @@ Use the `just` recipes; do not hand-roll equivalents.
 - **PRs follow `.github/pull_request_template.md`** (What / Why); it becomes the
   squash body.
 - **Releases:** `release-plz` opens a release PR from merged Conventional Commits;
-  merging it bumps the version, writes `CHANGELOG.md`, and pushes the `vX.Y.Z`
-  tag, which triggers `release.yml` (build + upload per-platform archives). Fully
-  automated — the only human action is merging a PR. **Bump policy (pre-1.0):**
-  `feat`/`feat!`/`BREAKING CHANGE` → minor; `fix`/`perf`/`refactor`/`build` →
-  patch; `chore`/`docs`/`ci`/`test`/`style` → no release.
+  merging it bumps the version, writes `CHANGELOG.md`, pushes the `vX.Y.Z` tag,
+  and cuts the GitHub Release (under `RELEASE_PLZ_TOKEN`, a PAT — a tag from the
+  default `GITHUB_TOKEN` would not fire `release.yml`). That Release's
+  `published` event drives `release.yml`, which re-gates on `just check` then, in
+  parallel: builds/attests/uploads the per-platform archives (+ `.sha256` +
+  `.sigstore.json`), publishes the crate to **crates.io**, and builds +
+  publishes the **PyPI** wheels + sdist. Fully automated — the only human action
+  is merging a PR. **Bump policy (pre-1.0):** `feat`/`feat!`/`BREAKING CHANGE` →
+  minor; `fix`/`perf`/`refactor`/`build` → patch; `chore`/`docs`/`ci`/`test`/
+  `style` → no release.
+- **Registry publishing is credential-gated and self-activating.** `release.yml`
+  publishes to crates.io only when `CARGO_REGISTRY_TOKEN` is set, and to PyPI only
+  when `PYPI_TOKEN` is set (both synced via `gh-secrets sync`); until then those
+  jobs stay dormant while archives + wheels still build, so a packaging break is
+  caught before publishing is switched on. crates.io publish lives in
+  `release.yml` (not release-plz), so a flaky registry push never blocks a tag.
+  PyPI ships the compiled binary inside per-platform wheels via **maturin**
+  (`bindings = "bin"`, `pyproject.toml`) exposing a `crozier` console script — the
+  ruff/uv model; `pip install crozier` needs no Rust toolchain. The crate,
+  the PyPI project, and the console script are all named `crozier`; keep them in
+  sync. Each publish is proven installable by a `verify-crate` / `verify-pypi`
+  smoke test against the live registry. **First publish reserves the name:** an
+  early `0.0.x`/`0.1.0` release claims `crozier` on both registries.
 
 ## Invariants (non-negotiable)
 

@@ -8,7 +8,22 @@ repository = "https://github.com/nickderobertis/crozier"
 readme = "README.md"
 keywords = ["openapi", "codegen", "sdk", "python", "fern"]
 categories = ["command-line-utilities", "development-tools"]
-publish = false
+# Package only what a crates.io consumer needs to build and run: the sources, the
+# manifest, the readme/license/attribution, and the `templates/` embedded at
+# compile time via `include_str!` (src/emit.rs). An explicit allowlist keeps the
+# published crate small and — crucially — excludes the `CLAUDE.md -> AGENTS.md`
+# symlink, which `cargo publish` rejects, along with CI config, scripts, and the
+# Fern fixture corpus. `publish` is intentionally left at its default (true);
+# the registry push runs from release.yml's `publish-crate` job, not release-plz.
+include = [
+    "src/**/*.rs",
+    "templates/**/*.j2",
+    "/Cargo.toml",
+    "/README.md",
+    "/LICENSE",
+    "/NOTICE",
+    "/licenses/*",
+]
 
 [[bin]]
 name = "crozier"

@@ -13,3 +13,6 @@ llmlint.buildout.yml
 # Scratch output from local generation runs
 /out
 /.crozier-tmp
+
+# maturin / Python packaging build output (wheels + sdist)
+/dist
