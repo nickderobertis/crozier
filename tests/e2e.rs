@@ -110,6 +110,11 @@ const EXHAUSTIVE: Corpus = Corpus {
         "src/fern/noauth/__init__.py",
         "src/fern/noreqbody/__init__.py",
         "src/fern/reqwithheaders/__init__.py",
+        // Per-tag raw clients for the no-request-body tags (path params only,
+        // single JSON success response). Other tags await wider endpoint support.
+        "src/fern/endpoints_put/raw_client.py",
+        "src/fern/endpoints_urls/raw_client.py",
+        "src/fern/noreqbody/raw_client.py",
     ],
 };
 

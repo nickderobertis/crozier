@@ -77,6 +77,63 @@ pub struct Operation {
     /// Tags; the first groups the operation into a client.
     #[serde(default)]
     pub tags: Vec<String>,
+    /// A human description; becomes the method docstring's summary line.
+    #[serde(default)]
+    pub description: Option<String>,
+    /// Path/query/header parameters, in document order.
+    #[serde(default)]
+    pub parameters: Vec<Parameter>,
+    /// The request body, if any.
+    #[serde(rename = "requestBody", default)]
+    pub request_body: Option<RequestBody>,
+    /// Responses, keyed by status code (or `default`), in document order.
+    #[serde(default)]
+    pub responses: IndexMap<String, Response>,
+}
+
+/// An operation parameter (path/query/header). Only inline parameters are
+/// modeled; a `$ref` parameter deserializes with an empty name.
+#[derive(Debug, Default, Deserialize)]
+pub struct Parameter {
+    /// Parameter name (the wire name; also the path placeholder for `in: path`).
+    #[serde(default)]
+    pub name: String,
+    /// Location: `path`, `query`, or `header`.
+    #[serde(rename = "in", default)]
+    pub location: String,
+    /// Whether the parameter is required.
+    #[serde(default)]
+    pub required: Option<bool>,
+    /// The parameter's value schema.
+    #[serde(default)]
+    pub schema: Option<Schema>,
+}
+
+/// A request body: a content-type → media-type map plus a required flag.
+#[derive(Debug, Default, Deserialize)]
+pub struct RequestBody {
+    /// Whether the body is required.
+    #[serde(default)]
+    pub required: Option<bool>,
+    /// Content, keyed by media type (e.g. `application/json`).
+    #[serde(default)]
+    pub content: IndexMap<String, MediaType>,
+}
+
+/// One response entry.
+#[derive(Debug, Default, Deserialize)]
+pub struct Response {
+    /// Content, keyed by media type.
+    #[serde(default)]
+    pub content: IndexMap<String, MediaType>,
+}
+
+/// A media-type object carrying the body/response schema.
+#[derive(Debug, Default, Deserialize)]
+pub struct MediaType {
+    /// The schema for this media type.
+    #[serde(default)]
+    pub schema: Option<Schema>,
 }
 
 /// The `info` block.

@@ -4,7 +4,7 @@
 
 use crate::config::GenerateConfig;
 use crate::naming;
-use crate::openapi::{AdditionalProperties, OpenApi, Schema};
+use crate::openapi::{AdditionalProperties, OpenApi, Operation, Schema};
 
 /// A fully-resolved SDK model ready to emit.
 #[derive(Debug)]
@@ -18,6 +18,42 @@ pub struct Ir {
     /// Endpoint client module (directory) names, one per operation group, in
     /// first-seen order.
     pub endpoint_modules: Vec<String>,
+    /// Every operation, in document-traversal order, resolved for emission.
+    pub endpoints: Vec<Endpoint>,
+}
+
+/// One API operation, resolved into the shape the raw client needs.
+#[derive(Debug)]
+pub struct Endpoint {
+    /// The client module (directory) this operation belongs to.
+    pub module: String,
+    /// The generated Python method name.
+    pub method_name: String,
+    /// The uppercase HTTP method (`GET`, `POST`, ...).
+    pub http_method: &'static str,
+    /// The URL path from the document (e.g. `/urls/{id}`), leading slash and all.
+    pub path: String,
+    /// Path parameters, in declaration order.
+    pub path_params: Vec<PathParam>,
+    /// The success response body type, or `None` when the endpoint returns no
+    /// content.
+    pub response: Option<TypeRef>,
+    /// A short description shown as the docstring's summary line.
+    pub docstring: Option<String>,
+    /// Whether crozier can emit this operation's raw client today. A module is
+    /// only emitted when every one of its operations is emittable.
+    pub emittable: bool,
+}
+
+/// A resolved path parameter.
+#[derive(Debug)]
+pub struct PathParam {
+    /// The wire name (matches the `{placeholder}` in the path).
+    pub wire_name: String,
+    /// The Python parameter identifier.
+    pub py_name: String,
+    /// The parameter's type.
+    pub type_ref: TypeRef,
 }
 
 /// A generated top-level type.
@@ -154,6 +190,90 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         project_name: config.project_name.clone(),
         types: builder.types,
         endpoint_modules: endpoint_modules(doc),
+        endpoints: endpoints(doc),
+    }
+}
+
+/// Resolve every operation into an [`Endpoint`], in document-traversal order
+/// (paths in document order, methods in a stable per-path order).
+fn endpoints(doc: &OpenApi) -> Vec<Endpoint> {
+    let mut out = Vec::new();
+    for (path, item) in &doc.paths {
+        for (http_method, op) in item.operations() {
+            out.push(build_endpoint(path, http_method, op));
+        }
+    }
+    out
+}
+
+/// Resolve one operation, deciding whether it is within the subset crozier can
+/// emit today (no request body, only path parameters, a single JSON success
+/// response whose type is a named model or a scalar).
+fn build_endpoint(path: &str, http_method: &'static str, op: &Operation) -> Endpoint {
+    let module = endpoint_module(&op.operation_id);
+    let path_params: Vec<PathParam> = op
+        .parameters
+        .iter()
+        .filter(|p| p.location == "path")
+        .map(|p| PathParam {
+            wire_name: p.name.clone(),
+            py_name: naming::field_name(&p.name),
+            type_ref: p
+                .schema
+                .as_ref()
+                .map_or(TypeRef::Primitive(Prim::Any), base_type_ref),
+        })
+        .collect();
+
+    let has_query_or_header = op
+        .parameters
+        .iter()
+        .any(|p| p.location == "query" || p.location == "header");
+    let only_success =
+        !op.responses.is_empty() && op.responses.keys().all(|code| code.starts_with('2'));
+    let response = success_response(op);
+
+    // Today's subset: no body, no query/header params, only 2xx responses, and a
+    // response type crozier knows how to render (named model or scalar).
+    let emittable = op.request_body.is_none()
+        && !has_query_or_header
+        && only_success
+        && matches!(response, Some(TypeRef::Named(_) | TypeRef::Primitive(_)));
+
+    Endpoint {
+        module,
+        method_name: endpoint_method_name(&op.operation_id),
+        http_method,
+        path: path.to_string(),
+        path_params,
+        response,
+        docstring: clean_doc(op.description.as_deref()),
+        emittable,
+    }
+}
+
+/// The success (2xx) response's `application/json` body type, if any.
+fn success_response(op: &Operation) -> Option<TypeRef> {
+    let response = op
+        .responses
+        .iter()
+        .find(|(code, _)| code.starts_with('2'))
+        .map(|(_, r)| r)?;
+    let schema = response.content.get("application/json")?.schema.as_ref()?;
+    Some(base_type_ref(schema))
+}
+
+/// The generated Python method name for an operation. Mirrors the module rule
+/// (see [`endpoint_module`]): when the group prefix is itself multi-segment
+/// (contains `_`), the whole operationId is snake-cased; otherwise only the
+/// suffix after the final `_` is taken and lowercased (camel humps flattened),
+/// matching Fern (`endpoints_put_add`, but `postwithnoauth`).
+fn endpoint_method_name(operation_id: &str) -> String {
+    let (group, rest) = operation_id.rsplit_once('_').unwrap_or(("", operation_id));
+    if group.contains('_') {
+        naming::to_snake_case(operation_id)
+    } else {
+        rest.to_lowercase()
     }
 }
 
@@ -531,5 +651,55 @@ fn clean_doc(desc: Option<&str>) -> Option<String> {
         None
     } else {
         Some(text.to_string())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{endpoint_method_name, endpoint_module};
+
+    #[test]
+    fn method_name_snakes_whole_id_for_multi_segment_groups() {
+        // The group prefix (`endpoints_put`) is multi-segment, so the whole
+        // operationId is snake-cased.
+        assert_eq!(
+            endpoint_method_name("endpoints_put_add"),
+            "endpoints_put_add"
+        );
+        assert_eq!(
+            endpoint_method_name("endpoints_urls_withMixedCase"),
+            "endpoints_urls_with_mixed_case"
+        );
+        assert_eq!(
+            endpoint_method_name("endpoints_httpMethods_testGet"),
+            "endpoints_http_methods_test_get"
+        );
+    }
+
+    #[test]
+    fn method_name_lowercases_suffix_for_single_segment_groups() {
+        // A single-segment group (`noReqBody`) contributes nothing to the method
+        // name; only the suffix survives, flattened to lowercase.
+        assert_eq!(
+            endpoint_method_name("noReqBody_getWithNoRequestBody"),
+            "getwithnorequestbody"
+        );
+        assert_eq!(
+            endpoint_method_name("inlinedRequests_postWithObjectBodyandResponse"),
+            "postwithobjectbodyandresponse"
+        );
+    }
+
+    #[test]
+    fn module_mirrors_the_group_naming() {
+        assert_eq!(endpoint_module("endpoints_put_add"), "endpoints_put");
+        assert_eq!(
+            endpoint_module("endpoints_httpMethods_testGet"),
+            "endpoints_http_methods"
+        );
+        assert_eq!(
+            endpoint_module("noReqBody_getWithNoRequestBody"),
+            "noreqbody"
+        );
     }
 }
