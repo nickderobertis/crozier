@@ -102,13 +102,39 @@ pub struct RequestBody {
     pub type_ref: TypeRef,
     /// Whether the body is required; optional bodies get `Optional[..] = None`.
     pub required: bool,
+    /// How the body serializes into the `json=` argument and whether it carries
+    /// the content-type header.
+    pub encoding: BodyEncoding,
+}
+
+/// How a request body serializes into the `json=` argument, and whether Fern
+/// emits the `content-type: application/json` header for it. Modeled as an enum
+/// (rather than independent `content_type` / `convert` flags) so the impossible
+/// "convert without a content-type header" state is unrepresentable.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum BodyEncoding {
+    /// `json=request` with no content-type header — a bare JSON scalar.
+    Scalar,
+    /// `json=request` with the content-type header — a named enum, or a
+    /// `uuid`/`byte` scalar (rendered as `str` but flagged by Fern).
+    Json,
+    /// `convert_and_respect_annotation_metadata(...)` with the content-type
+    /// header — a union whose object variants carry field aliases to respect.
+    Convert,
+}
+
+impl BodyEncoding {
     /// Whether the request emits the `content-type: application/json` header.
-    /// Fern omits it for bare scalar bodies and adds it for named (`$ref`) types.
-    pub content_type_header: bool,
-    /// Whether the body serializes through `convert_and_respect_annotation_metadata`
-    /// (Fern's wrapper for types carrying field aliases, e.g. unions of objects)
-    /// rather than a plain `json=request`.
-    pub convert: bool,
+    #[must_use]
+    pub fn content_type_header(self) -> bool {
+        !matches!(self, BodyEncoding::Scalar)
+    }
+
+    /// Whether the body serializes through `convert_and_respect_annotation_metadata`.
+    #[must_use]
+    pub fn is_convert(self) -> bool {
+        matches!(self, BodyEncoding::Convert)
+    }
 }
 
 /// A generated top-level type.
@@ -389,13 +415,12 @@ fn resolve_request_body(doc: &OpenApi, rb: &crate::openapi::RequestBody) -> Opti
     if let Some(reference) = &schema.reference {
         let target = resolve_ref(doc, reference)?;
         // A `$ref` to an extensible (string) enum serializes as a plain
-        // `json=request`.
+        // `json=request` with the content-type header.
         if string_enum_values(target).is_some() {
             return Some(RequestBody {
                 type_ref: TypeRef::Named(ref_to_class(reference)),
                 required,
-                content_type_header: true,
-                convert: false,
+                encoding: BodyEncoding::Json,
             });
         }
         // A `$ref` to a union goes through the convert wrapper (its object
@@ -404,35 +429,35 @@ fn resolve_request_body(doc: &OpenApi, rb: &crate::openapi::RequestBody) -> Opti
             return Some(RequestBody {
                 type_ref: TypeRef::Named(ref_to_class(reference)),
                 required,
-                content_type_header: true,
-                convert: true,
+                encoding: BodyEncoding::Convert,
             });
         }
         // A `$ref` to a plain object is inlined by Fern (each field becomes an
         // argument) — not yet supported.
         return None;
     }
-    scalar_body(schema).map(|(type_ref, content_type_header)| RequestBody {
+    scalar_body(schema).map(|(type_ref, encoding)| RequestBody {
         type_ref,
         required,
-        content_type_header,
-        convert: false,
+        encoding,
     })
 }
 
 /// A bare scalar request-body type Fern serializes with a plain `json=request`,
-/// paired with whether Fern adds the `content-type: application/json` header for
-/// it. Plain scalars and the date formats omit the header; the `uuid`/`byte`
-/// string formats (still rendered as `str`) carry it. Non-scalar shapes and other
-/// string formats return `None`.
-fn scalar_body(schema: &Schema) -> Option<(TypeRef, bool)> {
+/// paired with its [`BodyEncoding`]. Plain scalars and the date formats omit the
+/// content-type header ([`BodyEncoding::Scalar`]); the `uuid`/`byte` string
+/// formats (still rendered as `str`) carry it ([`BodyEncoding::Json`]). Non-scalar
+/// shapes and other string formats return `None`.
+fn scalar_body(schema: &Schema) -> Option<(TypeRef, BodyEncoding)> {
     let type_ref = match schema.ty.as_ref().and_then(|t| t.primary())? {
         "string" => match schema.format.as_deref() {
             None => TypeRef::Primitive(Prim::Str),
             Some("date-time") => TypeRef::Primitive(Prim::Datetime),
             Some("date") => TypeRef::Primitive(Prim::Date),
             // `uuid`/`byte` render as `str` but carry a content-type header.
-            Some("uuid" | "byte") => return Some((TypeRef::Primitive(Prim::Str), true)),
+            Some("uuid" | "byte") => {
+                return Some((TypeRef::Primitive(Prim::Str), BodyEncoding::Json))
+            }
             _ => return None,
         },
         "integer" => TypeRef::Primitive(Prim::Int),
@@ -440,7 +465,7 @@ fn scalar_body(schema: &Schema) -> Option<(TypeRef, bool)> {
         "boolean" => TypeRef::Primitive(Prim::Bool),
         _ => return None,
     };
-    Some((type_ref, false))
+    Some((type_ref, BodyEncoding::Scalar))
 }
 
 /// Resolve a local `#/components/schemas/{key}` reference to its schema.
@@ -853,10 +878,10 @@ fn clean_doc(desc: Option<&str>) -> Option<String> {
 
 #[cfg(test)]
 mod tests {
-    use super::{endpoint_method_name, endpoint_module, scalar_body, Prim, TypeRef};
+    use super::{endpoint_method_name, endpoint_module, scalar_body, BodyEncoding, Prim, TypeRef};
     use crate::openapi::{Schema, TypeField};
 
-    fn scalar(ty: &str, format: Option<&str>) -> Option<(TypeRef, bool)> {
+    fn scalar(ty: &str, format: Option<&str>) -> Option<(TypeRef, BodyEncoding)> {
         let schema = Schema {
             ty: Some(TypeField::Single(ty.to_string())),
             format: format.map(str::to_string),
@@ -870,28 +895,28 @@ mod tests {
         // Plain scalars and the date formats serialize with no content-type header.
         assert!(matches!(
             scalar("string", None),
-            Some((TypeRef::Primitive(Prim::Str), false))
+            Some((TypeRef::Primitive(Prim::Str), BodyEncoding::Scalar))
         ));
         assert!(matches!(
             scalar("string", Some("date-time")),
-            Some((TypeRef::Primitive(Prim::Datetime), false))
+            Some((TypeRef::Primitive(Prim::Datetime), BodyEncoding::Scalar))
         ));
         assert!(matches!(
             scalar("integer", None),
-            Some((TypeRef::Primitive(Prim::Int), false))
+            Some((TypeRef::Primitive(Prim::Int), BodyEncoding::Scalar))
         ));
         assert!(matches!(
             scalar("boolean", None),
-            Some((TypeRef::Primitive(Prim::Bool), false))
+            Some((TypeRef::Primitive(Prim::Bool), BodyEncoding::Scalar))
         ));
         // `uuid`/`byte` render as `str` but carry the content-type header.
         assert!(matches!(
             scalar("string", Some("uuid")),
-            Some((TypeRef::Primitive(Prim::Str), true))
+            Some((TypeRef::Primitive(Prim::Str), BodyEncoding::Json))
         ));
         assert!(matches!(
             scalar("string", Some("byte")),
-            Some((TypeRef::Primitive(Prim::Str), true))
+            Some((TypeRef::Primitive(Prim::Str), BodyEncoding::Json))
         ));
         // Other string formats and non-scalar shapes are excluded.
         assert!(scalar("string", Some("binary")).is_none());

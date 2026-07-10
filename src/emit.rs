@@ -849,7 +849,7 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
     // wrapper for types carrying field aliases; named bodies also carry a
     // `content-type: application/json` header.
     if let Some(rb) = &ep.request_body {
-        if rb.convert {
+        if rb.encoding.is_convert() {
             imports.add_from(
                 "..core.serialization",
                 "convert_and_respect_annotation_metadata",
@@ -879,7 +879,7 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
     let content_type = ep
         .request_body
         .as_ref()
-        .is_some_and(|rb| rb.content_type_header)
+        .is_some_and(|rb| rb.encoding.content_type_header())
         || (ep.request_body.is_some() && !ep.header_params.is_empty());
     if content_type || !ep.header_params.is_empty() {
         lines.push("            headers={".to_string());
