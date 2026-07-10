@@ -37,6 +37,8 @@ pub struct Endpoint {
     pub path_params: Vec<PathParam>,
     /// Query parameters, in declaration order.
     pub query_params: Vec<QueryParam>,
+    /// Header parameters, in declaration order.
+    pub header_params: Vec<HeaderParam>,
     /// The JSON request body, when the operation has one crozier can emit.
     pub request_body: Option<RequestBody>,
     /// The success response body type, or `None` when the endpoint returns no
@@ -65,6 +67,22 @@ pub struct PathParam {
 #[derive(Debug)]
 pub struct QueryParam {
     /// The wire name (the `params` dict key).
+    pub wire_name: String,
+    /// The Python parameter identifier.
+    pub py_name: String,
+    /// The parameter's base type (optionality is carried by `required`).
+    pub type_ref: TypeRef,
+    /// Whether the parameter is required; optional params get `Optional[..] = None`.
+    pub required: bool,
+    /// Optional description, shown under the parameter in the docstring.
+    pub docstring: Option<String>,
+}
+
+/// A resolved header parameter, rendered as a keyword-only method argument and a
+/// `headers={...}` entry (`str(x) if x is not None else None`).
+#[derive(Debug)]
+pub struct HeaderParam {
+    /// The wire name (the `headers` dict key, e.g. `X-TEST-ENDPOINT-HEADER`).
     pub wire_name: String,
     /// The Python parameter identifier.
     pub py_name: String,
@@ -283,13 +301,29 @@ fn build_endpoint(
         })
         .collect();
 
-    // Today crozier handles path and query parameters; any other kind (header,
-    // cookie, an unknown location, or a `$ref` with no location) puts the
+    let header_params: Vec<HeaderParam> = op
+        .parameters
+        .iter()
+        .filter(|p| p.location == Some(ParameterLocation::Header))
+        .map(|p| HeaderParam {
+            wire_name: p.name.clone(),
+            py_name: naming::field_name(header_param_stem(&p.name)),
+            type_ref: p
+                .schema
+                .as_ref()
+                .map_or(TypeRef::Primitive(Prim::Any), base_type_ref),
+            required: p.required == Some(true),
+            docstring: clean_doc(p.description.as_deref()),
+        })
+        .collect();
+
+    // Today crozier handles path, query, and header parameters; any other kind
+    // (cookie, an unknown location, or a `$ref` with no location) puts the
     // operation outside the emittable subset.
     let has_unsupported_params = op.parameters.iter().any(|p| {
         !matches!(
             p.location,
-            Some(ParameterLocation::Path | ParameterLocation::Query)
+            Some(ParameterLocation::Path | ParameterLocation::Query | ParameterLocation::Header)
         )
     });
     let only_success =
@@ -307,12 +341,16 @@ fn build_endpoint(
         Some(body) => body.is_some(),
     };
 
-    // Today's subset: a supported (or absent) body, path/query params only, only
-    // 2xx responses, and a response type crozier knows how to render.
+    // Today's subset: a supported (or absent) body, path/query/header params only,
+    // only 2xx responses, and a response crozier knows how to render — a named
+    // model, a scalar, or no content (a 2xx without a JSON body).
     let emittable = body_ok
         && !has_unsupported_params
         && only_success
-        && matches!(response, Some(TypeRef::Named(_) | TypeRef::Primitive(_)));
+        && matches!(
+            response,
+            None | Some(TypeRef::Named(_) | TypeRef::Primitive(_))
+        );
 
     Endpoint {
         module,
@@ -321,11 +359,22 @@ fn build_endpoint(
         path: path.to_string(),
         path_params,
         query_params,
+        header_params,
         request_body: request_body.flatten(),
         response,
         docstring: clean_doc(op.description.as_deref()),
         emittable,
     }
+}
+
+/// The stem crozier snake-cases into a header parameter's Python name. Fern drops
+/// the conventional `X-` custom-header prefix (`X-TEST-ENDPOINT-HEADER` becomes
+/// `test_endpoint_header`), while the wire name stays the `headers` dict key.
+fn header_param_stem(wire_name: &str) -> &str {
+    wire_name
+        .strip_prefix("X-")
+        .or_else(|| wire_name.strip_prefix("x-"))
+        .unwrap_or(wire_name)
 }
 
 /// Resolve an operation's `application/json` request body into the subset crozier

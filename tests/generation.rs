@@ -465,18 +465,26 @@ paths:
 fn emits_raw_client_only_for_supported_modules() {
     let files = render(ENDPOINTS_SPEC);
 
-    // The supported modules emit a raw client; the others (non-2xx response,
-    // empty response) do not — only their package marker.
+    // The supported modules emit a raw client; `err` (a non-2xx response) does
+    // not — only its package marker.
     let raw = files
         .get("src/acme/things/raw_client.py")
         .expect("things raw_client");
-    for module in ["err", "noresp"] {
-        assert!(
-            !files.contains_key(&format!("src/acme/{module}/raw_client.py")),
-            "{module} should not emit a raw_client yet"
-        );
-        assert!(files.contains_key(&format!("src/acme/{module}/__init__.py")));
-    }
+    assert!(
+        !files.contains_key("src/acme/err/raw_client.py"),
+        "err should not emit a raw_client yet"
+    );
+    assert!(files.contains_key("src/acme/err/__init__.py"));
+
+    // A 2xx response with no content (204) is supported and returns `None`.
+    let noresp = files
+        .get("src/acme/noresp/raw_client.py")
+        .expect("noresp raw_client");
+    assert!(noresp.contains("-> HttpResponse[None]:"), "{noresp}");
+    assert!(
+        noresp.contains("return HttpResponse(response=_response, data=None)"),
+        "{noresp}"
+    );
 
     // A query-parameter-only operation is now supported: the param becomes a
     // keyword-only optional argument and a `params={...}` entry.
@@ -642,6 +650,57 @@ fn named_enum_body_carries_content_type_and_uuid_body_is_gated() {
         "uuid body should gate the module out"
     );
     assert!(files.contains_key("src/acme/uid/__init__.py"));
+}
+
+/// A header parameter (with the `X-` custom-header prefix) plus a scalar body and
+/// a 204 response.
+const HEADER_SPEC: &str = r##"
+openapi: 3.0.0
+info:
+  title: Header API
+paths:
+  /h:
+    post:
+      operationId: hdr_send
+      tags: [Hdr]
+      parameters:
+        - name: X-My-Header
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        "204":
+          description: ""
+"##;
+
+#[test]
+fn header_param_strips_x_prefix_and_forces_content_type() {
+    let files = render(HEADER_SPEC);
+    let hdr = files
+        .get("src/acme/hdr/raw_client.py")
+        .expect("hdr raw_client");
+
+    // The `X-` prefix is dropped for the Python name; the wire name stays the key.
+    assert!(hdr.contains("my_header: str,"), "{hdr}");
+    assert!(
+        hdr.contains("\"X-My-Header\": str(my_header) if my_header is not None else None,"),
+        "{hdr}"
+    );
+    // A scalar body would normally omit the content-type header, but an
+    // accompanying header param forces it on.
+    assert!(
+        hdr.contains("\"content-type\": \"application/json\","),
+        "{hdr}"
+    );
+    // The 204 response returns `None`.
+    assert!(hdr.contains("-> HttpResponse[None]:"), "{hdr}");
 }
 
 #[test]
