@@ -114,14 +114,16 @@ fn object_fields_render_with_fern_conventions() {
     // Described field: pydantic.Field(default=None) + docstring line.
     assert!(widget.contains("described: typing.Optional[str] = pydantic.Field(default=None)"));
     assert!(widget.contains("A described optional field."));
-    // Reserved name is munged and aliased.
+    // Reserved name is munged and aliased; the wire alias lives only in
+    // FieldMetadata (not pydantic.Field).
     assert!(widget.contains(
-        "list_: typing_extensions.Annotated[typing.Optional[typing.List[str]], FieldMetadata(alias=\"list\"), pydantic.Field(alias=\"list\")] = None"
+        "list_: typing_extensions.Annotated[typing.Optional[typing.List[str]], FieldMetadata(alias=\"list\")] = None"
     ), "aliased list field: {widget}");
     // Primitive mappings.
     assert!(widget.contains("when: typing.Optional[dt.datetime] = None"));
     assert!(widget.contains("day: typing.Optional[dt.date] = None"));
-    assert!(widget.contains("ident: typing.Optional[uuid.UUID] = None"));
+    // Fern's OpenAPI importer maps `format: uuid` to plain `str`.
+    assert!(widget.contains("ident: typing.Optional[str] = None"));
     assert!(widget.contains("amount: typing.Optional[float] = None"));
     assert!(widget.contains("flag: typing.Optional[bool] = None"));
     assert!(widget.contains("attributes: typing.Optional[typing.Dict[str, str]] = None"));
@@ -137,7 +139,6 @@ fn import_block_follows_ferns_two_group_order() {
     let expected_head = "\
 import datetime as dt
 import typing
-import uuid
 
 import pydantic
 import typing_extensions
@@ -159,12 +160,16 @@ fn union_alias_and_scalar_alias_render() {
 }
 
 #[test]
-fn enum_file_lists_members() {
+fn string_enum_renders_as_extensible_union() {
+    // Fern renders an OpenAPI string enum as an extensible enum, not an
+    // `enum.Enum` class.
     let files = render(RICH_SPEC);
     let color = &files["src/acme/types/color.py"];
-    assert!(color.contains("class Color(str, enum.Enum):"));
-    assert!(color.contains("RED = \"red\""));
-    assert!(color.contains("GREEN = \"green\""));
+    assert!(
+        color.contains("Color = typing.Union[typing.Literal[\"red\", \"green\"], typing.Any]"),
+        "extensible enum: {color}"
+    );
+    assert!(!color.contains("enum.Enum"));
 }
 
 #[test]
@@ -255,6 +260,52 @@ fn additional_properties_true_maps_to_any() {
         "openapi: 3.0.0\ninfo:\n  title: A\ncomponents:\n  schemas:\n    Bag:\n      type: object\n      properties:\n        data:\n          type: object\n          additionalProperties: true\n",
     );
     assert!(files["src/acme/types/bag.py"].contains("data: typing.Optional[typing.Any] = None"));
+}
+
+#[test]
+fn required_documented_field_uses_empty_pydantic_field() {
+    // A required field with a description carries `pydantic.Field()` (no default),
+    // unlike an optional documented field (`pydantic.Field(default=None)`).
+    let files = render(
+        "openapi: 3.0.0\ninfo:\n  title: D\ncomponents:\n  schemas:\n    Obj:\n      type: object\n      required: [name]\n      properties:\n        name:\n          type: string\n          description: The name.\n",
+    );
+    let obj = &files["src/acme/types/obj.py"];
+    assert!(obj.contains("name: str = pydantic.Field()"), "{obj}");
+    assert!(obj.contains("The name."));
+}
+
+#[test]
+fn nullable_scalar_alias_is_optional() {
+    // A top-level `nullable` scalar becomes an `Optional[..]` alias.
+    let files = render(
+        "openapi: 3.0.0\ninfo:\n  title: N\ncomponents:\n  schemas:\n    Maybe:\n      type: string\n      nullable: true\n",
+    );
+    assert!(files["src/acme/types/maybe.py"].contains("Maybe = typing.Optional[str]"));
+}
+
+#[test]
+fn unknown_schema_maps_to_optional_any() {
+    // An empty schema is an unknown type: an `Optional[Any]` alias, and an
+    // always-optional `Optional[Any]` field even when listed as required.
+    let files = render(
+        "openapi: 3.0.0\ninfo:\n  title: U\ncomponents:\n  schemas:\n    Unknown: {}\n    Holder:\n      type: object\n      required: [value]\n      properties:\n        value: {}\n",
+    );
+    assert!(files["src/acme/types/unknown.py"].contains("Unknown = typing.Optional[typing.Any]"));
+    assert!(
+        files["src/acme/types/holder.py"].contains("value: typing.Optional[typing.Any] = None"),
+        "{}",
+        files["src/acme/types/holder.py"]
+    );
+}
+
+#[test]
+fn object_with_only_additional_properties_is_a_dict_alias() {
+    // A `type: object` with `additionalProperties` and no declared properties is
+    // a map alias, not an (empty) model.
+    let files = render(
+        "openapi: 3.0.0\ninfo:\n  title: M\ncomponents:\n  schemas:\n    Bag:\n      type: object\n      additionalProperties:\n        type: string\n",
+    );
+    assert!(files["src/acme/types/bag.py"].contains("Bag = typing.Dict[str, str]"));
 }
 
 #[test]

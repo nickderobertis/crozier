@@ -9,7 +9,6 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::path::PathBuf;
 
 use minijinja::{context, Environment};
-use serde::Serialize;
 
 use crate::error::{Error, Result};
 use crate::ir::{Field, Ir, Prim, TypeDecl, TypeRef};
@@ -140,15 +139,24 @@ fn render_type(t: &TypeRef, imports: &mut Imports) -> String {
                 imports.add_plain_as("datetime", "dt");
                 "dt.date".to_string()
             }
-            Prim::Uuid => {
-                imports.add_plain("uuid");
-                "uuid.UUID".to_string()
-            }
         },
         TypeRef::Named(class) => {
             let module = naming::module_name(class);
             imports.add_from(&format!(".{module}"), class);
             class.clone()
+        }
+        TypeRef::Optional(inner) => {
+            imports.add_plain("typing");
+            format!("typing.Optional[{}]", render_type(inner, imports))
+        }
+        TypeRef::Literal(values) => {
+            imports.add_plain("typing");
+            let joined = values
+                .iter()
+                .map(|v| format!("\"{v}\""))
+                .collect::<Vec<_>>()
+                .join(", ");
+            format!("typing.Literal[{joined}]")
         }
         TypeRef::List(inner) => {
             imports.add_plain("typing");
@@ -174,8 +182,8 @@ fn render_type(t: &TypeRef, imports: &mut Imports) -> String {
     }
 }
 
-/// A field prepared for the object template.
-#[derive(Serialize)]
+/// A field prepared for emission: its Python name, resolved annotation, the
+/// `= <default>` suffix, and an optional docstring.
 struct RenderedField {
     py_name: String,
     annotation: String,
@@ -193,41 +201,42 @@ fn render_field(field: &Field, imports: &mut Imports) -> RenderedField {
         inner
     };
 
-    if field.needs_alias() {
+    // Fern carries the wire alias in `FieldMetadata` inside the `Annotated`, not
+    // in `pydantic.Field`.
+    let annotation = if field.needs_alias() {
         imports.add_plain("typing_extensions");
-        imports.add_plain("pydantic");
         imports.add_from("..core.serialization", "FieldMetadata");
-        let annotation = format!(
-            "typing_extensions.Annotated[{typ}, FieldMetadata(alias=\"{wire}\"), pydantic.Field(alias=\"{wire}\")]",
-            wire = field.wire_name
-        );
-        let default = if field.optional {
-            " = None".to_string()
-        } else {
-            String::new()
-        };
-        return RenderedField {
-            py_name: field.py_name.clone(),
-            annotation,
-            default,
-            docstring: field.docstring.clone(),
-        };
-    }
-
-    let default = if field.docstring.is_some() {
-        imports.add_plain("pydantic");
-        " = pydantic.Field(default=None)".to_string()
-    } else if field.optional {
-        " = None".to_string()
+        format!(
+            "typing_extensions.Annotated[{typ}, FieldMetadata(alias=\"{}\")]",
+            field.wire_name
+        )
     } else {
-        String::new()
+        typ
     };
 
     RenderedField {
         py_name: field.py_name.clone(),
-        annotation: typ,
-        default,
+        annotation,
+        default: field_default(field, imports),
         docstring: field.docstring.clone(),
+    }
+}
+
+/// The `= <default>` suffix for a field. A documented field carries a
+/// `pydantic.Field` (with `default=None` when optional); an undocumented
+/// optional field defaults to `None`; a required undocumented field has none.
+fn field_default(field: &Field, imports: &mut Imports) -> String {
+    if field.docstring.is_some() {
+        imports.add_plain("pydantic");
+        if field.optional {
+            " = pydantic.Field(default=None)".to_string()
+        } else {
+            " = pydantic.Field()".to_string()
+        }
+    } else if field.optional {
+        " = None".to_string()
+    } else {
+        String::new()
     }
 }
 
@@ -243,8 +252,6 @@ fn environment() -> Environment<'static> {
         .expect("object template compiles");
     env.add_template("alias.py", include_str!("../templates/alias.py.j2"))
         .expect("alias template compiles");
-    env.add_template("enum.py", include_str!("../templates/enum.py.j2"))
-        .expect("enum template compiles");
     env
 }
 
@@ -284,6 +291,66 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     Ok(files)
 }
 
+/// The pydantic model configuration block Fern emits at the end of every model.
+/// Static (the `# type: ignore` comment is stripped before the byte comparison).
+const CONFIG_BLOCK: &str = "    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra=\"allow\", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow";
+
+/// Render a docstring as an indented triple-quoted block, escaping backslashes
+/// the way Fern does so the value round-trips. Every line (including blank ones)
+/// carries the block indent; the block has no trailing newline.
+fn render_docstring(doc: &str, indent: usize) -> String {
+    let pad = " ".repeat(indent);
+    let mut out = format!("{pad}\"\"\"\n");
+    for line in doc.split('\n') {
+        out.push_str(&pad);
+        out.push_str(&line.replace('\\', "\\\\"));
+        out.push('\n');
+    }
+    out.push_str(&pad);
+    out.push_str("\"\"\"");
+    out
+}
+
+/// Assemble a model's class body: an optional class docstring, the fields (each
+/// with an optional docstring), then the config block. Consecutive fields are
+/// separated by a blank line only after a documented field; a blank line always
+/// precedes the config block. No trailing newline (the template adds it).
+fn object_body(class_docstring: Option<&str>, fields: &[RenderedField]) -> String {
+    let mut body = String::new();
+    if let Some(doc) = class_docstring {
+        body.push_str(&render_docstring(doc, 4));
+        body.push_str("\n\n");
+    }
+    for (i, field) in fields.iter().enumerate() {
+        body.push_str("    ");
+        body.push_str(&field.py_name);
+        body.push_str(": ");
+        body.push_str(&field.annotation);
+        body.push_str(&field.default);
+        body.push('\n');
+        if let Some(doc) = &field.docstring {
+            body.push_str(&render_docstring(doc, 4));
+            body.push('\n');
+        }
+        // Separate a documented field from the next field with a blank line.
+        if field.docstring.is_some() && i + 1 < fields.len() {
+            body.push('\n');
+        }
+    }
+    if !fields.is_empty() {
+        body.push('\n');
+    }
+    body.push_str(CONFIG_BLOCK);
+    body
+}
+
 /// Render one type declaration to a file body.
 fn render_type_decl(env: &Environment<'static>, decl: &TypeDecl) -> Result<String> {
     match decl {
@@ -306,7 +373,7 @@ fn render_type_decl(env: &Environment<'static>, decl: &TypeDecl) -> Result<Strin
                     header => HEADER,
                     imports => imports.render(),
                     class_name => obj.name,
-                    fields => fields,
+                    body => object_body(obj.docstring.as_deref(), &fields),
                 },
             )
         }
@@ -325,16 +392,6 @@ fn render_type_decl(env: &Environment<'static>, decl: &TypeDecl) -> Result<Strin
                 },
             )
         }
-        TypeDecl::Enum(enum_type) => render(
-            env,
-            "enum.py",
-            &enum_type.name,
-            context! {
-                header => HEADER,
-                class_name => enum_type.name,
-                variants => enum_type.variants,
-            },
-        ),
     }
 }
 

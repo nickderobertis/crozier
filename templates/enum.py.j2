@@ -1,9 +1,0 @@
-{{ header }}
-
-import enum
-
-
-class {{ class_name }}(str, enum.Enum):
-{% for v in variants %}
-    {{ v | upper }} = "{{ v }}"
-{% endfor %}
