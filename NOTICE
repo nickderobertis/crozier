@@ -1,11 +1,21 @@
 crozier
 Copyright 2026 Nick DeRobertis
 
-This product includes test fixtures derived from Fern (https://github.com/fern-api/fern),
-which is licensed under the Apache License, Version 2.0. A copy of that license is
-retained at licenses/fern-APACHE-2.0.txt.
+This product includes both test fixtures and a vendored runtime derived from Fern
+(https://github.com/fern-api/fern), which is licensed under the Apache License,
+Version 2.0. A copy of that license is retained at licenses/fern-APACHE-2.0.txt.
 
-Attribution and statement of changes (per Apache-2.0 sections 4(b) and 4(c)):
+Vendored runtime (shipped and redistributed as product):
+
+  * assets/core/ is Fern's Python SDK runtime support library (HTTP client,
+    pydantic utilities, serialization, SSE, request options). crozier embeds it
+    and emits it verbatim into every generated SDK, exactly as Fern ships it into
+    its own output. It is generator boilerplate, not derived from any OpenAPI
+    document. Provenance and the statement of changes are in assets/README.md;
+    the only changes are comment stripping (as with the fixtures below) and
+    templating the SDK name/version header in client_wrapper.py.
+
+Test fixtures (attribution and statement of changes, per Apache-2.0 §4(b), §4(c)):
 
   * Source: fern-api/fern, commit 3a471b03d4778f291849adc03bacfcd40340fc26.
   * Vendored under tests/fixtures/ are (a) OpenAPI source documents from Fern's
@@ -24,6 +34,8 @@ Attribution and statement of changes (per Apache-2.0 sections 4(b) and 4(c)):
   * Fern's own API-definition files were intentionally NOT used. crozier consumes
     only the OpenAPI document.
 
-crozier's own source code is an independent, clean-room implementation. It does
-not copy Fern's generator source; it reproduces Fern's generated *output* format,
-which is the explicit goal of this project.
+crozier's own Rust source is an independent, clean-room implementation: it does
+not copy Fern's generator, it reproduces Fern's generated *output* format, which
+is the explicit goal of this project. The one exception is the runtime library
+under assets/core/ above, which is Fern's own code redistributed under Apache-2.0
+with attribution (it is SDK runtime, not part of crozier's generator).

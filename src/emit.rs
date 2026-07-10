@@ -293,7 +293,104 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         });
     }
 
+    // Fern's static core runtime, emitted verbatim (see assets/README.md).
+    files.extend(core_files(pkg, &ir.project_name));
+
     Ok(files)
+}
+
+/// Fern's SDK runtime, vendored under `assets/core/` and emitted into every SDK.
+/// Each entry is (path under `core/`, verbatim contents). Only `client_wrapper`
+/// carries substitutions. See `assets/README.md` and `NOTICE` for provenance.
+const CORE_ASSETS: &[(&str, &str)] = &[
+    ("__init__.py", include_str!("../assets/core/__init__.py")),
+    ("api_error.py", include_str!("../assets/core/api_error.py")),
+    (
+        "client_wrapper.py",
+        include_str!("../assets/core/client_wrapper.py"),
+    ),
+    (
+        "datetime_utils.py",
+        include_str!("../assets/core/datetime_utils.py"),
+    ),
+    ("file.py", include_str!("../assets/core/file.py")),
+    (
+        "force_multipart.py",
+        include_str!("../assets/core/force_multipart.py"),
+    ),
+    (
+        "http_client.py",
+        include_str!("../assets/core/http_client.py"),
+    ),
+    (
+        "http_response.py",
+        include_str!("../assets/core/http_response.py"),
+    ),
+    (
+        "http_sse/__init__.py",
+        include_str!("../assets/core/http_sse/__init__.py"),
+    ),
+    (
+        "http_sse/_api.py",
+        include_str!("../assets/core/http_sse/_api.py"),
+    ),
+    (
+        "http_sse/_decoders.py",
+        include_str!("../assets/core/http_sse/_decoders.py"),
+    ),
+    (
+        "http_sse/_exceptions.py",
+        include_str!("../assets/core/http_sse/_exceptions.py"),
+    ),
+    (
+        "http_sse/_models.py",
+        include_str!("../assets/core/http_sse/_models.py"),
+    ),
+    (
+        "jsonable_encoder.py",
+        include_str!("../assets/core/jsonable_encoder.py"),
+    ),
+    (
+        "pydantic_utilities.py",
+        include_str!("../assets/core/pydantic_utilities.py"),
+    ),
+    (
+        "query_encoder.py",
+        include_str!("../assets/core/query_encoder.py"),
+    ),
+    (
+        "remove_none_from_dict.py",
+        include_str!("../assets/core/remove_none_from_dict.py"),
+    ),
+    (
+        "request_options.py",
+        include_str!("../assets/core/request_options.py"),
+    ),
+    (
+        "serialization.py",
+        include_str!("../assets/core/serialization.py"),
+    ),
+];
+
+/// Placeholders substituted in `client_wrapper.py`.
+const SDK_NAME_PLACEHOLDER: &str = "@@CROZIER_SDK_NAME@@";
+const SDK_VERSION_PLACEHOLDER: &str = "@@CROZIER_SDK_VERSION@@";
+/// Default SDK version stamped into the runtime (Fern uses `0.0.0` when none is
+/// configured). Not yet exposed as a flag.
+const DEFAULT_SDK_VERSION: &str = "0.0.0";
+
+/// Emit the vendored core runtime for a package, substituting the SDK name
+/// (project name) and version into `client_wrapper.py`.
+fn core_files(pkg: &str, project_name: &str) -> Vec<GeneratedFile> {
+    CORE_ASSETS
+        .iter()
+        .map(|(rel, content)| GeneratedFile {
+            path: PathBuf::from(format!("src/{pkg}/core/{rel}")),
+            contents: content
+                .replace(SDK_NAME_PLACEHOLDER, project_name)
+                .replace(SDK_VERSION_PLACEHOLDER, DEFAULT_SDK_VERSION),
+        })
+        .collect()
 }
 
 /// The pydantic model configuration block Fern emits at the end of every model.
