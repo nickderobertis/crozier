@@ -1,0 +1,11 @@
+/target
+**/*.rs.bk
+*.pdb
+
+# llmlint / oneharness local state
+.oneharness/
+llmlint.buildout.yml
+
+# Scratch output from local generation runs
+/out
+/.crozier-tmp

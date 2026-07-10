@@ -1,0 +1,24 @@
+{{ header }}
+
+{{ imports }}
+
+
+class {{ class_name }}(UniversalBaseModel):
+{% for f in fields %}
+    {{ f.py_name }}: {{ f.annotation }}{{ f.default }}
+{% if f.docstring %}
+    """
+    {{ f.docstring }}
+    """
+
+{% endif %}
+{% endfor %}
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

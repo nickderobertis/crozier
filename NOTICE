@@ -1,0 +1,24 @@
+crozier
+Copyright 2026 Nick DeRobertis
+
+This product includes test fixtures derived from Fern (https://github.com/fern-api/fern),
+which is licensed under the Apache License, Version 2.0. A copy of that license is
+retained at licenses/fern-APACHE-2.0.txt.
+
+Attribution and statement of changes (per Apache-2.0 sections 4(b) and 4(c)):
+
+  * Source: fern-api/fern, commit 3a471b03d4778f291849adc03bacfcd40340fc26.
+  * Vendored under tests/fixtures/ are (a) OpenAPI source documents from Fern's
+    test definitions and (b) the Python SDK output Fern's generator produced from
+    them. These are used unmodified as source specs and as golden output that
+    crozier is verified against.
+  * Change made to the vendored Python output: source-code comments were removed
+    (a string-safe strip of `#` comments) so that generator-identifying comment
+    text does not affect the byte-for-byte comparison. No other transformation is
+    applied; the fixtures are otherwise Fern's output verbatim.
+  * Fern's own API-definition files were intentionally NOT used. crozier consumes
+    only the OpenAPI document.
+
+crozier's own source code is an independent, clean-room implementation. It does
+not copy Fern's generator source; it reproduces Fern's generated *output* format,
+which is the explicit goal of this project.

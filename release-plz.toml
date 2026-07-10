@@ -1,0 +1,17 @@
+# release-plz drives releasing: it opens a release PR from merged Conventional
+# Commits; merging it bumps the version, writes CHANGELOG.md, commits
+# `chore(release): X.Y.Z`, and pushes the `vX.Y.Z` tag. The tag triggers
+# release.yml (build + upload archives). The version job must run under a PAT
+# (RELEASE_PLZ_TOKEN) — a tag pushed by the default GITHUB_TOKEN does NOT fire
+# release.yml. See AGENTS.md and docs/releasing is covered there.
+
+[workspace]
+# Binary-only tool: no crates.io publish (Cargo.toml has publish = false), but
+# still cut GitHub releases and tags.
+publish = false
+git_release_enable = true
+git_tag_enable = true
+git_tag_name = "v{{ version }}"
+# Pre-1.0: a breaking change bumps the minor (0.x), not the major. release-plz
+# follows Conventional Commits; this is the default 0.x behavior.
+changelog_update = true

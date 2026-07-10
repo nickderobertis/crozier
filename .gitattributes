@@ -1,0 +1,9 @@
+# Normalize line endings to LF everywhere. The e2e byte-compares generated
+# Python against committed fixtures; a CRLF flip on the Windows runner would
+# break the match. Keep this even-handed across the tree.
+* text=auto eol=lf
+
+# Fixtures and templates are byte-significant: never let a filter rewrite them.
+tests/fixtures/** -text
+templates/** text eol=lf
+*.py text eol=lf

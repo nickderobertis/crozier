@@ -1,0 +1,7 @@
+# Single source of truth for the toolchain. CI installs from this file rather
+# than pinning a version in a setup action, so local and CI never drift.
+[toolchain]
+channel = "1.96.0"
+components = ["rustfmt", "clippy", "llvm-tools-preview"]
+targets = ["x86_64-unknown-linux-gnu", "aarch64-unknown-linux-gnu"]
+profile = "minimal"

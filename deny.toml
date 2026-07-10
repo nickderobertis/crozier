@@ -1,0 +1,36 @@
+# Supply-chain gate (`cargo deny check`). Run once on Linux in `just check`.
+
+[advisories]
+version = 2
+# No ignored advisories. Add one only with a tracked rationale inline.
+ignore = []
+
+[licenses]
+version = 2
+# Explicit allow-list: a new dependency on a license not listed fails the gate,
+# forcing a deliberate decision rather than a silent policy drift.
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Unicode-3.0",
+    "Unicode-DFS-2016",
+    "Zlib",
+    "MPL-2.0",
+    "CC0-1.0",
+]
+confidence-threshold = 0.8
+
+[bans]
+# Duplicate transitive versions are common and not a correctness issue; don't
+# fail on them. Wildcard version requirements are banned — they defeat the lock.
+multiple-versions = "allow"
+wildcards = "deny"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
