@@ -329,14 +329,13 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             .collect();
         if !eps.is_empty() && eps.iter().all(|e| e.emittable) {
             files.push(raw_client_file(&env, pkg, module, &eps)?);
-            files.push(client_file(
-                &env,
+            let cx = ClientCtx {
                 pkg,
-                &ir.client_name,
+                client_name: &ir.client_name,
                 module,
-                &eps,
-                &ir.types,
-            )?);
+                types: &ir.types,
+            };
+            files.push(client_file(&env, &cx, &eps)?);
             emittable_modules.push(module);
         }
     }
@@ -1724,18 +1723,25 @@ fn root_client_docstring(pkg: &str, example_name: &str) -> String {
     )
 }
 
+/// Shared context for emitting one per-tag `client.py`: the import package name,
+/// the root client name, the module, and the type table the example generator
+/// consults. Bundled so the client helpers stay within clippy's argument limit.
+struct ClientCtx<'a> {
+    pkg: &'a str,
+    client_name: &'a str,
+    module: &'a str,
+    types: &'a [TypeDecl],
+}
+
 /// Assemble a per-tag `client.py`: the sync and async high-level clients that
 /// wrap the raw client, return `_response.data`, and carry a worked `Examples`
 /// docstring.
 fn client_file(
     env: &Environment<'static>,
-    pkg: &str,
-    client_name: &str,
-    module: &str,
+    cx: &ClientCtx,
     endpoints: &[&Endpoint],
-    types: &[TypeDecl],
 ) -> Result<GeneratedFile> {
-    let stem = naming::to_pascal_case(module);
+    let stem = naming::to_pascal_case(cx.module);
     let mut imports = Imports::default();
     imports.add_plain("typing");
     imports.add_from("..core.client_wrapper", "AsyncClientWrapper");
@@ -1744,30 +1750,8 @@ fn client_file(
     imports.add_from(".raw_client", &format!("Raw{stem}Client"));
     imports.add_from(".raw_client", &format!("AsyncRaw{stem}Client"));
 
-    let sync = client_class(
-        &format!("{stem}Client"),
-        "SyncClientWrapper",
-        &format!("Raw{stem}Client"),
-        module,
-        endpoints,
-        false,
-        pkg,
-        client_name,
-        types,
-        &mut imports,
-    );
-    let async_class = client_class(
-        &format!("Async{stem}Client"),
-        "AsyncClientWrapper",
-        &format!("AsyncRaw{stem}Client"),
-        module,
-        endpoints,
-        true,
-        pkg,
-        client_name,
-        types,
-        &mut imports,
-    );
+    let sync = client_class(cx, endpoints, false, &mut imports);
+    let async_class = client_class(cx, endpoints, true, &mut imports);
     // The `OMIT` sentinel is declared above the classes whenever a request body
     // is present, exactly as in the raw client.
     let omit = if endpoints.iter().any(|e| e.request_body.is_some()) {
@@ -1779,30 +1763,38 @@ fn client_file(
     let contents = render(
         env,
         "raw_client.py",
-        module,
+        cx.module,
         context! { header => HEADER, imports => imports.render(), body => body },
     )?;
     Ok(GeneratedFile {
-        path: PathBuf::from(format!("src/{pkg}/{module}/client.py")),
+        path: PathBuf::from(format!("src/{}/{}/client.py", cx.pkg, cx.module)),
         contents,
     })
 }
 
 /// One high-level client class: `__init__`, the `with_raw_response` property, and
-/// one wrapper method per operation.
-#[allow(clippy::too_many_arguments)]
+/// one wrapper method per operation. The class/wrapper/raw-client names are
+/// derived from the module and `is_async`.
 fn client_class(
-    class_name: &str,
-    wrapper: &str,
-    raw_client_cls: &str,
-    module: &str,
+    cx: &ClientCtx,
     endpoints: &[&Endpoint],
     is_async: bool,
-    pkg: &str,
-    client_name: &str,
-    types: &[TypeDecl],
     imports: &mut Imports,
 ) -> String {
+    let stem = naming::to_pascal_case(cx.module);
+    let (class_name, wrapper, raw_client_cls) = if is_async {
+        (
+            format!("Async{stem}Client"),
+            "AsyncClientWrapper",
+            format!("AsyncRaw{stem}Client"),
+        )
+    } else {
+        (
+            format!("{stem}Client"),
+            "SyncClientWrapper",
+            format!("Raw{stem}Client"),
+        )
+    };
     let mut out = format!(
         "class {class_name}:
     def __init__(self, *, client_wrapper: {wrapper}):
@@ -1821,15 +1813,7 @@ fn client_class(
     );
     for ep in endpoints {
         out.push_str("\n\n");
-        out.push_str(&client_method(
-            ep,
-            is_async,
-            module,
-            pkg,
-            client_name,
-            types,
-            imports,
-        ));
+        out.push_str(&client_method(cx, ep, is_async, imports));
     }
     out
 }
@@ -1837,20 +1821,11 @@ fn client_class(
 /// One high-level wrapper method: the signature, the docstring (with a worked
 /// example), and a body delegating to the raw client and returning
 /// `_response.data`.
-#[allow(clippy::too_many_arguments)]
-fn client_method(
-    ep: &Endpoint,
-    is_async: bool,
-    module: &str,
-    pkg: &str,
-    client_name: &str,
-    types: &[TypeDecl],
-    imports: &mut Imports,
-) -> String {
+fn client_method(cx: &ClientCtx, ep: &Endpoint, is_async: bool, imports: &mut Imports) -> String {
     let mp = method_params(ep, imports);
     let return_type = mp.inner.clone();
     let sig = signature(ep, &mp, &return_type, is_async);
-    let docstring = client_docstring(ep, &mp, module, pkg, client_name, is_async, types);
+    let docstring = client_docstring(cx, ep, &mp, is_async);
 
     // Delegation: path params positionally, the rest as keywords, then
     // `request_options`, laid out with ruff's right-hand-split (line length 120).
@@ -1876,15 +1851,7 @@ fn client_method(
 /// The high-level method docstring (indent 8): the same summary + `Parameters` +
 /// `Returns` as the raw client, followed by a worked `Examples` block. A raw
 /// bytes body has no example (Fern omits the whole section).
-fn client_docstring(
-    ep: &Endpoint,
-    mp: &MethodParams,
-    module: &str,
-    pkg: &str,
-    client_name: &str,
-    is_async: bool,
-    types: &[TypeDecl],
-) -> String {
+fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: bool) -> String {
     let mut lines: Vec<String> = vec!["        \"\"\"".to_string()];
     if let Some(summary) = &ep.docstring {
         for line in summary.split('\n') {
@@ -1916,11 +1883,11 @@ fn client_docstring(
     lines.push(format!("        {}", mp.inner));
 
     let mut ctx = ExampleCtx {
-        types,
+        types: cx.types,
         referenced: BTreeSet::new(),
         uses_datetime: false,
     };
-    match build_example(ep, is_async, module, pkg, client_name, &mut ctx) {
+    match build_example(ep, is_async, cx.module, cx.pkg, cx.client_name, &mut ctx) {
         Some(ex_lines) => {
             // A concrete response leaves two blank lines before `Examples`; a
             // `None` return leaves one.
