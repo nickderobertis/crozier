@@ -760,6 +760,13 @@ fn reference_entry(ir: &Ir, ep: &Endpoint, module: &str, pkg: &str) -> Vec<Strin
 /// one line when it fits 120 columns, else a parenthesized block one name per
 /// line with a trailing comma. Returns the statement with its trailing newline.
 fn from_import_block(module: &str, names: &[String], indent: usize) -> String {
+    // An empty group emits nothing — a `from <module> import` with no names is a
+    // syntax error, and the source module (e.g. `errors/`) is not emitted when
+    // there is nothing to import from it. The corpus always has errors, so this
+    // path is only reached for specs that declare none.
+    if names.is_empty() {
+        return String::new();
+    }
     let pad = " ".repeat(indent);
     let mut names = names.to_vec();
     names.sort();
@@ -2410,7 +2417,21 @@ fn render(
         })
 }
 
-/// Write generated files under `root`, creating parent directories.
+/// Remove the generated package tree (`src/<package>`) before a fresh write so
+/// regeneration is idempotent: a schema or endpoint removed from the spec must
+/// not leave an orphaned module behind. Scoped to `src/<package>`, which is
+/// entirely crozier's own namespace — anything the user keeps elsewhere under
+/// `--output` is untouched. A missing tree is not an error (first run).
+pub fn clean_package_tree(root: &std::path::Path, package: &str) -> Result<()> {
+    let tree = root.join("src").join(package);
+    match std::fs::remove_dir_all(&tree) {
+        Ok(()) => Ok(()),
+        Err(source) if source.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        Err(source) => Err(Error::WriteOutput { path: tree, source }),
+    }
+}
+
+/// Write each generated file under `root`, creating parent directories as needed.
 pub fn write_files(root: &std::path::Path, files: &[GeneratedFile]) -> Result<()> {
     for file in files {
         let full = root.join(&file.path);

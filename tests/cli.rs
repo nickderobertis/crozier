@@ -30,6 +30,53 @@ fn generate_succeeds_and_writes() {
 }
 
 #[test]
+fn regeneration_prunes_stale_modules() {
+    // Regenerating into a populated output dir clears the crozier-owned package
+    // tree first, so a schema removed from the spec does not leave an orphan.
+    let dir = tempfile::tempdir().unwrap();
+    let out = dir.path().join("out");
+
+    let two = dir.path().join("two.yml");
+    std::fs::write(
+        &two,
+        "openapi: 3.0.0\ninfo:\n  title: T\ncomponents:\n  schemas:\n    Widget:\n      type: object\n      properties:\n        id:\n          type: string\n    Gadget:\n      type: object\n      properties:\n        id:\n          type: string\n",
+    )
+    .unwrap();
+    run_from([
+        "crozier",
+        "generate",
+        "--spec",
+        two.to_str().unwrap(),
+        "--output",
+        out.to_str().unwrap(),
+        "--package-name",
+        "t",
+    ])
+    .expect("first generate ok");
+    assert!(out.join("src/t/types/gadget.py").is_file());
+
+    let one = dir.path().join("one.yml");
+    std::fs::write(
+        &one,
+        "openapi: 3.0.0\ninfo:\n  title: T\ncomponents:\n  schemas:\n    Widget:\n      type: object\n      properties:\n        id:\n          type: string\n",
+    )
+    .unwrap();
+    run_from([
+        "crozier",
+        "generate",
+        "--spec",
+        one.to_str().unwrap(),
+        "--output",
+        out.to_str().unwrap(),
+        "--package-name",
+        "t",
+    ])
+    .expect("regenerate ok");
+    assert!(out.join("src/t/types/widget.py").is_file());
+    assert!(!out.join("src/t/types/gadget.py").exists());
+}
+
+#[test]
 fn internal_strip_runs() {
     let dir = tempfile::tempdir().unwrap();
     let file = dir.path().join("x.py");

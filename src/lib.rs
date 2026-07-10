@@ -59,6 +59,9 @@ pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     );
     let ir = ir::build(&doc, &config);
     let files = emit::generate(&ir)?;
+    // Regeneration is idempotent: clear the crozier-owned package tree first so a
+    // schema or endpoint dropped from the spec does not leave an orphaned module.
+    emit::clean_package_tree(&config.output, &config.package_name)?;
     emit::write_files(&config.output, &files)?;
     Ok(files)
 }
