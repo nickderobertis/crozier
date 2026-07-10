@@ -374,6 +374,15 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         ));
     }
 
+    // Generated `README.md` (usage examples from the first endpoint) and the
+    // per-endpoint `reference.md`.
+    if let Some(readme) = readme_file(ir) {
+        files.push(readme);
+    }
+    if let Some(reference) = reference_file(ir, &emittable_modules) {
+        files.push(reference);
+    }
+
     // Project-root scaffolding (pyproject.toml, requirements.txt, metadata).
     files.extend(scaffolding_files(pkg, &ir.project_name));
 
@@ -585,6 +594,167 @@ fn root_init_file(
         path: PathBuf::from(format!("src/{pkg}/__init__.py")),
         contents: render_lazy_loader(&tc, &pairs, &names),
     }
+}
+
+/// The generated `README.md`: mostly static prose with the SDK name/package
+/// substituted and a worked usage example (sync + async) synthesized from the
+/// first endpoint. Compared verbatim (README is not comment-stripped). Emitted
+/// only when there is an endpoint to demonstrate.
+fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
+    let first = ir.endpoints.iter().find(|e| e.emittable)?;
+    let pkg = &ir.package_name;
+    let org = naming::to_pascal_case(pkg);
+    let async_name = format!("Async{}", ir.client_name);
+
+    let sync_example = {
+        let mut ctx = ExampleCtx {
+            types: &ir.types,
+            referenced: BTreeSet::new(),
+            uses_datetime: false,
+        };
+        build_example(first, false, &first.module, pkg, &ir.client_name, &mut ctx)?.join("\n")
+    };
+    let async_example = {
+        let mut ctx = ExampleCtx {
+            types: &ir.types,
+            referenced: BTreeSet::new(),
+            uses_datetime: false,
+        };
+        build_example(first, true, &first.module, pkg, &ir.client_name, &mut ctx)?.join("\n")
+    };
+
+    let contents = include_str!("../assets/scaffolding/README.md.tmpl")
+        .replace("@@ORG@@", &org)
+        .replace("@@PROJECT@@", &ir.project_name)
+        .replace("@@PKG@@", pkg)
+        .replace("@@CLIENT@@", &ir.client_name)
+        .replace("@@ASYNC@@", &async_name)
+        .replace("@@TAG@@", &first.module)
+        .replace("@@METHOD@@", &first.method_name)
+        .replace("@@USAGE@@", &sync_example)
+        .replace("@@ASYNC_EXAMPLE@@", &async_example);
+    Some(GeneratedFile {
+        path: PathBuf::from("README.md"),
+        contents,
+    })
+}
+
+/// The generated `reference.md`: a per-endpoint reference grouped by tag, each
+/// entry a collapsible `<details>` with an optional description, a worked sync
+/// usage example, and a parameter table. Endpoints without an example (a raw
+/// bytes body) are omitted, exactly as Fern does. Compared verbatim.
+fn reference_file(ir: &Ir, modules: &[&String]) -> Option<GeneratedFile> {
+    let pkg = &ir.package_name;
+    let mut lines: Vec<String> = vec!["# Reference".to_string()];
+    let mut any = false;
+
+    for module in modules {
+        let eps: Vec<&Endpoint> = ir
+            .endpoints
+            .iter()
+            .filter(|e| &e.module == *module && e.emittable)
+            .filter(|e| !matches!(e.request_body, Some(RequestBody::Bytes)))
+            .collect();
+        if eps.is_empty() {
+            continue;
+        }
+        any = true;
+        lines.push(format!("## {}", naming::to_pascal_case(module)));
+        for ep in eps {
+            lines.extend(reference_entry(ir, ep, module, pkg));
+            lines.push(String::new());
+        }
+    }
+    if !any {
+        return None;
+    }
+    // The last entry's trailing blank line is kept: Fern ends the file with one.
+    Some(GeneratedFile {
+        path: PathBuf::from("reference.md"),
+        contents: format!("{}\n", lines.join("\n")),
+    })
+}
+
+/// One `reference.md` endpoint entry (a `<details>` block).
+fn reference_entry(ir: &Ir, ep: &Endpoint, module: &str, pkg: &str) -> Vec<String> {
+    let mut imports = Imports::default();
+    let mp = method_params(ep, &mut imports);
+
+    // The example (sync form). Bytes bodies are filtered out before this point.
+    let mut ctx = ExampleCtx {
+        types: &ir.types,
+        referenced: BTreeSet::new(),
+        uses_datetime: false,
+    };
+    let example =
+        build_example(ep, false, module, pkg, &ir.client_name, &mut ctx).unwrap_or_default();
+
+    // The parameter rows, in signature order, then `request_options`.
+    let mut params: Vec<(String, String, String)> = Vec::new();
+    for (name, ty) in &mp.path {
+        params.push((name.clone(), ty.clone(), " ".to_string()));
+    }
+    for dp in mp.query.iter().chain(&mp.header).chain(&mp.body) {
+        let suffix = match &dp.description {
+            Some(d) => format!(" — {d}"),
+            None => " ".to_string(),
+        };
+        params.push((dp.name.clone(), dp.annotation.clone(), suffix));
+    }
+    params.push((
+        "request_options".to_string(),
+        "typing.Optional[RequestOptions]".to_string(),
+        " — Request-specific configuration.".to_string(),
+    ));
+
+    let has_args =
+        !mp.path.is_empty() || !mp.query.is_empty() || !mp.header.is_empty() || !mp.body.is_empty();
+    let dots = if has_args { "..." } else { "" };
+
+    let mut out: Vec<String> = Vec::new();
+    out.push(format!(
+        "<details><summary><code>client.{module}.<a href=\"src/{pkg}/{module}/client.py\">{}</a>({dots})</code></summary>",
+        ep.method_name
+    ));
+    out.push("<dl>".to_string());
+    out.push("<dd>".to_string());
+    out.push(String::new());
+
+    // Optional description block.
+    if let Some(desc) = &ep.docstring {
+        out.push("#### 📝 Description".to_string());
+        out.push(String::new());
+        out.extend(["<dl>", "<dd>", "", "<dl>", "<dd>", ""].map(String::from));
+        out.extend(desc.split('\n').map(String::from));
+        out.extend(["</dd>", "</dl>", "</dd>", "</dl>", ""].map(String::from));
+    }
+
+    // Usage block.
+    out.push("#### 🔌 Usage".to_string());
+    out.push(String::new());
+    out.extend(["<dl>", "<dd>", "", "<dl>", "<dd>", ""].map(String::from));
+    out.push("```python".to_string());
+    out.extend(example);
+    out.push(String::new());
+    out.push("```".to_string());
+    out.extend(["</dd>", "</dl>", "</dd>", "</dl>", ""].map(String::from));
+
+    // Parameters block.
+    out.push("#### ⚙️ Parameters".to_string());
+    out.push(String::new());
+    out.extend(["<dl>", "<dd>", ""].map(String::from));
+    for (i, (name, annot, suffix)) in params.iter().enumerate() {
+        out.extend(["<dl>", "<dd>", ""].map(String::from));
+        out.push(format!("**{name}:** `{annot}`{suffix}"));
+        out.push("    ".to_string());
+        out.push("</dd>".to_string());
+        out.push("</dl>".to_string());
+        if i + 1 < params.len() {
+            out.push(String::new());
+        }
+    }
+    out.extend(["</dd>", "</dl>", "", "", "</dd>", "</dl>", "</details>"].map(String::from));
+    out
 }
 
 /// Render `from <module> import <names>` at `indent` spaces, sorted, ruff-wrapped:

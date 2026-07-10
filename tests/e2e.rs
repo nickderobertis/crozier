@@ -36,11 +36,11 @@ const QUERY_PARAMETERS: Corpus = Corpus {
 };
 
 /// The broad `exhaustive` target: Fern's Python output regenerated from the
-/// vendored OpenAPI document (see scripts/generate-fern-fixture.sh). Every
-/// `types/` module, the whole endpoint layer (raw + high-level per-tag clients),
-/// the root client, and the package `__init__.py` aggregators match; only the
-/// generated docs (`README.md`, `reference.md`) are still pending. See
-/// docs/matching.md.
+/// vendored OpenAPI document (see scripts/generate-fern-fixture.sh). **All 104
+/// files match** — the type layer, the `core/` runtime, the whole endpoint layer
+/// (raw + high-level per-tag clients + root client), the `errors/` package, the
+/// package `__init__.py` aggregators, the generated docs (`README.md`,
+/// `reference.md`), and the project scaffolding. See docs/matching.md.
 const EXHAUSTIVE: Corpus = Corpus {
     api: "exhaustive",
     package_name: "fern",
@@ -177,6 +177,12 @@ const EXHAUSTIVE: Corpus = Corpus {
         // `types/__init__.py` `TYPE_CHECKING` block follows Fern's traversal order.
         "src/fern/types/__init__.py",
         "src/fern/__init__.py",
+        // Generated `README.md`: static prose plus a worked usage example (sync +
+        // async) synthesized from the first endpoint. Compared verbatim.
+        "README.md",
+        // Generated `reference.md`: a per-endpoint reference grouped by tag, each
+        // a `<details>` block with a worked example and a parameter table.
+        "reference.md",
         // Project-root scaffolding (near-static; name/version substituted).
         "pyproject.toml",
         "requirements.txt",
