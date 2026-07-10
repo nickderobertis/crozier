@@ -336,6 +336,24 @@ fn wide_string_enum_wraps_like_ruff() {
 }
 
 #[test]
+fn emits_core_runtime_with_substituted_sdk_name() {
+    let files = render(RICH_SPEC);
+    // The static core runtime is emitted alongside the type layer.
+    assert!(files.contains_key("src/acme/core/http_client.py"));
+    assert!(files.contains_key("src/acme/core/pydantic_utilities.py"));
+    assert!(files.contains_key("src/acme/core/http_sse/_api.py"));
+    // client_wrapper carries the substituted SDK name (project name) and version;
+    // no placeholder remains.
+    let cw = &files["src/acme/core/client_wrapper.py"];
+    assert!(cw.contains("\"X-Fern-SDK-Name\": \"acme\""), "{cw}");
+    assert!(cw.contains("\"X-Fern-SDK-Version\": \"0.0.0\""), "{cw}");
+    assert!(
+        !cw.contains("@@CROZIER"),
+        "placeholder left unsubstituted: {cw}"
+    );
+}
+
+#[test]
 fn oneof_hoists_inline_object_variants() {
     // A oneOf with inline-object variants: each is hoisted to `{Name}{Ordinal}`.
     // Variant 0 uses allOf (a $ref base + an inline enum property); variant 1 is

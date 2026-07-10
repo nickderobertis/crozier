@@ -52,10 +52,10 @@ Currently matched for `query-parameters-openapi`:
 - `src/seed/types/nested_user.py`
 
 Matched for `exhaustive` (the OpenAPI-derived fixture from
-`scripts/generate-fern-fixture.sh`): `version.py`, `py.typed`, and the **entire
-type layer** — every `types/*.py` module (including the hoisted `typesAnimal`
-variants) except `types/__init__.py`, the lazy-loader over the full type set.
-See the `EXHAUSTIVE` `matched` list in `tests/e2e.rs` for the exact set.
+`scripts/generate-fern-fixture.sh`): `version.py`, `py.typed`, the **entire type
+layer** (every `types/*.py` module including the hoisted `typesAnimal` variants,
+except `types/__init__.py`), and the **entire `core/` runtime** (19 files). See
+the `EXHAUSTIVE` `matched` list in `tests/e2e.rs` for the exact set.
 
 The full expected tree is committed under `expected/` even where not yet matched,
 so the finish line is explicit and progress is measurable.
@@ -85,6 +85,12 @@ Type mapping follows Fern's OpenAPI importer: `format: uuid`/`byte` → `str`,
 Imports are emitted in Fern's exact two-group order (stdlib `import`s/`from`s,
 then everything else). `version.py` and `py.typed` are complete.
 
+**Core runtime.** The `core/` SDK runtime (HTTP client, pydantic utilities,
+serialization, SSE) is generator boilerplate, not derived from the spec — Fern
+ships identical `core/` files into every SDK. crozier vendors them under
+`assets/core/` (Apache-2.0; see `NOTICE`) and emits them verbatim, substituting
+only the SDK name/version in `client_wrapper.py`.
+
 **Line wrapping.** Fern runs `ruff format` (line length 120) over its output.
 crozier reproduces it without a runtime Python dependency: the emitter builds a
 [`Doc`](../src/wrap.rs) tree per type expression and `wrap::layout` renders it
@@ -100,10 +106,11 @@ element per line with a trailing comma.
 2. **Request/response inline-schema hoisting.** Component-schema hoisting is done;
    Fern also hoists inline request/response bodies (e.g. `SearchResponse`,
    `SearchRequestNeighbor`), which arrive with the endpoint layer.
-3. **The client, core, and error layers.** `client.py`/`raw_client.py`, the
-   `core/` runtime, and generated errors are not yet emitted. The `core/` files
-   are near-static Fern boilerplate and will be reproduced as attributed template
-   assets.
+3. **The endpoint layer.** `paths` are not yet read, so the per-tag
+   `client.py`/`raw_client.py`, the root `client.py`, and the generated `errors/`
+   are not emitted. This is the largest remaining capability; the two
+   `__init__.py` aggregators' import order and gap #2 both depend on it. (The
+   `core/` runtime it relies on is already emitted — see above.)
 
 ## Coverage note
 
