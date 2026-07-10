@@ -1,13 +1,19 @@
 # release-plz drives releasing: it opens a release PR from merged Conventional
 # Commits; merging it bumps the version, writes CHANGELOG.md, commits
-# `chore(release): X.Y.Z`, and pushes the `vX.Y.Z` tag. The tag triggers
-# release.yml (build + upload archives). The version job must run under a PAT
-# (RELEASE_PLZ_TOKEN) — a tag pushed by the default GITHUB_TOKEN does NOT fire
-# release.yml. See AGENTS.md and docs/releasing is covered there.
+# `chore(release): X.Y.Z`, and pushes the `vX.Y.Z` tag + cuts the GitHub Release.
+# That Release (created under a PAT — RELEASE_PLZ_TOKEN — a tag pushed by the
+# default GITHUB_TOKEN does NOT fire other workflows) triggers release.yml, which
+# builds/attaches archives, publishes the crate to crates.io, and publishes the
+# PyPI wheels. See AGENTS.md.
 
 [workspace]
-# Binary-only tool: no crates.io publish (Cargo.toml has publish = false), but
-# still cut GitHub releases and tags.
+# release-plz only versions, changelogs, tags, and cuts the GitHub Release — it
+# never runs `cargo publish`. crates.io publishing is a separate step: the
+# `publish-crate` job in release.yml, which self-activates when the
+# CARGO_REGISTRY_TOKEN secret is set. Keeping it out of release-plz decouples
+# versioning/tagging from the registry push (a flaky publish never blocks a tag,
+# and vice versa). Note: this is release-plz's own publish switch — Cargo.toml
+# leaves `publish` at its default (true) so `cargo publish` itself works.
 publish = false
 git_release_enable = true
 git_tag_enable = true

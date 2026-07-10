@@ -16,18 +16,49 @@ Python is the only target today; more will follow.
 
 ## Install
 
-**From source (recommended today):**
+**From PyPI (fastest — a prebuilt binary, no Rust toolchain):** crozier ships as
+platform wheels that wrap the compiled binary and expose it as a console script,
+so any Python installer puts it on your `PATH` in seconds:
+
+```sh
+pip install crozier      # or: pipx install crozier
+uvx crozier --help       # run once without installing
+```
+
+Platforms without a prebuilt wheel fall back to the source distribution, which
+builds from Rust (a toolchain is needed there).
+
+**From crates.io:**
+
+```sh
+cargo install crozier --locked
+```
+
+**From the install script (prebuilt binary from GitHub Releases, verified):**
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/nickderobertis/crozier/main/scripts/install.sh | sh
+```
+
+It detects your platform, downloads the matching archive, and verifies it against
+a trust root independent of where it was downloaded — a Sigstore build-provenance
+attestation when a verifier (`cosign`, `pip install sigstore`, or `gh`) is
+present, else the canonical SHA-256 checksum. Pin a version or install location
+with `sh -s -- --version v0.1.0 --to ~/.local/bin`.
+
+**From source (latest `main`):**
 
 ```sh
 cargo install --git https://github.com/nickderobertis/crozier --locked
 ```
 
-**From a release archive:** each release publishes per-platform archives named
-`crozier-<tag>-<target>.tar.gz` with a matching `.sha256`, for targets
-`x86_64`/`aarch64` Linux, `x86_64`/`aarch64` macOS, and `x86_64` Windows. Download
-the archive for your platform from the
+**From a release archive (manual):** each release publishes per-platform archives
+named `crozier-<tag>-<target>.tar.gz` with a matching `.sha256` and a
+`.sigstore.json` provenance bundle, for targets `x86_64`/`aarch64` Linux,
+`x86_64`/`aarch64` macOS, and `x86_64` Windows. Download the archive for your
+platform from the
 [Releases](https://github.com/nickderobertis/crozier/releases) page, verify the
-checksum, and put the `crozier` binary on your `PATH`.
+checksum (or the attestation), and put the `crozier` binary on your `PATH`.
 
 ## Usage
 

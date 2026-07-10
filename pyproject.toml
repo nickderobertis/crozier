@@ -1,0 +1,41 @@
+# PyPI distribution of the prebuilt crozier binary (the ruff/uv pattern):
+# maturin's `bin` bindings wrap the Rust binary in per-platform wheels, so
+# `pip install crozier` (or `pipx`/`uvx`) puts the real binary on PATH in
+# seconds with no Rust toolchain — the quickest trustworthy path in
+# restricted-egress environments where package registries are reachable but
+# github.com is not. The console script comes from the Cargo `[[bin]]` target
+# (`crozier`), and the name/version/description stay single-sourced from
+# Cargo.toml (release-plz remains the only version driver).
+
+[build-system]
+requires = ["maturin>=1.7,<2.0"]
+build-backend = "maturin"
+
+[project]
+# The PyPI project name matches the crate and the installed binary: all three
+# are `crozier`. Keep them in sync when renaming.
+name = "crozier"
+description = "Ultra-fast OpenAPI-to-SDK code generator that matches Fern's output, byte for byte."
+readme = "README.md"
+requires-python = ">=3.8"
+license = { file = "LICENSE" }
+keywords = ["openapi", "codegen", "sdk", "python", "fern"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Rust",
+    "Topic :: Software Development :: Code Generators",
+]
+# Version comes from Cargo.toml (maturin resolves it), so release-plz stays the
+# single source of truth.
+dynamic = ["version"]
+
+[project.urls]
+Repository = "https://github.com/nickderobertis/crozier"
+Changelog = "https://github.com/nickderobertis/crozier/blob/main/CHANGELOG.md"
+
+[tool.maturin]
+bindings = "bin"
