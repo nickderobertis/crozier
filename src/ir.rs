@@ -13,6 +13,12 @@ pub struct Ir {
     pub package_name: String,
     /// Distribution name recorded in `version.py`.
     pub project_name: String,
+    /// The root client class name (`FernApi`), from which the async name
+    /// (`AsyncFernApi`) is derived. Fern names it from the workspace
+    /// organization; crozier's closest input is the package name, so it is
+    /// `PascalCase(package_name) + "Api"` (matching the vendored fixture, whose
+    /// organization and package are both `fern`).
+    pub client_name: String,
     /// Generated types, in document order.
     pub types: Vec<TypeDecl>,
     /// Endpoint client module (directory) names, one per operation group, in
@@ -184,6 +190,9 @@ pub struct BodyField {
     pub type_ref: TypeRef,
     /// Whether the field is optional; optional fields get `Optional[..] = OMIT`.
     pub optional: bool,
+    /// Whether the property is in the schema's `required` set (see
+    /// [`Field::spec_required`]); drives whether a synthesized example includes it.
+    pub spec_required: bool,
     /// Optional description, shown under the argument in the docstring.
     pub docstring: Option<String>,
     /// Whether the field serializes through `convert_and_respect_annotation_metadata`
@@ -248,6 +257,10 @@ pub struct Field {
     pub type_ref: TypeRef,
     /// Whether the field is optional (wrapped in `typing.Optional`, default None).
     pub optional: bool,
+    /// Whether the property is in the schema's `required` set. Distinct from
+    /// `optional` (an unknown/nullable required field is still `Optional[..]` in
+    /// Python); drives whether a synthesized example includes the field.
+    pub spec_required: bool,
     /// Optional field docstring (from the property `description`).
     pub docstring: Option<String>,
 }
@@ -301,6 +314,9 @@ pub enum Prim {
     Str,
     /// `int`.
     Int,
+    /// `int` from `format: int64`. Renders as `int` like [`Prim::Int`]; kept
+    /// distinct only so a synthesized example matches Fern's larger placeholder.
+    Long,
     /// `float`.
     Float,
     /// `bool`.
@@ -328,6 +344,7 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
     Ir {
         package_name: config.package_name.clone(),
         project_name: config.project_name.clone(),
+        client_name: format!("{}Api", naming::to_pascal_case(&config.package_name)),
         types: builder.types,
         endpoint_modules: endpoint_modules(doc),
         endpoints,
@@ -630,7 +647,8 @@ fn hoist_inline_object(schema: &Schema, types: &[TypeDecl]) -> Option<Vec<BodyFi
         if prop_schema.reference.is_none() && string_enum_values(prop_schema).is_some() {
             return None;
         }
-        let optional = is_optional(prop_schema) || !required.contains(&prop.as_str());
+        let spec_required = required.contains(&prop.as_str());
+        let optional = is_optional(prop_schema) || !spec_required;
         let type_ref = base_type_ref(prop_schema);
         fields.push(BodyField {
             wire_name: prop.clone(),
@@ -638,6 +656,7 @@ fn hoist_inline_object(schema: &Schema, types: &[TypeDecl]) -> Option<Vec<BodyFi
             convert: type_needs_convert(&type_ref, types),
             type_ref,
             optional,
+            spec_required,
             docstring: clean_doc(prop_schema.description.as_deref()),
         });
     }
@@ -670,6 +689,7 @@ fn hoist_fields(class: &str, types: &[TypeDecl]) -> Option<Vec<BodyField>> {
                 py_name: f.py_name.clone(),
                 type_ref: f.type_ref.clone(),
                 optional: f.optional,
+                spec_required: f.spec_required,
                 docstring: f.docstring.clone(),
                 convert: type_needs_convert(&f.type_ref, types),
             })
@@ -708,12 +728,22 @@ fn scalar_body(schema: &Schema) -> Option<(TypeRef, bool)> {
             Some("uuid" | "byte") => return Some((TypeRef::Primitive(Prim::Str), true)),
             _ => return None,
         },
-        "integer" => TypeRef::Primitive(Prim::Int),
+        "integer" => TypeRef::Primitive(int_prim(schema)),
         "number" => TypeRef::Primitive(Prim::Float),
         "boolean" => TypeRef::Primitive(Prim::Bool),
         _ => return None,
     };
     Some((type_ref, false))
+}
+
+/// The integer primitive for a schema: `Long` for `format: int64`, else `Int`.
+/// Both render as Python `int`; the split only distinguishes the example value.
+fn int_prim(schema: &Schema) -> Prim {
+    if schema.format.as_deref() == Some("int64") {
+        Prim::Long
+    } else {
+        Prim::Int
+    }
 }
 
 /// Resolve a local `#/components/schemas/{key}` reference to its schema.
@@ -892,12 +922,14 @@ impl Builder {
         fields: &mut Vec<Field>,
     ) {
         for (prop, prop_schema) in &schema.properties {
-            let optional = is_optional(prop_schema) || !required.contains(&prop.as_str());
+            let spec_required = required.contains(&prop.as_str());
+            let optional = is_optional(prop_schema) || !spec_required;
             fields.push(Field {
                 wire_name: prop.clone(),
                 py_name: naming::field_name(prop),
                 type_ref: self.field_type_ref(owner, prop, prop_schema),
                 optional,
+                spec_required,
                 docstring: clean_doc(prop_schema.description.as_deref()),
             });
         }
@@ -1045,7 +1077,7 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
             // to plain `str`.
             _ => TypeRef::Primitive(Prim::Str),
         },
-        Some("integer") => TypeRef::Primitive(Prim::Int),
+        Some("integer") => TypeRef::Primitive(int_prim(schema)),
         Some("number") => TypeRef::Primitive(Prim::Float),
         Some("boolean") => TypeRef::Primitive(Prim::Bool),
         Some("array") => {
