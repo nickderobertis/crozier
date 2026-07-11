@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.9](https://github.com/nickderobertis/crozier/compare/v0.0.8...v0.0.9) - 2026-07-11
+
+### Added
+
+- close remaining Fern parity gaps (inline hoisting, cookie params, environments) ([#35](https://github.com/nickderobertis/crozier/pull/35))
+
 ## [0.0.8](https://github.com/nickderobertis/crozier/compare/v0.0.7...v0.0.8) - 2026-07-11
 
 ### Other
