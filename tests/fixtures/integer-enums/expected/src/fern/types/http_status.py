@@ -1,0 +1,3 @@
+
+
+HttpStatus = int
