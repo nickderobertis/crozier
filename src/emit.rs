@@ -15,7 +15,7 @@ use crate::ir::{
     Auth, Endpoint, ErrorClass, Field, Ir, ObjectType, Prim, RequestBody, TypeDecl, TypeRef,
 };
 use crate::naming;
-use crate::wrap::{self, Doc};
+use crate::wrap::Doc;
 
 /// The header comment crozier writes atop every generated file. It differs from
 /// Fern's by design; the comment-stripping normalizer removes it before any
@@ -123,7 +123,7 @@ impl Imports {
 }
 
 /// Render a resolved type to a [`Doc`] expression, registering needed imports.
-/// The `Doc` tree lets [`wrap::layout`] reproduce ruff's line wrapping.
+/// The `Doc` renders flat; `ruff format` handles any line wrapping downstream.
 fn render_type(t: &TypeRef, imports: &mut Imports) -> Doc {
     match t {
         TypeRef::Primitive(p) => match p {
@@ -480,30 +480,18 @@ fn render_lazy_loader(type_checking: &str, pairs: &[(String, String)], names: &[
     let mut names = names.to_vec();
     names.sort();
 
-    // `_dynamic_imports` and `__all__`: single line when they fit ruff's 120
-    // columns, else one entry per line with a trailing comma.
+    // `_dynamic_imports` and `__all__` are emitted flat; `ruff format` wraps them
+    // (one entry per line with a trailing comma) when they overflow.
     let entries: Vec<String> = pairs
         .iter()
         .map(|(n, m)| format!("\"{n}\": \"{m}\""))
         .collect();
-    let dynamic_flat = format!(
+    let dynamic = format!(
         "_dynamic_imports: typing.Dict[str, str] = {{{}}}",
         entries.join(", ")
     );
-    let dynamic = if dynamic_flat.len() <= wrap::LIMIT {
-        dynamic_flat
-    } else {
-        let body: String = entries.iter().map(|e| format!("    {e},\n")).collect();
-        format!("_dynamic_imports: typing.Dict[str, str] = {{\n{body}}}")
-    };
     let all_entries: Vec<String> = names.iter().map(|n| format!("\"{n}\"")).collect();
-    let all_flat = format!("__all__ = [{}]", all_entries.join(", "));
-    let all = if all_flat.len() <= wrap::LIMIT {
-        all_flat
-    } else {
-        let body: String = all_entries.iter().map(|e| format!("    {e},\n")).collect();
-        format!("__all__ = [\n{body}]")
-    };
+    let all = format!("__all__ = [{}]", all_entries.join(", "));
 
     format!(
         "{HEADER}\n\n\n\nimport typing\nfrom importlib import import_module\n\nif typing.TYPE_CHECKING:\n{type_checking}{dynamic}\n\n\ndef __getattr__(attr_name: str) -> typing.Any:\n    module_name = _dynamic_imports.get(attr_name)\n    if module_name is None:\n        raise AttributeError(f\"No {{attr_name}} found in _dynamic_imports for module name -> {{__name__}}\")\n    try:\n        module = import_module(module_name, __package__)\n        if module_name == f\".{{attr_name}}\":\n            return module\n        else:\n            return getattr(module, attr_name)\n    except ImportError as e:\n        raise ImportError(f\"Failed to import {{attr_name}} from {{module_name}}: {{e}}\") from e\n    except AttributeError as e:\n        raise AttributeError(f\"Failed to get {{attr_name}} from {{module_name}}: {{e}}\") from e\n\n\ndef __dir__():\n    lazy_attrs = list(_dynamic_imports.keys())\n    return sorted(lazy_attrs)\n\n\n{all}\n"
@@ -526,21 +514,11 @@ fn types_init_file(pkg: &str, types: &[TypeDecl]) -> GeneratedFile {
         }
     }
 
-    // TYPE_CHECKING order: `Types*` in reverse declaration order, then the rest
-    // alphabetically.
-    let mut typed: Vec<String> = names
-        .iter()
-        .filter(|n| n.starts_with("Types"))
-        .cloned()
-        .collect();
-    typed.reverse();
-    let mut rest: Vec<String> = names
-        .iter()
-        .filter(|n| !n.starts_with("Types"))
-        .cloned()
-        .collect();
-    rest.sort();
-    let ordered: Vec<String> = typed.into_iter().chain(rest).collect();
+    // TYPE_CHECKING imports are emitted alphabetically. Their order is never
+    // executed and the e2e canonicalizes it with isort, so crozier sorts
+    // straightforwardly rather than reproducing Fern's traversal order.
+    let mut ordered = names.clone();
+    ordered.sort();
 
     // Consecutive names sharing a module collapse into one `from .mod import a, b`
     // line (Fern groups a discriminated union's names on a single import).
@@ -892,9 +870,9 @@ fn reference_entry(ir: &Ir, ep: &Endpoint, module: &str, pkg: &str) -> Vec<Strin
     out
 }
 
-/// Render `from <module> import <names>` at `indent` spaces, sorted, ruff-wrapped:
-/// one line when it fits 120 columns, else a parenthesized block one name per
-/// line with a trailing comma. Returns the statement with its trailing newline.
+/// Render `from <module> import <names>` at `indent` spaces, sorted, on one line.
+/// `ruff format` wraps it into a parenthesized per-name block if it overflows.
+/// Returns the statement with its trailing newline.
 fn from_import_block(module: &str, names: &[String], indent: usize) -> String {
     // An empty group emits nothing — a `from <module> import` with no names is a
     // syntax error, and the source module (e.g. `errors/`) is not emitted when
@@ -906,17 +884,7 @@ fn from_import_block(module: &str, names: &[String], indent: usize) -> String {
     let pad = " ".repeat(indent);
     let mut names = names.to_vec();
     names.sort();
-    let flat = format!("{pad}from {module} import {}", names.join(", "));
-    if flat.len() <= wrap::LIMIT {
-        return format!("{flat}\n");
-    }
-    let inner = " ".repeat(indent + 4);
-    let mut out = format!("{pad}from {module} import (\n");
-    for n in &names {
-        out.push_str(&format!("{inner}{n},\n"));
-    }
-    out.push_str(&format!("{pad})\n"));
-    out
+    format!("{pad}from {module} import {}\n", names.join(", "))
 }
 
 /// Fern's SDK runtime, vendored under `assets/core/` and emitted into every SDK.
@@ -2383,6 +2351,12 @@ impl Example {
     /// Render the value starting on a line indented by `indent` spaces (the
     /// indent of the line this value begins on). Continuation lines align to
     /// `indent`; exploded children indent by four more.
+    ///
+    /// The examples are laid out by hand rather than through `ruff format`
+    /// (unlike the SDK files) because Fern's committed examples are *not* a ruff
+    /// fixed point: ruff reformats a long `await <call>(...)` by parenthesizing
+    /// the awaited expression, whereas Fern leaves the long `await …(` line and
+    /// only explodes the call arguments. This renderer reproduces Fern's form.
     fn render(&self, indent: usize) -> String {
         match self {
             Example::Atom(s) => s.clone(),
@@ -2698,8 +2672,9 @@ fn build_example(
         preamble.push("import datetime".to_string());
     }
 
-    // `from <pkg> import <client + referenced types>`, alphabetical, ruff-wrapped
-    // at the snippet's default line length (88).
+    // `from <pkg> import <client + referenced types>`, alphabetical, wrapped at
+    // the snippet's default line length (88). Fern's examples are laid out by hand
+    // (not `ruff format`) — see `Example::render` for why.
     let mut names: Vec<String> = ctx.referenced.iter().cloned().collect();
     names.push(example_name.clone());
     names.sort();
@@ -2862,20 +2837,19 @@ pub fn clean_package_tree(root: &std::path::Path, package: &str) -> Result<()> {
 /// - **Whitespace-only files** — the empty `py.typed` marker and the comment-only
 ///   endpoint `__init__.py` (emitted in its four-blank-line stripped form): there
 ///   is nothing to wrap and `ruff` would collapse them.
-/// - **`__init__.py` aggregators** — the lazy-loader packages (`types/`, `errors/`,
-///   the package root) are hand-built to Fern's exact layout. Their leading blank
-///   lines are a comment-stripping artifact of Fern's multi-line header that a
-///   one-line header plus `ruff` (which caps module-top blanks at two) cannot
-///   reproduce; and they carry no wrappable code, only import boilerplate crozier
-///   already lays out. Formatting them would break the byte match for no benefit.
+///
+/// The lazy-loader `__init__.py` aggregators *are* formatted: they overflow (long
+/// `_dynamic_imports`/`__all__`/import lines) and `ruff` wraps them like any other
+/// file. Their leading blank lines collapse under `ruff`, but that is a
+/// comment-strip artifact the e2e normalizes on both sides (see `normalize_init`),
+/// so the byte match is preserved.
 fn format_python_files(pkg: &str, files: &mut [GeneratedFile]) -> Result<()> {
     let core_root = PathBuf::from(format!("src/{pkg}/core"));
     for file in files.iter_mut() {
         let is_py = file.path.extension().and_then(|e| e.to_str()) == Some("py");
         let is_vendored = file.path.starts_with(&core_root);
-        let is_init = file.path.file_name().and_then(|n| n.to_str()) == Some("__init__.py");
         let has_code = file.contents.chars().any(|c| !c.is_whitespace());
-        if is_py && !is_vendored && !is_init && has_code {
+        if is_py && !is_vendored && has_code {
             let name = file.path.to_string_lossy();
             file.contents =
                 crate::pyfmt::format_source(&name, &file.contents, crate::pyfmt::LINE_LENGTH)?;

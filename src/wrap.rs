@@ -5,14 +5,6 @@
 //! only needs to build each type expression on a single line — a small [`Doc`]
 //! tree assembled here and rendered with [`Doc::flat`]. `ruff format` then splits
 //! any overflowing line with the same right-hand-split Fern's output uses.
-//!
-//! [`LIMIT`] remains for the few files crozier lays out by hand rather than
-//! handing to `ruff` — the lazy-loader `__init__.py` aggregators, whose leading
-//! blank lines a formatter cannot reproduce (see [`crate::emit`]).
-
-/// ruff's configured line length for Fern's output. Used by the hand-laid-out
-/// aggregator files, which are not passed through `ruff format`.
-pub const LIMIT: usize = 120;
 
 /// A renderable type expression: either an atomic token, or a bracketed group
 /// (`open` … comma-separated `items` … `close`). Rendered on one line by
