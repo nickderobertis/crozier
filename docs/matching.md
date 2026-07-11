@@ -173,10 +173,16 @@ target/release/crozier generate \
   --output /tmp/<fixture> --package-name fern --project-name default_package_name
 ```
 
-1. **Auth models beyond bearer** (`auth-schemes`). The root `client.py` and
-   `client_wrapper.py` are coupled to a bearer `token`, and `components.security‐
-   Schemes` is not even in the OpenAPI serde model. Other schemes (api-key, basic,
-   OAuth2 client-credentials) need auth modeling in the IR.
+1. **Auth models beyond bearer** (`auth-schemes`, partially implemented).
+   `components.securitySchemes` plus each operation's `security` now feed an
+   [`ir::Auth`] model: the first declared scheme selects the credential, and it is
+   *required* when every operation is authenticated (else optional, e.g. exhaustive's
+   `noauth`). `client_wrapper.py` is generated from it — api-key (`api_key: str` +
+   the scheme's header) and bearer (`token`, required/optional) both match across the
+   fixtures, and the bearer-optional form stays byte-identical to Fern's default. Not
+   yet threaded through: the root `client.py` constructor/docstring/`Examples` (still
+   bearer-shaped, so `auth-schemes` root client differs), and basic/OAuth2 primaries
+   (no fixture exercises them; they fall back to the optional-bearer wrapper).
 2. **Broader example coverage.** The example-value generator is proven against the
    corpus (objects, unions, enums, containers, maps, datetimes, `long`). Shapes the
    corpus lacks — e.g. a required `date` example, a nameless-slot enum — carry

@@ -219,13 +219,13 @@ const FEATURE_TARGETS: &[Corpus] = &[
         api: "auth-schemes",
         package_name: "fern",
         project_name: "default_package_name",
-        matched: &[],
+        matched: &["src/fern/core/client_wrapper.py"],
     },
     Corpus {
         api: "inline-request-response",
         package_name: "fern",
         project_name: "default_package_name",
-        matched: &[],
+        matched: &["src/fern/core/client_wrapper.py"],
     },
     Corpus {
         api: "cookie-parameters",
@@ -237,13 +237,14 @@ const FEATURE_TARGETS: &[Corpus] = &[
         api: "form-bodies",
         package_name: "fern",
         project_name: "default_package_name",
-        matched: &[],
+        matched: &["src/fern/core/client_wrapper.py"],
     },
     Corpus {
         api: "discriminated-unions",
         package_name: "fern",
         project_name: "default_package_name",
         matched: &[
+            "src/fern/core/client_wrapper.py",
             "src/fern/types/shape.py",
             "src/fern/types/circle.py",
             "src/fern/types/square.py",
@@ -254,13 +255,14 @@ const FEATURE_TARGETS: &[Corpus] = &[
         api: "schema-constraints",
         package_name: "fern",
         project_name: "default_package_name",
-        matched: &[],
+        matched: &["src/fern/core/client_wrapper.py"],
     },
     Corpus {
         api: "integer-enums",
         package_name: "fern",
         project_name: "default_package_name",
         matched: &[
+            "src/fern/core/client_wrapper.py",
             "src/fern/types/priority.py",
             "src/fern/types/http_status.py",
         ],
@@ -269,7 +271,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         api: "servers-webhooks",
         package_name: "fern",
         project_name: "default_package_name",
-        matched: &[],
+        matched: &["src/fern/core/client_wrapper.py"],
     },
 ];
 

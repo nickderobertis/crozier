@@ -27,6 +27,32 @@ pub struct OpenApi {
     /// API operations, keyed by URL path, in document order.
     #[serde(default)]
     pub paths: IndexMap<String, PathItem>,
+    /// Document-wide default security requirement; an operation without its own
+    /// `security` inherits this.
+    #[serde(default)]
+    pub security: Option<Vec<SecurityRequirement>>,
+}
+
+/// One security requirement: a map of scheme name → scopes. An empty map (`{}`)
+/// means optional auth; an empty list at the operation means no auth.
+pub type SecurityRequirement = IndexMap<String, Vec<String>>;
+
+/// A declared authentication scheme (`components.securitySchemes`). Only the
+/// fields crozier needs to shape the client wrapper are modeled.
+#[derive(Debug, Default, Clone, Deserialize)]
+pub struct SecurityScheme {
+    /// `type`: `apiKey`, `http`, `oauth2`, ...
+    #[serde(rename = "type", default)]
+    pub ty: String,
+    /// For `type: http`, the scheme (`bearer`, `basic`).
+    #[serde(default)]
+    pub scheme: Option<String>,
+    /// For `type: apiKey`, the header/query/cookie name carrying the key.
+    #[serde(default)]
+    pub name: Option<String>,
+    /// For `type: apiKey`, the location (`header`, `query`, `cookie`).
+    #[serde(rename = "in", default)]
+    pub location: Option<String>,
 }
 
 /// One path's operations, keyed by HTTP method. Only the methods crozier
@@ -89,6 +115,10 @@ pub struct Operation {
     /// Responses, keyed by status code (or `default`), in document order.
     #[serde(default)]
     pub responses: IndexMap<String, Response>,
+    /// Per-operation security requirement. `Some(vec![])` opts out of the
+    /// document default (no auth); `None` inherits it.
+    #[serde(default)]
+    pub security: Option<Vec<SecurityRequirement>>,
 }
 
 /// An operation parameter (path/query/header/cookie). Only inline parameters are
@@ -176,6 +206,9 @@ pub struct Components {
     /// Named schemas, in document order.
     #[serde(default)]
     pub schemas: IndexMap<String, Schema>,
+    /// Declared authentication schemes, in document order.
+    #[serde(rename = "securitySchemes", default)]
+    pub security_schemes: IndexMap<String, SecurityScheme>,
 }
 
 /// A JSON-Schema-ish node. A node is either a `$ref` (when [`Schema::reference`]

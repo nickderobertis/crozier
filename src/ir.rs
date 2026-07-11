@@ -30,6 +30,64 @@ pub struct Ir {
     pub endpoints: Vec<Endpoint>,
     /// Generated exception classes, one per distinct declared error response.
     pub errors: Vec<ErrorClass>,
+    /// The authentication model that shapes the client wrapper and root client.
+    pub auth: Auth,
+}
+
+/// The SDK's authentication model, derived from `components.securitySchemes` and
+/// how operations reference them. Only the schemes crozier reproduces byte-for-byte
+/// are distinguished; anything else (basic, oauth2, or no scheme) falls back to an
+/// optional bearer `token`, matching Fern's default client wrapper.
+#[derive(Debug, Clone)]
+pub enum Auth {
+    /// A `type: apiKey` header credential: a required-or-optional `api_key: str`
+    /// added to the named header.
+    ApiKey {
+        /// The header the key is sent in (the scheme's `name`).
+        header: String,
+        /// Whether every operation is authenticated (the credential is required).
+        required: bool,
+    },
+    /// A bearer `token` (str or callable), sent as `Authorization: Bearer`.
+    Bearer {
+        /// Whether every operation is authenticated (the token is required).
+        required: bool,
+    },
+}
+
+/// Derive the [`Auth`] model: the first declared scheme selects the credential
+/// shape, and the credential is required when every operation is authenticated.
+fn auth_model(doc: &OpenApi) -> Auth {
+    let required = all_operations_authenticated(doc);
+    match doc.components.security_schemes.values().next() {
+        Some(s) if s.ty == "apiKey" && s.location.as_deref() == Some("header") => Auth::ApiKey {
+            header: s.name.clone().unwrap_or_default(),
+            required,
+        },
+        Some(s) if s.ty == "http" && s.scheme.as_deref() == Some("bearer") => {
+            Auth::Bearer { required }
+        }
+        // Basic/oauth2/unknown/no scheme → Fern's default optional bearer token.
+        _ => Auth::Bearer { required: false },
+    }
+}
+
+/// Whether every operation carries a non-empty security requirement (its own, or
+/// the document default). An SDK with any unauthenticated operation makes the
+/// credential optional. Returns `false` for a spec with no operations.
+fn all_operations_authenticated(doc: &OpenApi) -> bool {
+    let mut any = false;
+    for item in doc.paths.values() {
+        for (_, op) in item.operations() {
+            any = true;
+            let effective = op.security.as_ref().or(doc.security.as_ref());
+            let authed = effective.is_some_and(|reqs| reqs.iter().any(|r| !r.is_empty()));
+            if !authed {
+                return false;
+            }
+        }
+    }
+    any
 }
 
 /// One API operation, resolved into the shape the raw client needs.
@@ -406,6 +464,7 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         endpoint_modules: endpoint_modules(doc),
         endpoints,
         errors,
+        auth: auth_model(doc),
     }
 }
 
