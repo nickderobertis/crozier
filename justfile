@@ -39,6 +39,14 @@ test:
 test-e2e:
     cargo nextest run --locked -E 'binary(e2e)'
 
+# Runtime ("wire") tests only: generate an SDK and drive the compiled client via
+# an injected httpx.MockTransport (tests/runtime/wire_test.py), asserting request
+# construction + response parsing at runtime. Part of `test-e2e`/`check`; this
+# runs it in isolation. Needs Python + httpx/pydantic (uv or pip); see
+# tests/runtime/AGENTS.md.
+test-runtime:
+    cargo nextest run --locked -E 'binary(e2e) and test(generated_sdk_runtime_behavior)'
+
 # Format the codebase in place.
 format:
     cargo fmt --all

@@ -108,6 +108,23 @@ the journeys a user actually takes, independent of the golden fixtures:
   with a message when no Python interpreter is on `PATH` (same posture as the
   coverage tier); GitHub's ubuntu/macos/windows runners all ship one, so the gate
   always runs it.
+- **The generated SDK behaves right at runtime.** Compiling proves the source is
+  legal Python; it does not prove the *client* issues the right HTTP request or
+  parses the response. `generated_sdk_runtime_behavior` generates the `exhaustive`
+  SDK and runs the committed driver [`tests/runtime/wire_test.py`](../tests/runtime/wire_test.py)
+  against it (in a cached venv holding the SDK's only runtime deps, `httpx` +
+  `pydantic`). The generated client accepts an `httpx_client`, so the driver
+  injects one whose `httpx.MockTransport` captures the outgoing request and returns
+  a scripted response — asserting URL/method construction, bearer-auth and
+  `X-Crozier-*` SDK-identity header injection, request-body serialization (wire
+  aliasing and `OMIT` filtering), query encoding, typed pydantic deserialization,
+  and typed error raising, for the sync **and** async clients. This is the
+  in-process analog of Fern's own wire tests — Fern runs a WireMock server in
+  Docker and verifies the request via its admin API, but that whole `tests/wire/`
+  tree is generated output gated behind an Enterprise `enable_wire_tests` flag that
+  none of the corpora set, so crozier does not emit it and reproduces the behavior
+  without Docker. Like the validity check it skips when Python/venv/deps are
+  unavailable, but is a **hard failure under `CI`** so the gate stays honest.
 - **Default naming.** The common bare invocation (no `--package-name` /
   `--project-name`) is exercised: the package directory is `snake_case(title)` and
   `version.py` records the same name.

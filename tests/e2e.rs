@@ -1603,6 +1603,150 @@ fn assert_valid_python(out: &Path) {
     );
 }
 
+/// The venv interpreter path for a given venv root, across platforms.
+fn venv_python(venv: &Path) -> PathBuf {
+    if cfg!(windows) {
+        venv.join("Scripts").join("python.exe")
+    } else {
+        venv.join("bin").join("python")
+    }
+}
+
+/// Whether `uv` (the fast installer) is on PATH.
+fn uv_available() -> bool {
+    std::process::Command::new("uv")
+        .arg("--version")
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
+        .status()
+        .map(|s| s.success())
+        .unwrap_or(false)
+}
+
+/// Whether `py` can import the generated SDK's runtime dependencies.
+fn can_import_sdk_deps(py: &Path) -> bool {
+    std::process::Command::new(py)
+        .args(["-c", "import httpx, pydantic"])
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
+        .status()
+        .map(|s| s.success())
+        .unwrap_or(false)
+}
+
+/// Prepare (creating and caching if needed) a virtualenv holding the generated
+/// SDK's only runtime dependencies (`httpx`, `pydantic`) and return its
+/// interpreter, so the runtime wire tests can import and drive a generated
+/// client. Returns an `Err` describing why the env could not be prepared — no
+/// base interpreter, no venv support, or a failed dependency install (e.g.
+/// offline) — which the caller turns into a skip locally / a hard failure in CI.
+///
+/// The venv is cached under the system temp dir and reused whenever it already
+/// imports the dependencies, so repeated `just check` runs pay the install once.
+/// `uv` is used when present (seconds); otherwise the stdlib `venv` + `pip`.
+fn runtime_python_env() -> Result<PathBuf, String> {
+    let base = python_interpreter().ok_or("no python3/python on PATH")?;
+    let venv = std::env::temp_dir().join("crozier-runtime-venv-v1");
+    let venv_py = venv_python(&venv);
+
+    if venv_py.exists() && can_import_sdk_deps(&venv_py) {
+        return Ok(venv_py);
+    }
+
+    let run = |mut cmd: std::process::Command, what: &str| -> Result<(), String> {
+        let output = cmd
+            .output()
+            .map_err(|e| format!("failed to spawn {what}: {e}"))?;
+        if output.status.success() {
+            return Ok(());
+        }
+        Err(format!(
+            "{what} failed:\n{}",
+            String::from_utf8_lossy(&output.stderr)
+        ))
+    };
+
+    if uv_available() {
+        let mut venv_cmd = std::process::Command::new("uv");
+        venv_cmd.arg("venv").arg(&venv);
+        run(venv_cmd, "uv venv")?;
+        let mut install = std::process::Command::new("uv");
+        install
+            .args(["pip", "install", "--python"])
+            .arg(&venv_py)
+            .args(["httpx", "pydantic"]);
+        run(install, "uv pip install")?;
+    } else {
+        let mut venv_cmd = std::process::Command::new(base);
+        venv_cmd.args(["-m", "venv"]).arg(&venv);
+        run(venv_cmd, "python -m venv")?;
+        let mut install = std::process::Command::new(&venv_py);
+        install.args(["-m", "pip", "install", "httpx", "pydantic"]);
+        run(install, "pip install")?;
+    }
+
+    if can_import_sdk_deps(&venv_py) {
+        Ok(venv_py)
+    } else {
+        Err("venv prepared but httpx/pydantic still not importable".into())
+    }
+}
+
+/// Runtime ("wire") behavior of a generated SDK: byte-matching Fern proves the
+/// source is right; this proves the compiled client *behaves* right. It generates
+/// the exhaustive SDK (the richest fully-matched corpus) and runs the committed
+/// `tests/runtime/wire_test.py` driver against it — the driver injects an
+/// `httpx.MockTransport`, so it asserts on URL/method construction, auth + SDK
+/// header injection, request-body serialization, query encoding, typed
+/// deserialization, and typed error raising, for the sync and async clients. This
+/// is the in-process analog of Fern's WireMock wire tests (Docker/Enterprise-gated
+/// output crozier does not emit). See docs/matching.md.
+#[test]
+fn generated_sdk_runtime_behavior() {
+    let out = tempfile::tempdir().expect("tempdir");
+    let spec = fixture_dir("exhaustive").join("openapi.yml");
+    crozier()
+        .args(["generate", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(out.path())
+        .args([
+            "--package-name",
+            "fern",
+            "--project-name",
+            "default_package_name",
+        ])
+        .assert()
+        .success();
+
+    let py = match runtime_python_env() {
+        Ok(py) => py,
+        Err(reason) => {
+            // Keep the gate honest in CI (its runners ship Python and have
+            // network) while letting a restricted local sandbox skip — the same
+            // posture as the Python-validity check above.
+            if std::env::var_os("CI").is_some() {
+                panic!("runtime wire tests require a Python env, unavailable in CI: {reason}");
+            }
+            eprintln!("skipping SDK runtime tests: {reason}");
+            return;
+        }
+    };
+
+    let driver = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/runtime/wire_test.py");
+    let output = std::process::Command::new(&py)
+        .arg(&driver)
+        .env("CROZIER_SDK_SRC", out.path().join("src"))
+        .output()
+        .expect("run the runtime wire-test driver");
+    assert!(
+        output.status.success(),
+        "runtime wire tests failed:\n{}{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr),
+    );
+}
+
 #[test]
 fn arbitrary_spec_generates_valid_python() {
     let dir = tempfile::tempdir().expect("tempdir");
