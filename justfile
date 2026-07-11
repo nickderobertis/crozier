@@ -63,6 +63,13 @@ upgrade:
 fixtures-refresh *args:
     ./scripts/fixtures-refresh.sh {{args}}
 
+# Coverage-growth aid: for each corpus, report which committed fixture files
+# crozier ALREADY reproduces byte-for-byte but are missing from its `matched` list
+# in tests/e2e.rs, printed as ready-to-paste array entries. Not part of `check`.
+# Run after a generator change to grow the manifest. See tests/fixtures/AGENTS.md.
+fixtures-candidates:
+    cargo test --locked --test e2e -- --ignored --nocapture report_matched_candidates
+
 # Install/refresh the llmlint toolchain (oneharness + llmlint). Idempotent.
 setup-llmlint:
     ./scripts/setup-llmlint.sh

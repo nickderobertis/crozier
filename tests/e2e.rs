@@ -623,11 +623,29 @@ fn ruff_isort(source: &str) -> String {
 /// `matched` list to equal the committed fixture once comments are stripped.
 fn assert_corpus_matches(c: &Corpus) {
     let fixtures = fixture_dir(c.api);
-    let out = tempfile::tempdir().expect("tempdir");
+    let out = generate_corpus(c);
 
+    for rel in c.matched {
+        let generated = std::fs::read_to_string(out.path().join(rel))
+            .unwrap_or_else(|e| panic!("crozier did not write {rel}: {e}"));
+        let expected = std::fs::read_to_string(fixtures.join("expected").join(rel))
+            .unwrap_or_else(|e| panic!("missing fixture {rel}: {e}"));
+        assert!(
+            generated_matches_fixture(rel, &generated, &expected),
+            "generated {rel} does not match the Fern fixture"
+        );
+    }
+}
+
+/// Generate a corpus's SDK into a fresh tempdir with that corpus's naming, and
+/// return the dir (the caller keeps it alive). Fails the test if crozier errors —
+/// shared by the gate and the candidate reporter so both drive the binary
+/// identically.
+fn generate_corpus(c: &Corpus) -> tempfile::TempDir {
+    let out = tempfile::tempdir().expect("tempdir");
     crozier()
         .args(["generate", "--spec"])
-        .arg(fixtures.join("openapi.yml"))
+        .arg(fixture_dir(c.api).join("openapi.yml"))
         .arg("--output")
         .arg(out.path())
         .args([
@@ -639,37 +657,38 @@ fn assert_corpus_matches(c: &Corpus) {
         .assert()
         .success()
         .stderr(predicate::str::contains("generated"));
+    out
+}
 
-    for rel in c.matched {
-        let generated = std::fs::read_to_string(out.path().join(rel))
-            .unwrap_or_else(|e| panic!("crozier did not write {rel}: {e}"));
-        let expected = std::fs::read_to_string(fixtures.join("expected").join(rel))
-            .unwrap_or_else(|e| panic!("missing fixture {rel}: {e}"));
-        // Python files are compared with comments stripped (the same normalization
-        // that produced the fixtures); non-Python scaffolding (pyproject.toml,
-        // requirements.txt, JSON) is Fern's verbatim output and compared as-is.
-        //
-        // The lazy-loader `__init__.py` aggregators are normalized on both sides
-        // before comparison: leading blank lines (a comment-strip artifact of
-        // Fern's multi-line header) are trimmed, and the `TYPE_CHECKING` import
-        // block is canonicalized with `ruff` isort. That block is never executed,
-        // so its order carries no meaning — normalizing it lets crozier sort
-        // imports straightforwardly instead of reproducing Fern's traversal order.
-        let (actual, expected) = if rel.ends_with("__init__.py") {
-            (
-                normalize_init(&crozier::strip_python_comments(&generated)),
-                normalize_init(&expected),
-            )
-        } else if rel.ends_with(".py") {
-            (crozier::strip_python_comments(&generated), expected)
-        } else {
-            (generated, expected)
-        };
-        assert_eq!(
-            actual, expected,
-            "generated {rel} does not match the Fern fixture"
-        );
-    }
+/// Whether crozier's `generated` output for `rel` equals the committed fixture
+/// under the gate's normalization — the single definition of "matches", used by
+/// both `assert_corpus_matches` and the candidate reporter so they never drift.
+///
+/// Python files are compared with comments stripped (the same normalization that
+/// produced the fixtures); non-Python scaffolding (pyproject.toml, requirements.txt,
+/// JSON) is Fern's verbatim output and compared as-is.
+///
+/// The lazy-loader `__init__.py` aggregators are normalized on both sides first:
+/// leading blank lines (a comment-strip artifact of Fern's multi-line header) are
+/// trimmed, and the `TYPE_CHECKING` import block is canonicalized with `ruff` isort.
+/// That block is never executed, so its order carries no meaning — normalizing it
+/// lets crozier sort imports straightforwardly instead of reproducing Fern's
+/// traversal order.
+fn generated_matches_fixture(rel: &str, generated: &str, expected: &str) -> bool {
+    let (actual, expected) = if rel.ends_with("__init__.py") {
+        (
+            normalize_init(&crozier::strip_python_comments(generated)),
+            normalize_init(expected),
+        )
+    } else if rel.ends_with(".py") {
+        (
+            crozier::strip_python_comments(generated),
+            expected.to_string(),
+        )
+    } else {
+        (generated.to_string(), expected.to_string())
+    };
+    actual == expected
 }
 
 #[test]
@@ -691,6 +710,84 @@ fn feature_target_specs_generate_without_panicking() {
     for target in FEATURE_TARGETS {
         assert_corpus_matches(target);
     }
+}
+
+/// Coverage-growth aid — NOT a gate (ignored by default so it never runs under
+/// `check`). For every corpus, generate its tree and report which committed
+/// fixture files crozier already reproduces byte-for-byte but that are absent from
+/// the corpus's `matched` list. It prints each such file as a ready-to-paste array
+/// entry, turning manifest growth from a manual diff into copy-paste. Run it via
+/// `just fixtures-candidates` after a generator change; see tests/fixtures/AGENTS.md.
+#[test]
+#[ignore = "coverage-growth aid, not a gate; run via `just fixtures-candidates`"]
+fn report_matched_candidates() {
+    let mut corpora: Vec<&Corpus> = vec![&QUERY_PARAMETERS, &EXHAUSTIVE];
+    corpora.extend(FEATURE_TARGETS.iter());
+
+    let mut total = 0usize;
+    for c in corpora {
+        let expected_root = fixture_dir(c.api).join("expected");
+        let matched: std::collections::HashSet<&str> = c.matched.iter().copied().collect();
+        let out = generate_corpus(c);
+
+        let mut candidates: Vec<String> = walk_files(&expected_root)
+            .into_iter()
+            .filter(|rel| !matched.contains(rel.as_str()))
+            .filter(|rel| {
+                // A file is a candidate only if crozier emits it AND it matches. Skip
+                // anything unreadable as UTF-8 (nothing in the corpus is binary today).
+                let (Ok(expected), Ok(generated)) = (
+                    std::fs::read_to_string(expected_root.join(rel)),
+                    std::fs::read_to_string(out.path().join(rel)),
+                ) else {
+                    return false;
+                };
+                generated_matches_fixture(rel, &generated, &expected)
+            })
+            .collect();
+        candidates.sort();
+
+        println!("\n=== {} ===", c.api);
+        println!("  {} file(s) already in `matched`.", matched.len());
+        if candidates.is_empty() {
+            println!("  no new byte-matching files.");
+        } else {
+            total += candidates.len();
+            println!(
+                "  {} new byte-matching file(s) — add to this corpus's `matched` in tests/e2e.rs:",
+                candidates.len()
+            );
+            for rel in candidates {
+                println!("        \"{rel}\",");
+            }
+        }
+    }
+    println!("\n{total} new candidate file(s) across all corpora.");
+}
+
+/// Every file under `root`, as `/`-separated paths relative to `root`, sorted.
+/// A small hand-rolled walk to avoid a `walkdir` dev-dependency for one use.
+fn walk_files(root: &Path) -> Vec<String> {
+    fn rec(base: &Path, dir: &Path, out: &mut Vec<String>) {
+        let mut entries: Vec<PathBuf> = std::fs::read_dir(dir)
+            .unwrap_or_else(|e| panic!("read_dir {}: {e}", dir.display()))
+            .map(|e| e.expect("dir entry").path())
+            .collect();
+        entries.sort();
+        for path in entries {
+            if path.is_dir() {
+                rec(base, &path, out);
+            } else {
+                let rel = path.strip_prefix(base).expect("path is under base");
+                out.push(rel.to_string_lossy().replace('\\', "/"));
+            }
+        }
+    }
+    let mut out = Vec::new();
+    if root.is_dir() {
+        rec(root, root, &mut out);
+    }
+    out
 }
 
 #[test]

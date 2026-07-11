@@ -42,7 +42,10 @@ the committed fixtures (`crozier::strip_python_comments`, exposed as
 
 Each `Corpus` in `tests/e2e.rs` carries a `matched` list — the files byte-matched
 today for that spec. It grows as generation lands; a file is only added once it
-matches exactly.
+matches exactly. After a generator change, `just fixtures-candidates` reports
+which committed fixture files crozier now reproduces byte-for-byte but that aren't
+yet listed — as ready-to-paste array entries — so growing the manifest is
+copy-paste, not a manual tree diff. See [`../tests/fixtures/AGENTS.md`](../tests/fixtures/AGENTS.md).
 
 Currently matched for `query-parameters-openapi`:
 
