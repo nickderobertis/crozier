@@ -26,10 +26,11 @@ It runs under `just test-e2e` / `just check`.
   body aliasing + `OMIT` filtering, query encoding, typed deserialization, and
   typed error raising — sync + async.
 - **The only allowed difference** is the deliberate SDK-identity branding
-  (`X-Crozier-*` vs `X-Fern-*`), canonicalized on both sides by
-  `_recorder._canonical_headers` exactly as `tests/e2e.rs::normalize_sdk_headers`
-  does. Do not add other normalizations to hide a real divergence — fix the
-  generator instead.
+  (`X-Crozier-*` vs `X-Fern-*`). `_recorder._canonical_headers` folds either
+  vendor prefix to a common `x-sdk-*` via one prefix rule (no enumerated list to
+  drift) — the runtime analog of the byte-diff's
+  `tests/e2e.rs::normalize_sdk_headers`. Do not add other normalizations to hide a
+  real divergence — fix the generator instead.
 - **Adding a journey.** Add a function `(sdk) -> observation dict` to
   `_recorder.JOURNEYS`; it must raise on a broken structural contract (e.g. a
   declared 4xx that fails to raise) so it can never record nothing and match

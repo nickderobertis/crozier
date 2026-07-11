@@ -1711,8 +1711,9 @@ fn runtime_python_env() -> Result<PathBuf, String> {
 /// headers, body field-aliasing and `OMIT` filtering, query encoding, typed
 /// pydantic deserialization, and typed error raising, sync and async. The *only*
 /// allowed difference is the deliberate SDK-identity branding (`X-Crozier-*` vs
-/// `X-Fern-*`), canonicalized on both sides exactly as `normalize_sdk_headers`
-/// does for the byte-diff. This is the in-process analog of Fern's own WireMock
+/// `X-Fern-*`), which the recorder folds to a common prefix on both sides — the
+/// runtime analog of the byte-diff's `normalize_sdk_headers`. This is the
+/// in-process analog of Fern's own WireMock
 /// wire tests (Docker/Enterprise-gated output crozier does not emit). This test
 /// drives the compiled binary and the compiled client, so it lives in the e2e
 /// tier. See docs/matching.md.

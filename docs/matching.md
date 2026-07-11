@@ -128,9 +128,10 @@ the journeys a user actually takes, independent of the golden fixtures:
   serialization (wire aliasing and `OMIT` filtering), query encoding, typed
   pydantic deserialization, and typed error raising, for the sync **and** async
   clients. The **only** allowed difference is the deliberate SDK-identity branding
-  (`X-Crozier-*` vs `X-Fern-*`), canonicalized on both sides exactly as
-  `normalize_sdk_headers` does for the byte-diff — any other divergence fails the
-  test. This is the in-process analog of Fern's own wire tests (Fern runs a
+  (`X-Crozier-*` vs `X-Fern-*`), which the recorder folds to a common prefix on
+  both sides — the runtime analog of the byte-diff's `normalize_sdk_headers` — so
+  any other divergence fails the test. This is the in-process analog of Fern's own
+  wire tests (Fern runs a
   WireMock server in Docker and verifies the request via its admin API), but that
   `tests/wire/` tree is generated output gated behind an Enterprise
   `enable_wire_tests` flag none of the corpora set, so crozier does not emit it and
