@@ -179,10 +179,13 @@ target/release/crozier generate \
    *required* when every operation is authenticated (else optional, e.g. exhaustive's
    `noauth`). `client_wrapper.py` is generated from it — api-key (`api_key: str` +
    the scheme's header) and bearer (`token`, required/optional) both match across the
-   fixtures, and the bearer-optional form stays byte-identical to Fern's default. Not
-   yet threaded through: the root `client.py` constructor/docstring/`Examples` (still
-   bearer-shaped, so `auth-schemes` root client differs), and basic/OAuth2 primaries
-   (no fixture exercises them; they fall back to the optional-bearer wrapper).
+   fixtures, and the bearer-optional form stays byte-identical to Fern's default. The
+   auth model is also threaded through the root `client.py` (constructor param, the
+   docstring `Parameters` line, and the `Examples` instantiation) and every worked
+   `Examples` snippet (per-tag `client.py`, README, reference), so `auth-schemes`
+   matches its root + per-tag clients and reference under api-key. Not yet handled:
+   basic/OAuth2 primaries (no fixture exercises them; they fall back to the
+   optional-bearer wrapper), and cookie-parameters' global-header promotion.
 2. **Broader example coverage.** The example-value generator is proven against the
    corpus (objects, unions, enums, containers, maps, datetimes, `long`). Shapes the
    corpus lacks — e.g. a required `date` example, a nameless-slot enum — carry

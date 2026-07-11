@@ -219,7 +219,17 @@ const FEATURE_TARGETS: &[Corpus] = &[
         api: "auth-schemes",
         package_name: "fern",
         project_name: "default_package_name",
-        matched: &["src/fern/core/client_wrapper.py"],
+        matched: &[
+            // api-key auth threaded through the wrapper, the root client, and the
+            // per-tag client `Examples` (`api_key="YOUR_API_KEY"`).
+            "src/fern/core/client_wrapper.py",
+            "src/fern/client.py",
+            "src/fern/apikeyauth/client.py",
+            "src/fern/basicauth/client.py",
+            "src/fern/bearerauth/client.py",
+            "src/fern/oauth/client.py",
+            "reference.md",
+        ],
     },
     Corpus {
         api: "inline-request-response",
@@ -245,6 +255,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         project_name: "default_package_name",
         matched: &[
             "src/fern/core/client_wrapper.py",
+            "src/fern/client.py",
             "src/fern/types/shape.py",
             "src/fern/types/circle.py",
             "src/fern/types/square.py",

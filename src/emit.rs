@@ -336,6 +336,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 client_name: &ir.client_name,
                 module,
                 types: &ir.types,
+                auth: &ir.auth,
             };
             files.push(client_file(&env, &cx, &eps)?);
             emittable_modules.push(module);
@@ -351,6 +352,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             pkg,
             &ir.client_name,
             &emittable_modules,
+            &ir.auth,
         )?);
     }
 
@@ -642,6 +644,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
             types: &ir.types,
             referenced: BTreeSet::new(),
             uses_datetime: false,
+            auth: &ir.auth,
         };
         build_example(first, false, &first.module, pkg, &ir.client_name, &mut ctx)?.join("\n")
     };
@@ -650,6 +653,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
             types: &ir.types,
             referenced: BTreeSet::new(),
             uses_datetime: false,
+            auth: &ir.auth,
         };
         build_example(first, true, &first.module, pkg, &ir.client_name, &mut ctx)?.join("\n")
     };
@@ -716,6 +720,7 @@ fn reference_entry(ir: &Ir, ep: &Endpoint, module: &str, pkg: &str) -> Vec<Strin
         types: &ir.types,
         referenced: BTreeSet::new(),
         uses_datetime: false,
+        auth: &ir.auth,
     };
     let example =
         build_example(ep, false, module, pkg, &ir.client_name, &mut ctx).unwrap_or_default();
@@ -991,6 +996,50 @@ fn auth_wrapper_parts(auth: &Auth) -> AuthWrapper {
                 super_arg: "token=token".to_string(),
             }
         }
+    }
+}
+
+/// The auth-varying fragments of the root client: the constructor parameter, the
+/// credential name passed to the client wrapper, the docstring `Parameters` line,
+/// and the `Examples` instantiation argument.
+struct AuthClient {
+    ctor_param: String,
+    wrapper_arg: String,
+    doc_param: String,
+    example_line: String,
+}
+
+fn auth_client_parts(auth: &Auth) -> AuthClient {
+    let (name, ty) = match auth {
+        Auth::ApiKey { required: true, .. } => ("api_key", "str".to_string()),
+        Auth::ApiKey {
+            required: false, ..
+        } => ("api_key", "typing.Optional[str] = None".to_string()),
+        Auth::Bearer { required: true } => (
+            "token",
+            "typing.Union[str, typing.Callable[[], str]]".to_string(),
+        ),
+        Auth::Bearer { required: false } => (
+            "token",
+            "typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None".to_string(),
+        ),
+    };
+    // The docstring type drops the ` = None` default suffix a parameter carries.
+    let doc_ty = ty.strip_suffix(" = None").unwrap_or(&ty);
+    AuthClient {
+        ctor_param: format!("        {name}: {ty},\n"),
+        wrapper_arg: name.to_string(),
+        doc_param: format!("    {name} : {doc_ty}\n"),
+        example_line: format!("        {},\n", auth_example(auth)),
+    }
+}
+
+/// The credential argument in a worked `Examples` client instantiation, e.g.
+/// `token="YOUR_TOKEN"` or `api_key="YOUR_API_KEY"` (no indent or trailing comma).
+fn auth_example(auth: &Auth) -> String {
+    match auth {
+        Auth::ApiKey { .. } => "api_key=\"YOUR_API_KEY\"".to_string(),
+        Auth::Bearer { .. } => "token=\"YOUR_TOKEN\"".to_string(),
     }
 }
 
@@ -1743,6 +1792,7 @@ fn root_client_file(
     pkg: &str,
     client_name: &str,
     modules: &[&String],
+    auth: &Auth,
 ) -> Result<GeneratedFile> {
     let async_name = format!("Async{client_name}");
     let mut body = String::new();
@@ -1750,8 +1800,14 @@ fn root_client_file(
     body.push_str("if typing.TYPE_CHECKING:\n");
     for m in modules {
         let pascal = naming::to_pascal_case(m);
+        // The two imported names are ordered alphabetically, so `Async{X}Client`
+        // usually comes first — but not when the tag itself starts with a letter
+        // that sorts `{X}Client` ahead (e.g. `ApikeyauthClient` < `Async...`).
+        let mut names = [format!("Async{pascal}Client"), format!("{pascal}Client")];
+        names.sort();
         body.push_str(&format!(
-            "    from .{m}.client import Async{pascal}Client, {pascal}Client\n"
+            "    from .{m}.client import {}, {}\n",
+            names[0], names[1]
         ));
     }
     body.push_str("\n\n");
@@ -1760,9 +1816,9 @@ fn root_client_file(
         "SyncClientWrapper",
         "httpx.Client",
         pkg,
-        client_name,
         false,
         modules,
+        auth,
     ));
     body.push_str("\n\n\n");
     body.push_str(&root_client_class(
@@ -1770,9 +1826,9 @@ fn root_client_file(
         "AsyncClientWrapper",
         "httpx.AsyncClient",
         pkg,
-        &async_name,
         true,
         modules,
+        auth,
     ));
 
     let contents = render(
@@ -1794,19 +1850,20 @@ fn root_client_class(
     wrapper: &str,
     httpx_type: &str,
     pkg: &str,
-    example_name: &str,
     is_async: bool,
     modules: &[&String],
+    auth: &Auth,
 ) -> String {
+    let a = auth_client_parts(auth);
     let mut out = format!("class {class_name}:\n");
-    out.push_str(&root_client_docstring(pkg, example_name));
+    // `class_name` doubles as the documented example class (`FernApi`/`AsyncFernApi`).
+    out.push_str(&root_client_docstring(pkg, class_name, &a));
     out.push_str(&format!(
         "\n\n    def __init__(
         self,
         *,
         base_url: str,
-        token: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,
-        headers: typing.Optional[typing.Dict[str, str]] = None,
+{ctor_param}        headers: typing.Optional[typing.Dict[str, str]] = None,
         timeout: typing.Optional[float] = None,
         follow_redirects: typing.Optional[bool] = True,
         httpx_client: typing.Optional[{httpx_type}] = None,
@@ -1816,7 +1873,7 @@ fn root_client_class(
         )
         self._client_wrapper = {wrapper}(
             base_url=base_url,
-            token=token,
+            {wrapper_arg}={wrapper_arg},
             headers=headers,
             httpx_client=httpx_client
             if httpx_client is not None
@@ -1824,7 +1881,9 @@ fn root_client_class(
             if follow_redirects is not None
             else {httpx_type}(timeout=_defaulted_timeout),
             timeout=_defaulted_timeout,
-        )\n"
+        )\n",
+        ctor_param = a.ctor_param,
+        wrapper_arg = a.wrapper_arg,
     ));
     // Per-tag lazy slots.
     for m in modules {
@@ -1867,7 +1926,7 @@ fn tag_client_name(module: &str, is_async: bool) -> String {
 /// section, and an `Examples` block instantiating the client. `example_name` is
 /// the class being documented (`FernApi`/`AsyncFernApi`); the import is from the
 /// package root.
-fn root_client_docstring(pkg: &str, example_name: &str) -> String {
+fn root_client_docstring(pkg: &str, example_name: &str, auth: &AuthClient) -> String {
     format!(
         "    \"\"\"
     Use this class to access the different functions within the SDK. You can instantiate any number of clients with different configuration that will propagate to these functions.
@@ -1877,8 +1936,7 @@ fn root_client_docstring(pkg: &str, example_name: &str) -> String {
     base_url : str
         The base url to use for requests from the client.
 
-    token : typing.Optional[typing.Union[str, typing.Callable[[], str]]]
-    headers : typing.Optional[typing.Dict[str, str]]
+{doc_param}    headers : typing.Optional[typing.Dict[str, str]]
         Additional headers to send with every request.
 
     timeout : typing.Optional[float]
@@ -1895,10 +1953,11 @@ fn root_client_docstring(pkg: &str, example_name: &str) -> String {
     from {pkg} import {example_name}
 
     client = {example_name}(
-        token=\"YOUR_TOKEN\",
-        base_url=\"https://yourhost.com/path/to/api\",
+{example_line}        base_url=\"https://yourhost.com/path/to/api\",
     )
     \"\"\"",
+        doc_param = auth.doc_param,
+        example_line = auth.example_line,
         httpx_field = if example_name.starts_with("Async") {
             "httpx.AsyncClient"
         } else {
@@ -1915,6 +1974,7 @@ struct ClientCtx<'a> {
     client_name: &'a str,
     module: &'a str,
     types: &'a [TypeDecl],
+    auth: &'a Auth,
 }
 
 /// Assemble a per-tag `client.py`: the sync and async high-level clients that
@@ -2070,6 +2130,7 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
         types: cx.types,
         referenced: BTreeSet::new(),
         uses_datetime: false,
+        auth: cx.auth,
     };
     match build_example(ep, is_async, cx.module, cx.pkg, cx.client_name, &mut ctx) {
         Some(ex_lines) => {
@@ -2231,6 +2292,8 @@ struct ExampleCtx<'a> {
     referenced: BTreeSet<String>,
     /// Whether any value is a datetime/date (drives an `import datetime`).
     uses_datetime: bool,
+    /// The auth model, for the credential argument in the client instantiation.
+    auth: &'a Auth,
 }
 
 /// The slot a string value sits in, which decides its placeholder text: a named
@@ -2495,7 +2558,7 @@ fn build_example(
 
     let client_block = vec![
         format!("client = {example_name}("),
-        "    token=\"YOUR_TOKEN\",".to_string(),
+        format!("    {},", auth_example(ctx.auth)),
         "    base_url=\"https://yourhost.com/path/to/api\",".to_string(),
         ")".to_string(),
     ];
