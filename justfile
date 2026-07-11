@@ -74,6 +74,12 @@ fixtures-candidates:
 setup-llmlint:
     ./scripts/setup-llmlint.sh
 
+# Make the generated fixture path runnable end to end (fern CLI, docker daemon,
+# release binary) — each only if not already present. Idempotent; also run by the
+# SessionStart hook. The offline path needs none of it. See tests/fixtures/AGENTS.md.
+setup-fern:
+    ./scripts/setup-fern.sh
+
 # LLM-judge lint (llmlint) — non-deterministic, harness-backed; kept OUT of
 # `check`. Run on demand over the configured set (or pass paths). See llmlint.yml.
 lint-llm *paths:
