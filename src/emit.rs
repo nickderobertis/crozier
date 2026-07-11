@@ -362,6 +362,12 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     files.extend(core_files(pkg));
     files.push(client_wrapper_file(pkg, &ir.project_name, &ir.auth));
 
+    // `environment.py`: the server-environment enum, when the document declares
+    // `servers`.
+    if let Some(environment) = &ir.environment {
+        files.push(environment_file(&env, pkg, environment)?);
+    }
+
     // One package marker per endpoint client module. Fern's `__init__.py` here is
     // a comment-only header, so the comment-stripped form is four blank lines.
     for module in &ir.endpoint_modules {
@@ -390,6 +396,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 module,
                 types: &ir.types,
                 auth: &ir.auth,
+                has_environment: ir.environment.is_some(),
             };
             files.push(client_file(&env, &cx, &eps)?);
             emittable_modules.push(module);
@@ -406,6 +413,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             &ir.client_name,
             &emittable_modules,
             &ir.auth,
+            ir.environment.as_ref(),
         )?);
     }
 
@@ -428,6 +436,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             &ir.types,
             &ir.errors,
             &emittable_modules,
+            ir.environment.as_ref(),
         )?);
     }
 
@@ -450,6 +459,30 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     format_python_files(pkg, &mut files)?;
 
     Ok(files)
+}
+
+/// Generate `environment.py`: an `enum.Enum` of the SDK's server environments.
+/// Fern's OpenAPI importer emits a single member (see [`ir::Environment`]).
+fn environment_file(
+    env: &Environment<'static>,
+    pkg: &str,
+    environment: &crate::ir::Environment,
+) -> Result<GeneratedFile> {
+    let (member, url) = &environment.member;
+    let body = format!(
+        "import enum\n\n\nclass {}(enum.Enum):\n    {member} = \"{url}\"\n",
+        environment.enum_name
+    );
+    let contents = render(
+        env,
+        "file.py",
+        "environment.py",
+        context! { header => HEADER, body => body },
+    )?;
+    Ok(GeneratedFile {
+        path: PathBuf::from(format!("src/{pkg}/environment.py")),
+        contents,
+    })
 }
 
 /// Generate the `errors/` package: an exception module per class and the
@@ -633,6 +666,7 @@ fn root_init_file(
     types: &[TypeDecl],
     errors: &[ErrorClass],
     modules: &[&String],
+    environment: Option<&crate::ir::Environment>,
 ) -> Result<GeneratedFile> {
     let async_name = format!("Async{client_name}");
 
@@ -657,6 +691,13 @@ fn root_init_file(
         &[async_name.clone(), client_name.to_string()],
         4,
     ));
+    if let Some(e) = environment {
+        tc.push_str(&from_import_block(
+            ".environment",
+            std::slice::from_ref(&e.enum_name),
+            4,
+        ));
+    }
     tc.push_str(&from_import_block(
         ".version",
         &["__version__".to_string()],
@@ -676,6 +717,9 @@ fn root_init_file(
     }
     pairs.push((client_name.to_string(), ".client".to_string()));
     pairs.push((async_name, ".client".to_string()));
+    if let Some(e) = environment {
+        pairs.push((e.enum_name.clone(), ".environment".to_string()));
+    }
     pairs.push(("__version__".to_string(), ".version".to_string()));
 
     let names: Vec<String> = pairs.iter().map(|(n, _)| n.clone()).collect();
@@ -687,14 +731,18 @@ fn root_init_file(
 
 /// Whether Fern shows a `...` placeholder for an endpoint's body in the README's
 /// abbreviated snippets (versus empty parens). Empirically `...` appears for a
-/// "fully-specified" body: an inline object whose every field is required, or a
-/// container body. A body with any optional field, a union, an enum/scalar, or no
-/// body renders empty parens.
+/// "fully-specified" body: an inline object with *two or more* fields all of which
+/// are required, or a container body. A body with any optional field, a lone
+/// required field, a union, an enum/scalar, or no body renders empty parens (a
+/// single-field inline body — e.g. servers-webhooks' `create` — shows `()`, while
+/// the two-required-field `gettoken` shows `...`).
 fn complex_body(ep: &Endpoint, types: &[TypeDecl]) -> bool {
     match &ep.request_body {
         None => false,
         Some(RequestBody::Bytes) => true,
-        Some(RequestBody::Inline(fields)) => fields.iter().all(|f| f.spec_required),
+        Some(RequestBody::Inline(fields)) => {
+            fields.len() >= 2 && fields.iter().all(|f| f.spec_required)
+        }
         Some(RequestBody::Form(form)) => {
             form.fields.iter().any(|f| f.is_file) || form.fields.iter().all(|f| f.spec_required)
         }
@@ -785,6 +833,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
             referenced: BTreeSet::new(),
             uses_datetime: false,
             auth: &ir.auth,
+            has_environment: ir.environment.is_some(),
         };
         build_example(first, false, &first.module, pkg, &ir.client_name, &mut ctx)?.join("\n")
     };
@@ -794,6 +843,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
             referenced: BTreeSet::new(),
             uses_datetime: false,
             auth: &ir.auth,
+            has_environment: ir.environment.is_some(),
         };
         build_example(first, true, &first.module, pkg, &ir.client_name, &mut ctx)?.join("\n")
     };
@@ -894,6 +944,7 @@ fn reference_entry(
         referenced: BTreeSet::new(),
         uses_datetime: false,
         auth: &ir.auth,
+        has_environment: ir.environment.is_some(),
     };
     let example = build_example(ep, false, module, pkg, &ir.client_name, &mut ctx)
         .unwrap_or_default()
@@ -2003,9 +2054,14 @@ fn root_client_file(
     client_name: &str,
     modules: &[&String],
     auth: &Auth,
+    environment: Option<&crate::ir::Environment>,
 ) -> Result<GeneratedFile> {
     let mut body = String::new();
-    body.push_str("from __future__ import annotations\n\nimport typing\n\nimport httpx\nfrom .core.client_wrapper import AsyncClientWrapper, SyncClientWrapper\n\n");
+    body.push_str("from __future__ import annotations\n\nimport typing\n\nimport httpx\nfrom .core.client_wrapper import AsyncClientWrapper, SyncClientWrapper\n");
+    if let Some(e) = environment {
+        body.push_str(&format!("from .environment import {}\n", e.enum_name));
+    }
+    body.push('\n');
     body.push_str("if typing.TYPE_CHECKING:\n");
     for m in modules {
         let pascal = naming::to_pascal_case(m);
@@ -2027,6 +2083,7 @@ fn root_client_file(
         false,
         modules,
         auth,
+        environment,
     )?);
     body.push_str("\n\n\n");
     body.push_str(&root_client_class(
@@ -2036,7 +2093,16 @@ fn root_client_file(
         true,
         modules,
         auth,
+        environment,
     )?);
+    // When environments are in play, a module-level `_get_base_url` resolves the
+    // explicit `base_url` or falls back to the selected environment's URL.
+    if let Some(e) = environment {
+        body.push_str(&format!(
+            "\n\n\ndef _get_base_url(*, base_url: typing.Optional[str] = None, environment: {enum}) -> str:\n    if base_url is not None:\n        return base_url\n    elif environment is not None:\n        return environment.value\n    else:\n        raise Exception(\"Please pass in either base_url or environment to construct the client\")",
+            enum = e.enum_name,
+        ));
+    }
 
     let contents = render(
         env,
@@ -2059,6 +2125,7 @@ fn root_client_class(
     is_async: bool,
     modules: &[&String],
     auth: &Auth,
+    environment: Option<&crate::ir::Environment>,
 ) -> Result<String> {
     let (class_name, wrapper, httpx_type) = if is_async {
         (
@@ -2070,6 +2137,24 @@ fn root_client_class(
         (client_name.to_string(), "SyncClientWrapper", "httpx.Client")
     };
     let a = auth_client_parts(auth);
+    // With an environment, `base_url` becomes optional, an `environment` parameter
+    // (defaulting to the first server) is added, and the wrapper's `base_url` is
+    // resolved through `_get_base_url`.
+    let e = environment.map(EnvClientParts::new);
+    let base_url_doc_ty = if e.is_some() {
+        "typing.Optional[str]"
+    } else {
+        "str"
+    };
+    let env_doc = e.as_ref().map_or_else(String::new, |e| e.doc.clone());
+    let base_url_ctor = e.as_ref().map_or_else(
+        || "        base_url: str,\n".to_string(),
+        |e| e.ctor.clone(),
+    );
+    let wrapper_base_url = e.as_ref().map_or_else(
+        || "base_url".to_string(),
+        |_| "_get_base_url(base_url=base_url, environment=environment)".to_string(),
+    );
     let module_views: Vec<RootModuleView> = modules
         .iter()
         .map(|m| RootModuleView {
@@ -2086,6 +2171,15 @@ fn root_client_class(
         wrapper_arg: a.wrapper_arg,
         doc_param: a.doc_param,
         example_line: a.example_line,
+        base_url_doc_ty: base_url_doc_ty.to_string(),
+        env_doc,
+        base_url_ctor,
+        wrapper_base_url,
+        example_base_url: if e.is_some() {
+            String::new()
+        } else {
+            "        base_url=\"https://yourhost.com/path/to/api\",\n".to_string()
+        },
         modules: module_views,
     };
     // The caller controls the separation between the sync/async classes and the
@@ -2118,7 +2212,45 @@ struct RootClientView {
     wrapper_arg: String,
     doc_param: String,
     example_line: String,
+    /// The docstring type for `base_url` (`str`, or `typing.Optional[str]` with an
+    /// environment).
+    base_url_doc_ty: String,
+    /// The `environment` docstring `Parameters` block (empty without environments).
+    env_doc: String,
+    /// The `base_url` (and `environment`) constructor parameter line(s).
+    base_url_ctor: String,
+    /// The value passed to the client wrapper's `base_url` (`base_url`, or a
+    /// `_get_base_url(...)` call with environments).
+    wrapper_base_url: String,
+    /// The `Examples` client instantiation's `base_url` line (empty with
+    /// environments, which drop it).
+    example_base_url: String,
     modules: Vec<RootModuleView>,
+}
+
+/// The environment-varying fragments of the root client: the docstring block, the
+/// constructor parameter lines. Assembled once and reused across the sync/async
+/// classes.
+struct EnvClientParts {
+    doc: String,
+    ctor: String,
+}
+
+impl EnvClientParts {
+    fn new(e: &crate::ir::Environment) -> Self {
+        let enum_name = &e.enum_name;
+        let default = e.default_ref();
+        EnvClientParts {
+            // Fern's docstring here leaks the import statement onto the description
+            // line and pads the block with blank lines; reproduced verbatim.
+            doc: format!(
+                "    environment : {enum_name}\n        The environment to use for requests from the client. from .environment import {enum_name}\n\n\n\n        Defaults to {default}\n\n\n\n"
+            ),
+            ctor: format!(
+                "        base_url: typing.Optional[str] = None,\n        environment: {enum_name} = {default},\n"
+            ),
+        }
+    }
 }
 
 /// The tag client class name for a module (`endpoints_put` → `EndpointsPutClient`,
@@ -2141,6 +2273,7 @@ struct ClientCtx<'a> {
     module: &'a str,
     types: &'a [TypeDecl],
     auth: &'a Auth,
+    has_environment: bool,
 }
 
 /// Assemble a per-tag `client.py`: the sync and async high-level clients that
@@ -2289,6 +2422,7 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
         referenced: BTreeSet::new(),
         uses_datetime: false,
         auth: cx.auth,
+        has_environment: cx.has_environment,
     };
     match build_example(ep, is_async, cx.module, cx.pkg, cx.client_name, &mut ctx) {
         Some(ex_lines) => {
@@ -2458,6 +2592,9 @@ struct ExampleCtx<'a> {
     uses_datetime: bool,
     /// The auth model, for the credential argument in the client instantiation.
     auth: &'a Auth,
+    /// Whether the SDK has server environments — with them, the client
+    /// instantiation drops the `base_url=...` line.
+    has_environment: bool,
 }
 
 /// The slot a string value sits in, which decides its placeholder text: a named
@@ -2728,12 +2865,15 @@ fn build_example(
         v
     };
 
-    let client_block = vec![
+    let mut client_block = vec![
         format!("client = {example_name}("),
         format!("    {},", auth_example(ctx.auth)),
-        "    base_url=\"https://yourhost.com/path/to/api\",".to_string(),
-        ")".to_string(),
     ];
+    // With server environments, Fern drops the hardcoded `base_url` from examples.
+    if !ctx.has_environment {
+        client_block.push("    base_url=\"https://yourhost.com/path/to/api\",".to_string());
+    }
+    client_block.push(")".to_string());
 
     let mut out: Vec<String> = Vec::new();
     if !preamble.is_empty() {
@@ -3044,6 +3184,11 @@ mod tests {
             wrapper_arg: "token".to_string(),
             doc_param: "    token : str\n\n".to_string(),
             example_line: "        token=\"YOUR_TOKEN\",\n".to_string(),
+            base_url_doc_ty: "str".to_string(),
+            env_doc: String::new(),
+            base_url_ctor: "        base_url: str,\n".to_string(),
+            wrapper_base_url: "base_url".to_string(),
+            example_base_url: "        base_url=\"https://yourhost.com/path/to/api\",\n".to_string(),
             modules: vec![RootModuleView {
                 attr: "endpoints_put".to_string(),
                 cls: "EndpointsPutClient".to_string(),

@@ -31,6 +31,21 @@ pub struct OpenApi {
     /// `security` inherits this.
     #[serde(default)]
     pub security: Option<Vec<SecurityRequirement>>,
+    /// Declared API servers; the first drives the generated environment enum.
+    #[serde(default)]
+    pub servers: Vec<Server>,
+}
+
+/// One entry from the document's `servers` list: a base URL and an optional
+/// human description (which names the generated environment member).
+#[derive(Debug, Default, Clone, Deserialize)]
+pub struct Server {
+    /// The server base URL (the environment member's value).
+    #[serde(default)]
+    pub url: String,
+    /// A human description; uppercased, it names the environment member.
+    #[serde(default)]
+    pub description: Option<String>,
 }
 
 /// One security requirement: a map of scheme name → scopes. An empty map (`{}`)

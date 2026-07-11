@@ -32,6 +32,66 @@ pub struct Ir {
     pub errors: Vec<ErrorClass>,
     /// The authentication model that shapes the client wrapper and root client.
     pub auth: Auth,
+    /// The server-environment model, when the document declares `servers`. Drives
+    /// `environment.py` and threads an `environment`/optional-`base_url` through
+    /// the root client.
+    pub environment: Option<Environment>,
+}
+
+/// The generated server-environment enum (`environment.py`). Fern maps the
+/// document's `servers` to an `enum.Enum`, but its OpenAPI importer emits only a
+/// single member — the first server, named from its description — even when the
+/// document lists several (the "2 servers → only `PRODUCTION`" oddity noted in
+/// issue #14). crozier reproduces that observed behavior.
+#[derive(Debug, Clone)]
+pub struct Environment {
+    /// The enum class name (`{ClientName}Environment`, e.g. `FernApiEnvironment`).
+    pub enum_name: String,
+    /// The single emitted member: (member name, URL value).
+    pub member: (String, String),
+}
+
+impl Environment {
+    /// The default member reference used in the root client (`FernApiEnvironment.PRODUCTION`).
+    #[must_use]
+    pub fn default_ref(&self) -> String {
+        format!("{}.{}", self.enum_name, self.member.0)
+    }
+}
+
+/// Derive the [`Environment`] model from the document's `servers`. Reproduces
+/// Fern's single-member behavior: the first server only, its member named by
+/// uppercasing the description (non-identifier characters → `_`), defaulting to
+/// `PRODUCTION` when there is no usable description.
+fn environment_model(doc: &OpenApi, client_name: &str) -> Option<Environment> {
+    let first = doc.servers.first()?;
+    let member_name = first
+        .description
+        .as_deref()
+        .map(env_member_name)
+        .filter(|n| !n.is_empty())
+        .unwrap_or_else(|| "PRODUCTION".to_string());
+    Some(Environment {
+        enum_name: format!("{client_name}Environment"),
+        member: (member_name, first.url.clone()),
+    })
+}
+
+/// Turn a server description into a Python enum member identifier: uppercased,
+/// with each run of non-alphanumeric characters collapsed to a single `_`.
+fn env_member_name(description: &str) -> String {
+    let mut out = String::new();
+    let mut prev_underscore = false;
+    for ch in description.chars() {
+        if ch.is_ascii_alphanumeric() {
+            out.push(ch.to_ascii_uppercase());
+            prev_underscore = false;
+        } else if !prev_underscore && !out.is_empty() {
+            out.push('_');
+            prev_underscore = true;
+        }
+    }
+    out.trim_end_matches('_').to_string()
 }
 
 /// The SDK's authentication model, derived from `components.securitySchemes` and
@@ -602,18 +662,22 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         .types
         .retain(|d| !inline_sources.contains(d.name()) || referenced.contains(d.name()));
 
+    let client_name = format!(
+        "{}Api",
+        naming::to_pascal_case(config.package_name.as_str())
+    );
+    let environment = environment_model(doc, &client_name);
+
     Ir {
         package_name: config.package_name.as_str().to_string(),
         project_name: config.project_name.clone(),
-        client_name: format!(
-            "{}Api",
-            naming::to_pascal_case(config.package_name.as_str())
-        ),
+        client_name,
         types: builder.types,
         endpoint_modules: endpoint_modules(doc),
         endpoints,
         errors,
         auth: auth_model(doc),
+        environment,
     }
 }
 
