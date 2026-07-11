@@ -304,6 +304,21 @@ fn environment() -> Environment<'static> {
         .expect("error template compiles");
     env.add_template("lazy_init.py", include_str!("../templates/lazy_init.py.j2"))
         .expect("lazy_init template compiles");
+    env.add_template(
+        "reference_entry.md",
+        include_str!("../templates/reference_entry.md.j2"),
+    )
+    .expect("reference_entry template compiles");
+    env.add_template(
+        "root_client.py",
+        include_str!("../templates/root_client.py.j2"),
+    )
+    .expect("root_client template compiles");
+    env.add_template(
+        "client_class.py",
+        include_str!("../templates/client_class.py.j2"),
+    )
+    .expect("client_class template compiles");
     env.add_template("file.py", include_str!("../templates/file.py.j2"))
         .expect("file template compiles");
     env
@@ -421,7 +436,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     if let Some(readme) = readme_file(ir) {
         files.push(readme);
     }
-    if let Some(reference) = reference_file(ir, &emittable_modules) {
+    if let Some(reference) = reference_file(&env, ir, &emittable_modules)? {
         files.push(reference);
     }
 
@@ -804,9 +819,13 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
 /// entry a collapsible `<details>` with an optional description, a worked sync
 /// usage example, and a parameter table. Endpoints without an example (a raw
 /// bytes body) are omitted, exactly as Fern does. Compared verbatim.
-fn reference_file(ir: &Ir, modules: &[&String]) -> Option<GeneratedFile> {
+fn reference_file(
+    env: &Environment<'static>,
+    ir: &Ir,
+    modules: &[&String],
+) -> Result<Option<GeneratedFile>> {
     let pkg = &ir.package_name;
-    let mut lines: Vec<String> = vec!["# Reference".to_string()];
+    let mut blocks: Vec<String> = vec!["# Reference".to_string()];
     let mut any = false;
 
     for module in modules {
@@ -820,24 +839,52 @@ fn reference_file(ir: &Ir, modules: &[&String]) -> Option<GeneratedFile> {
             continue;
         }
         any = true;
-        lines.push(format!("## {}", naming::to_pascal_case(module)));
+        blocks.push(format!("## {}", naming::to_pascal_case(module)));
         for ep in eps {
-            lines.extend(reference_entry(ir, ep, module, pkg));
-            lines.push(String::new());
+            blocks.push(reference_entry(env, ir, ep, module, pkg)?);
+            blocks.push(String::new());
         }
     }
     if !any {
-        return None;
+        return Ok(None);
     }
     // The last entry's trailing blank line is kept: Fern ends the file with one.
-    Some(GeneratedFile {
+    Ok(Some(GeneratedFile {
         path: PathBuf::from("reference.md"),
-        contents: format!("{}\n", lines.join("\n")),
-    })
+        contents: format!("{}\n", blocks.join("\n")),
+    }))
 }
 
-/// One `reference.md` endpoint entry (a `<details>` block).
-fn reference_entry(ir: &Ir, ep: &Endpoint, module: &str, pkg: &str) -> Vec<String> {
+/// One parameter row in the `reference.md` table: name, annotation, and the
+/// suffix (a lone space, or ` — <description>`).
+#[derive(Serialize)]
+struct ParamRow {
+    name: String,
+    annot: String,
+    suffix: String,
+}
+
+/// The view model for one `reference.md` endpoint entry (`reference_entry.md.j2`).
+#[derive(Serialize)]
+struct ReferenceEntryView {
+    module: String,
+    pkg: String,
+    method: String,
+    dots: &'static str,
+    description: Option<String>,
+    example: String,
+    params: Vec<ParamRow>,
+}
+
+/// Render one `reference.md` endpoint entry (a `<details>` block), returning it
+/// without a trailing newline so [`reference_file`] can join entries uniformly.
+fn reference_entry(
+    env: &Environment<'static>,
+    ir: &Ir,
+    ep: &Endpoint,
+    module: &str,
+    pkg: &str,
+) -> Result<String> {
     let mut imports = Imports::default();
     let mp = method_params(ep, &mut imports);
 
@@ -848,13 +895,18 @@ fn reference_entry(ir: &Ir, ep: &Endpoint, module: &str, pkg: &str) -> Vec<Strin
         uses_datetime: false,
         auth: &ir.auth,
     };
-    let example =
-        build_example(ep, false, module, pkg, &ir.client_name, &mut ctx).unwrap_or_default();
+    let example = build_example(ep, false, module, pkg, &ir.client_name, &mut ctx)
+        .unwrap_or_default()
+        .join("\n");
 
     // The parameter rows, in signature order, then `request_options`.
-    let mut params: Vec<(String, String, String)> = Vec::new();
+    let mut params: Vec<ParamRow> = Vec::new();
     for (name, ty) in &mp.path {
-        params.push((name.clone(), ty.clone(), " ".to_string()));
+        params.push(ParamRow {
+            name: name.clone(),
+            annot: ty.clone(),
+            suffix: " ".to_string(),
+        });
     }
     for dp in mp.query.iter().chain(&mp.header).chain(&mp.body) {
         let suffix = match &dp.description {
@@ -864,67 +916,41 @@ fn reference_entry(ir: &Ir, ep: &Endpoint, module: &str, pkg: &str) -> Vec<Strin
         // Fern renders a `core.File` type in the reference parameter table with a
         // leading `from __future__ import annotations` (an artifact of how it prints
         // the forward-referenced file type); reproduce it so the table matches.
-        let annotation = if dp.annotation == "core.File" {
+        let annot = if dp.annotation == "core.File" {
             "from __future__ import annotations\n\ncore.File".to_string()
         } else {
             dp.annotation.clone()
         };
-        params.push((dp.name.clone(), annotation, suffix));
+        params.push(ParamRow {
+            name: dp.name.clone(),
+            annot,
+            suffix,
+        });
     }
-    params.push((
-        "request_options".to_string(),
-        "typing.Optional[RequestOptions]".to_string(),
-        " — Request-specific configuration.".to_string(),
-    ));
+    params.push(ParamRow {
+        name: "request_options".to_string(),
+        annot: "typing.Optional[RequestOptions]".to_string(),
+        suffix: " — Request-specific configuration.".to_string(),
+    });
 
     let has_args =
         !mp.path.is_empty() || !mp.query.is_empty() || !mp.header.is_empty() || !mp.body.is_empty();
-    let dots = if has_args { "..." } else { "" };
-
-    let mut out: Vec<String> = Vec::new();
-    out.push(format!(
-        "<details><summary><code>client.{module}.<a href=\"src/{pkg}/{module}/client.py\">{}</a>({dots})</code></summary>",
-        ep.method_name
-    ));
-    out.push("<dl>".to_string());
-    out.push("<dd>".to_string());
-    out.push(String::new());
-
-    // Optional description block.
-    if let Some(desc) = &ep.docstring {
-        out.push("#### 📝 Description".to_string());
-        out.push(String::new());
-        out.extend(["<dl>", "<dd>", "", "<dl>", "<dd>", ""].map(String::from));
-        out.extend(desc.split('\n').map(String::from));
-        out.extend(["</dd>", "</dl>", "</dd>", "</dl>", ""].map(String::from));
-    }
-
-    // Usage block.
-    out.push("#### 🔌 Usage".to_string());
-    out.push(String::new());
-    out.extend(["<dl>", "<dd>", "", "<dl>", "<dd>", ""].map(String::from));
-    out.push("```python".to_string());
-    out.extend(example);
-    out.push(String::new());
-    out.push("```".to_string());
-    out.extend(["</dd>", "</dl>", "</dd>", "</dl>", ""].map(String::from));
-
-    // Parameters block.
-    out.push("#### ⚙️ Parameters".to_string());
-    out.push(String::new());
-    out.extend(["<dl>", "<dd>", ""].map(String::from));
-    for (i, (name, annot, suffix)) in params.iter().enumerate() {
-        out.extend(["<dl>", "<dd>", ""].map(String::from));
-        out.push(format!("**{name}:** `{annot}`{suffix}"));
-        out.push("    ".to_string());
-        out.push("</dd>".to_string());
-        out.push("</dl>".to_string());
-        if i + 1 < params.len() {
-            out.push(String::new());
-        }
-    }
-    out.extend(["</dd>", "</dl>", "", "", "</dd>", "</dl>", "</details>"].map(String::from));
-    out
+    let view = ReferenceEntryView {
+        module: module.to_string(),
+        pkg: pkg.to_string(),
+        method: ep.method_name.clone(),
+        dots: if has_args { "..." } else { "" },
+        description: ep.docstring.clone(),
+        example,
+        params,
+    };
+    let rendered = render(
+        env,
+        "reference_entry.md",
+        "reference.md",
+        minijinja::Value::from_serialize(&view),
+    )?;
+    Ok(rendered.trim_end_matches('\n').to_string())
 }
 
 /// Render `from <module> import <names>` at `indent` spaces, sorted, on one line.
@@ -1978,7 +2004,6 @@ fn root_client_file(
     modules: &[&String],
     auth: &Auth,
 ) -> Result<GeneratedFile> {
-    let async_name = format!("Async{client_name}");
     let mut body = String::new();
     body.push_str("from __future__ import annotations\n\nimport typing\n\nimport httpx\nfrom .core.client_wrapper import AsyncClientWrapper, SyncClientWrapper\n\n");
     body.push_str("if typing.TYPE_CHECKING:\n");
@@ -1996,24 +2021,22 @@ fn root_client_file(
     }
     body.push_str("\n\n");
     body.push_str(&root_client_class(
+        env,
         client_name,
-        "SyncClientWrapper",
-        "httpx.Client",
         pkg,
         false,
         modules,
         auth,
-    ));
+    )?);
     body.push_str("\n\n\n");
     body.push_str(&root_client_class(
-        &async_name,
-        "AsyncClientWrapper",
-        "httpx.AsyncClient",
+        env,
+        client_name,
         pkg,
         true,
         modules,
         auth,
-    ));
+    )?);
 
     let contents = render(
         env,
@@ -2030,69 +2053,72 @@ fn root_client_file(
 /// One root client class: the class docstring, the `__init__` wiring up the
 /// client wrapper and the per-tag lazy slots, then one cached `@property` per tag.
 fn root_client_class(
-    class_name: &str,
-    wrapper: &str,
-    httpx_type: &str,
+    env: &Environment<'static>,
+    client_name: &str,
     pkg: &str,
     is_async: bool,
     modules: &[&String],
     auth: &Auth,
-) -> String {
-    let a = auth_client_parts(auth);
-    let mut out = format!("class {class_name}:\n");
-    // `class_name` doubles as the documented example class (`FernApi`/`AsyncFernApi`).
-    out.push_str(&root_client_docstring(pkg, class_name, &a));
-    out.push_str(&format!(
-        "\n\n    def __init__(
-        self,
-        *,
-        base_url: str,
-{ctor_param}        headers: typing.Optional[typing.Dict[str, str]] = None,
-        timeout: typing.Optional[float] = None,
-        follow_redirects: typing.Optional[bool] = True,
-        httpx_client: typing.Optional[{httpx_type}] = None,
-    ):
-        _defaulted_timeout = (
-            timeout if timeout is not None else 60 if httpx_client is None else httpx_client.timeout.read
+) -> Result<String> {
+    let (class_name, wrapper, httpx_type) = if is_async {
+        (
+            format!("Async{client_name}"),
+            "AsyncClientWrapper",
+            "httpx.AsyncClient",
         )
-        self._client_wrapper = {wrapper}(
-            base_url=base_url,
-            {wrapper_arg}={wrapper_arg},
-            headers=headers,
-            httpx_client=httpx_client
-            if httpx_client is not None
-            else {httpx_type}(timeout=_defaulted_timeout, follow_redirects=follow_redirects)
-            if follow_redirects is not None
-            else {httpx_type}(timeout=_defaulted_timeout),
-            timeout=_defaulted_timeout,
-        )\n",
-        ctor_param = a.ctor_param,
-        wrapper_arg = a.wrapper_arg,
-    ));
-    // Per-tag lazy slots.
-    for m in modules {
-        let cls = tag_client_name(m, is_async);
-        out.push_str(&format!(
-            "        self._{m}: typing.Optional[{cls}] = None\n"
-        ));
-    }
-    // Per-tag cached properties.
-    for m in modules {
-        let cls = tag_client_name(m, is_async);
-        out.push_str(&format!(
-            "\n    @property
-    def {m}(self):
-        if self._{m} is None:
-            from .{m}.client import {cls}
+    } else {
+        (client_name.to_string(), "SyncClientWrapper", "httpx.Client")
+    };
+    let a = auth_client_parts(auth);
+    let module_views: Vec<RootModuleView> = modules
+        .iter()
+        .map(|m| RootModuleView {
+            attr: (*m).clone(),
+            cls: tag_client_name(m, is_async),
+        })
+        .collect();
+    let view = RootClientView {
+        class_name: class_name.to_string(),
+        pkg: pkg.to_string(),
+        httpx_type: httpx_type.to_string(),
+        wrapper: wrapper.to_string(),
+        ctor_param: a.ctor_param,
+        wrapper_arg: a.wrapper_arg,
+        doc_param: a.doc_param,
+        example_line: a.example_line,
+        modules: module_views,
+    };
+    // The caller controls the separation between the sync/async classes and the
+    // file's final newline, so drop the template's trailing newline.
+    let rendered = render(
+        env,
+        "root_client.py",
+        "client.py",
+        minijinja::Value::from_serialize(&view),
+    )?;
+    Ok(rendered.trim_end_matches('\n').to_string())
+}
 
-            self._{m} = {cls}(client_wrapper=self._client_wrapper)
-        return self._{m}\n"
-        ));
-    }
-    // Drop the trailing newline the last property added; the caller controls
-    // the separation between classes and the file's final newline.
-    out.pop();
-    out
+/// One root client's per-tag slot: the attribute name (`endpoints_put`) and its
+/// client class (`EndpointsPutClient`/`AsyncEndpointsPutClient`).
+#[derive(Serialize)]
+struct RootModuleView {
+    attr: String,
+    cls: String,
+}
+
+/// The view model for `root_client.py.j2` (the `FernApi`/`AsyncFernApi` class).
+#[derive(Serialize)]
+struct RootClientView {
+    class_name: String,
+    pkg: String,
+    httpx_type: String,
+    wrapper: String,
+    ctor_param: String,
+    wrapper_arg: String,
+    doc_param: String,
+    example_line: String,
+    modules: Vec<RootModuleView>,
 }
 
 /// The tag client class name for a module (`endpoints_put` → `EndpointsPutClient`,
@@ -2104,50 +2130,6 @@ fn tag_client_name(module: &str, is_async: bool) -> String {
     } else {
         format!("{pascal}Client")
     }
-}
-
-/// The root client class docstring (indent 4): a fixed description, a `Parameters`
-/// section, and an `Examples` block instantiating the client. `example_name` is
-/// the class being documented (`FernApi`/`AsyncFernApi`); the import is from the
-/// package root.
-fn root_client_docstring(pkg: &str, example_name: &str, auth: &AuthClient) -> String {
-    format!(
-        "    \"\"\"
-    Use this class to access the different functions within the SDK. You can instantiate any number of clients with different configuration that will propagate to these functions.
-
-    Parameters
-    ----------
-    base_url : str
-        The base url to use for requests from the client.
-
-{doc_param}    headers : typing.Optional[typing.Dict[str, str]]
-        Additional headers to send with every request.
-
-    timeout : typing.Optional[float]
-        The timeout to be used, in seconds, for requests. By default the timeout is 60 seconds, unless a custom httpx client is used, in which case this default is not enforced.
-
-    follow_redirects : typing.Optional[bool]
-        Whether the default httpx client follows redirects or not, this is irrelevant if a custom httpx client is passed in.
-
-    httpx_client : typing.Optional[{httpx_field}]
-        The httpx client to use for making requests, a preconfigured client is used by default, however this is useful should you want to pass in any custom httpx configuration.
-
-    Examples
-    --------
-    from {pkg} import {example_name}
-
-    client = {example_name}(
-{example_line}        base_url=\"https://yourhost.com/path/to/api\",
-    )
-    \"\"\"",
-        doc_param = auth.doc_param,
-        example_line = auth.example_line,
-        httpx_field = if example_name.starts_with("Async") {
-            "httpx.AsyncClient"
-        } else {
-            "httpx.Client"
-        },
-    )
 }
 
 /// Shared context for emitting one per-tag `client.py`: the import package name,
@@ -2178,8 +2160,8 @@ fn client_file(
     imports.add_from(".raw_client", &format!("Raw{stem}Client"));
     imports.add_from(".raw_client", &format!("AsyncRaw{stem}Client"));
 
-    let sync = client_class(cx, endpoints, false, &mut imports);
-    let async_class = client_class(cx, endpoints, true, &mut imports);
+    let sync = client_class(env, cx, endpoints, false, &mut imports)?;
+    let async_class = client_class(env, cx, endpoints, true, &mut imports)?;
     // The `OMIT` sentinel is declared above the classes whenever a request body
     // is present, exactly as in the raw client.
     let omit = if endpoints.iter().any(|e| e.request_body.is_some()) {
@@ -2204,11 +2186,12 @@ fn client_file(
 /// one wrapper method per operation. The class/wrapper/raw-client names are
 /// derived from the module and `is_async`.
 fn client_class(
+    env: &Environment<'static>,
     cx: &ClientCtx,
     endpoints: &[&Endpoint],
     is_async: bool,
     imports: &mut Imports,
-) -> String {
+) -> Result<String> {
     let stem = naming::to_pascal_case(cx.module);
     let (class_name, wrapper, raw_client_cls) = if is_async {
         (
@@ -2223,27 +2206,20 @@ fn client_class(
             format!("Raw{stem}Client"),
         )
     };
-    let mut out = format!(
-        "class {class_name}:
-    def __init__(self, *, client_wrapper: {wrapper}):
-        self._raw_client = {raw_client_cls}(client_wrapper=client_wrapper)
-
-    @property
-    def with_raw_response(self) -> {raw_client_cls}:
-        \"\"\"
-        Retrieves a raw implementation of this client that returns raw responses.
-
-        Returns
-        -------
-        {raw_client_cls}
-        \"\"\"
-        return self._raw_client"
-    );
-    for ep in endpoints {
-        out.push_str("\n\n");
-        out.push_str(&client_method(cx, ep, is_async, imports));
-    }
-    out
+    // Each method is computed in Rust (signature, docstring, delegation body); the
+    // template lays out the class skeleton and separates the methods.
+    let methods: Vec<String> = endpoints
+        .iter()
+        .map(|ep| client_method(cx, ep, is_async, imports))
+        .collect();
+    let view = context! {
+        class_name => class_name,
+        wrapper => wrapper,
+        raw_client_cls => raw_client_cls,
+        methods => methods,
+    };
+    let rendered = render(env, "client_class.py", &class_name, view)?;
+    Ok(rendered.trim_end_matches('\n').to_string())
 }
 
 /// One high-level wrapper method: the signature, the docstring (with a worked
@@ -2942,7 +2918,8 @@ pub fn write_files(root: &std::path::Path, files: &[GeneratedFile]) -> Result<()
 mod tests {
     use super::{
         abbrev_call, auth_client_parts, auth_example, auth_wrapper_parts, environment, field_decl,
-        raw_method, raw_type_str, render_class_body, url_arg, FieldView, Imports, RenderedField,
+        raw_method, raw_type_str, render, render_class_body, url_arg, FieldView, Imports, ParamRow,
+        ReferenceEntryView, RenderedField, RootClientView, RootModuleView,
     };
     use crate::ir::{
         Auth, BodyField, Endpoint, ErrorResponse, PathParam, Prim, RequestBody, TypeRef,
@@ -2954,6 +2931,18 @@ mod tests {
     /// body exactly as emitted, before the file-level `ruff format` pass.
     fn class_body(docstring: Option<&str>, fields: Vec<FieldView>) -> String {
         render_class_body(&environment(), docstring.map(str::to_string), fields).expect("renders")
+    }
+
+    /// Render any registered template with a serializable view — the direct
+    /// "minijinja in the loop" harness for the presentational templates.
+    fn render_tmpl(name: &str, view: impl serde::Serialize) -> String {
+        render(
+            &environment(),
+            name,
+            name,
+            minijinja::Value::from_serialize(&view),
+        )
+        .expect("renders")
     }
 
     fn field(decl: &str, docstring: Option<&str>) -> FieldView {
@@ -3015,6 +3004,81 @@ mod tests {
     fn class_body_renders_class_docstring_then_a_blank_line() {
         let body = class_body(Some("A model."), vec![field("a: str", None)]);
         assert!(body.starts_with("    \"\"\"\n    A model.\n    \"\"\"\n\n    a: str\n"));
+    }
+
+    #[test]
+    fn reference_entry_renders_details_line_and_param_row() {
+        let view = ReferenceEntryView {
+            module: "endpoints_urls".to_string(),
+            pkg: "fern".to_string(),
+            method: "get".to_string(),
+            dots: "...",
+            description: None,
+            example: "client.endpoints_urls.get()".to_string(),
+            params: vec![ParamRow {
+                name: "id".to_string(),
+                annot: "str".to_string(),
+                suffix: " ".to_string(),
+            }],
+        };
+        let out = render_tmpl("reference_entry.md", &view);
+        assert!(out.contains(
+            "<details><summary><code>client.endpoints_urls.\
+             <a href=\"src/fern/endpoints_urls/client.py\">get</a>(...)</code></summary>"
+        ));
+        // The param value line carries the suffix's trailing space, then the fixed
+        // four-space line (driven by an expression, not fragile template whitespace).
+        assert!(out.contains("**id:** `str` \n    \n</dd>"));
+        // No description block when there is no description.
+        assert!(!out.contains("Description"));
+    }
+
+    #[test]
+    fn root_client_loops_the_tag_properties() {
+        let view = RootClientView {
+            class_name: "FernApi".to_string(),
+            pkg: "fern".to_string(),
+            httpx_type: "httpx.Client".to_string(),
+            wrapper: "SyncClientWrapper".to_string(),
+            ctor_param: "        token: str,\n".to_string(),
+            wrapper_arg: "token".to_string(),
+            doc_param: "    token : str\n\n".to_string(),
+            example_line: "        token=\"YOUR_TOKEN\",\n".to_string(),
+            modules: vec![RootModuleView {
+                attr: "endpoints_put".to_string(),
+                cls: "EndpointsPutClient".to_string(),
+            }],
+        };
+        let out = render_tmpl("root_client.py", &view);
+        assert!(out.starts_with("class FernApi:"));
+        // The auth slots land in the ctor and the wrapper call.
+        assert!(out.contains("        token: str,\n        headers:"));
+        assert!(out.contains("token=token,"));
+        // One lazy slot and one cached property per module.
+        assert!(
+            out.contains("        self._endpoints_put: typing.Optional[EndpointsPutClient] = None")
+        );
+        assert!(out.contains(
+            "    @property\n    def endpoints_put(self):\n        if self._endpoints_put is None:"
+        ));
+    }
+
+    #[test]
+    fn client_class_lays_out_skeleton_and_methods() {
+        let view = minijinja::context! {
+            class_name => "EndpointsPutClient",
+            wrapper => "SyncClientWrapper",
+            raw_client_cls => "RawEndpointsPutClient",
+            methods => vec!["    def add(self):\n        ...", "    def remove(self):\n        ..."],
+        };
+        let out = render_tmpl("client_class.py", view);
+        assert!(out.starts_with(
+            "class EndpointsPutClient:\n    def __init__(self, *, client_wrapper: SyncClientWrapper):"
+        ));
+        assert!(out.contains("    def with_raw_response(self) -> RawEndpointsPutClient:"));
+        // Methods are separated by one blank line, in order.
+        assert!(out.contains("        return self._raw_client\n\n    def add(self):"));
+        assert!(out.contains("        ...\n\n    def remove(self):"));
     }
 
     #[test]

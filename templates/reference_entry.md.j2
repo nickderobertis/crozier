@@ -1,0 +1,61 @@
+<details><summary><code>client.{{ module }}.<a href="src/{{ pkg }}/{{ module }}/client.py">{{ method }}</a>({{ dots }})</code></summary>
+<dl>
+<dd>
+
+{% if description is not none %}
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+{{ description }}
+</dd>
+</dl>
+</dd>
+</dl>
+
+{% endif %}
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+{{ example }}
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+{% for p in params %}
+<dl>
+<dd>
+
+**{{ p.name }}:** `{{ p.annot }}`{{ p.suffix }}
+{{ "    " }}
+</dd>
+</dl>
+{% if not loop.last %}
+
+{% endif %}
+{% endfor %}
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
