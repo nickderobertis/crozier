@@ -1018,6 +1018,23 @@ fn integer_enum_alias_and_ref_body_are_emittable() {
     assert!(raw.contains("\"content-type\": \"application/json\""));
 }
 
+/// A multipart form body splits into `data=`/`files=` with `force_multipart`, and
+/// a urlencoded form uses `data=` with the form content-type header.
+#[test]
+fn form_bodies_split_data_and_files() {
+    let files = render(
+        "openapi: 3.0.1\ninfo:\n  title: F\npaths:\n  /up:\n    post:\n      operationId: uploads_send\n      responses:\n        \"204\":\n          description: \"\"\n      requestBody:\n        required: true\n        content:\n          multipart/form-data:\n            schema:\n              type: object\n              required:\n                - doc\n              properties:\n                doc:\n                  type: string\n                  format: binary\n                note:\n                  type: string\n  /form:\n    post:\n      operationId: uploads_form\n      responses:\n        \"204\":\n          description: \"\"\n      requestBody:\n        required: true\n        content:\n          application/x-www-form-urlencoded:\n            schema:\n              type: object\n              properties:\n                q:\n                  type: string\n",
+    );
+    let raw = &files["src/acme/uploads/raw_client.py"];
+    // Multipart: the binary field is a `core.File` in `files=`, the rest in `data=`.
+    assert!(raw.contains("doc: core.File"));
+    assert!(raw.contains("from .. import core"));
+    assert!(raw.contains("files={"));
+    assert!(raw.contains("force_multipart=True,"));
+    // Urlencoded: all fields in `data=` with the form content-type, no multipart.
+    assert!(raw.contains("\"content-type\": \"application/x-www-form-urlencoded\""));
+}
+
 /// The README example is the first endpoint with a request body, and its
 /// abbreviated snippets show `...` for a fully-required body (here a container).
 #[test]

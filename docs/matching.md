@@ -157,9 +157,10 @@ element per line with a trailing comma.
 
 ## Known gaps (roadmap)
 
-The `exhaustive` corpus is fully matched (all 104 files), and four
+The `exhaustive` corpus is fully matched (all 104 files), and five
 feature-coverage targets are **now fully matched too** — `auth-schemes` (42),
-`discriminated-unions` (35), `schema-constraints` (33), and `integer-enums` (35).
+`discriminated-unions` (35), `schema-constraints` (33), `integer-enums` (35), and
+`form-bodies` (34).
 The items below are the remaining generalization gaps — shapes the current specs
 do not fully generate — not exhaustive-fixture misses.
 
@@ -218,11 +219,11 @@ target/release/crozier generate \
 5. **Cookie parameters** (`cookie-parameters`). Path, query, and header params are
    emittable; a `cookie` param (`ParameterLocation::Cookie`) puts an operation
    outside today's subset.
-6. **Form request bodies** (`form-bodies`). Only `application/json`,
-   `application/octet-stream`, and unknown (`{}`) bodies generate;
-   `multipart/form-data` (file upload) and `application/x-www-form-urlencoded` are
-   not modeled (a `core/force_multipart.py` runtime asset ships, but no emitter
-   path drives it).
+6. **Form request bodies (implemented).** `multipart/form-data` splits its fields
+   into `data={...}` (non-file) and `files={...}` (`format: binary` → `core.File`)
+   with `force_multipart=True`; `application/x-www-form-urlencoded` sends all fields
+   via `data={...}` with the form content-type header. `form-bodies` matches in full
+   (the reference table reproduces Fern's `core.File` `from __future__` artifact).
 7. **Discriminated unions (implemented).** A `oneOf`/`anyOf` with a `discriminator`
    (`propertyName` + `mapping`) becomes Fern's `{Union}_{Variant}` wrapper models —
    each carrying the discriminant as a `typing.Literal[..]` field plus the referenced

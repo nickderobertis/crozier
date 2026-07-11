@@ -639,6 +639,9 @@ fn complex_body(ep: &Endpoint, types: &[TypeDecl]) -> bool {
         None => false,
         Some(RequestBody::Bytes) => true,
         Some(RequestBody::Inline(fields)) => fields.iter().all(|f| f.spec_required),
+        Some(RequestBody::Form(form)) => {
+            form.fields.iter().any(|f| f.is_file) || form.fields.iter().all(|f| f.spec_required)
+        }
         Some(RequestBody::Single(s)) => is_complex_type(&s.type_ref, types),
     }
 }
@@ -817,7 +820,15 @@ fn reference_entry(ir: &Ir, ep: &Endpoint, module: &str, pkg: &str) -> Vec<Strin
             Some(d) => format!(" — {d}"),
             None => " ".to_string(),
         };
-        params.push((dp.name.clone(), dp.annotation.clone(), suffix));
+        // Fern renders a `core.File` type in the reference parameter table with a
+        // leading `from __future__ import annotations` (an artifact of how it prints
+        // the forward-referenced file type); reproduce it so the table matches.
+        let annotation = if dp.annotation == "core.File" {
+            "from __future__ import annotations\n\ncore.File".to_string()
+        } else {
+            dp.annotation.clone()
+        };
+        params.push((dp.name.clone(), annotation, suffix));
     }
     params.push((
         "request_options".to_string(),
@@ -1550,6 +1561,40 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
             default: None,
             description: None,
         }],
+        Some(RequestBody::Form(form)) => form
+            .fields
+            .iter()
+            .map(|f| {
+                // A file field is typed `core.File` (importing the `core` package)
+                // and documented with Fern's fixed pointer to `core.File`.
+                let base = if f.is_file {
+                    imports.add_from("..", "core");
+                    "core.File".to_string()
+                } else {
+                    raw_type_str_ctx(&f.type_ref, imports, true)
+                };
+                let description = if f.is_file {
+                    Some("See core.File for more documentation".to_string())
+                } else {
+                    f.docstring.clone()
+                };
+                if f.optional {
+                    DocParam {
+                        name: f.py_name.clone(),
+                        annotation: format!("typing.Optional[{base}]"),
+                        default: Some("OMIT".to_string()),
+                        description,
+                    }
+                } else {
+                    DocParam {
+                        name: f.py_name.clone(),
+                        annotation: base,
+                        default: None,
+                        description,
+                    }
+                }
+            })
+            .collect(),
     };
 
     MethodParams {
@@ -1777,6 +1822,26 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
         }
         // A raw bytes body is streamed via `content=` rather than serialized.
         Some(RequestBody::Bytes) => lines.push("            content=request,".to_string()),
+        // A form body: non-file fields into `data={...}`, file fields into
+        // `files={...}` (in document order within each group).
+        Some(RequestBody::Form(form)) => {
+            let mut data = String::new();
+            let mut files = String::new();
+            for f in &form.fields {
+                let entry = format!("                \"{}\": {},\n", f.wire_name, f.py_name);
+                if f.is_file {
+                    files.push_str(&entry);
+                } else {
+                    data.push_str(&entry);
+                }
+            }
+            if !data.is_empty() {
+                lines.push(format!("            data={{\n{data}            }},"));
+            }
+            if !files.is_empty() {
+                lines.push(format!("            files={{\n{files}            }},"));
+            }
+        }
     }
     // The `headers` dict carries a `content-type`: `application/octet-stream` for a
     // raw bytes body, else `application/json` when the body intrinsically needs it
@@ -1784,6 +1849,11 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
     // rendered as `str(x) if x is not None else None`.
     let content_type: Option<&str> = match &ep.request_body {
         Some(RequestBody::Bytes) => Some("application/octet-stream"),
+        // A multipart form uses `force_multipart=True` (no content-type header);
+        // a urlencoded form carries its own content-type.
+        Some(RequestBody::Form(form)) => {
+            (!form.multipart).then_some("application/x-www-form-urlencoded")
+        }
         Some(body)
             if body.content_type_header()
                 || !ep.header_params.is_empty()
@@ -1810,6 +1880,10 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
     // A request body passes the `OMIT` sentinel so unset optionals drop out.
     if ep.request_body.is_some() {
         lines.push("            omit=OMIT,".to_string());
+    }
+    // A multipart form forces the request to serialize as `multipart/form-data`.
+    if matches!(&ep.request_body, Some(RequestBody::Form(f)) if f.multipart) {
+        lines.push("            force_multipart=True,".to_string());
     }
     lines.extend([
         "        )".to_string(),
@@ -2588,6 +2662,14 @@ fn build_example(
                 args.push((Some(f.py_name.clone()), v));
             }
         }
+        // A form body: required non-file fields only (a file cannot be shown as a
+        // literal, so Fern omits it from the example).
+        Some(RequestBody::Form(form)) => {
+            for f in form.fields.iter().filter(|f| f.spec_required && !f.is_file) {
+                let v = ctx.value(&f.type_ref, Slot::Named(&f.wire_name));
+                args.push((Some(f.py_name.clone()), v));
+            }
+        }
         _ => {}
     }
 
@@ -3017,6 +3099,7 @@ mod tests {
                 spec_required: true,
                 docstring: None,
                 convert: false,
+                is_file: false,
             },
             // An optional list → `Optional[Sequence[..]] = OMIT` in request context.
             BodyField {
@@ -3027,6 +3110,7 @@ mod tests {
                 spec_required: false,
                 docstring: None,
                 convert: false,
+                is_file: false,
             },
             // A convert field → convert-wrapped json entry keyed by the wire name.
             BodyField {
@@ -3037,6 +3121,7 @@ mod tests {
                 spec_required: true,
                 docstring: None,
                 convert: true,
+                is_file: false,
             },
         ]));
         let out = raw_method(&ep, false, &mut i);

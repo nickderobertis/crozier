@@ -145,6 +145,11 @@ fn referenced_type_names(
                     .iter()
                     .for_each(|f| collect_named(&f.type_ref, &mut set));
             }
+            Some(RequestBody::Form(form)) => {
+                form.fields
+                    .iter()
+                    .for_each(|f| collect_named(&f.type_ref, &mut set));
+            }
             Some(RequestBody::Bytes) | None => {}
         }
     }
@@ -294,18 +299,34 @@ pub enum RequestBody {
     /// `Union[bytes, Iterator[bytes], AsyncIterator[bytes]]`, sent as `content=`
     /// with a `content-type: application/octet-stream` header.
     Bytes,
+    /// A form body (`multipart/form-data` or `application/x-www-form-urlencoded`):
+    /// each property is a keyword-only argument; non-file fields serialize into
+    /// `data={...}` and file fields into `files={...}`. Multipart bodies set
+    /// `force_multipart=True`; urlencoded bodies carry the form content-type header.
+    Form(FormBody),
+}
+
+/// A resolved form request body.
+#[derive(Debug)]
+pub struct FormBody {
+    /// The form fields, in document order.
+    pub fields: Vec<BodyField>,
+    /// True for `multipart/form-data` (`force_multipart=True`), false for
+    /// `application/x-www-form-urlencoded` (a form content-type header).
+    pub multipart: bool,
 }
 
 impl RequestBody {
     /// Whether the request emits the `content-type: application/json` header.
     /// Inlined object bodies always do; a single body carries its own flag; a raw
     /// bytes body carries its own (octet-stream) header instead, handled at emit.
+    /// Form bodies carry their own (urlencoded) header or `force_multipart`.
     #[must_use]
     pub fn content_type_header(&self) -> bool {
         match self {
             RequestBody::Single(s) => s.content_type,
             RequestBody::Inline(_) => true,
-            RequestBody::Bytes => false,
+            RequestBody::Bytes | RequestBody::Form(_) => false,
         }
     }
 }
@@ -372,6 +393,9 @@ pub struct BodyField {
     /// Whether the field serializes through `convert_and_respect_annotation_metadata`
     /// (its type references an object or union carrying field aliases).
     pub convert: bool,
+    /// Whether this is a file upload field (`format: binary` in a form body),
+    /// which renders as `core.File` and serializes into `files={...}`.
+    pub is_file: bool,
 }
 
 /// A generated top-level type.
@@ -817,6 +841,25 @@ fn resolve_request_body(
     if rb.content.contains_key("application/octet-stream") {
         return Some(RequestBody::Bytes);
     }
+    // A form body: `multipart/form-data` (file uploads via `files=`) or
+    // `application/x-www-form-urlencoded` (all fields via `data=`).
+    for (media_type, multipart) in [
+        ("multipart/form-data", true),
+        ("application/x-www-form-urlencoded", false),
+    ] {
+        if let Some(media) = rb.content.get(media_type) {
+            let schema = media.schema.as_ref()?;
+            let obj = schema
+                .reference
+                .as_deref()
+                .and_then(|r| resolve_ref(doc, r))
+                .unwrap_or(schema);
+            return Some(RequestBody::Form(FormBody {
+                fields: hoist_form_object(obj),
+                multipart,
+            }));
+        }
+    }
     let schema = rb.content.get("application/json")?.schema.as_ref()?;
     let required = rb.required == Some(true);
     if let Some(reference) = &schema.reference {
@@ -900,9 +943,36 @@ fn hoist_inline_object(schema: &Schema, types: &[TypeDecl]) -> Option<Vec<BodyFi
             optional,
             spec_required,
             docstring: clean_doc(prop_schema.description.as_deref()),
+            is_file: false,
         });
     }
     Some(fields)
+}
+
+/// Hoist a form body's properties into [`BodyField`]s, marking `format: binary`
+/// fields as file uploads. Unlike a JSON object body these carry no convert
+/// wrapper (they serialize into `data=`/`files=`, not `json=`).
+fn hoist_form_object(schema: &Schema) -> Vec<BodyField> {
+    let required: Vec<&str> = schema.required.iter().map(String::as_str).collect();
+    schema
+        .properties
+        .iter()
+        .map(|(prop, prop_schema)| {
+            let spec_required = required.contains(&prop.as_str());
+            let is_file = prop_schema.ty.as_ref().and_then(|t| t.primary()) == Some("string")
+                && prop_schema.format.as_deref() == Some("binary");
+            BodyField {
+                wire_name: prop.clone(),
+                py_name: naming::field_name(prop),
+                type_ref: base_type_ref(prop_schema),
+                optional: is_optional(prop_schema) || !spec_required,
+                spec_required,
+                docstring: clean_doc(prop_schema.description.as_deref()),
+                convert: false,
+                is_file,
+            }
+        })
+        .collect()
 }
 
 /// A one-argument request body.
@@ -934,6 +1004,7 @@ fn hoist_fields(class: &str, types: &[TypeDecl]) -> Option<Vec<BodyField>> {
                 spec_required: f.spec_required,
                 docstring: f.docstring.clone(),
                 convert: type_needs_convert(&f.type_ref, types),
+                is_file: false,
             })
             .collect(),
     )
