@@ -214,8 +214,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       # `crozier generate` (driven by the smoke test) shells out to `ruff format`.
+      # `.ruff-version` is the single source of the pin; expose the shim to later steps.
       - name: Install ruff (generation-time dependency)
-        run: pipx install ruff==0.11.5
+        run: |
+          pipx install "ruff==$(cat .ruff-version)"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - name: Install via scripts/install.sh and smoke-test
         env:
           # install.sh prefers the `gh` verifier (present on runners); it reads a
@@ -277,8 +280,11 @@ jobs:
           echo "::error::crozier $ver did not appear on crates.io within ~5 minutes"
           exit 1
       # `crozier generate` (driven by the smoke test) shells out to `ruff format`.
+      # `.ruff-version` is the single source of the pin; expose the shim to later steps.
       - name: Install ruff (generation-time dependency)
-        run: pipx install ruff==0.11.5
+        run: |
+          pipx install "ruff==$(cat .ruff-version)"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - name: Install from crates.io and smoke-test
         shell: bash
         run: |
@@ -401,8 +407,11 @@ jobs:
           echo "::error::crozier $ver did not appear on PyPI within ~5 minutes"
           exit 1
       # `crozier generate` (driven by the smoke test) shells out to `ruff format`.
+      # `.ruff-version` is the single source of the pin; expose the shim to later steps.
       - name: Install ruff (generation-time dependency)
-        run: pipx install ruff==0.11.5
+        run: |
+          pipx install "ruff==$(cat .ruff-version)"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - name: Install from PyPI and smoke-test
         shell: bash
         run: |

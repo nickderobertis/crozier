@@ -6,12 +6,14 @@
 # this script is the clean-clone local path invoked by `just bootstrap`.
 set -euo pipefail
 
-# The ruff version Fern's fixtures were produced with. crozier defers Python
-# line wrapping to `ruff format` (see src/pyfmt.rs), so `ruff` is a
-# generation-time dependency the e2e needs; pinning it matches Fern's output
-# byte-for-byte. Any recent ruff formats these shapes identically, so an existing
-# `ruff` on PATH is left as-is rather than force-downgraded.
-RUFF_VERSION=0.11.5
+repo_root="$(cd "$(dirname "$0")/.." && pwd)"
+
+# The ruff version Fern's fixtures were produced with, read from the single source
+# of truth `.ruff-version`. crozier defers Python line wrapping to `ruff format`
+# (see src/pyfmt.rs), so `ruff` is a generation-time dependency the e2e needs;
+# pinning it matches Fern's output byte-for-byte. Any recent ruff formats these
+# shapes identically, so an existing `ruff` on PATH is left as-is.
+RUFF_VERSION="$(cat "$repo_root/.ruff-version")"
 
 tools=(cargo-nextest cargo-llvm-cov cargo-deny cargo-machete)
 
@@ -55,5 +57,10 @@ if [ "$need_ruff" -eq 1 ]; then
     uv tool install "ruff==$RUFF_VERSION"
   else
     python3 -m pip install --user "ruff==$RUFF_VERSION"
+  fi
+  # These installers drop the `ruff` shim in ~/.local/bin, which a fresh CI runner
+  # does not always have on PATH; expose it to subsequent GitHub Actions steps.
+  if [ -n "${GITHUB_PATH:-}" ]; then
+    printf '%s\n' "$HOME/.local/bin" >>"$GITHUB_PATH"
   fi
 fi
