@@ -208,59 +208,67 @@ const EXHAUSTIVE: Corpus = Corpus {
 /// form bodies, discriminated unions, schema constraints, integer enums, and
 /// document-level servers/webhooks/callbacks.
 ///
-/// They carry an empty `matched` list on purpose: each corpus's Fern `expected/`
-/// tree is produced by running Fern's container generator (see
-/// scripts/generate-fern-fixture.sh) and its `matched` list grows as generation
-/// lands. Until then the smoke test below asserts only that crozier consumes each
-/// spec and emits a tree without panicking — the "never panic on a real spec"
-/// invariant — so the specs are live in the harness before generation catches up.
+/// Their Fern `expected/` trees were produced by running Fern's container
+/// generator with the scaffold defaults (`--package-name fern`,
+/// `--project-name default_package_name`; see scripts/generate-fern-fixture.sh),
+/// so the corpora drive crozier with the same naming. Each `matched` list grows
+/// as generation lands; the smoke test asserts crozier consumes every spec
+/// without panicking regardless of how much is matched yet.
 const FEATURE_TARGETS: &[Corpus] = &[
     Corpus {
         api: "auth-schemes",
-        package_name: "seed",
-        project_name: "fern_auth-schemes",
+        package_name: "fern",
+        project_name: "default_package_name",
         matched: &[],
     },
     Corpus {
         api: "inline-request-response",
-        package_name: "seed",
-        project_name: "fern_inline-request-response",
+        package_name: "fern",
+        project_name: "default_package_name",
         matched: &[],
     },
     Corpus {
         api: "cookie-parameters",
-        package_name: "seed",
-        project_name: "fern_cookie-parameters",
+        package_name: "fern",
+        project_name: "default_package_name",
         matched: &[],
     },
     Corpus {
         api: "form-bodies",
-        package_name: "seed",
-        project_name: "fern_form-bodies",
+        package_name: "fern",
+        project_name: "default_package_name",
         matched: &[],
     },
     Corpus {
         api: "discriminated-unions",
-        package_name: "seed",
-        project_name: "fern_discriminated-unions",
-        matched: &[],
+        package_name: "fern",
+        project_name: "default_package_name",
+        matched: &[
+            "src/fern/types/shape.py",
+            "src/fern/types/circle.py",
+            "src/fern/types/square.py",
+            "src/fern/types/__init__.py",
+        ],
     },
     Corpus {
         api: "schema-constraints",
-        package_name: "seed",
-        project_name: "fern_schema-constraints",
+        package_name: "fern",
+        project_name: "default_package_name",
         matched: &[],
     },
     Corpus {
         api: "integer-enums",
-        package_name: "seed",
-        project_name: "fern_integer-enums",
-        matched: &[],
+        package_name: "fern",
+        project_name: "default_package_name",
+        matched: &[
+            "src/fern/types/priority.py",
+            "src/fern/types/http_status.py",
+        ],
     },
     Corpus {
         api: "servers-webhooks",
-        package_name: "seed",
-        project_name: "fern_servers-webhooks",
+        package_name: "fern",
+        project_name: "default_package_name",
         matched: &[],
     },
 ];

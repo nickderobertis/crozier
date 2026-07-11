@@ -2,6 +2,8 @@
 //! the OpenAPI document, decoupling parsing from emission. Schema and property
 //! order is preserved from the document so generated output is deterministic.
 
+use indexmap::IndexMap;
+
 use crate::config::GenerateConfig;
 use crate::naming;
 use crate::openapi::{AdditionalProperties, OpenApi, Operation, ParameterLocation, Schema};
@@ -208,15 +210,21 @@ pub enum TypeDecl {
     /// A type alias (`Name = <expr>`), e.g. a union, an extensible enum, or a
     /// scalar alias.
     Alias(AliasType),
+    /// A discriminated union: a set of per-variant wrapper models plus a
+    /// `Name = typing.Union[..]` alias, all in one module (Fern's `Shape_Circle`
+    /// / `Shape_Square` pattern).
+    DiscriminatedUnion(DiscriminatedUnion),
 }
 
 impl TypeDecl {
-    /// The class/alias name.
+    /// The primary class/alias name (the union alias name for a discriminated
+    /// union).
     #[must_use]
     pub fn name(&self) -> &str {
         match self {
             TypeDecl::Object(o) => &o.name,
             TypeDecl::Alias(a) => &a.name,
+            TypeDecl::DiscriminatedUnion(d) => &d.name,
         }
     }
 
@@ -226,8 +234,50 @@ impl TypeDecl {
         match self {
             TypeDecl::Object(o) => &o.module,
             TypeDecl::Alias(a) => &a.module,
+            TypeDecl::DiscriminatedUnion(d) => &d.module,
         }
     }
+
+    /// Every public name this declaration exports, in declaration order. All but
+    /// a discriminated union export exactly their [`TypeDecl::name`]; a
+    /// discriminated union also exports each variant wrapper class.
+    #[must_use]
+    pub fn exported_names(&self) -> Vec<&str> {
+        match self {
+            TypeDecl::DiscriminatedUnion(d) => std::iter::once(d.name.as_str())
+                .chain(d.members.iter().map(|m| m.class_name.as_str()))
+                .collect(),
+            other => vec![other.name()],
+        }
+    }
+}
+
+/// A discriminated `oneOf`/`anyOf`: Fern emits a wrapper model per variant
+/// (`{Union}_{Variant}`) carrying the discriminant as a `Literal` field, then a
+/// `{Union} = typing.Union[..]` alias over the wrappers.
+#[derive(Debug)]
+pub struct DiscriminatedUnion {
+    /// The union alias name (e.g. `Shape`).
+    pub name: String,
+    /// Module (file stem).
+    pub module: String,
+    /// The property whose value selects the variant (e.g. `type`).
+    pub discriminant_property: String,
+    /// The variant wrapper models, in mapping order.
+    pub members: Vec<UnionMember>,
+    /// Optional docstring.
+    pub docstring: Option<String>,
+}
+
+/// One variant wrapper of a [`DiscriminatedUnion`].
+#[derive(Debug)]
+pub struct UnionMember {
+    /// The wrapper class name (e.g. `Shape_Circle`).
+    pub class_name: String,
+    /// The discriminant literal value (e.g. `circle`).
+    pub discriminant: String,
+    /// The variant's fields, with the discriminant property removed.
+    pub fields: Vec<Field>,
 }
 
 /// A pydantic model type.
@@ -332,7 +382,11 @@ pub enum Prim {
 /// Build the IR from a parsed document and config.
 #[must_use]
 pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
-    let mut builder = Builder { types: Vec::new() };
+    let mut builder = Builder {
+        types: Vec::new(),
+        schemas: &doc.components.schemas,
+        strip_discriminant: discriminant_strips(&doc.components.schemas),
+    };
     for (key, schema) in &doc.components.schemas {
         builder.add_named(&naming::class_name(key), schema);
     }
@@ -708,6 +762,8 @@ fn type_needs_convert(t: &TypeRef, types: &[TypeDecl]) -> bool {
         TypeRef::Named(name) => types.iter().any(|d| match d {
             TypeDecl::Object(o) => o.name == *name,
             TypeDecl::Alias(a) => a.name == *name && matches!(a.target, TypeRef::Union(_)),
+            // A discriminated union's wrapper models carry field aliases too.
+            TypeDecl::DiscriminatedUnion(u) => u.name == *name,
         }),
         TypeRef::Optional(inner) | TypeRef::List(inner) | TypeRef::Set(inner) => {
             type_needs_convert(inner, types)
@@ -832,15 +888,95 @@ fn endpoint_module(operation_id: &str) -> String {
 /// Accumulates generated types. Some schemas produce more than one type: an
 /// inline schema (a `oneOf` object variant, or an inline enum property) is
 /// *hoisted* into its own named type and referenced by name, matching Fern.
-struct Builder {
+struct Builder<'a> {
     types: Vec<TypeDecl>,
+    /// The document's component schemas, for resolving discriminated-union member
+    /// `$ref`s to their field sets.
+    schemas: &'a IndexMap<String, Schema>,
+    /// class name → discriminant property to strip from that class's model,
+    /// because it is a member of a discriminated union (Fern re-declares the
+    /// discriminant on the union wrapper instead).
+    strip_discriminant: std::collections::HashMap<String, String>,
 }
 
-impl Builder {
+/// Scan every schema for a discriminated `oneOf`/`anyOf` and record, per member
+/// class, the discriminant property to strip from its model. Keyed by class name
+/// (post-`class_name` normalization), matching the `owner` passed to
+/// [`Builder::collect_fields`].
+fn discriminant_strips(
+    schemas: &IndexMap<String, Schema>,
+) -> std::collections::HashMap<String, String> {
+    let mut strips = std::collections::HashMap::new();
+    for schema in schemas.values() {
+        let Some(disc) = &schema.discriminator else {
+            continue;
+        };
+        if disc.property_name.is_empty() {
+            continue;
+        }
+        for reference in disc.mapping.values() {
+            let key = reference.rsplit('/').next().unwrap_or(reference);
+            strips.insert(naming::class_name(key), disc.property_name.clone());
+        }
+    }
+    strips
+}
+
+/// Collect a discriminated-union member's fields (the referenced model's
+/// properties minus the discriminant). Inline hoisting is intentionally skipped:
+/// the member model is emitted separately and owns any hoisted property types.
+fn member_fields(schema: &Schema, discriminant: &str) -> Vec<Field> {
+    let required: Vec<&str> = schema
+        .required
+        .iter()
+        .chain(schema.all_of.iter().flatten().flat_map(|m| &m.required))
+        .map(String::as_str)
+        .collect();
+    let mut fields = Vec::new();
+    for member in schema.all_of.iter().flatten() {
+        if member.reference.is_none() {
+            append_member_fields(member, discriminant, &required, &mut fields);
+        }
+    }
+    append_member_fields(schema, discriminant, &required, &mut fields);
+    fields
+}
+
+/// Append a schema's own properties (minus the discriminant) to `fields`.
+fn append_member_fields(
+    schema: &Schema,
+    discriminant: &str,
+    required: &[&str],
+    fields: &mut Vec<Field>,
+) {
+    for (prop, prop_schema) in &schema.properties {
+        if prop == discriminant {
+            continue;
+        }
+        let spec_required = required.contains(&prop.as_str());
+        fields.push(Field {
+            wire_name: prop.clone(),
+            py_name: naming::field_name(prop),
+            type_ref: base_type_ref(prop_schema),
+            optional: is_optional(prop_schema) || !spec_required,
+            spec_required,
+            docstring: clean_doc(prop_schema.description.as_deref()),
+        });
+    }
+}
+
+impl Builder<'_> {
     /// Classify one named schema and push it (plus any hoisted types).
     fn add_named(&mut self, name: &str, schema: &Schema) {
         let module = naming::module_name(name);
         let docstring = clean_doc(schema.description.as_deref());
+
+        // A discriminated `oneOf`/`anyOf` (with an explicit `mapping`) becomes a
+        // set of per-variant wrapper models plus a union alias.
+        if let Some(decl) = self.discriminated_union(name, &module, schema, docstring.clone()) {
+            self.types.push(TypeDecl::DiscriminatedUnion(decl));
+            return;
+        }
 
         // A `oneOf`/`anyOf` with an inline-object variant: hoist each such
         // variant to `{Name}{Ordinal}` and alias to the union of variant types.
@@ -924,7 +1060,13 @@ impl Builder {
         required: &[&str],
         fields: &mut Vec<Field>,
     ) {
+        let strip = self.strip_discriminant.get(owner).cloned();
         for (prop, prop_schema) in &schema.properties {
+            // A discriminated-union member drops the discriminant property from
+            // its own model; Fern re-declares it on the union wrapper instead.
+            if strip.as_deref() == Some(prop.as_str()) {
+                continue;
+            }
             let spec_required = required.contains(&prop.as_str());
             let optional = is_optional(prop_schema) || !spec_required;
             fields.push(Field {
@@ -936,6 +1078,43 @@ impl Builder {
                 docstring: clean_doc(prop_schema.description.as_deref()),
             });
         }
+    }
+
+    /// Build a [`DiscriminatedUnion`] from a schema, or `None` if it is not a
+    /// discriminated `oneOf`/`anyOf` with an explicit `mapping`. Each mapping
+    /// entry `value → $ref` becomes a `{Name}_{Variant}` wrapper carrying the
+    /// discriminant literal plus the referenced model's (stripped) fields.
+    fn discriminated_union(
+        &self,
+        name: &str,
+        module: &str,
+        schema: &Schema,
+        docstring: Option<String>,
+    ) -> Option<DiscriminatedUnion> {
+        let disc = schema.discriminator.as_ref()?;
+        // Only oneOf/anyOf schemas carry a discriminator, and we key generation
+        // off the explicit mapping (value → variant `$ref`).
+        schema.one_of.as_ref().or(schema.any_of.as_ref())?;
+        if disc.property_name.is_empty() || disc.mapping.is_empty() {
+            return None;
+        }
+        let mut members = Vec::new();
+        for (value, reference) in &disc.mapping {
+            let target_key = reference.rsplit('/').next().unwrap_or(reference);
+            let target = self.schemas.get(target_key)?;
+            members.push(UnionMember {
+                class_name: format!("{name}_{}", naming::class_name(target_key)),
+                discriminant: value.clone(),
+                fields: member_fields(target, &disc.property_name),
+            });
+        }
+        Some(DiscriminatedUnion {
+            name: name.to_string(),
+            module: module.to_string(),
+            discriminant_property: disc.property_name.clone(),
+            members,
+            docstring,
+        })
     }
 
     /// The type of a property, hoisting an inline string enum to a named

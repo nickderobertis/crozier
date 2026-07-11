@@ -505,7 +505,16 @@ fn render_lazy_loader(type_checking: &str, pairs: &[(String, String)], names: &[
 /// order, which for this corpus is the `Types*` types in reverse declaration
 /// order followed by the remaining types alphabetically.
 fn types_init_file(pkg: &str, types: &[TypeDecl]) -> GeneratedFile {
-    let names: Vec<String> = types.iter().map(|t| t.name().to_string()).collect();
+    // Each declaration may export more than its primary name (a discriminated
+    // union also exports its per-variant wrappers), all sharing the decl module.
+    let mut module_of: std::collections::HashMap<String, String> = std::collections::HashMap::new();
+    let mut names: Vec<String> = Vec::new();
+    for decl in types {
+        for n in decl.exported_names() {
+            names.push(n.to_string());
+            module_of.insert(n.to_string(), decl.module().to_string());
+        }
+    }
 
     // TYPE_CHECKING order: `Types*` in reverse declaration order, then the rest
     // alphabetically.
@@ -522,14 +531,31 @@ fn types_init_file(pkg: &str, types: &[TypeDecl]) -> GeneratedFile {
         .collect();
     rest.sort();
     let ordered: Vec<String> = typed.into_iter().chain(rest).collect();
-    let type_checking: String = ordered
-        .iter()
-        .map(|n| format!("    from .{} import {n}\n", naming::module_name(n)))
-        .collect();
+
+    // Consecutive names sharing a module collapse into one `from .mod import a, b`
+    // line (Fern groups a discriminated union's names on a single import).
+    let module = |n: &str| {
+        module_of
+            .get(n)
+            .cloned()
+            .unwrap_or_else(|| naming::module_name(n))
+    };
+    let mut type_checking = String::new();
+    let mut i = 0;
+    while i < ordered.len() {
+        let m = module(&ordered[i]);
+        let mut group = vec![ordered[i].clone()];
+        while i + 1 < ordered.len() && module(&ordered[i + 1]) == m {
+            i += 1;
+            group.push(ordered[i].clone());
+        }
+        type_checking.push_str(&format!("    from .{m} import {}\n", group.join(", ")));
+        i += 1;
+    }
 
     let pairs: Vec<(String, String)> = names
         .iter()
-        .map(|n| (n.clone(), format!(".{}", naming::module_name(n))))
+        .map(|n| (n.clone(), format!(".{}", module(n))))
         .collect();
     GeneratedFile {
         path: PathBuf::from(format!("src/{pkg}/types/__init__.py")),
@@ -550,7 +576,11 @@ fn root_init_file(
 ) -> GeneratedFile {
     let async_name = format!("Async{client_name}");
 
-    let mut type_names: Vec<String> = types.iter().map(|t| t.name().to_string()).collect();
+    let mut type_names: Vec<String> = types
+        .iter()
+        .flat_map(|t| t.exported_names())
+        .map(str::to_string)
+        .collect();
     type_names.sort();
     let mut error_names: Vec<String> = errors.iter().map(|e| e.class_name.clone()).collect();
     error_names.sort();
@@ -1018,7 +1048,60 @@ fn render_type_decl(env: &Environment<'static>, decl: &TypeDecl) -> Result<Strin
                 },
             )
         }
+        TypeDecl::DiscriminatedUnion(union) => Ok(render_discriminated_union(union)),
     }
+}
+
+/// Render a discriminated union to its module: a `{Union}_{Variant}` pydantic
+/// model per variant (each with the discriminant as a `Literal` field), then the
+/// `{Union} = typing.Union[..]` alias over them. Built directly (not via the
+/// object template) because it carries a `from __future__ import annotations` and
+/// several classes in one file.
+fn render_discriminated_union(union: &crate::ir::DiscriminatedUnion) -> String {
+    let mut imports = Imports::default();
+    imports.add_plain("typing");
+    imports.add_plain("pydantic");
+    imports.add_from("..core.pydantic_utilities", "IS_PYDANTIC_V2");
+    imports.add_from("..core.pydantic_utilities", "UniversalBaseModel");
+
+    let mut classes: Vec<String> = Vec::new();
+    for member in &union.members {
+        // The discriminant field: `type: typing.Literal["circle"] = "circle"`.
+        let discriminant = RenderedField {
+            py_name: union.discriminant_property.clone(),
+            annotation: render_type(
+                &TypeRef::Literal(vec![member.discriminant.clone()]),
+                &mut imports,
+            ),
+            default: format!(" = \"{}\"", member.discriminant),
+            docstring: None,
+        };
+        let mut rendered = vec![discriminant];
+        rendered.extend(member.fields.iter().map(|f| render_field(f, &mut imports)));
+        classes.push(format!(
+            "class {}(UniversalBaseModel):\n{}",
+            member.class_name,
+            object_body(None, &rendered)
+        ));
+    }
+
+    let variants: Vec<Doc> = union
+        .members
+        .iter()
+        .map(|m| Doc::atom(m.class_name.clone()))
+        .collect();
+    let alias = wrap::layout(
+        &format!("{} = ", union.name),
+        &Doc::group("typing.Union[", variants, "]"),
+        "",
+        0,
+    );
+
+    format!(
+        "{HEADER}\n\nfrom __future__ import annotations\n\n{}\n\n\n{}\n\n\n{alias}\n",
+        imports.render(),
+        classes.join("\n\n\n")
+    )
 }
 
 /// Render a resolved type to its flat Python expression for the raw client,
@@ -2173,6 +2256,27 @@ impl<'a> ExampleCtx<'a> {
                 let target = a.target.clone();
                 self.value(&target, slot)
             }
+            Some(TypeDecl::DiscriminatedUnion(u)) => match u.members.first() {
+                Some(m) => {
+                    self.referenced.insert(m.class_name.clone());
+                    let mut args = vec![(
+                        Some(u.discriminant_property.clone()),
+                        Example::Atom(format!("\"{}\"", m.discriminant)),
+                    )];
+                    for f in m.fields.iter().filter(|f| f.spec_required) {
+                        let ty = f.type_ref.clone();
+                        args.push((
+                            Some(f.py_name.clone()),
+                            self.value(&ty, Slot::Named(&f.wire_name)),
+                        ));
+                    }
+                    Example::Call(m.class_name.clone(), args)
+                }
+                None => Example::Dict(vec![(
+                    "key".to_string(),
+                    Example::Atom("\"value\"".to_string()),
+                )]),
+            },
             None => Example::Dict(vec![(
                 "key".to_string(),
                 Example::Atom("\"value\"".to_string()),

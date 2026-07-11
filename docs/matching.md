@@ -159,18 +159,18 @@ element per line with a trailing comma.
 
 The `exhaustive` corpus is fully matched (all 104 files). The items below are
 generalization gaps — shapes the current spec does not exercise — not
-exhaustive-fixture misses. Each gap now has a hand-authored **feature-coverage
-target** under `tests/fixtures/` (registered as a `FEATURE_TARGETS` corpus in
-`tests/e2e.rs` with an empty `matched` list); the smoke test asserts crozier
-consumes the spec without panicking, and the `matched` list grows once the Fern
-`expected/` tree is generated (`scripts/generate-fern-fixture.sh <fixture>`) and
-generation lands. To reproduce the current (incomplete) output for a target:
+exhaustive-fixture misses. Each gap has a hand-authored **feature-coverage
+target** under `tests/fixtures/` (a `FEATURE_TARGETS` corpus in `tests/e2e.rs`),
+with the full Fern `expected/` tree committed. Each corpus's `matched` list grows
+file-by-file as generation lands; the smoke test also asserts crozier consumes
+every spec without panicking regardless of how much is matched. To reproduce the
+current output for a target (Fern generated these with the scaffold defaults):
 
 ```
 cargo build --release
 target/release/crozier generate \
   --spec tests/fixtures/<fixture>/openapi.yml \
-  --output /tmp/<fixture> --package-name seed --project-name fern_<fixture>
+  --output /tmp/<fixture> --package-name fern --project-name default_package_name
 ```
 
 1. **Auth models beyond bearer** (`auth-schemes`). The root `client.py` and
@@ -179,9 +179,10 @@ target/release/crozier generate \
    OAuth2 client-credentials) need auth modeling in the IR.
 2. **Broader example coverage.** The example-value generator is proven against the
    corpus (objects, unions, enums, containers, maps, datetimes, `long`). Shapes the
-   corpus lacks — e.g. a required `date` example, a nameless-slot enum, integer
-   enums (`integer-enums`) — carry plausible-but-unverified placeholders; confirm
-   them as new fixtures land.
+   corpus lacks — e.g. a required `date` example, a nameless-slot enum — carry
+   plausible-but-unverified placeholders; confirm them as new fixtures land.
+   *Integer enums* now generate: a `type: integer` enum becomes a plain `Name = int`
+   alias (Fern does not build a `Literal` union for them), matched in `integer-enums`.
 3. **Fern's `TYPE_CHECKING` traversal order** in `types/__init__.py` is reproduced
    empirically (the `Types*` types in reverse declaration order, then the rest
    alphabetically). It matches the corpus byte-for-byte; a spec with a different
@@ -198,9 +199,14 @@ target/release/crozier generate \
    `multipart/form-data` (file upload) and `application/x-www-form-urlencoded` are
    not modeled (a `core/force_multipart.py` runtime asset ships, but no emitter
    path drives it).
-7. **Discriminated unions** (`discriminated-unions`). `oneOf`/`anyOf` map to plain
-   unions; `discriminator` (`propertyName` + `mapping`) is dropped, so tagged
-   unions are not distinguished from bare ones.
+7. **Discriminated unions (implemented).** A `oneOf`/`anyOf` with a `discriminator`
+   (`propertyName` + `mapping`) becomes Fern's `{Union}_{Variant}` wrapper models —
+   each carrying the discriminant as a `typing.Literal[..]` field plus the referenced
+   model's other fields — over a `{Union} = typing.Union[..]` alias, and the
+   discriminant property is stripped from each member's own model. The type layer
+   (`shape.py`, `circle.py`, `square.py`, `types/__init__.py`) matches in
+   `discriminated-unions`; the endpoint/docs layer awaits the auth + endpoint work.
+   A discriminator without an explicit `mapping` still falls back to a plain union.
 8. **Schema annotations and constraints** (`schema-constraints`). `readOnly`/
    `writeOnly` (request-vs-response field splitting), `deprecated`, `default`,
    validation keywords (`minLength`/`maxLength`/`pattern`/`minimum`/`maximum`/

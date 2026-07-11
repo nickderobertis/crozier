@@ -225,6 +225,22 @@ pub struct Schema {
     /// OpenAPI 3.0 nullability.
     #[serde(default)]
     pub nullable: Option<bool>,
+    /// A `oneOf`/`anyOf` discriminator: the property that selects the variant and
+    /// (optionally) an explicit value → `$ref` mapping.
+    #[serde(default)]
+    pub discriminator: Option<Discriminator>,
+}
+
+/// A `oneOf`/`anyOf` discriminator object.
+#[derive(Debug, Default, Clone, Deserialize)]
+pub struct Discriminator {
+    /// The property whose value selects the union variant.
+    #[serde(rename = "propertyName", default)]
+    pub property_name: String,
+    /// Explicit value → `$ref` mapping, in document order. When absent, the value
+    /// is inferred from each variant's own discriminator-property enum.
+    #[serde(default)]
+    pub mapping: IndexMap<String, String>,
 }
 
 /// `type` as a single string or (3.1) a list of strings.
