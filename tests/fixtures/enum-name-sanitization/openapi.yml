@@ -1,0 +1,31 @@
+openapi: 3.0.3
+info: { title: Widget API, version: 1.0.0 }
+paths:
+  /widgets:
+    get:
+      operationId: listWidgets
+      tags: [widgets]
+      parameters:
+        - name: size
+          in: query
+          required: false
+          schema: { type: string, enum: [100, 125, 175, 250] }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Widget' }
+components:
+  schemas:
+    Widget:
+      type: object
+      properties:
+        scope: { $ref: '#/components/schemas/WidgetScope' }
+        status: { $ref: '#/components/schemas/WidgetStatus' }
+    WidgetScope:
+      type: string
+      enum: ["global", "practice", "intent"]
+    WidgetStatus:
+      type: string
+      enum: ["0: Active", "1: InActive"]

@@ -1111,6 +1111,56 @@ const FEATURE_TARGETS: &[Corpus] = &[
             "src/fern/types/stream_chunk.py",
         ],
     },
+    // issue #50: enum member / `visit()` parameter names are sanitized into legal
+    // Python identifiers instead of crashing the final `ruff format`. `global` (a
+    // keyword) → `GLOBAL`/`global_`, `0: Active` (leading digit + punctuation) →
+    // `ZERO_ACTIVE`/`zero_active`, and a `type: string` enum whose values are all
+    // integers (`size`) drops its members and falls back to `str`. The
+    // digit-leading `_01_00_AM` shape Fern itself rejects is covered by the
+    // compile-only `enum_sanitization_generates_valid_python` test below, not here.
+    Corpus {
+        api: "enum-name-sanitization",
+        package_name: "fern",
+        project_name: "default_package_name",
+        audiences: &[],
+        matched: &[
+            ".fern/metadata.json",
+            "README.md",
+            "pyproject.toml",
+            "reference.md",
+            "requirements.txt",
+            "src/fern/__init__.py",
+            "src/fern/client.py",
+            "src/fern/core/__init__.py",
+            "src/fern/core/api_error.py",
+            "src/fern/core/client_wrapper.py",
+            "src/fern/core/datetime_utils.py",
+            "src/fern/core/file.py",
+            "src/fern/core/force_multipart.py",
+            "src/fern/core/http_client.py",
+            "src/fern/core/http_response.py",
+            "src/fern/core/http_sse/__init__.py",
+            "src/fern/core/http_sse/_api.py",
+            "src/fern/core/http_sse/_decoders.py",
+            "src/fern/core/http_sse/_exceptions.py",
+            "src/fern/core/http_sse/_models.py",
+            "src/fern/core/jsonable_encoder.py",
+            "src/fern/core/pydantic_utilities.py",
+            "src/fern/core/query_encoder.py",
+            "src/fern/core/remove_none_from_dict.py",
+            "src/fern/core/request_options.py",
+            "src/fern/core/serialization.py",
+            "src/fern/py.typed",
+            "src/fern/types/__init__.py",
+            "src/fern/types/widget.py",
+            "src/fern/types/widget_scope.py",
+            "src/fern/types/widget_status.py",
+            "src/fern/version.py",
+            "src/fern/widgets/__init__.py",
+            "src/fern/widgets/client.py",
+            "src/fern/widgets/raw_client.py",
+        ],
+    },
 ];
 
 /// Path to a fixture directory under `tests/fixtures/`.
@@ -1865,6 +1915,51 @@ fn digit_leading_property_gets_f_prefix_and_alias() {
     assert!(
         thing.contains("FieldMetadata(alias=\"2fa_enabled\")"),
         "the wire name should be preserved as a FieldMetadata alias: {thing}"
+    );
+}
+
+#[test]
+fn enum_sanitization_generates_valid_python() {
+    // Issue #50: enum member names and `visit()` parameters are derived from the
+    // raw wire values, so a value that is not already a bare identifier once
+    // produced Python that failed the final `ruff format` and discarded the whole
+    // SDK. This spec packs the crashing shapes into one enum — a Python keyword
+    // (`global`), punctuation + a leading digit (`0: Active`), and the
+    // digit-leading value `_01_00_AM` that Fern itself rejects (so it has no
+    // byte-match fixture) — plus a `type: string` enum whose values are all
+    // integers. Generation must succeed and every module must compile.
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    \
+         get:\n      operationId: listWidgets\n      tags: [widgets]\n      parameters:\n        \
+         - { name: size, in: query, required: false, schema: { type: string, enum: [100, 125] } }\n      \
+         responses:\n        '200': { description: OK, content: { application/json: { schema: \
+         { $ref: '#/components/schemas/Widget' } } } }\ncomponents:\n  schemas:\n    Widget:\n      \
+         type: object\n      properties:\n        scope: { $ref: '#/components/schemas/WidgetScope' }\n        \
+         hour: { $ref: '#/components/schemas/WidgetHour' }\n    WidgetScope:\n      type: string\n      \
+         enum: [\"global\", \"practice\"]\n    WidgetHour:\n      type: string\n      \
+         enum: [\"_01_00_AM\", \"_12_00_PM\"]\n",
+    );
+    // The keyword value's `visit` parameter is keyword-escaped, and the leading
+    // digit that Fern rejects is prefixed into a legal identifier by crozier.
+    let scope = std::fs::read_to_string(out.join("src/acme/types/widget_scope.py"))
+        .expect("WidgetScope enum is generated");
+    assert!(
+        scope.contains("global_: typing.Callable"),
+        "keyword value → keyword-escaped visit param: {scope}"
+    );
+    let hour = std::fs::read_to_string(out.join("src/acme/types/widget_hour.py"))
+        .expect("WidgetHour enum is generated");
+    assert!(
+        hour.contains("_01_00_AM = \"_01_00_AM\""),
+        "digit-leading member is prefixed into a legal identifier: {hour}"
+    );
+    // The type-mismatched enum (string type, integer values) drops its members and
+    // falls back to the base `str` type rather than emitting an empty enum class.
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
+    assert!(
+        raw.contains("size: typing.Optional[str] = None"),
+        "a type-mismatched string enum falls back to str: {raw}"
     );
 }
 

@@ -222,8 +222,9 @@ The `exhaustive` corpus is fully matched, and **every** feature-coverage target 
 `schema-constraints`, `integer-enums`, `form-bodies`, `inline-request-response`,
 `cookie-parameters`, `servers-webhooks`, the four former gap targets
 `basic-auth`, `oauth-client-credentials`, `inline-array-request`, and
-`writeonly-fields`, and the two issue-#43 targets `error-responses` and
-`sse-streaming`. (The exact matched-file set for each corpus — and the roster of
+`writeonly-fields`, the two issue-#43 targets `error-responses` and
+`sse-streaming`, and the issue-#50 target `enum-name-sanitization`. (The exact
+matched-file set for each corpus — and the roster of
 corpora itself — is the `FEATURE_TARGETS`/`matched` data in `tests/e2e.rs`, the
 single source of truth; counts are deliberately not restated here so they cannot
 drift.) The items below record how each shape generates; the remaining unproven
@@ -595,6 +596,46 @@ corpus).
 
 All three new fixtures are the *packaged* SDK form (like exhaustive), reproduced with
 `fern generate --preview` (see the regeneration note below).
+
+## Enum name sanitization (issue #50)
+
+The real-`enum.Enum` generator derived each member name and `visit()` parameter
+straight from the wire *value*, so any value that was not already a bare Python
+identifier emitted source that failed the final `ruff format` and discarded the
+whole SDK. `enum-name-sanitization` pins Fern's sanitized output for the shapes
+that occur in real specs:
+
+- **Python keyword value** (`global`) — the member is the safe upper-cased form
+  (`GLOBAL`) and the `visit()` parameter is keyword-escaped (`global_`), via
+  [`naming::enum_visit_param`]/[`enum_member_name`] (Fern's `snake_case.safe_name`
+  / `screaming_snake_case.safe_name`).
+- **Punctuation + leading single digit** (`0: Active`) — the `:`/space become word
+  boundaries and a bare single-digit word is spelled out
+  (`ZERO_ACTIVE`/`zero_active`; `1: InActive` → `ONE_IN_ACTIVE`/`one_in_active`),
+  matching Fern's enum-name generator, which carries a number-to-words map.
+- **Type-mismatched enum** — a `type: string` enum whose values are all integers
+  (`size: {enum: [100, 125, 175, 250]}`) has nothing to enumerate;
+  [`ir::string_enum_values`] returns `None` so the schema falls back to the base
+  `str` (`typing.Optional[str]`) rather than emitting an empty enum class with a
+  body-less `visit()`. A *partial* mismatch still drops only the bad members.
+
+Two enum members that sanitize to the same identifier are disambiguated with a
+`_{n}` suffix ([`ir::dedupe`]) so the emitted Python stays valid.
+
+**A multi-digit leading token Fern cannot name** (`_01_00_AM` → Fern's `0100Am`,
+which it *rejects* with "not suitable for code generation") has no byte-match
+target, so it is covered by the compile-only
+`enum_sanitization_generates_valid_python` e2e instead: crozier prefixes `_` to
+keep the identifier legal (`_01_00_AM`) and the whole tree compiles. This is the
+same posture as the arbitrary-spec validity check — where Fern errors, the bar is
+"valid Python," not byte-parity.
+
+Not addressed here: **discriminated-union alias annotation** (issue #50 part 2).
+The pinned Fern (`fern-python-sdk` 4.34.0) emits a plain `Shape = typing.Union[…]`
+(the committed `discriminated-unions` fixture proves it); the
+`Annotated[Union[…], pydantic.Field(discriminator=…)]` form is newer-Fern only, so
+adopting it would break the byte-match against the current corpus. It stays
+deferred to a corpus-wide Fern bump (same call as issue #43 gap #2).
 
 > **Regenerating these golden trees.** `scripts/generate-fern-fixture.sh` pins the
 > Fern CLI to the corpus version via `fern.config.json` and installs the *packaged*

@@ -706,18 +706,37 @@ pub struct EnumMember {
     pub visit_param: String,
 }
 
+/// Return `ident` unchanged the first time it is seen, or a `_{n}`-suffixed
+/// variant on a repeat, so a set of enum members/parameters stays unique (and
+/// thus valid Python) even when two wire values sanitize to the same identifier.
+fn dedupe(ident: String, seen: &mut std::collections::HashMap<String, usize>) -> String {
+    let count = seen.entry(ident.clone()).or_insert(0);
+    *count += 1;
+    if *count == 1 {
+        ident
+    } else {
+        format!("{ident}_{}", *count - 1)
+    }
+}
+
 /// Build an [`EnumType`] from a schema's string-enum values, deriving each
 /// member's Python name and `visit` parameter from its wire value.
 fn build_enum(name: &str, values: Vec<String>, docstring: Option<String>) -> EnumType {
+    // Fern derives the member name and `visit` parameter from each wire value,
+    // sanitizing both into legal Python identifiers (issue #50): `global` →
+    // `GLOBAL`/`global_`, `0: Active` → `ZERO_ACTIVE`/`zero_active`. Two values
+    // that collapse to the same identifier would emit duplicate members/params
+    // (invalid Python), so a suffix disambiguates any collision.
+    let mut seen_members: std::collections::HashMap<String, usize> =
+        std::collections::HashMap::new();
+    let mut seen_params: std::collections::HashMap<String, usize> =
+        std::collections::HashMap::new();
     let members = values
         .into_iter()
-        .map(|value| {
-            let snake = naming::to_snake_case(&value);
-            EnumMember {
-                name: snake.to_ascii_uppercase(),
-                visit_param: snake,
-                value,
-            }
+        .map(|value| EnumMember {
+            name: dedupe(naming::enum_member_name(&value), &mut seen_members),
+            visit_param: dedupe(naming::enum_visit_param(&value), &mut seen_params),
+            value,
         })
         .collect();
     EnumType {
@@ -2156,12 +2175,19 @@ fn string_enum_values(schema: &Schema) -> Option<Vec<String>> {
         return None;
     }
     let values = schema.enum_values.as_ref()?;
-    Some(
-        values
-            .iter()
-            .filter_map(|v| v.as_str().map(str::to_string))
-            .collect(),
-    )
+    let strings: Vec<String> = values
+        .iter()
+        .filter_map(|v| v.as_str().map(str::to_string))
+        .collect();
+    // A `type: string` enum whose values are all the wrong type (e.g. the
+    // integers `[100, 125, 175, 250]`) leaves nothing to enumerate. Fern drops
+    // such members and falls back to the base type rather than emitting an empty
+    // enum class with a body-less `visit()` (invalid Python); returning `None`
+    // here makes every call site treat the schema as a plain `str` (issue #50).
+    if strings.is_empty() {
+        return None;
+    }
+    Some(strings)
 }
 
 /// Extract union variants from a `oneOf`/`anyOf` schema, if present.
@@ -2204,10 +2230,29 @@ fn clean_doc(desc: Option<&str>) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::{
-        method_from_grouped_id, module_from_grouped_id, scalar_body, singularize,
+        build_enum, method_from_grouped_id, module_from_grouped_id, scalar_body, singularize,
         synthesized_method_name, Prim, TypeRef,
     };
     use crate::openapi::{Schema, TypeField};
+
+    #[test]
+    fn build_enum_disambiguates_colliding_member_names() {
+        // Two wire values that sanitize to the same identifier must not emit
+        // duplicate members/`visit` params (invalid Python); the second is
+        // suffixed. (Fern rejects such a spec; crozier keeps generation legal.)
+        let e = build_enum(
+            "Color",
+            vec!["a-b".to_string(), "a b".to_string(), "a.b".to_string()],
+            None,
+        );
+        let members: Vec<&str> = e.members.iter().map(|m| m.name.as_str()).collect();
+        assert_eq!(members, ["A_B", "A_B_1", "A_B_2"]);
+        let params: Vec<&str> = e.members.iter().map(|m| m.visit_param.as_str()).collect();
+        assert_eq!(params, ["a_b", "a_b_1", "a_b_2"]);
+        // The wire values are preserved untouched for the `= "…"` initializers.
+        let values: Vec<&str> = e.members.iter().map(|m| m.value.as_str()).collect();
+        assert_eq!(values, ["a-b", "a b", "a.b"]);
+    }
 
     fn scalar(ty: &str, format: Option<&str>) -> Option<(TypeRef, bool)> {
         let schema = Schema {
