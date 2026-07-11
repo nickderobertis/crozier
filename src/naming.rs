@@ -121,6 +121,83 @@ pub fn sanitize_identifier(name: &str) -> String {
     out
 }
 
+/// The English word for a bare single decimal digit. Fern's enum-name generator
+/// spells out a one-character digit word so a leading digit becomes a legal
+/// identifier (`0: Active` → `zero_active`); a multi-digit run (`01`) is left
+/// alone (Fern rejects the result, crozier keeps it legal via the prefix in
+/// [`finalize_enum_ident`]).
+fn digit_word(word: &str) -> Option<&'static str> {
+    let mut chars = word.chars();
+    let (first, rest) = (chars.next()?, chars.next());
+    if rest.is_some() {
+        return None;
+    }
+    Some(match first {
+        '0' => "zero",
+        '1' => "one",
+        '2' => "two",
+        '3' => "three",
+        '4' => "four",
+        '5' => "five",
+        '6' => "six",
+        '7' => "seven",
+        '8' => "eight",
+        '9' => "nine",
+        _ => return None,
+    })
+}
+
+/// Split an enum wire value into Fern's identifier words: every non-alphanumeric
+/// run separates, `camelCase`/`PascalCase` boundaries split, and a bare
+/// single-digit word is spelled out (`0` → `zero`). This reproduces Fern's
+/// enum-value name generation, whose cased forms drive both the member name and
+/// the `visit` parameter (`0: Active` → words `[zero, active]`; `1: InActive` →
+/// `[one, in, active]`).
+fn enum_words(value: &str) -> Vec<String> {
+    let spaced: String = value
+        .chars()
+        .map(|c| if c.is_ascii_alphanumeric() { c } else { ' ' })
+        .collect();
+    split_words(&spaced)
+        .into_iter()
+        .map(|w| digit_word(&w).map_or(w, str::to_string))
+        .collect()
+}
+
+/// Coerce a cased enum identifier into a legal, non-empty Python name: a value
+/// with no usable characters falls back to `_`, a leading digit (a multi-digit
+/// token Fern would reject) is prefixed with `_`, and a reserved word gets the
+/// trailing-`_` `safe_name` treatment Fern applies. Shared by the member and
+/// `visit`-parameter derivations so both stay valid and mutually consistent.
+fn finalize_enum_ident(mut name: String) -> String {
+    if name.is_empty() {
+        name.push('_');
+    }
+    if name.starts_with(|c: char| c.is_ascii_digit()) {
+        name.insert(0, '_');
+    }
+    if is_reserved(&name) {
+        name.push('_');
+    }
+    name
+}
+
+/// The `SCREAMING_SNAKE` member identifier for an enum wire value, sanitized to
+/// a legal Python name (Fern's `screaming_snake_case.safe_name`): `global` →
+/// `GLOBAL`, `0: Active` → `ZERO_ACTIVE`.
+#[must_use]
+pub fn enum_member_name(value: &str) -> String {
+    finalize_enum_ident(enum_words(value).join("_").to_ascii_uppercase())
+}
+
+/// The `snake_case` `visit` callback parameter for an enum wire value, sanitized
+/// to a legal Python name (Fern's `snake_case.safe_name`): `global` → `global_`
+/// (keyword), `0: Active` → `zero_active`.
+#[must_use]
+pub fn enum_visit_param(value: &str) -> String {
+    finalize_enum_ident(enum_words(value).join("_"))
+}
+
 /// Names Fern suffixes with `_` (keeping the wire name as an alias): Python hard
 /// keywords (syntactically un-usable as identifiers) plus the specific builtins
 /// observed in Fern's output. The builtin set is deliberately evidence-based —
@@ -186,6 +263,34 @@ mod tests {
         assert_eq!(field_name("2-factor"), "f_2_factor");
         // Non-digit-leading names are untouched.
         assert_eq!(field_name("v2"), "v2");
+    }
+
+    #[test]
+    fn enum_names_match_ferns_sanitized_identifiers() {
+        // Keyword value: member is safe (upper-cased), the visit param is escaped.
+        assert_eq!(enum_member_name("global"), "GLOBAL");
+        assert_eq!(enum_visit_param("global"), "global_");
+        assert_eq!(enum_member_name("practice"), "PRACTICE");
+        assert_eq!(enum_visit_param("practice"), "practice");
+        // Punctuation + a leading single digit: the digit is spelled out and the
+        // `:`/space become word boundaries (Fern: `0: Active` → `ZERO_ACTIVE`).
+        assert_eq!(enum_member_name("0: Active"), "ZERO_ACTIVE");
+        assert_eq!(enum_visit_param("0: Active"), "zero_active");
+        assert_eq!(enum_member_name("1: InActive"), "ONE_IN_ACTIVE");
+        assert_eq!(enum_visit_param("1: InActive"), "one_in_active");
+    }
+
+    #[test]
+    fn enum_names_stay_legal_where_fern_would_error() {
+        // A multi-digit leading token is not spelled out (Fern rejects it); crozier
+        // prefixes `_` so the identifier is still legal Python.
+        assert_eq!(enum_member_name("_01_00_AM"), "_01_00_AM");
+        assert_eq!(enum_visit_param("_01_00_AM"), "_01_00_am");
+        assert_eq!(enum_member_name("2fa"), "_2FA");
+        assert_eq!(enum_visit_param("2fa"), "_2fa");
+        // A value with no identifier characters still yields a legal name.
+        assert_eq!(enum_member_name("!!!"), "_");
+        assert_eq!(enum_visit_param("!!!"), "_");
     }
 
     #[test]
