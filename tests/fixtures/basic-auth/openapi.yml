@@ -1,0 +1,25 @@
+openapi: 3.0.1
+info:
+  title: basic-auth
+  version: ""
+paths:
+  /whoami:
+    get:
+      operationId: user_whoAmI
+      tags:
+        - User
+      parameters: []
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: string
+      security:
+        - BasicAuth: []
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic

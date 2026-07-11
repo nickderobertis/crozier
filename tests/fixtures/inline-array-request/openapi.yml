@@ -1,0 +1,56 @@
+openapi: 3.0.1
+info:
+  title: inline-array-request
+  version: ""
+paths:
+  /items/batch:
+    post:
+      operationId: items_createBatch
+      tags:
+        - Items
+      parameters: []
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Item"
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  quantity:
+                    type: integer
+                required:
+                  - name
+components:
+  schemas:
+    Item:
+      title: Item
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        quantity:
+          type: integer
+      required:
+        - id
+        - name
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer

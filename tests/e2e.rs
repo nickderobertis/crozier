@@ -556,6 +556,193 @@ const FEATURE_TARGETS: &[Corpus] = &[
             "src/fern/version.py",
         ],
     },
+    // Gap-exercising targets: previously unproven OpenAPI shapes, each now with its
+    // golden Fern `expected/` tree generated (via scripts/generate-fern-fixture.sh)
+    // and byte-matched in full. The comment on each records the shape it pins.
+    //
+    // basic-auth: HTTP `basic` as the sole/primary security scheme. crozier's auth
+    // model reproduces it as Fern's `username`/`password` client wrapper (each a
+    // `str` or callable), threaded through the root/per-tag clients, docs, and the
+    // `httpx.BasicAuth(...)._auth_header` header wiring. Matches in full.
+    Corpus {
+        api: "basic-auth",
+        package_name: "fern",
+        project_name: "default_package_name",
+        matched: &[
+            ".fern/metadata.json",
+            "README.md",
+            "pyproject.toml",
+            "reference.md",
+            "requirements.txt",
+            "src/fern/__init__.py",
+            "src/fern/client.py",
+            "src/fern/core/__init__.py",
+            "src/fern/core/api_error.py",
+            "src/fern/core/client_wrapper.py",
+            "src/fern/core/datetime_utils.py",
+            "src/fern/core/file.py",
+            "src/fern/core/force_multipart.py",
+            "src/fern/core/http_client.py",
+            "src/fern/core/http_response.py",
+            "src/fern/core/http_sse/__init__.py",
+            "src/fern/core/http_sse/_api.py",
+            "src/fern/core/http_sse/_decoders.py",
+            "src/fern/core/http_sse/_exceptions.py",
+            "src/fern/core/http_sse/_models.py",
+            "src/fern/core/jsonable_encoder.py",
+            "src/fern/core/pydantic_utilities.py",
+            "src/fern/core/query_encoder.py",
+            "src/fern/core/remove_none_from_dict.py",
+            "src/fern/core/request_options.py",
+            "src/fern/core/serialization.py",
+            "src/fern/py.typed",
+            "src/fern/user/__init__.py",
+            "src/fern/user/client.py",
+            "src/fern/user/raw_client.py",
+            "src/fern/version.py",
+        ],
+    },
+    // oauth-client-credentials: OAuth2 `clientCredentials` as the primary scheme,
+    // with the token endpoint declared as an operation. Fern's plain-OpenAPI oauth2
+    // output equals crozier's optional-bearer fallback (no `x-fern-*` extensions to
+    // wire a token provider), so this matches in full and pins that equivalence.
+    Corpus {
+        api: "oauth-client-credentials",
+        package_name: "fern",
+        project_name: "default_package_name",
+        matched: &[
+            ".fern/metadata.json",
+            "README.md",
+            "pyproject.toml",
+            "reference.md",
+            "requirements.txt",
+            "src/fern/__init__.py",
+            "src/fern/auth/__init__.py",
+            "src/fern/auth/client.py",
+            "src/fern/auth/raw_client.py",
+            "src/fern/client.py",
+            "src/fern/core/__init__.py",
+            "src/fern/core/api_error.py",
+            "src/fern/core/client_wrapper.py",
+            "src/fern/core/datetime_utils.py",
+            "src/fern/core/file.py",
+            "src/fern/core/force_multipart.py",
+            "src/fern/core/http_client.py",
+            "src/fern/core/http_response.py",
+            "src/fern/core/http_sse/__init__.py",
+            "src/fern/core/http_sse/_api.py",
+            "src/fern/core/http_sse/_decoders.py",
+            "src/fern/core/http_sse/_exceptions.py",
+            "src/fern/core/http_sse/_models.py",
+            "src/fern/core/jsonable_encoder.py",
+            "src/fern/core/pydantic_utilities.py",
+            "src/fern/core/query_encoder.py",
+            "src/fern/core/remove_none_from_dict.py",
+            "src/fern/core/request_options.py",
+            "src/fern/core/serialization.py",
+            "src/fern/py.typed",
+            "src/fern/types/__init__.py",
+            "src/fern/types/token_response.py",
+            "src/fern/types/user.py",
+            "src/fern/users/__init__.py",
+            "src/fern/users/client.py",
+            "src/fern/users/raw_client.py",
+            "src/fern/version.py",
+        ],
+    },
+    // inline-array-request: a request body that is an array of *inline* objects
+    // (not a `$ref`). The element hoists into the tag's `types/` as
+    // `{Tag}{Method}RequestItem` (`ItemsCreateBatchRequestItem`), the body serializes
+    // through the convert wrapper as `Sequence[..]`, and the worked example
+    // constructs the element and imports it from its tag package. Matches in full.
+    Corpus {
+        api: "inline-array-request",
+        package_name: "fern",
+        project_name: "default_package_name",
+        matched: &[
+            ".fern/metadata.json",
+            "README.md",
+            "pyproject.toml",
+            "reference.md",
+            "requirements.txt",
+            "src/fern/__init__.py",
+            "src/fern/client.py",
+            "src/fern/core/__init__.py",
+            "src/fern/core/api_error.py",
+            "src/fern/core/client_wrapper.py",
+            "src/fern/core/datetime_utils.py",
+            "src/fern/core/file.py",
+            "src/fern/core/force_multipart.py",
+            "src/fern/core/http_client.py",
+            "src/fern/core/http_response.py",
+            "src/fern/core/http_sse/__init__.py",
+            "src/fern/core/http_sse/_api.py",
+            "src/fern/core/http_sse/_decoders.py",
+            "src/fern/core/http_sse/_exceptions.py",
+            "src/fern/core/http_sse/_models.py",
+            "src/fern/core/jsonable_encoder.py",
+            "src/fern/core/pydantic_utilities.py",
+            "src/fern/core/query_encoder.py",
+            "src/fern/core/remove_none_from_dict.py",
+            "src/fern/core/request_options.py",
+            "src/fern/core/serialization.py",
+            "src/fern/items/__init__.py",
+            "src/fern/items/client.py",
+            "src/fern/items/raw_client.py",
+            "src/fern/items/types/__init__.py",
+            "src/fern/items/types/items_create_batch_request_item.py",
+            "src/fern/py.typed",
+            "src/fern/types/__init__.py",
+            "src/fern/types/item.py",
+            "src/fern/version.py",
+        ],
+    },
+    // writeonly-fields: one schema used as *both* request body and response, with a
+    // required `readOnly` field (server-populated) and a required `writeOnly` field
+    // (client-only). Fern orders the inlined request signature/docstring
+    // required-first (optional `= OMIT` args last) while the `json={...}` dict keeps
+    // schema order — so the `readOnly`/`writeOnly` fields land after the required
+    // ones. Also carries a required `date` field. Matches in full.
+    Corpus {
+        api: "writeonly-fields",
+        package_name: "fern",
+        project_name: "default_package_name",
+        matched: &[
+            ".fern/metadata.json",
+            "README.md",
+            "pyproject.toml",
+            "reference.md",
+            "requirements.txt",
+            "src/fern/__init__.py",
+            "src/fern/client.py",
+            "src/fern/core/__init__.py",
+            "src/fern/core/api_error.py",
+            "src/fern/core/client_wrapper.py",
+            "src/fern/core/datetime_utils.py",
+            "src/fern/core/file.py",
+            "src/fern/core/force_multipart.py",
+            "src/fern/core/http_client.py",
+            "src/fern/core/http_response.py",
+            "src/fern/core/http_sse/__init__.py",
+            "src/fern/core/http_sse/_api.py",
+            "src/fern/core/http_sse/_decoders.py",
+            "src/fern/core/http_sse/_exceptions.py",
+            "src/fern/core/http_sse/_models.py",
+            "src/fern/core/jsonable_encoder.py",
+            "src/fern/core/pydantic_utilities.py",
+            "src/fern/core/query_encoder.py",
+            "src/fern/core/remove_none_from_dict.py",
+            "src/fern/core/request_options.py",
+            "src/fern/core/serialization.py",
+            "src/fern/py.typed",
+            "src/fern/types/__init__.py",
+            "src/fern/types/user.py",
+            "src/fern/users/__init__.py",
+            "src/fern/users/client.py",
+            "src/fern/users/raw_client.py",
+            "src/fern/version.py",
+        ],
+    },
 ];
 
 /// Path to a fixture directory under `tests/fixtures/`.
@@ -684,10 +871,12 @@ fn exhaustive_matches_fern_output_byte_for_byte() {
 
 #[test]
 fn feature_target_specs_generate_without_panicking() {
-    // Each feature-coverage target has an empty `matched` list, so this asserts
-    // crozier consumes the spec and writes a tree (exit 0, "generated" on stderr)
-    // without panicking. As generation lands for a feature, populate that
-    // corpus's `matched` list and the same helper starts byte-comparing files.
+    // A feature-coverage target with a populated `matched` list is byte-compared
+    // file-by-file; one with an empty `matched` list asserts only that crozier
+    // consumes the spec and writes a tree (exit 0, "generated" on stderr) without
+    // panicking. Every target is fully matched today; a future gap target starts
+    // empty (golden Fern tree not yet generated) and grows its `matched` list as
+    // generation lands, and the same helper then starts byte-comparing files.
     for target in FEATURE_TARGETS {
         assert_corpus_matches(target);
     }

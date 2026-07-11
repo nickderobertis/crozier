@@ -16,8 +16,8 @@ use serde::Serialize;
 
 use crate::error::{Error, Result};
 use crate::ir::{
-    Auth, Endpoint, ErrorClass, Field, GlobalHeader, Ir, ObjectType, Prim, RequestBody, TypeDecl,
-    TypeRef,
+    Auth, Endpoint, ErrorClass, Field, GlobalHeader, Ir, ObjectType, Prim, RequestBody,
+    TagTypeDecl, TypeDecl, TypeRef,
 };
 use crate::naming;
 use crate::wrap::Doc;
@@ -504,6 +504,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 client_name: &ir.client_name,
                 module,
                 types: &ir.types,
+                tag_decls: &ir.tag_types,
                 auth: &ir.auth,
                 has_environment: ir.environment.is_some(),
                 tag_types: &tag_map,
@@ -917,7 +918,7 @@ fn root_init_file(
 /// `inline`'s `filter`) or has two-or-more fields all required (`gettoken`). A body
 /// of only scalar fields with any optional one (`createaccount`) or a single field
 /// (`create`), or a union/enum/scalar/no body, renders empty parens.
-fn complex_body(ep: &Endpoint, types: &[TypeDecl]) -> bool {
+fn complex_body(ep: &Endpoint, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) -> bool {
     match &ep.request_body {
         None => false,
         Some(RequestBody::Bytes) => true,
@@ -928,16 +929,55 @@ fn complex_body(ep: &Endpoint, types: &[TypeDecl]) -> bool {
         Some(RequestBody::Form(form)) => {
             form.fields.iter().any(|f| f.is_file) || form.fields.iter().all(|f| f.spec_required)
         }
-        Some(RequestBody::Single(s)) => is_complex_type(&s.type_ref, types),
+        Some(RequestBody::Single(s)) => is_complex_type(&s.type_ref, types, tag_decls),
     }
 }
 
-/// Whether a single-argument body type renders as a container (list/set/map) or a
-/// plain object — not a union, enum, or scalar.
-fn is_complex_type(t: &TypeRef, types: &[TypeDecl]) -> bool {
+/// Whether an object rendered as a worked-example body is "complex" (`...`) rather
+/// than empty parens: two-or-more fields all required. A single field, or any
+/// optional field, renders `()` — the same evidence-based split as an inline body.
+fn object_body_complex(obj: &ObjectType) -> bool {
+    obj.fields.len() >= 2 && obj.fields.iter().all(|f| f.spec_required)
+}
+
+/// The object an example-body container holds, if any: unwrap optionals and resolve
+/// a `Named` to a package-root or hoisted tag object.
+fn container_element_object<'a>(
+    t: &TypeRef,
+    types: &'a [TypeDecl],
+    tag_decls: &'a [TagTypeDecl],
+) -> Option<&'a ObjectType> {
     match t {
-        TypeRef::List(_) | TypeRef::Set(_) | TypeRef::Dict(..) => true,
-        TypeRef::Optional(inner) => is_complex_type(inner, types),
+        TypeRef::Optional(inner) => container_element_object(inner, types, tag_decls),
+        TypeRef::Named(n) => {
+            let decl = types.iter().find(|d| d.name() == n).or_else(|| {
+                tag_decls
+                    .iter()
+                    .find_map(|tt| (tt.decl.name() == n).then_some(&tt.decl))
+            })?;
+            match decl {
+                TypeDecl::Object(o) => Some(o),
+                _ => None,
+            }
+        }
+        _ => None,
+    }
+}
+
+/// Whether a single-argument body type renders as `...` in the abbreviated snippets
+/// (versus empty parens). A container of objects defers to its element's shape — an
+/// element with an optional field renders `()`, matching Fern; a container of
+/// scalars stays complex. A plain object is complex; a union/enum/scalar is not.
+fn is_complex_type(t: &TypeRef, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) -> bool {
+    match t {
+        TypeRef::List(inner) | TypeRef::Set(inner) => {
+            match container_element_object(inner, types, tag_decls) {
+                Some(obj) => object_body_complex(obj),
+                None => true,
+            }
+        }
+        TypeRef::Dict(..) => true,
+        TypeRef::Optional(inner) => is_complex_type(inner, types, tag_decls),
         TypeRef::Named(n) => types
             .iter()
             .find(|d| d.name() == n)
@@ -946,7 +986,8 @@ fn is_complex_type(t: &TypeRef, types: &[TypeDecl]) -> bool {
                 // A union (named or discriminated) renders empty parens.
                 TypeDecl::DiscriminatedUnion(_) => false,
                 TypeDecl::Alias(a) => {
-                    !matches!(a.target, TypeRef::Union(_)) && is_complex_type(&a.target, types)
+                    !matches!(a.target, TypeRef::Union(_))
+                        && is_complex_type(&a.target, types, tag_decls)
                 }
             }),
         TypeRef::Union(_) | TypeRef::Primitive(_) | TypeRef::Literal(_) => false,
@@ -988,7 +1029,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     // The abbreviated calls in the error-handling and advanced sections show `...`
     // for an endpoint with a complex (object/container/union) body, else empty
     // parens; the error/raw-response calls are ruff-wrapped at the snippet width 88.
-    let complex = complex_body(first, &ir.types);
+    let complex = complex_body(first, &ir.types, &ir.tag_types);
     let err_call = abbrev_call(
         4,
         &format!("client.{}.{}", first.module, first.method_name),
@@ -1012,7 +1053,9 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     let sync_example = {
         let mut ctx = ExampleCtx {
             types: &ir.types,
+            tag_decls: &ir.tag_types,
             referenced: BTreeSet::new(),
+            referenced_tag: BTreeSet::new(),
             uses_datetime: false,
             auth: &ir.auth,
             has_environment: ir.environment.is_some(),
@@ -1023,7 +1066,9 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     let async_example = {
         let mut ctx = ExampleCtx {
             types: &ir.types,
+            tag_decls: &ir.tag_types,
             referenced: BTreeSet::new(),
+            referenced_tag: BTreeSet::new(),
             uses_datetime: false,
             auth: &ir.auth,
             has_environment: ir.environment.is_some(),
@@ -1127,7 +1172,9 @@ fn reference_entry(
     // The example (sync form). Bytes bodies are filtered out before this point.
     let mut ctx = ExampleCtx {
         types: &ir.types,
+        tag_decls: &ir.tag_types,
         referenced: BTreeSet::new(),
+        referenced_tag: BTreeSet::new(),
         uses_datetime: false,
         auth: &ir.auth,
         has_environment: ir.environment.is_some(),
@@ -1384,6 +1431,13 @@ fn auth_wrapper_parts(auth: &Auth) -> AuthWrapper {
                 super_arg: "token=token".to_string(),
             }
         }
+        Auth::Basic => AuthWrapper {
+            param: "        username: typing.Union[str, typing.Callable[[], str]],\n        password: typing.Union[str, typing.Callable[[], str]],\n".to_string(),
+            assign: "        self._username = username\n        self._password = password\n".to_string(),
+            header_block: "        headers[\"Authorization\"] = httpx.BasicAuth(self._get_username(), self._get_password())._auth_header\n".to_string(),
+            token_method: "    def _get_username(self) -> str:\n        if isinstance(self._username, str):\n            return self._username\n        else:\n            return self._username()\n\n    def _get_password(self) -> str:\n        if isinstance(self._password, str):\n            return self._password\n        else:\n            return self._password()\n\n".to_string(),
+            super_arg: "username=username, password=password".to_string(),
+        },
     }
 }
 
@@ -1398,36 +1452,72 @@ struct AuthClient {
 }
 
 fn auth_client_parts(auth: &Auth) -> AuthClient {
-    let (name, ty) = match auth {
-        Auth::ApiKey { required: true, .. } => ("api_key", "str".to_string()),
+    // Each credential is a `(name, type)` pair; basic auth carries two
+    // (`username`/`password`), every other scheme exactly one.
+    let creds: Vec<(&str, String)> = match auth {
+        Auth::ApiKey { required: true, .. } => vec![("api_key", "str".to_string())],
         Auth::ApiKey {
             required: false, ..
-        } => ("api_key", "typing.Optional[str] = None".to_string()),
-        Auth::Bearer { required: true } => (
+        } => vec![("api_key", "typing.Optional[str] = None".to_string())],
+        Auth::Bearer { required: true } => vec![(
             "token",
             "typing.Union[str, typing.Callable[[], str]]".to_string(),
-        ),
-        Auth::Bearer { required: false } => (
+        )],
+        Auth::Bearer { required: false } => vec![(
             "token",
             "typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None".to_string(),
-        ),
+        )],
+        Auth::Basic => vec![
+            (
+                "username",
+                "typing.Union[str, typing.Callable[[], str]]".to_string(),
+            ),
+            (
+                "password",
+                "typing.Union[str, typing.Callable[[], str]]".to_string(),
+            ),
+        ],
     };
+    let ctor_param: String = creds
+        .iter()
+        .map(|(name, ty)| format!("        {name}: {ty},\n"))
+        .collect();
     // The docstring type drops the ` = None` default suffix a parameter carries.
-    let doc_ty = ty.strip_suffix(" = None").unwrap_or(&ty);
+    let doc_param: String = creds
+        .iter()
+        .map(|(name, ty)| {
+            let doc_ty = ty.strip_suffix(" = None").unwrap_or(ty);
+            format!("    {name} : {doc_ty}\n")
+        })
+        .collect();
+    // The wrapper call passes each credential through; the template supplies the
+    // final newline, so the joined block carries none.
+    let wrapper_arg = creds
+        .iter()
+        .map(|(name, _)| format!("            {name}={name},\n"))
+        .collect::<String>()
+        .trim_end_matches('\n')
+        .to_string();
+    let example_line: String = auth_example_args(auth)
+        .iter()
+        .map(|arg| format!("        {arg},\n"))
+        .collect();
     AuthClient {
-        ctor_param: format!("        {name}: {ty},\n"),
-        wrapper_arg: name.to_string(),
-        doc_param: format!("    {name} : {doc_ty}\n"),
-        example_line: format!("        {},\n", auth_example(auth)),
+        ctor_param,
+        wrapper_arg,
+        doc_param,
+        example_line,
     }
 }
 
-/// The credential argument in a worked `Examples` client instantiation, e.g.
-/// `token="YOUR_TOKEN"` or `api_key="YOUR_API_KEY"` (no indent or trailing comma).
-fn auth_example(auth: &Auth) -> String {
+/// The credential arguments in a worked `Examples` client instantiation, e.g.
+/// `["token=\"YOUR_TOKEN\""]` or, for basic auth, both `username`/`password` lines
+/// (each with no indent or trailing comma — the caller adds those).
+fn auth_example_args(auth: &Auth) -> Vec<&'static str> {
     match auth {
-        Auth::ApiKey { .. } => "api_key=\"YOUR_API_KEY\"".to_string(),
-        Auth::Bearer { .. } => "token=\"YOUR_TOKEN\"".to_string(),
+        Auth::ApiKey { .. } => vec!["api_key=\"YOUR_API_KEY\""],
+        Auth::Bearer { .. } => vec!["token=\"YOUR_TOKEN\""],
+        Auth::Basic => vec!["username=\"YOUR_USERNAME\"", "password=\"YOUR_PASSWORD\""],
     }
 }
 
@@ -1883,27 +1973,36 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
             let base = raw_type_str_ctx(&s.type_ref, imports, true);
             vec![optional_arg(base, s.required, None, "request".to_string())]
         }
-        Some(RequestBody::Inline(fields)) => fields
-            .iter()
-            .map(|f| {
-                let base = raw_type_str_ctx(&f.type_ref, imports, true);
-                if f.optional {
-                    DocParam {
-                        name: f.py_name.clone(),
-                        annotation: format!("typing.Optional[{base}]"),
-                        default: Some("OMIT".to_string()),
-                        description: f.docstring.clone(),
+        Some(RequestBody::Inline(fields)) => {
+            let mut params: Vec<DocParam> = fields
+                .iter()
+                .map(|f| {
+                    let base = raw_type_str_ctx(&f.type_ref, imports, true);
+                    if f.optional {
+                        DocParam {
+                            name: f.py_name.clone(),
+                            annotation: format!("typing.Optional[{base}]"),
+                            default: Some("OMIT".to_string()),
+                            description: f.docstring.clone(),
+                        }
+                    } else {
+                        DocParam {
+                            name: f.py_name.clone(),
+                            annotation: base,
+                            default: None,
+                            description: f.docstring.clone(),
+                        }
                     }
-                } else {
-                    DocParam {
-                        name: f.py_name.clone(),
-                        annotation: base,
-                        default: None,
-                        description: f.docstring.clone(),
-                    }
-                }
-            })
-            .collect(),
+                })
+                .collect();
+            // Fern orders the inlined body's *signature* and docstring required-first
+            // (optional `= OMIT` args last), a stable partition that preserves schema
+            // order within each group. The `json={...}` dict keeps pure schema order
+            // (built separately below), so only this view is reordered — matching how
+            // a `readOnly`/`writeOnly` field lands after the required ones.
+            params.sort_by_key(|p| p.default.is_some());
+            params
+        }
         Some(RequestBody::Bytes) => vec![DocParam {
             name: "request".to_string(),
             annotation: "typing.Union[bytes, typing.Iterator[bytes], typing.AsyncIterator[bytes]]"
@@ -2558,6 +2657,8 @@ struct ClientCtx<'a> {
     client_name: &'a str,
     module: &'a str,
     types: &'a [TypeDecl],
+    /// Hoisted tag-scoped types, for the example generator's constructors.
+    tag_decls: &'a [TagTypeDecl],
     auth: &'a Auth,
     has_environment: bool,
     tag_types: &'a BTreeMap<String, String>,
@@ -2707,7 +2808,9 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
 
     let mut ctx = ExampleCtx {
         types: cx.types,
+        tag_decls: cx.tag_decls,
         referenced: BTreeSet::new(),
+        referenced_tag: BTreeSet::new(),
         uses_datetime: false,
         auth: cx.auth,
         has_environment: cx.has_environment,
@@ -2874,9 +2977,15 @@ impl Example {
 /// Threads the type table and the imports/datetime a worked example accumulates.
 struct ExampleCtx<'a> {
     types: &'a [TypeDecl],
+    /// Hoisted tag-scoped types, consulted so an example can construct one and
+    /// import it from its tag package (`from <pkg>.<tag> import ...`).
+    tag_decls: &'a [TagTypeDecl],
     /// Generated type names referenced as constructors (drives the example's
     /// `from <pkg> import ...`).
     referenced: BTreeSet<String>,
+    /// Referenced hoisted tag-types as `(tag module, type name)` — imported from
+    /// their tag package on a separate line above the main import.
+    referenced_tag: BTreeSet<(String, String)>,
     /// Whether any value is a datetime/date (drives an `import datetime`).
     uses_datetime: bool,
     /// The auth model, for the credential argument in the client instantiation.
@@ -2899,9 +3008,25 @@ enum Slot<'a> {
 }
 
 impl<'a> ExampleCtx<'a> {
-    /// Look up a generated type by name.
+    /// Look up a generated type by name — a package-root type, else a hoisted
+    /// tag-scoped one (so an example can construct an inline-hoisted model).
     fn find(&self, name: &str) -> Option<&'a TypeDecl> {
-        self.types.iter().find(|d| d.name() == name)
+        self.types.iter().find(|d| d.name() == name).or_else(|| {
+            self.tag_decls
+                .iter()
+                .find_map(|tt| (tt.decl.name() == name).then_some(&tt.decl))
+        })
+    }
+
+    /// Record a referenced constructor: a tag-scoped type is tracked with its tag
+    /// module (imported separately), a package-root type in the main import set.
+    fn record_ref(&mut self, name: &str) {
+        if let Some(tt) = self.tag_decls.iter().find(|tt| tt.decl.name() == name) {
+            self.referenced_tag
+                .insert((tt.module.clone(), name.to_string()));
+        } else {
+            self.referenced.insert(name.to_string());
+        }
     }
 
     /// Whether a type resolves (through aliases/optionals) to an unknown value —
@@ -2991,7 +3116,7 @@ impl<'a> ExampleCtx<'a> {
     fn named_value(&mut self, name: &str, slot: Slot) -> Example {
         match self.find(name) {
             Some(TypeDecl::Object(obj)) => {
-                self.referenced.insert(name.to_string());
+                self.record_ref(name);
                 // Include inherited fields (pydantic construction takes them too),
                 // base classes first, then the object's own fields.
                 let fields = self.object_fields(obj);
@@ -3156,6 +3281,21 @@ fn build_example(
         v.push(")".to_string());
         v
     };
+    // Hoisted tag-scoped types import from their tag package, one line per tag,
+    // as a separate group above the main import (`from fern.items import ...`).
+    let mut tag_import_lines: Vec<String> = Vec::new();
+    {
+        let mut by_module: BTreeMap<&str, Vec<&str>> = BTreeMap::new();
+        for (module, name) in &ctx.referenced_tag {
+            by_module.entry(module).or_default().push(name);
+        }
+        for (module, tag_names) in by_module {
+            tag_import_lines.push(format!(
+                "from {pkg}.{module} import {}",
+                tag_names.join(", ")
+            ));
+        }
+    }
 
     let mut client_block = vec![format!("client = {example_name}(")];
     // Promoted global headers come first (`tenant="YOUR_TENANT"`), then the auth
@@ -3167,7 +3307,9 @@ fn build_example(
             h.py_name.to_uppercase()
         ));
     }
-    client_block.push(format!("    {},", auth_example(ctx.auth)));
+    for arg in auth_example_args(ctx.auth) {
+        client_block.push(format!("    {arg},"));
+    }
     if !ctx.has_environment {
         client_block.push("    base_url=\"https://yourhost.com/path/to/api\",".to_string());
     }
@@ -3176,6 +3318,10 @@ fn build_example(
     let mut out: Vec<String> = Vec::new();
     if !preamble.is_empty() {
         out.extend(preamble);
+        out.push(String::new());
+    }
+    if !tag_import_lines.is_empty() {
+        out.extend(tag_import_lines);
         out.push(String::new());
     }
     out.extend(import_lines);
@@ -3356,7 +3502,7 @@ pub fn write_files(root: &std::path::Path, files: &[GeneratedFile]) -> Result<()
 #[cfg(test)]
 mod tests {
     use super::{
-        abbrev_call, auth_client_parts, auth_example, auth_wrapper_parts, environment,
+        abbrev_call, auth_client_parts, auth_example_args, auth_wrapper_parts, environment,
         escape_py_str, field_decl, raw_method, raw_type_str, render, render_class_body, url_arg,
         FieldView, Imports, ParamRow, RefLoc, ReferenceEntryView, RenderedField, RootClientView,
         RootModuleView,
@@ -3481,7 +3627,7 @@ mod tests {
             httpx_type: "httpx.Client".to_string(),
             wrapper: "SyncClientWrapper".to_string(),
             ctor_param: "        token: str,\n".to_string(),
-            wrapper_arg: "token".to_string(),
+            wrapper_arg: "            token=token,".to_string(),
             doc_param: "    token : str\n\n".to_string(),
             example_line: "        token=\"YOUR_TOKEN\",\n".to_string(),
             base_url_doc_ty: "str".to_string(),
@@ -3617,16 +3763,49 @@ mod tests {
         assert!(c.ctor_param.contains("typing.Optional[typing.Union[str"));
         assert!(!c.doc_param.contains(" = None"));
 
+        // basic: a required `username`/`password` pair everywhere a single
+        // credential would otherwise appear.
+        let w = auth_wrapper_parts(&Auth::Basic);
+        assert!(w.param.contains("username: typing.Union[str"));
+        assert!(w.param.contains("password: typing.Union[str"));
+        assert!(w.assign.contains("self._username = username"));
+        assert!(w.assign.contains("self._password = password"));
+        assert!(w.header_block.contains("httpx.BasicAuth("));
+        assert!(w.token_method.contains("def _get_username(self) -> str:"));
+        assert!(w.token_method.contains("def _get_password(self) -> str:"));
+        assert_eq!(w.super_arg, "username=username, password=password");
+        let c = auth_client_parts(&Auth::Basic);
         assert_eq!(
-            auth_example(&Auth::Bearer { required: true }),
-            "token=\"YOUR_TOKEN\""
+            c.ctor_param,
+            "        username: typing.Union[str, typing.Callable[[], str]],\n        password: typing.Union[str, typing.Callable[[], str]],\n"
         );
         assert_eq!(
-            auth_example(&Auth::ApiKey {
+            c.doc_param,
+            "    username : typing.Union[str, typing.Callable[[], str]]\n    password : typing.Union[str, typing.Callable[[], str]]\n"
+        );
+        assert_eq!(
+            c.wrapper_arg,
+            "            username=username,\n            password=password,"
+        );
+        assert_eq!(
+            c.example_line,
+            "        username=\"YOUR_USERNAME\",\n        password=\"YOUR_PASSWORD\",\n"
+        );
+
+        assert_eq!(
+            auth_example_args(&Auth::Bearer { required: true }),
+            vec!["token=\"YOUR_TOKEN\""]
+        );
+        assert_eq!(
+            auth_example_args(&Auth::ApiKey {
                 header: "X".to_string(),
                 required: false
             }),
-            "api_key=\"YOUR_API_KEY\""
+            vec!["api_key=\"YOUR_API_KEY\""]
+        );
+        assert_eq!(
+            auth_example_args(&Auth::Basic),
+            vec!["username=\"YOUR_USERNAME\"", "password=\"YOUR_PASSWORD\""]
         );
     }
 
