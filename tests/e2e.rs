@@ -756,6 +756,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         matched: &[
             "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
+            "src/fern/core/client_wrapper.py",
             "src/fern/core/datetime_utils.py",
             "src/fern/core/file.py",
             "src/fern/core/force_multipart.py",
@@ -789,6 +790,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
             "src/fern/client.py",
             "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
+            "src/fern/core/client_wrapper.py",
             "src/fern/core/datetime_utils.py",
             "src/fern/core/file.py",
             "src/fern/core/force_multipart.py",
@@ -824,6 +826,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
             "src/fern/client.py",
             "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
+            "src/fern/core/client_wrapper.py",
             "src/fern/core/datetime_utils.py",
             "src/fern/core/file.py",
             "src/fern/core/force_multipart.py",
@@ -859,12 +862,31 @@ fn crozier() -> Command {
     Command::cargo_bin("crozier").expect("crozier binary is built for tests")
 }
 
-/// Canonicalize crozier's `X-Crozier-*` SDK-identity headers to Fern's `X-Fern-*`
-/// so the deliberate header-name rebrand does not gate the byte match (the values,
-/// ordering, and every other line stay exact). A no-op on the Fern fixtures, which
-/// carry no `X-Crozier-` prefix.
+/// Normalize the SDK-identity headers out of the comparison. crozier brands its
+/// own `X-Crozier-*` headers rather than impersonating Fern, and — because it
+/// reproduces Fern's *packaged* wrapper — always emits the `SDK-Name`/`SDK-Version`
+/// headers that Fern's publishing metadata supplies, which the credential-free
+/// local golden trees omit. Both are deliberate, non-behavioral differences in tool
+/// branding/packaging, so drop the `SDK-Name`/`SDK-Version` lines and canonicalize
+/// the remaining `X-Crozier-` prefix (the `Language` header) to `X-Fern-`. Applied
+/// to both sides; a no-op on lines the fixtures don't contain.
 fn normalize_sdk_headers(content: &str) -> String {
-    content.replace("X-Crozier-", "X-Fern-")
+    let is_sdk_identity_line = |line: &str| {
+        let t = line.trim_start();
+        [
+            "X-Fern-SDK-Name",
+            "X-Crozier-SDK-Name",
+            "X-Fern-SDK-Version",
+            "X-Crozier-SDK-Version",
+        ]
+        .iter()
+        .any(|h| t.starts_with(&format!("\"{h}\"")))
+    };
+    content
+        .split_inclusive('\n')
+        .filter(|line| !is_sdk_identity_line(line))
+        .collect::<String>()
+        .replace("X-Crozier-", "X-Fern-")
 }
 
 /// Normalize a lazy-loader `__init__.py` for comparison: drop leading blank lines

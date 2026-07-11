@@ -426,27 +426,30 @@ high-level clients, the root client, and the aggregators.
 ### crozier vs Fern SDK-identity headers
 
 crozier does not impersonate Fern in the generated SDK: it emits `X-Crozier-Language`
-/ `X-Crozier-SDK-Name` / `X-Crozier-SDK-Version` where Fern emits `X-Fern-*` (same
-values, same order, same everything else). The byte-match canonicalizes the
-`X-Crozier-` prefix back to `X-Fern-` (`tests/e2e.rs::normalize_sdk_headers`) so the
-deliberate rebrand — like the differing file-header comments — does not gate the
-comparison. Every other line of `client_wrapper.py` still matches exactly.
+/ `X-Crozier-SDK-Name` / `X-Crozier-SDK-Version` where Fern emits `X-Fern-*`. It also
+reproduces Fern's *packaged* client wrapper, so it always emits the
+`SDK-Name`/`SDK-Version` headers that Fern's publishing metadata supplies — which the
+credential-free local golden trees (below) omit. Both are deliberate,
+non-behavioral differences in tool branding/packaging, so
+`tests/e2e.rs::normalize_sdk_headers` drops the `SDK-Name`/`SDK-Version` lines and
+canonicalizes the remaining `X-Crozier-` prefix (the `Language` header) to `X-Fern-`
+on both sides before comparison. Every other line of `client_wrapper.py` matches
+exactly, so the wrapper is in each corpus's `matched` list.
 
-### Two files stay unmatched (packaged vs. local Fern output)
+### What stays unmatched (packaged vs. local Fern output)
 
-The `matched` lists exclude `core/client_wrapper.py` and the package-root
-`__init__.py` (plus `pyproject.toml` / `version.py` / `py.typed`, which the golden
-trees do not contain). This is **not** a crozier defect: crozier reproduces Fern's
-*packaged* SDK (a pip package with `pyproject.toml`, a `version.py`, and the
-`X-Fern-SDK-Name`/`Version` headers that come from Fern's publishing metadata),
-exactly as the auth'd corpora above prove. Fern only writes that packaged form when
-it generates for a registry (`output.location: pypi`/`github`), which needs
-publishing credentials; the credential-free local mode (`local-file-system` →
-`downloadFiles`) that vendors these golden trees omits the package scaffolding and
-those two headers. So the packaged-only files have no counterpart in the golden to
-match against — while the packaged client wrapper itself stays validated by the
-auth'd corpora. (`digit-leading-property` additionally leaves its client layer
-unmatched: its `getThing` operation is untagged and groupless, so Fern emits a
+The only files the golden trees carry that stay out of the `matched` lists are the
+package-root `__init__.py` aggregators (they import `__version__` from a
+`version.py` crozier emits but Fern's local output omits). The pure packaging
+scaffolding — `pyproject.toml`, `version.py`, `py.typed`, `README.md`,
+`reference.md` — is simply absent from the golden trees, so there is nothing to
+compare against. This is **not** a crozier defect: crozier reproduces Fern's
+*packaged* SDK (a pip package with all of the above), exactly as the auth'd corpora
+prove. Fern only writes that packaged form when generating for a registry
+(`output.location: pypi`/`github`), which needs publishing credentials; the
+credential-free local mode (`local-file-system` → `downloadFiles`) that vendors
+these golden trees omits it. (`digit-leading-property` additionally leaves its client
+layer unmatched: its `getThing` operation is untagged and groupless, so Fern emits a
 root-level method where crozier still nests a single-endpoint client — a separate
 root-client gap. Its `f_2fa_enabled` model, the fix under test, matches in full.)
 
