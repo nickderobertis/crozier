@@ -180,15 +180,16 @@ here means matching Fern, not `ruff`.
 
 ## Known gaps (roadmap)
 
-The `exhaustive` corpus is fully matched, and twelve feature-coverage targets are
+The `exhaustive` corpus is fully matched, and **every** feature-coverage target is
 **fully matched too** — `auth-schemes`, `discriminated-unions`,
 `schema-constraints`, `integer-enums`, `form-bodies`, `inline-request-response`,
 `cookie-parameters`, `servers-webhooks`, and the four former gap targets
 `basic-auth`, `oauth-client-credentials`, `inline-array-request`, and
-`writeonly-fields`. (The exact matched-file set for each corpus is its `matched`
-array in `tests/e2e.rs`, the single source of truth; counts are deliberately not
-restated here so they cannot drift.) The items below record how each shape
-generates; the remaining unproven paths are called out inline.
+`writeonly-fields`. (The exact matched-file set for each corpus — and the roster of
+corpora itself — is the `FEATURE_TARGETS`/`matched` data in `tests/e2e.rs`, the
+single source of truth; counts are deliberately not restated here so they cannot
+drift.) The items below record how each shape generates; the remaining unproven
+paths are called out inline.
 
 The generated **README/reference** now pick the first endpoint with a request body
 for the worked example and abbreviate the error-handling/advanced snippets to `...`
