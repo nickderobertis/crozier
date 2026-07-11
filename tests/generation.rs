@@ -255,11 +255,13 @@ fn openapi_31_nullable_type_list_uses_primary() {
 }
 
 #[test]
-fn additional_properties_true_maps_to_any() {
+fn additional_properties_true_maps_to_open_dict() {
     let files = render(
         "openapi: 3.0.0\ninfo:\n  title: A\ncomponents:\n  schemas:\n    Bag:\n      type: object\n      properties:\n        data:\n          type: object\n          additionalProperties: true\n",
     );
-    assert!(files["src/acme/types/bag.py"].contains("data: typing.Optional[typing.Any] = None"));
+    // Fern types an open map (`additionalProperties: true`) as a dict to unknown.
+    assert!(files["src/acme/types/bag.py"]
+        .contains("data: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None"));
 }
 
 #[test]
@@ -876,4 +878,225 @@ fn inline_object_response_keeps_the_module_unemittable() {
         "openapi: 3.0.0\ninfo:\n  title: E\npaths:\n  /y:\n    get:\n      operationId: widgets_get\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema:\n                type: object\n                properties:\n                  name:\n                    type: string\n",
     );
     assert!(!files.contains_key("src/acme/widgets/raw_client.py"));
+}
+
+/// A discriminated `oneOf` with a `mapping` emits per-variant wrapper models over
+/// a union alias, strips the discriminant from each member's own model, and does
+/// not hoist the discriminant enum. The default (all-authenticated) bearer wrapper
+/// is exercised alongside.
+const DISCRIMINATED_SPEC: &str = r##"
+openapi: 3.0.1
+info:
+  title: Shapes
+paths:
+  /shape:
+    post:
+      operationId: shapes_create
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Shape"
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Shape"
+components:
+  schemas:
+    Shape:
+      oneOf:
+        - $ref: "#/components/schemas/Circle"
+        - $ref: "#/components/schemas/Square"
+      discriminator:
+        propertyName: type
+        mapping:
+          circle: "#/components/schemas/Circle"
+          square: "#/components/schemas/Square"
+    Circle:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - circle
+        radius:
+          type: number
+      required:
+        - type
+        - radius
+    Square:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - square
+        side:
+          type: number
+      required:
+        - type
+        - side
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+"##;
+
+#[test]
+fn discriminated_union_emits_variant_wrappers_and_strips_discriminant() {
+    let files = render(DISCRIMINATED_SPEC);
+
+    let shape = &files["src/acme/types/shape.py"];
+    assert!(shape.contains("class Shape_Circle(UniversalBaseModel):"));
+    assert!(shape.contains("type: typing.Literal[\"circle\"] = \"circle\""));
+    assert!(shape.contains("Shape = typing.Union[Shape_Circle, Shape_Square]"));
+    assert!(shape.contains("from __future__ import annotations"));
+
+    // The member model keeps its own (non-discriminant) fields and drops `type`;
+    // the discriminant enum is never hoisted to a separate module.
+    let circle = &files["src/acme/types/circle.py"];
+    assert!(circle.contains("radius: float"));
+    // The `type` field is gone (the `# type: ignore` config comment doesn't count).
+    assert!(!circle.contains("\n    type:"));
+    assert!(!circle.contains("Literal"));
+    assert!(!files.contains_key("src/acme/types/circle_type.py"));
+
+    // The aggregator groups all three names on the `.shape` import line.
+    let init = &files["src/acme/types/__init__.py"];
+    assert!(init.contains("from .shape import Shape, Shape_Circle, Shape_Square"));
+
+    // All operations are authenticated, so the bearer token is required.
+    let wrapper = &files["src/acme/core/client_wrapper.py"];
+    assert!(wrapper.contains("token: typing.Union[str, typing.Callable[[], str]],"));
+    assert!(wrapper.contains("headers[\"Authorization\"] = f\"Bearer {self._get_token()}\""));
+}
+
+/// An api-key header scheme shapes the client wrapper (public `api_key`, the
+/// scheme's header, no token helper) and the root client's credential argument.
+#[test]
+fn api_key_scheme_shapes_client_wrapper_and_root_client() {
+    let files = render(
+        "openapi: 3.0.1\ninfo:\n  title: Keyed\npaths:\n  /me:\n    get:\n      operationId: users_me\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema:\n                type: string\n      security:\n        - ApiKeyAuth: []\ncomponents:\n  securitySchemes:\n    ApiKeyAuth:\n      type: apiKey\n      in: header\n      name: X-API-Key\n",
+    );
+    let wrapper = &files["src/acme/core/client_wrapper.py"];
+    assert!(wrapper.contains("api_key: str,"));
+    assert!(wrapper.contains("headers[\"X-API-Key\"] = self.api_key"));
+    assert!(!wrapper.contains("_get_token"));
+
+    let client = &files["src/acme/client.py"];
+    assert!(client.contains("api_key=api_key,"));
+    assert!(client.contains("api_key=\"YOUR_API_KEY\","));
+}
+
+/// When some operation is unauthenticated, the bearer token is optional (Fern's
+/// default wrapper) — exercising the `all_operations_authenticated` false branch.
+#[test]
+fn unauthenticated_operation_makes_the_token_optional() {
+    let files = render(
+        "openapi: 3.0.1\ninfo:\n  title: Mixed\npaths:\n  /a:\n    get:\n      operationId: a_get\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema:\n                type: string\n      security:\n        - BearerAuth: []\n  /b:\n    get:\n      operationId: b_get\n      security: []\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema:\n                type: string\ncomponents:\n  securitySchemes:\n    BearerAuth:\n      type: http\n      scheme: bearer\n",
+    );
+    let wrapper = &files["src/acme/core/client_wrapper.py"];
+    assert!(wrapper
+        .contains("token: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,"));
+}
+
+/// An integer `enum` becomes a plain `int` alias, and a `$ref` integer-enum
+/// request body is emittable (json=request + content-type header).
+#[test]
+fn integer_enum_alias_and_ref_body_are_emittable() {
+    let files = render(
+        "openapi: 3.0.1\ninfo:\n  title: Levels\npaths:\n  /p:\n    post:\n      operationId: levels_set\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema:\n                type: string\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n              $ref: \"#/components/schemas/Level\"\ncomponents:\n  schemas:\n    Level:\n      type: integer\n      enum:\n        - 1\n        - 2\n",
+    );
+    assert!(files["src/acme/types/level.py"].contains("Level = int"));
+    let raw = &files["src/acme/levels/raw_client.py"];
+    assert!(raw.contains("request: Level"));
+    assert!(raw.contains("\"content-type\": \"application/json\""));
+}
+
+/// A multipart form body splits into `data=`/`files=` with `force_multipart`, and
+/// a urlencoded form uses `data=` with the form content-type header.
+#[test]
+fn form_bodies_split_data_and_files() {
+    let files = render(
+        "openapi: 3.0.1\ninfo:\n  title: F\npaths:\n  /up:\n    post:\n      operationId: uploads_send\n      responses:\n        \"204\":\n          description: \"\"\n      requestBody:\n        required: true\n        content:\n          multipart/form-data:\n            schema:\n              type: object\n              required:\n                - doc\n              properties:\n                doc:\n                  type: string\n                  format: binary\n                note:\n                  type: string\n  /form:\n    post:\n      operationId: uploads_form\n      responses:\n        \"204\":\n          description: \"\"\n      requestBody:\n        required: true\n        content:\n          application/x-www-form-urlencoded:\n            schema:\n              type: object\n              properties:\n                q:\n                  type: string\n",
+    );
+    let raw = &files["src/acme/uploads/raw_client.py"];
+    // Multipart: the binary field is a `core.File` in `files=`, the rest in `data=`.
+    assert!(raw.contains("doc: core.File"));
+    assert!(raw.contains("from .. import core"));
+    assert!(raw.contains("files={"));
+    assert!(raw.contains("force_multipart=True,"));
+    // Urlencoded: all fields in `data=` with the form content-type, no multipart.
+    assert!(raw.contains("\"content-type\": \"application/x-www-form-urlencoded\""));
+}
+
+/// The README example is the first endpoint with a request body, and its
+/// abbreviated snippets show `...` for a fully-required body (here a container).
+#[test]
+fn readme_shows_dots_for_a_container_body_endpoint() {
+    let files = render(
+        "openapi: 3.0.1\ninfo:\n  title: R\npaths:\n  /ping:\n    get:\n      operationId: health_ping\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema:\n                type: string\n  /bulk:\n    post:\n      operationId: items_bulk\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema:\n                type: string\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n              type: array\n              items:\n                type: string\n",
+    );
+    let readme = &files["README.md"];
+    // Skips the no-body `health_ping` for the body-carrying `items_bulk`.
+    assert!(readme.contains("client.items.bulk(...)"));
+    assert!(readme.contains("client.items.bulk(..., request_options={"));
+    assert!(!readme.contains("health.ping"));
+}
+
+/// A `readOnly` property is optional even when listed in `required` (it is
+/// server-populated), and `additionalProperties: true` maps to an open dict.
+#[test]
+fn read_only_field_is_optional_and_open_map_is_dict() {
+    let files = render(
+        "openapi: 3.0.1\ninfo:\n  title: R\ncomponents:\n  schemas:\n    Rec:\n      type: object\n      required:\n        - id\n        - name\n      properties:\n        id:\n          type: string\n          readOnly: true\n        name:\n          type: string\n        extra:\n          type: object\n          additionalProperties: true\n",
+    );
+    let rec = &files["src/acme/types/rec.py"];
+    // `id` is readOnly → optional despite being required; `name` stays required.
+    assert!(rec.contains("id: typing.Optional[str] = None"));
+    assert!(rec.contains("name: str\n"));
+    assert!(rec
+        .contains("extra: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None"));
+}
+
+/// A schema used only as an inlined (`$ref`-object) request body is not emitted as
+/// a standalone type; one also used elsewhere (a response) is kept.
+#[test]
+fn request_body_only_type_is_dropped_but_reused_type_is_kept() {
+    let files = render(
+        "openapi: 3.0.1\ninfo:\n  title: B\npaths:\n  /a:\n    post:\n      operationId: things_make\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema:\n                $ref: \"#/components/schemas/Thing\"\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n              $ref: \"#/components/schemas/MakeRequest\"\ncomponents:\n  schemas:\n    Thing:\n      type: object\n      properties:\n        id:\n          type: string\n    MakeRequest:\n      type: object\n      properties:\n        name:\n          type: string\n",
+    );
+    // `Thing` is a response type — kept; `MakeRequest` is only an inlined body — dropped.
+    assert!(files.contains_key("src/acme/types/thing.py"));
+    assert!(!files.contains_key("src/acme/types/make_request.py"));
+    // Its fields were still hoisted onto the request method.
+    assert!(files["src/acme/things/raw_client.py"].contains("name:"));
+    // The aggregator omits the dropped type.
+    assert!(!files["src/acme/types/__init__.py"].contains("MakeRequest"));
+}
+
+/// An `apiKey` scheme without its required `name` is rejected at the boundary
+/// (rather than emitting a client with an empty header name).
+#[test]
+fn api_key_scheme_without_name_is_rejected() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let path = dir.path().join("api.yml");
+    std::fs::write(
+        &path,
+        "openapi: 3.0.1\ninfo:\n  title: K\ncomponents:\n  securitySchemes:\n    ApiKeyAuth:\n      type: apiKey\n      in: header\n",
+    )
+    .unwrap();
+    let err = render_files(GenerateArgs {
+        spec: path,
+        output: PathBuf::from("unused"),
+        package_name: Some("acme".to_string()),
+        project_name: Some("acme".to_string()),
+    })
+    .expect_err("missing apiKey name must fail");
+    assert!(err.to_string().contains("apiKey security scheme"));
 }

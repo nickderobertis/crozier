@@ -12,7 +12,7 @@ use minijinja::{context, Environment};
 
 use crate::error::{Error, Result};
 use crate::ir::{
-    Endpoint, ErrorClass, Field, Ir, ObjectType, Prim, RequestBody, TypeDecl, TypeRef,
+    Auth, Endpoint, ErrorClass, Field, Ir, ObjectType, Prim, RequestBody, TypeDecl, TypeRef,
 };
 use crate::naming;
 use crate::wrap::{self, Doc};
@@ -304,8 +304,10 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         });
     }
 
-    // Fern's static core runtime, emitted verbatim (see assets/README.md).
-    files.extend(core_files(pkg, &ir.project_name));
+    // Fern's static core runtime, emitted verbatim (see assets/README.md), plus
+    // the auth-shaped `client_wrapper.py`.
+    files.extend(core_files(pkg));
+    files.push(client_wrapper_file(pkg, &ir.project_name, &ir.auth));
 
     // One package marker per endpoint client module. Fern's `__init__.py` here is
     // a comment-only header, so the comment-stripped form is four blank lines.
@@ -334,6 +336,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 client_name: &ir.client_name,
                 module,
                 types: &ir.types,
+                auth: &ir.auth,
             };
             files.push(client_file(&env, &cx, &eps)?);
             emittable_modules.push(module);
@@ -349,6 +352,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             pkg,
             &ir.client_name,
             &emittable_modules,
+            &ir.auth,
         )?);
     }
 
@@ -505,7 +509,16 @@ fn render_lazy_loader(type_checking: &str, pairs: &[(String, String)], names: &[
 /// order, which for this corpus is the `Types*` types in reverse declaration
 /// order followed by the remaining types alphabetically.
 fn types_init_file(pkg: &str, types: &[TypeDecl]) -> GeneratedFile {
-    let names: Vec<String> = types.iter().map(|t| t.name().to_string()).collect();
+    // Each declaration may export more than its primary name (a discriminated
+    // union also exports its per-variant wrappers), all sharing the decl module.
+    let mut module_of: std::collections::HashMap<String, String> = std::collections::HashMap::new();
+    let mut names: Vec<String> = Vec::new();
+    for decl in types {
+        for n in decl.exported_names() {
+            names.push(n.to_string());
+            module_of.insert(n.to_string(), decl.module().to_string());
+        }
+    }
 
     // TYPE_CHECKING order: `Types*` in reverse declaration order, then the rest
     // alphabetically.
@@ -522,14 +535,31 @@ fn types_init_file(pkg: &str, types: &[TypeDecl]) -> GeneratedFile {
         .collect();
     rest.sort();
     let ordered: Vec<String> = typed.into_iter().chain(rest).collect();
-    let type_checking: String = ordered
-        .iter()
-        .map(|n| format!("    from .{} import {n}\n", naming::module_name(n)))
-        .collect();
+
+    // Consecutive names sharing a module collapse into one `from .mod import a, b`
+    // line (Fern groups a discriminated union's names on a single import).
+    let module = |n: &str| {
+        module_of
+            .get(n)
+            .cloned()
+            .unwrap_or_else(|| naming::module_name(n))
+    };
+    let mut type_checking = String::new();
+    let mut i = 0;
+    while i < ordered.len() {
+        let m = module(&ordered[i]);
+        let mut group = vec![ordered[i].clone()];
+        while i + 1 < ordered.len() && module(&ordered[i + 1]) == m {
+            i += 1;
+            group.push(ordered[i].clone());
+        }
+        type_checking.push_str(&format!("    from .{m} import {}\n", group.join(", ")));
+        i += 1;
+    }
 
     let pairs: Vec<(String, String)> = names
         .iter()
-        .map(|n| (n.clone(), format!(".{}", naming::module_name(n))))
+        .map(|n| (n.clone(), format!(".{}", module(n))))
         .collect();
     GeneratedFile {
         path: PathBuf::from(format!("src/{pkg}/types/__init__.py")),
@@ -550,7 +580,11 @@ fn root_init_file(
 ) -> GeneratedFile {
     let async_name = format!("Async{client_name}");
 
-    let mut type_names: Vec<String> = types.iter().map(|t| t.name().to_string()).collect();
+    let mut type_names: Vec<String> = types
+        .iter()
+        .flat_map(|t| t.exported_names())
+        .map(str::to_string)
+        .collect();
     type_names.sort();
     let mut error_names: Vec<String> = errors.iter().map(|e| e.class_name.clone()).collect();
     error_names.sort();
@@ -595,21 +629,106 @@ fn root_init_file(
     }
 }
 
+/// Whether Fern shows a `...` placeholder for an endpoint's body in the README's
+/// abbreviated snippets (versus empty parens). Empirically `...` appears for a
+/// "fully-specified" body: an inline object whose every field is required, or a
+/// container body. A body with any optional field, a union, an enum/scalar, or no
+/// body renders empty parens.
+fn complex_body(ep: &Endpoint, types: &[TypeDecl]) -> bool {
+    match &ep.request_body {
+        None => false,
+        Some(RequestBody::Bytes) => true,
+        Some(RequestBody::Inline(fields)) => fields.iter().all(|f| f.spec_required),
+        Some(RequestBody::Form(form)) => {
+            form.fields.iter().any(|f| f.is_file) || form.fields.iter().all(|f| f.spec_required)
+        }
+        Some(RequestBody::Single(s)) => is_complex_type(&s.type_ref, types),
+    }
+}
+
+/// Whether a single-argument body type renders as a container (list/set/map) or a
+/// plain object — not a union, enum, or scalar.
+fn is_complex_type(t: &TypeRef, types: &[TypeDecl]) -> bool {
+    match t {
+        TypeRef::List(_) | TypeRef::Set(_) | TypeRef::Dict(..) => true,
+        TypeRef::Optional(inner) => is_complex_type(inner, types),
+        TypeRef::Named(n) => types
+            .iter()
+            .find(|d| d.name() == n)
+            .is_some_and(|d| match d {
+                TypeDecl::Object(_) => true,
+                // A union (named or discriminated) renders empty parens.
+                TypeDecl::DiscriminatedUnion(_) => false,
+                TypeDecl::Alias(a) => {
+                    !matches!(a.target, TypeRef::Union(_)) && is_complex_type(&a.target, types)
+                }
+            }),
+        TypeRef::Union(_) | TypeRef::Primitive(_) | TypeRef::Literal(_) => false,
+    }
+}
+
+/// Render an abbreviated call `<prefix>(...)` for the README snippets: empty parens
+/// when the body is not complex, else a `...` placeholder, ruff-wrapped at width 88
+/// (the snippet line length) onto its own line when the flat form overflows.
+fn abbrev_call(indent: usize, prefix: &str, complex: bool) -> String {
+    let pad = " ".repeat(indent);
+    if !complex {
+        return format!("{pad}{prefix}()");
+    }
+    let flat = format!("{pad}{prefix}(...)");
+    if flat.len() <= 88 {
+        flat
+    } else {
+        format!("{pad}{prefix}(\n{}...\n{pad})", " ".repeat(indent + 4))
+    }
+}
+
 /// The generated `README.md`: mostly static prose with the SDK name/package
 /// substituted and a worked usage example (sync + async) synthesized from the
 /// first endpoint. Compared verbatim (README is not comment-stripped). Emitted
 /// only when there is an endpoint to demonstrate.
 fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
-    let first = ir.endpoints.iter().find(|e| e.emittable)?;
+    // Fern demonstrates the first emittable endpoint that has a request body (the
+    // most illustrative call), falling back to the first emittable endpoint.
+    let first = ir
+        .endpoints
+        .iter()
+        .find(|e| e.emittable && e.request_body.is_some())
+        .or_else(|| ir.endpoints.iter().find(|e| e.emittable))?;
     let pkg = &ir.package_name;
     let org = naming::to_pascal_case(pkg);
     let async_name = format!("Async{}", ir.client_name);
+
+    // The abbreviated calls in the error-handling and advanced sections show `...`
+    // for an endpoint with a complex (object/container/union) body, else empty
+    // parens; the error/raw-response calls are ruff-wrapped at the snippet width 88.
+    let complex = complex_body(first, &ir.types);
+    let err_call = abbrev_call(
+        4,
+        &format!("client.{}.{}", first.module, first.method_name),
+        complex,
+    );
+    let raw_call = abbrev_call(
+        0,
+        &format!(
+            "response = client.{}.with_raw_response.{}",
+            first.module, first.method_name
+        ),
+        complex,
+    );
+    let retry_call = format!(
+        "client.{}.{}({}request_options={{",
+        first.module,
+        first.method_name,
+        if complex { "..., " } else { "" }
+    );
 
     let sync_example = {
         let mut ctx = ExampleCtx {
             types: &ir.types,
             referenced: BTreeSet::new(),
             uses_datetime: false,
+            auth: &ir.auth,
         };
         build_example(first, false, &first.module, pkg, &ir.client_name, &mut ctx)?.join("\n")
     };
@@ -618,6 +737,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
             types: &ir.types,
             referenced: BTreeSet::new(),
             uses_datetime: false,
+            auth: &ir.auth,
         };
         build_example(first, true, &first.module, pkg, &ir.client_name, &mut ctx)?.join("\n")
     };
@@ -628,8 +748,9 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
         .replace("@@PKG@@", pkg)
         .replace("@@CLIENT@@", &ir.client_name)
         .replace("@@ASYNC@@", &async_name)
-        .replace("@@TAG@@", &first.module)
-        .replace("@@METHOD@@", &first.method_name)
+        .replace("@@ERR_CALL@@", &err_call)
+        .replace("@@RAW_CALL@@", &raw_call)
+        .replace("@@RETRY_CALL@@", &retry_call)
         .replace("@@USAGE@@", &sync_example)
         .replace("@@ASYNC_EXAMPLE@@", &async_example);
     Some(GeneratedFile {
@@ -684,6 +805,7 @@ fn reference_entry(ir: &Ir, ep: &Endpoint, module: &str, pkg: &str) -> Vec<Strin
         types: &ir.types,
         referenced: BTreeSet::new(),
         uses_datetime: false,
+        auth: &ir.auth,
     };
     let example =
         build_example(ep, false, module, pkg, &ir.client_name, &mut ctx).unwrap_or_default();
@@ -698,7 +820,15 @@ fn reference_entry(ir: &Ir, ep: &Endpoint, module: &str, pkg: &str) -> Vec<Strin
             Some(d) => format!(" — {d}"),
             None => " ".to_string(),
         };
-        params.push((dp.name.clone(), dp.annotation.clone(), suffix));
+        // Fern renders a `core.File` type in the reference parameter table with a
+        // leading `from __future__ import annotations` (an artifact of how it prints
+        // the forward-referenced file type); reproduce it so the table matches.
+        let annotation = if dp.annotation == "core.File" {
+            "from __future__ import annotations\n\ncore.File".to_string()
+        } else {
+            dp.annotation.clone()
+        };
+        params.push((dp.name.clone(), annotation, suffix));
     }
     params.push((
         "request_options".to_string(),
@@ -784,15 +914,12 @@ fn from_import_block(module: &str, names: &[String], indent: usize) -> String {
 }
 
 /// Fern's SDK runtime, vendored under `assets/core/` and emitted into every SDK.
-/// Each entry is (path under `core/`, verbatim contents). Only `client_wrapper`
-/// carries substitutions. See `assets/README.md` and `NOTICE` for provenance.
+/// Each entry is (path under `core/`, verbatim contents). `client_wrapper.py` is
+/// *not* here — Fern shapes it from the auth model, so it is generated by
+/// [`client_wrapper_file`]. See `assets/README.md` and `NOTICE` for provenance.
 const CORE_ASSETS: &[(&str, &str)] = &[
     ("__init__.py", include_str!("../assets/core/__init__.py")),
     ("api_error.py", include_str!("../assets/core/api_error.py")),
-    (
-        "client_wrapper.py",
-        include_str!("../assets/core/client_wrapper.py"),
-    ),
     (
         "datetime_utils.py",
         include_str!("../assets/core/datetime_utils.py"),
@@ -890,18 +1017,157 @@ fn scaffolding_files(pkg: &str, project_name: &str) -> Vec<GeneratedFile> {
     ]
 }
 
-/// Emit the vendored core runtime for a package, substituting the SDK name
-/// (project name) and version into `client_wrapper.py`.
-fn core_files(pkg: &str, project_name: &str) -> Vec<GeneratedFile> {
+/// Emit the vendored core runtime for a package. The runtime assets are emitted
+/// verbatim; `client_wrapper.py` is generated separately (see
+/// [`client_wrapper_file`]) because Fern shapes it from the auth model.
+fn core_files(pkg: &str) -> Vec<GeneratedFile> {
     CORE_ASSETS
         .iter()
         .map(|(rel, content)| GeneratedFile {
             path: PathBuf::from(format!("src/{pkg}/core/{rel}")),
-            contents: content
-                .replace(SDK_NAME_PLACEHOLDER, project_name)
-                .replace(SDK_VERSION_PLACEHOLDER, DEFAULT_SDK_VERSION),
+            contents: (*content).to_string(),
         })
         .collect()
+}
+
+/// The auth-varying fragments of `client_wrapper.py`: the credential constructor
+/// parameter, its assignment in `BaseClientWrapper.__init__`, the `get_headers`
+/// lines that apply it, the optional `_get_token` helper, and the `super().__init__`
+/// argument. Each fragment carries its own trailing newline where the template
+/// expects one.
+struct AuthWrapper {
+    param: String,
+    assign: String,
+    header_block: String,
+    token_method: String,
+    super_arg: String,
+}
+
+fn auth_wrapper_parts(auth: &Auth) -> AuthWrapper {
+    match auth {
+        Auth::ApiKey { header, required } => {
+            let param = if *required {
+                "        api_key: str,\n".to_string()
+            } else {
+                "        api_key: typing.Optional[str] = None,\n".to_string()
+            };
+            let header_block = if *required {
+                format!("        headers[\"{header}\"] = self.api_key\n")
+            } else {
+                format!(
+                    "        if self.api_key is not None:\n            headers[\"{header}\"] = self.api_key\n"
+                )
+            };
+            AuthWrapper {
+                param,
+                assign: "        self.api_key = api_key\n".to_string(),
+                header_block,
+                token_method: String::new(),
+                super_arg: "api_key=api_key".to_string(),
+            }
+        }
+        Auth::Bearer { required } => {
+            let (param, header_block, token_method) = if *required {
+                (
+                    "        token: typing.Union[str, typing.Callable[[], str]],\n".to_string(),
+                    "        headers[\"Authorization\"] = f\"Bearer {self._get_token()}\"\n"
+                        .to_string(),
+                    "    def _get_token(self) -> str:\n        if isinstance(self._token, str):\n            return self._token\n        else:\n            return self._token()\n\n".to_string(),
+                )
+            } else {
+                (
+                    "        token: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,\n".to_string(),
+                    "        token = self._get_token()\n        if token is not None:\n            headers[\"Authorization\"] = f\"Bearer {token}\"\n".to_string(),
+                    "    def _get_token(self) -> typing.Optional[str]:\n        if isinstance(self._token, str) or self._token is None:\n            return self._token\n        else:\n            return self._token()\n\n".to_string(),
+                )
+            };
+            AuthWrapper {
+                param,
+                assign: "        self._token = token\n".to_string(),
+                header_block,
+                token_method,
+                super_arg: "token=token".to_string(),
+            }
+        }
+    }
+}
+
+/// The auth-varying fragments of the root client: the constructor parameter, the
+/// credential name passed to the client wrapper, the docstring `Parameters` line,
+/// and the `Examples` instantiation argument.
+struct AuthClient {
+    ctor_param: String,
+    wrapper_arg: String,
+    doc_param: String,
+    example_line: String,
+}
+
+fn auth_client_parts(auth: &Auth) -> AuthClient {
+    let (name, ty) = match auth {
+        Auth::ApiKey { required: true, .. } => ("api_key", "str".to_string()),
+        Auth::ApiKey {
+            required: false, ..
+        } => ("api_key", "typing.Optional[str] = None".to_string()),
+        Auth::Bearer { required: true } => (
+            "token",
+            "typing.Union[str, typing.Callable[[], str]]".to_string(),
+        ),
+        Auth::Bearer { required: false } => (
+            "token",
+            "typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None".to_string(),
+        ),
+    };
+    // The docstring type drops the ` = None` default suffix a parameter carries.
+    let doc_ty = ty.strip_suffix(" = None").unwrap_or(&ty);
+    AuthClient {
+        ctor_param: format!("        {name}: {ty},\n"),
+        wrapper_arg: name.to_string(),
+        doc_param: format!("    {name} : {doc_ty}\n"),
+        example_line: format!("        {},\n", auth_example(auth)),
+    }
+}
+
+/// The credential argument in a worked `Examples` client instantiation, e.g.
+/// `token="YOUR_TOKEN"` or `api_key="YOUR_API_KEY"` (no indent or trailing comma).
+fn auth_example(auth: &Auth) -> String {
+    match auth {
+        Auth::ApiKey { .. } => "api_key=\"YOUR_API_KEY\"".to_string(),
+        Auth::Bearer { .. } => "token=\"YOUR_TOKEN\"".to_string(),
+    }
+}
+
+/// Generate `core/client_wrapper.py`, shaped by the SDK's [`Auth`] model. The
+/// bearer-optional form is byte-identical to Fern's default wrapper; api-key and
+/// required-credential forms swap the constructor parameter, the header wiring,
+/// and the token helper. Assembled from literal blocks (no source-line
+/// continuations, which would eat the Python indentation).
+fn client_wrapper_file(pkg: &str, project_name: &str, auth: &Auth) -> GeneratedFile {
+    let a = auth_wrapper_parts(auth);
+    let get_headers_head = format!(
+        "        self._headers = headers\n        self._base_url = base_url\n        self._timeout = timeout\n\n    def get_headers(self) -> typing.Dict[str, str]:\n        headers: typing.Dict[str, str] = {{\n            \"X-Fern-Language\": \"Python\",\n            \"X-Fern-SDK-Name\": \"{project_name}\",\n            \"X-Fern-SDK-Version\": \"{DEFAULT_SDK_VERSION}\",\n            **(self.get_custom_headers() or {{}}),\n        }}\n"
+    );
+    let mut c = String::new();
+    c.push_str("\n\nimport typing\n\nimport httpx\nfrom .http_client import AsyncHttpClient, HttpClient\n\n\nclass BaseClientWrapper:\n    def __init__(\n        self,\n        *,\n");
+    c.push_str(&a.param);
+    c.push_str("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n    ):\n");
+    c.push_str(&a.assign);
+    c.push_str(&get_headers_head);
+    c.push_str(&a.header_block);
+    c.push_str("        return headers\n\n");
+    c.push_str(&a.token_method);
+    c.push_str("    def get_custom_headers(self) -> typing.Optional[typing.Dict[str, str]]:\n        return self._headers\n\n    def get_base_url(self) -> str:\n        return self._base_url\n\n    def get_timeout(self) -> typing.Optional[float]:\n        return self._timeout\n\n\nclass SyncClientWrapper(BaseClientWrapper):\n    def __init__(\n        self,\n        *,\n");
+    c.push_str(&a.param);
+    c.push_str("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        httpx_client: httpx.Client,\n    ):\n        super().__init__(");
+    c.push_str(&a.super_arg);
+    c.push_str(", headers=headers, base_url=base_url, timeout=timeout)\n        self.httpx_client = HttpClient(\n            httpx_client=httpx_client,\n            base_headers=self.get_headers,\n            base_timeout=self.get_timeout,\n            base_url=self.get_base_url,\n        )\n\n\nclass AsyncClientWrapper(BaseClientWrapper):\n    def __init__(\n        self,\n        *,\n");
+    c.push_str(&a.param);
+    c.push_str("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        httpx_client: httpx.AsyncClient,\n    ):\n        super().__init__(");
+    c.push_str(&a.super_arg);
+    c.push_str(", headers=headers, base_url=base_url, timeout=timeout)\n        self.httpx_client = AsyncHttpClient(\n            httpx_client=httpx_client,\n            base_headers=self.get_headers,\n            base_timeout=self.get_timeout,\n            base_url=self.get_base_url,\n        )\n");
+    GeneratedFile {
+        path: PathBuf::from(format!("src/{pkg}/core/client_wrapper.py")),
+        contents: c,
+    }
 }
 
 /// The pydantic model configuration block Fern emits at the end of every model.
@@ -1018,7 +1284,60 @@ fn render_type_decl(env: &Environment<'static>, decl: &TypeDecl) -> Result<Strin
                 },
             )
         }
+        TypeDecl::DiscriminatedUnion(union) => Ok(render_discriminated_union(union)),
     }
+}
+
+/// Render a discriminated union to its module: a `{Union}_{Variant}` pydantic
+/// model per variant (each with the discriminant as a `Literal` field), then the
+/// `{Union} = typing.Union[..]` alias over them. Built directly (not via the
+/// object template) because it carries a `from __future__ import annotations` and
+/// several classes in one file.
+fn render_discriminated_union(union: &crate::ir::DiscriminatedUnion) -> String {
+    let mut imports = Imports::default();
+    imports.add_plain("typing");
+    imports.add_plain("pydantic");
+    imports.add_from("..core.pydantic_utilities", "IS_PYDANTIC_V2");
+    imports.add_from("..core.pydantic_utilities", "UniversalBaseModel");
+
+    let mut classes: Vec<String> = Vec::new();
+    for member in &union.members {
+        // The discriminant field: `type: typing.Literal["circle"] = "circle"`.
+        let discriminant = RenderedField {
+            py_name: union.discriminant_property.clone(),
+            annotation: render_type(
+                &TypeRef::Literal(vec![member.discriminant.clone()]),
+                &mut imports,
+            ),
+            default: format!(" = \"{}\"", member.discriminant),
+            docstring: None,
+        };
+        let mut rendered = vec![discriminant];
+        rendered.extend(member.fields.iter().map(|f| render_field(f, &mut imports)));
+        classes.push(format!(
+            "class {}(UniversalBaseModel):\n{}",
+            member.class_name,
+            object_body(None, &rendered)
+        ));
+    }
+
+    let variants: Vec<Doc> = union
+        .members
+        .iter()
+        .map(|m| Doc::atom(m.class_name.clone()))
+        .collect();
+    let alias = wrap::layout(
+        &format!("{} = ", union.name),
+        &Doc::group("typing.Union[", variants, "]"),
+        "",
+        0,
+    );
+
+    format!(
+        "{HEADER}\n\nfrom __future__ import annotations\n\n{}\n\n\n{}\n\n\n{alias}\n",
+        imports.render(),
+        classes.join("\n\n\n")
+    )
 }
 
 /// Render a resolved type to its flat Python expression for the raw client,
@@ -1242,6 +1561,40 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
             default: None,
             description: None,
         }],
+        Some(RequestBody::Form(form)) => form
+            .fields
+            .iter()
+            .map(|f| {
+                // A file field is typed `core.File` (importing the `core` package)
+                // and documented with Fern's fixed pointer to `core.File`.
+                let base = if f.is_file {
+                    imports.add_from("..", "core");
+                    "core.File".to_string()
+                } else {
+                    raw_type_str_ctx(&f.type_ref, imports, true)
+                };
+                let description = if f.is_file {
+                    Some("See core.File for more documentation".to_string())
+                } else {
+                    f.docstring.clone()
+                };
+                if f.optional {
+                    DocParam {
+                        name: f.py_name.clone(),
+                        annotation: format!("typing.Optional[{base}]"),
+                        default: Some("OMIT".to_string()),
+                        description,
+                    }
+                } else {
+                    DocParam {
+                        name: f.py_name.clone(),
+                        annotation: base,
+                        default: None,
+                        description,
+                    }
+                }
+            })
+            .collect(),
     };
 
     MethodParams {
@@ -1469,6 +1822,26 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
         }
         // A raw bytes body is streamed via `content=` rather than serialized.
         Some(RequestBody::Bytes) => lines.push("            content=request,".to_string()),
+        // A form body: non-file fields into `data={...}`, file fields into
+        // `files={...}` (in document order within each group).
+        Some(RequestBody::Form(form)) => {
+            let mut data = String::new();
+            let mut files = String::new();
+            for f in &form.fields {
+                let entry = format!("                \"{}\": {},\n", f.wire_name, f.py_name);
+                if f.is_file {
+                    files.push_str(&entry);
+                } else {
+                    data.push_str(&entry);
+                }
+            }
+            if !data.is_empty() {
+                lines.push(format!("            data={{\n{data}            }},"));
+            }
+            if !files.is_empty() {
+                lines.push(format!("            files={{\n{files}            }},"));
+            }
+        }
     }
     // The `headers` dict carries a `content-type`: `application/octet-stream` for a
     // raw bytes body, else `application/json` when the body intrinsically needs it
@@ -1476,6 +1849,11 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
     // rendered as `str(x) if x is not None else None`.
     let content_type: Option<&str> = match &ep.request_body {
         Some(RequestBody::Bytes) => Some("application/octet-stream"),
+        // A multipart form uses `force_multipart=True` (no content-type header);
+        // a urlencoded form carries its own content-type.
+        Some(RequestBody::Form(form)) => {
+            (!form.multipart).then_some("application/x-www-form-urlencoded")
+        }
         Some(body)
             if body.content_type_header()
                 || !ep.header_params.is_empty()
@@ -1502,6 +1880,10 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
     // A request body passes the `OMIT` sentinel so unset optionals drop out.
     if ep.request_body.is_some() {
         lines.push("            omit=OMIT,".to_string());
+    }
+    // A multipart form forces the request to serialize as `multipart/form-data`.
+    if matches!(&ep.request_body, Some(RequestBody::Form(f)) if f.multipart) {
+        lines.push("            force_multipart=True,".to_string());
     }
     lines.extend([
         "        )".to_string(),
@@ -1566,6 +1948,7 @@ fn root_client_file(
     pkg: &str,
     client_name: &str,
     modules: &[&String],
+    auth: &Auth,
 ) -> Result<GeneratedFile> {
     let async_name = format!("Async{client_name}");
     let mut body = String::new();
@@ -1573,8 +1956,14 @@ fn root_client_file(
     body.push_str("if typing.TYPE_CHECKING:\n");
     for m in modules {
         let pascal = naming::to_pascal_case(m);
+        // The two imported names are ordered alphabetically, so `Async{X}Client`
+        // usually comes first — but not when the tag itself starts with a letter
+        // that sorts `{X}Client` ahead (e.g. `ApikeyauthClient` < `Async...`).
+        let mut names = [format!("Async{pascal}Client"), format!("{pascal}Client")];
+        names.sort();
         body.push_str(&format!(
-            "    from .{m}.client import Async{pascal}Client, {pascal}Client\n"
+            "    from .{m}.client import {}, {}\n",
+            names[0], names[1]
         ));
     }
     body.push_str("\n\n");
@@ -1583,9 +1972,9 @@ fn root_client_file(
         "SyncClientWrapper",
         "httpx.Client",
         pkg,
-        client_name,
         false,
         modules,
+        auth,
     ));
     body.push_str("\n\n\n");
     body.push_str(&root_client_class(
@@ -1593,9 +1982,9 @@ fn root_client_file(
         "AsyncClientWrapper",
         "httpx.AsyncClient",
         pkg,
-        &async_name,
         true,
         modules,
+        auth,
     ));
 
     let contents = render(
@@ -1617,19 +2006,20 @@ fn root_client_class(
     wrapper: &str,
     httpx_type: &str,
     pkg: &str,
-    example_name: &str,
     is_async: bool,
     modules: &[&String],
+    auth: &Auth,
 ) -> String {
+    let a = auth_client_parts(auth);
     let mut out = format!("class {class_name}:\n");
-    out.push_str(&root_client_docstring(pkg, example_name));
+    // `class_name` doubles as the documented example class (`FernApi`/`AsyncFernApi`).
+    out.push_str(&root_client_docstring(pkg, class_name, &a));
     out.push_str(&format!(
         "\n\n    def __init__(
         self,
         *,
         base_url: str,
-        token: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,
-        headers: typing.Optional[typing.Dict[str, str]] = None,
+{ctor_param}        headers: typing.Optional[typing.Dict[str, str]] = None,
         timeout: typing.Optional[float] = None,
         follow_redirects: typing.Optional[bool] = True,
         httpx_client: typing.Optional[{httpx_type}] = None,
@@ -1639,7 +2029,7 @@ fn root_client_class(
         )
         self._client_wrapper = {wrapper}(
             base_url=base_url,
-            token=token,
+            {wrapper_arg}={wrapper_arg},
             headers=headers,
             httpx_client=httpx_client
             if httpx_client is not None
@@ -1647,7 +2037,9 @@ fn root_client_class(
             if follow_redirects is not None
             else {httpx_type}(timeout=_defaulted_timeout),
             timeout=_defaulted_timeout,
-        )\n"
+        )\n",
+        ctor_param = a.ctor_param,
+        wrapper_arg = a.wrapper_arg,
     ));
     // Per-tag lazy slots.
     for m in modules {
@@ -1690,7 +2082,7 @@ fn tag_client_name(module: &str, is_async: bool) -> String {
 /// section, and an `Examples` block instantiating the client. `example_name` is
 /// the class being documented (`FernApi`/`AsyncFernApi`); the import is from the
 /// package root.
-fn root_client_docstring(pkg: &str, example_name: &str) -> String {
+fn root_client_docstring(pkg: &str, example_name: &str, auth: &AuthClient) -> String {
     format!(
         "    \"\"\"
     Use this class to access the different functions within the SDK. You can instantiate any number of clients with different configuration that will propagate to these functions.
@@ -1700,8 +2092,7 @@ fn root_client_docstring(pkg: &str, example_name: &str) -> String {
     base_url : str
         The base url to use for requests from the client.
 
-    token : typing.Optional[typing.Union[str, typing.Callable[[], str]]]
-    headers : typing.Optional[typing.Dict[str, str]]
+{doc_param}    headers : typing.Optional[typing.Dict[str, str]]
         Additional headers to send with every request.
 
     timeout : typing.Optional[float]
@@ -1718,10 +2109,11 @@ fn root_client_docstring(pkg: &str, example_name: &str) -> String {
     from {pkg} import {example_name}
 
     client = {example_name}(
-        token=\"YOUR_TOKEN\",
-        base_url=\"https://yourhost.com/path/to/api\",
+{example_line}        base_url=\"https://yourhost.com/path/to/api\",
     )
     \"\"\"",
+        doc_param = auth.doc_param,
+        example_line = auth.example_line,
         httpx_field = if example_name.starts_with("Async") {
             "httpx.AsyncClient"
         } else {
@@ -1738,6 +2130,7 @@ struct ClientCtx<'a> {
     client_name: &'a str,
     module: &'a str,
     types: &'a [TypeDecl],
+    auth: &'a Auth,
 }
 
 /// Assemble a per-tag `client.py`: the sync and async high-level clients that
@@ -1893,6 +2286,7 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
         types: cx.types,
         referenced: BTreeSet::new(),
         uses_datetime: false,
+        auth: cx.auth,
     };
     match build_example(ep, is_async, cx.module, cx.pkg, cx.client_name, &mut ctx) {
         Some(ex_lines) => {
@@ -2054,6 +2448,8 @@ struct ExampleCtx<'a> {
     referenced: BTreeSet<String>,
     /// Whether any value is a datetime/date (drives an `import datetime`).
     uses_datetime: bool,
+    /// The auth model, for the credential argument in the client instantiation.
+    auth: &'a Auth,
 }
 
 /// The slot a string value sits in, which decides its placeholder text: a named
@@ -2173,6 +2569,26 @@ impl<'a> ExampleCtx<'a> {
                 let target = a.target.clone();
                 self.value(&target, slot)
             }
+            Some(TypeDecl::DiscriminatedUnion(u)) => match u.members.first() {
+                Some(m) => {
+                    self.referenced.insert(m.class_name.clone());
+                    // The discriminant field carries a default (`= "circle"`), so
+                    // Fern's example omits it and sets only the required fields.
+                    let mut args = Vec::new();
+                    for f in m.fields.iter().filter(|f| f.spec_required) {
+                        let ty = f.type_ref.clone();
+                        args.push((
+                            Some(f.py_name.clone()),
+                            self.value(&ty, Slot::Named(&f.wire_name)),
+                        ));
+                    }
+                    Example::Call(m.class_name.clone(), args)
+                }
+                None => Example::Dict(vec![(
+                    "key".to_string(),
+                    Example::Atom("\"value\"".to_string()),
+                )]),
+            },
             None => Example::Dict(vec![(
                 "key".to_string(),
                 Example::Atom("\"value\"".to_string()),
@@ -2246,6 +2662,14 @@ fn build_example(
                 args.push((Some(f.py_name.clone()), v));
             }
         }
+        // A form body: required non-file fields only (a file cannot be shown as a
+        // literal, so Fern omits it from the example).
+        Some(RequestBody::Form(form)) => {
+            for f in form.fields.iter().filter(|f| f.spec_required && !f.is_file) {
+                let v = ctx.value(&f.type_ref, Slot::Named(&f.wire_name));
+                args.push((Some(f.py_name.clone()), v));
+            }
+        }
         _ => {}
     }
 
@@ -2297,7 +2721,7 @@ fn build_example(
 
     let client_block = vec![
         format!("client = {example_name}("),
-        "    token=\"YOUR_TOKEN\",".to_string(),
+        format!("    {},", auth_example(ctx.auth)),
         "    base_url=\"https://yourhost.com/path/to/api\",".to_string(),
         ")".to_string(),
     ];
@@ -2451,8 +2875,101 @@ pub fn write_files(root: &std::path::Path, files: &[GeneratedFile]) -> Result<()
 
 #[cfg(test)]
 mod tests {
-    use super::{raw_method, raw_type_str, url_arg, Imports};
-    use crate::ir::{BodyField, Endpoint, ErrorResponse, PathParam, Prim, RequestBody, TypeRef};
+    use super::{
+        abbrev_call, auth_client_parts, auth_example, auth_wrapper_parts, raw_method, raw_type_str,
+        url_arg, Imports,
+    };
+    use crate::ir::{
+        Auth, BodyField, Endpoint, ErrorResponse, PathParam, Prim, RequestBody, TypeRef,
+    };
+
+    #[test]
+    fn abbrev_call_renders_empty_inline_and_wrapped() {
+        // No complex body → empty parens.
+        assert_eq!(abbrev_call(4, "client.a.b", false), "    client.a.b()");
+        // Complex + short → inline `...`.
+        assert_eq!(abbrev_call(4, "client.a.b", true), "    client.a.b(...)");
+        // Complex + over the 88-col snippet width → exploded onto its own line.
+        let long = format!("client.tag.{}", "m".repeat(90));
+        let wrapped = abbrev_call(0, &long, true);
+        assert_eq!(wrapped, format!("{long}(\n    ...\n)"));
+    }
+
+    #[test]
+    fn auth_fragments_cover_every_scheme() {
+        // api-key required: public `api_key`, unconditional header, no token helper.
+        let w = auth_wrapper_parts(&Auth::ApiKey {
+            header: "X-API-Key".to_string(),
+            required: true,
+        });
+        assert_eq!(w.param, "        api_key: str,\n");
+        assert_eq!(w.assign, "        self.api_key = api_key\n");
+        assert_eq!(
+            w.header_block,
+            "        headers[\"X-API-Key\"] = self.api_key\n"
+        );
+        assert!(w.token_method.is_empty());
+        assert_eq!(w.super_arg, "api_key=api_key");
+
+        // api-key optional: nullable param and a guarded header write.
+        let w = auth_wrapper_parts(&Auth::ApiKey {
+            header: "X-Key".to_string(),
+            required: false,
+        });
+        assert_eq!(w.param, "        api_key: typing.Optional[str] = None,\n");
+        assert_eq!(
+            w.header_block,
+            "        if self.api_key is not None:\n            headers[\"X-Key\"] = self.api_key\n"
+        );
+
+        // bearer required vs optional: the token helper's signature differs.
+        let req = auth_wrapper_parts(&Auth::Bearer { required: true });
+        assert!(req.token_method.contains("-> str:"));
+        assert!(req.header_block.contains("f\"Bearer {self._get_token()}\""));
+        let opt = auth_wrapper_parts(&Auth::Bearer { required: false });
+        assert!(opt.token_method.contains("-> typing.Optional[str]:"));
+        assert!(opt.param.contains("typing.Optional[typing.Union[str"));
+
+        // The root-client fragments and example arg track the same schemes.
+        let c = auth_client_parts(&Auth::ApiKey {
+            header: "X-API-Key".to_string(),
+            required: true,
+        });
+        assert_eq!(c.ctor_param, "        api_key: str,\n");
+        assert_eq!(c.doc_param, "    api_key : str\n");
+        assert_eq!(c.example_line, "        api_key=\"YOUR_API_KEY\",\n");
+
+        // The remaining root-client arms (the docstring drops a ` = None` default).
+        let c = auth_client_parts(&Auth::ApiKey {
+            header: "X-Key".to_string(),
+            required: false,
+        });
+        assert_eq!(
+            c.ctor_param,
+            "        api_key: typing.Optional[str] = None,\n"
+        );
+        assert_eq!(c.doc_param, "    api_key : typing.Optional[str]\n");
+        let c = auth_client_parts(&Auth::Bearer { required: true });
+        assert_eq!(
+            c.ctor_param,
+            "        token: typing.Union[str, typing.Callable[[], str]],\n"
+        );
+        let c = auth_client_parts(&Auth::Bearer { required: false });
+        assert!(c.ctor_param.contains("typing.Optional[typing.Union[str"));
+        assert!(!c.doc_param.contains(" = None"));
+
+        assert_eq!(
+            auth_example(&Auth::Bearer { required: true }),
+            "token=\"YOUR_TOKEN\""
+        );
+        assert_eq!(
+            auth_example(&Auth::ApiKey {
+                header: "X".to_string(),
+                required: false
+            }),
+            "api_key=\"YOUR_API_KEY\""
+        );
+    }
 
     fn endpoint(path: &str, params: Vec<PathParam>, response: Option<TypeRef>) -> Endpoint {
         Endpoint {
@@ -2582,6 +3099,7 @@ mod tests {
                 spec_required: true,
                 docstring: None,
                 convert: false,
+                is_file: false,
             },
             // An optional list → `Optional[Sequence[..]] = OMIT` in request context.
             BodyField {
@@ -2592,6 +3110,7 @@ mod tests {
                 spec_required: false,
                 docstring: None,
                 convert: false,
+                is_file: false,
             },
             // A convert field → convert-wrapped json entry keyed by the wire name.
             BodyField {
@@ -2602,6 +3121,7 @@ mod tests {
                 spec_required: true,
                 docstring: None,
                 convert: true,
+                is_file: false,
             },
         ]));
         let out = raw_method(&ep, false, &mut i);

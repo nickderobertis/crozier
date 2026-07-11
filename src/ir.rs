@@ -2,6 +2,8 @@
 //! the OpenAPI document, decoupling parsing from emission. Schema and property
 //! order is preserved from the document so generated output is deterministic.
 
+use indexmap::IndexMap;
+
 use crate::config::GenerateConfig;
 use crate::naming;
 use crate::openapi::{AdditionalProperties, OpenApi, Operation, ParameterLocation, Schema};
@@ -28,6 +30,183 @@ pub struct Ir {
     pub endpoints: Vec<Endpoint>,
     /// Generated exception classes, one per distinct declared error response.
     pub errors: Vec<ErrorClass>,
+    /// The authentication model that shapes the client wrapper and root client.
+    pub auth: Auth,
+}
+
+/// The SDK's authentication model, derived from `components.securitySchemes` and
+/// how operations reference them. Only the schemes crozier reproduces byte-for-byte
+/// are distinguished; anything else (basic, oauth2, or no scheme) falls back to an
+/// optional bearer `token`, matching Fern's default client wrapper.
+#[derive(Debug, Clone)]
+pub enum Auth {
+    /// A `type: apiKey` header credential: a required-or-optional `api_key: str`
+    /// added to the named header.
+    ApiKey {
+        /// The header the key is sent in (the scheme's `name`).
+        header: String,
+        /// Whether every operation is authenticated (the credential is required).
+        required: bool,
+    },
+    /// A bearer `token` (str or callable), sent as `Authorization: Bearer`.
+    Bearer {
+        /// Whether every operation is authenticated (the token is required).
+        required: bool,
+    },
+}
+
+/// Derive the [`Auth`] model: the first declared scheme selects the credential
+/// shape, and the credential is required when every operation is authenticated.
+fn auth_model(doc: &OpenApi) -> Auth {
+    use crate::openapi::{HttpAuthScheme, SecuritySchemeType};
+    let required = all_operations_authenticated(doc);
+    match doc.components.security_schemes.values().next() {
+        // `name` is validated non-empty at the boundary (see `openapi::load`).
+        Some(s)
+            if s.ty == SecuritySchemeType::ApiKey
+                && s.location == Some(ParameterLocation::Header) =>
+        {
+            Auth::ApiKey {
+                header: s.name.clone().unwrap_or_default(),
+                required,
+            }
+        }
+        Some(s) if s.ty == SecuritySchemeType::Http && s.scheme == Some(HttpAuthScheme::Bearer) => {
+            Auth::Bearer { required }
+        }
+        // Basic/oauth2/unknown/no scheme → Fern's default optional bearer token.
+        _ => Auth::Bearer { required: false },
+    }
+}
+
+/// Collect every generated-type name a [`TypeRef`] references, descending through
+/// optionals, collections, and unions.
+fn collect_named(t: &TypeRef, set: &mut std::collections::HashSet<String>) {
+    match t {
+        TypeRef::Named(n) => {
+            set.insert(n.clone());
+        }
+        TypeRef::Optional(i) | TypeRef::List(i) | TypeRef::Set(i) => collect_named(i, set),
+        TypeRef::Dict(k, v) => {
+            collect_named(k, set);
+            collect_named(v, set);
+        }
+        TypeRef::Union(vs) => vs.iter().for_each(|v| collect_named(v, set)),
+        TypeRef::Primitive(_) | TypeRef::Literal(_) => {}
+    }
+}
+
+/// Class names referenced by anything other than an inlined request body: type
+/// fields/bases/alias targets/union members, and endpoint responses, parameters,
+/// error bodies, single (non-inlined) bodies, and inlined-body field types.
+fn referenced_type_names(
+    types: &[TypeDecl],
+    endpoints: &[Endpoint],
+) -> std::collections::HashSet<String> {
+    let mut set = std::collections::HashSet::new();
+    for decl in types {
+        match decl {
+            TypeDecl::Object(o) => {
+                o.bases.iter().for_each(|b| {
+                    set.insert(b.clone());
+                });
+                o.fields
+                    .iter()
+                    .for_each(|f| collect_named(&f.type_ref, &mut set));
+            }
+            TypeDecl::Alias(a) => collect_named(&a.target, &mut set),
+            TypeDecl::DiscriminatedUnion(u) => u
+                .members
+                .iter()
+                .flat_map(|m| &m.fields)
+                .for_each(|f| collect_named(&f.type_ref, &mut set)),
+        }
+    }
+    for ep in endpoints {
+        if let Some(r) = &ep.response {
+            collect_named(r, &mut set);
+        }
+        ep.path_params
+            .iter()
+            .for_each(|p| collect_named(&p.type_ref, &mut set));
+        ep.query_params
+            .iter()
+            .for_each(|p| collect_named(&p.type_ref, &mut set));
+        ep.header_params
+            .iter()
+            .for_each(|p| collect_named(&p.type_ref, &mut set));
+        ep.errors
+            .iter()
+            .for_each(|e| collect_named(&e.body_type, &mut set));
+        match &ep.request_body {
+            Some(RequestBody::Single(s)) => collect_named(&s.type_ref, &mut set),
+            Some(RequestBody::Inline(fields)) => {
+                fields
+                    .iter()
+                    .for_each(|f| collect_named(&f.type_ref, &mut set));
+            }
+            Some(RequestBody::Form(form)) => {
+                form.fields
+                    .iter()
+                    .for_each(|f| collect_named(&f.type_ref, &mut set));
+            }
+            Some(RequestBody::Bytes) | None => {}
+        }
+    }
+    set
+}
+
+/// Class names of schemas used as an inlined (plain-object `$ref`) request body —
+/// the candidates Fern omits from the type layer. Mirrors the `$ref`-object branch
+/// of [`resolve_request_body`].
+fn inline_body_source_names(doc: &OpenApi) -> std::collections::HashSet<String> {
+    let mut set = std::collections::HashSet::new();
+    for item in doc.paths.values() {
+        for (_, op) in item.operations() {
+            let Some(rb) = &op.request_body else { continue };
+            let Some(schema) = rb
+                .content
+                .get("application/json")
+                .and_then(|mt| mt.schema.as_ref())
+            else {
+                continue;
+            };
+            let Some(reference) = &schema.reference else {
+                continue;
+            };
+            let Some(target) = resolve_ref(doc, reference) else {
+                continue;
+            };
+            let is_enum = string_enum_values(target).is_some() || is_int_enum(target);
+            let is_union = target.one_of.is_some() || target.any_of.is_some();
+            if !is_enum
+                && !is_union
+                && !is_map(target)
+                && (!target.properties.is_empty() || target.all_of.is_some())
+            {
+                set.insert(ref_to_class(reference));
+            }
+        }
+    }
+    set
+}
+
+/// Whether every operation carries a non-empty security requirement (its own, or
+/// the document default). An SDK with any unauthenticated operation makes the
+/// credential optional. Returns `false` for a spec with no operations.
+fn all_operations_authenticated(doc: &OpenApi) -> bool {
+    let mut any = false;
+    for item in doc.paths.values() {
+        for (_, op) in item.operations() {
+            any = true;
+            let effective = op.security.as_ref().or(doc.security.as_ref());
+            let authed = effective.is_some_and(|reqs| reqs.iter().any(|r| !r.is_empty()));
+            if !authed {
+                return false;
+            }
+        }
+    }
+    any
 }
 
 /// One API operation, resolved into the shape the raw client needs.
@@ -120,18 +299,34 @@ pub enum RequestBody {
     /// `Union[bytes, Iterator[bytes], AsyncIterator[bytes]]`, sent as `content=`
     /// with a `content-type: application/octet-stream` header.
     Bytes,
+    /// A form body (`multipart/form-data` or `application/x-www-form-urlencoded`):
+    /// each property is a keyword-only argument; non-file fields serialize into
+    /// `data={...}` and file fields into `files={...}`. Multipart bodies set
+    /// `force_multipart=True`; urlencoded bodies carry the form content-type header.
+    Form(FormBody),
+}
+
+/// A resolved form request body.
+#[derive(Debug)]
+pub struct FormBody {
+    /// The form fields, in document order.
+    pub fields: Vec<BodyField>,
+    /// True for `multipart/form-data` (`force_multipart=True`), false for
+    /// `application/x-www-form-urlencoded` (a form content-type header).
+    pub multipart: bool,
 }
 
 impl RequestBody {
     /// Whether the request emits the `content-type: application/json` header.
     /// Inlined object bodies always do; a single body carries its own flag; a raw
     /// bytes body carries its own (octet-stream) header instead, handled at emit.
+    /// Form bodies carry their own (urlencoded) header or `force_multipart`.
     #[must_use]
     pub fn content_type_header(&self) -> bool {
         match self {
             RequestBody::Single(s) => s.content_type,
             RequestBody::Inline(_) => true,
-            RequestBody::Bytes => false,
+            RequestBody::Bytes | RequestBody::Form(_) => false,
         }
     }
 }
@@ -198,6 +393,9 @@ pub struct BodyField {
     /// Whether the field serializes through `convert_and_respect_annotation_metadata`
     /// (its type references an object or union carrying field aliases).
     pub convert: bool,
+    /// Whether this is a file upload field (`format: binary` in a form body),
+    /// which renders as `core.File` and serializes into `files={...}`.
+    pub is_file: bool,
 }
 
 /// A generated top-level type.
@@ -208,15 +406,21 @@ pub enum TypeDecl {
     /// A type alias (`Name = <expr>`), e.g. a union, an extensible enum, or a
     /// scalar alias.
     Alias(AliasType),
+    /// A discriminated union: a set of per-variant wrapper models plus a
+    /// `Name = typing.Union[..]` alias, all in one module (Fern's `Shape_Circle`
+    /// / `Shape_Square` pattern).
+    DiscriminatedUnion(DiscriminatedUnion),
 }
 
 impl TypeDecl {
-    /// The class/alias name.
+    /// The primary class/alias name (the union alias name for a discriminated
+    /// union).
     #[must_use]
     pub fn name(&self) -> &str {
         match self {
             TypeDecl::Object(o) => &o.name,
             TypeDecl::Alias(a) => &a.name,
+            TypeDecl::DiscriminatedUnion(d) => &d.name,
         }
     }
 
@@ -226,8 +430,50 @@ impl TypeDecl {
         match self {
             TypeDecl::Object(o) => &o.module,
             TypeDecl::Alias(a) => &a.module,
+            TypeDecl::DiscriminatedUnion(d) => &d.module,
         }
     }
+
+    /// Every public name this declaration exports, in declaration order. All but
+    /// a discriminated union export exactly their [`TypeDecl::name`]; a
+    /// discriminated union also exports each variant wrapper class.
+    #[must_use]
+    pub fn exported_names(&self) -> Vec<&str> {
+        match self {
+            TypeDecl::DiscriminatedUnion(d) => std::iter::once(d.name.as_str())
+                .chain(d.members.iter().map(|m| m.class_name.as_str()))
+                .collect(),
+            other => vec![other.name()],
+        }
+    }
+}
+
+/// A discriminated `oneOf`/`anyOf`: Fern emits a wrapper model per variant
+/// (`{Union}_{Variant}`) carrying the discriminant as a `Literal` field, then a
+/// `{Union} = typing.Union[..]` alias over the wrappers.
+#[derive(Debug)]
+pub struct DiscriminatedUnion {
+    /// The union alias name (e.g. `Shape`).
+    pub name: String,
+    /// Module (file stem).
+    pub module: String,
+    /// The property whose value selects the variant (e.g. `type`).
+    pub discriminant_property: String,
+    /// The variant wrapper models, in mapping order.
+    pub members: Vec<UnionMember>,
+    /// Optional docstring.
+    pub docstring: Option<String>,
+}
+
+/// One variant wrapper of a [`DiscriminatedUnion`].
+#[derive(Debug)]
+pub struct UnionMember {
+    /// The wrapper class name (e.g. `Shape_Circle`).
+    pub class_name: String,
+    /// The discriminant literal value (e.g. `circle`).
+    pub discriminant: String,
+    /// The variant's fields, with the discriminant property removed.
+    pub fields: Vec<Field>,
 }
 
 /// A pydantic model type.
@@ -332,7 +578,11 @@ pub enum Prim {
 /// Build the IR from a parsed document and config.
 #[must_use]
 pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
-    let mut builder = Builder { types: Vec::new() };
+    let mut builder = Builder {
+        types: Vec::new(),
+        schemas: &doc.components.schemas,
+        strip_discriminant: discriminant_strips(&doc.components.schemas),
+    };
     for (key, schema) in &doc.components.schemas {
         builder.add_named(&naming::class_name(key), schema);
     }
@@ -341,6 +591,17 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
     // wrapper, so it runs after the type layer is built.
     let endpoints = endpoints(doc, &builder.types);
     let errors = error_classes(&endpoints);
+
+    // Fern does not emit a standalone type for a schema used *only* as an inlined
+    // (plain-object `$ref`) request body — its fields live on the request method
+    // instead. Drop such a type unless it is referenced elsewhere (a response, a
+    // field, a parameter, a non-inlined body, ...).
+    let referenced = referenced_type_names(&builder.types, &endpoints);
+    let inline_sources = inline_body_source_names(doc);
+    builder
+        .types
+        .retain(|d| !inline_sources.contains(d.name()) || referenced.contains(d.name()));
+
     Ir {
         package_name: config.package_name.as_str().to_string(),
         project_name: config.project_name.clone(),
@@ -352,6 +613,7 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         endpoint_modules: endpoint_modules(doc),
         endpoints,
         errors,
+        auth: auth_model(doc),
     }
 }
 
@@ -579,14 +841,34 @@ fn resolve_request_body(
     if rb.content.contains_key("application/octet-stream") {
         return Some(RequestBody::Bytes);
     }
+    // A form body: `multipart/form-data` (file uploads via `files=`) or
+    // `application/x-www-form-urlencoded` (all fields via `data=`).
+    for (media_type, multipart) in [
+        ("multipart/form-data", true),
+        ("application/x-www-form-urlencoded", false),
+    ] {
+        if let Some(media) = rb.content.get(media_type) {
+            let schema = media.schema.as_ref()?;
+            let obj = schema
+                .reference
+                .as_deref()
+                .and_then(|r| resolve_ref(doc, r))
+                .unwrap_or(schema);
+            return Some(RequestBody::Form(FormBody {
+                fields: hoist_form_object(obj),
+                multipart,
+            }));
+        }
+    }
     let schema = rb.content.get("application/json")?.schema.as_ref()?;
     let required = rb.required == Some(true);
     if let Some(reference) = &schema.reference {
         let target = resolve_ref(doc, reference)?;
         let class = ref_to_class(reference);
-        // A `$ref` to an extensible (string) enum serializes as a plain
-        // `json=request` with the content-type header.
-        if string_enum_values(target).is_some() {
+        // A `$ref` to an enum — string (extensible) or integer (a plain `int`
+        // alias) — serializes as a plain `json=request` with the content-type
+        // header.
+        if string_enum_values(target).is_some() || is_int_enum(target) {
             return Some(single(TypeRef::Named(class), required, false, true));
         }
         // A `$ref` to a union goes through the convert wrapper (its object
@@ -661,9 +943,36 @@ fn hoist_inline_object(schema: &Schema, types: &[TypeDecl]) -> Option<Vec<BodyFi
             optional,
             spec_required,
             docstring: clean_doc(prop_schema.description.as_deref()),
+            is_file: false,
         });
     }
     Some(fields)
+}
+
+/// Hoist a form body's properties into [`BodyField`]s, marking `format: binary`
+/// fields as file uploads. Unlike a JSON object body these carry no convert
+/// wrapper (they serialize into `data=`/`files=`, not `json=`).
+fn hoist_form_object(schema: &Schema) -> Vec<BodyField> {
+    let required: Vec<&str> = schema.required.iter().map(String::as_str).collect();
+    schema
+        .properties
+        .iter()
+        .map(|(prop, prop_schema)| {
+            let spec_required = required.contains(&prop.as_str());
+            let is_file = prop_schema.ty.as_ref().and_then(|t| t.primary()) == Some("string")
+                && prop_schema.format.as_deref() == Some("binary");
+            BodyField {
+                wire_name: prop.clone(),
+                py_name: naming::field_name(prop),
+                type_ref: base_type_ref(prop_schema),
+                optional: is_optional(prop_schema) || !spec_required,
+                spec_required,
+                docstring: clean_doc(prop_schema.description.as_deref()),
+                convert: false,
+                is_file,
+            }
+        })
+        .collect()
 }
 
 /// A one-argument request body.
@@ -695,6 +1004,7 @@ fn hoist_fields(class: &str, types: &[TypeDecl]) -> Option<Vec<BodyField>> {
                 spec_required: f.spec_required,
                 docstring: f.docstring.clone(),
                 convert: type_needs_convert(&f.type_ref, types),
+                is_file: false,
             })
             .collect(),
     )
@@ -708,6 +1018,8 @@ fn type_needs_convert(t: &TypeRef, types: &[TypeDecl]) -> bool {
         TypeRef::Named(name) => types.iter().any(|d| match d {
             TypeDecl::Object(o) => o.name == *name,
             TypeDecl::Alias(a) => a.name == *name && matches!(a.target, TypeRef::Union(_)),
+            // A discriminated union's wrapper models carry field aliases too.
+            TypeDecl::DiscriminatedUnion(u) => u.name == *name,
         }),
         TypeRef::Optional(inner) | TypeRef::List(inner) | TypeRef::Set(inner) => {
             type_needs_convert(inner, types)
@@ -832,15 +1144,95 @@ fn endpoint_module(operation_id: &str) -> String {
 /// Accumulates generated types. Some schemas produce more than one type: an
 /// inline schema (a `oneOf` object variant, or an inline enum property) is
 /// *hoisted* into its own named type and referenced by name, matching Fern.
-struct Builder {
+struct Builder<'a> {
     types: Vec<TypeDecl>,
+    /// The document's component schemas, for resolving discriminated-union member
+    /// `$ref`s to their field sets.
+    schemas: &'a IndexMap<String, Schema>,
+    /// class name → discriminant property to strip from that class's model,
+    /// because it is a member of a discriminated union (Fern re-declares the
+    /// discriminant on the union wrapper instead).
+    strip_discriminant: std::collections::HashMap<String, String>,
 }
 
-impl Builder {
+/// Scan every schema for a discriminated `oneOf`/`anyOf` and record, per member
+/// class, the discriminant property to strip from its model. Keyed by class name
+/// (post-`class_name` normalization), matching the `owner` passed to
+/// [`Builder::collect_fields`].
+fn discriminant_strips(
+    schemas: &IndexMap<String, Schema>,
+) -> std::collections::HashMap<String, String> {
+    let mut strips = std::collections::HashMap::new();
+    for schema in schemas.values() {
+        let Some(disc) = &schema.discriminator else {
+            continue;
+        };
+        if disc.property_name.is_empty() {
+            continue;
+        }
+        for reference in disc.mapping.values() {
+            let key = reference.rsplit('/').next().unwrap_or(reference);
+            strips.insert(naming::class_name(key), disc.property_name.clone());
+        }
+    }
+    strips
+}
+
+/// Collect a discriminated-union member's fields (the referenced model's
+/// properties minus the discriminant). Inline hoisting is intentionally skipped:
+/// the member model is emitted separately and owns any hoisted property types.
+fn member_fields(schema: &Schema, discriminant: &str) -> Vec<Field> {
+    let required: Vec<&str> = schema
+        .required
+        .iter()
+        .chain(schema.all_of.iter().flatten().flat_map(|m| &m.required))
+        .map(String::as_str)
+        .collect();
+    let mut fields = Vec::new();
+    for member in schema.all_of.iter().flatten() {
+        if member.reference.is_none() {
+            append_member_fields(member, discriminant, &required, &mut fields);
+        }
+    }
+    append_member_fields(schema, discriminant, &required, &mut fields);
+    fields
+}
+
+/// Append a schema's own properties (minus the discriminant) to `fields`.
+fn append_member_fields(
+    schema: &Schema,
+    discriminant: &str,
+    required: &[&str],
+    fields: &mut Vec<Field>,
+) {
+    for (prop, prop_schema) in &schema.properties {
+        if prop == discriminant {
+            continue;
+        }
+        let spec_required = required.contains(&prop.as_str());
+        fields.push(Field {
+            wire_name: prop.clone(),
+            py_name: naming::field_name(prop),
+            type_ref: base_type_ref(prop_schema),
+            optional: is_optional(prop_schema) || !spec_required,
+            spec_required,
+            docstring: clean_doc(prop_schema.description.as_deref()),
+        });
+    }
+}
+
+impl Builder<'_> {
     /// Classify one named schema and push it (plus any hoisted types).
     fn add_named(&mut self, name: &str, schema: &Schema) {
         let module = naming::module_name(name);
         let docstring = clean_doc(schema.description.as_deref());
+
+        // A discriminated `oneOf`/`anyOf` (with an explicit `mapping`) becomes a
+        // set of per-variant wrapper models plus a union alias.
+        if let Some(decl) = self.discriminated_union(name, &module, schema, docstring.clone()) {
+            self.types.push(TypeDecl::DiscriminatedUnion(decl));
+            return;
+        }
 
         // A `oneOf`/`anyOf` with an inline-object variant: hoist each such
         // variant to `{Name}{Ordinal}` and alias to the union of variant types.
@@ -924,8 +1316,17 @@ impl Builder {
         required: &[&str],
         fields: &mut Vec<Field>,
     ) {
+        let strip = self.strip_discriminant.get(owner).cloned();
         for (prop, prop_schema) in &schema.properties {
-            let spec_required = required.contains(&prop.as_str());
+            // A discriminated-union member drops the discriminant property from
+            // its own model; Fern re-declares it on the union wrapper instead.
+            if strip.as_deref() == Some(prop.as_str()) {
+                continue;
+            }
+            // A `readOnly` property is server-populated, so Fern treats it as
+            // optional (and never a required input) even if listed in `required`.
+            let spec_required =
+                required.contains(&prop.as_str()) && prop_schema.read_only != Some(true);
             let optional = is_optional(prop_schema) || !spec_required;
             fields.push(Field {
                 wire_name: prop.clone(),
@@ -936,6 +1337,43 @@ impl Builder {
                 docstring: clean_doc(prop_schema.description.as_deref()),
             });
         }
+    }
+
+    /// Build a [`DiscriminatedUnion`] from a schema, or `None` if it is not a
+    /// discriminated `oneOf`/`anyOf` with an explicit `mapping`. Each mapping
+    /// entry `value → $ref` becomes a `{Name}_{Variant}` wrapper carrying the
+    /// discriminant literal plus the referenced model's (stripped) fields.
+    fn discriminated_union(
+        &self,
+        name: &str,
+        module: &str,
+        schema: &Schema,
+        docstring: Option<String>,
+    ) -> Option<DiscriminatedUnion> {
+        let disc = schema.discriminator.as_ref()?;
+        // Only oneOf/anyOf schemas carry a discriminator, and we key generation
+        // off the explicit mapping (value → variant `$ref`).
+        schema.one_of.as_ref().or(schema.any_of.as_ref())?;
+        if disc.property_name.is_empty() || disc.mapping.is_empty() {
+            return None;
+        }
+        let mut members = Vec::new();
+        for (value, reference) in &disc.mapping {
+            let target_key = reference.rsplit('/').next().unwrap_or(reference);
+            let target = self.schemas.get(target_key)?;
+            members.push(UnionMember {
+                class_name: format!("{name}_{}", naming::class_name(target_key)),
+                discriminant: value.clone(),
+                fields: member_fields(target, &disc.property_name),
+            });
+        }
+        Some(DiscriminatedUnion {
+            name: name.to_string(),
+            module: module.to_string(),
+            discriminant_property: disc.property_name.clone(),
+            members,
+            docstring,
+        })
     }
 
     /// The type of a property, hoisting an inline string enum to a named
@@ -1103,6 +1541,12 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
                 }
                 TypeRef::Dict(Box::new(TypeRef::Primitive(Prim::Str)), Box::new(val))
             }
+            // `additionalProperties: true` is an open map to unknown values, which
+            // Fern types as `Dict[str, Optional[Any]]`.
+            Some(AdditionalProperties::Bool(true)) => TypeRef::Dict(
+                Box::new(TypeRef::Primitive(Prim::Str)),
+                Box::new(TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)))),
+            ),
             _ => TypeRef::Primitive(Prim::Any),
         },
         _ => TypeRef::Primitive(Prim::Any),
@@ -1159,6 +1603,11 @@ fn ref_to_class(reference: &str) -> String {
 /// Is this schema declared as `type: string`?
 fn is_string_type(schema: &Schema) -> bool {
     schema.ty.as_ref().and_then(|t| t.primary()) == Some("string")
+}
+
+/// Is this schema an integer `enum` (which Fern aliases to a plain `int`)?
+fn is_int_enum(schema: &Schema) -> bool {
+    schema.ty.as_ref().and_then(|t| t.primary()) == Some("integer") && schema.enum_values.is_some()
 }
 
 /// Is this schema declared as `type: object`?

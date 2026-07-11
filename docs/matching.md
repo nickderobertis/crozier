@@ -157,55 +157,90 @@ element per line with a trailing comma.
 
 ## Known gaps (roadmap)
 
-The `exhaustive` corpus is fully matched (all 104 files). The items below are
-generalization gaps — shapes the current spec does not exercise — not
-exhaustive-fixture misses. Each gap now has a hand-authored **feature-coverage
-target** under `tests/fixtures/` (registered as a `FEATURE_TARGETS` corpus in
-`tests/e2e.rs` with an empty `matched` list); the smoke test asserts crozier
-consumes the spec without panicking, and the `matched` list grows once the Fern
-`expected/` tree is generated (`scripts/generate-fern-fixture.sh <fixture>`) and
-generation lands. To reproduce the current (incomplete) output for a target:
+The `exhaustive` corpus is fully matched, and five feature-coverage targets are
+**now fully matched too** — `auth-schemes`, `discriminated-unions`,
+`schema-constraints`, `integer-enums`, and `form-bodies`. (The exact matched-file
+set for each corpus is its `matched` array in `tests/e2e.rs`, the single source of
+truth; counts are deliberately not restated here so they cannot drift.) The items
+below are the remaining generalization gaps — shapes the current specs do not fully
+generate — not exhaustive-fixture misses.
+
+The generated **README/reference** now pick the first endpoint with a request body
+for the worked example and abbreviate the error-handling/advanced snippets to `...`
+(for a fully-required inline body or a container body) or `()` (a body with an
+optional field, a union/enum/scalar body, or no body), ruff-wrapped at the 88-col
+snippet width. Each gap has a hand-authored **feature-coverage
+target** under `tests/fixtures/` (a `FEATURE_TARGETS` corpus in `tests/e2e.rs`),
+with the full Fern `expected/` tree committed. Each corpus's `matched` list grows
+file-by-file as generation lands; the smoke test also asserts crozier consumes
+every spec without panicking regardless of how much is matched. To reproduce the
+current output for a target (Fern generated these with the scaffold defaults):
 
 ```
 cargo build --release
 target/release/crozier generate \
   --spec tests/fixtures/<fixture>/openapi.yml \
-  --output /tmp/<fixture> --package-name seed --project-name fern_<fixture>
+  --output /tmp/<fixture> --package-name fern --project-name default_package_name
 ```
 
-1. **Auth models beyond bearer** (`auth-schemes`). The root `client.py` and
-   `client_wrapper.py` are coupled to a bearer `token`, and `components.security‐
-   Schemes` is not even in the OpenAPI serde model. Other schemes (api-key, basic,
-   OAuth2 client-credentials) need auth modeling in the IR.
+1. **Auth models beyond bearer** (`auth-schemes`, partially implemented).
+   `components.securitySchemes` plus each operation's `security` now feed an
+   [`ir::Auth`] model: the first declared scheme selects the credential, and it is
+   *required* when every operation is authenticated (else optional, e.g. exhaustive's
+   `noauth`). `client_wrapper.py` is generated from it — api-key (`api_key: str` +
+   the scheme's header) and bearer (`token`, required/optional) both match across the
+   fixtures, and the bearer-optional form stays byte-identical to Fern's default. The
+   auth model is also threaded through the root `client.py` (constructor param, the
+   docstring `Parameters` line, and the `Examples` instantiation) and every worked
+   `Examples` snippet (per-tag `client.py`, README, reference), so `auth-schemes`
+   matches its root + per-tag clients and reference under api-key. Not yet handled:
+   basic/OAuth2 primaries (no fixture exercises them; they fall back to the
+   optional-bearer wrapper), and cookie-parameters' global-header promotion.
 2. **Broader example coverage.** The example-value generator is proven against the
    corpus (objects, unions, enums, containers, maps, datetimes, `long`). Shapes the
-   corpus lacks — e.g. a required `date` example, a nameless-slot enum, integer
-   enums (`integer-enums`) — carry plausible-but-unverified placeholders; confirm
-   them as new fixtures land.
+   corpus lacks — e.g. a required `date` example, a nameless-slot enum — carry
+   plausible-but-unverified placeholders; confirm them as new fixtures land.
+   *Integer enums* now generate: a `type: integer` enum becomes a plain `Name = int`
+   alias (Fern does not build a `Literal` union for them), and a `$ref` integer-enum
+   request body is emittable (`json=request` + content-type header, like a string
+   enum) — so `integer-enums` matches its whole `enums` module, root client, and
+   reference (only the README example placeholder differs).
 3. **Fern's `TYPE_CHECKING` traversal order** in `types/__init__.py` is reproduced
    empirically (the `Types*` types in reverse declaration order, then the rest
    alphabetically). It matches the corpus byte-for-byte; a spec with a different
    type-namespace layout may need the true endpoint-traversal derivation.
-4. **Request/response inline-schema hoisting** (`inline-request-response`).
-   Component-schema hoisting is done; Fern also hoists inline request/response
-   bodies (e.g. `SearchResponse`, `SearchRequestNeighbor`) into named models, which
-   arrive with the endpoint layer.
+4. **Request/response inline-schema hoisting** (`inline-request-response`, partial).
+   A component schema used *only* as an inlined (plain-object `$ref`) request body
+   is no longer emitted as a standalone type — Fern inlines its fields onto the
+   request method and drops the type (verified in `auth-schemes`' `TokenRequest`,
+   `schema-constraints`' `CreateAccountRequest`, `servers-webhooks`'
+   `CreateSubscriptionRequest`). Still to do: hoisting *inline* (non-`$ref`)
+   request/response bodies into new named models (`SearchResponse`,
+   `SearchRequestNeighbor`).
 5. **Cookie parameters** (`cookie-parameters`). Path, query, and header params are
    emittable; a `cookie` param (`ParameterLocation::Cookie`) puts an operation
    outside today's subset.
-6. **Form request bodies** (`form-bodies`). Only `application/json`,
-   `application/octet-stream`, and unknown (`{}`) bodies generate;
-   `multipart/form-data` (file upload) and `application/x-www-form-urlencoded` are
-   not modeled (a `core/force_multipart.py` runtime asset ships, but no emitter
-   path drives it).
-7. **Discriminated unions** (`discriminated-unions`). `oneOf`/`anyOf` map to plain
-   unions; `discriminator` (`propertyName` + `mapping`) is dropped, so tagged
-   unions are not distinguished from bare ones.
-8. **Schema annotations and constraints** (`schema-constraints`). `readOnly`/
-   `writeOnly` (request-vs-response field splitting), `deprecated`, `default`,
-   validation keywords (`minLength`/`maxLength`/`pattern`/`minimum`/`maximum`/
-   `minItems`/`maxItems`, i.e. pydantic constraints), and `example`/`examples` are
-   all fields the `Schema` model does not read.
+6. **Form request bodies (implemented).** `multipart/form-data` splits its fields
+   into `data={...}` (non-file) and `files={...}` (`format: binary` → `core.File`)
+   with `force_multipart=True`; `application/x-www-form-urlencoded` sends all fields
+   via `data={...}` with the form content-type header. `form-bodies` matches in full
+   (the reference table reproduces Fern's `core.File` `from __future__` artifact).
+7. **Discriminated unions (implemented).** A `oneOf`/`anyOf` with a `discriminator`
+   (`propertyName` + `mapping`) becomes Fern's `{Union}_{Variant}` wrapper models —
+   each carrying the discriminant as a `typing.Literal[..]` field plus the referenced
+   model's other fields — over a `{Union} = typing.Union[..]` alias, and the
+   discriminant property is stripped from each member's own model. The type layer
+   (`shape.py`, `circle.py`, `square.py`, `types/__init__.py`) matches in
+   `discriminated-unions`; the endpoint/docs layer awaits the auth + endpoint work.
+   A discriminator without an explicit `mapping` still falls back to a plain union.
+8. **Schema annotations and constraints** (`schema-constraints`, mostly matched).
+   Fern ignores the validation keywords (`minLength`/`pattern`/`minimum`/`maxItems`/
+   …), `default`, and `deprecated` in its generated models, so crozier does too;
+   a `readOnly` property is now rendered optional even when `required` (it is
+   server-populated), and `additionalProperties: true` maps to
+   `Dict[str, Optional[Any]]`. The whole `schema-constraints` type + endpoint layer
+   matches (only the README example placeholder differs). Not yet exercised:
+   request-vs-response splitting for a `writeOnly` field that is also `required`.
 9. **Document-level `servers`/`webhooks`/`callbacks`** (`servers-webhooks`). The
    base URL is hardcoded in the runtime; `servers`, `webhooks`, and `callbacks` are
    absent from the serde model, so multi-server specs and event-driven definitions
