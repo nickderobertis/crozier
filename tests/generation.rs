@@ -870,14 +870,21 @@ fn unmapped_error_status_keeps_the_module_unemittable() {
     assert!(!files.contains_key("src/acme/things/raw_client.py"));
 }
 
-/// An inline-object success response (which Fern would hoist into a named type)
-/// is outside the emittable subset — exercising the response-support gate.
+/// An inline-object success response is hoisted into a named `{Tag}{Method}Response`
+/// model in the tag's own `types/` package, and the module becomes emittable.
 #[test]
-fn inline_object_response_keeps_the_module_unemittable() {
+fn inline_object_response_is_hoisted_into_a_tag_type() {
     let files = render(
         "openapi: 3.0.0\ninfo:\n  title: E\npaths:\n  /y:\n    get:\n      operationId: widgets_get\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema:\n                type: object\n                properties:\n                  name:\n                    type: string\n",
     );
-    assert!(!files.contains_key("src/acme/widgets/raw_client.py"));
+    // The response object is hoisted under the tag's `types/` package and the raw
+    // client (now emittable) returns it.
+    let hoisted = "src/acme/widgets/types/widgets_get_response.py";
+    assert!(files.contains_key(hoisted), "expected {hoisted}");
+    assert!(files[hoisted].contains("class WidgetsGetResponse"));
+    let raw = &files["src/acme/widgets/raw_client.py"];
+    assert!(raw.contains("HttpResponse[WidgetsGetResponse]"));
+    assert!(raw.contains("from .types.widgets_get_response import WidgetsGetResponse"));
 }
 
 /// A discriminated `oneOf` with a `mapping` emits per-variant wrapper models over
@@ -1099,4 +1106,109 @@ fn api_key_scheme_without_name_is_rejected() {
     })
     .expect_err("missing apiKey name must fail");
     assert!(err.to_string().contains("apiKey security scheme"));
+}
+
+/// Document-level `servers` generate `environment.py` (an `enum.Enum` with Fern's
+/// single member — the first server, named from its description) and thread an
+/// `environment`/`_get_base_url` through the root client and the package `__init__`.
+#[test]
+fn servers_generate_environment_and_thread_root_client() {
+    let files = render(
+        "openapi: 3.0.1\ninfo:\n  title: Srv\nservers:\n  - url: https://api.example.com\n    description: Production\n  - url: https://staging.example.com\n    description: Staging\npaths:\n  /session:\n    get:\n      operationId: cookies_getSession\n      tags: [Cookies]\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema: { $ref: \"#/components/schemas/Session\" }\n      security:\n        - BearerAuth: []\ncomponents:\n  schemas:\n    Session:\n      type: object\n      required: [id]\n      properties:\n        id: { type: string }\n  securitySchemes:\n    BearerAuth: { type: http, scheme: bearer }\n",
+    );
+    let env = &files["src/acme/environment.py"];
+    assert!(env.contains("class AcmeApiEnvironment(enum.Enum):"));
+    // Fern emits only the first server, named from its description.
+    assert!(env.contains("PRODUCTION = \"https://api.example.com\""));
+    assert!(!env.contains("STAGING"));
+
+    let client = &files["src/acme/client.py"];
+    assert!(client.contains("def _get_base_url("));
+    assert!(client.contains("environment: AcmeApiEnvironment = AcmeApiEnvironment.PRODUCTION"));
+    assert!(client.contains("_get_base_url(base_url=base_url, environment=environment)"));
+    assert!(client.contains("from .environment import AcmeApiEnvironment"));
+    // The example drops the hardcoded base_url once an environment exists.
+    assert!(!client.contains("https://yourhost.com/path/to/api"));
+
+    assert!(files["src/acme/__init__.py"].contains("AcmeApiEnvironment"));
+}
+
+/// A `cookie` parameter is dropped from the method signature entirely, and an
+/// *optional* operation header is promoted to a client-wrapper-level `tenant`
+/// field (set once at construction), threaded through the root client too.
+#[test]
+fn cookie_dropped_and_optional_header_promoted_to_client_wrapper() {
+    let files = render(
+        "openapi: 3.0.1\ninfo:\n  title: Ck\npaths:\n  /session:\n    get:\n      operationId: cookies_getSession\n      tags: [Cookies]\n      parameters:\n        - name: sid\n          in: cookie\n          required: true\n          schema: { type: string }\n        - name: X-Tenant\n          in: header\n          required: false\n          schema: { type: string }\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema: { $ref: \"#/components/schemas/Session\" }\n      security:\n        - BearerAuth: []\ncomponents:\n  schemas:\n    Session:\n      type: object\n      required: [id]\n      properties:\n        id: { type: string }\n  securitySchemes:\n    BearerAuth: { type: http, scheme: bearer }\n",
+    );
+    // The operation is emittable even though it carries a cookie param.
+    let raw = &files["src/acme/cookies/raw_client.py"];
+    // Neither the cookie nor the promoted header appears in the method signature.
+    assert!(raw.contains("def getsession(self, *, request_options"));
+    assert!(!raw.contains("sid"));
+    assert!(!raw.contains("tenant"));
+    assert!(!raw.contains("X-Tenant"));
+
+    // The header is promoted to a global client-wrapper field.
+    let wrapper = &files["src/acme/core/client_wrapper.py"];
+    assert!(wrapper.contains("tenant: typing.Optional[str] = None,"));
+    assert!(wrapper.contains("self._tenant = tenant"));
+    assert!(wrapper.contains("if self._tenant is not None:"));
+    assert!(wrapper.contains("headers[\"X-Tenant\"] = self._tenant"));
+    assert!(wrapper.contains("super().__init__(tenant=tenant, token=token,"));
+
+    // And threaded through the root client (ctor, example, wrapper call).
+    let client = &files["src/acme/client.py"];
+    assert!(client.contains("tenant: typing.Optional[str] = None,"));
+    assert!(client.contains("tenant=\"YOUR_TENANT\","));
+    assert!(client.contains("tenant=tenant,"));
+}
+
+/// A required operation header is *not* promoted — it stays a per-method parameter
+/// and no `tenant`-style global field appears on the client wrapper.
+#[test]
+fn required_header_is_not_promoted() {
+    let files = render(
+        "openapi: 3.0.1\ninfo:\n  title: Rh\npaths:\n  /ping:\n    get:\n      operationId: pings_get\n      tags: [Pings]\n      parameters:\n        - name: X-Trace\n          in: header\n          required: true\n          schema: { type: string }\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema: { $ref: \"#/components/schemas/Pong\" }\ncomponents:\n  schemas:\n    Pong:\n      type: object\n      required: [ok]\n      properties:\n        ok: { type: boolean }\n",
+    );
+    let raw = &files["src/acme/pings/raw_client.py"];
+    assert!(raw.contains("trace: str"));
+    // The required header is not lifted to a client-wrapper field.
+    assert!(!files["src/acme/core/client_wrapper.py"].contains("self._trace"));
+}
+
+/// An inline (non-`$ref`) request body hoists its nested inline objects into the
+/// tag's own `types/` package, and the inline response hoists too — including a
+/// nested inline object (a sibling tag-type reference) and a `$ref` to a
+/// package-root type (which resolves back up to the root `types/` package).
+#[test]
+fn inline_request_body_hoists_nested_objects_into_tag_types() {
+    let files = render(
+        "openapi: 3.0.1\ninfo:\n  title: In\npaths:\n  /search:\n    post:\n      operationId: inlined_search\n      tags: [Inlined]\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema:\n                type: object\n                properties:\n                  neighbor:\n                    type: object\n                    properties:\n                      id: { type: string }\n                    required: [id]\n                  hit:\n                    $ref: \"#/components/schemas/Hit\"\n                required: [neighbor]\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n              type: object\n              properties:\n                filter:\n                  type: object\n                  properties:\n                    field: { type: string }\n                  required: [field]\n              required: [filter]\ncomponents:\n  schemas:\n    Hit:\n      type: object\n      required: [score]\n      properties:\n        score: { type: number }\n",
+    );
+    // Response hoisted to {Tag}{Method}Response, request nested object to
+    // {Tag}{Method}Request{Prop}, both under the tag's `types/` package.
+    let resp = "src/acme/inlined/types/inlined_search_response.py";
+    let filt = "src/acme/inlined/types/inlined_search_request_filter.py";
+    let neighbor = "src/acme/inlined/types/inlined_search_response_neighbor.py";
+    assert!(files.contains_key(resp));
+    assert!(files[resp].contains("class InlinedSearchResponse"));
+    // Nested inline object → sibling tag-type import; `$ref` → root `types/`.
+    assert!(files[resp]
+        .contains("from .inlined_search_response_neighbor import InlinedSearchResponseNeighbor"));
+    assert!(files[resp].contains("from ...types.hit import Hit"));
+    assert!(files.contains_key(neighbor));
+    assert!(files.contains_key(filt));
+    assert!(files[filt].contains("class InlinedSearchRequestFilter"));
+    // The tag's `types/__init__` and the tag package `__init__` re-export them.
+    assert!(files.contains_key("src/acme/inlined/types/__init__.py"));
+    assert!(files["src/acme/inlined/__init__.py"].contains("InlinedSearchRequestFilter"));
+    // The raw client imports the hoisted types from the tag's `types/` package.
+    let raw = &files["src/acme/inlined/raw_client.py"];
+    assert!(raw.contains("from .types.inlined_search_response import InlinedSearchResponse"));
+    assert!(
+        raw.contains("from .types.inlined_search_request_filter import InlinedSearchRequestFilter")
+    );
+    // The package root re-exports the hoisted types through the tag submodule.
+    assert!(files["src/acme/__init__.py"].contains("InlinedSearchResponse"));
 }

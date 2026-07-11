@@ -180,13 +180,13 @@ here means matching Fern, not `ruff`.
 
 ## Known gaps (roadmap)
 
-The `exhaustive` corpus is fully matched, and five feature-coverage targets are
+The `exhaustive` corpus is fully matched, and **every** feature-coverage target is
 **now fully matched too** — `auth-schemes`, `discriminated-unions`,
-`schema-constraints`, `integer-enums`, and `form-bodies`. (The exact matched-file
-set for each corpus is its `matched` array in `tests/e2e.rs`, the single source of
-truth; counts are deliberately not restated here so they cannot drift.) The items
-below are the remaining generalization gaps — shapes the current specs do not fully
-generate — not exhaustive-fixture misses.
+`schema-constraints`, `integer-enums`, `form-bodies`, `inline-request-response`,
+`cookie-parameters`, and `servers-webhooks`. (The exact matched-file set for each
+corpus is its `matched` array in `tests/e2e.rs`, the single source of truth; counts
+are deliberately not restated here so they cannot drift.) The items below record how
+each shape generates; the remaining unproven paths are called out inline.
 
 The generated **README/reference** now pick the first endpoint with a request body
 for the worked example and abbreviate the error-handling/advanced snippets to `...`
@@ -232,17 +232,30 @@ target/release/crozier generate \
    empirically (the `Types*` types in reverse declaration order, then the rest
    alphabetically). It matches the corpus byte-for-byte; a spec with a different
    type-namespace layout may need the true endpoint-traversal derivation.
-4. **Request/response inline-schema hoisting** (`inline-request-response`, partial).
-   A component schema used *only* as an inlined (plain-object `$ref`) request body
-   is no longer emitted as a standalone type — Fern inlines its fields onto the
-   request method and drops the type (verified in `auth-schemes`' `TokenRequest`,
-   `schema-constraints`' `CreateAccountRequest`, `servers-webhooks`'
-   `CreateSubscriptionRequest`). Still to do: hoisting *inline* (non-`$ref`)
-   request/response bodies into new named models (`SearchResponse`,
-   `SearchRequestNeighbor`).
-5. **Cookie parameters** (`cookie-parameters`). Path, query, and header params are
-   emittable; a `cookie` param (`ParameterLocation::Cookie`) puts an operation
-   outside today's subset.
+4. **Request/response inline-schema hoisting (implemented).** A component schema
+   used *only* as an inlined (plain-object `$ref`) request body is not emitted as a
+   standalone type — Fern inlines its fields onto the request method and drops the
+   type (`auth-schemes`' `TokenRequest`, `schema-constraints`' `CreateAccountRequest`,
+   `servers-webhooks`' `CreateSubscriptionRequest`). An *inline* (non-`$ref`)
+   request/response object body is hoisted into a named model in the **tag's own
+   `types/` package** (Fern's `inlined/types/`): a response becomes
+   `{Tag}{Method}Response`, a request's nested inline objects
+   `{Tag}{Method}Request{Prop}`, and nested inline objects recurse as
+   `{Parent}{Prop}` — structural names derived from the operation and property path,
+   ignoring any `title`. An [`ir::InlineHoister`] builds these tag-scoped types; a
+   location-aware import resolver (`RefLoc`) picks the right relative path from any
+   file, and the tag package/`types` package/root `__init__` re-export them.
+   `inline-request-response` matches in full.
+5. **Cookie parameters + global-header promotion (implemented).** A `cookie` param
+   (`ParameterLocation::Cookie`) is dropped from the method signature entirely, and
+   an **optional** operation header is promoted to a client-wrapper-level "global"
+   field (Fern lifts `X-Tenant` → a `tenant` field set once at construction, wired
+   through `client_wrapper.py`, the root client, and the worked examples). The
+   promotion heuristic is evidence-based: across the corpus the only two operation
+   headers split exactly on `required` — `cookie-parameters`' optional `X-Tenant`
+   promotes, `exhaustive`'s required `X-TEST-ENDPOINT-HEADER` stays per-method — so
+   crozier promotes a header that is optional in every operation it appears in
+   ([`ir::global_headers`]). `cookie-parameters` matches in full.
 6. **Form request bodies (implemented).** `multipart/form-data` splits its fields
    into `data={...}` (non-file) and `files={...}` (`format: binary` → `core.File`)
    with `force_multipart=True`; `application/x-www-form-urlencoded` sends all fields
@@ -264,10 +277,16 @@ target/release/crozier generate \
    `Dict[str, Optional[Any]]`. The whole `schema-constraints` type + endpoint layer
    matches (only the README example placeholder differs). Not yet exercised:
    request-vs-response splitting for a `writeOnly` field that is also `required`.
-9. **Document-level `servers`/`webhooks`/`callbacks`** (`servers-webhooks`). The
-   base URL is hardcoded in the runtime; `servers`, `webhooks`, and `callbacks` are
-   absent from the serde model, so multi-server specs and event-driven definitions
-   are unsupported.
+9. **Document-level `servers` (implemented); `webhooks`/`callbacks` (ignored).**
+   When the document declares `servers`, crozier emits `environment.py` (an
+   `enum.Enum` of environments) and threads an `environment` / optional-`base_url`
+   through the root client, resolving the base URL via a generated `_get_base_url`
+   and dropping the hardcoded `base_url` from the worked examples. Fern's OpenAPI
+   importer emits a **single** environment member — the first server, named from its
+   description (the "2 servers → only `PRODUCTION`" oddity) — which
+   [`ir::Environment`] reproduces. `webhooks`/`callbacks` are still absent from the
+   serde model (and Fern's OpenAPI SDK does not generate from them), so they are
+   ignored; `servers-webhooks` matches in full regardless.
 5. **The endpoint layer (implemented — kept as a reference of the covered
    shapes).** `paths` are read into an operation IR
    ([`ir::Endpoint`]): module, method name, HTTP method, URL, path params, and

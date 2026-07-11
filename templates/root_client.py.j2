@@ -4,10 +4,10 @@ class {{ class_name }}:
 
     Parameters
     ----------
-    base_url : str
+    base_url : {{ base_url_doc_ty }}
         The base url to use for requests from the client.
 
-{{ doc_param }}    headers : typing.Optional[typing.Dict[str, str]]
+{{ env_doc }}{{ gh_doc }}{{ doc_param }}    headers : typing.Optional[typing.Dict[str, str]]
         Additional headers to send with every request.
 
     timeout : typing.Optional[float]
@@ -24,15 +24,13 @@ class {{ class_name }}:
     from {{ pkg }} import {{ class_name }}
 
     client = {{ class_name }}(
-{{ example_line }}        base_url="https://yourhost.com/path/to/api",
-    )
+{{ gh_example }}{{ example_line }}{{ example_base_url }}    )
     """
 
     def __init__(
         self,
         *,
-        base_url: str,
-{{ ctor_param }}        headers: typing.Optional[typing.Dict[str, str]] = None,
+{{ base_url_ctor }}{{ gh_ctor }}{{ ctor_param }}        headers: typing.Optional[typing.Dict[str, str]] = None,
         timeout: typing.Optional[float] = None,
         follow_redirects: typing.Optional[bool] = True,
         httpx_client: typing.Optional[{{ httpx_type }}] = None,
@@ -41,8 +39,8 @@ class {{ class_name }}:
             timeout if timeout is not None else 60 if httpx_client is None else httpx_client.timeout.read
         )
         self._client_wrapper = {{ wrapper }}(
-            base_url=base_url,
-            {{ wrapper_arg }}={{ wrapper_arg }},
+            base_url={{ wrapper_base_url }},
+{{ gh_wrapper }}            {{ wrapper_arg }}={{ wrapper_arg }},
             headers=headers,
             httpx_client=httpx_client
             if httpx_client is not None
