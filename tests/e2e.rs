@@ -1179,6 +1179,96 @@ fn arbitrary_spec_generates_valid_python() {
     assert_valid_python(&out);
 }
 
+/// Generate from `spec`, asserting success, and return the output directory
+/// (kept alive by the returned `TempDir`). Shared by the issue-#40 real-world
+/// regression tests below.
+fn generate_ok(spec: &str) -> (tempfile::TempDir, std::path::PathBuf) {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let path = dir.path().join("api.yml");
+    std::fs::write(&path, spec).unwrap();
+    let out = dir.path().join("out");
+    crozier()
+        .args(["generate", "--spec"])
+        .arg(&path)
+        .arg("--output")
+        .arg(&out)
+        .args(["--package-name", "acme"])
+        .assert()
+        .success();
+    assert_valid_python(&out);
+    (dir, out)
+}
+
+#[test]
+fn hyphenated_operation_id_generates_valid_python() {
+    // Issue #40 case 1a: a hyphen in the operationId once produced a module dir
+    // and identifiers that failed to parse. It must sanitize to a legal name.
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    \
+         get:\n      operationId: get-all-widgets\n      tags: [widgets]\n      responses:\n        \
+         '200': { description: OK, content: { application/json: { schema: { type: array, items: \
+         { type: string } } } } }\n",
+    );
+    assert!(
+        out.join("src/acme/get_all_widgets").is_dir(),
+        "hyphenated operationId should sanitize to a legal module directory"
+    );
+}
+
+#[test]
+fn spaced_operation_id_generates_valid_python() {
+    // Issue #40 case 1b: a space in the operationId.
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /verify:\n    \
+         post:\n      operationId: verify code\n      tags: [widgets]\n      responses:\n        \
+         '200': { description: OK, content: { application/json: { schema: { type: object, \
+         properties: { ok: { type: boolean } } } } } }\n",
+    );
+    assert!(
+        out.join("src/acme/verify_code").is_dir(),
+        "spaced operationId should sanitize to a legal module directory"
+    );
+}
+
+#[test]
+fn digit_leading_property_gets_f_prefix_and_alias() {
+    // Issue #40 case 2: a property name starting with a digit is not a legal
+    // identifier. Fern renames it `f_<name>` and keeps the wire name as an alias.
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /thing:\n    \
+         get:\n      operationId: getThing\n      responses:\n        '200': { description: OK, \
+         content: { application/json: { schema: { $ref: '#/components/schemas/Thing' } } } }\n\
+         components:\n  schemas:\n    Thing:\n      type: object\n      properties:\n        \
+         \"2fa_enabled\": { type: boolean }\n",
+    );
+    let thing = std::fs::read_to_string(out.join("src/acme/types/thing.py"))
+        .expect("Thing model is generated");
+    assert!(
+        thing.contains("f_2fa_enabled"),
+        "digit-leading property should be renamed to f_2fa_enabled: {thing}"
+    );
+    assert!(
+        thing.contains("FieldMetadata(alias=\"2fa_enabled\")"),
+        "the wire name should be preserved as a FieldMetadata alias: {thing}"
+    );
+}
+
+#[test]
+fn missing_operation_id_generates_valid_python() {
+    // Issue #40 case 3: an operation without an operationId is valid OpenAPI and
+    // must generate (crozier synthesizes a name), not hard-error.
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    \
+         get:\n      summary: List widgets\n      tags: [widgets]\n      responses:\n        \
+         '200': { description: OK, content: { application/json: { schema: { type: array, items: \
+         { type: string } } } } }\n",
+    );
+    assert!(
+        out.join("src/acme/widgets").is_dir(),
+        "the tag should name the synthesized client module"
+    );
+}
+
 #[test]
 fn exhaustive_output_is_valid_python() {
     let fixtures = fixture_dir("exhaustive");

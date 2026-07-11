@@ -1368,11 +1368,14 @@ fn response_supported(_op: &Operation) -> bool {
 /// matching Fern (`endpoints_put_add`, but `postwithnoauth`).
 fn endpoint_method_name(operation_id: &str) -> String {
     let (group, rest) = operation_id.rsplit_once('_').unwrap_or(("", operation_id));
-    if group.contains('_') {
+    let name = if group.contains('_') {
         naming::to_snake_case(operation_id)
     } else {
         rest.to_lowercase()
-    }
+    };
+    // A hyphen/space in the operationId survives the lowercase branch; coerce it
+    // to a legal identifier so the generated method name parses.
+    naming::sanitize_identifier(&name)
 }
 
 /// The `PascalCase` method segment used in a hoisted inline type's name
@@ -1382,11 +1385,12 @@ fn endpoint_method_name(operation_id: &str) -> String {
 /// `CreateBatch` (Fern's `ItemsCreateBatchRequestItem`), not `Createbatch`.
 fn endpoint_type_method(operation_id: &str) -> String {
     let (group, rest) = operation_id.rsplit_once('_').unwrap_or(("", operation_id));
-    if group.contains('_') {
+    let name = if group.contains('_') {
         naming::to_pascal_case(operation_id)
     } else {
         naming::to_pascal_case(rest)
-    }
+    };
+    naming::sanitize_identifier(&name)
 }
 
 /// Collect the endpoint client module names, one per operation group, in the
@@ -1414,11 +1418,14 @@ fn endpoint_module(operation_id: &str) -> String {
     let prefix = operation_id
         .rsplit_once('_')
         .map_or(operation_id, |(prefix, _)| prefix);
-    if prefix.contains('_') {
+    let name = if prefix.contains('_') {
         naming::to_snake_case(prefix)
     } else {
         prefix.to_lowercase()
-    }
+    };
+    // Coerce a hyphen/space (from an unsanitized operationId) into a legal
+    // module/directory name.
+    naming::sanitize_identifier(&name)
 }
 
 /// Accumulates generated types. Some schemas produce more than one type: an

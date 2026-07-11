@@ -149,6 +149,24 @@ impl PathItem {
         .filter_map(|(method, op)| op.as_ref().map(|o| (method, o)))
         .collect()
     }
+
+    /// The operations present on this path, paired with their HTTP method, as
+    /// mutable references (same stable method order as [`operations`]). Used to
+    /// backfill a synthesized `operationId` where the spec omitted one.
+    ///
+    /// [`operations`]: PathItem::operations
+    fn operations_mut(&mut self) -> Vec<(&'static str, &mut Operation)> {
+        [
+            ("GET", &mut self.get),
+            ("POST", &mut self.post),
+            ("PUT", &mut self.put),
+            ("DELETE", &mut self.delete),
+            ("PATCH", &mut self.patch),
+        ]
+        .into_iter()
+        .filter_map(|(method, op)| op.as_mut().map(|o| (method, o)))
+        .collect()
+    }
 }
 
 /// A single API operation.
@@ -380,7 +398,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
         .and_then(|e| e.to_str())
         .map(str::to_ascii_lowercase);
 
-    let doc: OpenApi = match ext.as_deref() {
+    let mut doc: OpenApi = match ext.as_deref() {
         Some("yml" | "yaml") => serde_yaml_ng::from_str(&text).map_err(|e| Error::ParseSpec {
             path: path.to_path_buf(),
             message: e.to_string(),
@@ -412,16 +430,14 @@ pub fn load(path: &Path) -> Result<OpenApi> {
         });
     }
     // crozier derives each client's module and method names from `operationId`,
-    // so require it on every operation rather than emitting a malformed path.
-    for (url, item) in &doc.paths {
-        for (method, op) in item.operations() {
+    // but OpenAPI makes it optional and real specs omit it. Rather than reject the
+    // document, synthesize a deterministic id from the tag/path + HTTP method so
+    // downstream naming has something valid to work with. (Fern likewise names an
+    // operation from its route; the synthesized id is not byte-identical to it.)
+    for (url, item) in &mut doc.paths {
+        for (method, op) in item.operations_mut() {
             if op.operation_id.trim().is_empty() {
-                return Err(Error::InvalidSpec {
-                    path: path.to_path_buf(),
-                    message: format!(
-                        "operation `{method} {url}` has no `operationId`; crozier requires one to name the client"
-                    ),
-                });
+                op.operation_id = synthesize_operation_id(method, url, &op.tags);
             }
         }
     }
@@ -442,4 +458,75 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     }
 
     Ok(doc)
+}
+
+/// Synthesize a deterministic `operationId` for an operation that declares none.
+///
+/// The shape is `{group}_{verb}{PathWords}`, e.g. `GET /widgets` (tag `widgets`)
+/// → `widgets_getWidgets`. The single underscore is deliberate: it makes
+/// [`crate::ir::endpoint_module`] treat `group` as the client module and the
+/// underscore-free tail as the method, so the derived names stay legal. The
+/// group is the first non-empty tag (falling back to the first path segment, then
+/// a fixed `service`), reduced to `[A-Za-z0-9]` so it carries no separators.
+/// Including the method and every path word keeps distinct routes from colliding.
+fn synthesize_operation_id(method: &str, url: &str, tags: &[String]) -> String {
+    let alnum = |s: &str| -> String { s.chars().filter(char::is_ascii_alphanumeric).collect() };
+    // Path words: static segments and `{param}` names each contribute a word.
+    let words: Vec<String> = url
+        .split('/')
+        .map(alnum)
+        .filter(|w| !w.is_empty())
+        .collect();
+    let group = tags
+        .iter()
+        .map(|t| alnum(t.trim()))
+        .find(|g| !g.is_empty())
+        .or_else(|| words.first().cloned())
+        .unwrap_or_else(|| "service".to_string());
+    // Verb + each path word, camel-cased into a single underscore-free segment.
+    let mut tail = method.to_ascii_lowercase();
+    for word in &words {
+        let mut chars = word.chars();
+        if let Some(first) = chars.next() {
+            tail.push(first.to_ascii_uppercase());
+            tail.push_str(chars.as_str());
+        }
+    }
+    format!("{group}_{tail}")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::synthesize_operation_id;
+
+    #[test]
+    fn synthesized_id_groups_by_tag_and_encodes_route() {
+        // Tag becomes the client group; verb + path words become the method tail.
+        assert_eq!(
+            synthesize_operation_id("GET", "/widgets", &["widgets".to_string()]),
+            "widgets_getWidgets"
+        );
+        assert_eq!(
+            synthesize_operation_id("POST", "/widgets/{id}/reviews", &["widgets".to_string()]),
+            "widgets_postWidgetsIdReviews"
+        );
+    }
+
+    #[test]
+    fn synthesized_id_falls_back_without_tags() {
+        // No tag: the first path segment groups the operation.
+        assert_eq!(
+            synthesize_operation_id("GET", "/widgets", &[]),
+            "widgets_getWidgets"
+        );
+        // No tag and no path segments: a stable fallback keeps the id legal.
+        assert_eq!(synthesize_operation_id("GET", "/", &[]), "service_get");
+    }
+
+    #[test]
+    fn synthesized_id_distinguishes_methods_on_one_path() {
+        let get = synthesize_operation_id("GET", "/widgets", &["widgets".to_string()]);
+        let post = synthesize_operation_id("POST", "/widgets", &["widgets".to_string()]);
+        assert_ne!(get, post);
+    }
 }

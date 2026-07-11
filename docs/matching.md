@@ -376,6 +376,37 @@ This is exactly how the four former gap targets (`basic-auth`,
    so the endpoint layer — and the whole `exhaustive` corpus — is complete. Gap #4
    (inline request/response hoisting) is the next generalization step.
 
+## Real-world-spec robustness (issue #40)
+
+The matched corpora are hand-authored to have clean, Fern-style operationIds and
+property names. Real vendor specs are messier, and three shapes that used to make
+crozier emit invalid Python or hard-error now generate legal output:
+
+- **Non-identifier `operationId`** (`get-all-widgets`, `verify code`). The
+  module/method/type-method names derived from an operationId are passed through
+  [`naming::sanitize_identifier`], coercing any non-`[A-Za-z0-9_]` character to `_`
+  (and prefixing a leading digit). Names that are already legal — every fixture —
+  pass through untouched, so this does not perturb the byte match. Full parity with
+  Fern's tag-based client grouping for these specs is a separate, larger step
+  (crozier derives the client module from the operationId prefix, not the `tags`).
+
+- **Digit-leading property name** (`2fa_enabled`). [`naming::field_name`] prefixes
+  `f_` when the snake-cased name would start with a digit, and the wire name is
+  preserved as a `FieldMetadata` alias — byte-for-byte Fern's `f_2fa_enabled`.
+
+- **Missing `operationId`** (optional in OpenAPI). [`openapi::synthesize_operation_id`]
+  fills one in from the first tag (or path segment) plus the HTTP verb and path
+  words, e.g. `GET /widgets` (tag `widgets`) → `widgets_getWidgets`. The generated
+  client is valid but the synthesized method name is **not** byte-identical to
+  Fern's route-derived name (Fern infers verbs like `list`); matching that is a
+  follow-up.
+
+Still open from the issue (tracked, not yet done): hoisting an inline object nested
+inside an `array.items` of a *component* schema (dropped to `typing.Any` today —
+adjacent to gap #4's request/response hoisting), Swagger 2.0 / fragment-doc
+tolerance, and the `address_line_1` → `address_line1` underscore-before-digit
+rename.
+
 ## Coverage note
 
 The gate measures coverage with `cargo llvm-cov --fail-under-lines 95`, which
