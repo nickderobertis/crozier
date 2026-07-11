@@ -1,14 +1,18 @@
 //! Rendering the IR to Python source files with minijinja.
 //!
-//! Rust computes the semantics — resolved type expressions, the exact import
-//! block, per-field annotations and defaults — and minijinja lays out the files.
-//! The split keeps the byte-sensitive logic (import ordering, alias wrapping) in
-//! testable Rust while templates stay presentational.
+//! Three layers: Rust computes the semantics (resolved type expressions, the
+//! exact import block, per-field annotations and defaults); minijinja templates
+//! (`templates/`) lay out the file shape — e.g. `class_body.py.j2` arranges a
+//! pydantic model's docstring, fields, and config block, applying the Fern
+//! blank-line rules `ruff` does not impose; and `ruff format` (see [`crate::pyfmt`])
+//! handles the line wrapping. The template layout is covered directly by render
+//! tests (see this module's `tests`), so it iterates without the full pipeline.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::PathBuf;
 
 use minijinja::{context, Environment};
+use serde::Serialize;
 
 use crate::error::{Error, Result};
 use crate::ir::{
@@ -194,6 +198,30 @@ struct RenderedField {
     docstring: Option<String>,
 }
 
+/// The view model handed to `object.py.j2`. Rust computes the semantics (imports,
+/// per-field annotation strings, defaults); the template lays out the class body
+/// (field order, docstrings, the blank-line rules `ruff` does not impose) and
+/// `ruff format` handles the line wrapping. This split keeps the byte-sensitive
+/// logic in testable Rust while the file's *shape* lives in the template.
+#[derive(Serialize)]
+struct ObjectView {
+    header: &'static str,
+    imports: String,
+    class_name: String,
+    bases: String,
+    /// The class docstring's raw text (the template applies the `docstring` filter).
+    docstring: Option<String>,
+    fields: Vec<FieldView>,
+}
+
+/// One field as the object template consumes it: the flat declaration line
+/// (`name: annotation = default`, wrapped later by `ruff`) and the raw docstring.
+#[derive(Serialize)]
+struct FieldView {
+    decl: String,
+    docstring: Option<String>,
+}
+
 /// Compute a field's annotation + default, registering imports.
 fn render_field(field: &Field, imports: &mut Imports) -> RenderedField {
     let inner = render_type(&field.type_ref, imports);
@@ -253,10 +281,18 @@ fn environment() -> Environment<'static> {
     env.set_keep_trailing_newline(true);
     env.set_trim_blocks(true);
     env.set_lstrip_blocks(true);
+    // Render a raw docstring into an indented, backslash-escaped triple-quoted
+    // block; templates apply it with `{{ text | docstring }}`.
+    env.add_filter("docstring", |text: String| render_docstring(&text, 4));
     env.add_template("version.py", include_str!("../templates/version.py.j2"))
         .expect("version template compiles");
     env.add_template("object.py", include_str!("../templates/object.py.j2"))
         .expect("object template compiles");
+    env.add_template(
+        "class_body.py",
+        include_str!("../templates/class_body.py.j2"),
+    )
+    .expect("class_body template compiles");
     env.add_template("alias.py", include_str!("../templates/alias.py.j2"))
         .expect("alias template compiles");
     env.add_template(
@@ -1144,17 +1180,6 @@ fn client_wrapper_file(pkg: &str, project_name: &str, auth: &Auth) -> GeneratedF
     }
 }
 
-/// The pydantic model configuration block Fern emits at the end of every model.
-/// Static (the `# type: ignore` comment is stripped before the byte comparison).
-const CONFIG_BLOCK: &str = "    if IS_PYDANTIC_V2:
-        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra=\"allow\", frozen=True)  # type: ignore # Pydantic v2
-    else:
-
-        class Config:
-            frozen = True
-            smart_union = True
-            extra = pydantic.Extra.allow";
-
 /// Render a docstring as an indented triple-quoted block, escaping backslashes
 /// the way Fern does so the value round-trips. Every line (including blank ones)
 /// carries the block indent; the block has no trailing newline.
@@ -1171,40 +1196,36 @@ fn render_docstring(doc: &str, indent: usize) -> String {
     out
 }
 
-/// Assemble a model's class body: an optional class docstring, the fields (each
-/// with an optional docstring), then the config block. Consecutive fields are
-/// separated by a blank line only after a documented field; a blank line always
-/// precedes the config block. No trailing newline (the template adds it).
-fn object_body(class_docstring: Option<&str>, fields: &[RenderedField]) -> String {
-    let mut body = String::new();
-    if let Some(doc) = class_docstring {
-        body.push_str(&render_docstring(doc, 4));
-        body.push_str("\n\n");
-    }
-    for (i, field) in fields.iter().enumerate() {
-        // Emit the field flat; `ruff format` wraps it if it overflows.
-        let line = format!(
-            "    {}: {}{}",
-            field.py_name,
-            field.annotation.flat(),
-            field.default
-        );
-        body.push_str(&line);
-        body.push('\n');
-        if let Some(doc) = &field.docstring {
-            body.push_str(&render_docstring(doc, 4));
-            body.push('\n');
-        }
-        // Separate a documented field from the next field with a blank line.
-        if field.docstring.is_some() && i + 1 < fields.len() {
-            body.push('\n');
-        }
-    }
-    if !fields.is_empty() {
-        body.push('\n');
-    }
-    body.push_str(CONFIG_BLOCK);
-    body
+/// The class-body context for `class_body.py.j2`: the optional class docstring
+/// and the fields. Shared by the object template (via `{% include %}`) and the
+/// discriminated-union path, so one template lays out every pydantic model body.
+#[derive(Serialize)]
+struct ClassBodyView {
+    docstring: Option<String>,
+    fields: Vec<FieldView>,
+}
+
+/// The flat field declaration line, `name: annotation = default`. `ruff format`
+/// wraps a long annotation downstream.
+fn field_decl(f: &RenderedField) -> String {
+    format!("{}: {}{}", f.py_name, f.annotation.flat(), f.default)
+}
+
+/// Render a class body (docstring + fields + config block) with `class_body.py`.
+/// Used directly for the discriminated-union variant classes; the object template
+/// renders the same partial through `{% include %}`.
+fn render_class_body(
+    env: &Environment<'static>,
+    docstring: Option<String>,
+    fields: Vec<FieldView>,
+) -> Result<String> {
+    let view = ClassBodyView { docstring, fields };
+    render(
+        env,
+        "class_body.py",
+        "class_body",
+        minijinja::Value::from_serialize(&view),
+    )
 }
 
 /// Render one type declaration to a file body.
@@ -1226,22 +1247,30 @@ fn render_type_decl(env: &Environment<'static>, decl: &TypeDecl) -> Result<Strin
                 }
                 obj.bases.join(", ")
             };
-            let fields: Vec<RenderedField> = obj
+            let fields: Vec<FieldView> = obj
                 .fields
                 .iter()
-                .map(|f| render_field(f, &mut imports))
+                .map(|f| {
+                    let rf = render_field(f, &mut imports);
+                    FieldView {
+                        decl: field_decl(&rf),
+                        docstring: rf.docstring,
+                    }
+                })
                 .collect();
+            let view = ObjectView {
+                header: HEADER,
+                imports: imports.render(),
+                class_name: obj.name.clone(),
+                bases,
+                docstring: obj.docstring.clone(),
+                fields,
+            };
             render(
                 env,
                 "object.py",
                 &obj.name,
-                context! {
-                    header => HEADER,
-                    imports => imports.render(),
-                    class_name => obj.name,
-                    bases => bases,
-                    body => object_body(obj.docstring.as_deref(), &fields),
-                },
+                minijinja::Value::from_serialize(&view),
             )
         }
         TypeDecl::Alias(alias) => {
@@ -1259,7 +1288,7 @@ fn render_type_decl(env: &Environment<'static>, decl: &TypeDecl) -> Result<Strin
                 },
             )
         }
-        TypeDecl::DiscriminatedUnion(union) => Ok(render_discriminated_union(union)),
+        TypeDecl::DiscriminatedUnion(union) => render_discriminated_union(env, union),
     }
 }
 
@@ -1267,8 +1296,12 @@ fn render_type_decl(env: &Environment<'static>, decl: &TypeDecl) -> Result<Strin
 /// model per variant (each with the discriminant as a `Literal` field), then the
 /// `{Union} = typing.Union[..]` alias over them. Built directly (not via the
 /// object template) because it carries a `from __future__ import annotations` and
-/// several classes in one file.
-fn render_discriminated_union(union: &crate::ir::DiscriminatedUnion) -> String {
+/// several classes in one file. Each variant's body is rendered with the shared
+/// `class_body.py` partial (same as a plain object).
+fn render_discriminated_union(
+    env: &Environment<'static>,
+    union: &crate::ir::DiscriminatedUnion,
+) -> Result<String> {
     let mut imports = Imports::default();
     imports.add_plain("typing");
     imports.add_plain("pydantic");
@@ -1289,10 +1322,18 @@ fn render_discriminated_union(union: &crate::ir::DiscriminatedUnion) -> String {
         };
         let mut rendered = vec![discriminant];
         rendered.extend(member.fields.iter().map(|f| render_field(f, &mut imports)));
+        let fields: Vec<FieldView> = rendered
+            .into_iter()
+            .map(|rf| FieldView {
+                decl: field_decl(&rf),
+                docstring: rf.docstring,
+            })
+            .collect();
+        let body = render_class_body(env, None, fields)?;
         classes.push(format!(
             "class {}(UniversalBaseModel):\n{}",
             member.class_name,
-            object_body(None, &rendered)
+            body.trim_end()
         ));
     }
 
@@ -1307,11 +1348,11 @@ fn render_discriminated_union(union: &crate::ir::DiscriminatedUnion) -> String {
         Doc::group("typing.Union[", variants, "]").flat()
     );
 
-    format!(
+    Ok(format!(
         "{HEADER}\n\nfrom __future__ import annotations\n\n{}\n\n\n{}\n\n\n{alias}\n",
         imports.render(),
         classes.join("\n\n\n")
-    )
+    ))
 }
 
 /// Render a resolved type to its flat Python expression for the raw client,
@@ -2879,12 +2920,92 @@ pub fn write_files(root: &std::path::Path, files: &[GeneratedFile]) -> Result<()
 #[cfg(test)]
 mod tests {
     use super::{
-        abbrev_call, auth_client_parts, auth_example, auth_wrapper_parts, raw_method, raw_type_str,
-        url_arg, Imports,
+        abbrev_call, auth_client_parts, auth_example, auth_wrapper_parts, environment, field_decl,
+        raw_method, raw_type_str, render_class_body, url_arg, FieldView, Imports, RenderedField,
     };
     use crate::ir::{
         Auth, BodyField, Endpoint, ErrorResponse, PathParam, Prim, RequestBody, TypeRef,
     };
+    use crate::wrap::Doc;
+
+    /// Render a class body through the real `class_body.py` template — the fast
+    /// feedback loop for layout/filter changes (no binary, no `ruff`). Returns the
+    /// body exactly as emitted, before the file-level `ruff format` pass.
+    fn class_body(docstring: Option<&str>, fields: Vec<FieldView>) -> String {
+        render_class_body(&environment(), docstring.map(str::to_string), fields).expect("renders")
+    }
+
+    fn field(decl: &str, docstring: Option<&str>) -> FieldView {
+        FieldView {
+            decl: decl.to_string(),
+            docstring: docstring.map(str::to_string),
+        }
+    }
+
+    #[test]
+    fn class_body_separates_documented_fields_with_a_blank_line() {
+        let body = class_body(
+            None,
+            vec![
+                field("a: str = pydantic.Field()", Some("Doc A.")),
+                field("b: str = pydantic.Field()", Some("Doc B.")),
+            ],
+        );
+        assert_eq!(
+            body,
+            r#"    a: str = pydantic.Field()
+    """
+    Doc A.
+    """
+
+    b: str = pydantic.Field()
+    """
+    Doc B.
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow
+"#
+        );
+    }
+
+    #[test]
+    fn class_body_omits_blank_after_undocumented_field() {
+        let body = class_body(
+            None,
+            vec![
+                field("a: str", None),
+                field("b: typing.Optional[int] = None", None),
+            ],
+        );
+        // Undocumented fields sit on consecutive lines; one blank precedes config.
+        assert!(body.starts_with(
+            "    a: str\n    b: typing.Optional[int] = None\n\n    if IS_PYDANTIC_V2:"
+        ));
+    }
+
+    #[test]
+    fn class_body_renders_class_docstring_then_a_blank_line() {
+        let body = class_body(Some("A model."), vec![field("a: str", None)]);
+        assert!(body.starts_with("    \"\"\"\n    A model.\n    \"\"\"\n\n    a: str\n"));
+    }
+
+    #[test]
+    fn field_decl_is_flat_name_annotation_default() {
+        let rf = RenderedField {
+            py_name: "count".to_string(),
+            annotation: Doc::group("typing.Optional[", vec![Doc::atom("int")], "]"),
+            default: " = None".to_string(),
+            docstring: None,
+        };
+        assert_eq!(field_decl(&rf), "count: typing.Optional[int] = None");
+    }
 
     #[test]
     fn abbrev_call_renders_empty_inline_and_wrapped() {
