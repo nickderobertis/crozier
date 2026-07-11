@@ -1190,28 +1190,14 @@ impl InlineHoister<'_> {
     /// item) into `{parent}{PascalCase(prop)}`. A `$ref` or scalar passes through
     /// [`base_type_ref`].
     fn prop_type_ref(&mut self, parent: &str, prop: &str, prop_schema: &Schema) -> TypeRef {
-        if prop_schema.reference.is_none() {
-            if is_inline_struct(prop_schema) {
-                let nested = format!("{parent}{}", naming::class_name(prop));
-                self.hoist_object(&nested, prop_schema);
-                return TypeRef::Named(nested);
-            }
-            // An array of inline objects hoists the item type the same way.
-            if prop_schema.ty.as_ref().and_then(|t| t.primary()) == Some("array") {
-                if let Some(item) = prop_schema.items.as_deref() {
-                    if is_inline_struct(item) {
-                        let nested = format!("{parent}{}", naming::class_name(prop));
-                        self.hoist_object(&nested, item);
-                        let inner = TypeRef::Named(nested);
-                        return if prop_schema.unique_items == Some(true) {
-                            TypeRef::Set(Box::new(inner))
-                        } else {
-                            TypeRef::List(Box::new(inner))
-                        };
-                    }
-                }
-            }
+        if prop_schema.reference.is_none() && is_inline_struct(prop_schema) {
+            let nested = format!("{parent}{}", naming::class_name(prop));
+            self.hoist_object(&nested, prop_schema);
+            return TypeRef::Named(nested);
         }
+        // A `$ref`, scalar, or container (e.g. an array of `$ref` items) passes
+        // through unchanged. An array of *inline* objects is not yet exercised by a
+        // fixture, so it is left to `base_type_ref` rather than guessing Fern's name.
         base_type_ref(prop_schema)
     }
 
