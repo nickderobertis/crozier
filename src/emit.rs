@@ -516,7 +516,11 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             emittable_modules.push(module);
         }
     }
-    emittable_modules.sort();
+    // `emittable_modules` stays in first-appearance (declaration) order — the order
+    // `ir.endpoint_modules` yields — because that is the order Fern lists sub-clients
+    // in the root client and `reference.md` (e.g. `widgets` before `gadgets` when
+    // `/widgets` is declared first, not alphabetically). The root `__init__.py`
+    // re-sorts its own dynamic-import/`__all__` maps, so its output is unaffected.
 
     // Root client: `FernApi`/`AsyncFernApi` aggregating the tag clients. Emitted
     // only when there is at least one tag client to aggregate.
@@ -985,8 +989,9 @@ fn is_complex_type(t: &TypeRef, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) -
             .find(|d| d.name() == n)
             .is_some_and(|d| match d {
                 TypeDecl::Object(_) => true,
-                // A union (named or discriminated) renders empty parens.
-                TypeDecl::DiscriminatedUnion(_) => false,
+                // A union (named or discriminated) renders empty parens; an enum
+                // is a single member-access value, likewise not "complex".
+                TypeDecl::DiscriminatedUnion(_) | TypeDecl::Enum(_) => false,
                 TypeDecl::Alias(a) => {
                     !matches!(a.target, TypeRef::Union(_))
                         && is_complex_type(&a.target, types, tag_decls)
@@ -1728,8 +1733,50 @@ fn render_type_decl(
                 },
             )
         }
+        TypeDecl::Enum(e) => render_enum(env, e),
         TypeDecl::DiscriminatedUnion(union) => render_discriminated_union(env, union),
     }
+}
+
+/// Render a string enum to its module: a `class {Name}(str, enum.Enum)` with a
+/// `SCREAMING_SNAKE = "value"` member per value and a `visit` dispatch method
+/// (Fern's `enum_type: python_enums` shape). The `visit` signature is emitted on
+/// one line; the `ruff` post-pass wraps it past the line-length limit.
+fn render_enum(env: &Environment<'static>, e: &crate::ir::EnumType) -> Result<String> {
+    let mut body = String::from(
+        "import enum\nimport typing\n\nT_Result = typing.TypeVar(\"T_Result\")\n\n\nclass ",
+    );
+    body.push_str(&e.name);
+    body.push_str("(str, enum.Enum):\n");
+    for m in &e.members {
+        body.push_str(&format!(
+            "    {} = \"{}\"\n",
+            m.name,
+            escape_py_str(&m.value)
+        ));
+    }
+    body.push('\n');
+    let params: Vec<String> = e
+        .members
+        .iter()
+        .map(|m| format!("{}: typing.Callable[[], T_Result]", m.visit_param))
+        .collect();
+    body.push_str(&format!(
+        "    def visit(self, {}) -> T_Result:\n",
+        params.join(", ")
+    ));
+    for m in &e.members {
+        body.push_str(&format!(
+            "        if self is {}.{}:\n            return {}()\n",
+            e.name, m.name, m.visit_param
+        ));
+    }
+    render(
+        env,
+        "file.py",
+        &e.name,
+        context! { header => HEADER, body => body },
+    )
 }
 
 /// Render a discriminated union to its module: a `{Union}_{Variant}` pydantic
@@ -2583,7 +2630,13 @@ fn root_client_file(
     }
     body.push('\n');
     body.push_str("if typing.TYPE_CHECKING:\n");
-    for m in modules {
+    // Fern emits the sub-client imports alphabetically by module (`gadgets` before
+    // `widgets`), even though the properties below stay in declaration order. This
+    // block is never executed, but — unlike the `__init__.py` aggregators — client.py
+    // is not isort-canonicalized by the e2e, so the order must match Fern exactly.
+    let mut import_modules: Vec<&&String> = modules.iter().collect();
+    import_modules.sort();
+    for m in import_modules {
         let pascal = naming::to_pascal_case(m);
         // The two imported names are ordered alphabetically, so `Async{X}Client`
         // usually comes first — but not when the tag itself starts with a letter
@@ -3417,6 +3470,15 @@ impl<'a> ExampleCtx<'a> {
             Some(TypeDecl::Alias(a)) => {
                 let target = a.target.clone();
                 self.value(&target, slot)
+            }
+            // An enum's example is member access on its first member
+            // (`TypesWeatherReport.SUNNY`), importing the enum by name.
+            Some(TypeDecl::Enum(e)) => {
+                self.record_ref(name);
+                match e.members.first() {
+                    Some(m) => Example::Atom(format!("{name}.{}", m.name)),
+                    None => Example::Atom("None".to_string()),
+                }
             }
             Some(TypeDecl::DiscriminatedUnion(u)) => match u.members.first() {
                 Some(m) => {

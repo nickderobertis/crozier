@@ -44,14 +44,14 @@ class EndpointsEnumClient:
 
         Examples
         --------
-        from fern import FernApi
+        from fern import FernApi, TypesWeatherReport
 
         client = FernApi(
             token="YOUR_TOKEN",
             base_url="https://yourhost.com/path/to/api",
         )
         client.endpoints_enum.endpoints_enum_get_and_return_enum(
-            request="SUNNY",
+            request=TypesWeatherReport.SUNNY,
         )
         """
         _response = self._raw_client.endpoints_enum_get_and_return_enum(
@@ -95,7 +95,7 @@ class AsyncEndpointsEnumClient:
         --------
         import asyncio
 
-        from fern import AsyncFernApi
+        from fern import AsyncFernApi, TypesWeatherReport
 
         client = AsyncFernApi(
             token="YOUR_TOKEN",
@@ -105,7 +105,7 @@ class AsyncEndpointsEnumClient:
 
         async def main() -> None:
             await client.endpoints_enum.endpoints_enum_get_and_return_enum(
-                request="SUNNY",
+                request=TypesWeatherReport.SUNNY,
             )
 
 

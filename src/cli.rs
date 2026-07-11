@@ -53,6 +53,13 @@ struct GenerateCmd {
     /// Distribution name recorded in `version.py`. Defaults to the package name.
     #[arg(long)]
     project_name: Option<String>,
+
+    /// `x-crozier-audiences` filter (repeatable). When given, only operations
+    /// carrying a matching audience — or none at all — are generated, along with
+    /// the transitive closure of schemas they reference. Omit to generate the
+    /// whole API.
+    #[arg(long = "audience")]
+    audiences: Vec<String>,
 }
 
 /// Parse an explicit argument list and run — the in-process entry point used by
@@ -75,6 +82,7 @@ pub fn run(cli: Cli) -> std::result::Result<(), String> {
                 output: cmd.output.clone(),
                 package_name: cmd.package_name,
                 project_name: cmd.project_name,
+                audiences: cmd.audiences,
             })
             .map_err(|e| e.to_string())?;
             eprintln!(

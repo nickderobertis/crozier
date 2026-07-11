@@ -19,6 +19,9 @@ struct Corpus {
     api: &'static str,
     package_name: &'static str,
     project_name: &'static str,
+    /// `--audience` filters to drive crozier with (`x-crozier-audiences`);
+    /// empty means the whole API is generated, matching most corpora.
+    audiences: &'static [&'static str],
     matched: &'static [&'static str],
 }
 
@@ -27,6 +30,7 @@ const QUERY_PARAMETERS: Corpus = Corpus {
     api: "query-parameters-openapi",
     package_name: "seed",
     project_name: "fern_query-parameters-openapi",
+    audiences: &[],
     matched: &[
         "src/seed/version.py",
         "src/seed/py.typed",
@@ -57,6 +61,7 @@ const EXHAUSTIVE: Corpus = Corpus {
     api: "exhaustive",
     package_name: "fern",
     project_name: "default_package_name",
+    audiences: &[],
     matched: &[
         "src/fern/version.py",
         "src/fern/py.typed",
@@ -219,6 +224,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         api: "auth-schemes",
         package_name: "fern",
         project_name: "default_package_name",
+        audiences: &[],
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -268,6 +274,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         api: "inline-request-response",
         package_name: "fern",
         project_name: "default_package_name",
+        audiences: &[],
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -312,6 +319,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         api: "cookie-parameters",
         package_name: "fern",
         project_name: "default_package_name",
+        audiences: &[],
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -351,6 +359,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         api: "form-bodies",
         package_name: "fern",
         project_name: "default_package_name",
+        audiences: &[],
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -391,6 +400,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         api: "discriminated-unions",
         package_name: "fern",
         project_name: "default_package_name",
+        audiences: &[],
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -432,6 +442,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         api: "schema-constraints",
         package_name: "fern",
         project_name: "default_package_name",
+        audiences: &[],
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -472,6 +483,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         api: "integer-enums",
         package_name: "fern",
         project_name: "default_package_name",
+        audiences: &[],
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -513,6 +525,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         api: "servers-webhooks",
         package_name: "fern",
         project_name: "default_package_name",
+        audiences: &[],
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -562,6 +575,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         api: "basic-auth",
         package_name: "fern",
         project_name: "default_package_name",
+        audiences: &[],
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -603,6 +617,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         api: "oauth-client-credentials",
         package_name: "fern",
         project_name: "default_package_name",
+        audiences: &[],
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -652,6 +667,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         api: "inline-array-request",
         package_name: "fern",
         project_name: "default_package_name",
+        audiences: &[],
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -699,6 +715,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         api: "writeonly-fields",
         package_name: "fern",
         project_name: "default_package_name",
+        audiences: &[],
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -753,6 +770,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         api: "digit-leading-property",
         package_name: "fern",
         project_name: "default_package_name",
+        audiences: &[],
         matched: &[
             "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
@@ -786,6 +804,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         api: "operation-id-non-identifier",
         package_name: "fern",
         project_name: "default_package_name",
+        audiences: &[],
         matched: &[
             "src/fern/client.py",
             "src/fern/core/__init__.py",
@@ -822,6 +841,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         api: "missing-operation-id",
         package_name: "fern",
         project_name: "default_package_name",
+        audiences: &[],
         matched: &[
             "src/fern/client.py",
             "src/fern/core/__init__.py",
@@ -864,6 +884,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         api: "error-responses",
         package_name: "fern",
         project_name: "default_package_name",
+        audiences: &[],
         matched: &[
             ".fern/metadata.json",
             "src/fern/client.py",
@@ -900,6 +921,152 @@ const FEATURE_TARGETS: &[Corpus] = &[
             "src/fern/widgets/raw_client.py",
         ],
     },
+    // tag-based-grouping (issue #41 gap 1): plain (no `group_method`) operationIds
+    // `listWidgets`/`createWidget` under tags `widgets`, `gadgets`/`createGadget`
+    // under `gadgets`. Fern groups by first tag into one sub-client per tag with
+    // snake_cased methods, orders the sub-clients in path-declaration order
+    // (`widgets` before `gadgets`), and hoists each inline response to
+    // `{Method}Response` in that tag's own `types/`.
+    Corpus {
+        api: "tag-based-grouping",
+        package_name: "fern",
+        project_name: "default_package_name",
+        audiences: &[],
+        matched: &[
+            ".fern/metadata.json",
+            "pyproject.toml",
+            "reference.md",
+            "requirements.txt",
+            "src/fern/__init__.py",
+            "src/fern/client.py",
+            "src/fern/core/__init__.py",
+            "src/fern/core/api_error.py",
+            "src/fern/core/client_wrapper.py",
+            "src/fern/core/datetime_utils.py",
+            "src/fern/core/file.py",
+            "src/fern/core/force_multipart.py",
+            "src/fern/core/http_client.py",
+            "src/fern/core/http_response.py",
+            "src/fern/core/http_sse/__init__.py",
+            "src/fern/core/http_sse/_api.py",
+            "src/fern/core/http_sse/_decoders.py",
+            "src/fern/core/http_sse/_exceptions.py",
+            "src/fern/core/http_sse/_models.py",
+            "src/fern/core/jsonable_encoder.py",
+            "src/fern/core/pydantic_utilities.py",
+            "src/fern/core/query_encoder.py",
+            "src/fern/core/remove_none_from_dict.py",
+            "src/fern/core/request_options.py",
+            "src/fern/core/serialization.py",
+            "src/fern/gadgets/__init__.py",
+            "src/fern/gadgets/client.py",
+            "src/fern/gadgets/raw_client.py",
+            "src/fern/gadgets/types/__init__.py",
+            "src/fern/gadgets/types/create_gadget_response.py",
+            "src/fern/py.typed",
+            "src/fern/version.py",
+            "src/fern/widgets/__init__.py",
+            "src/fern/widgets/client.py",
+            "src/fern/widgets/raw_client.py",
+            "src/fern/widgets/types/__init__.py",
+            "src/fern/widgets/types/create_widget_response.py",
+        ],
+    },
+    // enum-query-param (issue #41 gap 2a): an inline `type: string` enum on a query
+    // parameter. Fern hoists it to a named extensible-enum alias
+    // `{Method}Request{Prop}` (`ListWidgetsRequestLevel`) in the tag's `types/`
+    // package and references it by name in the client/raw client, rather than
+    // inlining the `Union[Literal[..], Any]` at every use site.
+    Corpus {
+        api: "enum-query-param",
+        package_name: "fern",
+        project_name: "default_package_name",
+        audiences: &[],
+        matched: &[
+            ".fern/metadata.json",
+            "README.md",
+            "pyproject.toml",
+            "reference.md",
+            "requirements.txt",
+            "src/fern/__init__.py",
+            "src/fern/client.py",
+            "src/fern/core/__init__.py",
+            "src/fern/core/api_error.py",
+            "src/fern/core/client_wrapper.py",
+            "src/fern/core/datetime_utils.py",
+            "src/fern/core/file.py",
+            "src/fern/core/force_multipart.py",
+            "src/fern/core/http_client.py",
+            "src/fern/core/http_response.py",
+            "src/fern/core/http_sse/__init__.py",
+            "src/fern/core/http_sse/_api.py",
+            "src/fern/core/http_sse/_decoders.py",
+            "src/fern/core/http_sse/_exceptions.py",
+            "src/fern/core/http_sse/_models.py",
+            "src/fern/core/jsonable_encoder.py",
+            "src/fern/core/pydantic_utilities.py",
+            "src/fern/core/query_encoder.py",
+            "src/fern/core/remove_none_from_dict.py",
+            "src/fern/core/request_options.py",
+            "src/fern/core/serialization.py",
+            "src/fern/py.typed",
+            "src/fern/version.py",
+            "src/fern/widgets/__init__.py",
+            "src/fern/widgets/client.py",
+            "src/fern/widgets/raw_client.py",
+            "src/fern/widgets/types/__init__.py",
+            "src/fern/widgets/types/list_widgets_request_level.py",
+            "src/fern/widgets/types/list_widgets_response.py",
+        ],
+    },
+    // audience-filter (issue #41 gap 3): `x-crozier-audiences` on the operations
+    // (`listWidgets`→public, `getStats`→internal; the spec also carries Fern's
+    // `x-fern-audiences` so Fern produces the golden). Driven with `--audience public`,
+    // crozier prunes to the public operation and the transitive schema closure it
+    // references (`Widget`→`WidgetDetail`), dropping the internal `admin` client and
+    // the internal-only `Stats` type — byte-matching Fern's audience-filtered SDK.
+    Corpus {
+        api: "audience-filter",
+        package_name: "fern",
+        project_name: "default_package_name",
+        audiences: &["public"],
+        matched: &[
+            ".fern/metadata.json",
+            "README.md",
+            "pyproject.toml",
+            "reference.md",
+            "requirements.txt",
+            "src/fern/__init__.py",
+            "src/fern/client.py",
+            "src/fern/core/__init__.py",
+            "src/fern/core/api_error.py",
+            "src/fern/core/client_wrapper.py",
+            "src/fern/core/datetime_utils.py",
+            "src/fern/core/file.py",
+            "src/fern/core/force_multipart.py",
+            "src/fern/core/http_client.py",
+            "src/fern/core/http_response.py",
+            "src/fern/core/http_sse/__init__.py",
+            "src/fern/core/http_sse/_api.py",
+            "src/fern/core/http_sse/_decoders.py",
+            "src/fern/core/http_sse/_exceptions.py",
+            "src/fern/core/http_sse/_models.py",
+            "src/fern/core/jsonable_encoder.py",
+            "src/fern/core/pydantic_utilities.py",
+            "src/fern/core/query_encoder.py",
+            "src/fern/core/remove_none_from_dict.py",
+            "src/fern/core/request_options.py",
+            "src/fern/core/serialization.py",
+            "src/fern/py.typed",
+            "src/fern/types/__init__.py",
+            "src/fern/types/widget.py",
+            "src/fern/types/widget_detail.py",
+            "src/fern/version.py",
+            "src/fern/widgets/__init__.py",
+            "src/fern/widgets/client.py",
+            "src/fern/widgets/raw_client.py",
+        ],
+    },
     // sse-streaming (issue #43, gap #3): a `text/event-stream` (SSE) response used to
     // collapse to a `-> None` method that discarded the stream. crozier now emits
     // Fern's context-managed streaming shape: the raw client is a
@@ -914,6 +1081,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         api: "sse-streaming",
         package_name: "fern",
         project_name: "default_package_name",
+        audiences: &[],
         matched: &[
             ".fern/metadata.json",
             "src/fern/client.py",
@@ -995,6 +1163,42 @@ fn normalize_init(content: &str) -> String {
     ruff_isort(&trimmed)
 }
 
+/// Drop Fern's `generatorConfig` block from `.fern/metadata.json`. Because the
+/// whole corpus is generated with `pydantic_config.enum_type: python_enums` (so
+/// enums render as real classes — see docs/matching.md), Fern records that config
+/// in its provenance file. crozier renders python_enums unconditionally and carries
+/// no such config, so — like the SDK-identity headers — this Fern-only provenance is
+/// normalized out of both sides rather than faked by crozier. Applied only to
+/// `metadata.json`; a no-op on content without the block. The block is the object's
+/// last key, so removing it plus the preceding comma restores the shorter form.
+fn normalize_metadata(content: &str) -> String {
+    let Some(start) = content.find("\"generatorConfig\"") else {
+        return content.to_string();
+    };
+    let before = content[..start].trim_end();
+    let before = before.strip_suffix(',').unwrap_or(before);
+    // Skip past the balanced `{ ... }` value that follows `"generatorConfig":`.
+    let rest = &content[start..];
+    let (mut depth, mut started, mut end) = (0i32, false, rest.len());
+    for (i, ch) in rest.char_indices() {
+        match ch {
+            '{' => {
+                depth += 1;
+                started = true;
+            }
+            '}' if started => {
+                depth -= 1;
+                if depth == 0 {
+                    end = i + 1;
+                    break;
+                }
+            }
+            _ => {}
+        }
+    }
+    format!("{before}{}", &rest[end..])
+}
+
 /// Run `ruff check --select I --fix` over a source string, returning the
 /// import-sorted result. Uses the same `ruff` the generator depends on.
 fn ruff_isort(source: &str) -> String {
@@ -1068,6 +1272,7 @@ fn generate_corpus(c: &Corpus) -> tempfile::TempDir {
             "--project-name",
             c.project_name,
         ])
+        .args(c.audiences.iter().flat_map(|a| ["--audience", a]))
         .assert()
         .success()
         .stderr(predicate::str::contains("generated"));
@@ -1103,6 +1308,11 @@ fn generated_matches_fixture(rel: &str, generated: &str, expected: &str) -> bool
         )
     } else if rel.ends_with(".py") {
         (crozier::strip_python_comments(&generated), expected)
+    } else if rel.ends_with("metadata.json") {
+        (
+            normalize_metadata(&generated),
+            normalize_metadata(&expected),
+        )
     } else {
         (generated, expected)
     };
@@ -1601,4 +1811,56 @@ fn regeneration_prunes_stale_modules_and_stays_valid() {
         "stale module was not pruned on regeneration"
     );
     assert_valid_python(&out);
+}
+
+#[test]
+fn audience_filter_prunes_through_the_binary_and_stays_valid() {
+    // Drive the real binary over the committed `audience-filter` spec both ways.
+    // The `feature_target_specs` byte-match already proves `--audience public`
+    // equals Fern's pruned golden; this adds the two things that check cannot: the
+    // filter-vs-unfiltered *contrast* through the CLI, and that the pruned subset
+    // still compiles (no dangling import to a removed type).
+    let dir = tempfile::tempdir().expect("tempdir");
+    let spec = fixture_dir("audience-filter").join("openapi.yml");
+
+    // Unfiltered: both the public `widgets` client and the internal `admin` client
+    // (with its `Stats` type) are generated.
+    let full = dir.path().join("full");
+    crozier()
+        .args(["generate", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&full)
+        .args(["--package-name", "aud"])
+        .assert()
+        .success();
+    assert!(full.join("src/aud/widgets/client.py").is_file());
+    assert!(full.join("src/aud/admin/client.py").is_file());
+    assert!(full.join("src/aud/types/stats.py").is_file());
+    assert_valid_python(&full);
+
+    // Filtered to `public`: the internal `admin` client and its internal-only
+    // `Stats` type are pruned; the public client and its transitive `Widget`
+    // closure remain, and the result still compiles.
+    let pub_only = dir.path().join("public");
+    crozier()
+        .args(["generate", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&pub_only)
+        .args(["--package-name", "aud", "--audience", "public"])
+        .assert()
+        .success();
+    assert!(pub_only.join("src/aud/widgets/client.py").is_file());
+    assert!(
+        !pub_only.join("src/aud/admin").exists(),
+        "internal admin client should be pruned by --audience public"
+    );
+    assert!(
+        !pub_only.join("src/aud/types/stats.py").exists(),
+        "internal-only Stats type should be pruned by --audience public"
+    );
+    assert!(pub_only.join("src/aud/types/widget.py").is_file());
+    assert!(pub_only.join("src/aud/types/widget_detail.py").is_file());
+    assert_valid_python(&pub_only);
 }

@@ -2,6 +2,12 @@
 # Generate Fern's Python SDK output for a fixture's OpenAPI spec, strip comments,
 # and install it as that fixture's golden `expected/` tree.
 #
+# Produces the *packaged* SDK (a pip package: `src/<pkg>/…` + pyproject.toml +
+# README.md/reference.md + .fern/) via `fern generate --preview`, which is the form
+# the committed corpus vendors and needs no publishing credentials. String enums
+# render as real `enum.Enum` classes (`pydantic_config.enum_type: python_enums`) to
+# match crozier — see docs/matching.md.
+#
 # Fern's generator only runs under a container runtime (Docker/Podman), which is
 # not available in every environment — so this is a SEPARATE, opt-in script, not
 # part of `just fixtures-refresh`'s default offline path. Run it on a machine
@@ -54,45 +60,70 @@ trap 'rm -rf "$workdir"' EXIT
 
 # Scaffold a minimal Fern workspace around the vendored OpenAPI spec. We ignore
 # Fern's definition files by construction: only the OpenAPI document is wired in.
-mkdir -p "$workdir/fern/openapi" "$workdir/generated"
+mkdir -p "$workdir/fern/openapi"
 cp "$spec" "$workdir/fern/openapi/openapi.yml"
 cat > "$workdir/fern/fern.config.json" <<JSON
 { "organization": "fern", "version": "${FERN_CLI_VERSION}" }
 JSON
+# Optional audience filter (issue #41 gap 3): FERN_AUDIENCES=public[,internal]
+# adds a group-level `audiences:` block so Fern prunes to matching operations plus
+# the transitive type closure. Empty → no filter (the whole API is generated).
+audiences_block=""
+if [ -n "${FERN_AUDIENCES:-}" ]; then
+  audiences_block=$'    audiences:\n'
+  IFS=',' read -ra _auds <<<"$FERN_AUDIENCES"
+  for _a in "${_auds[@]}"; do audiences_block+="      - ${_a}"$'\n'; done
+fi
 cat > "$workdir/fern/generators.yml" <<YAML
 api:
   path: openapi/openapi.yml
 groups:
   python-sdk:
-    generators:
+${audiences_block}    generators:
       - name: fernapi/fern-python-sdk
         version: ${FERN_PYTHON_VERSION}
+        config:
+          # crozier renders string enums as real \`enum.Enum\` classes (issue #41
+          # gap 2b), which is Fern's opt-in \`python_enums\` mode rather than its
+          # out-of-the-box open-\`Literal\`-union default. The whole golden corpus
+          # therefore targets \`python_enums\`; keep this in lockstep with the
+          # generator so a regeneration does not silently flip the enum shape.
+          pydantic_config:
+            enum_type: python_enums
         output:
           location: local-file-system
           path: ../generated/python
 YAML
 
 echo "generate-fern-fixture: running Fern (python-sdk@${FERN_PYTHON_VERSION}) locally..." >&2
-( cd "$workdir/fern" && fern generate --group python-sdk --local --force )
+# `--preview --output` writes the full *packaged* SDK (a pip package with
+# `src/<pkg>/…` + `pyproject.toml` + `README.md`/`reference.md` + `.fern/`) under
+# `<output>/fern-python-sdk/`. A plain `--local` with `location: local-file-system`
+# instead emits only the flat module tree (no packaging), so the committed corpus
+# — which is the packaged form — is reproduced with `--preview`. It needs no
+# publishing credentials (unlike a `pypi`/`github` output location, whose local
+# run tries to push and fails).
+#
+# `--preview` only emits the full package when Fern considers itself authenticated;
+# with no FERN_TOKEN it silently falls back to the flat module tree. We never
+# publish (local `--preview`), so any non-empty token unlocks the packaged form —
+# a dummy is sufficient and carries no credential.
+export FERN_TOKEN="${FERN_TOKEN:-preview-only-no-publish}"
+mkdir -p "$workdir/preview"
+( cd "$workdir/fern" && fern generate --group python-sdk --local --preview --output "$workdir/preview" --force )
 
-out="$workdir/generated/python"
-# Fern emits one of two layouts depending on the CLI version: a full pip package
-# (`python/src/<pkg>/...` alongside pyproject.toml — install verbatim) or a flat
-# module tree (`python/<pkg-contents>` with no `src/` — relocate under
-# `src/fern/`, the layout crozier and the committed corpus use). Detect which.
-if [ -d "$out/src" ]; then
-  src="$out"; prefix=""
-elif [ -f "$out/__init__.py" ]; then
-  src="$out"; prefix="src/fern/"
-else
-  echo "generate-fern-fixture: Fern produced no recognizable package under $out" >&2
+# The packaged tree lands under `<output>/fern-python-sdk/`; it is already the
+# `src/…` + `.fern/` layout the committed corpus uses, so no path remapping.
+src="$workdir/preview/fern-python-sdk"
+prefix=""
+if [ ! -d "$src/src" ]; then
+  echo "generate-fern-fixture: Fern produced no packaged SDK under $src" >&2
   exit 1
 fi
 
 # Strip comments from every generated .py, mirroring the offline corpus, and
-# install into the fixture tree (under $prefix). Non-.py files are copied verbatim.
-# In the flat layout the package root and the output root are conflated, so the
-# `.fern/` metadata dir stays at the fixture root rather than moving under src/.
+# install into the fixture tree. Non-.py files (pyproject.toml, README.md,
+# reference.md, .fern/metadata.json, …) are copied verbatim.
 rm -rf "$dest"
 mkdir -p "$dest"
 ( cd "$src" && find . -type f -print0 ) | while IFS= read -r -d '' rel; do
