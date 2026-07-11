@@ -28,18 +28,32 @@ if [ "${#missing[@]}" -eq 0 ] && [ "$need_ruff" -eq 0 ]; then
   exit 0
 fi
 
-if command -v cargo-binstall >/dev/null 2>&1; then
-  [ "${#missing[@]}" -gt 0 ] && {
-    echo "install-dev-tools: installing ${missing[*]}" >&2
+# One status line naming everything that will be installed, then install quietly.
+# (Append guardedly: bash 3.2 on macOS errors on an empty-array expansion here.)
+wanted=()
+[ "${#missing[@]}" -gt 0 ] && wanted+=("${missing[@]}")
+[ "$need_ruff" -eq 1 ] && wanted+=("ruff==$RUFF_VERSION")
+echo "install-dev-tools: installing ${wanted[*]}" >&2
+
+# Cargo subcommands: prebuilt binaries via cargo-binstall, else build from source.
+if [ "${#missing[@]}" -gt 0 ]; then
+  if command -v cargo-binstall >/dev/null 2>&1; then
     cargo binstall --no-confirm --locked "${missing[@]}"
-  }
-  [ "$need_ruff" -eq 1 ] && {
-    echo "install-dev-tools: installing ruff@$RUFF_VERSION" >&2
-    cargo binstall --no-confirm "ruff@$RUFF_VERSION"
-  }
-else
-  echo "install-dev-tools: cargo-binstall not found; building from source (slow)." \
-       "Install it for faster setup: https://github.com/cargo-bins/cargo-binstall" >&2
-  [ "${#missing[@]}" -gt 0 ] && cargo install --locked "${missing[@]}"
-  [ "$need_ruff" -eq 1 ] && cargo install --version "$RUFF_VERSION" ruff
+  else
+    echo "install-dev-tools: cargo-binstall not found; building ${missing[*]} from source" \
+         "(slow). Install it for faster setup: https://github.com/cargo-bins/cargo-binstall" >&2
+    cargo install --locked "${missing[@]}"
+  fi
+fi
+
+# ruff ships as a Python package, not a cargo crate, so install it from PyPI
+# (pipx keeps it isolated and on PATH; fall back to uv or pip --user).
+if [ "$need_ruff" -eq 1 ]; then
+  if command -v pipx >/dev/null 2>&1; then
+    pipx install "ruff==$RUFF_VERSION"
+  elif command -v uv >/dev/null 2>&1; then
+    uv tool install "ruff==$RUFF_VERSION"
+  else
+    python3 -m pip install --user "ruff==$RUFF_VERSION"
+  fi
 fi

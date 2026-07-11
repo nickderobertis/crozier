@@ -573,7 +573,7 @@ fn ruff_isort(source: &str) -> String {
         ])
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
-        .stderr(Stdio::null())
+        .stderr(Stdio::piped())
         .spawn()
         .expect("ruff is on PATH for the e2e (see docs/matching.md)");
     child
@@ -583,6 +583,14 @@ fn ruff_isort(source: &str) -> String {
         .write_all(source.as_bytes())
         .expect("write to ruff");
     let out = child.wait_with_output().expect("ruff ran");
+    // Trust ruff's stdout only when it exited cleanly — a non-zero exit (e.g. a
+    // syntax error in the input) must surface, not silently yield wrong text.
+    assert!(
+        out.status.success(),
+        "ruff isort failed ({}): {}",
+        out.status,
+        String::from_utf8_lossy(&out.stderr)
+    );
     String::from_utf8(out.stdout).expect("ruff output is UTF-8")
 }
 

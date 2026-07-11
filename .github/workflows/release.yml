@@ -213,6 +213,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+      # `crozier generate` (driven by the smoke test) shells out to `ruff format`.
+      - name: Install ruff (generation-time dependency)
+        run: pipx install ruff==0.11.5
       - name: Install via scripts/install.sh and smoke-test
         env:
           # install.sh prefers the `gh` verifier (present on runners); it reads a
@@ -273,6 +276,9 @@ jobs:
           done
           echo "::error::crozier $ver did not appear on crates.io within ~5 minutes"
           exit 1
+      # `crozier generate` (driven by the smoke test) shells out to `ruff format`.
+      - name: Install ruff (generation-time dependency)
+        run: pipx install ruff==0.11.5
       - name: Install from crates.io and smoke-test
         shell: bash
         run: |
@@ -394,6 +400,9 @@ jobs:
           done
           echo "::error::crozier $ver did not appear on PyPI within ~5 minutes"
           exit 1
+      # `crozier generate` (driven by the smoke test) shells out to `ruff format`.
+      - name: Install ruff (generation-time dependency)
+        run: pipx install ruff==0.11.5
       - name: Install from PyPI and smoke-test
         shell: bash
         run: |
