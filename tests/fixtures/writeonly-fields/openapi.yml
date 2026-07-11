@@ -1,0 +1,57 @@
+openapi: 3.0.1
+info:
+  title: writeonly-fields
+  version: ""
+paths:
+  /users:
+    post:
+      operationId: users_upsert
+      tags:
+        - Users
+      parameters: []
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+components:
+  schemas:
+    User:
+      title: User
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        username:
+          type: string
+        password:
+          type: string
+          writeOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        birthday:
+          type: string
+          format: date
+      required:
+        - id
+        - username
+        - password
+        - birthday
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer

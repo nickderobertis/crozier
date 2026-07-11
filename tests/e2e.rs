@@ -556,6 +556,53 @@ const FEATURE_TARGETS: &[Corpus] = &[
             "src/fern/version.py",
         ],
     },
+    // Gap-exercising targets: the OpenAPI spec is vendored, but the golden Fern
+    // `expected/` tree is not yet generated (it needs Fern + Docker; see
+    // scripts/generate-fern-fixture.sh and docs/matching.md). With an empty
+    // `matched` list these assert only that crozier consumes the spec and writes a
+    // tree without panicking; populate `matched` file-by-file once the golden tree
+    // is generated and generation lands.
+    //
+    // basic-auth: HTTP `basic` as the sole/primary security scheme. crozier's auth
+    // model currently reproduces api-key and bearer byte-for-byte and falls back to
+    // an optional bearer wrapper for basic/oauth2 — this pins the basic primary so
+    // the fallback is measured against Fern's real `username`/`password` wrapper.
+    Corpus {
+        api: "basic-auth",
+        package_name: "fern",
+        project_name: "default_package_name",
+        matched: &[],
+    },
+    // oauth-client-credentials: OAuth2 `clientCredentials` as the primary scheme,
+    // with the token endpoint declared as an operation. Exercises the oauth2
+    // primary fallback against Fern's token-provider client wrapper.
+    Corpus {
+        api: "oauth-client-credentials",
+        package_name: "fern",
+        project_name: "default_package_name",
+        matched: &[],
+    },
+    // inline-array-request: a request body that is an array of *inline* objects
+    // (not a `$ref`). The inline-hoister covers inline object bodies; an array of
+    // inline objects is the shape called out as not-yet-exercised in ir.rs.
+    Corpus {
+        api: "inline-array-request",
+        package_name: "fern",
+        project_name: "default_package_name",
+        matched: &[],
+    },
+    // writeonly-fields: one schema used as *both* request body and response, with a
+    // required `readOnly` field (server-populated) and a required `writeOnly` field
+    // (client-only). Fern splits such a schema into distinct request/response
+    // representations — the request-vs-response splitting called out as unexercised
+    // in the schema-constraints notes. Also carries a required `date` field, whose
+    // example placeholder is likewise unverified against a fixture.
+    Corpus {
+        api: "writeonly-fields",
+        package_name: "fern",
+        project_name: "default_package_name",
+        matched: &[],
+    },
 ];
 
 /// Path to a fixture directory under `tests/fixtures/`.
@@ -684,10 +731,13 @@ fn exhaustive_matches_fern_output_byte_for_byte() {
 
 #[test]
 fn feature_target_specs_generate_without_panicking() {
-    // Each feature-coverage target has an empty `matched` list, so this asserts
-    // crozier consumes the spec and writes a tree (exit 0, "generated" on stderr)
-    // without panicking. As generation lands for a feature, populate that
-    // corpus's `matched` list and the same helper starts byte-comparing files.
+    // A feature-coverage target with a populated `matched` list is byte-compared
+    // file-by-file; one with an empty `matched` list asserts only that crozier
+    // consumes the spec and writes a tree (exit 0, "generated" on stderr) without
+    // panicking (the golden Fern tree is not yet generated — see the gap targets
+    // at the end of FEATURE_TARGETS). As generation lands for a gap, generate its
+    // `expected/` tree and grow its `matched` list; the same helper then starts
+    // byte-comparing files.
     for target in FEATURE_TARGETS {
         assert_corpus_matches(target);
     }

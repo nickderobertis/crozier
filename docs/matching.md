@@ -180,13 +180,25 @@ here means matching Fern, not `ruff`.
 
 ## Known gaps (roadmap)
 
-The `exhaustive` corpus is fully matched, and **every** feature-coverage target is
-**now fully matched too** — `auth-schemes`, `discriminated-unions`,
+The `exhaustive` corpus is fully matched, and eight feature-coverage targets are
+**fully matched too** — `auth-schemes`, `discriminated-unions`,
 `schema-constraints`, `integer-enums`, `form-bodies`, `inline-request-response`,
 `cookie-parameters`, and `servers-webhooks`. (The exact matched-file set for each
 corpus is its `matched` array in `tests/e2e.rs`, the single source of truth; counts
 are deliberately not restated here so they cannot drift.) The items below record how
 each shape generates; the remaining unproven paths are called out inline.
+
+Four further **gap targets** vendor a spec but do **not** yet carry a golden
+`expected/` tree (their `matched` array is empty, so the e2e only asserts crozier
+consumes the spec without panicking): `basic-auth` and `oauth-client-credentials`
+(a basic/OAuth2 primary scheme, where the auth model currently falls back to the
+optional-bearer wrapper — items 1 below), `inline-array-request` (a request body
+that is an array of *inline* objects — item 4), and `writeonly-fields` (one schema
+used as both request and response with a required `readOnly`/`writeOnly` field,
+forcing Fern's request-vs-response split — item 8; it also carries a required
+`date` field for the unverified date example placeholder — item 2). Generate their
+golden trees with `scripts/generate-fern-fixture.sh <fixture>` on a Docker host
+(see "Generating a gap target's golden tree" below), then grow the `matched` list.
 
 The generated **README/reference** now pick the first endpoint with a request body
 for the worked example and abbreviate the error-handling/advanced snippets to `...`
@@ -205,6 +217,29 @@ target/release/crozier generate \
   --spec tests/fixtures/<fixture>/openapi.yml \
   --output /tmp/<fixture> --package-name fern --project-name default_package_name
 ```
+
+### Generating a gap target's golden tree
+
+The gap targets (`basic-auth`, `oauth-client-credentials`, `inline-array-request`,
+`writeonly-fields`) ship only `openapi.yml`. Fern's generator runs only under a
+container runtime, so the golden `expected/` tree is produced on a Docker host, not
+in CI. On such a machine:
+
+```
+# prerequisites: Docker running, `npm i -g fern-api`, `cargo build --release`
+scripts/generate-fern-fixture.sh basic-auth          # writes tests/fixtures/basic-auth/expected/
+scripts/generate-fern-fixture.sh oauth-client-credentials
+scripts/generate-fern-fixture.sh inline-array-request
+scripts/generate-fern-fixture.sh writeonly-fields
+```
+
+The script scaffolds a Fern workspace around the vendored spec, runs
+`fern-python-sdk` (pinned to the same version as the other fixtures — the default
+in the script), strips comments with `crozier internal-strip`, and installs the
+result as `tests/fixtures/<fixture>/expected/`. Commit that tree, then diff crozier
+against it and add each byte-matching file to the fixture's `matched` array in
+`tests/e2e.rs` (the e2e starts comparing it immediately). Anything that does not
+match is generator work to land next; keep the file out of `matched` until it does.
 
 1. **Auth models beyond bearer** (`auth-schemes`, partially implemented).
    `components.securitySchemes` plus each operation's `security` now feed an
