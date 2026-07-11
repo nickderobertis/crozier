@@ -102,6 +102,11 @@ lint-llm *paths:
     @command -v llmlint >/dev/null 2>&1 || { echo "llmlint not installed — run 'just setup-llmlint'"; exit 1; }
     llmlint {{paths}}
 
+
+# Deterministic llmlint config/ignore/version-bump validation.
+lint-llm-validate *args:
+    PATH="$HOME/.local/bin:$PATH" llmlint validate {{args}}
+
 # `--diff` self-discovers the changed files (a three-dot compare against the base
 # that skips files main also touched) and honors llmlint.yml's excludes, so no
 # wrapper script is needed — it lints only what this branch introduced.

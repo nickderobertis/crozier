@@ -33,6 +33,7 @@
       "Bash(just setup-fern)",
       "Bash(just lint-llm:*)",
       "Bash(just lint-llm-diff:*)",
+      "Bash(just lint-llm-validate:*)",
       "Bash(llmlint:*)",
       "Bash(./scripts/setup-llmlint.sh)",
       "Bash(./scripts/setup-fern.sh)",
