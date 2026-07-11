@@ -1,0 +1,36 @@
+openapi: 3.0.3
+info:
+  title: Widget API
+  version: 1.0.0
+paths:
+  /widgets:
+    get:
+      # A hyphen is illegal in a Python identifier; crozier once emitted a module
+      # directory and identifiers verbatim from this id and produced unparseable
+      # source (issue #40, case 1a). It must sanitize to a legal name.
+      operationId: get-all-widgets
+      tags: [widgets]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /verify:
+    post:
+      # A space is likewise illegal (issue #40, case 1b).
+      operationId: verify code
+      tags: [widgets]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean

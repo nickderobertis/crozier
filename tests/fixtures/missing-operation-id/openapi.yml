@@ -1,0 +1,21 @@
+openapi: 3.0.3
+info:
+  title: Widget API
+  version: 1.0.0
+paths:
+  /widgets:
+    get:
+      # `operationId` is optional in OpenAPI and real specs omit it. crozier once
+      # hard-errored ("requires one to name the client"); it now synthesizes a
+      # deterministic id from the tag/path + method (issue #40, case 3).
+      summary: List widgets
+      tags: [widgets]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
