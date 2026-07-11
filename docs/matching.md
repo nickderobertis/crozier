@@ -153,10 +153,10 @@ crozier delegates the wrapping to the same tool. The emitters build each
 statement on one line (a small [`Doc`](../src/wrap.rs) expression rendered flat),
 and a post-pass ([`pyfmt`](../src/pyfmt.rs)) runs `ruff format` over the generated
 `.py` files. `ruff` is therefore a **generation-time dependency**, invoked over
-the CLI (not the unstable `ruff_python_formatter` library crates) and pinned to
-`0.11.5` in CI to match Fern's fixtures; its formatter output is byte-identical,
-on the shapes crozier emits, across `0.11`–`0.15` (verified by running the e2e
-under both). The vendored `core/` runtime is left unformatted — it is already
+the CLI (not the unstable `ruff_python_formatter` library crates) and pinned in CI
+to match Fern's fixtures (the version lives in `.ruff-version`, installed by
+`scripts/install-ruff.sh`); its formatter output is byte-identical, on the shapes
+crozier emits, across `0.11`–`0.15` (verified by running the e2e under both). The vendored `core/` runtime is left unformatted — it is already
 Fern's own `ruff`-formatted source, and reformatting it does not commute with the
 comment-strip comparison.
 

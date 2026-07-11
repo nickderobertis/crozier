@@ -40,7 +40,7 @@ jobs:
 
       # Bootstrap installs the pinned `ruff` too (a generation-time dependency —
       # crozier defers Python wrapping to `ruff format`); see
-      # scripts/install-dev-tools.sh and the `.ruff-version` source of truth.
+      # scripts/install-ruff.sh and the `.ruff-version` source of truth.
       - name: Bootstrap
         run: just bootstrap
 

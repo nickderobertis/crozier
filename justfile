@@ -12,6 +12,7 @@ bootstrap:
     @rustup component add rustfmt clippy llvm-tools-preview >/dev/null 2>&1 || true
     cargo fetch --locked
     @./scripts/install-dev-tools.sh
+    @./scripts/install-ruff.sh
 
 # Full quality gate. Fails on any issue. e2e is part of the gate, not opt-in.
 check: fmt-check lint test test-e2e supply-chain doc

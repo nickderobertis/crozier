@@ -5,7 +5,8 @@
 //! layout in Rust, crozier emits content-correct Python and hands the final
 //! wrapping to `ruff` itself — the same tool Fern uses. `ruff format` is
 //! deterministic and its style has been verified byte-identical, on the shapes
-//! crozier emits, to the `0.11.5` Fern pins (see `docs/matching.md`).
+//! crozier emits, to the version Fern pins (see `.ruff-version` and
+//! `docs/matching.md`).
 //!
 //! `ruff` is invoked as an external process (not the unstable `0.0.x` library
 //! crates), so it is a runtime prerequisite of `crozier generate`; a missing or
