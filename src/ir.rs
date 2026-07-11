@@ -991,13 +991,19 @@ fn success_response_doc(op: &Operation) -> Option<String> {
     clean_doc(response.description.as_deref())
 }
 
-/// The generated exception class name for an HTTP status code, mirroring Fern's
+/// The generated exception class name for an HTTP status code, reproducing Fern's
 /// status-code → exception map (every standard 4xx/5xx code). A status Fern does
 /// not name (a non-standard code such as `460`) returns `None`: crozier then omits
 /// its `raise` branch and lets the operation fall through to the generic
 /// `ApiError`, exactly as Fern does — it never suppresses the whole method.
-/// Verified against a Fern fixture spanning the full range (see the
-/// `error-responses` corpus and `docs/matching.md`).
+///
+/// The table was read off Fern's own generator output (running it across the full
+/// status range under Docker, `scripts/generate-fern-fixture.sh`). Its drift gates:
+/// the `error-responses` corpus pins the shape byte-for-byte for the common statuses
+/// (400/404/422/500/503), and the exhaustive
+/// `every_standard_error_status_maps_to_its_fern_exception` test
+/// (`tests/generation.rs`) locks every entry's class name, `errors/` module filename,
+/// and `status_code`, so an accidental edit here fails loudly. See `docs/matching.md`.
 fn error_class_name(status: u16) -> Option<&'static str> {
     Some(match status {
         400 => "BadRequestError",
