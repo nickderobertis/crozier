@@ -58,13 +58,20 @@ pub enum Auth {
 /// Derive the [`Auth`] model: the first declared scheme selects the credential
 /// shape, and the credential is required when every operation is authenticated.
 fn auth_model(doc: &OpenApi) -> Auth {
+    use crate::openapi::{HttpAuthScheme, SecuritySchemeType};
     let required = all_operations_authenticated(doc);
     match doc.components.security_schemes.values().next() {
-        Some(s) if s.ty == "apiKey" && s.location.as_deref() == Some("header") => Auth::ApiKey {
-            header: s.name.clone().unwrap_or_default(),
-            required,
-        },
-        Some(s) if s.ty == "http" && s.scheme.as_deref() == Some("bearer") => {
+        // `name` is validated non-empty at the boundary (see `openapi::load`).
+        Some(s)
+            if s.ty == SecuritySchemeType::ApiKey
+                && s.location == Some(ParameterLocation::Header) =>
+        {
+            Auth::ApiKey {
+                header: s.name.clone().unwrap_or_default(),
+                required,
+            }
+        }
+        Some(s) if s.ty == SecuritySchemeType::Http && s.scheme == Some(HttpAuthScheme::Bearer) => {
             Auth::Bearer { required }
         }
         // Basic/oauth2/unknown/no scheme → Fern's default optional bearer token.

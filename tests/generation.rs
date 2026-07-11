@@ -877,3 +877,162 @@ fn inline_object_response_keeps_the_module_unemittable() {
     );
     assert!(!files.contains_key("src/acme/widgets/raw_client.py"));
 }
+
+/// A discriminated `oneOf` with a `mapping` emits per-variant wrapper models over
+/// a union alias, strips the discriminant from each member's own model, and does
+/// not hoist the discriminant enum. The default (all-authenticated) bearer wrapper
+/// is exercised alongside.
+const DISCRIMINATED_SPEC: &str = r##"
+openapi: 3.0.1
+info:
+  title: Shapes
+paths:
+  /shape:
+    post:
+      operationId: shapes_create
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Shape"
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Shape"
+components:
+  schemas:
+    Shape:
+      oneOf:
+        - $ref: "#/components/schemas/Circle"
+        - $ref: "#/components/schemas/Square"
+      discriminator:
+        propertyName: type
+        mapping:
+          circle: "#/components/schemas/Circle"
+          square: "#/components/schemas/Square"
+    Circle:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - circle
+        radius:
+          type: number
+      required:
+        - type
+        - radius
+    Square:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - square
+        side:
+          type: number
+      required:
+        - type
+        - side
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+"##;
+
+#[test]
+fn discriminated_union_emits_variant_wrappers_and_strips_discriminant() {
+    let files = render(DISCRIMINATED_SPEC);
+
+    let shape = &files["src/acme/types/shape.py"];
+    assert!(shape.contains("class Shape_Circle(UniversalBaseModel):"));
+    assert!(shape.contains("type: typing.Literal[\"circle\"] = \"circle\""));
+    assert!(shape.contains("Shape = typing.Union[Shape_Circle, Shape_Square]"));
+    assert!(shape.contains("from __future__ import annotations"));
+
+    // The member model keeps its own (non-discriminant) fields and drops `type`;
+    // the discriminant enum is never hoisted to a separate module.
+    let circle = &files["src/acme/types/circle.py"];
+    assert!(circle.contains("radius: float"));
+    // The `type` field is gone (the `# type: ignore` config comment doesn't count).
+    assert!(!circle.contains("\n    type:"));
+    assert!(!circle.contains("Literal"));
+    assert!(!files.contains_key("src/acme/types/circle_type.py"));
+
+    // The aggregator groups all three names on the `.shape` import line.
+    let init = &files["src/acme/types/__init__.py"];
+    assert!(init.contains("from .shape import Shape, Shape_Circle, Shape_Square"));
+
+    // All operations are authenticated, so the bearer token is required.
+    let wrapper = &files["src/acme/core/client_wrapper.py"];
+    assert!(wrapper.contains("token: typing.Union[str, typing.Callable[[], str]],"));
+    assert!(wrapper.contains("headers[\"Authorization\"] = f\"Bearer {self._get_token()}\""));
+}
+
+/// An api-key header scheme shapes the client wrapper (public `api_key`, the
+/// scheme's header, no token helper) and the root client's credential argument.
+#[test]
+fn api_key_scheme_shapes_client_wrapper_and_root_client() {
+    let files = render(
+        "openapi: 3.0.1\ninfo:\n  title: Keyed\npaths:\n  /me:\n    get:\n      operationId: users_me\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema:\n                type: string\n      security:\n        - ApiKeyAuth: []\ncomponents:\n  securitySchemes:\n    ApiKeyAuth:\n      type: apiKey\n      in: header\n      name: X-API-Key\n",
+    );
+    let wrapper = &files["src/acme/core/client_wrapper.py"];
+    assert!(wrapper.contains("api_key: str,"));
+    assert!(wrapper.contains("headers[\"X-API-Key\"] = self.api_key"));
+    assert!(!wrapper.contains("_get_token"));
+
+    let client = &files["src/acme/client.py"];
+    assert!(client.contains("api_key=api_key,"));
+    assert!(client.contains("api_key=\"YOUR_API_KEY\","));
+}
+
+/// When some operation is unauthenticated, the bearer token is optional (Fern's
+/// default wrapper) — exercising the `all_operations_authenticated` false branch.
+#[test]
+fn unauthenticated_operation_makes_the_token_optional() {
+    let files = render(
+        "openapi: 3.0.1\ninfo:\n  title: Mixed\npaths:\n  /a:\n    get:\n      operationId: a_get\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema:\n                type: string\n      security:\n        - BearerAuth: []\n  /b:\n    get:\n      operationId: b_get\n      security: []\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema:\n                type: string\ncomponents:\n  securitySchemes:\n    BearerAuth:\n      type: http\n      scheme: bearer\n",
+    );
+    let wrapper = &files["src/acme/core/client_wrapper.py"];
+    assert!(wrapper
+        .contains("token: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,"));
+}
+
+/// An integer `enum` becomes a plain `int` alias, and a `$ref` integer-enum
+/// request body is emittable (json=request + content-type header).
+#[test]
+fn integer_enum_alias_and_ref_body_are_emittable() {
+    let files = render(
+        "openapi: 3.0.1\ninfo:\n  title: Levels\npaths:\n  /p:\n    post:\n      operationId: levels_set\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema:\n                type: string\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n              $ref: \"#/components/schemas/Level\"\ncomponents:\n  schemas:\n    Level:\n      type: integer\n      enum:\n        - 1\n        - 2\n",
+    );
+    assert!(files["src/acme/types/level.py"].contains("Level = int"));
+    let raw = &files["src/acme/levels/raw_client.py"];
+    assert!(raw.contains("request: Level"));
+    assert!(raw.contains("\"content-type\": \"application/json\""));
+}
+
+/// An `apiKey` scheme without its required `name` is rejected at the boundary
+/// (rather than emitting a client with an empty header name).
+#[test]
+fn api_key_scheme_without_name_is_rejected() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let path = dir.path().join("api.yml");
+    std::fs::write(
+        &path,
+        "openapi: 3.0.1\ninfo:\n  title: K\ncomponents:\n  securitySchemes:\n    ApiKeyAuth:\n      type: apiKey\n      in: header\n",
+    )
+    .unwrap();
+    let err = render_files(GenerateArgs {
+        spec: path,
+        output: PathBuf::from("unused"),
+        package_name: Some("acme".to_string()),
+        project_name: Some("acme".to_string()),
+    })
+    .expect_err("missing apiKey name must fail");
+    assert!(err.to_string().contains("apiKey security scheme"));
+}

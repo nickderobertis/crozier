@@ -2763,9 +2763,36 @@ mod tests {
         assert_eq!(c.ctor_param, "        api_key: str,\n");
         assert_eq!(c.doc_param, "    api_key : str\n");
         assert_eq!(c.example_line, "        api_key=\"YOUR_API_KEY\",\n");
+
+        // The remaining root-client arms (the docstring drops a ` = None` default).
+        let c = auth_client_parts(&Auth::ApiKey {
+            header: "X-Key".to_string(),
+            required: false,
+        });
+        assert_eq!(
+            c.ctor_param,
+            "        api_key: typing.Optional[str] = None,\n"
+        );
+        assert_eq!(c.doc_param, "    api_key : typing.Optional[str]\n");
+        let c = auth_client_parts(&Auth::Bearer { required: true });
+        assert_eq!(
+            c.ctor_param,
+            "        token: typing.Union[str, typing.Callable[[], str]],\n"
+        );
+        let c = auth_client_parts(&Auth::Bearer { required: false });
+        assert!(c.ctor_param.contains("typing.Optional[typing.Union[str"));
+        assert!(!c.doc_param.contains(" = None"));
+
         assert_eq!(
             auth_example(&Auth::Bearer { required: true }),
             "token=\"YOUR_TOKEN\""
+        );
+        assert_eq!(
+            auth_example(&Auth::ApiKey {
+                header: "X".to_string(),
+                required: false
+            }),
+            "api_key=\"YOUR_API_KEY\""
         );
     }
 
