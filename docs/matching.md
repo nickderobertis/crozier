@@ -575,10 +575,15 @@ All three new fixtures are the *packaged* SDK form (like exhaustive), reproduced
 > (1) `--preview` only emits the package when Fern considers itself authenticated, so
 > the script sets a dummy `FERN_TOKEN` (no credential — a non-empty value suffices);
 > (2) Fern's generator runs `npm install @fern-api/generator-cli` inside its
-> container, so under a TLS-intercepting sandbox the container needs host networking
-> and the proxy CA (e.g. a `docker` shim injecting `--network host -v <ca>:/ca.crt -e
-> NODE_EXTRA_CA_CERTS=/ca.crt`); (3) on a sandbox whose Docker daemon can't see the
-> host `mktemp` dir, point `TMPDIR` at a Docker-visible path.
+> container, which hangs forever under a TLS-intercepting sandbox — the container
+> reaches neither the host proxy (it listens on `127.0.0.1`) nor the proxy CA. The
+> script handles this automatically: when a proxy is configured (`HTTPS_PROXY`) it
+> routes Fern's `docker run`/`create` through a generated shim injecting
+> `--network host`, the proxy env, and `-v <ca>:/ca.crt -e
+> NODE_EXTRA_CA_CERTS=/ca.crt` (CA from `$NODE_EXTRA_CA_CERTS`, override with
+> `CROZIER_FERN_DOCKER_CA`; disable the shim with `CROZIER_FERN_NO_DOCKER_SHIM=1`);
+> (3) on a sandbox whose Docker daemon can't see the host `mktemp` dir, point
+> `TMPDIR` at a Docker-visible path.
 
 ## Coverage note
 
