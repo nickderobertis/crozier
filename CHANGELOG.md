@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.12](https://github.com/nickderobertis/crozier/compare/v0.0.11...v0.0.12) - 2026-07-11
+
+### Added
+
+- close issue #43 gaps — error responses and SSE streaming ([#45](https://github.com/nickderobertis/crozier/pull/45))
+
 ## [0.0.11](https://github.com/nickderobertis/crozier/compare/v0.0.10...v0.0.11) - 2026-07-11
 
 ### Added
