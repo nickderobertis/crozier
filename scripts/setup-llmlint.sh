@@ -35,8 +35,12 @@ set -uo pipefail
 # `uv tool install llmlint-cli` works) and gives the whole-tree default the composed
 # llmlint.yml relies on (it omits `files.include`). >= 0.3.12 is required so the
 # diff-scoped run honors `files.exclude` (drops the vendored fixtures); older
-# builds re-include them and overflow the harness argv.
-readonly LLMLINT_MIN="0.3.12"
+# builds re-include them and overflow the harness argv. >= 0.3.14 is the current
+# floor: it passes the judge system prompt by file rather than an argv string
+# (0.3.13, avoids argv-length truncation of the rules) and narrates the actual
+# lint set before judging (0.3.14). (0.3.15 fixes plain `--diff-base` three-dot
+# semantics but is not yet on PyPI; raise the floor once `llmlint-cli` ships it.)
+readonly LLMLINT_MIN="0.3.14"
 readonly BIN_DIR="$HOME/.local/bin"
 
 log() { printf 'setup-llmlint: %s\n' "$*" >&2; }
