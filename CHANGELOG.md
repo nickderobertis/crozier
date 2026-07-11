@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.13](https://github.com/nickderobertis/crozier/compare/v0.0.12...v0.0.13) - 2026-07-11
+
+### Added
+
+- close Fern-python parity gaps from #41 (tag grouping, real enums, audience filtering) ([#47](https://github.com/nickderobertis/crozier/pull/47))
+
 ## [0.0.12](https://github.com/nickderobertis/crozier/compare/v0.0.11...v0.0.12) - 2026-07-11
 
 ### Added
