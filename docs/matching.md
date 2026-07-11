@@ -157,12 +157,13 @@ element per line with a trailing comma.
 
 ## Known gaps (roadmap)
 
-The `exhaustive` corpus is fully matched (all 104 files), and five
-feature-coverage targets are **now fully matched too** — `auth-schemes` (42),
-`discriminated-unions` (35), `schema-constraints` (33), `integer-enums` (35), and
-`form-bodies` (34).
-The items below are the remaining generalization gaps — shapes the current specs
-do not fully generate — not exhaustive-fixture misses.
+The `exhaustive` corpus is fully matched, and five feature-coverage targets are
+**now fully matched too** — `auth-schemes`, `discriminated-unions`,
+`schema-constraints`, `integer-enums`, and `form-bodies`. (The exact matched-file
+set for each corpus is its `matched` array in `tests/e2e.rs`, the single source of
+truth; counts are deliberately not restated here so they cannot drift.) The items
+below are the remaining generalization gaps — shapes the current specs do not fully
+generate — not exhaustive-fixture misses.
 
 The generated **README/reference** now pick the first endpoint with a request body
 for the worked example and abbreviate the error-handling/advanced snippets to `...`
