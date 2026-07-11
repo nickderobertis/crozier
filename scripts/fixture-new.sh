@@ -17,17 +17,17 @@
 # mirror tests/fixtures/AGENTS.md.
 set -euo pipefail
 
+. "$(cd "$(dirname "$0")" && pwd)/lib.sh"
+
 name="${1:-}"
 [ -n "$name" ] || { echo "fixture-new: usage: scripts/fixture-new.sh <name>" >&2; exit 1; }
 
-# Hold the name to a single safe path segment (same invariant as
-# generate-fern-fixture.sh and crozier's --package-name): no slashes, no `..`, no
-# leading `.`/`-`. Rejects traversal and keeps it a valid dir under tests/fixtures/.
-case "$name" in
-  *[!A-Za-z0-9._-]* | [.-]* | *..*)
-    echo "fixture-new: invalid name '$name' — must match [A-Za-z0-9][A-Za-z0-9._-]*" >&2
-    exit 1 ;;
-esac
+# Hold the name to a single safe path segment (shared valid_fixture_name): rejects
+# traversal and keeps it a valid dir under tests/fixtures/.
+valid_fixture_name "$name" || {
+  echo "fixture-new: invalid name '$name' — must match [A-Za-z0-9][A-Za-z0-9._-]*" >&2
+  exit 1
+}
 
 repo_root="$(cd "$(dirname "$0")/.." && pwd)"
 dir="$repo_root/tests/fixtures/$name"
