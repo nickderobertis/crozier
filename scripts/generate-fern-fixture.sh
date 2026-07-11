@@ -19,6 +19,15 @@
 set -euo pipefail
 
 FIXTURE="${1:-exhaustive}"
+# FIXTURE is spliced into paths that are later `rm -rf`'d, so hold it to a single
+# safe path segment (the same invariant crozier enforces on --package-name): no
+# slashes, no `..`, no leading `.`/`-`. Rejects traversal and option injection.
+case "$FIXTURE" in
+  *[!A-Za-z0-9._-]* | [.-]* | *..*)
+    echo "generate-fern-fixture: invalid fixture name '$FIXTURE' — must be a single" \
+         "path segment matching [A-Za-z0-9][A-Za-z0-9._-]* (a dir under tests/fixtures/)" >&2
+    exit 1 ;;
+esac
 # The fern-python-sdk generator version whose output we target. Bump together
 # with the vendored spec + fixtures so the corpus stays internally consistent.
 FERN_PYTHON_VERSION="${2:-4.34.0}"
