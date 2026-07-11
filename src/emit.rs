@@ -1405,7 +1405,7 @@ fn auth_wrapper_parts(auth: &Auth) -> AuthWrapper {
                 assign: "        self.api_key = api_key\n".to_string(),
                 header_block,
                 token_method: String::new(),
-                super_arg: "api_key=api_key".to_string(),
+                super_arg: "api_key=api_key, ".to_string(),
             }
         }
         Auth::Bearer { required } => {
@@ -1428,7 +1428,7 @@ fn auth_wrapper_parts(auth: &Auth) -> AuthWrapper {
                 assign: "        self._token = token\n".to_string(),
                 header_block,
                 token_method,
-                super_arg: "token=token".to_string(),
+                super_arg: "token=token, ".to_string(),
             }
         }
         Auth::Basic => AuthWrapper {
@@ -1436,7 +1436,15 @@ fn auth_wrapper_parts(auth: &Auth) -> AuthWrapper {
             assign: "        self._username = username\n        self._password = password\n".to_string(),
             header_block: "        headers[\"Authorization\"] = httpx.BasicAuth(self._get_username(), self._get_password())._auth_header\n".to_string(),
             token_method: "    def _get_username(self) -> str:\n        if isinstance(self._username, str):\n            return self._username\n        else:\n            return self._username()\n\n    def _get_password(self) -> str:\n        if isinstance(self._password, str):\n            return self._password\n        else:\n            return self._password()\n\n".to_string(),
-            super_arg: "username=username, password=password".to_string(),
+            super_arg: "username=username, password=password, ".to_string(),
+        },
+        // No auth: no credential parameter, assignment, header, or token helper.
+        Auth::None => AuthWrapper {
+            param: String::new(),
+            assign: String::new(),
+            header_block: String::new(),
+            token_method: String::new(),
+            super_arg: String::new(),
         },
     }
 }
@@ -1477,6 +1485,7 @@ fn auth_client_parts(auth: &Auth) -> AuthClient {
                 "typing.Union[str, typing.Callable[[], str]]".to_string(),
             ),
         ],
+        Auth::None => Vec::new(),
     };
     let ctor_param: String = creds
         .iter()
@@ -1518,6 +1527,7 @@ fn auth_example_args(auth: &Auth) -> Vec<&'static str> {
         Auth::ApiKey { .. } => vec!["api_key=\"YOUR_API_KEY\""],
         Auth::Bearer { .. } => vec!["token=\"YOUR_TOKEN\""],
         Auth::Basic => vec!["username=\"YOUR_USERNAME\"", "password=\"YOUR_PASSWORD\""],
+        Auth::None => Vec::new(),
     }
 }
 
@@ -1558,8 +1568,11 @@ fn client_wrapper_file(
         .iter()
         .map(|h| format!("{0}={0}, ", h.py_name))
         .collect();
+    // crozier brands its own SDK-identity headers rather than impersonating Fern;
+    // the e2e byte-match normalizes the `X-Crozier-` prefix back to `X-Fern-` so
+    // the comparison against Fern's fixtures is otherwise exact (see docs/matching).
     let get_headers_head = format!(
-        "        self._headers = headers\n        self._base_url = base_url\n        self._timeout = timeout\n\n    def get_headers(self) -> typing.Dict[str, str]:\n        headers: typing.Dict[str, str] = {{\n            \"X-Fern-Language\": \"Python\",\n            \"X-Fern-SDK-Name\": \"{project_name}\",\n            \"X-Fern-SDK-Version\": \"{DEFAULT_SDK_VERSION}\",\n            **(self.get_custom_headers() or {{}}),\n        }}\n"
+        "        self._headers = headers\n        self._base_url = base_url\n        self._timeout = timeout\n\n    def get_headers(self) -> typing.Dict[str, str]:\n        headers: typing.Dict[str, str] = {{\n            \"X-Crozier-Language\": \"Python\",\n            \"X-Crozier-SDK-Name\": \"{project_name}\",\n            \"X-Crozier-SDK-Version\": \"{DEFAULT_SDK_VERSION}\",\n            **(self.get_custom_headers() or {{}}),\n        }}\n"
     );
     let mut c = String::new();
     c.push_str("\n\nimport typing\n\nimport httpx\nfrom .http_client import AsyncHttpClient, HttpClient\n\n\nclass BaseClientWrapper:\n    def __init__(\n        self,\n        *,\n");
@@ -1579,13 +1592,13 @@ fn client_wrapper_file(
     c.push_str("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        httpx_client: httpx.Client,\n    ):\n        super().__init__(");
     c.push_str(&gh_super);
     c.push_str(&a.super_arg);
-    c.push_str(", headers=headers, base_url=base_url, timeout=timeout)\n        self.httpx_client = HttpClient(\n            httpx_client=httpx_client,\n            base_headers=self.get_headers,\n            base_timeout=self.get_timeout,\n            base_url=self.get_base_url,\n        )\n\n\nclass AsyncClientWrapper(BaseClientWrapper):\n    def __init__(\n        self,\n        *,\n");
+    c.push_str("headers=headers, base_url=base_url, timeout=timeout)\n        self.httpx_client = HttpClient(\n            httpx_client=httpx_client,\n            base_headers=self.get_headers,\n            base_timeout=self.get_timeout,\n            base_url=self.get_base_url,\n        )\n\n\nclass AsyncClientWrapper(BaseClientWrapper):\n    def __init__(\n        self,\n        *,\n");
     c.push_str(&gh_param);
     c.push_str(&a.param);
     c.push_str("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        httpx_client: httpx.AsyncClient,\n    ):\n        super().__init__(");
     c.push_str(&gh_super);
     c.push_str(&a.super_arg);
-    c.push_str(", headers=headers, base_url=base_url, timeout=timeout)\n        self.httpx_client = AsyncHttpClient(\n            httpx_client=httpx_client,\n            base_headers=self.get_headers,\n            base_timeout=self.get_timeout,\n            base_url=self.get_base_url,\n        )\n");
+    c.push_str("headers=headers, base_url=base_url, timeout=timeout)\n        self.httpx_client = AsyncHttpClient(\n            httpx_client=httpx_client,\n            base_headers=self.get_headers,\n            base_timeout=self.get_timeout,\n            base_url=self.get_base_url,\n        )\n");
     GeneratedFile {
         path: PathBuf::from(format!("src/{pkg}/core/client_wrapper.py")),
         contents: c,
@@ -3719,7 +3732,20 @@ mod tests {
             "        headers[\"X-API-Key\"] = self.api_key\n"
         );
         assert!(w.token_method.is_empty());
-        assert_eq!(w.super_arg, "api_key=api_key");
+        // The `super().__init__` arg carries a trailing separator so the following
+        // `headers=` kwarg needs no leading comma (which the no-auth arm would omit).
+        assert_eq!(w.super_arg, "api_key=api_key, ");
+
+        // No auth: every credential fragment is empty, so the wrapper carries no
+        // token and `super().__init__(headers=...)` has no dangling comma.
+        let none = auth_wrapper_parts(&Auth::None);
+        assert!(none.param.is_empty());
+        assert!(none.assign.is_empty());
+        assert!(none.header_block.is_empty());
+        assert!(none.token_method.is_empty());
+        assert!(none.super_arg.is_empty());
+        assert!(auth_client_parts(&Auth::None).ctor_param.is_empty());
+        assert!(auth_example_args(&Auth::None).is_empty());
 
         // api-key optional: nullable param and a guarded header write.
         let w = auth_wrapper_parts(&Auth::ApiKey {
@@ -3778,7 +3804,7 @@ mod tests {
         assert!(w.header_block.contains("httpx.BasicAuth("));
         assert!(w.token_method.contains("def _get_username(self) -> str:"));
         assert!(w.token_method.contains("def _get_password(self) -> str:"));
-        assert_eq!(w.super_arg, "username=username, password=password");
+        assert_eq!(w.super_arg, "username=username, password=password, ");
         let c = auth_client_parts(&Auth::Basic);
         assert_eq!(
             c.ctor_param,

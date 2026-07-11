@@ -31,6 +31,11 @@ valid_fixture_name "$FIXTURE" || {
 # The fern-python-sdk generator version whose output we target. Bump together
 # with the vendored spec + fixtures so the corpus stays internally consistent.
 FERN_PYTHON_VERSION="${2:-4.34.0}"
+# The Fern CLI version, pinned via fern.config.json's `version` (the `fern` npm
+# package is only a launcher; this field selects the actual CLI it runs). Matches
+# the corpus's `.fern/metadata.json` cliVersion so regenerated output stays
+# consistent; a `*` here would float to the latest CLI and can drift the output.
+FERN_CLI_VERSION="${FERN_CLI_VERSION:-5.67.1}"
 
 repo_root="$(cd "$(dirname "$0")/.." && pwd)"
 spec="$repo_root/tests/fixtures/$FIXTURE/openapi.yml"
@@ -51,8 +56,8 @@ trap 'rm -rf "$workdir"' EXIT
 # Fern's definition files by construction: only the OpenAPI document is wired in.
 mkdir -p "$workdir/fern/openapi" "$workdir/generated"
 cp "$spec" "$workdir/fern/openapi/openapi.yml"
-cat > "$workdir/fern/fern.config.json" <<'JSON'
-{ "organization": "fern", "version": "*" }
+cat > "$workdir/fern/fern.config.json" <<JSON
+{ "organization": "fern", "version": "${FERN_CLI_VERSION}" }
 JSON
 cat > "$workdir/fern/generators.yml" <<YAML
 api:

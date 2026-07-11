@@ -413,13 +413,42 @@ its first tag instead (`get-all-widgets`/`verify code`/`GET /widgets` under tag
 operationId alone ([`ir::endpoint_pascal_context`]), never the tag, so a tag-grouped
 inline response stays `VerifyCodeResponse`, not `WidgetsVerifyCodeResponse`.
 
-These three specs declare **no auth**, so Fern emits a stripped-down
-`client_wrapper.py` (no bearer token, no `X-Fern-SDK-*` headers) that crozier's
-fuller default wrapper does not yet reproduce; the root client and package
-`__init__` aggregators differ for the same reason. Those files are intentionally
-left out of the `matched` lists — a pre-existing, #40-orthogonal gap in crozier's
-no-auth handling — while the tag-grouped raw clients, hoisted types, and the
-`widgets` `__init__` do match.
+### No-auth parity
+
+These specs declare **no security scheme**, so they exercise crozier's
+unauthenticated client. [`ir::auth_model`] now returns [`ir::Auth::None`] for such a
+document (rather than defaulting to an optional bearer token), and the client
+wrapper, root client, and per-tag clients drop every credential parameter and the
+`Authorization` header — byte-matching Fern's credential-free clients. The whole
+SDK-code layer of all three corpora matches: the types, the tag-grouped raw and
+high-level clients, the root client, and the aggregators.
+
+### crozier vs Fern SDK-identity headers
+
+crozier does not impersonate Fern in the generated SDK: it emits `X-Crozier-Language`
+/ `X-Crozier-SDK-Name` / `X-Crozier-SDK-Version` where Fern emits `X-Fern-*` (same
+values, same order, same everything else). The byte-match canonicalizes the
+`X-Crozier-` prefix back to `X-Fern-` (`tests/e2e.rs::normalize_sdk_headers`) so the
+deliberate rebrand — like the differing file-header comments — does not gate the
+comparison. Every other line of `client_wrapper.py` still matches exactly.
+
+### Two files stay unmatched (packaged vs. local Fern output)
+
+The `matched` lists exclude `core/client_wrapper.py` and the package-root
+`__init__.py` (plus `pyproject.toml` / `version.py` / `py.typed`, which the golden
+trees do not contain). This is **not** a crozier defect: crozier reproduces Fern's
+*packaged* SDK (a pip package with `pyproject.toml`, a `version.py`, and the
+`X-Fern-SDK-Name`/`Version` headers that come from Fern's publishing metadata),
+exactly as the auth'd corpora above prove. Fern only writes that packaged form when
+it generates for a registry (`output.location: pypi`/`github`), which needs
+publishing credentials; the credential-free local mode (`local-file-system` →
+`downloadFiles`) that vendors these golden trees omits the package scaffolding and
+those two headers. So the packaged-only files have no counterpart in the golden to
+match against — while the packaged client wrapper itself stays validated by the
+auth'd corpora. (`digit-leading-property` additionally leaves its client layer
+unmatched: its `getThing` operation is untagged and groupless, so Fern emits a
+root-level method where crozier still nests a single-endpoint client — a separate
+root-client gap. Its `f_2fa_enabled` model, the fix under test, matches in full.)
 
 Still open from the issue (tracked, not yet done): hoisting an inline object nested
 inside an `array.items` of a *component* schema (dropped to `typing.Any` today —
@@ -427,13 +456,14 @@ adjacent to gap #4's request/response hoisting), Swagger 2.0 / fragment-doc
 tolerance, and the `address_line_1` → `address_line1` underscore-before-digit
 rename.
 
-> **Regenerating these golden trees under a proxied Docker environment.** Fern's
-> generator runs `npm install @fern-api/generator-cli` inside its container; where
-> outbound TLS is intercepted (agent sandboxes), the container needs host
-> networking and the proxy CA to reach the registry. Run the container with
-> `--network host` and the CA mounted (e.g. via a `docker` shim that injects
-> `--network host -v <ca>:/ca.crt -e NODE_EXTRA_CA_CERTS=/ca.crt`) before invoking
-> `scripts/generate-fern-fixture.sh`.
+> **Regenerating these golden trees.** `scripts/generate-fern-fixture.sh` pins the
+> Fern CLI to the corpus version via `fern.config.json` and installs Fern's flat
+> (`downloadFiles`) output under `src/fern/`. Two environment notes: (1) Fern's
+> generator runs `npm install @fern-api/generator-cli` inside its container, so under
+> a TLS-intercepting sandbox the container needs host networking and the proxy CA
+> (e.g. a `docker` shim injecting `--network host -v <ca>:/ca.crt -e
+> NODE_EXTRA_CA_CERTS=/ca.crt`); (2) the flat output omits `pyproject.toml` /
+> `version.py` / the `X-Fern-SDK-*` headers — see the packaging note above.
 
 ## Coverage note
 

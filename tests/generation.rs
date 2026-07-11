@@ -721,11 +721,11 @@ fn emits_core_runtime_with_substituted_sdk_name() {
     assert!(files.contains_key("src/acme/core/http_client.py"));
     assert!(files.contains_key("src/acme/core/pydantic_utilities.py"));
     assert!(files.contains_key("src/acme/core/http_sse/_api.py"));
-    // client_wrapper carries the substituted SDK name (project name) and version;
-    // no placeholder remains.
+    // client_wrapper carries the substituted SDK name (project name) and version
+    // under crozier's own header prefix; no placeholder remains.
     let cw = &files["src/acme/core/client_wrapper.py"];
-    assert!(cw.contains("\"X-Fern-SDK-Name\": \"acme\""), "{cw}");
-    assert!(cw.contains("\"X-Fern-SDK-Version\": \"0.0.0\""), "{cw}");
+    assert!(cw.contains("\"X-Crozier-SDK-Name\": \"acme\""), "{cw}");
+    assert!(cw.contains("\"X-Crozier-SDK-Version\": \"0.0.0\""), "{cw}");
     assert!(
         !cw.contains("@@CROZIER"),
         "placeholder left unsubstituted: {cw}"

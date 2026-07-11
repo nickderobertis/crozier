@@ -161,12 +161,21 @@ pub enum Auth {
     /// HTTP `basic` credentials: a required `username`/`password` pair (each a
     /// `str` or callable), sent via `httpx.BasicAuth` as `Authorization: Basic`.
     Basic,
+    /// No authentication: the document declares no security schemes, so the client
+    /// wrapper carries no credential and adds no `Authorization` header — matching
+    /// Fern's wrapper for an unauthenticated API.
+    None,
 }
 
 /// Derive the [`Auth`] model: the first declared scheme selects the credential
 /// shape, and the credential is required when every operation is authenticated.
 fn auth_model(doc: &OpenApi) -> Auth {
     use crate::openapi::{HttpAuthScheme, SecuritySchemeType};
+    // A document with no declared security scheme is unauthenticated: Fern emits a
+    // credential-free wrapper (no token, no `Authorization`), not a default bearer.
+    if doc.components.security_schemes.is_empty() {
+        return Auth::None;
+    }
     let required = all_operations_authenticated(doc);
     match doc.components.security_schemes.values().next() {
         // `name` is validated non-empty at the boundary (see `openapi::load`).

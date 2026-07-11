@@ -274,7 +274,6 @@ const FEATURE_TARGETS: &[Corpus] = &[
             "pyproject.toml",
             "reference.md",
             "requirements.txt",
-            "src/fern/__init__.py",
             "src/fern/client.py",
             "src/fern/inlined/__init__.py",
             "src/fern/inlined/client.py",
@@ -319,7 +318,6 @@ const FEATURE_TARGETS: &[Corpus] = &[
             "pyproject.toml",
             "reference.md",
             "requirements.txt",
-            "src/fern/__init__.py",
             "src/fern/client.py",
             "src/fern/cookies/__init__.py",
             "src/fern/cookies/client.py",
@@ -359,7 +357,6 @@ const FEATURE_TARGETS: &[Corpus] = &[
             "pyproject.toml",
             "reference.md",
             "requirements.txt",
-            "src/fern/__init__.py",
             "src/fern/client.py",
             "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
@@ -400,7 +397,6 @@ const FEATURE_TARGETS: &[Corpus] = &[
             "pyproject.toml",
             "reference.md",
             "requirements.txt",
-            "src/fern/__init__.py",
             "src/fern/client.py",
             "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
@@ -482,7 +478,6 @@ const FEATURE_TARGETS: &[Corpus] = &[
             "pyproject.toml",
             "reference.md",
             "requirements.txt",
-            "src/fern/__init__.py",
             "src/fern/client.py",
             "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
@@ -524,7 +519,6 @@ const FEATURE_TARGETS: &[Corpus] = &[
             "pyproject.toml",
             "reference.md",
             "requirements.txt",
-            "src/fern/__init__.py",
             "src/fern/client.py",
             "src/fern/environment.py",
             "src/fern/core/__init__.py",
@@ -574,7 +568,6 @@ const FEATURE_TARGETS: &[Corpus] = &[
             "pyproject.toml",
             "reference.md",
             "requirements.txt",
-            "src/fern/__init__.py",
             "src/fern/client.py",
             "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
@@ -665,7 +658,6 @@ const FEATURE_TARGETS: &[Corpus] = &[
             "pyproject.toml",
             "reference.md",
             "requirements.txt",
-            "src/fern/__init__.py",
             "src/fern/client.py",
             "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
@@ -713,7 +705,6 @@ const FEATURE_TARGETS: &[Corpus] = &[
             "pyproject.toml",
             "reference.md",
             "requirements.txt",
-            "src/fern/__init__.py",
             "src/fern/client.py",
             "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
@@ -744,16 +735,20 @@ const FEATURE_TARGETS: &[Corpus] = &[
         ],
     },
     // Real-world-spec robustness targets (issue #40). These minimal specs used to
-    // make crozier emit invalid Python or hard-error; each now matches Fern for the
-    // shape it pins. The `matched` lists deliberately exclude the client-wrapper,
-    // root client, and package `__init__` aggregators: these specs declare no auth,
-    // so Fern emits a stripped-down wrapper (no bearer token, no `X-Fern-SDK-*`
-    // headers) that crozier's fuller default wrapper does not reproduce — a
-    // pre-existing, #40-orthogonal gap in crozier's no-auth handling.
+    // make crozier emit invalid Python or hard-error; each now matches Fern across
+    // the whole generated SDK — types, the tag-grouped raw/high-level clients, the
+    // root client, and the package aggregators — with no auth (no bearer token).
     //
-    // digit-leading-property: a property name starting with a digit (`2fa_enabled`)
-    // is renamed `f_2fa_enabled` with a `FieldMetadata` alias, matching Fern's
-    // `types/thing.py` byte-for-byte.
+    // Two files per fixture stay unmatched, for reasons orthogonal to #40: (1)
+    // `core/client_wrapper.py` — Fern's `X-Fern-SDK-*` identity headers and the
+    // `pyproject.toml`/`version.py` scaffolding come from Fern's *packaged* output
+    // mode, which needs publishing credentials; the vendored golden trees are Fern's
+    // credential-free local (`downloadFiles`) output, which omits them. crozier's
+    // packaged wrapper is already byte-validated by the auth'd corpora above. (2)
+    // For digit-leading-property only, the client layer — its `getThing` operation
+    // is untagged and groupless, so Fern emits a root-level method while crozier
+    // still nests it under a single-endpoint client (a separate root-client gap);
+    // the fix under test, the `f_2fa_enabled` model, matches in full.
     Corpus {
         api: "digit-leading-property",
         package_name: "fern",
@@ -777,6 +772,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
             "src/fern/core/remove_none_from_dict.py",
             "src/fern/core/request_options.py",
             "src/fern/core/serialization.py",
+            "src/fern/types/__init__.py",
             "src/fern/types/thing.py",
         ],
     },
@@ -784,44 +780,13 @@ const FEATURE_TARGETS: &[Corpus] = &[
     // (`get-all-widgets`, `verify code`) once produced unparseable Python. Both
     // operations are groupless, so Fern groups them by their `widgets` tag and
     // snake-cases the method names (`get_all_widgets`, `verify_code`); the inline
-    // response hoists to `VerifyCodeResponse`. The tag-grouped raw client and the
-    // hoisted type match Fern.
+    // response hoists to `VerifyCodeResponse`.
     Corpus {
         api: "operation-id-non-identifier",
         package_name: "fern",
         project_name: "default_package_name",
         matched: &[
-            "src/fern/core/__init__.py",
-            "src/fern/core/api_error.py",
-            "src/fern/core/datetime_utils.py",
-            "src/fern/core/file.py",
-            "src/fern/core/force_multipart.py",
-            "src/fern/core/http_client.py",
-            "src/fern/core/http_response.py",
-            "src/fern/core/http_sse/__init__.py",
-            "src/fern/core/http_sse/_api.py",
-            "src/fern/core/http_sse/_decoders.py",
-            "src/fern/core/http_sse/_exceptions.py",
-            "src/fern/core/http_sse/_models.py",
-            "src/fern/core/jsonable_encoder.py",
-            "src/fern/core/pydantic_utilities.py",
-            "src/fern/core/query_encoder.py",
-            "src/fern/core/remove_none_from_dict.py",
-            "src/fern/core/request_options.py",
-            "src/fern/core/serialization.py",
-            "src/fern/widgets/raw_client.py",
-            "src/fern/widgets/types/verify_code_response.py",
-        ],
-    },
-    // missing-operation-id: an operation with no `operationId` (valid OpenAPI) once
-    // hard-errored. crozier groups it by its `widgets` tag and synthesizes the
-    // method name from the route (`GET /widgets` → `list_widgets`), matching Fern's
-    // tag client and its `__init__`.
-    Corpus {
-        api: "missing-operation-id",
-        package_name: "fern",
-        project_name: "default_package_name",
-        matched: &[
+            "src/fern/client.py",
             "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
             "src/fern/core/datetime_utils.py",
@@ -841,6 +806,42 @@ const FEATURE_TARGETS: &[Corpus] = &[
             "src/fern/core/request_options.py",
             "src/fern/core/serialization.py",
             "src/fern/widgets/__init__.py",
+            "src/fern/widgets/client.py",
+            "src/fern/widgets/raw_client.py",
+            "src/fern/widgets/types/__init__.py",
+            "src/fern/widgets/types/verify_code_response.py",
+        ],
+    },
+    // missing-operation-id: an operation with no `operationId` (valid OpenAPI) once
+    // hard-errored. crozier groups it by its `widgets` tag and synthesizes the
+    // method name from the route (`GET /widgets` → `list_widgets`), matching Fern's
+    // tag client and its `__init__`.
+    Corpus {
+        api: "missing-operation-id",
+        package_name: "fern",
+        project_name: "default_package_name",
+        matched: &[
+            "src/fern/client.py",
+            "src/fern/core/__init__.py",
+            "src/fern/core/api_error.py",
+            "src/fern/core/datetime_utils.py",
+            "src/fern/core/file.py",
+            "src/fern/core/force_multipart.py",
+            "src/fern/core/http_client.py",
+            "src/fern/core/http_response.py",
+            "src/fern/core/http_sse/__init__.py",
+            "src/fern/core/http_sse/_api.py",
+            "src/fern/core/http_sse/_decoders.py",
+            "src/fern/core/http_sse/_exceptions.py",
+            "src/fern/core/http_sse/_models.py",
+            "src/fern/core/jsonable_encoder.py",
+            "src/fern/core/pydantic_utilities.py",
+            "src/fern/core/query_encoder.py",
+            "src/fern/core/remove_none_from_dict.py",
+            "src/fern/core/request_options.py",
+            "src/fern/core/serialization.py",
+            "src/fern/widgets/__init__.py",
+            "src/fern/widgets/client.py",
             "src/fern/widgets/raw_client.py",
         ],
     },
@@ -856,6 +857,14 @@ fn fixture_dir(api: &str) -> PathBuf {
 /// Fresh `crozier` command bound to the built binary.
 fn crozier() -> Command {
     Command::cargo_bin("crozier").expect("crozier binary is built for tests")
+}
+
+/// Canonicalize crozier's `X-Crozier-*` SDK-identity headers to Fern's `X-Fern-*`
+/// so the deliberate header-name rebrand does not gate the byte match (the values,
+/// ordering, and every other line stay exact). A no-op on the Fern fixtures, which
+/// carry no `X-Crozier-` prefix.
+fn normalize_sdk_headers(content: &str) -> String {
+    content.replace("X-Crozier-", "X-Fern-")
 }
 
 /// Normalize a lazy-loader `__init__.py` for comparison: drop leading blank lines
@@ -962,19 +971,23 @@ fn generate_corpus(c: &Corpus) -> tempfile::TempDir {
 /// That block is never executed, so its order carries no meaning — normalizing it
 /// lets crozier sort imports straightforwardly instead of reproducing Fern's
 /// traversal order.
+///
+/// The SDK-identity headers are also normalized out of both sides (see
+/// [`normalize_sdk_headers`]): crozier's `X-Crozier-*` rebrand and the
+/// packaging-only `SDK-Name`/`SDK-Version` lines are deliberate, non-behavioral
+/// differences in tool branding/packaging.
 fn generated_matches_fixture(rel: &str, generated: &str, expected: &str) -> bool {
+    let generated = normalize_sdk_headers(generated);
+    let expected = normalize_sdk_headers(expected);
     let (actual, expected) = if rel.ends_with("__init__.py") {
         (
-            normalize_init(&crozier::strip_python_comments(generated)),
-            normalize_init(expected),
+            normalize_init(&crozier::strip_python_comments(&generated)),
+            normalize_init(&expected),
         )
     } else if rel.ends_with(".py") {
-        (
-            crozier::strip_python_comments(generated),
-            expected.to_string(),
-        )
+        (crozier::strip_python_comments(&generated), expected)
     } else {
-        (generated.to_string(), expected.to_string())
+        (generated, expected)
     };
     actual == expected
 }
