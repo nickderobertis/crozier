@@ -302,6 +302,8 @@ fn environment() -> Environment<'static> {
     .expect("raw_client template compiles");
     env.add_template("error.py", include_str!("../templates/error.py.j2"))
         .expect("error template compiles");
+    env.add_template("lazy_init.py", include_str!("../templates/lazy_init.py.j2"))
+        .expect("lazy_init template compiles");
     env.add_template("file.py", include_str!("../templates/file.py.j2"))
         .expect("file template compiles");
     env
@@ -401,16 +403,17 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     // package-root `__init__.py` re-exporting types, errors, the endpoint
     // submodules, the root client, and `__version__`.
     if !ir.types.is_empty() {
-        files.push(types_init_file(pkg, &ir.types));
+        files.push(types_init_file(&env, pkg, &ir.types)?);
     }
     if !emittable_modules.is_empty() {
         files.push(root_init_file(
+            &env,
             pkg,
             &ir.client_name,
             &ir.types,
             &ir.errors,
             &emittable_modules,
-        ));
+        )?);
     }
 
     // Generated `README.md` (usage examples from the first endpoint) and the
@@ -471,7 +474,7 @@ fn error_files(
     }
     files.push(GeneratedFile {
         path: PathBuf::from(format!("src/{pkg}/errors/__init__.py")),
-        contents: lazy_loader_init(errors),
+        contents: lazy_loader_init(env, errors)?,
     });
     Ok(files)
 }
@@ -480,7 +483,7 @@ fn error_files(
 /// `TYPE_CHECKING` import block, a `_dynamic_imports` map, the static
 /// `__getattr__`/`__dir__` machinery, and `__all__`. The error classes arrive
 /// pre-sorted, so all three sections are alphabetical.
-fn lazy_loader_init(errors: &[ErrorClass]) -> String {
+fn lazy_loader_init(env: &Environment<'static>, errors: &[ErrorClass]) -> Result<String> {
     let type_checking: String = errors
         .iter()
         .map(|e| {
@@ -501,7 +504,7 @@ fn lazy_loader_init(errors: &[ErrorClass]) -> String {
         })
         .collect();
     let names: Vec<String> = errors.iter().map(|e| e.class_name.clone()).collect();
-    render_lazy_loader(&type_checking, &pairs, &names)
+    render_lazy_loader(env, &type_checking, &pairs, &names)
 }
 
 /// Assemble a lazy-loader `__init__.py` from its `TYPE_CHECKING` block, the
@@ -510,7 +513,12 @@ fn lazy_loader_init(errors: &[ErrorClass]) -> String {
 /// (sorted here); only the `TYPE_CHECKING` block's order is caller-controlled.
 /// The header collapses to the four leading blank lines Fern's comment header
 /// strips to.
-fn render_lazy_loader(type_checking: &str, pairs: &[(String, String)], names: &[String]) -> String {
+fn render_lazy_loader(
+    env: &Environment<'static>,
+    type_checking: &str,
+    pairs: &[(String, String)],
+    names: &[String],
+) -> Result<String> {
     let mut pairs = pairs.to_vec();
     pairs.sort();
     let mut names = names.to_vec();
@@ -529,8 +537,16 @@ fn render_lazy_loader(type_checking: &str, pairs: &[(String, String)], names: &[
     let all_entries: Vec<String> = names.iter().map(|n| format!("\"{n}\"")).collect();
     let all = format!("__all__ = [{}]", all_entries.join(", "));
 
-    format!(
-        "{HEADER}\n\n\n\nimport typing\nfrom importlib import import_module\n\nif typing.TYPE_CHECKING:\n{type_checking}{dynamic}\n\n\ndef __getattr__(attr_name: str) -> typing.Any:\n    module_name = _dynamic_imports.get(attr_name)\n    if module_name is None:\n        raise AttributeError(f\"No {{attr_name}} found in _dynamic_imports for module name -> {{__name__}}\")\n    try:\n        module = import_module(module_name, __package__)\n        if module_name == f\".{{attr_name}}\":\n            return module\n        else:\n            return getattr(module, attr_name)\n    except ImportError as e:\n        raise ImportError(f\"Failed to import {{attr_name}} from {{module_name}}: {{e}}\") from e\n    except AttributeError as e:\n        raise AttributeError(f\"Failed to get {{attr_name}} from {{module_name}}: {{e}}\") from e\n\n\ndef __dir__():\n    lazy_attrs = list(_dynamic_imports.keys())\n    return sorted(lazy_attrs)\n\n\n{all}\n"
+    render(
+        env,
+        "lazy_init.py",
+        "__init__.py",
+        context! {
+            header => HEADER,
+            type_checking => type_checking,
+            dynamic => dynamic,
+            all => all,
+        },
     )
 }
 
@@ -538,7 +554,11 @@ fn render_lazy_loader(type_checking: &str, pairs: &[(String, String)], names: &[
 /// alphabetical; the `TYPE_CHECKING` block follows Fern's endpoint-traversal
 /// order, which for this corpus is the `Types*` types in reverse declaration
 /// order followed by the remaining types alphabetically.
-fn types_init_file(pkg: &str, types: &[TypeDecl]) -> GeneratedFile {
+fn types_init_file(
+    env: &Environment<'static>,
+    pkg: &str,
+    types: &[TypeDecl],
+) -> Result<GeneratedFile> {
     // Each declaration may export more than its primary name (a discriminated
     // union also exports its per-variant wrappers), all sharing the decl module.
     let mut module_of: std::collections::HashMap<String, String> = std::collections::HashMap::new();
@@ -581,10 +601,10 @@ fn types_init_file(pkg: &str, types: &[TypeDecl]) -> GeneratedFile {
         .iter()
         .map(|n| (n.clone(), format!(".{}", module(n))))
         .collect();
-    GeneratedFile {
+    Ok(GeneratedFile {
         path: PathBuf::from(format!("src/{pkg}/types/__init__.py")),
-        contents: render_lazy_loader(&type_checking, &pairs, &names),
-    }
+        contents: render_lazy_loader(env, &type_checking, &pairs, &names)?,
+    })
 }
 
 /// The package-root `__init__.py` lazy loader, re-exporting the type layer, the
@@ -592,12 +612,13 @@ fn types_init_file(pkg: &str, types: &[TypeDecl]) -> GeneratedFile {
 /// section is alphabetical; the `TYPE_CHECKING` block groups the imports by
 /// source (`.types`, `.errors`, submodules, `.client`, `.version`).
 fn root_init_file(
+    env: &Environment<'static>,
     pkg: &str,
     client_name: &str,
     types: &[TypeDecl],
     errors: &[ErrorClass],
     modules: &[&String],
-) -> GeneratedFile {
+) -> Result<GeneratedFile> {
     let async_name = format!("Async{client_name}");
 
     let mut type_names: Vec<String> = types
@@ -643,10 +664,10 @@ fn root_init_file(
     pairs.push(("__version__".to_string(), ".version".to_string()));
 
     let names: Vec<String> = pairs.iter().map(|(n, _)| n.clone()).collect();
-    GeneratedFile {
+    Ok(GeneratedFile {
         path: PathBuf::from(format!("src/{pkg}/__init__.py")),
-        contents: render_lazy_loader(&tc, &pairs, &names),
-    }
+        contents: render_lazy_loader(env, &tc, &pairs, &names)?,
+    })
 }
 
 /// Whether Fern shows a `...` placeholder for an endpoint's body in the README's
