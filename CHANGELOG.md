@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.7](https://github.com/nickderobertis/crozier/compare/v0.0.6...v0.0.7) - 2026-07-11
+
+### Added
+
+- byte-match generation for auth, discriminated unions, integer enums, schema constraints, and form bodies ([#31](https://github.com/nickderobertis/crozier/pull/31))
+
 ## [0.0.6](https://github.com/nickderobertis/crozier/compare/v0.0.5...v0.0.6) - 2026-07-10
 
 ### Fixed
