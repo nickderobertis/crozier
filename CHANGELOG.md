@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.10](https://github.com/nickderobertis/crozier/compare/v0.0.9...v0.0.10) - 2026-07-11
+
+### Added
+
+- close the four remaining Fern parity gaps (basic auth, oauth, inline-array bodies, writeOnly ordering) ([#37](https://github.com/nickderobertis/crozier/pull/37))
+
 ## [0.0.9](https://github.com/nickderobertis/crozier/compare/v0.0.8...v0.0.9) - 2026-07-11
 
 ### Added
