@@ -276,6 +276,15 @@ const FEATURE_TARGETS: &[Corpus] = &[
             "src/fern/core/client_wrapper.py",
             "src/fern/types/priority.py",
             "src/fern/types/http_status.py",
+            // A `$ref` integer-enum request body is emittable (json=request +
+            // content-type), so the whole `enums` module, root client, and docs land.
+            "src/fern/enums/__init__.py",
+            "src/fern/enums/raw_client.py",
+            "src/fern/enums/client.py",
+            "src/fern/client.py",
+            "src/fern/__init__.py",
+            "src/fern/types/__init__.py",
+            "reference.md",
         ],
     },
     Corpus {

@@ -191,7 +191,10 @@ target/release/crozier generate \
    corpus lacks — e.g. a required `date` example, a nameless-slot enum — carry
    plausible-but-unverified placeholders; confirm them as new fixtures land.
    *Integer enums* now generate: a `type: integer` enum becomes a plain `Name = int`
-   alias (Fern does not build a `Literal` union for them), matched in `integer-enums`.
+   alias (Fern does not build a `Literal` union for them), and a `$ref` integer-enum
+   request body is emittable (`json=request` + content-type header, like a string
+   enum) — so `integer-enums` matches its whole `enums` module, root client, and
+   reference (only the README example placeholder differs).
 3. **Fern's `TYPE_CHECKING` traversal order** in `types/__init__.py` is reproduced
    empirically (the `Types*` types in reverse declaration order, then the rest
    alphabetically). It matches the corpus byte-for-byte; a spec with a different

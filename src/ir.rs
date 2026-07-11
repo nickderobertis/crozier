@@ -697,9 +697,10 @@ fn resolve_request_body(
     if let Some(reference) = &schema.reference {
         let target = resolve_ref(doc, reference)?;
         let class = ref_to_class(reference);
-        // A `$ref` to an extensible (string) enum serializes as a plain
-        // `json=request` with the content-type header.
-        if string_enum_values(target).is_some() {
+        // A `$ref` to an enum — string (extensible) or integer (a plain `int`
+        // alias) — serializes as a plain `json=request` with the content-type
+        // header.
+        if string_enum_values(target).is_some() || is_int_enum(target) {
             return Some(single(TypeRef::Named(class), required, false, true));
         }
         // A `$ref` to a union goes through the convert wrapper (its object
@@ -1397,6 +1398,11 @@ fn ref_to_class(reference: &str) -> String {
 /// Is this schema declared as `type: string`?
 fn is_string_type(schema: &Schema) -> bool {
     schema.ty.as_ref().and_then(|t| t.primary()) == Some("string")
+}
+
+/// Is this schema an integer `enum` (which Fern aliases to a plain `int`)?
+fn is_int_enum(schema: &Schema) -> bool {
+    schema.ty.as_ref().and_then(|t| t.primary()) == Some("integer") && schema.enum_values.is_some()
 }
 
 /// Is this schema declared as `type: object`?
