@@ -233,6 +233,10 @@ pub struct RequestBody {
 /// One response entry.
 #[derive(Debug, Default, Deserialize)]
 pub struct Response {
+    /// Human description of the response; Fern surfaces it in the method
+    /// docstring's `Returns` section.
+    #[serde(default)]
+    pub description: Option<String>,
     /// Content, keyed by media type.
     #[serde(default)]
     pub content: IndexMap<String, MediaType>,
@@ -411,20 +415,10 @@ pub fn load(path: &Path) -> Result<OpenApi> {
             ),
         });
     }
-    // crozier derives each client's module and method names from `operationId`,
-    // so require it on every operation rather than emitting a malformed path.
-    for (url, item) in &doc.paths {
-        for (method, op) in item.operations() {
-            if op.operation_id.trim().is_empty() {
-                return Err(Error::InvalidSpec {
-                    path: path.to_path_buf(),
-                    message: format!(
-                        "operation `{method} {url}` has no `operationId`; crozier requires one to name the client"
-                    ),
-                });
-            }
-        }
-    }
+    // `operationId` is optional in OpenAPI and real specs omit it. crozier no
+    // longer requires it: the IR's endpoint naming synthesizes a client group and
+    // method from the operation's tag and route when it is absent (see
+    // `crate::ir::endpoint_method_name`), so a spec without one still generates.
     // An apiKey scheme's `name` (the header/query/cookie carrying the key) is
     // required by OpenAPI; without it the generated header name would be empty.
     // Fail at the boundary rather than emit a broken client.

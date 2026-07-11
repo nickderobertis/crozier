@@ -339,9 +339,10 @@ fn wide_string_enum_wraps_like_ruff() {
 
 #[test]
 fn emits_endpoint_package_markers_with_fern_module_names() {
-    // The client module name comes from the operationId's group prefix:
-    // snake_cased when the prefix has an underscore, else lowercased; an
-    // operationId with no underscore falls back to lowercasing the whole id.
+    // A `group_method` operationId names its own client from the prefix (snake-cased
+    // when the prefix has an underscore, else lowercased), and Fern ignores the tag
+    // there. A groupless operationId is grouped by its first tag instead, and — with
+    // no tag either — falls back to snake-casing the whole id.
     let spec = "\
 openapi: 3.0.0
 info:
@@ -357,11 +358,15 @@ paths:
       tags: [Solo]
   /c:
     get:
+      operationId: getWidgets
+      tags: [Bare Things]
+  /d:
+    get:
       operationId: bareid
-      tags: [Bare]
 ";
     let files = render(spec);
-    for module in ["my_group", "solothing", "bareid"] {
+    // grouped→prefix (tag ignored), grouped→prefix, groupless→tag, groupless→id.
+    for module in ["my_group", "solothing", "bare_things", "bareid"] {
         let init = files
             .get(&format!("src/acme/{module}/__init__.py"))
             .unwrap_or_else(|| panic!("expected {module}/__init__.py; got {:?}", files.keys()));
@@ -716,11 +721,11 @@ fn emits_core_runtime_with_substituted_sdk_name() {
     assert!(files.contains_key("src/acme/core/http_client.py"));
     assert!(files.contains_key("src/acme/core/pydantic_utilities.py"));
     assert!(files.contains_key("src/acme/core/http_sse/_api.py"));
-    // client_wrapper carries the substituted SDK name (project name) and version;
-    // no placeholder remains.
+    // client_wrapper carries the substituted SDK name (project name) and version
+    // under crozier's own header prefix; no placeholder remains.
     let cw = &files["src/acme/core/client_wrapper.py"];
-    assert!(cw.contains("\"X-Fern-SDK-Name\": \"acme\""), "{cw}");
-    assert!(cw.contains("\"X-Fern-SDK-Version\": \"0.0.0\""), "{cw}");
+    assert!(cw.contains("\"X-Crozier-SDK-Name\": \"acme\""), "{cw}");
+    assert!(cw.contains("\"X-Crozier-SDK-Version\": \"0.0.0\""), "{cw}");
     assert!(
         !cw.contains("@@CROZIER"),
         "placeholder left unsubstituted: {cw}"

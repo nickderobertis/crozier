@@ -31,6 +31,11 @@ valid_fixture_name "$FIXTURE" || {
 # The fern-python-sdk generator version whose output we target. Bump together
 # with the vendored spec + fixtures so the corpus stays internally consistent.
 FERN_PYTHON_VERSION="${2:-4.34.0}"
+# The Fern CLI version, pinned via fern.config.json's `version` (the `fern` npm
+# package is only a launcher; this field selects the actual CLI it runs). Matches
+# the corpus's `.fern/metadata.json` cliVersion so regenerated output stays
+# consistent; a `*` here would float to the latest CLI and can drift the output.
+FERN_CLI_VERSION="${FERN_CLI_VERSION:-5.67.1}"
 
 repo_root="$(cd "$(dirname "$0")/.." && pwd)"
 spec="$repo_root/tests/fixtures/$FIXTURE/openapi.yml"
@@ -51,8 +56,8 @@ trap 'rm -rf "$workdir"' EXIT
 # Fern's definition files by construction: only the OpenAPI document is wired in.
 mkdir -p "$workdir/fern/openapi" "$workdir/generated"
 cp "$spec" "$workdir/fern/openapi/openapi.yml"
-cat > "$workdir/fern/fern.config.json" <<'JSON'
-{ "organization": "fern", "version": "*" }
+cat > "$workdir/fern/fern.config.json" <<JSON
+{ "organization": "fern", "version": "${FERN_CLI_VERSION}" }
 JSON
 cat > "$workdir/fern/generators.yml" <<YAML
 api:
@@ -70,18 +75,36 @@ YAML
 echo "generate-fern-fixture: running Fern (python-sdk@${FERN_PYTHON_VERSION}) locally..." >&2
 ( cd "$workdir/fern" && fern generate --group python-sdk --local --force )
 
-src="$workdir/generated/python"
-[ -d "$src/src" ] || { echo "generate-fern-fixture: Fern produced no src/ under $src" >&2; exit 1; }
+out="$workdir/generated/python"
+# Fern emits one of two layouts depending on the CLI version: a full pip package
+# (`python/src/<pkg>/...` alongside pyproject.toml — install verbatim) or a flat
+# module tree (`python/<pkg-contents>` with no `src/` — relocate under
+# `src/fern/`, the layout crozier and the committed corpus use). Detect which.
+if [ -d "$out/src" ]; then
+  src="$out"; prefix=""
+elif [ -f "$out/__init__.py" ]; then
+  src="$out"; prefix="src/fern/"
+else
+  echo "generate-fern-fixture: Fern produced no recognizable package under $out" >&2
+  exit 1
+fi
 
 # Strip comments from every generated .py, mirroring the offline corpus, and
-# install into the fixture tree. Non-.py files are copied verbatim.
+# install into the fixture tree (under $prefix). Non-.py files are copied verbatim.
+# In the flat layout the package root and the output root are conflated, so the
+# `.fern/` metadata dir stays at the fixture root rather than moving under src/.
 rm -rf "$dest"
 mkdir -p "$dest"
 ( cd "$src" && find . -type f -print0 ) | while IFS= read -r -d '' rel; do
-  mkdir -p "$dest/$(dirname "$rel")"
+  rel="${rel#./}"
   case "$rel" in
-    *.py) "$crozier_bin" internal-strip "$src/$rel" > "$dest/$rel" ;;
-    *)    cp "$src/$rel" "$dest/$rel" ;;
+    .fern/*) target="$dest/$rel" ;;
+    *)       target="$dest/$prefix$rel" ;;
+  esac
+  mkdir -p "$(dirname "$target")"
+  case "$rel" in
+    *.py) "$crozier_bin" internal-strip "$src/$rel" > "$target" ;;
+    *)    cp "$src/$rel" "$target" ;;
   esac
 done
 

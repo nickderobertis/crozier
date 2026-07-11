@@ -80,15 +80,45 @@ pub fn module_name(class_name: &str) -> String {
 }
 
 /// The Python field identifier for a wire property name: `snake_case`, with a
-/// trailing `_` appended when it would collide with a reserved word.
+/// trailing `_` appended when it would collide with a reserved word, or an `f_`
+/// prefix when it would otherwise start with a digit (an illegal identifier).
+/// Both transforms make [`crate::ir::Field::needs_alias`] fire, so the wire name
+/// is preserved as a `FieldMetadata` alias — matching Fern (`2fa_enabled` →
+/// `f_2fa_enabled`).
 #[must_use]
 pub fn field_name(wire_name: &str) -> String {
     let snake = to_snake_case(wire_name);
-    if is_reserved(&snake) {
+    if snake.starts_with(|c: char| c.is_ascii_digit()) {
+        format!("f_{snake}")
+    } else if is_reserved(&snake) {
         format!("{snake}_")
     } else {
         snake
     }
+}
+
+/// Coerce a derived name into a legal Python identifier: any character that is
+/// not `[A-Za-z0-9_]` becomes `_`, and a leading digit is prefixed with `_`.
+/// Applied to operationId-derived module/method names so a hyphen or space in an
+/// `operationId` (`get-all-widgets`, `verify code`) yields valid Python rather
+/// than source that fails to parse. Names already valid pass through unchanged,
+/// so this never perturbs the byte-matched fixtures.
+#[must_use]
+pub fn sanitize_identifier(name: &str) -> String {
+    let mut out: String = name
+        .chars()
+        .map(|c| {
+            if c.is_ascii_alphanumeric() || c == '_' {
+                c
+            } else {
+                '_'
+            }
+        })
+        .collect();
+    if out.starts_with(|c: char| c.is_ascii_digit()) {
+        out.insert(0, '_');
+    }
+    out
 }
 
 /// Names Fern suffixes with `_` (keeping the wire name as an alias): Python hard
@@ -145,5 +175,29 @@ mod tests {
         assert_eq!(field_name("uuid"), "uuid_");
         assert_eq!(field_name("name"), "name");
         assert_eq!(field_name("tags"), "tags");
+    }
+
+    #[test]
+    fn digit_leading_fields_get_f_prefix() {
+        // Fern renames a leading-digit property to `f_<name>` and aliases it.
+        assert_eq!(field_name("2fa_enabled"), "f_2fa_enabled");
+        assert_eq!(field_name("3d"), "f_3d");
+        // A hyphenated, digit-leading name still snakes then prefixes.
+        assert_eq!(field_name("2-factor"), "f_2_factor");
+        // Non-digit-leading names are untouched.
+        assert_eq!(field_name("v2"), "v2");
+    }
+
+    #[test]
+    fn sanitize_identifier_coerces_illegal_chars() {
+        assert_eq!(sanitize_identifier("get-all-widgets"), "get_all_widgets");
+        assert_eq!(sanitize_identifier("verify code"), "verify_code");
+        assert_eq!(sanitize_identifier("2fa"), "_2fa");
+        // Already-legal identifiers pass through unchanged.
+        assert_eq!(sanitize_identifier("postwithnoauth"), "postwithnoauth");
+        assert_eq!(
+            sanitize_identifier("endpoints_container"),
+            "endpoints_container"
+        );
     }
 }

@@ -240,24 +240,34 @@ fn missing_openapi_field_errors() {
 }
 
 #[test]
-fn operation_without_operation_id_errors() {
+fn operation_without_operation_id_generates() {
+    // `operationId` is optional in OpenAPI; crozier synthesizes one from the
+    // tag/path + method rather than rejecting the document (issue #40).
     let dir = tempfile::tempdir().unwrap();
     let spec = dir.path().join("api.yml");
     std::fs::write(
         &spec,
-        "openapi: 3.0.0\ninfo:\n  title: X\npaths:\n  /thing:\n    get:\n      tags: [Thing]\n",
+        "openapi: 3.0.0\ninfo:\n  title: X\npaths:\n  /thing:\n    get:\n      tags: [Thing]\n      \
+         responses:\n        '200':\n          description: OK\n          content:\n            \
+         application/json:\n              schema:\n                type: object\n                \
+         properties:\n                  ok: { type: boolean }\n",
     )
     .unwrap();
-    let err = run_from([
+    let out = dir.path().join("out");
+    run_from([
         "crozier",
         "generate",
         "--spec",
         spec.to_str().unwrap(),
         "--output",
-        dir.path().join("out").to_str().unwrap(),
+        out.to_str().unwrap(),
     ])
-    .unwrap_err();
-    assert!(err.contains("operationId"), "{err}");
+    .expect("missing operationId is synthesized, not rejected");
+    // The tag becomes the client module.
+    assert!(
+        out.join("src/x/thing").is_dir(),
+        "expected a `thing` client module"
+    );
 }
 
 #[test]

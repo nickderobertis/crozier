@@ -1,0 +1,25 @@
+openapi: 3.0.3
+info:
+  title: Widget API
+  version: 1.0.0
+paths:
+  /thing:
+    get:
+      operationId: getThing
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Thing'
+components:
+  schemas:
+    Thing:
+      type: object
+      properties:
+        # A property name starting with a digit is not a legal identifier. Fern
+        # renames it `f_2fa_enabled` and keeps the wire name as a FieldMetadata
+        # alias; crozier now matches that byte-for-byte (issue #40, case 2).
+        "2fa_enabled":
+          type: boolean

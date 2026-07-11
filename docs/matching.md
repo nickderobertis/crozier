@@ -376,6 +376,98 @@ This is exactly how the four former gap targets (`basic-auth`,
    so the endpoint layer — and the whole `exhaustive` corpus — is complete. Gap #4
    (inline request/response hoisting) is the next generalization step.
 
+## Real-world-spec robustness (issue #40)
+
+The other corpora are hand-authored to have clean, Fern-style `group_method`
+operationIds and property names. Real vendor specs are messier, and three shapes
+that used to make crozier emit invalid Python or hard-error now generate legal —
+and, for the shapes below, byte-matched — output. Each has its own gap-target
+corpus (`digit-leading-property`, `operation-id-non-identifier`,
+`missing-operation-id`), whose `matched` list is defined in `tests/e2e.rs`.
+
+- **Digit-leading property name** (`2fa_enabled`). [`naming::field_name`] prefixes
+  `f_` when the snake-cased name would start with a digit, and the wire name is
+  preserved as a `FieldMetadata` alias — byte-for-byte Fern's `f_2fa_enabled`
+  (`digit-leading-property/expected/.../types/thing.py`).
+
+- **Non-identifier `operationId`** (`get-all-widgets`, `verify code`).
+  [`naming::sanitize_identifier`] coerces any non-`[A-Za-z0-9_]` character in a
+  name derived from an operationId to `_`; legal names (every other fixture) pass
+  through untouched. The method names snake-case to `get_all_widgets`/`verify_code`
+  and the inline response hoists to `VerifyCodeResponse`, matching Fern.
+
+- **Missing `operationId`** (optional in OpenAPI). Instead of hard-erroring,
+  [`ir::endpoint_method_name`] synthesizes the method from the route:
+  [`ir::synthesized_method_name`] infers a verb from the HTTP method and whether
+  the path addresses a collection or an item (`GET /widgets` → `list_widgets`,
+  `GET /widgets/{id}` → `get_widget`), matching Fern's route-derived names.
+
+### Tag-based client grouping
+
+Closing the last two required grouping operations by **tag**, as Fern does. Fern's
+rule — reproduced in [`ir::endpoint_module`] — is: a `group_method` operationId
+names its own client from the prefix (`endpoints_container`, `inlinedrequests`) and
+the `tags` are ignored; a groupless operationId (or one with none) is grouped by
+its first tag instead (`get-all-widgets`/`verify code`/`GET /widgets` under tag
+`widgets` → the `widgets` client). The hoisted-type context comes from the
+operationId alone ([`ir::endpoint_pascal_context`]), never the tag, so a tag-grouped
+inline response stays `VerifyCodeResponse`, not `WidgetsVerifyCodeResponse`.
+
+### No-auth parity
+
+These specs declare **no security scheme**, so they exercise crozier's
+unauthenticated client. [`ir::auth_model`] now returns [`ir::Auth::None`] for such a
+document (rather than defaulting to an optional bearer token), and the client
+wrapper, root client, and per-tag clients drop every credential parameter and the
+`Authorization` header — byte-matching Fern's credential-free clients. The whole
+SDK-code layer of all three corpora matches: the types, the tag-grouped raw and
+high-level clients, the root client, and the aggregators.
+
+### crozier vs Fern SDK-identity headers
+
+crozier does not impersonate Fern in the generated SDK: it emits `X-Crozier-Language`
+/ `X-Crozier-SDK-Name` / `X-Crozier-SDK-Version` where Fern emits `X-Fern-*`. It also
+reproduces Fern's *packaged* client wrapper, so it always emits the
+`SDK-Name`/`SDK-Version` headers that Fern's publishing metadata supplies — which the
+credential-free local golden trees (below) omit. Both are deliberate,
+non-behavioral differences in tool branding/packaging, so
+`tests/e2e.rs::normalize_sdk_headers` drops the `SDK-Name`/`SDK-Version` lines and
+canonicalizes the remaining `X-Crozier-` prefix (the `Language` header) to `X-Fern-`
+on both sides before comparison. Every other line of `client_wrapper.py` matches
+exactly, so the wrapper is in each corpus's `matched` list.
+
+### What stays unmatched (packaged vs. local Fern output)
+
+The only files the golden trees carry that stay out of the `matched` lists are the
+package-root `__init__.py` aggregators (they import `__version__` from a
+`version.py` crozier emits but Fern's local output omits). The pure packaging
+scaffolding — `pyproject.toml`, `version.py`, `py.typed`, `README.md`,
+`reference.md` — is simply absent from the golden trees, so there is nothing to
+compare against. This is **not** a crozier defect: crozier reproduces Fern's
+*packaged* SDK (a pip package with all of the above), exactly as the auth'd corpora
+prove. Fern only writes that packaged form when generating for a registry
+(`output.location: pypi`/`github`), which needs publishing credentials; the
+credential-free local mode (`local-file-system` → `downloadFiles`) that vendors
+these golden trees omits it. (`digit-leading-property` additionally leaves its client
+layer unmatched: its `getThing` operation is untagged and groupless, so Fern emits a
+root-level method where crozier still nests a single-endpoint client — a separate
+root-client gap. Its `f_2fa_enabled` model, the fix under test, matches in full.)
+
+Still open from the issue (tracked, not yet done): hoisting an inline object nested
+inside an `array.items` of a *component* schema (dropped to `typing.Any` today —
+adjacent to gap #4's request/response hoisting), Swagger 2.0 / fragment-doc
+tolerance, and the `address_line_1` → `address_line1` underscore-before-digit
+rename.
+
+> **Regenerating these golden trees.** `scripts/generate-fern-fixture.sh` pins the
+> Fern CLI to the corpus version via `fern.config.json` and installs Fern's flat
+> (`downloadFiles`) output under `src/fern/`. Two environment notes: (1) Fern's
+> generator runs `npm install @fern-api/generator-cli` inside its container, so under
+> a TLS-intercepting sandbox the container needs host networking and the proxy CA
+> (e.g. a `docker` shim injecting `--network host -v <ca>:/ca.crt -e
+> NODE_EXTRA_CA_CERTS=/ca.crt`); (2) the flat output omits `pyproject.toml` /
+> `version.py` / the `X-Fern-SDK-*` headers — see the packaging note above.
+
 ## Coverage note
 
 The gate measures coverage with `cargo llvm-cov --fail-under-lines 95`, which

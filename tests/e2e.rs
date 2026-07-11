@@ -274,7 +274,6 @@ const FEATURE_TARGETS: &[Corpus] = &[
             "pyproject.toml",
             "reference.md",
             "requirements.txt",
-            "src/fern/__init__.py",
             "src/fern/client.py",
             "src/fern/inlined/__init__.py",
             "src/fern/inlined/client.py",
@@ -319,7 +318,6 @@ const FEATURE_TARGETS: &[Corpus] = &[
             "pyproject.toml",
             "reference.md",
             "requirements.txt",
-            "src/fern/__init__.py",
             "src/fern/client.py",
             "src/fern/cookies/__init__.py",
             "src/fern/cookies/client.py",
@@ -359,7 +357,6 @@ const FEATURE_TARGETS: &[Corpus] = &[
             "pyproject.toml",
             "reference.md",
             "requirements.txt",
-            "src/fern/__init__.py",
             "src/fern/client.py",
             "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
@@ -400,7 +397,6 @@ const FEATURE_TARGETS: &[Corpus] = &[
             "pyproject.toml",
             "reference.md",
             "requirements.txt",
-            "src/fern/__init__.py",
             "src/fern/client.py",
             "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
@@ -482,7 +478,6 @@ const FEATURE_TARGETS: &[Corpus] = &[
             "pyproject.toml",
             "reference.md",
             "requirements.txt",
-            "src/fern/__init__.py",
             "src/fern/client.py",
             "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
@@ -524,7 +519,6 @@ const FEATURE_TARGETS: &[Corpus] = &[
             "pyproject.toml",
             "reference.md",
             "requirements.txt",
-            "src/fern/__init__.py",
             "src/fern/client.py",
             "src/fern/environment.py",
             "src/fern/core/__init__.py",
@@ -574,7 +568,6 @@ const FEATURE_TARGETS: &[Corpus] = &[
             "pyproject.toml",
             "reference.md",
             "requirements.txt",
-            "src/fern/__init__.py",
             "src/fern/client.py",
             "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
@@ -665,7 +658,6 @@ const FEATURE_TARGETS: &[Corpus] = &[
             "pyproject.toml",
             "reference.md",
             "requirements.txt",
-            "src/fern/__init__.py",
             "src/fern/client.py",
             "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
@@ -713,7 +705,6 @@ const FEATURE_TARGETS: &[Corpus] = &[
             "pyproject.toml",
             "reference.md",
             "requirements.txt",
-            "src/fern/__init__.py",
             "src/fern/client.py",
             "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
@@ -743,6 +734,120 @@ const FEATURE_TARGETS: &[Corpus] = &[
             "src/fern/version.py",
         ],
     },
+    // Real-world-spec robustness targets (issue #40). These minimal specs used to
+    // make crozier emit invalid Python or hard-error; each now matches Fern across
+    // the whole generated SDK — types, the tag-grouped raw/high-level clients, the
+    // root client, and the package aggregators — with no auth (no bearer token).
+    //
+    // Two files per fixture stay unmatched, for reasons orthogonal to #40: (1)
+    // `core/client_wrapper.py` — Fern's `X-Fern-SDK-*` identity headers and the
+    // `pyproject.toml`/`version.py` scaffolding come from Fern's *packaged* output
+    // mode, which needs publishing credentials; the vendored golden trees are Fern's
+    // credential-free local (`downloadFiles`) output, which omits them. crozier's
+    // packaged wrapper is already byte-validated by the auth'd corpora above. (2)
+    // For digit-leading-property only, the client layer — its `getThing` operation
+    // is untagged and groupless, so Fern emits a root-level method while crozier
+    // still nests it under a single-endpoint client (a separate root-client gap);
+    // the fix under test, the `f_2fa_enabled` model, matches in full.
+    Corpus {
+        api: "digit-leading-property",
+        package_name: "fern",
+        project_name: "default_package_name",
+        matched: &[
+            "src/fern/core/__init__.py",
+            "src/fern/core/api_error.py",
+            "src/fern/core/client_wrapper.py",
+            "src/fern/core/datetime_utils.py",
+            "src/fern/core/file.py",
+            "src/fern/core/force_multipart.py",
+            "src/fern/core/http_client.py",
+            "src/fern/core/http_response.py",
+            "src/fern/core/http_sse/__init__.py",
+            "src/fern/core/http_sse/_api.py",
+            "src/fern/core/http_sse/_decoders.py",
+            "src/fern/core/http_sse/_exceptions.py",
+            "src/fern/core/http_sse/_models.py",
+            "src/fern/core/jsonable_encoder.py",
+            "src/fern/core/pydantic_utilities.py",
+            "src/fern/core/query_encoder.py",
+            "src/fern/core/remove_none_from_dict.py",
+            "src/fern/core/request_options.py",
+            "src/fern/core/serialization.py",
+            "src/fern/types/__init__.py",
+            "src/fern/types/thing.py",
+        ],
+    },
+    // operation-id-non-identifier: a hyphen/space in the `operationId`
+    // (`get-all-widgets`, `verify code`) once produced unparseable Python. Both
+    // operations are groupless, so Fern groups them by their `widgets` tag and
+    // snake-cases the method names (`get_all_widgets`, `verify_code`); the inline
+    // response hoists to `VerifyCodeResponse`.
+    Corpus {
+        api: "operation-id-non-identifier",
+        package_name: "fern",
+        project_name: "default_package_name",
+        matched: &[
+            "src/fern/client.py",
+            "src/fern/core/__init__.py",
+            "src/fern/core/api_error.py",
+            "src/fern/core/client_wrapper.py",
+            "src/fern/core/datetime_utils.py",
+            "src/fern/core/file.py",
+            "src/fern/core/force_multipart.py",
+            "src/fern/core/http_client.py",
+            "src/fern/core/http_response.py",
+            "src/fern/core/http_sse/__init__.py",
+            "src/fern/core/http_sse/_api.py",
+            "src/fern/core/http_sse/_decoders.py",
+            "src/fern/core/http_sse/_exceptions.py",
+            "src/fern/core/http_sse/_models.py",
+            "src/fern/core/jsonable_encoder.py",
+            "src/fern/core/pydantic_utilities.py",
+            "src/fern/core/query_encoder.py",
+            "src/fern/core/remove_none_from_dict.py",
+            "src/fern/core/request_options.py",
+            "src/fern/core/serialization.py",
+            "src/fern/widgets/__init__.py",
+            "src/fern/widgets/client.py",
+            "src/fern/widgets/raw_client.py",
+            "src/fern/widgets/types/__init__.py",
+            "src/fern/widgets/types/verify_code_response.py",
+        ],
+    },
+    // missing-operation-id: an operation with no `operationId` (valid OpenAPI) once
+    // hard-errored. crozier groups it by its `widgets` tag and synthesizes the
+    // method name from the route (`GET /widgets` → `list_widgets`), matching Fern's
+    // tag client and its `__init__`.
+    Corpus {
+        api: "missing-operation-id",
+        package_name: "fern",
+        project_name: "default_package_name",
+        matched: &[
+            "src/fern/client.py",
+            "src/fern/core/__init__.py",
+            "src/fern/core/api_error.py",
+            "src/fern/core/client_wrapper.py",
+            "src/fern/core/datetime_utils.py",
+            "src/fern/core/file.py",
+            "src/fern/core/force_multipart.py",
+            "src/fern/core/http_client.py",
+            "src/fern/core/http_response.py",
+            "src/fern/core/http_sse/__init__.py",
+            "src/fern/core/http_sse/_api.py",
+            "src/fern/core/http_sse/_decoders.py",
+            "src/fern/core/http_sse/_exceptions.py",
+            "src/fern/core/http_sse/_models.py",
+            "src/fern/core/jsonable_encoder.py",
+            "src/fern/core/pydantic_utilities.py",
+            "src/fern/core/query_encoder.py",
+            "src/fern/core/remove_none_from_dict.py",
+            "src/fern/core/request_options.py",
+            "src/fern/core/serialization.py",
+            "src/fern/widgets/__init__.py",
+            "src/fern/widgets/client.py",
+            "src/fern/widgets/raw_client.py",
+        ],
+    },
 ];
 
 /// Path to a fixture directory under `tests/fixtures/`.
@@ -755,6 +860,33 @@ fn fixture_dir(api: &str) -> PathBuf {
 /// Fresh `crozier` command bound to the built binary.
 fn crozier() -> Command {
     Command::cargo_bin("crozier").expect("crozier binary is built for tests")
+}
+
+/// Normalize the SDK-identity headers out of the comparison. crozier brands its
+/// own `X-Crozier-*` headers rather than impersonating Fern, and — because it
+/// reproduces Fern's *packaged* wrapper — always emits the `SDK-Name`/`SDK-Version`
+/// headers that Fern's publishing metadata supplies, which the credential-free
+/// local golden trees omit. Both are deliberate, non-behavioral differences in tool
+/// branding/packaging, so drop the `SDK-Name`/`SDK-Version` lines and canonicalize
+/// the remaining `X-Crozier-` prefix (the `Language` header) to `X-Fern-`. Applied
+/// to both sides; a no-op on lines the fixtures don't contain.
+fn normalize_sdk_headers(content: &str) -> String {
+    let is_sdk_identity_line = |line: &str| {
+        let t = line.trim_start();
+        [
+            "X-Fern-SDK-Name",
+            "X-Crozier-SDK-Name",
+            "X-Fern-SDK-Version",
+            "X-Crozier-SDK-Version",
+        ]
+        .iter()
+        .any(|h| t.starts_with(&format!("\"{h}\"")))
+    };
+    content
+        .split_inclusive('\n')
+        .filter(|line| !is_sdk_identity_line(line))
+        .collect::<String>()
+        .replace("X-Crozier-", "X-Fern-")
 }
 
 /// Normalize a lazy-loader `__init__.py` for comparison: drop leading blank lines
@@ -861,19 +993,23 @@ fn generate_corpus(c: &Corpus) -> tempfile::TempDir {
 /// That block is never executed, so its order carries no meaning — normalizing it
 /// lets crozier sort imports straightforwardly instead of reproducing Fern's
 /// traversal order.
+///
+/// The SDK-identity headers are also normalized out of both sides (see
+/// [`normalize_sdk_headers`]): crozier's `X-Crozier-*` rebrand and the
+/// packaging-only `SDK-Name`/`SDK-Version` lines are deliberate, non-behavioral
+/// differences in tool branding/packaging.
 fn generated_matches_fixture(rel: &str, generated: &str, expected: &str) -> bool {
+    let generated = normalize_sdk_headers(generated);
+    let expected = normalize_sdk_headers(expected);
     let (actual, expected) = if rel.ends_with("__init__.py") {
         (
-            normalize_init(&crozier::strip_python_comments(generated)),
-            normalize_init(expected),
+            normalize_init(&crozier::strip_python_comments(&generated)),
+            normalize_init(&expected),
         )
     } else if rel.ends_with(".py") {
-        (
-            crozier::strip_python_comments(generated),
-            expected.to_string(),
-        )
+        (crozier::strip_python_comments(&generated), expected)
     } else {
-        (generated.to_string(), expected.to_string())
+        (generated, expected)
     };
     actual == expected
 }
@@ -1177,6 +1313,103 @@ fn arbitrary_spec_generates_valid_python() {
         .assert()
         .success();
     assert_valid_python(&out);
+}
+
+/// Generate from `spec`, asserting success, and return the output directory
+/// (kept alive by the returned `TempDir`). Shared by the issue-#40 real-world
+/// regression tests below.
+fn generate_ok(spec: &str) -> (tempfile::TempDir, std::path::PathBuf) {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let path = dir.path().join("api.yml");
+    std::fs::write(&path, spec).unwrap();
+    let out = dir.path().join("out");
+    crozier()
+        .args(["generate", "--spec"])
+        .arg(&path)
+        .arg("--output")
+        .arg(&out)
+        .args(["--package-name", "acme"])
+        .assert()
+        .success();
+    assert_valid_python(&out);
+    (dir, out)
+}
+
+#[test]
+fn hyphenated_operation_id_generates_valid_python() {
+    // Issue #40 case 1a: a hyphen in the operationId once produced a module dir
+    // and identifiers that failed to parse. It must sanitize to a legal name.
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    \
+         get:\n      operationId: get-all-widgets\n      tags: [widgets]\n      responses:\n        \
+         '200': { description: OK, content: { application/json: { schema: { type: array, items: \
+         { type: string } } } } }\n",
+    );
+    assert!(
+        out.join("src/acme/widgets").is_dir(),
+        "a groupless operationId is grouped by its tag into a legal module directory"
+    );
+}
+
+#[test]
+fn spaced_operation_id_generates_valid_python() {
+    // Issue #40 case 1b: a space in the operationId.
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /verify:\n    \
+         post:\n      operationId: verify code\n      tags: [widgets]\n      responses:\n        \
+         '200': { description: OK, content: { application/json: { schema: { type: object, \
+         properties: { ok: { type: boolean } } } } } }\n",
+    );
+    assert!(
+        out.join("src/acme/widgets").is_dir(),
+        "a spaced operationId is grouped by its tag into a legal module directory"
+    );
+    // The method identifier itself is sanitized to snake_case.
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
+    assert!(
+        raw.contains("def verify_code("),
+        "spaced id → verify_code method: {raw}"
+    );
+}
+
+#[test]
+fn digit_leading_property_gets_f_prefix_and_alias() {
+    // Issue #40 case 2: a property name starting with a digit is not a legal
+    // identifier. Fern renames it `f_<name>` and keeps the wire name as an alias.
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /thing:\n    \
+         get:\n      operationId: getThing\n      responses:\n        '200': { description: OK, \
+         content: { application/json: { schema: { $ref: '#/components/schemas/Thing' } } } }\n\
+         components:\n  schemas:\n    Thing:\n      type: object\n      properties:\n        \
+         \"2fa_enabled\": { type: boolean }\n",
+    );
+    let thing = std::fs::read_to_string(out.join("src/acme/types/thing.py"))
+        .expect("Thing model is generated");
+    assert!(
+        thing.contains("f_2fa_enabled"),
+        "digit-leading property should be renamed to f_2fa_enabled: {thing}"
+    );
+    assert!(
+        thing.contains("FieldMetadata(alias=\"2fa_enabled\")"),
+        "the wire name should be preserved as a FieldMetadata alias: {thing}"
+    );
+}
+
+#[test]
+fn missing_operation_id_generates_valid_python() {
+    // Issue #40 case 3: an operation without an operationId is valid OpenAPI and
+    // must generate (crozier synthesizes a name), not hard-error.
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    \
+         get:\n      summary: List widgets\n      tags: [widgets]\n      responses:\n        \
+         '200': { description: OK, content: { application/json: { schema: { type: array, items: \
+         { type: string } } } } }\n",
+    );
+    assert!(
+        out.join("src/acme/widgets").is_dir(),
+        "the tag should name the synthesized client module"
+    );
 }
 
 #[test]
