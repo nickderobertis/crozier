@@ -24,6 +24,7 @@
       "Bash(just check)",
       "Bash(just test)",
       "Bash(just test-e2e)",
+      "Bash(just test-runtime)",
       "Bash(just lint)",
       "Bash(just format)",
       "Bash(just upgrade)",

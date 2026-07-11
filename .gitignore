@@ -16,3 +16,9 @@ llmlint.buildout.yml
 
 # maturin / Python packaging build output (wheels + sdist)
 /dist
+
+# Python bytecode caches (the runtime wire tests import generated SDKs; a stray
+# non-sandboxed run can drop these next to the imported modules / fixtures)
+__pycache__/
+*.pyc
+.pytest_cache/
