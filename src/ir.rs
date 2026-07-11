@@ -35,6 +35,10 @@ pub struct Ir {
     pub errors: Vec<ErrorClass>,
     /// The authentication model that shapes the client wrapper and root client.
     pub auth: Auth,
+    /// Operation headers promoted to client-wrapper-level "global" fields (Fern
+    /// lifts an optional operation header, e.g. `X-Tenant` → `tenant`, out of the
+    /// method signature and sets it once at client construction).
+    pub global_headers: Vec<GlobalHeader>,
     /// The server-environment model, when the document declares `servers`. Drives
     /// `environment.py` and threads an `environment`/optional-`base_url` through
     /// the root client.
@@ -95,6 +99,44 @@ fn env_member_name(description: &str) -> String {
         }
     }
     out.trim_end_matches('_').to_string()
+}
+
+/// An operation header promoted to a client-wrapper-level field. Fern lifts an
+/// *optional* operation header out of the method (a required one stays per-method,
+/// e.g. exhaustive's `X-TEST-ENDPOINT-HEADER`) and applies it as a global header
+/// set once at client construction — `X-Tenant` becomes the `tenant` field.
+#[derive(Debug, Clone)]
+pub struct GlobalHeader {
+    /// The wire header name (the `headers` dict key), e.g. `X-Tenant`.
+    pub wire_name: String,
+    /// The Python field/parameter name, e.g. `tenant` (the `X-` prefix dropped).
+    pub py_name: String,
+}
+
+/// Collect the operation headers Fern promotes to client-wrapper-level fields: a
+/// header that is *optional* in every operation it appears in, in first-seen order.
+/// A header that is required anywhere stays a per-method parameter.
+fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
+    // name → whether every occurrence so far is optional, in first-seen order.
+    let mut seen: IndexMap<String, bool> = IndexMap::new();
+    for item in doc.paths.values() {
+        for (_, op) in item.operations() {
+            for p in &op.parameters {
+                if p.location == Some(ParameterLocation::Header) {
+                    let optional = p.required != Some(true);
+                    let entry = seen.entry(p.name.clone()).or_insert(true);
+                    *entry = *entry && optional;
+                }
+            }
+        }
+    }
+    seen.into_iter()
+        .filter(|(_, optional)| *optional)
+        .map(|(wire_name, _)| GlobalHeader {
+            py_name: naming::field_name(header_param_stem(&wire_name)),
+            wire_name,
+        })
+        .collect()
 }
 
 /// The SDK's authentication model, derived from `components.securitySchemes` and
@@ -665,7 +707,8 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
     // body's fields and to decide which of them serialize through the convert
     // wrapper, so it runs after the type layer is built. It also hoists inline
     // request/response bodies into their tags' own `types/` packages.
-    let (endpoints, tag_types) = endpoints(doc, &builder.types);
+    let global = global_headers(doc);
+    let (endpoints, tag_types) = endpoints(doc, &builder.types, &global);
     let errors = error_classes(&endpoints);
 
     // Fern does not emit a standalone type for a schema used *only* as an inlined
@@ -694,6 +737,7 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         endpoints,
         errors,
         auth: auth_model(doc),
+        global_headers: global,
         environment,
     }
 }
@@ -721,7 +765,13 @@ fn error_classes(endpoints: &[Endpoint]) -> Vec<ErrorClass> {
 /// Resolve every operation into an [`Endpoint`], in document-traversal order
 /// (paths in document order, methods in a stable per-path order). Inline
 /// request/response bodies are hoisted into per-tag types, collected alongside.
-fn endpoints(doc: &OpenApi, types: &[TypeDecl]) -> (Vec<Endpoint>, Vec<TagTypeDecl>) {
+fn endpoints(
+    doc: &OpenApi,
+    types: &[TypeDecl],
+    global: &[GlobalHeader],
+) -> (Vec<Endpoint>, Vec<TagTypeDecl>) {
+    let global_names: std::collections::HashSet<&str> =
+        global.iter().map(|h| h.wire_name.as_str()).collect();
     let mut out = Vec::new();
     let mut tag_types = Vec::new();
     for (path, item) in &doc.paths {
@@ -733,6 +783,7 @@ fn endpoints(doc: &OpenApi, types: &[TypeDecl]) -> (Vec<Endpoint>, Vec<TagTypeDe
                 http_method,
                 op,
                 &mut tag_types,
+                &global_names,
             ));
         }
     }
@@ -749,6 +800,7 @@ fn build_endpoint(
     http_method: &'static str,
     op: &Operation,
     tag_types: &mut Vec<TagTypeDecl>,
+    global_headers: &std::collections::HashSet<&str>,
 ) -> Endpoint {
     let module = endpoint_module(&op.operation_id);
     let method = endpoint_method_name(&op.operation_id);
@@ -791,7 +843,12 @@ fn build_endpoint(
     let header_params: Vec<HeaderParam> = op
         .parameters
         .iter()
-        .filter(|p| p.location == Some(ParameterLocation::Header))
+        // A header promoted to a client-wrapper-level global field is dropped from
+        // the method signature entirely (it is set once at client construction).
+        .filter(|p| {
+            p.location == Some(ParameterLocation::Header)
+                && !global_headers.contains(p.name.as_str())
+        })
         .map(|p| HeaderParam {
             wire_name: p.name.clone(),
             py_name: naming::field_name(header_param_stem(&p.name)),
@@ -804,13 +861,19 @@ fn build_endpoint(
         })
         .collect();
 
-    // Today crozier handles path, query, and header parameters; any other kind
-    // (cookie, an unknown location, or a `$ref` with no location) puts the
-    // operation outside the emittable subset.
+    // crozier handles path, query, and header parameters, and drops `cookie`
+    // parameters (Fern omits them from the method signature entirely). Any other
+    // kind (an unknown location, or a `$ref` with no location) puts the operation
+    // outside the emittable subset.
     let has_unsupported_params = op.parameters.iter().any(|p| {
         !matches!(
             p.location,
-            Some(ParameterLocation::Path | ParameterLocation::Query | ParameterLocation::Header)
+            Some(
+                ParameterLocation::Path
+                    | ParameterLocation::Query
+                    | ParameterLocation::Header
+                    | ParameterLocation::Cookie
+            )
         )
     });
     // Error (non-2xx) responses each become a `raise` branch; `None` means one of

@@ -16,7 +16,8 @@ use serde::Serialize;
 
 use crate::error::{Error, Result};
 use crate::ir::{
-    Auth, Endpoint, ErrorClass, Field, Ir, ObjectType, Prim, RequestBody, TypeDecl, TypeRef,
+    Auth, Endpoint, ErrorClass, Field, GlobalHeader, Ir, ObjectType, Prim, RequestBody, TypeDecl,
+    TypeRef,
 };
 use crate::naming;
 use crate::wrap::Doc;
@@ -447,7 +448,12 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     // Fern's static core runtime, emitted verbatim (see assets/README.md), plus
     // the auth-shaped `client_wrapper.py`.
     files.extend(core_files(pkg));
-    files.push(client_wrapper_file(pkg, &ir.project_name, &ir.auth));
+    files.push(client_wrapper_file(
+        pkg,
+        &ir.project_name,
+        &ir.auth,
+        &ir.global_headers,
+    ));
 
     // `environment.py`: the server-environment enum, when the document declares
     // `servers`.
@@ -490,6 +496,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 auth: &ir.auth,
                 has_environment: ir.environment.is_some(),
                 tag_types: &tag_map,
+                global_headers: &ir.global_headers,
             };
             files.push(client_file(&env, &cx, &eps)?);
             emittable_modules.push(module);
@@ -507,6 +514,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             &emittable_modules,
             &ir.auth,
             ir.environment.as_ref(),
+            &ir.global_headers,
         )?);
     }
 
@@ -996,6 +1004,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
             uses_datetime: false,
             auth: &ir.auth,
             has_environment: ir.environment.is_some(),
+            global_headers: &ir.global_headers,
         };
         build_example(first, false, &first.module, pkg, &ir.client_name, &mut ctx)?.join("\n")
     };
@@ -1006,6 +1015,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
             uses_datetime: false,
             auth: &ir.auth,
             has_environment: ir.environment.is_some(),
+            global_headers: &ir.global_headers,
         };
         build_example(first, true, &first.module, pkg, &ir.client_name, &mut ctx)?.join("\n")
     };
@@ -1109,6 +1119,7 @@ fn reference_entry(
         uses_datetime: false,
         auth: &ir.auth,
         has_environment: ir.environment.is_some(),
+        global_headers: &ir.global_headers,
     };
     let example = build_example(ep, false, module, pkg, &ir.client_name, &mut ctx)
         .unwrap_or_default()
@@ -1413,27 +1424,63 @@ fn auth_example(auth: &Auth) -> String {
 /// required-credential forms swap the constructor parameter, the header wiring,
 /// and the token helper. Assembled from literal blocks (no source-line
 /// continuations, which would eat the Python indentation).
-fn client_wrapper_file(pkg: &str, project_name: &str, auth: &Auth) -> GeneratedFile {
+fn client_wrapper_file(
+    pkg: &str,
+    project_name: &str,
+    auth: &Auth,
+    global_headers: &[GlobalHeader],
+) -> GeneratedFile {
     let a = auth_wrapper_parts(auth);
+    // Promoted global headers: a constructor parameter, an assignment, a
+    // `get_headers` block, and a `super().__init__` argument — all emitted before
+    // the auth credential's, matching Fern's ordering.
+    let gh_param: String = global_headers
+        .iter()
+        .map(|h| format!("        {}: typing.Optional[str] = None,\n", h.py_name))
+        .collect();
+    let gh_assign: String = global_headers
+        .iter()
+        .map(|h| format!("        self._{0} = {0}\n", h.py_name))
+        .collect();
+    let gh_header: String = global_headers
+        .iter()
+        .map(|h| {
+            format!(
+                "        if self._{0} is not None:\n            headers[\"{1}\"] = self._{0}\n",
+                h.py_name, h.wire_name
+            )
+        })
+        .collect();
+    let gh_super: String = global_headers
+        .iter()
+        .map(|h| format!("{0}={0}, ", h.py_name))
+        .collect();
     let get_headers_head = format!(
         "        self._headers = headers\n        self._base_url = base_url\n        self._timeout = timeout\n\n    def get_headers(self) -> typing.Dict[str, str]:\n        headers: typing.Dict[str, str] = {{\n            \"X-Fern-Language\": \"Python\",\n            \"X-Fern-SDK-Name\": \"{project_name}\",\n            \"X-Fern-SDK-Version\": \"{DEFAULT_SDK_VERSION}\",\n            **(self.get_custom_headers() or {{}}),\n        }}\n"
     );
     let mut c = String::new();
     c.push_str("\n\nimport typing\n\nimport httpx\nfrom .http_client import AsyncHttpClient, HttpClient\n\n\nclass BaseClientWrapper:\n    def __init__(\n        self,\n        *,\n");
+    c.push_str(&gh_param);
     c.push_str(&a.param);
     c.push_str("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n    ):\n");
+    c.push_str(&gh_assign);
     c.push_str(&a.assign);
     c.push_str(&get_headers_head);
+    c.push_str(&gh_header);
     c.push_str(&a.header_block);
     c.push_str("        return headers\n\n");
     c.push_str(&a.token_method);
     c.push_str("    def get_custom_headers(self) -> typing.Optional[typing.Dict[str, str]]:\n        return self._headers\n\n    def get_base_url(self) -> str:\n        return self._base_url\n\n    def get_timeout(self) -> typing.Optional[float]:\n        return self._timeout\n\n\nclass SyncClientWrapper(BaseClientWrapper):\n    def __init__(\n        self,\n        *,\n");
+    c.push_str(&gh_param);
     c.push_str(&a.param);
     c.push_str("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        httpx_client: httpx.Client,\n    ):\n        super().__init__(");
+    c.push_str(&gh_super);
     c.push_str(&a.super_arg);
     c.push_str(", headers=headers, base_url=base_url, timeout=timeout)\n        self.httpx_client = HttpClient(\n            httpx_client=httpx_client,\n            base_headers=self.get_headers,\n            base_timeout=self.get_timeout,\n            base_url=self.get_base_url,\n        )\n\n\nclass AsyncClientWrapper(BaseClientWrapper):\n    def __init__(\n        self,\n        *,\n");
+    c.push_str(&gh_param);
     c.push_str(&a.param);
     c.push_str("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        httpx_client: httpx.AsyncClient,\n    ):\n        super().__init__(");
+    c.push_str(&gh_super);
     c.push_str(&a.super_arg);
     c.push_str(", headers=headers, base_url=base_url, timeout=timeout)\n        self.httpx_client = AsyncHttpClient(\n            httpx_client=httpx_client,\n            base_headers=self.get_headers,\n            base_timeout=self.get_timeout,\n            base_url=self.get_base_url,\n        )\n");
     GeneratedFile {
@@ -2232,6 +2279,7 @@ fn root_client_file(
     modules: &[&String],
     auth: &Auth,
     environment: Option<&crate::ir::Environment>,
+    global_headers: &[GlobalHeader],
 ) -> Result<GeneratedFile> {
     let mut body = String::new();
     body.push_str("from __future__ import annotations\n\nimport typing\n\nimport httpx\nfrom .core.client_wrapper import AsyncClientWrapper, SyncClientWrapper\n");
@@ -2252,6 +2300,11 @@ fn root_client_file(
             names[0], names[1]
         ));
     }
+    let cfg = RootClientCfg {
+        auth,
+        environment,
+        global_headers,
+    };
     body.push_str("\n\n");
     body.push_str(&root_client_class(
         env,
@@ -2259,8 +2312,7 @@ fn root_client_file(
         pkg,
         false,
         modules,
-        auth,
-        environment,
+        &cfg,
     )?);
     body.push_str("\n\n\n");
     body.push_str(&root_client_class(
@@ -2269,8 +2321,7 @@ fn root_client_file(
         pkg,
         true,
         modules,
-        auth,
-        environment,
+        &cfg,
     )?);
     // When environments are in play, a module-level `_get_base_url` resolves the
     // explicit `base_url` or falls back to the selected environment's URL.
@@ -2293,6 +2344,14 @@ fn root_client_file(
     })
 }
 
+/// The credential/environment/global-header configuration shared by both root
+/// client classes, bundled to keep [`root_client_class`] within the argument limit.
+struct RootClientCfg<'a> {
+    auth: &'a Auth,
+    environment: Option<&'a crate::ir::Environment>,
+    global_headers: &'a [GlobalHeader],
+}
+
 /// One root client class: the class docstring, the `__init__` wiring up the
 /// client wrapper and the per-tag lazy slots, then one cached `@property` per tag.
 fn root_client_class(
@@ -2301,9 +2360,11 @@ fn root_client_class(
     pkg: &str,
     is_async: bool,
     modules: &[&String],
-    auth: &Auth,
-    environment: Option<&crate::ir::Environment>,
+    cfg: &RootClientCfg,
 ) -> Result<String> {
+    let auth = cfg.auth;
+    let environment = cfg.environment;
+    let global_headers = cfg.global_headers;
     let (class_name, wrapper, httpx_type) = if is_async {
         (
             format!("Async{client_name}"),
@@ -2332,6 +2393,30 @@ fn root_client_class(
         || "base_url".to_string(),
         |_| "_get_base_url(base_url=base_url, environment=environment)".to_string(),
     );
+    // Promoted global headers: an optional docstring/ctor/example/wrapper line
+    // each, emitted right after `base_url` and before the auth credential.
+    let gh_doc: String = global_headers
+        .iter()
+        .map(|h| format!("    {} : typing.Optional[str]\n", h.py_name))
+        .collect();
+    let gh_ctor: String = global_headers
+        .iter()
+        .map(|h| format!("        {}: typing.Optional[str] = None,\n", h.py_name))
+        .collect();
+    let gh_example: String = global_headers
+        .iter()
+        .map(|h| {
+            format!(
+                "        {}=\"YOUR_{}\",\n",
+                h.py_name,
+                h.py_name.to_uppercase()
+            )
+        })
+        .collect();
+    let gh_wrapper: String = global_headers
+        .iter()
+        .map(|h| format!("            {0}={0},\n", h.py_name))
+        .collect();
     let module_views: Vec<RootModuleView> = modules
         .iter()
         .map(|m| RootModuleView {
@@ -2357,6 +2442,10 @@ fn root_client_class(
         } else {
             "        base_url=\"https://yourhost.com/path/to/api\",\n".to_string()
         },
+        gh_doc,
+        gh_ctor,
+        gh_example,
+        gh_wrapper,
         modules: module_views,
     };
     // The caller controls the separation between the sync/async classes and the
@@ -2402,6 +2491,13 @@ struct RootClientView {
     /// The `Examples` client instantiation's `base_url` line (empty with
     /// environments, which drop it).
     example_base_url: String,
+    /// Promoted global-header lines (empty without any): the docstring `Parameters`
+    /// entries, the constructor parameters, the `Examples` arguments, and the
+    /// client-wrapper call arguments — all placed after `base_url`.
+    gh_doc: String,
+    gh_ctor: String,
+    gh_example: String,
+    gh_wrapper: String,
     modules: Vec<RootModuleView>,
 }
 
@@ -2452,6 +2548,7 @@ struct ClientCtx<'a> {
     auth: &'a Auth,
     has_environment: bool,
     tag_types: &'a BTreeMap<String, String>,
+    global_headers: &'a [GlobalHeader],
 }
 
 /// Assemble a per-tag `client.py`: the sync and async high-level clients that
@@ -2601,6 +2698,7 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
         uses_datetime: false,
         auth: cx.auth,
         has_environment: cx.has_environment,
+        global_headers: cx.global_headers,
     };
     match build_example(ep, is_async, cx.module, cx.pkg, cx.client_name, &mut ctx) {
         Some(ex_lines) => {
@@ -2773,6 +2871,9 @@ struct ExampleCtx<'a> {
     /// Whether the SDK has server environments — with them, the client
     /// instantiation drops the `base_url=...` line.
     has_environment: bool,
+    /// Promoted global headers, shown as `tenant="YOUR_TENANT"` example lines
+    /// before the auth credential in the client instantiation.
+    global_headers: &'a [GlobalHeader],
 }
 
 /// The slot a string value sits in, which decides its placeholder text: a named
@@ -3043,11 +3144,17 @@ fn build_example(
         v
     };
 
-    let mut client_block = vec![
-        format!("client = {example_name}("),
-        format!("    {},", auth_example(ctx.auth)),
-    ];
-    // With server environments, Fern drops the hardcoded `base_url` from examples.
+    let mut client_block = vec![format!("client = {example_name}(")];
+    // Promoted global headers come first (`tenant="YOUR_TENANT"`), then the auth
+    // credential, then the hardcoded `base_url` (dropped when environments exist).
+    for h in ctx.global_headers {
+        client_block.push(format!(
+            "    {}=\"YOUR_{}\",",
+            h.py_name,
+            h.py_name.to_uppercase()
+        ));
+    }
+    client_block.push(format!("    {},", auth_example(ctx.auth)));
     if !ctx.has_environment {
         client_block.push("    base_url=\"https://yourhost.com/path/to/api\",".to_string());
     }
@@ -3369,6 +3476,10 @@ mod tests {
             wrapper_base_url: "base_url".to_string(),
             example_base_url: "        base_url=\"https://yourhost.com/path/to/api\",\n"
                 .to_string(),
+            gh_doc: String::new(),
+            gh_ctor: String::new(),
+            gh_example: String::new(),
+            gh_wrapper: String::new(),
             modules: vec![RootModuleView {
                 attr: "endpoints_put".to_string(),
                 cls: "EndpointsPutClient".to_string(),
