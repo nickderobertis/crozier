@@ -16,9 +16,12 @@ keep this file for constraints, tradeoffs, and judgment.
 `crozier` is a Rust CLI that generates client SDKs from an OpenAPI 3.x document,
 matching [Fern](https://github.com/fern-api/fern)'s generator output byte-for-byte
 (comments aside). Python is the only target today. It ships as a single static
-binary. Generators are Rust + [minijinja](https://github.com/mitsuhiko/minijinja)
-templates — there is no plugin-in-target-language model and no per-project config
-file: the OpenAPI document plus a few naming flags are the entire input.
+binary, with one **generation-time dependency**: `crozier generate` shells out to
+`ruff format` (over the CLI) to wrap the emitted Python, so `ruff` must be on
+PATH — a missing one is an actionable error, not a panic. Generators are Rust +
+[minijinja](https://github.com/mitsuhiko/minijinja) templates — there is no
+plugin-in-target-language model and no per-project config file: the OpenAPI
+document plus a few naming flags are the entire input.
 
 The north star: **`crozier`'s output, with comments stripped, equals Fern's
 output with comments stripped.** See [`docs/matching.md`](docs/matching.md) for

@@ -545,6 +545,55 @@ fn crozier() -> Command {
     Command::cargo_bin("crozier").expect("crozier binary is built for tests")
 }
 
+/// Normalize a lazy-loader `__init__.py` for comparison: drop leading blank lines
+/// (a comment-strip artifact) and canonicalize the import order with `ruff` isort,
+/// so the semantically-irrelevant `TYPE_CHECKING` ordering does not gate the match.
+fn normalize_init(content: &str) -> String {
+    let trimmed: String = content
+        .split_inclusive('\n')
+        .skip_while(|line| line.trim().is_empty())
+        .collect();
+    ruff_isort(&trimmed)
+}
+
+/// Run `ruff check --select I --fix` over a source string, returning the
+/// import-sorted result. Uses the same `ruff` the generator depends on.
+fn ruff_isort(source: &str) -> String {
+    use std::io::Write;
+    use std::process::{Command as PCommand, Stdio};
+    let mut child = PCommand::new("ruff")
+        .args([
+            "check",
+            "--select",
+            "I",
+            "--fix",
+            "--stdin-filename",
+            "x.py",
+            "-",
+        ])
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("ruff is on PATH for the e2e (see docs/matching.md)");
+    child
+        .stdin
+        .take()
+        .expect("piped stdin")
+        .write_all(source.as_bytes())
+        .expect("write to ruff");
+    let out = child.wait_with_output().expect("ruff ran");
+    // Trust ruff's stdout only when it exited cleanly — a non-zero exit (e.g. a
+    // syntax error in the input) must surface, not silently yield wrong text.
+    assert!(
+        out.status.success(),
+        "ruff isort failed ({}): {}",
+        out.status,
+        String::from_utf8_lossy(&out.stderr)
+    );
+    String::from_utf8(out.stdout).expect("ruff output is UTF-8")
+}
+
 /// Drive the compiled binary over a corpus's spec and require every file in its
 /// `matched` list to equal the committed fixture once comments are stripped.
 fn assert_corpus_matches(c: &Corpus) {
@@ -574,10 +623,22 @@ fn assert_corpus_matches(c: &Corpus) {
         // Python files are compared with comments stripped (the same normalization
         // that produced the fixtures); non-Python scaffolding (pyproject.toml,
         // requirements.txt, JSON) is Fern's verbatim output and compared as-is.
-        let actual = if rel.ends_with(".py") {
-            crozier::strip_python_comments(&generated)
+        //
+        // The lazy-loader `__init__.py` aggregators are normalized on both sides
+        // before comparison: leading blank lines (a comment-strip artifact of
+        // Fern's multi-line header) are trimmed, and the `TYPE_CHECKING` import
+        // block is canonicalized with `ruff` isort. That block is never executed,
+        // so its order carries no meaning — normalizing it lets crozier sort
+        // imports straightforwardly instead of reproducing Fern's traversal order.
+        let (actual, expected) = if rel.ends_with("__init__.py") {
+            (
+                normalize_init(&crozier::strip_python_comments(&generated)),
+                normalize_init(&expected),
+            )
+        } else if rel.ends_with(".py") {
+            (crozier::strip_python_comments(&generated), expected)
         } else {
-            generated
+            (generated, expected)
         };
         assert_eq!(
             actual, expected,

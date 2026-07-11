@@ -148,12 +148,35 @@ ships identical `core/` files into every SDK. crozier vendors them under
 `assets/core/` (Apache-2.0; see `NOTICE`) and emits them verbatim, substituting
 only the SDK name/version in `client_wrapper.py`.
 
-**Line wrapping.** Fern runs `ruff format` (line length 120) over its output.
-crozier reproduces it without a runtime Python dependency: the emitter builds a
-[`Doc`](../src/wrap.rs) tree per type expression and `wrap::layout` renders it
-with ruff's recursive right-hand-split — keep a statement on one line if it fits,
-else explode the outermost bracket, and if the contents still overflow, one
-element per line with a trailing comma.
+**Line wrapping.** Fern runs `ruff format` (line length 120) over its output, so
+crozier delegates the wrapping to the same tool. The emitters build each
+statement on one line (a small [`Doc`](../src/wrap.rs) expression rendered flat),
+and a post-pass ([`pyfmt`](../src/pyfmt.rs)) runs `ruff format` over the generated
+`.py` files. `ruff` is therefore a **generation-time dependency**, invoked over
+the CLI (not the unstable `ruff_python_formatter` library crates) and pinned in CI
+to match Fern's fixtures (the version lives in `.ruff-version`, installed by
+`scripts/install-ruff.sh`); its formatter output is byte-identical, on the shapes
+crozier emits, across `0.11`–`0.15` (verified by running the e2e under both). The vendored `core/` runtime is left unformatted — it is already
+Fern's own `ruff`-formatted source, and reformatting it does not commute with the
+comment-strip comparison.
+
+**Aggregator imports.** The lazy-loader `__init__.py` files (`types/`, `errors/`,
+the package root) are formatted like any other file, but two artifacts are
+normalized on both sides of the e2e comparison (see `normalize_init` in
+`tests/e2e.rs`) rather than reproduced: their leading blank lines (a comment-strip
+artifact of Fern's multi-line header that a one-line header plus `ruff`, which
+caps module-top blanks at two, cannot reproduce), and the order of the
+`if typing.TYPE_CHECKING:` import block. That block is never executed, so its
+order is meaningless — Fern emits it in traversal order; crozier sorts it
+straightforwardly and the e2e canonicalizes both sides with `ruff` isort. The
+`_dynamic_imports` map and `__all__` (which *are* executed) stay alphabetical.
+
+**Example snippets.** The worked examples in docstrings/`README`/`reference.md`
+are laid out by hand (`Example::render`), *not* through `ruff format`, because
+Fern's committed examples are not a `ruff` fixed point: `ruff` reformats a long
+`await <call>(...)` by parenthesizing the awaited expression, while Fern leaves
+the long `await …(` line and only explodes the call arguments. Reproducing Fern
+here means matching Fern, not `ruff`.
 
 ## Known gaps (roadmap)
 

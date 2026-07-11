@@ -1,0 +1,18 @@
+class {{ class_name }}:
+    def __init__(self, *, client_wrapper: {{ wrapper }}):
+        self._raw_client = {{ raw_client_cls }}(client_wrapper=client_wrapper)
+
+    @property
+    def with_raw_response(self) -> {{ raw_client_cls }}:
+        """
+        Retrieves a raw implementation of this client that returns raw responses.
+
+        Returns
+        -------
+        {{ raw_client_cls }}
+        """
+        return self._raw_client
+{% for m in methods %}
+
+{{ m }}
+{% endfor %}

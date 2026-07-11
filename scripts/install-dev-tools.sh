@@ -3,7 +3,9 @@
 # on success. Prefers prebuilt binaries (cargo-binstall) over source builds.
 #
 # In CI these come from taiki-e/install-action (see .github/workflows/ci.yml);
-# this script is the clean-clone local path invoked by `just bootstrap`.
+# this script is the clean-clone local path invoked by `just bootstrap`. `ruff`
+# (the other generation-time dependency) is installed by scripts/install-ruff.sh,
+# which `just bootstrap` calls alongside this.
 set -euo pipefail
 
 tools=(cargo-nextest cargo-llvm-cov cargo-deny cargo-machete)

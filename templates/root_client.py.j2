@@ -1,0 +1,66 @@
+class {{ class_name }}:
+    """
+    Use this class to access the different functions within the SDK. You can instantiate any number of clients with different configuration that will propagate to these functions.
+
+    Parameters
+    ----------
+    base_url : str
+        The base url to use for requests from the client.
+
+{{ doc_param }}    headers : typing.Optional[typing.Dict[str, str]]
+        Additional headers to send with every request.
+
+    timeout : typing.Optional[float]
+        The timeout to be used, in seconds, for requests. By default the timeout is 60 seconds, unless a custom httpx client is used, in which case this default is not enforced.
+
+    follow_redirects : typing.Optional[bool]
+        Whether the default httpx client follows redirects or not, this is irrelevant if a custom httpx client is passed in.
+
+    httpx_client : typing.Optional[{{ httpx_type }}]
+        The httpx client to use for making requests, a preconfigured client is used by default, however this is useful should you want to pass in any custom httpx configuration.
+
+    Examples
+    --------
+    from {{ pkg }} import {{ class_name }}
+
+    client = {{ class_name }}(
+{{ example_line }}        base_url="https://yourhost.com/path/to/api",
+    )
+    """
+
+    def __init__(
+        self,
+        *,
+        base_url: str,
+{{ ctor_param }}        headers: typing.Optional[typing.Dict[str, str]] = None,
+        timeout: typing.Optional[float] = None,
+        follow_redirects: typing.Optional[bool] = True,
+        httpx_client: typing.Optional[{{ httpx_type }}] = None,
+    ):
+        _defaulted_timeout = (
+            timeout if timeout is not None else 60 if httpx_client is None else httpx_client.timeout.read
+        )
+        self._client_wrapper = {{ wrapper }}(
+            base_url=base_url,
+            {{ wrapper_arg }}={{ wrapper_arg }},
+            headers=headers,
+            httpx_client=httpx_client
+            if httpx_client is not None
+            else {{ httpx_type }}(timeout=_defaulted_timeout, follow_redirects=follow_redirects)
+            if follow_redirects is not None
+            else {{ httpx_type }}(timeout=_defaulted_timeout),
+            timeout=_defaulted_timeout,
+        )
+{% for m in modules %}
+        self._{{ m.attr }}: typing.Optional[{{ m.cls }}] = None
+{% endfor %}
+{% for m in modules %}
+
+    @property
+    def {{ m.attr }}(self):
+        if self._{{ m.attr }} is None:
+            from .{{ m.attr }}.client import {{ m.cls }}
+
+            self._{{ m.attr }} = {{ m.cls }}(client_wrapper=self._client_wrapper)
+        return self._{{ m.attr }}
+{% endfor %}

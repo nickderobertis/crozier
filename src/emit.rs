@@ -1,21 +1,25 @@
 //! Rendering the IR to Python source files with minijinja.
 //!
-//! Rust computes the semantics — resolved type expressions, the exact import
-//! block, per-field annotations and defaults — and minijinja lays out the files.
-//! The split keeps the byte-sensitive logic (import ordering, alias wrapping) in
-//! testable Rust while templates stay presentational.
+//! Three layers: Rust computes the semantics (resolved type expressions, the
+//! exact import block, per-field annotations and defaults); minijinja templates
+//! (`templates/`) lay out the file shape — e.g. `class_body.py.j2` arranges a
+//! pydantic model's docstring, fields, and config block, applying the Fern
+//! blank-line rules `ruff` does not impose; and `ruff format` (see [`crate::pyfmt`])
+//! handles the line wrapping. The template layout is covered directly by render
+//! tests (see this module's `tests`), so it iterates without the full pipeline.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::PathBuf;
 
 use minijinja::{context, Environment};
+use serde::Serialize;
 
 use crate::error::{Error, Result};
 use crate::ir::{
     Auth, Endpoint, ErrorClass, Field, Ir, ObjectType, Prim, RequestBody, TypeDecl, TypeRef,
 };
 use crate::naming;
-use crate::wrap::{self, Doc};
+use crate::wrap::Doc;
 
 /// The header comment crozier writes atop every generated file. It differs from
 /// Fern's by design; the comment-stripping normalizer removes it before any
@@ -123,7 +127,7 @@ impl Imports {
 }
 
 /// Render a resolved type to a [`Doc`] expression, registering needed imports.
-/// The `Doc` tree lets [`wrap::layout`] reproduce ruff's line wrapping.
+/// The `Doc` renders flat; `ruff format` handles any line wrapping downstream.
 fn render_type(t: &TypeRef, imports: &mut Imports) -> Doc {
     match t {
         TypeRef::Primitive(p) => match p {
@@ -194,6 +198,30 @@ struct RenderedField {
     docstring: Option<String>,
 }
 
+/// The view model handed to `object.py.j2`. Rust computes the semantics (imports,
+/// per-field annotation strings, defaults); the template lays out the class body
+/// (field order, docstrings, the blank-line rules `ruff` does not impose) and
+/// `ruff format` handles the line wrapping. This split keeps the byte-sensitive
+/// logic in testable Rust while the file's *shape* lives in the template.
+#[derive(Serialize)]
+struct ObjectView {
+    header: &'static str,
+    imports: String,
+    class_name: String,
+    bases: String,
+    /// The class docstring's raw text (the template applies the `docstring` filter).
+    docstring: Option<String>,
+    fields: Vec<FieldView>,
+}
+
+/// One field as the object template consumes it: the flat declaration line
+/// (`name: annotation = default`, wrapped later by `ruff`) and the raw docstring.
+#[derive(Serialize)]
+struct FieldView {
+    decl: String,
+    docstring: Option<String>,
+}
+
 /// Compute a field's annotation + default, registering imports.
 fn render_field(field: &Field, imports: &mut Imports) -> RenderedField {
     let inner = render_type(&field.type_ref, imports);
@@ -253,10 +281,18 @@ fn environment() -> Environment<'static> {
     env.set_keep_trailing_newline(true);
     env.set_trim_blocks(true);
     env.set_lstrip_blocks(true);
+    // Render a raw docstring into an indented, backslash-escaped triple-quoted
+    // block; templates apply it with `{{ text | docstring }}`.
+    env.add_filter("docstring", |text: String| render_docstring(&text, 4));
     env.add_template("version.py", include_str!("../templates/version.py.j2"))
         .expect("version template compiles");
     env.add_template("object.py", include_str!("../templates/object.py.j2"))
         .expect("object template compiles");
+    env.add_template(
+        "class_body.py",
+        include_str!("../templates/class_body.py.j2"),
+    )
+    .expect("class_body template compiles");
     env.add_template("alias.py", include_str!("../templates/alias.py.j2"))
         .expect("alias template compiles");
     env.add_template(
@@ -266,6 +302,23 @@ fn environment() -> Environment<'static> {
     .expect("raw_client template compiles");
     env.add_template("error.py", include_str!("../templates/error.py.j2"))
         .expect("error template compiles");
+    env.add_template("lazy_init.py", include_str!("../templates/lazy_init.py.j2"))
+        .expect("lazy_init template compiles");
+    env.add_template(
+        "reference_entry.md",
+        include_str!("../templates/reference_entry.md.j2"),
+    )
+    .expect("reference_entry template compiles");
+    env.add_template(
+        "root_client.py",
+        include_str!("../templates/root_client.py.j2"),
+    )
+    .expect("root_client template compiles");
+    env.add_template(
+        "client_class.py",
+        include_str!("../templates/client_class.py.j2"),
+    )
+    .expect("client_class template compiles");
     env.add_template("file.py", include_str!("../templates/file.py.j2"))
         .expect("file template compiles");
     env
@@ -365,16 +418,17 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     // package-root `__init__.py` re-exporting types, errors, the endpoint
     // submodules, the root client, and `__version__`.
     if !ir.types.is_empty() {
-        files.push(types_init_file(pkg, &ir.types));
+        files.push(types_init_file(&env, pkg, &ir.types)?);
     }
     if !emittable_modules.is_empty() {
         files.push(root_init_file(
+            &env,
             pkg,
             &ir.client_name,
             &ir.types,
             &ir.errors,
             &emittable_modules,
-        ));
+        )?);
     }
 
     // Generated `README.md` (usage examples from the first endpoint) and the
@@ -382,12 +436,18 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     if let Some(readme) = readme_file(ir) {
         files.push(readme);
     }
-    if let Some(reference) = reference_file(ir, &emittable_modules) {
+    if let Some(reference) = reference_file(&env, ir, &emittable_modules)? {
         files.push(reference);
     }
 
     // Project-root scaffolding (pyproject.toml, requirements.txt, metadata).
     files.extend(scaffolding_files(pkg, &ir.project_name));
+
+    // Final wrapping is delegated to `ruff format` (the tool Fern runs), so the
+    // emitters above produce content-correct Python without reproducing ruff's
+    // line layout. `.py` files are formatted in place; non-Python outputs
+    // (Markdown, TOML, JSON, the `py.typed` marker) are left untouched.
+    format_python_files(pkg, &mut files)?;
 
     Ok(files)
 }
@@ -429,7 +489,7 @@ fn error_files(
     }
     files.push(GeneratedFile {
         path: PathBuf::from(format!("src/{pkg}/errors/__init__.py")),
-        contents: lazy_loader_init(errors),
+        contents: lazy_loader_init(env, errors)?,
     });
     Ok(files)
 }
@@ -438,7 +498,7 @@ fn error_files(
 /// `TYPE_CHECKING` import block, a `_dynamic_imports` map, the static
 /// `__getattr__`/`__dir__` machinery, and `__all__`. The error classes arrive
 /// pre-sorted, so all three sections are alphabetical.
-fn lazy_loader_init(errors: &[ErrorClass]) -> String {
+fn lazy_loader_init(env: &Environment<'static>, errors: &[ErrorClass]) -> Result<String> {
     let type_checking: String = errors
         .iter()
         .map(|e| {
@@ -459,7 +519,7 @@ fn lazy_loader_init(errors: &[ErrorClass]) -> String {
         })
         .collect();
     let names: Vec<String> = errors.iter().map(|e| e.class_name.clone()).collect();
-    render_lazy_loader(&type_checking, &pairs, &names)
+    render_lazy_loader(env, &type_checking, &pairs, &names)
 }
 
 /// Assemble a lazy-loader `__init__.py` from its `TYPE_CHECKING` block, the
@@ -468,39 +528,40 @@ fn lazy_loader_init(errors: &[ErrorClass]) -> String {
 /// (sorted here); only the `TYPE_CHECKING` block's order is caller-controlled.
 /// The header collapses to the four leading blank lines Fern's comment header
 /// strips to.
-fn render_lazy_loader(type_checking: &str, pairs: &[(String, String)], names: &[String]) -> String {
+fn render_lazy_loader(
+    env: &Environment<'static>,
+    type_checking: &str,
+    pairs: &[(String, String)],
+    names: &[String],
+) -> Result<String> {
     let mut pairs = pairs.to_vec();
     pairs.sort();
     let mut names = names.to_vec();
     names.sort();
 
-    // `_dynamic_imports` and `__all__`: single line when they fit ruff's 120
-    // columns, else one entry per line with a trailing comma.
+    // `_dynamic_imports` and `__all__` are emitted flat; `ruff format` wraps them
+    // (one entry per line with a trailing comma) when they overflow.
     let entries: Vec<String> = pairs
         .iter()
         .map(|(n, m)| format!("\"{n}\": \"{m}\""))
         .collect();
-    let dynamic_flat = format!(
+    let dynamic = format!(
         "_dynamic_imports: typing.Dict[str, str] = {{{}}}",
         entries.join(", ")
     );
-    let dynamic = if dynamic_flat.len() <= wrap::LIMIT {
-        dynamic_flat
-    } else {
-        let body: String = entries.iter().map(|e| format!("    {e},\n")).collect();
-        format!("_dynamic_imports: typing.Dict[str, str] = {{\n{body}}}")
-    };
     let all_entries: Vec<String> = names.iter().map(|n| format!("\"{n}\"")).collect();
-    let all_flat = format!("__all__ = [{}]", all_entries.join(", "));
-    let all = if all_flat.len() <= wrap::LIMIT {
-        all_flat
-    } else {
-        let body: String = all_entries.iter().map(|e| format!("    {e},\n")).collect();
-        format!("__all__ = [\n{body}]")
-    };
+    let all = format!("__all__ = [{}]", all_entries.join(", "));
 
-    format!(
-        "{HEADER}\n\n\n\nimport typing\nfrom importlib import import_module\n\nif typing.TYPE_CHECKING:\n{type_checking}{dynamic}\n\n\ndef __getattr__(attr_name: str) -> typing.Any:\n    module_name = _dynamic_imports.get(attr_name)\n    if module_name is None:\n        raise AttributeError(f\"No {{attr_name}} found in _dynamic_imports for module name -> {{__name__}}\")\n    try:\n        module = import_module(module_name, __package__)\n        if module_name == f\".{{attr_name}}\":\n            return module\n        else:\n            return getattr(module, attr_name)\n    except ImportError as e:\n        raise ImportError(f\"Failed to import {{attr_name}} from {{module_name}}: {{e}}\") from e\n    except AttributeError as e:\n        raise AttributeError(f\"Failed to get {{attr_name}} from {{module_name}}: {{e}}\") from e\n\n\ndef __dir__():\n    lazy_attrs = list(_dynamic_imports.keys())\n    return sorted(lazy_attrs)\n\n\n{all}\n"
+    render(
+        env,
+        "lazy_init.py",
+        "__init__.py",
+        context! {
+            header => HEADER,
+            type_checking => type_checking,
+            dynamic => dynamic,
+            all => all,
+        },
     )
 }
 
@@ -508,7 +569,11 @@ fn render_lazy_loader(type_checking: &str, pairs: &[(String, String)], names: &[
 /// alphabetical; the `TYPE_CHECKING` block follows Fern's endpoint-traversal
 /// order, which for this corpus is the `Types*` types in reverse declaration
 /// order followed by the remaining types alphabetically.
-fn types_init_file(pkg: &str, types: &[TypeDecl]) -> GeneratedFile {
+fn types_init_file(
+    env: &Environment<'static>,
+    pkg: &str,
+    types: &[TypeDecl],
+) -> Result<GeneratedFile> {
     // Each declaration may export more than its primary name (a discriminated
     // union also exports its per-variant wrappers), all sharing the decl module.
     let mut module_of: std::collections::HashMap<String, String> = std::collections::HashMap::new();
@@ -520,21 +585,11 @@ fn types_init_file(pkg: &str, types: &[TypeDecl]) -> GeneratedFile {
         }
     }
 
-    // TYPE_CHECKING order: `Types*` in reverse declaration order, then the rest
-    // alphabetically.
-    let mut typed: Vec<String> = names
-        .iter()
-        .filter(|n| n.starts_with("Types"))
-        .cloned()
-        .collect();
-    typed.reverse();
-    let mut rest: Vec<String> = names
-        .iter()
-        .filter(|n| !n.starts_with("Types"))
-        .cloned()
-        .collect();
-    rest.sort();
-    let ordered: Vec<String> = typed.into_iter().chain(rest).collect();
+    // TYPE_CHECKING imports are emitted alphabetically. Their order is never
+    // executed and the e2e canonicalizes it with isort, so crozier sorts
+    // straightforwardly rather than reproducing Fern's traversal order.
+    let mut ordered = names.clone();
+    ordered.sort();
 
     // Consecutive names sharing a module collapse into one `from .mod import a, b`
     // line (Fern groups a discriminated union's names on a single import).
@@ -561,10 +616,10 @@ fn types_init_file(pkg: &str, types: &[TypeDecl]) -> GeneratedFile {
         .iter()
         .map(|n| (n.clone(), format!(".{}", module(n))))
         .collect();
-    GeneratedFile {
+    Ok(GeneratedFile {
         path: PathBuf::from(format!("src/{pkg}/types/__init__.py")),
-        contents: render_lazy_loader(&type_checking, &pairs, &names),
-    }
+        contents: render_lazy_loader(env, &type_checking, &pairs, &names)?,
+    })
 }
 
 /// The package-root `__init__.py` lazy loader, re-exporting the type layer, the
@@ -572,12 +627,13 @@ fn types_init_file(pkg: &str, types: &[TypeDecl]) -> GeneratedFile {
 /// section is alphabetical; the `TYPE_CHECKING` block groups the imports by
 /// source (`.types`, `.errors`, submodules, `.client`, `.version`).
 fn root_init_file(
+    env: &Environment<'static>,
     pkg: &str,
     client_name: &str,
     types: &[TypeDecl],
     errors: &[ErrorClass],
     modules: &[&String],
-) -> GeneratedFile {
+) -> Result<GeneratedFile> {
     let async_name = format!("Async{client_name}");
 
     let mut type_names: Vec<String> = types
@@ -623,10 +679,10 @@ fn root_init_file(
     pairs.push(("__version__".to_string(), ".version".to_string()));
 
     let names: Vec<String> = pairs.iter().map(|(n, _)| n.clone()).collect();
-    GeneratedFile {
+    Ok(GeneratedFile {
         path: PathBuf::from(format!("src/{pkg}/__init__.py")),
-        contents: render_lazy_loader(&tc, &pairs, &names),
-    }
+        contents: render_lazy_loader(env, &tc, &pairs, &names)?,
+    })
 }
 
 /// Whether Fern shows a `...` placeholder for an endpoint's body in the README's
@@ -763,9 +819,13 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
 /// entry a collapsible `<details>` with an optional description, a worked sync
 /// usage example, and a parameter table. Endpoints without an example (a raw
 /// bytes body) are omitted, exactly as Fern does. Compared verbatim.
-fn reference_file(ir: &Ir, modules: &[&String]) -> Option<GeneratedFile> {
+fn reference_file(
+    env: &Environment<'static>,
+    ir: &Ir,
+    modules: &[&String],
+) -> Result<Option<GeneratedFile>> {
     let pkg = &ir.package_name;
-    let mut lines: Vec<String> = vec!["# Reference".to_string()];
+    let mut blocks: Vec<String> = vec!["# Reference".to_string()];
     let mut any = false;
 
     for module in modules {
@@ -779,24 +839,52 @@ fn reference_file(ir: &Ir, modules: &[&String]) -> Option<GeneratedFile> {
             continue;
         }
         any = true;
-        lines.push(format!("## {}", naming::to_pascal_case(module)));
+        blocks.push(format!("## {}", naming::to_pascal_case(module)));
         for ep in eps {
-            lines.extend(reference_entry(ir, ep, module, pkg));
-            lines.push(String::new());
+            blocks.push(reference_entry(env, ir, ep, module, pkg)?);
+            blocks.push(String::new());
         }
     }
     if !any {
-        return None;
+        return Ok(None);
     }
     // The last entry's trailing blank line is kept: Fern ends the file with one.
-    Some(GeneratedFile {
+    Ok(Some(GeneratedFile {
         path: PathBuf::from("reference.md"),
-        contents: format!("{}\n", lines.join("\n")),
-    })
+        contents: format!("{}\n", blocks.join("\n")),
+    }))
 }
 
-/// One `reference.md` endpoint entry (a `<details>` block).
-fn reference_entry(ir: &Ir, ep: &Endpoint, module: &str, pkg: &str) -> Vec<String> {
+/// One parameter row in the `reference.md` table: name, annotation, and the
+/// suffix (a lone space, or ` — <description>`).
+#[derive(Serialize)]
+struct ParamRow {
+    name: String,
+    annot: String,
+    suffix: String,
+}
+
+/// The view model for one `reference.md` endpoint entry (`reference_entry.md.j2`).
+#[derive(Serialize)]
+struct ReferenceEntryView {
+    module: String,
+    pkg: String,
+    method: String,
+    dots: &'static str,
+    description: Option<String>,
+    example: String,
+    params: Vec<ParamRow>,
+}
+
+/// Render one `reference.md` endpoint entry (a `<details>` block), returning it
+/// without a trailing newline so [`reference_file`] can join entries uniformly.
+fn reference_entry(
+    env: &Environment<'static>,
+    ir: &Ir,
+    ep: &Endpoint,
+    module: &str,
+    pkg: &str,
+) -> Result<String> {
     let mut imports = Imports::default();
     let mp = method_params(ep, &mut imports);
 
@@ -807,13 +895,18 @@ fn reference_entry(ir: &Ir, ep: &Endpoint, module: &str, pkg: &str) -> Vec<Strin
         uses_datetime: false,
         auth: &ir.auth,
     };
-    let example =
-        build_example(ep, false, module, pkg, &ir.client_name, &mut ctx).unwrap_or_default();
+    let example = build_example(ep, false, module, pkg, &ir.client_name, &mut ctx)
+        .unwrap_or_default()
+        .join("\n");
 
     // The parameter rows, in signature order, then `request_options`.
-    let mut params: Vec<(String, String, String)> = Vec::new();
+    let mut params: Vec<ParamRow> = Vec::new();
     for (name, ty) in &mp.path {
-        params.push((name.clone(), ty.clone(), " ".to_string()));
+        params.push(ParamRow {
+            name: name.clone(),
+            annot: ty.clone(),
+            suffix: " ".to_string(),
+        });
     }
     for dp in mp.query.iter().chain(&mp.header).chain(&mp.body) {
         let suffix = match &dp.description {
@@ -823,72 +916,46 @@ fn reference_entry(ir: &Ir, ep: &Endpoint, module: &str, pkg: &str) -> Vec<Strin
         // Fern renders a `core.File` type in the reference parameter table with a
         // leading `from __future__ import annotations` (an artifact of how it prints
         // the forward-referenced file type); reproduce it so the table matches.
-        let annotation = if dp.annotation == "core.File" {
+        let annot = if dp.annotation == "core.File" {
             "from __future__ import annotations\n\ncore.File".to_string()
         } else {
             dp.annotation.clone()
         };
-        params.push((dp.name.clone(), annotation, suffix));
+        params.push(ParamRow {
+            name: dp.name.clone(),
+            annot,
+            suffix,
+        });
     }
-    params.push((
-        "request_options".to_string(),
-        "typing.Optional[RequestOptions]".to_string(),
-        " — Request-specific configuration.".to_string(),
-    ));
+    params.push(ParamRow {
+        name: "request_options".to_string(),
+        annot: "typing.Optional[RequestOptions]".to_string(),
+        suffix: " — Request-specific configuration.".to_string(),
+    });
 
     let has_args =
         !mp.path.is_empty() || !mp.query.is_empty() || !mp.header.is_empty() || !mp.body.is_empty();
-    let dots = if has_args { "..." } else { "" };
-
-    let mut out: Vec<String> = Vec::new();
-    out.push(format!(
-        "<details><summary><code>client.{module}.<a href=\"src/{pkg}/{module}/client.py\">{}</a>({dots})</code></summary>",
-        ep.method_name
-    ));
-    out.push("<dl>".to_string());
-    out.push("<dd>".to_string());
-    out.push(String::new());
-
-    // Optional description block.
-    if let Some(desc) = &ep.docstring {
-        out.push("#### 📝 Description".to_string());
-        out.push(String::new());
-        out.extend(["<dl>", "<dd>", "", "<dl>", "<dd>", ""].map(String::from));
-        out.extend(desc.split('\n').map(String::from));
-        out.extend(["</dd>", "</dl>", "</dd>", "</dl>", ""].map(String::from));
-    }
-
-    // Usage block.
-    out.push("#### 🔌 Usage".to_string());
-    out.push(String::new());
-    out.extend(["<dl>", "<dd>", "", "<dl>", "<dd>", ""].map(String::from));
-    out.push("```python".to_string());
-    out.extend(example);
-    out.push(String::new());
-    out.push("```".to_string());
-    out.extend(["</dd>", "</dl>", "</dd>", "</dl>", ""].map(String::from));
-
-    // Parameters block.
-    out.push("#### ⚙️ Parameters".to_string());
-    out.push(String::new());
-    out.extend(["<dl>", "<dd>", ""].map(String::from));
-    for (i, (name, annot, suffix)) in params.iter().enumerate() {
-        out.extend(["<dl>", "<dd>", ""].map(String::from));
-        out.push(format!("**{name}:** `{annot}`{suffix}"));
-        out.push("    ".to_string());
-        out.push("</dd>".to_string());
-        out.push("</dl>".to_string());
-        if i + 1 < params.len() {
-            out.push(String::new());
-        }
-    }
-    out.extend(["</dd>", "</dl>", "", "", "</dd>", "</dl>", "</details>"].map(String::from));
-    out
+    let view = ReferenceEntryView {
+        module: module.to_string(),
+        pkg: pkg.to_string(),
+        method: ep.method_name.clone(),
+        dots: if has_args { "..." } else { "" },
+        description: ep.docstring.clone(),
+        example,
+        params,
+    };
+    let rendered = render(
+        env,
+        "reference_entry.md",
+        "reference.md",
+        minijinja::Value::from_serialize(&view),
+    )?;
+    Ok(rendered.trim_end_matches('\n').to_string())
 }
 
-/// Render `from <module> import <names>` at `indent` spaces, sorted, ruff-wrapped:
-/// one line when it fits 120 columns, else a parenthesized block one name per
-/// line with a trailing comma. Returns the statement with its trailing newline.
+/// Render `from <module> import <names>` at `indent` spaces, sorted, on one line.
+/// `ruff format` wraps it into a parenthesized per-name block if it overflows.
+/// Returns the statement with its trailing newline.
 fn from_import_block(module: &str, names: &[String], indent: usize) -> String {
     // An empty group emits nothing — a `from <module> import` with no names is a
     // syntax error, and the source module (e.g. `errors/`) is not emitted when
@@ -900,17 +967,7 @@ fn from_import_block(module: &str, names: &[String], indent: usize) -> String {
     let pad = " ".repeat(indent);
     let mut names = names.to_vec();
     names.sort();
-    let flat = format!("{pad}from {module} import {}", names.join(", "));
-    if flat.len() <= wrap::LIMIT {
-        return format!("{flat}\n");
-    }
-    let inner = " ".repeat(indent + 4);
-    let mut out = format!("{pad}from {module} import (\n");
-    for n in &names {
-        out.push_str(&format!("{inner}{n},\n"));
-    }
-    out.push_str(&format!("{pad})\n"));
-    out
+    format!("{pad}from {module} import {}\n", names.join(", "))
 }
 
 /// Fern's SDK runtime, vendored under `assets/core/` and emitted into every SDK.
@@ -1170,17 +1227,6 @@ fn client_wrapper_file(pkg: &str, project_name: &str, auth: &Auth) -> GeneratedF
     }
 }
 
-/// The pydantic model configuration block Fern emits at the end of every model.
-/// Static (the `# type: ignore` comment is stripped before the byte comparison).
-const CONFIG_BLOCK: &str = "    if IS_PYDANTIC_V2:
-        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra=\"allow\", frozen=True)  # type: ignore # Pydantic v2
-    else:
-
-        class Config:
-            frozen = True
-            smart_union = True
-            extra = pydantic.Extra.allow";
-
 /// Render a docstring as an indented triple-quoted block, escaping backslashes
 /// the way Fern does so the value round-trips. Every line (including blank ones)
 /// carries the block indent; the block has no trailing newline.
@@ -1197,39 +1243,36 @@ fn render_docstring(doc: &str, indent: usize) -> String {
     out
 }
 
-/// Assemble a model's class body: an optional class docstring, the fields (each
-/// with an optional docstring), then the config block. Consecutive fields are
-/// separated by a blank line only after a documented field; a blank line always
-/// precedes the config block. No trailing newline (the template adds it).
-fn object_body(class_docstring: Option<&str>, fields: &[RenderedField]) -> String {
-    let mut body = String::new();
-    if let Some(doc) = class_docstring {
-        body.push_str(&render_docstring(doc, 4));
-        body.push_str("\n\n");
-    }
-    for (i, field) in fields.iter().enumerate() {
-        let line = wrap::layout(
-            &format!("    {}: ", field.py_name),
-            &field.annotation,
-            &field.default,
-            4,
-        );
-        body.push_str(&line);
-        body.push('\n');
-        if let Some(doc) = &field.docstring {
-            body.push_str(&render_docstring(doc, 4));
-            body.push('\n');
-        }
-        // Separate a documented field from the next field with a blank line.
-        if field.docstring.is_some() && i + 1 < fields.len() {
-            body.push('\n');
-        }
-    }
-    if !fields.is_empty() {
-        body.push('\n');
-    }
-    body.push_str(CONFIG_BLOCK);
-    body
+/// The class-body context for `class_body.py.j2`: the optional class docstring
+/// and the fields. Shared by the object template (via `{% include %}`) and the
+/// discriminated-union path, so one template lays out every pydantic model body.
+#[derive(Serialize)]
+struct ClassBodyView {
+    docstring: Option<String>,
+    fields: Vec<FieldView>,
+}
+
+/// The flat field declaration line, `name: annotation = default`. `ruff format`
+/// wraps a long annotation downstream.
+fn field_decl(f: &RenderedField) -> String {
+    format!("{}: {}{}", f.py_name, f.annotation.flat(), f.default)
+}
+
+/// Render a class body (docstring + fields + config block) with `class_body.py`.
+/// Used directly for the discriminated-union variant classes; the object template
+/// renders the same partial through `{% include %}`.
+fn render_class_body(
+    env: &Environment<'static>,
+    docstring: Option<String>,
+    fields: Vec<FieldView>,
+) -> Result<String> {
+    let view = ClassBodyView { docstring, fields };
+    render(
+        env,
+        "class_body.py",
+        "class_body",
+        minijinja::Value::from_serialize(&view),
+    )
 }
 
 /// Render one type declaration to a file body.
@@ -1251,28 +1294,36 @@ fn render_type_decl(env: &Environment<'static>, decl: &TypeDecl) -> Result<Strin
                 }
                 obj.bases.join(", ")
             };
-            let fields: Vec<RenderedField> = obj
+            let fields: Vec<FieldView> = obj
                 .fields
                 .iter()
-                .map(|f| render_field(f, &mut imports))
+                .map(|f| {
+                    let rf = render_field(f, &mut imports);
+                    FieldView {
+                        decl: field_decl(&rf),
+                        docstring: rf.docstring,
+                    }
+                })
                 .collect();
+            let view = ObjectView {
+                header: HEADER,
+                imports: imports.render(),
+                class_name: obj.name.clone(),
+                bases,
+                docstring: obj.docstring.clone(),
+                fields,
+            };
             render(
                 env,
                 "object.py",
                 &obj.name,
-                context! {
-                    header => HEADER,
-                    imports => imports.render(),
-                    class_name => obj.name,
-                    bases => bases,
-                    body => object_body(obj.docstring.as_deref(), &fields),
-                },
+                minijinja::Value::from_serialize(&view),
             )
         }
         TypeDecl::Alias(alias) => {
             let mut imports = Imports::default();
             let target = render_type(&alias.target, &mut imports);
-            let assignment = wrap::layout(&format!("{} = ", alias.name), &target, "", 0);
+            let assignment = format!("{} = {}", alias.name, target.flat());
             render(
                 env,
                 "alias.py",
@@ -1284,7 +1335,7 @@ fn render_type_decl(env: &Environment<'static>, decl: &TypeDecl) -> Result<Strin
                 },
             )
         }
-        TypeDecl::DiscriminatedUnion(union) => Ok(render_discriminated_union(union)),
+        TypeDecl::DiscriminatedUnion(union) => render_discriminated_union(env, union),
     }
 }
 
@@ -1292,8 +1343,12 @@ fn render_type_decl(env: &Environment<'static>, decl: &TypeDecl) -> Result<Strin
 /// model per variant (each with the discriminant as a `Literal` field), then the
 /// `{Union} = typing.Union[..]` alias over them. Built directly (not via the
 /// object template) because it carries a `from __future__ import annotations` and
-/// several classes in one file.
-fn render_discriminated_union(union: &crate::ir::DiscriminatedUnion) -> String {
+/// several classes in one file. Each variant's body is rendered with the shared
+/// `class_body.py` partial (same as a plain object).
+fn render_discriminated_union(
+    env: &Environment<'static>,
+    union: &crate::ir::DiscriminatedUnion,
+) -> Result<String> {
     let mut imports = Imports::default();
     imports.add_plain("typing");
     imports.add_plain("pydantic");
@@ -1314,10 +1369,18 @@ fn render_discriminated_union(union: &crate::ir::DiscriminatedUnion) -> String {
         };
         let mut rendered = vec![discriminant];
         rendered.extend(member.fields.iter().map(|f| render_field(f, &mut imports)));
+        let fields: Vec<FieldView> = rendered
+            .into_iter()
+            .map(|rf| FieldView {
+                decl: field_decl(&rf),
+                docstring: rf.docstring,
+            })
+            .collect();
+        let body = render_class_body(env, None, fields)?;
         classes.push(format!(
             "class {}(UniversalBaseModel):\n{}",
             member.class_name,
-            object_body(None, &rendered)
+            body.trim_end()
         ));
     }
 
@@ -1326,18 +1389,17 @@ fn render_discriminated_union(union: &crate::ir::DiscriminatedUnion) -> String {
         .iter()
         .map(|m| Doc::atom(m.class_name.clone()))
         .collect();
-    let alias = wrap::layout(
-        &format!("{} = ", union.name),
-        &Doc::group("typing.Union[", variants, "]"),
-        "",
-        0,
+    let alias = format!(
+        "{} = {}",
+        union.name,
+        Doc::group("typing.Union[", variants, "]").flat()
     );
 
-    format!(
+    Ok(format!(
         "{HEADER}\n\nfrom __future__ import annotations\n\n{}\n\n\n{}\n\n\n{alias}\n",
         imports.render(),
         classes.join("\n\n\n")
-    )
+    ))
 }
 
 /// Render a resolved type to its flat Python expression for the raw client,
@@ -1636,11 +1698,11 @@ fn signature(ep: &Endpoint, mp: &MethodParams, return_type: &str, is_async: bool
         if is_async { "async " } else { "" },
         ep.method_name
     );
-    wrap::layout(
-        "",
-        &Doc::group(sig_open, args, ")"),
-        &format!(" -> {return_type}:"),
-        4,
+    // Emit the signature flat; `ruff format` splits it across lines if it
+    // overflows (its right-hand-split matches Fern's output).
+    format!(
+        "{} -> {return_type}:",
+        Doc::group(sig_open, args, ")").flat()
     )
 }
 
@@ -1778,11 +1840,7 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
                 ],
                 ")",
             );
-            lines.extend(
-                wrap::layout("", &call, ",", 12)
-                    .split('\n')
-                    .map(String::from),
-            );
+            lines.push(format!("{},", call.flat()));
         }
         Some(RequestBody::Single(_)) => lines.push("            json=request,".to_string()),
         Some(RequestBody::Inline(fields)) => {
@@ -1806,11 +1864,7 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
                         ],
                         ")",
                     );
-                    lines.extend(
-                        wrap::layout("", &call, ",", 16)
-                            .split('\n')
-                            .map(String::from),
-                    );
+                    lines.push(format!("{},", call.flat()));
                 } else {
                     lines.push(format!(
                         "                \"{}\": {},",
@@ -1950,7 +2004,6 @@ fn root_client_file(
     modules: &[&String],
     auth: &Auth,
 ) -> Result<GeneratedFile> {
-    let async_name = format!("Async{client_name}");
     let mut body = String::new();
     body.push_str("from __future__ import annotations\n\nimport typing\n\nimport httpx\nfrom .core.client_wrapper import AsyncClientWrapper, SyncClientWrapper\n\n");
     body.push_str("if typing.TYPE_CHECKING:\n");
@@ -1968,24 +2021,22 @@ fn root_client_file(
     }
     body.push_str("\n\n");
     body.push_str(&root_client_class(
+        env,
         client_name,
-        "SyncClientWrapper",
-        "httpx.Client",
         pkg,
         false,
         modules,
         auth,
-    ));
+    )?);
     body.push_str("\n\n\n");
     body.push_str(&root_client_class(
-        &async_name,
-        "AsyncClientWrapper",
-        "httpx.AsyncClient",
+        env,
+        client_name,
         pkg,
         true,
         modules,
         auth,
-    ));
+    )?);
 
     let contents = render(
         env,
@@ -2002,69 +2053,72 @@ fn root_client_file(
 /// One root client class: the class docstring, the `__init__` wiring up the
 /// client wrapper and the per-tag lazy slots, then one cached `@property` per tag.
 fn root_client_class(
-    class_name: &str,
-    wrapper: &str,
-    httpx_type: &str,
+    env: &Environment<'static>,
+    client_name: &str,
     pkg: &str,
     is_async: bool,
     modules: &[&String],
     auth: &Auth,
-) -> String {
-    let a = auth_client_parts(auth);
-    let mut out = format!("class {class_name}:\n");
-    // `class_name` doubles as the documented example class (`FernApi`/`AsyncFernApi`).
-    out.push_str(&root_client_docstring(pkg, class_name, &a));
-    out.push_str(&format!(
-        "\n\n    def __init__(
-        self,
-        *,
-        base_url: str,
-{ctor_param}        headers: typing.Optional[typing.Dict[str, str]] = None,
-        timeout: typing.Optional[float] = None,
-        follow_redirects: typing.Optional[bool] = True,
-        httpx_client: typing.Optional[{httpx_type}] = None,
-    ):
-        _defaulted_timeout = (
-            timeout if timeout is not None else 60 if httpx_client is None else httpx_client.timeout.read
+) -> Result<String> {
+    let (class_name, wrapper, httpx_type) = if is_async {
+        (
+            format!("Async{client_name}"),
+            "AsyncClientWrapper",
+            "httpx.AsyncClient",
         )
-        self._client_wrapper = {wrapper}(
-            base_url=base_url,
-            {wrapper_arg}={wrapper_arg},
-            headers=headers,
-            httpx_client=httpx_client
-            if httpx_client is not None
-            else {httpx_type}(timeout=_defaulted_timeout, follow_redirects=follow_redirects)
-            if follow_redirects is not None
-            else {httpx_type}(timeout=_defaulted_timeout),
-            timeout=_defaulted_timeout,
-        )\n",
-        ctor_param = a.ctor_param,
-        wrapper_arg = a.wrapper_arg,
-    ));
-    // Per-tag lazy slots.
-    for m in modules {
-        let cls = tag_client_name(m, is_async);
-        out.push_str(&format!(
-            "        self._{m}: typing.Optional[{cls}] = None\n"
-        ));
-    }
-    // Per-tag cached properties.
-    for m in modules {
-        let cls = tag_client_name(m, is_async);
-        out.push_str(&format!(
-            "\n    @property
-    def {m}(self):
-        if self._{m} is None:
-            from .{m}.client import {cls}
+    } else {
+        (client_name.to_string(), "SyncClientWrapper", "httpx.Client")
+    };
+    let a = auth_client_parts(auth);
+    let module_views: Vec<RootModuleView> = modules
+        .iter()
+        .map(|m| RootModuleView {
+            attr: (*m).clone(),
+            cls: tag_client_name(m, is_async),
+        })
+        .collect();
+    let view = RootClientView {
+        class_name: class_name.to_string(),
+        pkg: pkg.to_string(),
+        httpx_type: httpx_type.to_string(),
+        wrapper: wrapper.to_string(),
+        ctor_param: a.ctor_param,
+        wrapper_arg: a.wrapper_arg,
+        doc_param: a.doc_param,
+        example_line: a.example_line,
+        modules: module_views,
+    };
+    // The caller controls the separation between the sync/async classes and the
+    // file's final newline, so drop the template's trailing newline.
+    let rendered = render(
+        env,
+        "root_client.py",
+        "client.py",
+        minijinja::Value::from_serialize(&view),
+    )?;
+    Ok(rendered.trim_end_matches('\n').to_string())
+}
 
-            self._{m} = {cls}(client_wrapper=self._client_wrapper)
-        return self._{m}\n"
-        ));
-    }
-    // Drop the trailing newline the last property added; the caller controls
-    // the separation between classes and the file's final newline.
-    out.pop();
-    out
+/// One root client's per-tag slot: the attribute name (`endpoints_put`) and its
+/// client class (`EndpointsPutClient`/`AsyncEndpointsPutClient`).
+#[derive(Serialize)]
+struct RootModuleView {
+    attr: String,
+    cls: String,
+}
+
+/// The view model for `root_client.py.j2` (the `FernApi`/`AsyncFernApi` class).
+#[derive(Serialize)]
+struct RootClientView {
+    class_name: String,
+    pkg: String,
+    httpx_type: String,
+    wrapper: String,
+    ctor_param: String,
+    wrapper_arg: String,
+    doc_param: String,
+    example_line: String,
+    modules: Vec<RootModuleView>,
 }
 
 /// The tag client class name for a module (`endpoints_put` → `EndpointsPutClient`,
@@ -2076,50 +2130,6 @@ fn tag_client_name(module: &str, is_async: bool) -> String {
     } else {
         format!("{pascal}Client")
     }
-}
-
-/// The root client class docstring (indent 4): a fixed description, a `Parameters`
-/// section, and an `Examples` block instantiating the client. `example_name` is
-/// the class being documented (`FernApi`/`AsyncFernApi`); the import is from the
-/// package root.
-fn root_client_docstring(pkg: &str, example_name: &str, auth: &AuthClient) -> String {
-    format!(
-        "    \"\"\"
-    Use this class to access the different functions within the SDK. You can instantiate any number of clients with different configuration that will propagate to these functions.
-
-    Parameters
-    ----------
-    base_url : str
-        The base url to use for requests from the client.
-
-{doc_param}    headers : typing.Optional[typing.Dict[str, str]]
-        Additional headers to send with every request.
-
-    timeout : typing.Optional[float]
-        The timeout to be used, in seconds, for requests. By default the timeout is 60 seconds, unless a custom httpx client is used, in which case this default is not enforced.
-
-    follow_redirects : typing.Optional[bool]
-        Whether the default httpx client follows redirects or not, this is irrelevant if a custom httpx client is passed in.
-
-    httpx_client : typing.Optional[{httpx_field}]
-        The httpx client to use for making requests, a preconfigured client is used by default, however this is useful should you want to pass in any custom httpx configuration.
-
-    Examples
-    --------
-    from {pkg} import {example_name}
-
-    client = {example_name}(
-{example_line}        base_url=\"https://yourhost.com/path/to/api\",
-    )
-    \"\"\"",
-        doc_param = auth.doc_param,
-        example_line = auth.example_line,
-        httpx_field = if example_name.starts_with("Async") {
-            "httpx.AsyncClient"
-        } else {
-            "httpx.Client"
-        },
-    )
 }
 
 /// Shared context for emitting one per-tag `client.py`: the import package name,
@@ -2150,8 +2160,8 @@ fn client_file(
     imports.add_from(".raw_client", &format!("Raw{stem}Client"));
     imports.add_from(".raw_client", &format!("AsyncRaw{stem}Client"));
 
-    let sync = client_class(cx, endpoints, false, &mut imports);
-    let async_class = client_class(cx, endpoints, true, &mut imports);
+    let sync = client_class(env, cx, endpoints, false, &mut imports)?;
+    let async_class = client_class(env, cx, endpoints, true, &mut imports)?;
     // The `OMIT` sentinel is declared above the classes whenever a request body
     // is present, exactly as in the raw client.
     let omit = if endpoints.iter().any(|e| e.request_body.is_some()) {
@@ -2176,11 +2186,12 @@ fn client_file(
 /// one wrapper method per operation. The class/wrapper/raw-client names are
 /// derived from the module and `is_async`.
 fn client_class(
+    env: &Environment<'static>,
     cx: &ClientCtx,
     endpoints: &[&Endpoint],
     is_async: bool,
     imports: &mut Imports,
-) -> String {
+) -> Result<String> {
     let stem = naming::to_pascal_case(cx.module);
     let (class_name, wrapper, raw_client_cls) = if is_async {
         (
@@ -2195,27 +2206,20 @@ fn client_class(
             format!("Raw{stem}Client"),
         )
     };
-    let mut out = format!(
-        "class {class_name}:
-    def __init__(self, *, client_wrapper: {wrapper}):
-        self._raw_client = {raw_client_cls}(client_wrapper=client_wrapper)
-
-    @property
-    def with_raw_response(self) -> {raw_client_cls}:
-        \"\"\"
-        Retrieves a raw implementation of this client that returns raw responses.
-
-        Returns
-        -------
-        {raw_client_cls}
-        \"\"\"
-        return self._raw_client"
-    );
-    for ep in endpoints {
-        out.push_str("\n\n");
-        out.push_str(&client_method(cx, ep, is_async, imports));
-    }
-    out
+    // Each method is computed in Rust (signature, docstring, delegation body); the
+    // template lays out the class skeleton and separates the methods.
+    let methods: Vec<String> = endpoints
+        .iter()
+        .map(|ep| client_method(cx, ep, is_async, imports))
+        .collect();
+    let view = context! {
+        class_name => class_name,
+        wrapper => wrapper,
+        raw_client_cls => raw_client_cls,
+        methods => methods,
+    };
+    let rendered = render(env, "client_class.py", &class_name, view)?;
+    Ok(rendered.trim_end_matches('\n').to_string())
 }
 
 /// One high-level wrapper method: the signature, the docstring (with a worked
@@ -2239,11 +2243,9 @@ fn client_method(cx: &ClientCtx, ep: &Endpoint, is_async: bool, imports: &mut Im
     }
     call_args.push(Doc::atom("request_options=request_options"));
     let open = format!("{await_}self._raw_client.{}(", ep.method_name);
-    let call = wrap::layout(
-        "        _response = ",
-        &Doc::group(open, call_args, ")"),
-        "",
-        8,
+    let call = format!(
+        "        _response = {}",
+        Doc::group(open, call_args, ")").flat()
     );
     format!("{sig}\n{docstring}\n{call}\n        return _response.data")
 }
@@ -2387,6 +2389,12 @@ impl Example {
     /// Render the value starting on a line indented by `indent` spaces (the
     /// indent of the line this value begins on). Continuation lines align to
     /// `indent`; exploded children indent by four more.
+    ///
+    /// The examples are laid out by hand rather than through `ruff format`
+    /// (unlike the SDK files) because Fern's committed examples are *not* a ruff
+    /// fixed point: ruff reformats a long `await <call>(...)` by parenthesizing
+    /// the awaited expression, whereas Fern leaves the long `await …(` line and
+    /// only explodes the call arguments. This renderer reproduces Fern's form.
     fn render(&self, indent: usize) -> String {
         match self {
             Example::Atom(s) => s.clone(),
@@ -2702,8 +2710,9 @@ fn build_example(
         preamble.push("import datetime".to_string());
     }
 
-    // `from <pkg> import <client + referenced types>`, alphabetical, ruff-wrapped
-    // at the snippet's default line length (88).
+    // `from <pkg> import <client + referenced types>`, alphabetical, wrapped at
+    // the snippet's default line length (88). Fern's examples are laid out by hand
+    // (not `ruff format`) — see `Example::render` for why.
     let mut names: Vec<String> = ctx.referenced.iter().cloned().collect();
     names.push(example_name.clone());
     names.sort();
@@ -2855,6 +2864,38 @@ pub fn clean_package_tree(root: &std::path::Path, package: &str) -> Result<()> {
     }
 }
 
+/// Format every crozier-*generated* `.py` file in place with `ruff format`,
+/// delegating line-wrapping to the tool Fern uses. Two classes of file are left
+/// untouched:
+///
+/// - **Vendored `core/` runtime** — emitted verbatim from `assets/core/` (Fern's
+///   own already-`ruff`-formatted source). Re-formatting would change it: since
+///   these carry comments, `ruff format` then comment-strip does not commute with
+///   Fern's strip-only fixture, so formatting them breaks the byte match.
+/// - **Whitespace-only files** — the empty `py.typed` marker and the comment-only
+///   endpoint `__init__.py` (emitted in its four-blank-line stripped form): there
+///   is nothing to wrap and `ruff` would collapse them.
+///
+/// The lazy-loader `__init__.py` aggregators *are* formatted: they overflow (long
+/// `_dynamic_imports`/`__all__`/import lines) and `ruff` wraps them like any other
+/// file. Their leading blank lines collapse under `ruff`, but that is a
+/// comment-strip artifact the e2e normalizes on both sides (see `normalize_init`),
+/// so the byte match is preserved.
+fn format_python_files(pkg: &str, files: &mut [GeneratedFile]) -> Result<()> {
+    let core_root = PathBuf::from(format!("src/{pkg}/core"));
+    for file in files.iter_mut() {
+        let is_py = file.path.extension().and_then(|e| e.to_str()) == Some("py");
+        let is_vendored = file.path.starts_with(&core_root);
+        let has_code = file.contents.chars().any(|c| !c.is_whitespace());
+        if is_py && !is_vendored && has_code {
+            let name = file.path.to_string_lossy();
+            file.contents =
+                crate::pyfmt::format_source(&name, &file.contents, crate::pyfmt::LINE_LENGTH)?;
+        }
+    }
+    Ok(())
+}
+
 /// Write each generated file under `root`, creating parent directories as needed.
 pub fn write_files(root: &std::path::Path, files: &[GeneratedFile]) -> Result<()> {
     for file in files {
@@ -2876,12 +2917,180 @@ pub fn write_files(root: &std::path::Path, files: &[GeneratedFile]) -> Result<()
 #[cfg(test)]
 mod tests {
     use super::{
-        abbrev_call, auth_client_parts, auth_example, auth_wrapper_parts, raw_method, raw_type_str,
-        url_arg, Imports,
+        abbrev_call, auth_client_parts, auth_example, auth_wrapper_parts, environment, field_decl,
+        raw_method, raw_type_str, render, render_class_body, url_arg, FieldView, Imports, ParamRow,
+        ReferenceEntryView, RenderedField, RootClientView, RootModuleView,
     };
     use crate::ir::{
         Auth, BodyField, Endpoint, ErrorResponse, PathParam, Prim, RequestBody, TypeRef,
     };
+    use crate::wrap::Doc;
+
+    /// Render a class body through the real `class_body.py` template — the fast
+    /// feedback loop for layout/filter changes (no binary, no `ruff`). Returns the
+    /// body exactly as emitted, before the file-level `ruff format` pass.
+    fn class_body(docstring: Option<&str>, fields: Vec<FieldView>) -> String {
+        render_class_body(&environment(), docstring.map(str::to_string), fields).expect("renders")
+    }
+
+    /// Render any registered template with a serializable view — the direct
+    /// "minijinja in the loop" harness for the presentational templates.
+    fn render_tmpl(name: &str, view: impl serde::Serialize) -> String {
+        render(
+            &environment(),
+            name,
+            name,
+            minijinja::Value::from_serialize(&view),
+        )
+        .expect("renders")
+    }
+
+    fn field(decl: &str, docstring: Option<&str>) -> FieldView {
+        FieldView {
+            decl: decl.to_string(),
+            docstring: docstring.map(str::to_string),
+        }
+    }
+
+    #[test]
+    fn class_body_separates_documented_fields_with_a_blank_line() {
+        let body = class_body(
+            None,
+            vec![
+                field("a: str = pydantic.Field()", Some("Doc A.")),
+                field("b: str = pydantic.Field()", Some("Doc B.")),
+            ],
+        );
+        assert_eq!(
+            body,
+            r#"    a: str = pydantic.Field()
+    """
+    Doc A.
+    """
+
+    b: str = pydantic.Field()
+    """
+    Doc B.
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow
+"#
+        );
+    }
+
+    #[test]
+    fn class_body_omits_blank_after_undocumented_field() {
+        let body = class_body(
+            None,
+            vec![
+                field("a: str", None),
+                field("b: typing.Optional[int] = None", None),
+            ],
+        );
+        // Undocumented fields sit on consecutive lines; one blank precedes config.
+        assert!(body.starts_with(
+            "    a: str\n    b: typing.Optional[int] = None\n\n    if IS_PYDANTIC_V2:"
+        ));
+    }
+
+    #[test]
+    fn class_body_renders_class_docstring_then_a_blank_line() {
+        let body = class_body(Some("A model."), vec![field("a: str", None)]);
+        assert!(body.starts_with("    \"\"\"\n    A model.\n    \"\"\"\n\n    a: str\n"));
+    }
+
+    #[test]
+    fn reference_entry_renders_details_line_and_param_row() {
+        let view = ReferenceEntryView {
+            module: "endpoints_urls".to_string(),
+            pkg: "fern".to_string(),
+            method: "get".to_string(),
+            dots: "...",
+            description: None,
+            example: "client.endpoints_urls.get()".to_string(),
+            params: vec![ParamRow {
+                name: "id".to_string(),
+                annot: "str".to_string(),
+                suffix: " ".to_string(),
+            }],
+        };
+        let out = render_tmpl("reference_entry.md", &view);
+        assert!(out.contains(
+            "<details><summary><code>client.endpoints_urls.\
+             <a href=\"src/fern/endpoints_urls/client.py\">get</a>(...)</code></summary>"
+        ));
+        // The param value line carries the suffix's trailing space, then the fixed
+        // four-space line (driven by an expression, not fragile template whitespace).
+        assert!(out.contains("**id:** `str` \n    \n</dd>"));
+        // No description block when there is no description.
+        assert!(!out.contains("Description"));
+    }
+
+    #[test]
+    fn root_client_loops_the_tag_properties() {
+        let view = RootClientView {
+            class_name: "FernApi".to_string(),
+            pkg: "fern".to_string(),
+            httpx_type: "httpx.Client".to_string(),
+            wrapper: "SyncClientWrapper".to_string(),
+            ctor_param: "        token: str,\n".to_string(),
+            wrapper_arg: "token".to_string(),
+            doc_param: "    token : str\n\n".to_string(),
+            example_line: "        token=\"YOUR_TOKEN\",\n".to_string(),
+            modules: vec![RootModuleView {
+                attr: "endpoints_put".to_string(),
+                cls: "EndpointsPutClient".to_string(),
+            }],
+        };
+        let out = render_tmpl("root_client.py", &view);
+        assert!(out.starts_with("class FernApi:"));
+        // The auth slots land in the ctor and the wrapper call.
+        assert!(out.contains("        token: str,\n        headers:"));
+        assert!(out.contains("token=token,"));
+        // One lazy slot and one cached property per module.
+        assert!(
+            out.contains("        self._endpoints_put: typing.Optional[EndpointsPutClient] = None")
+        );
+        assert!(out.contains(
+            "    @property\n    def endpoints_put(self):\n        if self._endpoints_put is None:"
+        ));
+    }
+
+    #[test]
+    fn client_class_lays_out_skeleton_and_methods() {
+        let view = minijinja::context! {
+            class_name => "EndpointsPutClient",
+            wrapper => "SyncClientWrapper",
+            raw_client_cls => "RawEndpointsPutClient",
+            methods => vec!["    def add(self):\n        ...", "    def remove(self):\n        ..."],
+        };
+        let out = render_tmpl("client_class.py", view);
+        assert!(out.starts_with(
+            "class EndpointsPutClient:\n    def __init__(self, *, client_wrapper: SyncClientWrapper):"
+        ));
+        assert!(out.contains("    def with_raw_response(self) -> RawEndpointsPutClient:"));
+        // Methods are separated by one blank line, in order.
+        assert!(out.contains("        return self._raw_client\n\n    def add(self):"));
+        assert!(out.contains("        ...\n\n    def remove(self):"));
+    }
+
+    #[test]
+    fn field_decl_is_flat_name_annotation_default() {
+        let rf = RenderedField {
+            py_name: "count".to_string(),
+            annotation: Doc::group("typing.Optional[", vec![Doc::atom("int")], "]"),
+            default: " = None".to_string(),
+            docstring: None,
+        };
+        assert_eq!(field_decl(&rf), "count: typing.Optional[int] = None");
+    }
 
     #[test]
     fn abbrev_call_renders_empty_inline_and_wrapped() {
