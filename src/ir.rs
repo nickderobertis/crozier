@@ -6,7 +6,9 @@ use indexmap::IndexMap;
 
 use crate::config::GenerateConfig;
 use crate::naming;
-use crate::openapi::{AdditionalProperties, OpenApi, Operation, ParameterLocation, Schema};
+use crate::openapi::{
+    AdditionalProperties, OpenApi, Operation, ParameterLocation, Response, Schema,
+};
 
 /// A fully-resolved SDK model ready to emit.
 #[derive(Debug)]
@@ -358,6 +360,10 @@ pub struct Endpoint {
     pub errors: Vec<ErrorResponse>,
     /// A short description shown as the docstring's summary line.
     pub docstring: Option<String>,
+    /// Whether the success response is a Server-Sent-Events stream
+    /// (`text/event-stream`). A streaming operation is emitted as a
+    /// context-managed iterator of chunks rather than a buffered response.
+    pub streaming: bool,
     /// Whether crozier can emit this operation's raw client today. A module is
     /// only emitted when every one of its operations is emittable.
     pub emittable: bool,
@@ -894,12 +900,10 @@ fn build_endpoint(
             )
         )
     });
-    // Error (non-2xx) responses each become a `raise` branch; `None` means one of
-    // them is outside the subset crozier can render (an unmapped status code, or a
-    // body that is not a `$ref`), which keeps the operation unemittable.
+    // Error (non-2xx) responses each become a `raise` branch. They never suppress
+    // method generation (issue #43): a status Fern does not name is skipped and the
+    // operation falls through to the generic `ApiError`.
     let errors = resolve_errors(op);
-    let errors_ok = errors.is_some();
-    let errors = errors.unwrap_or_default();
     // The success response: a `$ref`/scalar/container passes straight through; an
     // inline object body is hoisted into a `{Ctx}Response` model, where `Ctx` is
     // the operation's PascalCase context (from the operationId, never the tag).
@@ -943,14 +947,11 @@ fn build_endpoint(
     }
 
     // Today's subset: a supported (or absent) body, path/query/header params only,
-    // at least one response, every non-2xx response mappable to a generated error,
-    // and a success response crozier knows how to render (any resolved shape but an
-    // un-hoisted inline object).
-    let emittable = body_ok
-        && errors_ok
-        && !has_unsupported_params
-        && !op.responses.is_empty()
-        && response_supported(op);
+    // at least one response, and a success response crozier knows how to render (any
+    // resolved shape but an un-hoisted inline object). Error responses never gate
+    // emittability (issue #43).
+    let emittable =
+        body_ok && !has_unsupported_params && !op.responses.is_empty() && response_supported(op);
 
     Endpoint {
         module,
@@ -965,8 +966,20 @@ fn build_endpoint(
         response_doc: success_response_doc(op),
         errors,
         docstring: clean_doc(op.description.as_deref()),
+        streaming: is_streaming(op),
         emittable,
     }
+}
+
+/// Whether the operation's success response is a Server-Sent-Events stream. Fern
+/// models a `text/event-stream` 2xx response as an iterator of chunks; crozier
+/// keys off the same content type (the `x-fern-streaming` extension is not needed —
+/// Fern's OpenAPI importer does not resolve its `chunk-schema-ref`, so the chunk is
+/// `typing.Optional[typing.Any]` regardless).
+fn is_streaming(op: &Operation) -> bool {
+    op.responses
+        .iter()
+        .any(|(code, resp)| code.starts_with('2') && resp.content.contains_key("text/event-stream"))
 }
 
 /// The success (2xx) response's description, cleaned for the `Returns` docstring.
@@ -978,42 +991,97 @@ fn success_response_doc(op: &Operation) -> Option<String> {
     clean_doc(response.description.as_deref())
 }
 
-/// The generated exception class name for an HTTP status code. Deliberately
-/// evidence-based: only codes confirmed against a Fern fixture are mapped, so an
-/// unmapped code keeps its operation unemittable rather than guessing a name.
-/// Extend as new fixtures confirm more.
+/// The generated exception class name for an HTTP status code, mirroring Fern's
+/// status-code → exception map (every standard 4xx/5xx code). A status Fern does
+/// not name (a non-standard code such as `460`) returns `None`: crozier then omits
+/// its `raise` branch and lets the operation fall through to the generic
+/// `ApiError`, exactly as Fern does — it never suppresses the whole method.
+/// Verified against a Fern fixture spanning the full range (see the
+/// `error-responses` corpus and `docs/matching.md`).
 fn error_class_name(status: u16) -> Option<&'static str> {
-    match status {
-        400 => Some("BadRequestError"),
-        _ => None,
+    Some(match status {
+        400 => "BadRequestError",
+        401 => "UnauthorizedError",
+        402 => "PaymentRequiredError",
+        403 => "ForbiddenError",
+        404 => "NotFoundError",
+        405 => "MethodNotAllowedError",
+        406 => "NotAcceptableError",
+        407 => "ProxyAuthenticationRequiredError",
+        408 => "RequestTimeoutError",
+        409 => "ConflictError",
+        410 => "GoneError",
+        411 => "LengthRequiredError",
+        412 => "PreconditionFailedError",
+        413 => "ContentTooLargeError",
+        414 => "UriTooLongError",
+        415 => "UnsupportedMediaTypeError",
+        416 => "RangeNotSatisfiableError",
+        417 => "ExpectationFailedError",
+        418 => "ImATeapotError",
+        421 => "MisdirectedRequestError",
+        422 => "UnprocessableEntityError",
+        423 => "LockedError",
+        424 => "FailedDependencyError",
+        425 => "TooEarlyError",
+        426 => "UpgradeRequiredError",
+        428 => "PreconditionError",
+        429 => "TooManyRequestsError",
+        431 => "RequestHeaderFieldsTooLargeError",
+        451 => "UnavailableForLegalReasonsError",
+        500 => "InternalServerError",
+        501 => "NotImplementedError",
+        502 => "BadGatewayError",
+        503 => "ServiceUnavailableError",
+        504 => "GatewayTimeoutError",
+        505 => "HttpVersionNotSupportedError",
+        506 => "VariantAlsoNegotiatesError",
+        507 => "InsufficientStorageError",
+        508 => "LoopDetectedError",
+        510 => "NotExtendedError",
+        511 => "NetworkAuthenticationRequiredError",
+        _ => return None,
+    })
+}
+
+/// The exception body type for an error response. A `$ref`/scalar/container body
+/// resolves through [`base_type_ref`] (in response context — `List`/`Dict`, never
+/// `Sequence`); an error with no `application/json` body takes Fern's
+/// `typing.Optional[typing.Any]`.
+fn error_body_type(resp: &Response) -> TypeRef {
+    match resp
+        .content
+        .get("application/json")
+        .and_then(|c| c.schema.as_ref())
+    {
+        Some(schema) => base_type_ref(schema),
+        None => TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any))),
     }
 }
 
-/// Resolve an operation's declared error (non-2xx) responses. Returns `None` if any
-/// is outside the subset crozier can render — an unmapped status code, a missing
-/// `application/json` body, or a body that is not a `$ref` to a named type.
-fn resolve_errors(op: &Operation) -> Option<Vec<ErrorResponse>> {
+/// Resolve an operation's declared error (non-2xx) responses into `raise` branches.
+/// An error response **never** suppresses method generation (issue #43): a status
+/// Fern does not name is simply skipped (it falls through to the generic
+/// `ApiError`), and any renderable body shape is accepted.
+fn resolve_errors(op: &Operation) -> Vec<ErrorResponse> {
     let mut out = Vec::new();
     for (code, resp) in &op.responses {
         if code.starts_with('2') {
             continue;
         }
-        let status: u16 = code.parse().ok()?;
-        let class = error_class_name(status)?;
-        let reference = resp
-            .content
-            .get("application/json")?
-            .schema
-            .as_ref()?
-            .reference
-            .as_ref()?;
+        let Ok(status) = code.parse::<u16>() else {
+            continue;
+        };
+        let Some(class) = error_class_name(status) else {
+            continue;
+        };
         out.push(ErrorResponse {
             status_code: status,
             class_name: class.to_string(),
-            body_type: TypeRef::Named(ref_to_class(reference)),
+            body_type: error_body_type(resp),
         });
     }
-    Some(out)
+    out
 }
 
 /// The stem crozier snake-cases into a header parameter's Python name. Fern drops

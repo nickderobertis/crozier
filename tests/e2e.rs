@@ -848,6 +848,101 @@ const FEATURE_TARGETS: &[Corpus] = &[
             "src/fern/widgets/raw_client.py",
         ],
     },
+    // error-responses (issue #43, gap #1): an operation that declares any non-2xx
+    // response used to be silently dropped — crozier emitted its response type but no
+    // client method, reporting a successful generation of an uncallable SDK. Now an
+    // error response never suppresses method generation: each declared status maps to
+    // Fern's typed exception (`404` → `NotFoundError`, `500` → `InternalServerError`,
+    // `400` → `BadRequestError`, `422` → `UnprocessableEntityError`, `503` →
+    // `ServiceUnavailableError`) raised over the generic `ApiError` fallback, with the
+    // body parsed per declared shape — a `$ref` (`Error`), a container
+    // (`typing.List[str]`), or `typing.Optional[typing.Any]` for a content-less error.
+    // Matches Fern's whole raw/high-level client, error package, and types. Only the
+    // package-root `__init__.py` stays unmatched (the `version.py` packaging
+    // difference the local golden trees carry).
+    Corpus {
+        api: "error-responses",
+        package_name: "fern",
+        project_name: "default_package_name",
+        matched: &[
+            ".fern/metadata.json",
+            "src/fern/client.py",
+            "src/fern/core/__init__.py",
+            "src/fern/core/api_error.py",
+            "src/fern/core/client_wrapper.py",
+            "src/fern/core/datetime_utils.py",
+            "src/fern/core/file.py",
+            "src/fern/core/force_multipart.py",
+            "src/fern/core/http_client.py",
+            "src/fern/core/http_response.py",
+            "src/fern/core/http_sse/__init__.py",
+            "src/fern/core/http_sse/_api.py",
+            "src/fern/core/http_sse/_decoders.py",
+            "src/fern/core/http_sse/_exceptions.py",
+            "src/fern/core/http_sse/_models.py",
+            "src/fern/core/jsonable_encoder.py",
+            "src/fern/core/pydantic_utilities.py",
+            "src/fern/core/query_encoder.py",
+            "src/fern/core/remove_none_from_dict.py",
+            "src/fern/core/request_options.py",
+            "src/fern/core/serialization.py",
+            "src/fern/errors/__init__.py",
+            "src/fern/errors/bad_request_error.py",
+            "src/fern/errors/internal_server_error.py",
+            "src/fern/errors/not_found_error.py",
+            "src/fern/errors/service_unavailable_error.py",
+            "src/fern/errors/unprocessable_entity_error.py",
+            "src/fern/types/__init__.py",
+            "src/fern/types/error.py",
+            "src/fern/types/widget.py",
+            "src/fern/widgets/__init__.py",
+            "src/fern/widgets/client.py",
+            "src/fern/widgets/raw_client.py",
+        ],
+    },
+    // sse-streaming (issue #43, gap #3): a `text/event-stream` (SSE) response used to
+    // collapse to a `-> None` method that discarded the stream. crozier now emits
+    // Fern's context-managed streaming shape: the raw client is a
+    // `@contextlib.(async)contextmanager` over `httpx_client.stream(...)` that decodes
+    // events through the `core/http_sse` runtime (`EventSource.iter_sse`/`aiter_sse`)
+    // into `typing.(Async)Iterator[typing.Optional[typing.Any]]` chunks (Fern's OpenAPI
+    // importer does not resolve the `x-fern-streaming` `chunk-schema-ref`, so the chunk
+    // stays `Optional[Any]`), and the high-level client yields each chunk with a worked
+    // streaming `Examples` block. Matches Fern's whole client layer; only the
+    // package-root `__init__.py` stays unmatched (the `version.py` packaging difference).
+    Corpus {
+        api: "sse-streaming",
+        package_name: "fern",
+        project_name: "default_package_name",
+        matched: &[
+            ".fern/metadata.json",
+            "src/fern/client.py",
+            "src/fern/core/__init__.py",
+            "src/fern/core/api_error.py",
+            "src/fern/core/client_wrapper.py",
+            "src/fern/core/datetime_utils.py",
+            "src/fern/core/file.py",
+            "src/fern/core/force_multipart.py",
+            "src/fern/core/http_client.py",
+            "src/fern/core/http_response.py",
+            "src/fern/core/http_sse/__init__.py",
+            "src/fern/core/http_sse/_api.py",
+            "src/fern/core/http_sse/_decoders.py",
+            "src/fern/core/http_sse/_exceptions.py",
+            "src/fern/core/http_sse/_models.py",
+            "src/fern/core/jsonable_encoder.py",
+            "src/fern/core/pydantic_utilities.py",
+            "src/fern/core/query_encoder.py",
+            "src/fern/core/remove_none_from_dict.py",
+            "src/fern/core/request_options.py",
+            "src/fern/core/serialization.py",
+            "src/fern/messages/__init__.py",
+            "src/fern/messages/client.py",
+            "src/fern/messages/raw_client.py",
+            "src/fern/types/__init__.py",
+            "src/fern/types/stream_chunk.py",
+        ],
+    },
 ];
 
 /// Path to a fixture directory under `tests/fixtures/`.

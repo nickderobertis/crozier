@@ -62,6 +62,8 @@ const STDLIB_MODULES: &[&str] = &[
     "collections",
     "decimal",
     "abc",
+    "contextlib",
+    "logging",
 ];
 
 /// The location of the file whose imports are being collected, relative to the
@@ -2111,6 +2113,10 @@ fn raw_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> String {
     imports.add_plain("typing");
     imports.add_from("..core.request_options", "RequestOptions");
 
+    if ep.streaming {
+        return raw_stream_method(ep, is_async, imports);
+    }
+
     let wrapper = if is_async {
         "AsyncHttpResponse"
     } else {
@@ -2219,6 +2225,68 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
         format!("            {},", url_arg(ep)),
         format!("            method=\"{}\",", ep.http_method),
     ];
+    append_request_call_args(&mut lines, ep, imports);
+    lines.extend([
+        "        )".to_string(),
+        "        try:".to_string(),
+        "            if 200 <= _response.status_code < 300:".to_string(),
+    ]);
+    if ep.response.is_some() {
+        imports.add_from("..core.pydantic_utilities", "parse_obj_as");
+        lines.extend([
+            "                _data = typing.cast(".to_string(),
+            format!("                    {inner},"),
+            "                    parse_obj_as(".to_string(),
+            format!("                        type_={inner},"),
+            "                        object_=_response.json(),".to_string(),
+            "                    ),".to_string(),
+            "                )".to_string(),
+            format!("                return {wrapper}(response=_response, data=_data)"),
+        ]);
+    } else {
+        lines.push(format!(
+            "                return {wrapper}(response=_response, data=None)"
+        ));
+    }
+    // One `raise <Error>` branch per declared error response, keyed on its status
+    // code, parsing the error body into the generated exception.
+    for err in &ep.errors {
+        imports.add_from("..core.pydantic_utilities", "parse_obj_as");
+        let module = naming::module_name(&err.class_name);
+        imports.add_from(&format!("..errors.{module}"), &err.class_name);
+        let body = raw_type_str(&err.body_type, imports);
+        lines.extend([
+            format!(
+                "            if _response.status_code == {}:",
+                err.status_code
+            ),
+            format!("                raise {}(", err.class_name),
+            "                    headers=dict(_response.headers),".to_string(),
+            "                    body=typing.cast(".to_string(),
+            format!("                        {body},"),
+            "                        parse_obj_as(".to_string(),
+            format!("                            type_={body},"),
+            "                            object_=_response.json(),".to_string(),
+            "                        ),".to_string(),
+            "                    ),".to_string(),
+            "                )".to_string(),
+        ]);
+    }
+    lines.extend([
+        "            _response_json = _response.json()".to_string(),
+        "        except JSONDecodeError:".to_string(),
+        "            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)".to_string(),
+        "        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)".to_string(),
+    ]);
+    lines.join("\n")
+}
+
+/// Append an endpoint's httpx call arguments (indent 12) to `lines` — the query
+/// `params` dict, the serialized request body, the `headers` dict,
+/// `request_options`, and the `omit`/`force_multipart` sentinels. Shared by the
+/// buffered `.request(...)` path ([`raw_body`]) and the streaming `.stream(...)`
+/// path ([`raw_stream_body`]) so both serialize a body identically.
+fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mut Imports) {
     // Query parameters map wire name to the Python argument in a `params` dict.
     if !ep.query_params.is_empty() {
         lines.push("            params={".to_string());
@@ -2350,58 +2418,149 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
     if matches!(&ep.request_body, Some(RequestBody::Form(f)) if f.multipart) {
         lines.push("            force_multipart=True,".to_string());
     }
-    lines.extend([
-        "        )".to_string(),
-        "        try:".to_string(),
-        "            if 200 <= _response.status_code < 300:".to_string(),
-    ]);
-    if ep.response.is_some() {
-        imports.add_from("..core.pydantic_utilities", "parse_obj_as");
-        lines.extend([
-            "                _data = typing.cast(".to_string(),
-            format!("                    {inner},"),
-            "                    parse_obj_as(".to_string(),
-            format!("                        type_={inner},"),
-            "                        object_=_response.json(),".to_string(),
-            "                    ),".to_string(),
-            "                )".to_string(),
-            format!("                return {wrapper}(response=_response, data=_data)"),
-        ]);
-    } else {
-        lines.push(format!(
-            "                return {wrapper}(response=_response, data=None)"
-        ));
+}
+
+/// The chunk type Fern yields from an OpenAPI-sourced SSE stream. Fern's OpenAPI
+/// importer does not resolve the `x-fern-streaming` `chunk-schema-ref`, so every
+/// streamed event is typed `typing.Optional[typing.Any]`.
+const SSE_CHUNK: &str = "typing.Optional[typing.Any]";
+
+/// Build one streaming raw-client method (sync or async): a context-managed
+/// `httpx_client.stream(...)` that decodes Server-Sent Events into an iterator of
+/// chunks over the `core.http_sse` runtime, matching Fern's shape (issue #43).
+fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> String {
+    imports.add_plain("contextlib");
+    imports.add_plain("typing");
+    imports.add_from("json.decoder", "JSONDecodeError");
+    imports.add_from("logging", "error");
+    imports.add_from("logging", "warning");
+    imports.add_from("..core.api_error", "ApiError");
+    imports.add_from("..core.http_sse._api", "EventSource");
+    imports.add_from("..core.pydantic_utilities", "parse_obj_as");
+
+    let (wrapper, iter_t, aiter, decorator, async_kw, async_with, for_kw, iter_sse, read) =
+        if is_async {
+            (
+                "AsyncHttpResponse",
+                "typing.AsyncIterator",
+                "typing.AsyncIterator",
+                "@contextlib.asynccontextmanager",
+                "async ",
+                "async with",
+                "async for",
+                "aiter_sse",
+                "await _response.aread()",
+            )
+        } else {
+            (
+                "HttpResponse",
+                "typing.Iterator",
+                "typing.Iterator",
+                "@contextlib.contextmanager",
+                "",
+                "with",
+                "for",
+                "iter_sse",
+                "_response.read()",
+            )
+        };
+    let mp = method_params(ep, imports);
+    let data_type = format!("{aiter}[{SSE_CHUNK}]");
+    let return_type = format!("{iter_t}[{wrapper}[{data_type}]]");
+    let sig = signature(ep, &mp, &return_type, is_async);
+    let docstring = raw_stream_docstring(ep, &mp, &return_type);
+
+    let mut call: Vec<String> = vec![format!(
+        "        {async_with} self._client_wrapper.httpx_client.stream("
+    )];
+    call.push(format!("            {},", url_arg(ep)));
+    call.push(format!("            method=\"{}\",", ep.http_method));
+    append_request_call_args(&mut call, ep, imports);
+    call.push("        ) as _response:".to_string());
+
+    let inner_return = format!("{wrapper}(response=_response, data=_iter())");
+    let body = format!(
+        "\
+{call}
+
+            {async_kw}def _stream() -> {wrapper}[{data_type}]:
+                try:
+                    if 200 <= _response.status_code < 300:
+
+                        {async_kw}def _iter():
+                            _event_source = EventSource(_response)
+                            {for_kw} _sse in _event_source.{iter_sse}():
+                                if _sse.data == None:
+                                    return
+                                try:
+                                    yield typing.cast(
+                                        {SSE_CHUNK},
+                                        parse_obj_as(
+                                            type_={SSE_CHUNK},
+                                            object_=_sse.json(),
+                                        ),
+                                    )
+                                except JSONDecodeError as e:
+                                    warning(f\"Skipping SSE event with invalid JSON: {{e}}, sse: {{_sse!r}}\")
+                                except (TypeError, ValueError, KeyError, AttributeError) as e:
+                                    warning(
+                                        f\"Skipping SSE event due to model construction error: {{type(e).__name__}}: {{e}}, sse: {{_sse!r}}\"
+                                    )
+                                except Exception as e:
+                                    error(
+                                        f\"Unexpected error processing SSE event: {{type(e).__name__}}: {{e}}, sse: {{_sse!r}}\"
+                                    )
+                            return
+
+                        return {inner_return}
+                    {read}
+                    _response_json = _response.json()
+                except JSONDecodeError:
+                    raise ApiError(
+                        status_code=_response.status_code, headers=dict(_response.headers), body=_response.text
+                    )
+                raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+            yield {yield_expr}",
+        call = call.join("\n"),
+        yield_expr = if is_async {
+            "await _stream()"
+        } else {
+            "_stream()"
+        },
+    );
+    format!("    {decorator}\n{sig}\n{docstring}\n{body}")
+}
+
+/// The streaming raw method docstring (indent 8): `Parameters` then a `Yields`
+/// section (Fern uses `Yields`, not `Returns`, for a streaming method) carrying the
+/// return type and the response description.
+fn raw_stream_docstring(ep: &Endpoint, mp: &MethodParams, return_type: &str) -> String {
+    let mut lines: Vec<String> = vec!["        \"\"\"".to_string()];
+    lines.push("        Parameters".to_string());
+    lines.push("        ----------".to_string());
+    for (name, ty) in &mp.path {
+        lines.push(format!("        {name} : {ty}"));
+        lines.push(String::new());
     }
-    // One `raise <Error>` branch per declared error response, keyed on its status
-    // code, parsing the error body into the generated exception.
-    for err in &ep.errors {
-        imports.add_from("..core.pydantic_utilities", "parse_obj_as");
-        let module = naming::module_name(&err.class_name);
-        imports.add_from(&format!("..errors.{module}"), &err.class_name);
-        let body = raw_type_str(&err.body_type, imports);
-        lines.extend([
-            format!(
-                "            if _response.status_code == {}:",
-                err.status_code
-            ),
-            format!("                raise {}(", err.class_name),
-            "                    headers=dict(_response.headers),".to_string(),
-            "                    body=typing.cast(".to_string(),
-            format!("                        {body},"),
-            "                        parse_obj_as(".to_string(),
-            format!("                            type_={body},"),
-            "                            object_=_response.json(),".to_string(),
-            "                        ),".to_string(),
-            "                    ),".to_string(),
-            "                )".to_string(),
-        ]);
-    }
-    lines.extend([
-        "            _response_json = _response.json()".to_string(),
-        "        except JSONDecodeError:".to_string(),
-        "            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)".to_string(),
-        "        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)".to_string(),
-    ]);
+    let mut push_param = |dp: &DocParam| {
+        lines.push(format!("        {} : {}", dp.name, dp.annotation));
+        if let Some(desc) = &dp.description {
+            lines.push(format!("            {desc}"));
+        }
+        lines.push(String::new());
+    };
+    mp.query.iter().for_each(&mut push_param);
+    mp.header.iter().for_each(&mut push_param);
+    mp.body.iter().for_each(&mut push_param);
+    lines.push("        request_options : typing.Optional[RequestOptions]".to_string());
+    lines.push("            Request-specific configuration.".to_string());
+    lines.push(String::new());
+    lines.push("        Yields".to_string());
+    lines.push("        ------".to_string());
+    lines.push(format!("        {return_type}"));
+    push_return_doc(&mut lines, ep.response_doc.as_deref());
+    lines.push("        \"\"\"".to_string());
     lines.join("\n")
 }
 
@@ -2772,6 +2931,9 @@ fn client_class(
 /// example), and a body delegating to the raw client and returning
 /// `_response.data`.
 fn client_method(cx: &ClientCtx, ep: &Endpoint, is_async: bool, imports: &mut Imports) -> String {
+    if ep.streaming {
+        return client_stream_method(cx, ep, is_async, imports);
+    }
     let mp = method_params(ep, imports);
     let return_type = mp.inner.clone();
     let sig = signature(ep, &mp, &return_type, is_async);
@@ -2794,6 +2956,113 @@ fn client_method(cx: &ClientCtx, ep: &Endpoint, is_async: bool, imports: &mut Im
         Doc::group(open, call_args, ")").flat()
     );
     format!("{sig}\n{docstring}\n{call}\n        return _response.data")
+}
+
+/// The high-level streaming method (sync or async): a plain generator that opens
+/// the context-managed raw stream and yields each decoded chunk. Matches Fern's
+/// `Iterator`/`AsyncIterator` wrapper over the raw client's SSE stream (issue #43).
+fn client_stream_method(
+    cx: &ClientCtx,
+    ep: &Endpoint,
+    is_async: bool,
+    imports: &mut Imports,
+) -> String {
+    let mp = method_params(ep, imports);
+    let iter_t = if is_async {
+        "typing.AsyncIterator"
+    } else {
+        "typing.Iterator"
+    };
+    let return_type = format!("{iter_t}[{SSE_CHUNK}]");
+    let sig = signature(ep, &mp, &return_type, is_async);
+    let docstring = client_stream_docstring(cx, ep, &mp, is_async);
+
+    // Delegation call arguments, in signature order (path positionally, the rest as
+    // keywords, then `request_options`) — identical to the buffered high-level method.
+    let mut call_args: Vec<Doc> = Vec::new();
+    for (name, _) in &mp.path {
+        call_args.push(Doc::atom(name.clone()));
+    }
+    for dp in mp.query.iter().chain(&mp.header).chain(&mp.body) {
+        call_args.push(Doc::atom(format!("{}={}", dp.name, dp.name)));
+    }
+    call_args.push(Doc::atom("request_options=request_options"));
+    let open = format!("self._raw_client.{}(", ep.method_name);
+    let raw_call = Doc::group(open, call_args, ")").flat();
+    let body = if is_async {
+        format!(
+            "        async with {raw_call} as r:\n            async for _chunk in r.data:\n                yield _chunk"
+        )
+    } else {
+        format!("        with {raw_call} as r:\n            yield from r.data")
+    };
+    format!("{sig}\n{docstring}\n{body}")
+}
+
+/// The streaming high-level method docstring (indent 8): `Parameters`, a `Yields`
+/// section (matching Fern's streaming methods), then a worked `Examples` block that
+/// iterates the returned stream.
+fn client_stream_docstring(
+    cx: &ClientCtx,
+    ep: &Endpoint,
+    mp: &MethodParams,
+    is_async: bool,
+) -> String {
+    let iter_t = if is_async {
+        "typing.AsyncIterator"
+    } else {
+        "typing.Iterator"
+    };
+    let mut lines: Vec<String> = vec!["        \"\"\"".to_string()];
+    lines.push("        Parameters".to_string());
+    lines.push("        ----------".to_string());
+    for (name, ty) in &mp.path {
+        lines.push(format!("        {name} : {ty}"));
+        lines.push(String::new());
+    }
+    let mut push_param = |dp: &DocParam| {
+        lines.push(format!("        {} : {}", dp.name, dp.annotation));
+        if let Some(desc) = &dp.description {
+            lines.push(format!("            {desc}"));
+        }
+        lines.push(String::new());
+    };
+    mp.query.iter().for_each(&mut push_param);
+    mp.header.iter().for_each(&mut push_param);
+    mp.body.iter().for_each(&mut push_param);
+    lines.push("        request_options : typing.Optional[RequestOptions]".to_string());
+    lines.push("            Request-specific configuration.".to_string());
+    lines.push(String::new());
+    lines.push("        Yields".to_string());
+    lines.push("        ------".to_string());
+    lines.push(format!("        {iter_t}[{SSE_CHUNK}]"));
+    push_return_doc(&mut lines, ep.response_doc.as_deref());
+
+    let mut ctx = ExampleCtx {
+        types: cx.types,
+        tag_decls: cx.tag_decls,
+        referenced: BTreeSet::new(),
+        referenced_tag: BTreeSet::new(),
+        uses_datetime: false,
+        auth: cx.auth,
+        has_environment: cx.has_environment,
+        global_headers: cx.global_headers,
+    };
+    if let Some(ex_lines) = build_example(ep, is_async, cx.module, cx.pkg, cx.client_name, &mut ctx)
+    {
+        lines.push(String::new());
+        lines.push("        Examples".to_string());
+        lines.push("        --------".to_string());
+        for l in ex_lines {
+            if l.is_empty() {
+                lines.push(String::new());
+            } else {
+                lines.push(format!("        {l}"));
+            }
+        }
+    }
+    lines.push("        \"\"\"".to_string());
+    lines.join("\n")
 }
 
 /// The high-level method docstring (indent 8): the same summary + `Parameters` +
@@ -3266,10 +3535,20 @@ fn build_example(
         ep.method_name
     );
     // `render` positions continuation lines but leaves the first line for the
-    // caller to place, so prepend the base indent to it.
+    // caller to place, so prepend the base indent to it. A streaming endpoint binds
+    // the returned stream to `response` and iterates it (`for chunk in response:` /
+    // `async for chunk in response:`) instead of calling for its buffered value.
+    let pad = " ".repeat(call_indent);
     let call = {
         let rendered = Example::Call(receiver, args).render(call_indent);
-        format!("{}{rendered}", " ".repeat(call_indent))
+        if ep.streaming {
+            let for_kw = if is_async { "async for" } else { "for" };
+            format!(
+                "{pad}response = {rendered}\n{pad}{for_kw} chunk in response:\n{pad}    yield chunk"
+            )
+        } else {
+            format!("{pad}{rendered}")
+        }
     };
 
     // Preamble stdlib imports: `asyncio` for the async form, `datetime` when a
@@ -3854,6 +4133,7 @@ mod tests {
             response_doc: None,
             errors: Vec::new(),
             docstring: None,
+            streaming: false,
             emittable: true,
         }
     }

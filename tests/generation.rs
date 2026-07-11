@@ -472,15 +472,17 @@ paths:
 fn emits_raw_client_only_for_supported_modules() {
     let files = render(ENDPOINTS_SPEC);
 
-    // The supported modules emit a raw client; `err` (a non-2xx response) does
-    // not — only its package marker.
     let raw = files
         .get("src/acme/things/raw_client.py")
         .expect("things raw_client");
-    assert!(
-        !files.contains_key("src/acme/err/raw_client.py"),
-        "err should not emit a raw_client yet"
-    );
+    // `err` declares only a non-2xx (404) response. It used to be silently dropped
+    // (issue #43); now it emits a raw client whose method raises the typed
+    // `NotFoundError` over the `ApiError` fallback.
+    let err = files
+        .get("src/acme/err/raw_client.py")
+        .expect("err raw_client");
+    assert!(err.contains("if _response.status_code == 404:"), "{err}");
+    assert!(err.contains("raise NotFoundError("), "{err}");
     assert!(files.contains_key("src/acme/err/__init__.py"));
 
     // A 2xx response with no content (204) is supported and returns `None`.
@@ -863,16 +865,27 @@ fn renders_exhaustive_endpoint_layer_in_process() {
     assert!(noauth.contains("raise BadRequestError("));
 }
 
-/// A non-2xx status crozier cannot name keeps the operation unemittable (so no
-/// wrong error branch is emitted) — exercising the unmapped-code path.
+/// A non-2xx status crozier cannot name (a non-standard `460`) never suppresses the
+/// method (issue #43): the module still emits, a mapped status (`404`) raises its
+/// typed exception, and the unmapped status is skipped so the operation falls
+/// through to the generic `ApiError`.
 #[test]
-fn unmapped_error_status_keeps_the_module_unemittable() {
+fn unmapped_error_status_is_skipped_but_the_module_still_emits() {
     let files = render(
-        "openapi: 3.0.0\ninfo:\n  title: E\npaths:\n  /x:\n    get:\n      operationId: things_get\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema:\n                type: string\n        \"404\":\n          content:\n            application/json:\n              schema:\n                $ref: \"#/components/schemas/Err\"\ncomponents:\n  schemas:\n    Err:\n      type: object\n      properties:\n        message:\n          type: string\n",
+        "openapi: 3.0.0\ninfo:\n  title: E\npaths:\n  /x:\n    get:\n      operationId: things_get\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema:\n                type: string\n        \"404\":\n          content:\n            application/json:\n              schema:\n                $ref: \"#/components/schemas/Err\"\n        \"460\":\n          description: nonstandard\ncomponents:\n  schemas:\n    Err:\n      type: object\n      properties:\n        message:\n          type: string\n",
     );
-    // The package marker is emitted, but not a (wrong) raw client.
+    // The module is emitted, and the operation is callable.
     assert!(files.contains_key("src/acme/things/__init__.py"));
-    assert!(!files.contains_key("src/acme/things/raw_client.py"));
+    let raw = &files["src/acme/things/raw_client.py"];
+    // The mapped 404 raises its typed exception with the declared body type.
+    assert!(raw.contains("if _response.status_code == 404:"), "{raw}");
+    assert!(raw.contains("raise NotFoundError("), "{raw}");
+    // The unmapped 460 gets no branch — it falls through to the generic ApiError.
+    assert!(!raw.contains("== 460"), "{raw}");
+    assert!(
+        raw.contains("raise ApiError(status_code=_response.status_code"),
+        "{raw}"
+    );
 }
 
 /// An inline-object success response is hoisted into a named `{Tag}{Method}Response`
