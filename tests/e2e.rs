@@ -718,6 +718,10 @@ fn feature_target_specs_generate_without_panicking() {
 /// the corpus's `matched` list. It prints each such file as a ready-to-paste array
 /// entry, turning manifest growth from a manual diff into copy-paste. Run it via
 /// `just fixtures-candidates` after a generator change; see tests/fixtures/AGENTS.md.
+///
+/// It also self-checks: a positive control asserts its detection pipeline re-confirms
+/// every file already in `matched`, so a broken walk/matcher fails loudly rather than
+/// silently reporting nothing.
 #[test]
 #[ignore = "coverage-growth aid, not a gate; run via `just fixtures-candidates`"]
 fn report_matched_candidates() {
@@ -730,12 +734,13 @@ fn report_matched_candidates() {
         let matched: std::collections::HashSet<&str> = c.matched.iter().copied().collect();
         let out = generate_corpus(c);
 
-        let mut candidates: Vec<String> = walk_files(&expected_root)
+        // Every expected file the reporter's own pipeline (walk + emit + match)
+        // confirms crozier reproduces byte-for-byte — matched-or-not.
+        let confirmed: std::collections::HashSet<String> = walk_files(&expected_root)
             .into_iter()
-            .filter(|rel| !matched.contains(rel.as_str()))
             .filter(|rel| {
-                // A file is a candidate only if crozier emits it AND it matches. Skip
-                // anything unreadable as UTF-8 (nothing in the corpus is binary today).
+                // Confirmed only if crozier emits it AND it matches. Skip anything
+                // unreadable as UTF-8 (nothing in the corpus is binary today).
                 let (Ok(expected), Ok(generated)) = (
                     std::fs::read_to_string(expected_root.join(rel)),
                     std::fs::read_to_string(out.path().join(rel)),
@@ -744,6 +749,24 @@ fn report_matched_candidates() {
                 };
                 generated_matches_fixture(rel, &generated, &expected)
             })
+            .collect();
+
+        // Positive control — assert real behavior, not just printing. Every file
+        // already in `matched` is proven byte-identical by the gate, so the
+        // reporter's detection MUST re-confirm it; if it doesn't, the pipeline is
+        // broken (an empty walk, an always-false matcher, a bad path) and any
+        // "0 candidates" result is a false negative. Fail loudly instead.
+        for rel in c.matched {
+            assert!(
+                confirmed.contains(*rel),
+                "{}: reporter failed to re-confirm already-matched {rel} — candidate detection is broken",
+                c.api
+            );
+        }
+
+        let mut candidates: Vec<&String> = confirmed
+            .iter()
+            .filter(|rel| !matched.contains(rel.as_str()))
             .collect();
         candidates.sort();
 
