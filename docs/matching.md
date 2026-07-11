@@ -157,9 +157,17 @@ element per line with a trailing comma.
 
 ## Known gaps (roadmap)
 
-The `exhaustive` corpus is fully matched (all 104 files). The items below are
-generalization gaps — shapes the current spec does not exercise — not
-exhaustive-fixture misses. Each gap has a hand-authored **feature-coverage
+The `exhaustive` corpus is fully matched (all 104 files), and four
+feature-coverage targets are **now fully matched too** — `auth-schemes` (42),
+`discriminated-unions` (35), `schema-constraints` (33), and `integer-enums` (35).
+The items below are the remaining generalization gaps — shapes the current specs
+do not fully generate — not exhaustive-fixture misses.
+
+The generated **README/reference** now pick the first endpoint with a request body
+for the worked example and abbreviate the error-handling/advanced snippets to `...`
+(for a fully-required inline body or a container body) or `()` (a body with an
+optional field, a union/enum/scalar body, or no body), ruff-wrapped at the 88-col
+snippet width. Each gap has a hand-authored **feature-coverage
 target** under `tests/fixtures/` (a `FEATURE_TARGETS` corpus in `tests/e2e.rs`),
 with the full Fern `expected/` tree committed. Each corpus's `matched` list grows
 file-by-file as generation lands; the smoke test also asserts crozier consumes

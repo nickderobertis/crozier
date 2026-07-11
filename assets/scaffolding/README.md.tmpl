@@ -54,9 +54,7 @@ will be thrown.
 from @@PKG@@.core.api_error import ApiError
 
 try:
-    client.@@TAG@@.@@METHOD@@(
-        ...
-    )
+@@ERR_CALL@@
 except ApiError as e:
     print(e.status_code)
     print(e.body)
@@ -75,9 +73,7 @@ from @@PKG@@ import @@CLIENT@@
 client = @@CLIENT@@(
     ...,
 )
-response = client.@@TAG@@.with_raw_response.@@METHOD@@(
-    ...
-)
+@@RAW_CALL@@
 print(response.headers)  # access the response headers
 print(response.data)  # access the underlying object
 ```
@@ -97,7 +93,7 @@ A request is deemed retryable when any of the following HTTP status codes is ret
 Use the `max_retries` request option to configure this behavior.
 
 ```python
-client.@@TAG@@.@@METHOD@@(..., request_options={
+@@RETRY_CALL@@
     "max_retries": 1
 })
 ```
@@ -117,7 +113,7 @@ client = @@CLIENT@@(
 
 
 # Override timeout for a specific method
-client.@@TAG@@.@@METHOD@@(..., request_options={
+@@RETRY_CALL@@
     "timeout_in_seconds": 1
 })
 ```

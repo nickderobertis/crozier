@@ -221,6 +221,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         project_name: "default_package_name",
         matched: &[
             ".fern/metadata.json",
+            "README.md",
             "pyproject.toml",
             "reference.md",
             "requirements.txt",
@@ -370,6 +371,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         project_name: "default_package_name",
         matched: &[
             ".fern/metadata.json",
+            "README.md",
             "pyproject.toml",
             "reference.md",
             "requirements.txt",
@@ -411,6 +413,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         project_name: "default_package_name",
         matched: &[
             ".fern/metadata.json",
+            "README.md",
             "pyproject.toml",
             "reference.md",
             "requirements.txt",
@@ -450,6 +453,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         project_name: "default_package_name",
         matched: &[
             ".fern/metadata.json",
+            "README.md",
             "pyproject.toml",
             "reference.md",
             "requirements.txt",

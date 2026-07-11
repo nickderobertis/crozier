@@ -1018,6 +1018,20 @@ fn integer_enum_alias_and_ref_body_are_emittable() {
     assert!(raw.contains("\"content-type\": \"application/json\""));
 }
 
+/// The README example is the first endpoint with a request body, and its
+/// abbreviated snippets show `...` for a fully-required body (here a container).
+#[test]
+fn readme_shows_dots_for_a_container_body_endpoint() {
+    let files = render(
+        "openapi: 3.0.1\ninfo:\n  title: R\npaths:\n  /ping:\n    get:\n      operationId: health_ping\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema:\n                type: string\n  /bulk:\n    post:\n      operationId: items_bulk\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema:\n                type: string\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n              type: array\n              items:\n                type: string\n",
+    );
+    let readme = &files["README.md"];
+    // Skips the no-body `health_ping` for the body-carrying `items_bulk`.
+    assert!(readme.contains("client.items.bulk(...)"));
+    assert!(readme.contains("client.items.bulk(..., request_options={"));
+    assert!(!readme.contains("health.ping"));
+}
+
 /// A `readOnly` property is optional even when listed in `required` (it is
 /// server-populated), and `additionalProperties: true` maps to an open dict.
 #[test]

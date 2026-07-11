@@ -629,15 +629,96 @@ fn root_init_file(
     }
 }
 
+/// Whether Fern shows a `...` placeholder for an endpoint's body in the README's
+/// abbreviated snippets (versus empty parens). Empirically `...` appears for a
+/// "fully-specified" body: an inline object whose every field is required, or a
+/// container body. A body with any optional field, a union, an enum/scalar, or no
+/// body renders empty parens.
+fn complex_body(ep: &Endpoint, types: &[TypeDecl]) -> bool {
+    match &ep.request_body {
+        None => false,
+        Some(RequestBody::Bytes) => true,
+        Some(RequestBody::Inline(fields)) => fields.iter().all(|f| f.spec_required),
+        Some(RequestBody::Single(s)) => is_complex_type(&s.type_ref, types),
+    }
+}
+
+/// Whether a single-argument body type renders as a container (list/set/map) or a
+/// plain object — not a union, enum, or scalar.
+fn is_complex_type(t: &TypeRef, types: &[TypeDecl]) -> bool {
+    match t {
+        TypeRef::List(_) | TypeRef::Set(_) | TypeRef::Dict(..) => true,
+        TypeRef::Optional(inner) => is_complex_type(inner, types),
+        TypeRef::Named(n) => types
+            .iter()
+            .find(|d| d.name() == n)
+            .is_some_and(|d| match d {
+                TypeDecl::Object(_) => true,
+                // A union (named or discriminated) renders empty parens.
+                TypeDecl::DiscriminatedUnion(_) => false,
+                TypeDecl::Alias(a) => {
+                    !matches!(a.target, TypeRef::Union(_)) && is_complex_type(&a.target, types)
+                }
+            }),
+        TypeRef::Union(_) | TypeRef::Primitive(_) | TypeRef::Literal(_) => false,
+    }
+}
+
+/// Render an abbreviated call `<prefix>(...)` for the README snippets: empty parens
+/// when the body is not complex, else a `...` placeholder, ruff-wrapped at width 88
+/// (the snippet line length) onto its own line when the flat form overflows.
+fn abbrev_call(indent: usize, prefix: &str, complex: bool) -> String {
+    let pad = " ".repeat(indent);
+    if !complex {
+        return format!("{pad}{prefix}()");
+    }
+    let flat = format!("{pad}{prefix}(...)");
+    if flat.len() <= 88 {
+        flat
+    } else {
+        format!("{pad}{prefix}(\n{}...\n{pad})", " ".repeat(indent + 4))
+    }
+}
+
 /// The generated `README.md`: mostly static prose with the SDK name/package
 /// substituted and a worked usage example (sync + async) synthesized from the
 /// first endpoint. Compared verbatim (README is not comment-stripped). Emitted
 /// only when there is an endpoint to demonstrate.
 fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
-    let first = ir.endpoints.iter().find(|e| e.emittable)?;
+    // Fern demonstrates the first emittable endpoint that has a request body (the
+    // most illustrative call), falling back to the first emittable endpoint.
+    let first = ir
+        .endpoints
+        .iter()
+        .find(|e| e.emittable && e.request_body.is_some())
+        .or_else(|| ir.endpoints.iter().find(|e| e.emittable))?;
     let pkg = &ir.package_name;
     let org = naming::to_pascal_case(pkg);
     let async_name = format!("Async{}", ir.client_name);
+
+    // The abbreviated calls in the error-handling and advanced sections show `...`
+    // for an endpoint with a complex (object/container/union) body, else empty
+    // parens; the error/raw-response calls are ruff-wrapped at the snippet width 88.
+    let complex = complex_body(first, &ir.types);
+    let err_call = abbrev_call(
+        4,
+        &format!("client.{}.{}", first.module, first.method_name),
+        complex,
+    );
+    let raw_call = abbrev_call(
+        0,
+        &format!(
+            "response = client.{}.with_raw_response.{}",
+            first.module, first.method_name
+        ),
+        complex,
+    );
+    let retry_call = format!(
+        "client.{}.{}({}request_options={{",
+        first.module,
+        first.method_name,
+        if complex { "..., " } else { "" }
+    );
 
     let sync_example = {
         let mut ctx = ExampleCtx {
@@ -664,8 +745,9 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
         .replace("@@PKG@@", pkg)
         .replace("@@CLIENT@@", &ir.client_name)
         .replace("@@ASYNC@@", &async_name)
-        .replace("@@TAG@@", &first.module)
-        .replace("@@METHOD@@", &first.method_name)
+        .replace("@@ERR_CALL@@", &err_call)
+        .replace("@@RAW_CALL@@", &raw_call)
+        .replace("@@RETRY_CALL@@", &retry_call)
         .replace("@@USAGE@@", &sync_example)
         .replace("@@ASYNC_EXAMPLE@@", &async_example);
     Some(GeneratedFile {
@@ -2712,12 +2794,24 @@ pub fn write_files(root: &std::path::Path, files: &[GeneratedFile]) -> Result<()
 #[cfg(test)]
 mod tests {
     use super::{
-        auth_client_parts, auth_example, auth_wrapper_parts, raw_method, raw_type_str, url_arg,
-        Imports,
+        abbrev_call, auth_client_parts, auth_example, auth_wrapper_parts, raw_method, raw_type_str,
+        url_arg, Imports,
     };
     use crate::ir::{
         Auth, BodyField, Endpoint, ErrorResponse, PathParam, Prim, RequestBody, TypeRef,
     };
+
+    #[test]
+    fn abbrev_call_renders_empty_inline_and_wrapped() {
+        // No complex body → empty parens.
+        assert_eq!(abbrev_call(4, "client.a.b", false), "    client.a.b()");
+        // Complex + short → inline `...`.
+        assert_eq!(abbrev_call(4, "client.a.b", true), "    client.a.b(...)");
+        // Complex + over the 88-col snippet width → exploded onto its own line.
+        let long = format!("client.tag.{}", "m".repeat(90));
+        let wrapped = abbrev_call(0, &long, true);
+        assert_eq!(wrapped, format!("{long}(\n    ...\n)"));
+    }
 
     #[test]
     fn auth_fragments_cover_every_scheme() {
