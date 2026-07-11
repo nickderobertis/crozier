@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.14](https://github.com/nickderobertis/crozier/compare/v0.0.13...v0.0.14) - 2026-07-11
+
+### Fixed
+
+- sanitize enum member and visit() names (issue #50) ([#53](https://github.com/nickderobertis/crozier/pull/53))
+
 ## [0.0.13](https://github.com/nickderobertis/crozier/compare/v0.0.12...v0.0.13) - 2026-07-11
 
 ### Added
