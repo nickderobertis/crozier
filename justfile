@@ -40,10 +40,10 @@ test-e2e:
     cargo nextest run --locked -E 'binary(e2e)'
 
 # Runtime ("wire") test only: record the compiled client's behavior via an
-# injected httpx.MockTransport (tests/runtime/wire_test.py) and assert it matches
-# the real Fern fixture SDK's behavior, modulo the normalized SDK-identity
+# injected httpx.MockTransport (the pytest suite in tests/runtime/) and assert it
+# matches the real Fern fixture SDK's behavior, modulo the normalized SDK-identity
 # headers. Part of `test-e2e`/`check`; this runs it in isolation. Needs Python +
-# httpx/pydantic (uv or pip); see tests/runtime/AGENTS.md.
+# httpx/pydantic/pytest (uv or pip); see tests/runtime/AGENTS.md.
 test-runtime:
     cargo nextest run --locked -E 'binary(e2e) and test(crozier_matches_fern_runtime_behavior)'
 

@@ -1623,10 +1623,11 @@ fn uv_available() -> bool {
         .unwrap_or(false)
 }
 
-/// Whether `py` can import the generated SDK's runtime dependencies.
+/// Whether `py` can import the generated SDK's runtime dependencies plus the test
+/// runner (`pytest`) the wire suite is driven with.
 fn can_import_sdk_deps(py: &Path) -> bool {
     std::process::Command::new(py)
-        .args(["-c", "import httpx, pydantic"])
+        .args(["-c", "import httpx, pydantic, pytest"])
         .stdout(std::process::Stdio::null())
         .stderr(std::process::Stdio::null())
         .status()
@@ -1635,8 +1636,8 @@ fn can_import_sdk_deps(py: &Path) -> bool {
 }
 
 /// Prepare (creating and caching if needed) a virtualenv holding the generated
-/// SDK's only runtime dependencies (`httpx`, `pydantic`) and return its
-/// interpreter, so the runtime wire tests can import and drive a generated
+/// SDK's runtime dependencies (`httpx`, `pydantic`) and `pytest`, and return its
+/// interpreter, so the runtime wire suite can import and drive a generated
 /// client. Returns an `Err` describing why the env could not be prepared — no
 /// base interpreter, no venv support, or a failed dependency install (e.g.
 /// offline) — which the caller turns into a skip locally / a hard failure in CI.
@@ -1645,8 +1646,10 @@ fn can_import_sdk_deps(py: &Path) -> bool {
 /// imports the dependencies, so repeated `just check` runs pay the install once.
 /// `uv` is used when present (seconds); otherwise the stdlib `venv` + `pip`.
 fn runtime_python_env() -> Result<PathBuf, String> {
+    // The SDK's own runtime deps plus the wire suite's test runner.
+    const DEPS: [&str; 3] = ["httpx", "pydantic", "pytest"];
     let base = python_interpreter().ok_or("no python3/python on PATH")?;
-    let venv = std::env::temp_dir().join("crozier-runtime-venv-v1");
+    let venv = std::env::temp_dir().join("crozier-runtime-venv-v2");
     let venv_py = venv_python(&venv);
 
     if venv_py.exists() && can_import_sdk_deps(&venv_py) {
@@ -1674,64 +1677,45 @@ fn runtime_python_env() -> Result<PathBuf, String> {
         install
             .args(["pip", "install", "--python"])
             .arg(&venv_py)
-            .args(["httpx", "pydantic"]);
+            .args(DEPS);
         run(install, "uv pip install")?;
     } else {
         let mut venv_cmd = std::process::Command::new(base);
         venv_cmd.args(["-m", "venv"]).arg(&venv);
         run(venv_cmd, "python -m venv")?;
         let mut install = std::process::Command::new(&venv_py);
-        install.args(["-m", "pip", "install", "httpx", "pydantic"]);
+        install.args(["-m", "pip", "install"]).args(DEPS);
         run(install, "pip install")?;
     }
 
     if can_import_sdk_deps(&venv_py) {
         Ok(venv_py)
     } else {
-        Err("venv prepared but httpx/pydantic still not importable".into())
+        Err("venv prepared but httpx/pydantic/pytest still not importable".into())
     }
-}
-
-/// Run the committed wire-test recorder (`tests/runtime/wire_test.py`) against the
-/// SDK rooted at `src`, returning its canonical-JSON recording of the client's
-/// runtime behavior. Panics with the driver's stderr if it does not exit cleanly.
-fn record_sdk_behavior(py: &Path, src: &Path) -> String {
-    let driver = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/runtime/wire_test.py");
-    let output = std::process::Command::new(py)
-        .arg(&driver)
-        .env("CROZIER_SDK_SRC", src)
-        .output()
-        .expect("run the runtime wire-test driver");
-    assert!(
-        output.status.success(),
-        "wire-test driver failed for {}:\n{}{}",
-        src.display(),
-        String::from_utf8_lossy(&output.stdout),
-        String::from_utf8_lossy(&output.stderr),
-    );
-    String::from_utf8(output.stdout).expect("driver output is UTF-8")
 }
 
 /// Runtime ("wire") behavior of a generated SDK, verified **differentially
 /// against Fern**: byte-matching Fern proves the source is right and
 /// `assert_valid_python` proves it compiles, but neither proves the compiled
 /// client issues the right HTTP request or parses the response. Rather than
-/// hand-author the expected behavior, this derives it from Fern: it runs the same
-/// recorder ([`tests/runtime/wire_test.py`]) against **both** the committed Fern
-/// fixture SDK (`exhaustive/expected/src`, which is real, runnable Fern output)
-/// and the crozier-generated SDK, and asserts the two recordings are identical.
+/// hand-author the expected behavior, this derives it from Fern: the committed
+/// pytest suite ([`tests/runtime/test_wire.py`]) records the client's behavior
+/// (via an injected `httpx.MockTransport`) for **both** the committed Fern fixture
+/// SDK (`exhaustive/expected/src`, real runnable Fern output) and the
+/// crozier-generated SDK, and asserts — per journey — that the recordings match.
 ///
-/// The recorder injects an `httpx.MockTransport` (the generated client accepts an
-/// `httpx_client`) and captures, per journey, the outgoing request (method, URL,
-/// headers, serialized body) and the outcome (the response model dumped to a dict,
-/// or the typed error's class/status/body) — covering request construction, auth +
-/// SDK-identity headers, body field-aliasing and `OMIT` filtering, query encoding,
-/// typed pydantic deserialization, and typed error raising, sync and async. The
-/// *only* allowed difference is the deliberate SDK-identity branding (`X-Crozier-*`
-/// vs `X-Fern-*`), which the recorder canonicalizes on both sides exactly as
-/// `normalize_sdk_headers` does for the byte-diff. This is the in-process analog of
-/// Fern's own WireMock wire tests (Docker/Enterprise-gated output crozier does not
-/// emit). See docs/matching.md.
+/// Each journey captures the outgoing request (method, URL, headers, serialized
+/// body) and the outcome (the response model dumped to a dict, or the typed
+/// error's class/status/body) — covering request construction, auth + SDK-identity
+/// headers, body field-aliasing and `OMIT` filtering, query encoding, typed
+/// pydantic deserialization, and typed error raising, sync and async. The *only*
+/// allowed difference is the deliberate SDK-identity branding (`X-Crozier-*` vs
+/// `X-Fern-*`), canonicalized on both sides exactly as `normalize_sdk_headers`
+/// does for the byte-diff. This is the in-process analog of Fern's own WireMock
+/// wire tests (Docker/Enterprise-gated output crozier does not emit). This test
+/// drives the compiled binary and the compiled client, so it lives in the e2e
+/// tier. See docs/matching.md.
 #[test]
 fn crozier_matches_fern_runtime_behavior() {
     let out = tempfile::tempdir().expect("tempdir");
@@ -1764,32 +1748,25 @@ fn crozier_matches_fern_runtime_behavior() {
         }
     };
 
+    let runtime_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/runtime");
     let fern_src = fixture_dir("exhaustive").join("expected/src");
-    let fern = record_sdk_behavior(&py, &fern_src);
-    let crozier = record_sdk_behavior(&py, &out.path().join("src"));
-
-    if fern != crozier {
-        // Both recordings are canonical JSON (sorted keys, one field per line), so
-        // a line diff points straight at the diverging behavior. A line-count
-        // mismatch (a whole field added/removed) misaligns a zip, so fall back to
-        // the full recordings in that case.
-        let detail = if fern.lines().count() == crozier.lines().count() {
-            fern.lines()
-                .zip(crozier.lines())
-                .enumerate()
-                .filter(|(_, (f, c))| f != c)
-                .map(|(i, (f, c))| {
-                    format!("  line {}:\n    fern:    {f}\n    crozier: {c}\n", i + 1)
-                })
-                .collect()
-        } else {
-            format!("--- fern ---\n{fern}\n--- crozier ---\n{crozier}")
-        };
-        panic!(
-            "crozier's generated client behaves differently from Fern's at runtime \
-             (beyond the normalized SDK-identity headers):\n{detail}"
-        );
-    }
+    let output = std::process::Command::new(&py)
+        .args(["-m", "pytest", "-q", "-p", "no:cacheprovider"])
+        .arg(&runtime_dir)
+        // FERN_SDK_SRC supplies the derived-from-Fern expectations; CROZIER_SDK_SRC
+        // is the SDK under test. Keep the repo tree clean of pytest byte-caches.
+        .env("FERN_SDK_SRC", &fern_src)
+        .env("CROZIER_SDK_SRC", out.path().join("src"))
+        .env("PYTHONDONTWRITEBYTECODE", "1")
+        .output()
+        .expect("run the runtime wire-test suite (pytest)");
+    assert!(
+        output.status.success(),
+        "runtime wire tests failed (crozier's client behaves differently from \
+         Fern's beyond the normalized SDK-identity headers):\n{}{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr),
+    );
 }
 
 #[test]

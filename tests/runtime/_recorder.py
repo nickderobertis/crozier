@@ -1,50 +1,46 @@
 """Record the runtime ("wire") behavior of a generated Python SDK.
 
-Byte-matching Fern proves the generated *source* is right and `compileall`
-proves it is valid Python; this proves the compiled client *behaves* right when
-imported and called. Rather than hand-assert expected values, this driver
-*records* what the client does and the Rust e2e harness (`tests/e2e.rs`) runs it
-against **both** the committed Fern fixture SDK and the crozier-generated SDK and
-asserts the two recordings are identical — so the expected behavior is derived
-from Fern, not authored here. The only differences allowed are the deliberate,
-non-behavioral ones the byte-diff already normalizes (crozier's `X-Crozier-*`
-SDK-identity headers vs Fern's `X-Fern-*`), which this driver canonicalizes on
-both sides exactly as `tests/e2e.rs::normalize_sdk_headers` does.
+This is a *helper*, not a test module (pytest imports it for the journey list;
+`test_wire.py` runs it as a subprocess to record each SDK's behavior and compares
+the recordings). The generated client accepts an `httpx_client`, so each journey
+injects one whose `httpx.MockTransport` captures the outgoing request and returns
+a scripted response — exercising URL/method construction, header injection,
+request-body serialization (field aliasing and `OMIT` filtering), query encoding,
+typed pydantic deserialization, and typed error raising, for the sync and async
+clients. It records, per journey, the request (method, URL, canonicalized headers,
+body) and the outcome (the response model dumped to a dict, or the typed error's
+class/status/body).
 
-The generated client accepts an `httpx_client`, so each journey injects one whose
-`httpx.MockTransport` captures the outgoing request and returns a scripted
-response — exercising URL/method construction, header injection, request-body
-serialization (field aliasing and `OMIT` filtering), query encoding, typed
-pydantic deserialization, and typed error raising, for the sync and async
-clients. It records, per journey, the request (method, URL, canonicalized
-headers, body) and the outcome (the response model dumped to a dict, or the typed
-error's class/status/body), then prints the whole recording as canonical JSON.
-
-The SDK's `src/` directory is passed in `CROZIER_SDK_SRC`; the only third-party
-imports are the SDK's own runtime dependencies (`httpx`, `pydantic`). A journey
-that cannot complete its structural contract (e.g. a declared 4xx that fails to
-raise) exits non-zero so a broken journey fails loudly instead of matching
-trivially.
+The SDK is imported *lazily* (inside `load_sdk`, from the path in `WIRE_SDK_SRC`)
+so that importing this module to read `JOURNEY_NAMES` never touches a generated
+`fern` package — the two SDKs under comparison are both named `fern` and cannot
+coexist in one process, which is why the recording runs one SDK per subprocess.
+The only third-party imports are the SDK's own runtime deps (`httpx`, `pydantic`).
+A journey that cannot complete its structural contract (e.g. a declared 4xx that
+fails to raise) raises, so a broken journey fails loudly instead of recording
+nothing and matching trivially.
 """
 
 import asyncio
 import json
 import os
 import sys
+from types import SimpleNamespace
 
-_src = os.environ.get("CROZIER_SDK_SRC")
-if not _src:
-    print("CROZIER_SDK_SRC is not set (path to the generated SDK's src/ dir)", file=sys.stderr)
-    sys.exit(2)
-sys.path.insert(0, _src)
-
-import httpx  # noqa: E402  (import after the generated src/ is on sys.path)
-
-from fern import AsyncFernApi, FernApi  # noqa: E402
-from fern.errors.bad_request_error import BadRequestError  # noqa: E402
+import httpx
 
 BASE_URL = "https://api.example.test"
 TOKEN = "secret-token"
+
+
+def load_sdk(src):
+    """Put the generated SDK's `src/` on the path and import the symbols the
+    journeys need. Deferred so this module is importable without an SDK present."""
+    sys.path.insert(0, src)
+    from fern import AsyncFernApi, FernApi
+    from fern.errors.bad_request_error import BadRequestError
+
+    return SimpleNamespace(FernApi=FernApi, AsyncFernApi=AsyncFernApi, BadRequestError=BadRequestError)
 
 
 def _capture(status, payload):
@@ -106,17 +102,17 @@ def _dump(model):
     return model.dict()
 
 
-def _sync_client(status, payload, *, token=TOKEN):
+def _sync_client(sdk, status, payload, *, token=TOKEN):
     transport, box = _capture(status, payload)
-    client = FernApi(base_url=BASE_URL, token=token, httpx_client=httpx.Client(transport=transport))
+    client = sdk.FernApi(base_url=BASE_URL, token=token, httpx_client=httpx.Client(transport=transport))
     return client, box
 
 
-def request_construction_and_response():
+def request_construction_and_response(sdk):
     """A POST with an inlined object body: URL/method, bearer auth + SDK-identity
     headers, body field-aliasing (`long_`->`long`, ...) with unset optionals
     filtered out, and the JSON response parsed into a pydantic model."""
-    client, box = _sync_client(200, {"string": "world", "long": 7, "bool": False, "list": ["x"]})
+    client, box = _sync_client(sdk, 200, {"string": "world", "long": 7, "bool": False, "list": ["x"]})
     result = client.endpoints_object.endpoints_object_get_and_return_with_optional_field(
         string="hello", integer=1, long_=42, bool_=True, list_=["a", "b"]
     )
@@ -126,10 +122,10 @@ def request_construction_and_response():
     }
 
 
-def no_auth_omits_authorization():
+def no_auth_omits_authorization(sdk):
     """With no token the Authorization header is absent, but the SDK-identity
     headers are still sent — the unauthenticated path stays wired up."""
-    client, box = _sync_client(200, True, token=None)
+    client, box = _sync_client(sdk, 200, True, token=None)
     result = client.noauth.postwithnoauth(request={"ping": 1})
     return {
         "request": _request_record(box["request"]),
@@ -137,13 +133,13 @@ def no_auth_omits_authorization():
     }
 
 
-def typed_error_is_raised():
+def typed_error_is_raised(sdk):
     """A declared 4xx becomes a generated typed exception whose `body` is the
     parsed error model, not a raw dict. Failing to raise is a hard error."""
-    client, box = _sync_client(400, {"message": "bad thing"}, token=None)
+    client, box = _sync_client(sdk, 400, {"message": "bad thing"}, token=None)
     try:
         client.noauth.postwithnoauth(request={"ping": 1})
-    except BadRequestError as err:
+    except sdk.BadRequestError as err:
         return {
             "request": _request_record(box["request"]),
             "outcome": {"error": type(err).__name__, "status": err.status_code, "body": _dump(err.body)},
@@ -151,9 +147,9 @@ def typed_error_is_raised():
     raise AssertionError("expected BadRequestError for a 400 response, none raised")
 
 
-def query_parameters_are_encoded():
+def query_parameters_are_encoded(sdk):
     """Keyword query args are encoded onto the URL, not the body."""
-    client, box = _sync_client(200, {"items": [], "next": None})
+    client, box = _sync_client(sdk, 200, {"items": [], "next": None})
     result = client.endpoints_pagination.endpoints_pagination_list_items(cursor="abc", limit=10)
     return {
         "request": _request_record(box["request"]),
@@ -161,10 +157,10 @@ def query_parameters_are_encoded():
     }
 
 
-def raw_response_exposes_underlying_http():
+def raw_response_exposes_underlying_http(sdk):
     """`.with_raw_response` returns the parsed data plus access to the response,
     without a second network round-trip."""
-    client, box = _sync_client(200, {"string": "raw"})
+    client, box = _sync_client(sdk, 200, {"string": "raw"})
     raw = client.endpoints_object.with_raw_response.endpoints_object_get_and_return_with_optional_field(string="s")
     if not isinstance(raw.headers, dict):
         raise AssertionError(f"raw response headers should be a dict, got {type(raw.headers)}")
@@ -174,12 +170,12 @@ def raw_response_exposes_underlying_http():
     }
 
 
-def async_request_and_response():
+def async_request_and_response(sdk):
     """The async client makes the same request and deserializes the same way."""
 
     async def run():
         transport, box = _capture(200, {"string": "async-world", "long": 9})
-        client = AsyncFernApi(
+        client = sdk.AsyncFernApi(
             base_url=BASE_URL, token=TOKEN, httpx_client=httpx.AsyncClient(transport=transport)
         )
         result = await client.endpoints_object.endpoints_object_get_and_return_with_optional_field(
@@ -201,15 +197,21 @@ JOURNEYS = [
     raw_response_exposes_underlying_http,
     async_request_and_response,
 ]
+JOURNEY_NAMES = [journey.__name__ for journey in JOURNEYS]
+
+
+def record(src):
+    """Run every journey against the SDK at `src` and return the recording dict."""
+    sdk = load_sdk(src)
+    return {journey.__name__: journey(sdk) for journey in JOURNEYS}
 
 
 def main():
-    recording = {}
-    for journey in JOURNEYS:
-        # A journey that raises is a hard failure (exit non-zero via the uncaught
-        # exception) — it must never silently record nothing and match trivially.
-        recording[journey.__name__] = journey()
-    json.dump(recording, sys.stdout, indent=2, sort_keys=True, default=str)
+    src = os.environ.get("WIRE_SDK_SRC")
+    if not src:
+        print("WIRE_SDK_SRC is not set (path to the generated SDK's src/ dir)", file=sys.stderr)
+        sys.exit(2)
+    json.dump(record(src), sys.stdout, indent=2, sort_keys=True, default=str)
     sys.stdout.write("\n")
 
 

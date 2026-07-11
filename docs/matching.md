@@ -112,15 +112,18 @@ the journeys a user actually takes, independent of the golden fixtures:
   Fern.** Compiling proves the source is legal Python; it does not prove the
   *client* issues the right HTTP request or parses the response. Rather than
   hand-author the expected behavior, `crozier_matches_fern_runtime_behavior`
-  *derives* it from Fern: the committed recorder
-  [`tests/runtime/wire_test.py`](../tests/runtime/wire_test.py) is run against
-  **both** the committed Fern fixture SDK (`exhaustive/expected/src` — real,
-  runnable Fern output) and the crozier-generated SDK, and their recordings must be
-  **identical**. The generated client accepts an `httpx_client`, so the recorder
-  injects one whose `httpx.MockTransport` captures the outgoing request and returns
-  a scripted response, recording per journey the request (method, URL, headers,
-  serialized body) and the outcome (the response model dumped to a dict, or the
-  typed error's class/status/body). Between them the journeys cover URL/method
+  *derives* it from Fern: the committed **pytest** suite
+  [`tests/runtime/test_wire.py`](../tests/runtime/test_wire.py) records the
+  client's behavior (via a shared recorder, `_recorder.py`) for **both** the
+  committed Fern fixture SDK (`exhaustive/expected/src` — real, runnable Fern
+  output) and the crozier-generated SDK, and a parametrized test asserts — per
+  journey — that the recordings are **identical**. (Both SDKs are named `fern`, so
+  each recording runs in its own subprocess.) The generated client accepts an
+  `httpx_client`, so the recorder injects one whose `httpx.MockTransport` captures
+  the outgoing request and returns a scripted response, recording per journey the
+  request (method, URL, headers, serialized body) and the outcome (the response
+  model dumped to a dict, or the typed error's class/status/body). Between them the
+  journeys cover URL/method
   construction, bearer auth and SDK-identity header injection, request-body
   serialization (wire aliasing and `OMIT` filtering), query encoding, typed
   pydantic deserialization, and typed error raising, for the sync **and** async
@@ -132,9 +135,9 @@ the journeys a user actually takes, independent of the golden fixtures:
   `tests/wire/` tree is generated output gated behind an Enterprise
   `enable_wire_tests` flag none of the corpora set, so crozier does not emit it and
   reproduces the behavior without Docker. It runs in a cached venv holding the
-  SDK's only runtime deps (`httpx` + `pydantic`); like the validity check it skips
-  when Python/venv/deps are unavailable, but is a **hard failure under `CI`** so the
-  gate stays honest.
+  SDK's runtime deps (`httpx` + `pydantic`) plus `pytest`; like the validity check
+  it skips when Python/venv/deps are unavailable, but is a **hard failure under
+  `CI`** so the gate stays honest.
 - **Default naming.** The common bare invocation (no `--package-name` /
   `--project-name`) is exercised: the package directory is `snake_case(title)` and
   `version.py` records the same name.
