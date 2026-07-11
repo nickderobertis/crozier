@@ -70,18 +70,36 @@ YAML
 echo "generate-fern-fixture: running Fern (python-sdk@${FERN_PYTHON_VERSION}) locally..." >&2
 ( cd "$workdir/fern" && fern generate --group python-sdk --local --force )
 
-src="$workdir/generated/python"
-[ -d "$src/src" ] || { echo "generate-fern-fixture: Fern produced no src/ under $src" >&2; exit 1; }
+out="$workdir/generated/python"
+# Fern emits one of two layouts depending on the CLI version: a full pip package
+# (`python/src/<pkg>/...` alongside pyproject.toml — install verbatim) or a flat
+# module tree (`python/<pkg-contents>` with no `src/` — relocate under
+# `src/fern/`, the layout crozier and the committed corpus use). Detect which.
+if [ -d "$out/src" ]; then
+  src="$out"; prefix=""
+elif [ -f "$out/__init__.py" ]; then
+  src="$out"; prefix="src/fern/"
+else
+  echo "generate-fern-fixture: Fern produced no recognizable package under $out" >&2
+  exit 1
+fi
 
 # Strip comments from every generated .py, mirroring the offline corpus, and
-# install into the fixture tree. Non-.py files are copied verbatim.
+# install into the fixture tree (under $prefix). Non-.py files are copied verbatim.
+# In the flat layout the package root and the output root are conflated, so the
+# `.fern/` metadata dir stays at the fixture root rather than moving under src/.
 rm -rf "$dest"
 mkdir -p "$dest"
 ( cd "$src" && find . -type f -print0 ) | while IFS= read -r -d '' rel; do
-  mkdir -p "$dest/$(dirname "$rel")"
+  rel="${rel#./}"
   case "$rel" in
-    *.py) "$crozier_bin" internal-strip "$src/$rel" > "$dest/$rel" ;;
-    *)    cp "$src/$rel" "$dest/$rel" ;;
+    .fern/*) target="$dest/$rel" ;;
+    *)       target="$dest/$prefix$rel" ;;
+  esac
+  mkdir -p "$(dirname "$target")"
+  case "$rel" in
+    *.py) "$crozier_bin" internal-strip "$src/$rel" > "$target" ;;
+    *)    cp "$src/$rel" "$target" ;;
   esac
 done
 

@@ -2165,13 +2165,24 @@ fn raw_docstring(
     lines.push("        Returns".to_string());
     lines.push("        -------".to_string());
     lines.push(format!("        {return_type}"));
-    // A concrete response type is followed by a blank line before the closing
-    // quotes; a `None` return closes immediately.
+    // A concrete response type is followed by the response description (indented,
+    // blank when the spec gives none) before the closing quotes; a `None` return
+    // closes immediately.
     if ep.response.is_some() {
-        lines.push(String::new());
+        push_return_doc(&mut lines, ep.response_doc.as_deref());
     }
     lines.push("        \"\"\"".to_string());
     lines.join("\n")
+}
+
+/// Push the `Returns` description under the return type: each line of the
+/// response description indented 12 spaces, or a single blank line when the spec
+/// declares no (non-empty) description — matching Fern.
+fn push_return_doc(lines: &mut Vec<String>, response_doc: Option<&str>) {
+    match response_doc {
+        Some(doc) => lines.extend(doc.split('\n').map(|line| format!("            {line}"))),
+        None => lines.push(String::new()),
+    }
 }
 
 /// The method body (indent 8): the `httpx_client.request(...)` call and the
@@ -2805,6 +2816,11 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
     lines.push("        Returns".to_string());
     lines.push("        -------".to_string());
     lines.push(format!("        {}", mp.inner));
+    // A concrete response carries its description (indented, blank when the spec
+    // gives none) under the return type.
+    if ep.response.is_some() {
+        push_return_doc(&mut lines, ep.response_doc.as_deref());
+    }
 
     let mut ctx = ExampleCtx {
         types: cx.types,
@@ -2816,29 +2832,18 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
         has_environment: cx.has_environment,
         global_headers: cx.global_headers,
     };
-    match build_example(ep, is_async, cx.module, cx.pkg, cx.client_name, &mut ctx) {
-        Some(ex_lines) => {
-            // A concrete response leaves two blank lines before `Examples`; a
-            // `None` return leaves one.
-            lines.push(String::new());
-            if ep.response.is_some() {
+    // With an example, one blank line separates the `Returns` block from
+    // `Examples`; without one, close straight after (like the raw docstring).
+    if let Some(ex_lines) = build_example(ep, is_async, cx.module, cx.pkg, cx.client_name, &mut ctx)
+    {
+        lines.push(String::new());
+        lines.push("        Examples".to_string());
+        lines.push("        --------".to_string());
+        for l in ex_lines {
+            if l.is_empty() {
                 lines.push(String::new());
-            }
-            lines.push("        Examples".to_string());
-            lines.push("        --------".to_string());
-            for l in ex_lines {
-                if l.is_empty() {
-                    lines.push(String::new());
-                } else {
-                    lines.push(format!("        {l}"));
-                }
-            }
-        }
-        // No example (raw bytes body): close like the raw docstring — a concrete
-        // response keeps one trailing blank line.
-        None => {
-            if ep.response.is_some() {
-                lines.push(String::new());
+            } else {
+                lines.push(format!("        {l}"));
             }
         }
     }
@@ -3820,6 +3825,7 @@ mod tests {
             header_params: Vec::new(),
             request_body: None,
             response,
+            response_doc: None,
             errors: Vec::new(),
             docstring: None,
             emittable: true,

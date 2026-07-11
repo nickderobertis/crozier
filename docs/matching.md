@@ -378,34 +378,62 @@ This is exactly how the four former gap targets (`basic-auth`,
 
 ## Real-world-spec robustness (issue #40)
 
-The matched corpora are hand-authored to have clean, Fern-style operationIds and
-property names. Real vendor specs are messier, and three shapes that used to make
-crozier emit invalid Python or hard-error now generate legal output:
-
-- **Non-identifier `operationId`** (`get-all-widgets`, `verify code`). The
-  module/method/type-method names derived from an operationId are passed through
-  [`naming::sanitize_identifier`], coercing any non-`[A-Za-z0-9_]` character to `_`
-  (and prefixing a leading digit). Names that are already legal — every fixture —
-  pass through untouched, so this does not perturb the byte match. Full parity with
-  Fern's tag-based client grouping for these specs is a separate, larger step
-  (crozier derives the client module from the operationId prefix, not the `tags`).
+The other corpora are hand-authored to have clean, Fern-style `group_method`
+operationIds and property names. Real vendor specs are messier, and three shapes
+that used to make crozier emit invalid Python or hard-error now generate legal —
+and, for the shapes below, byte-matched — output. Each has its own gap-target
+corpus (`digit-leading-property`, `operation-id-non-identifier`,
+`missing-operation-id`), whose `matched` list is defined in `tests/e2e.rs`.
 
 - **Digit-leading property name** (`2fa_enabled`). [`naming::field_name`] prefixes
   `f_` when the snake-cased name would start with a digit, and the wire name is
-  preserved as a `FieldMetadata` alias — byte-for-byte Fern's `f_2fa_enabled`.
+  preserved as a `FieldMetadata` alias — byte-for-byte Fern's `f_2fa_enabled`
+  (`digit-leading-property/expected/.../types/thing.py`).
 
-- **Missing `operationId`** (optional in OpenAPI). [`openapi::synthesize_operation_id`]
-  fills one in from the first tag (or path segment) plus the HTTP verb and path
-  words, e.g. `GET /widgets` (tag `widgets`) → `widgets_getWidgets`. The generated
-  client is valid but the synthesized method name is **not** byte-identical to
-  Fern's route-derived name (Fern infers verbs like `list`); matching that is a
-  follow-up.
+- **Non-identifier `operationId`** (`get-all-widgets`, `verify code`).
+  [`naming::sanitize_identifier`] coerces any non-`[A-Za-z0-9_]` character in a
+  name derived from an operationId to `_`; legal names (every other fixture) pass
+  through untouched. The method names snake-case to `get_all_widgets`/`verify_code`
+  and the inline response hoists to `VerifyCodeResponse`, matching Fern.
+
+- **Missing `operationId`** (optional in OpenAPI). Instead of hard-erroring,
+  [`ir::endpoint_method_name`] synthesizes the method from the route:
+  [`ir::synthesized_method_name`] infers a verb from the HTTP method and whether
+  the path addresses a collection or an item (`GET /widgets` → `list_widgets`,
+  `GET /widgets/{id}` → `get_widget`), matching Fern's route-derived names.
+
+### Tag-based client grouping
+
+Closing the last two required grouping operations by **tag**, as Fern does. Fern's
+rule — reproduced in [`ir::endpoint_module`] — is: a `group_method` operationId
+names its own client from the prefix (`endpoints_container`, `inlinedrequests`) and
+the `tags` are ignored; a groupless operationId (or one with none) is grouped by
+its first tag instead (`get-all-widgets`/`verify code`/`GET /widgets` under tag
+`widgets` → the `widgets` client). The hoisted-type context comes from the
+operationId alone ([`ir::endpoint_pascal_context`]), never the tag, so a tag-grouped
+inline response stays `VerifyCodeResponse`, not `WidgetsVerifyCodeResponse`.
+
+These three specs declare **no auth**, so Fern emits a stripped-down
+`client_wrapper.py` (no bearer token, no `X-Fern-SDK-*` headers) that crozier's
+fuller default wrapper does not yet reproduce; the root client and package
+`__init__` aggregators differ for the same reason. Those files are intentionally
+left out of the `matched` lists — a pre-existing, #40-orthogonal gap in crozier's
+no-auth handling — while the tag-grouped raw clients, hoisted types, and the
+`widgets` `__init__` do match.
 
 Still open from the issue (tracked, not yet done): hoisting an inline object nested
 inside an `array.items` of a *component* schema (dropped to `typing.Any` today —
 adjacent to gap #4's request/response hoisting), Swagger 2.0 / fragment-doc
 tolerance, and the `address_line_1` → `address_line1` underscore-before-digit
 rename.
+
+> **Regenerating these golden trees under a proxied Docker environment.** Fern's
+> generator runs `npm install @fern-api/generator-cli` inside its container; where
+> outbound TLS is intercepted (agent sandboxes), the container needs host
+> networking and the proxy CA to reach the registry. Run the container with
+> `--network host` and the CA mounted (e.g. via a `docker` shim that injects
+> `--network host -v <ca>:/ca.crt -e NODE_EXTRA_CA_CERTS=/ca.crt`) before invoking
+> `scripts/generate-fern-fixture.sh`.
 
 ## Coverage note
 

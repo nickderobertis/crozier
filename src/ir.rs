@@ -342,6 +342,9 @@ pub struct Endpoint {
     /// The success response body type, or `None` when the endpoint returns no
     /// content.
     pub response: Option<TypeRef>,
+    /// The success response's description, shown in the docstring's `Returns`
+    /// section (Fern emits an indented line under the return type).
+    pub response_doc: Option<String>,
     /// Declared error (non-2xx) responses, each raising a generated exception.
     pub errors: Vec<ErrorResponse>,
     /// A short description shown as the docstring's summary line.
@@ -808,8 +811,8 @@ fn build_endpoint(
     tag_types: &mut Vec<TagTypeDecl>,
     global_headers: &std::collections::HashSet<&str>,
 ) -> Endpoint {
-    let module = endpoint_module(&op.operation_id);
-    let method = endpoint_method_name(&op.operation_id);
+    let module = endpoint_module(op, path);
+    let method = endpoint_method_name(op, http_method, path);
     // Inline (non-`$ref`) request/response objects hoist into this tag's own
     // `types/` package; the hoister accumulates them, keyed to the tag below.
     let mut hoister = InlineHoister {
@@ -889,13 +892,12 @@ fn build_endpoint(
     let errors_ok = errors.is_some();
     let errors = errors.unwrap_or_default();
     // The success response: a `$ref`/scalar/container passes straight through; an
-    // inline object body is hoisted into a `{Tag}{Method}Response` model.
-    // The hoisted-type method segment preserves the operationId's camelCase
-    // (`createBatch` → `CreateBatch`), distinct from the lowercased Python `method`.
-    let type_method = endpoint_type_method(&op.operation_id);
+    // inline object body is hoisted into a `{Ctx}Response` model, where `Ctx` is
+    // the operation's PascalCase context (from the operationId, never the tag).
+    let pascal_ctx = endpoint_pascal_context(op, http_method, path);
     let response = match success_response_schema(op) {
         Some(schema) if is_inline_struct(schema) => {
-            let name = format!("{}{}Response", naming::to_pascal_case(&module), type_method);
+            let name = format!("{pascal_ctx}Response");
             hoister.hoist_object(&name, schema);
             Some(TypeRef::Named(name))
         }
@@ -903,9 +905,8 @@ fn build_endpoint(
     };
 
     // A request body is either absent, within the subset crozier can render, or
-    // unsupported. Its inline nested objects hoist under a `{Tag}{Method}Request`
-    // context name.
-    let request_ctx = format!("{}{}Request", naming::to_pascal_case(&module), type_method);
+    // unsupported. Its inline nested objects hoist under a `{Ctx}Request` context.
+    let request_ctx = format!("{pascal_ctx}Request");
     let request_body = op
         .request_body
         .as_ref()
@@ -952,10 +953,20 @@ fn build_endpoint(
         header_params,
         request_body,
         response,
+        response_doc: success_response_doc(op),
         errors,
         docstring: clean_doc(op.description.as_deref()),
         emittable,
     }
+}
+
+/// The success (2xx) response's description, cleaned for the `Returns` docstring.
+fn success_response_doc(op: &Operation) -> Option<String> {
+    let (_, response) = op
+        .responses
+        .iter()
+        .find(|(code, _)| code.starts_with('2'))?;
+    clean_doc(response.description.as_deref())
 }
 
 /// The generated exception class name for an HTTP status code. Deliberately
@@ -1361,36 +1372,107 @@ fn response_supported(_op: &Operation) -> bool {
     true
 }
 
-/// The generated Python method name for an operation. Mirrors the module rule
-/// (see [`endpoint_module`]): when the group prefix is itself multi-segment
-/// (contains `_`), the whole operationId is snake-cased; otherwise only the
-/// suffix after the final `_` is taken and lowercased (camel humps flattened),
-/// matching Fern (`endpoints_put_add`, but `postwithnoauth`).
-fn endpoint_method_name(operation_id: &str) -> String {
-    let (group, rest) = operation_id.rsplit_once('_').unwrap_or(("", operation_id));
+/// The first non-empty, trimmed tag on an operation. Fern uses it to group an
+/// operation whose `operationId` carries no `group_` prefix into a client.
+fn first_tag(op: &Operation) -> Option<&str> {
+    op.tags.iter().map(|t| t.trim()).find(|t| !t.is_empty())
+}
+
+/// The generated Python method name for an operation.
+///
+/// Fern derives it from the `operationId` when there is one, and synthesizes it
+/// from the route otherwise:
+/// - `group_method` (grouped): the method is the suffix after the final `_`,
+///   flattened to lowercase for a single-segment group (`noAuth_postWithNoAuth`
+///   → `postwithnoauth`) or the whole id snake-cased for a multi-segment group
+///   (`endpoints_put_add`);
+/// - groupless (`get-all-widgets`, `verify code`, `getThing`): the whole id is
+///   `snake_case`d (→ `get_all_widgets`, `verify_code`, `get_thing`);
+/// - missing: [`synthesized_method_name`] infers a verb from the HTTP method and
+///   route (`GET /widgets` → `list_widgets`).
+fn endpoint_method_name(op: &Operation, http_method: &str, url: &str) -> String {
+    let id = op.operation_id.trim();
+    if id.contains('_') {
+        return method_from_grouped_id(id);
+    }
+    if !id.is_empty() {
+        return naming::sanitize_identifier(&naming::to_snake_case(id));
+    }
+    synthesized_method_name(http_method, url)
+}
+
+/// The method name for a `group_method` operationId (one that contains `_`).
+fn method_from_grouped_id(id: &str) -> String {
+    let (group, rest) = id.rsplit_once('_').unwrap_or(("", id));
     let name = if group.contains('_') {
-        naming::to_snake_case(operation_id)
+        naming::to_snake_case(id)
     } else {
         rest.to_lowercase()
     };
-    // A hyphen/space in the operationId survives the lowercase branch; coerce it
-    // to a legal identifier so the generated method name parses.
     naming::sanitize_identifier(&name)
 }
 
-/// The `PascalCase` method segment used in a hoisted inline type's name
-/// (`{Tag}{Method}Request`/`Response`). Unlike [`endpoint_method_name`] — which
-/// lowercases the segment for the Python method identifier — this preserves the
-/// operationId's camelCase word boundaries, so `items_createBatch` yields
-/// `CreateBatch` (Fern's `ItemsCreateBatchRequestItem`), not `Createbatch`.
-fn endpoint_type_method(operation_id: &str) -> String {
-    let (group, rest) = operation_id.rsplit_once('_').unwrap_or(("", operation_id));
-    let name = if group.contains('_') {
-        naming::to_pascal_case(operation_id)
+/// The `PascalCase` context that names an operation's hoisted inline
+/// request/response types (`{Ctx}Request`/`{Ctx}Response`). Fern derives it from
+/// the `operationId` alone — `inlined_search` → `InlinedSearch`, `verify code` →
+/// `VerifyCode` — never prefixing the tag, so a tag-grouped operation's hoisted
+/// type stays `VerifyCodeResponse`, not `WidgetsVerifyCodeResponse`.
+fn endpoint_pascal_context(op: &Operation, http_method: &str, url: &str) -> String {
+    let id = op.operation_id.trim();
+    if id.is_empty() {
+        naming::to_pascal_case(&synthesized_method_name(http_method, url))
     } else {
-        naming::to_pascal_case(rest)
+        naming::sanitize_identifier(&naming::to_pascal_case(id))
+    }
+}
+
+/// Fern's fallback endpoint name for an operation that declares no `operationId`:
+/// an action verb inferred from the HTTP method and whether the route addresses a
+/// collection or a single item, joined to the trailing resource. `GET /widgets` →
+/// `list_widgets`, `GET /widgets/{id}` → `get_widget`, `POST /widgets` →
+/// `create_widget`. Item routes (ending in a `{param}`) singularize the noun.
+fn synthesized_method_name(http_method: &str, url: &str) -> String {
+    let is_param = |s: &str| s.starts_with('{') && s.ends_with('}');
+    let segments: Vec<&str> = url.split('/').filter(|s| !s.is_empty()).collect();
+    let ends_with_param = segments.last().is_some_and(|s| is_param(s));
+    let verb = match http_method.to_ascii_uppercase().as_str() {
+        "GET" => {
+            if ends_with_param {
+                "get"
+            } else {
+                "list"
+            }
+        }
+        "POST" => "create",
+        "PUT" | "PATCH" => "update",
+        "DELETE" => "delete",
+        _ => "call",
     };
-    naming::sanitize_identifier(&name)
+    match segments.iter().rev().find(|s| !is_param(s)) {
+        Some(resource) => {
+            let noun = naming::to_snake_case(resource);
+            let noun = if ends_with_param {
+                singularize(&noun)
+            } else {
+                noun
+            };
+            naming::sanitize_identifier(&format!("{verb}_{noun}"))
+        }
+        None => verb.to_string(),
+    }
+}
+
+/// A naive English singularizer for the resource noun of an inferred item-route
+/// name (`users` → `user`, `entries` → `entry`). Only exercised for operations
+/// with no `operationId` on a `{param}`-terminated route.
+fn singularize(word: &str) -> String {
+    if let Some(stem) = word.strip_suffix("ies") {
+        format!("{stem}y")
+    } else if word.ends_with("ss") || !word.ends_with('s') {
+        word.to_string()
+    } else {
+        word[..word.len() - 1].to_string()
+    }
 }
 
 /// Collect the endpoint client module names, one per operation group, in the
@@ -1398,9 +1480,9 @@ fn endpoint_type_method(operation_id: &str) -> String {
 fn endpoint_modules(doc: &OpenApi) -> Vec<String> {
     let mut modules = Vec::new();
     let mut seen = std::collections::HashSet::new();
-    for item in doc.paths.values() {
+    for (url, item) in &doc.paths {
         for (_, op) in item.operations() {
-            let module = endpoint_module(&op.operation_id);
+            let module = endpoint_module(op, url);
             if seen.insert(module.clone()) {
                 modules.push(module);
             }
@@ -1409,23 +1491,48 @@ fn endpoint_modules(doc: &OpenApi) -> Vec<String> {
     modules
 }
 
-/// The client module (directory) name for an operation, derived from its
-/// operationId's group prefix (everything before the final `_`): `snake_case`d
-/// when the prefix itself contains an underscore, otherwise just lowercased.
-/// This reproduces Fern's directory names (`endpoints_content_type`,
-/// `inlinedrequests`).
-fn endpoint_module(operation_id: &str) -> String {
-    let prefix = operation_id
-        .rsplit_once('_')
-        .map_or(operation_id, |(prefix, _)| prefix);
+/// The client module (directory) name for an operation.
+///
+/// A `group_method` operationId names its own client from the prefix, and Fern
+/// ignores tags there (`endpoints_content_type`, `inlinedrequests`). A groupless
+/// operationId is grouped by the first tag instead (`get-all-widgets` under tag
+/// `widgets` → `widgets`); with neither a group nor a tag, it falls back to the
+/// whole id, then the leading path segment.
+fn endpoint_module(op: &Operation, url: &str) -> String {
+    let id = op.operation_id.trim();
+    if id.contains('_') {
+        return module_from_grouped_id(id);
+    }
+    if let Some(tag) = first_tag(op) {
+        return naming::sanitize_identifier(&naming::to_snake_case(tag));
+    }
+    if !id.is_empty() {
+        return naming::sanitize_identifier(&naming::to_snake_case(id));
+    }
+    naming::sanitize_identifier(&naming::to_snake_case(&path_group(url)))
+}
+
+/// The module name from a `group_method` operationId (one that contains `_`):
+/// the prefix, snake-cased when itself multi-segment, else lowercased.
+fn module_from_grouped_id(id: &str) -> String {
+    let prefix = id.rsplit_once('_').map_or(id, |(prefix, _)| prefix);
     let name = if prefix.contains('_') {
         naming::to_snake_case(prefix)
     } else {
         prefix.to_lowercase()
     };
-    // Coerce a hyphen/space (from an unsanitized operationId) into a legal
-    // module/directory name.
     naming::sanitize_identifier(&name)
+}
+
+/// The leading static (non-`{param}`) path segment, the last-resort client group
+/// for an operation with neither an `operationId` nor a tag; `service` if the
+/// route has no static segment.
+fn path_group(url: &str) -> String {
+    url.split('/')
+        .filter(|s| !s.is_empty())
+        .find(|s| !(s.starts_with('{') && s.ends_with('}')))
+        .unwrap_or("service")
+        .to_string()
 }
 
 /// Accumulates generated types. Some schemas produce more than one type: an
@@ -1922,7 +2029,10 @@ fn clean_doc(desc: Option<&str>) -> Option<String> {
 
 #[cfg(test)]
 mod tests {
-    use super::{endpoint_method_name, endpoint_module, scalar_body, Prim, TypeRef};
+    use super::{
+        method_from_grouped_id, module_from_grouped_id, scalar_body, singularize,
+        synthesized_method_name, Prim, TypeRef,
+    };
     use crate::openapi::{Schema, TypeField};
 
     fn scalar(ty: &str, format: Option<&str>) -> Option<(TypeRef, bool)> {
@@ -1973,15 +2083,15 @@ mod tests {
         // The group prefix (`endpoints_put`) is multi-segment, so the whole
         // operationId is snake-cased.
         assert_eq!(
-            endpoint_method_name("endpoints_put_add"),
+            method_from_grouped_id("endpoints_put_add"),
             "endpoints_put_add"
         );
         assert_eq!(
-            endpoint_method_name("endpoints_urls_withMixedCase"),
+            method_from_grouped_id("endpoints_urls_withMixedCase"),
             "endpoints_urls_with_mixed_case"
         );
         assert_eq!(
-            endpoint_method_name("endpoints_httpMethods_testGet"),
+            method_from_grouped_id("endpoints_httpMethods_testGet"),
             "endpoints_http_methods_test_get"
         );
     }
@@ -1991,25 +2101,56 @@ mod tests {
         // A single-segment group (`noReqBody`) contributes nothing to the method
         // name; only the suffix survives, flattened to lowercase.
         assert_eq!(
-            endpoint_method_name("noReqBody_getWithNoRequestBody"),
+            method_from_grouped_id("noReqBody_getWithNoRequestBody"),
             "getwithnorequestbody"
         );
         assert_eq!(
-            endpoint_method_name("inlinedRequests_postWithObjectBodyandResponse"),
+            method_from_grouped_id("inlinedRequests_postWithObjectBodyandResponse"),
             "postwithobjectbodyandresponse"
         );
     }
 
     #[test]
     fn module_mirrors_the_group_naming() {
-        assert_eq!(endpoint_module("endpoints_put_add"), "endpoints_put");
+        assert_eq!(module_from_grouped_id("endpoints_put_add"), "endpoints_put");
         assert_eq!(
-            endpoint_module("endpoints_httpMethods_testGet"),
+            module_from_grouped_id("endpoints_httpMethods_testGet"),
             "endpoints_http_methods"
         );
         assert_eq!(
-            endpoint_module("noReqBody_getWithNoRequestBody"),
+            module_from_grouped_id("noReqBody_getWithNoRequestBody"),
             "noreqbody"
         );
+    }
+
+    #[test]
+    fn synthesized_names_infer_verbs_from_method_and_route() {
+        // Fern's fallback naming for an operation with no operationId.
+        assert_eq!(synthesized_method_name("GET", "/widgets"), "list_widgets");
+        assert_eq!(
+            synthesized_method_name("GET", "/widgets/{id}"),
+            "get_widget"
+        );
+        assert_eq!(
+            synthesized_method_name("POST", "/widgets"),
+            "create_widgets"
+        );
+        assert_eq!(
+            synthesized_method_name("DELETE", "/widgets/{id}"),
+            "delete_widget"
+        );
+        assert_eq!(
+            synthesized_method_name("PUT", "/widgets/{id}"),
+            "update_widget"
+        );
+    }
+
+    #[test]
+    fn singularize_handles_common_plurals() {
+        assert_eq!(singularize("widgets"), "widget");
+        assert_eq!(singularize("entries"), "entry");
+        // Words ending in `ss` and already-singular nouns pass through.
+        assert_eq!(singularize("address"), "address");
+        assert_eq!(singularize("widget"), "widget");
     }
 }

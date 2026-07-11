@@ -743,6 +743,107 @@ const FEATURE_TARGETS: &[Corpus] = &[
             "src/fern/version.py",
         ],
     },
+    // Real-world-spec robustness targets (issue #40). These minimal specs used to
+    // make crozier emit invalid Python or hard-error; each now matches Fern for the
+    // shape it pins. The `matched` lists deliberately exclude the client-wrapper,
+    // root client, and package `__init__` aggregators: these specs declare no auth,
+    // so Fern emits a stripped-down wrapper (no bearer token, no `X-Fern-SDK-*`
+    // headers) that crozier's fuller default wrapper does not reproduce — a
+    // pre-existing, #40-orthogonal gap in crozier's no-auth handling.
+    //
+    // digit-leading-property: a property name starting with a digit (`2fa_enabled`)
+    // is renamed `f_2fa_enabled` with a `FieldMetadata` alias, matching Fern's
+    // `types/thing.py` byte-for-byte.
+    Corpus {
+        api: "digit-leading-property",
+        package_name: "fern",
+        project_name: "default_package_name",
+        matched: &[
+            "src/fern/core/__init__.py",
+            "src/fern/core/api_error.py",
+            "src/fern/core/datetime_utils.py",
+            "src/fern/core/file.py",
+            "src/fern/core/force_multipart.py",
+            "src/fern/core/http_client.py",
+            "src/fern/core/http_response.py",
+            "src/fern/core/http_sse/__init__.py",
+            "src/fern/core/http_sse/_api.py",
+            "src/fern/core/http_sse/_decoders.py",
+            "src/fern/core/http_sse/_exceptions.py",
+            "src/fern/core/http_sse/_models.py",
+            "src/fern/core/jsonable_encoder.py",
+            "src/fern/core/pydantic_utilities.py",
+            "src/fern/core/query_encoder.py",
+            "src/fern/core/remove_none_from_dict.py",
+            "src/fern/core/request_options.py",
+            "src/fern/core/serialization.py",
+            "src/fern/types/thing.py",
+        ],
+    },
+    // operation-id-non-identifier: a hyphen/space in the `operationId`
+    // (`get-all-widgets`, `verify code`) once produced unparseable Python. Both
+    // operations are groupless, so Fern groups them by their `widgets` tag and
+    // snake-cases the method names (`get_all_widgets`, `verify_code`); the inline
+    // response hoists to `VerifyCodeResponse`. The tag-grouped raw client and the
+    // hoisted type match Fern.
+    Corpus {
+        api: "operation-id-non-identifier",
+        package_name: "fern",
+        project_name: "default_package_name",
+        matched: &[
+            "src/fern/core/__init__.py",
+            "src/fern/core/api_error.py",
+            "src/fern/core/datetime_utils.py",
+            "src/fern/core/file.py",
+            "src/fern/core/force_multipart.py",
+            "src/fern/core/http_client.py",
+            "src/fern/core/http_response.py",
+            "src/fern/core/http_sse/__init__.py",
+            "src/fern/core/http_sse/_api.py",
+            "src/fern/core/http_sse/_decoders.py",
+            "src/fern/core/http_sse/_exceptions.py",
+            "src/fern/core/http_sse/_models.py",
+            "src/fern/core/jsonable_encoder.py",
+            "src/fern/core/pydantic_utilities.py",
+            "src/fern/core/query_encoder.py",
+            "src/fern/core/remove_none_from_dict.py",
+            "src/fern/core/request_options.py",
+            "src/fern/core/serialization.py",
+            "src/fern/widgets/raw_client.py",
+            "src/fern/widgets/types/verify_code_response.py",
+        ],
+    },
+    // missing-operation-id: an operation with no `operationId` (valid OpenAPI) once
+    // hard-errored. crozier groups it by its `widgets` tag and synthesizes the
+    // method name from the route (`GET /widgets` → `list_widgets`), matching Fern's
+    // tag client and its `__init__`.
+    Corpus {
+        api: "missing-operation-id",
+        package_name: "fern",
+        project_name: "default_package_name",
+        matched: &[
+            "src/fern/core/__init__.py",
+            "src/fern/core/api_error.py",
+            "src/fern/core/datetime_utils.py",
+            "src/fern/core/file.py",
+            "src/fern/core/force_multipart.py",
+            "src/fern/core/http_client.py",
+            "src/fern/core/http_response.py",
+            "src/fern/core/http_sse/__init__.py",
+            "src/fern/core/http_sse/_api.py",
+            "src/fern/core/http_sse/_decoders.py",
+            "src/fern/core/http_sse/_exceptions.py",
+            "src/fern/core/http_sse/_models.py",
+            "src/fern/core/jsonable_encoder.py",
+            "src/fern/core/pydantic_utilities.py",
+            "src/fern/core/query_encoder.py",
+            "src/fern/core/remove_none_from_dict.py",
+            "src/fern/core/request_options.py",
+            "src/fern/core/serialization.py",
+            "src/fern/widgets/__init__.py",
+            "src/fern/widgets/raw_client.py",
+        ],
+    },
 ];
 
 /// Path to a fixture directory under `tests/fixtures/`.
@@ -1210,8 +1311,8 @@ fn hyphenated_operation_id_generates_valid_python() {
          { type: string } } } } }\n",
     );
     assert!(
-        out.join("src/acme/get_all_widgets").is_dir(),
-        "hyphenated operationId should sanitize to a legal module directory"
+        out.join("src/acme/widgets").is_dir(),
+        "a groupless operationId is grouped by its tag into a legal module directory"
     );
 }
 
@@ -1225,8 +1326,15 @@ fn spaced_operation_id_generates_valid_python() {
          properties: { ok: { type: boolean } } } } } }\n",
     );
     assert!(
-        out.join("src/acme/verify_code").is_dir(),
-        "spaced operationId should sanitize to a legal module directory"
+        out.join("src/acme/widgets").is_dir(),
+        "a spaced operationId is grouped by its tag into a legal module directory"
+    );
+    // The method identifier itself is sanitized to snake_case.
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
+    assert!(
+        raw.contains("def verify_code("),
+        "spaced id → verify_code method: {raw}"
     );
 }
 
