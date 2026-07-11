@@ -389,6 +389,12 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     // Project-root scaffolding (pyproject.toml, requirements.txt, metadata).
     files.extend(scaffolding_files(pkg, &ir.project_name));
 
+    // Final wrapping is delegated to `ruff format` (the tool Fern runs), so the
+    // emitters above produce content-correct Python without reproducing ruff's
+    // line layout. `.py` files are formatted in place; non-Python outputs
+    // (Markdown, TOML, JSON, the `py.typed` marker) are left untouched.
+    format_python_files(pkg, &mut files)?;
+
     Ok(files)
 }
 
@@ -1208,11 +1214,12 @@ fn object_body(class_docstring: Option<&str>, fields: &[RenderedField]) -> Strin
         body.push_str("\n\n");
     }
     for (i, field) in fields.iter().enumerate() {
-        let line = wrap::layout(
-            &format!("    {}: ", field.py_name),
-            &field.annotation,
-            &field.default,
-            4,
+        // Emit the field flat; `ruff format` wraps it if it overflows.
+        let line = format!(
+            "    {}: {}{}",
+            field.py_name,
+            field.annotation.flat(),
+            field.default
         );
         body.push_str(&line);
         body.push('\n');
@@ -1272,7 +1279,7 @@ fn render_type_decl(env: &Environment<'static>, decl: &TypeDecl) -> Result<Strin
         TypeDecl::Alias(alias) => {
             let mut imports = Imports::default();
             let target = render_type(&alias.target, &mut imports);
-            let assignment = wrap::layout(&format!("{} = ", alias.name), &target, "", 0);
+            let assignment = format!("{} = {}", alias.name, target.flat());
             render(
                 env,
                 "alias.py",
@@ -1326,11 +1333,10 @@ fn render_discriminated_union(union: &crate::ir::DiscriminatedUnion) -> String {
         .iter()
         .map(|m| Doc::atom(m.class_name.clone()))
         .collect();
-    let alias = wrap::layout(
-        &format!("{} = ", union.name),
-        &Doc::group("typing.Union[", variants, "]"),
-        "",
-        0,
+    let alias = format!(
+        "{} = {}",
+        union.name,
+        Doc::group("typing.Union[", variants, "]").flat()
     );
 
     format!(
@@ -1636,11 +1642,11 @@ fn signature(ep: &Endpoint, mp: &MethodParams, return_type: &str, is_async: bool
         if is_async { "async " } else { "" },
         ep.method_name
     );
-    wrap::layout(
-        "",
-        &Doc::group(sig_open, args, ")"),
-        &format!(" -> {return_type}:"),
-        4,
+    // Emit the signature flat; `ruff format` splits it across lines if it
+    // overflows (its right-hand-split matches Fern's output).
+    format!(
+        "{} -> {return_type}:",
+        Doc::group(sig_open, args, ")").flat()
     )
 }
 
@@ -1778,11 +1784,7 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
                 ],
                 ")",
             );
-            lines.extend(
-                wrap::layout("", &call, ",", 12)
-                    .split('\n')
-                    .map(String::from),
-            );
+            lines.push(format!("{},", call.flat()));
         }
         Some(RequestBody::Single(_)) => lines.push("            json=request,".to_string()),
         Some(RequestBody::Inline(fields)) => {
@@ -1806,11 +1808,7 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
                         ],
                         ")",
                     );
-                    lines.extend(
-                        wrap::layout("", &call, ",", 16)
-                            .split('\n')
-                            .map(String::from),
-                    );
+                    lines.push(format!("{},", call.flat()));
                 } else {
                     lines.push(format!(
                         "                \"{}\": {},",
@@ -2239,11 +2237,9 @@ fn client_method(cx: &ClientCtx, ep: &Endpoint, is_async: bool, imports: &mut Im
     }
     call_args.push(Doc::atom("request_options=request_options"));
     let open = format!("{await_}self._raw_client.{}(", ep.method_name);
-    let call = wrap::layout(
-        "        _response = ",
-        &Doc::group(open, call_args, ")"),
-        "",
-        8,
+    let call = format!(
+        "        _response = {}",
+        Doc::group(open, call_args, ")").flat()
     );
     format!("{sig}\n{docstring}\n{call}\n        return _response.data")
 }
@@ -2853,6 +2849,39 @@ pub fn clean_package_tree(root: &std::path::Path, package: &str) -> Result<()> {
         Err(source) if source.kind() == std::io::ErrorKind::NotFound => Ok(()),
         Err(source) => Err(Error::WriteOutput { path: tree, source }),
     }
+}
+
+/// Format every crozier-*generated* `.py` file in place with `ruff format`,
+/// delegating line-wrapping to the tool Fern uses. Two classes of file are left
+/// untouched:
+///
+/// - **Vendored `core/` runtime** — emitted verbatim from `assets/core/` (Fern's
+///   own already-`ruff`-formatted source). Re-formatting would change it: since
+///   these carry comments, `ruff format` then comment-strip does not commute with
+///   Fern's strip-only fixture, so formatting them breaks the byte match.
+/// - **Whitespace-only files** — the empty `py.typed` marker and the comment-only
+///   endpoint `__init__.py` (emitted in its four-blank-line stripped form): there
+///   is nothing to wrap and `ruff` would collapse them.
+/// - **`__init__.py` aggregators** — the lazy-loader packages (`types/`, `errors/`,
+///   the package root) are hand-built to Fern's exact layout. Their leading blank
+///   lines are a comment-stripping artifact of Fern's multi-line header that a
+///   one-line header plus `ruff` (which caps module-top blanks at two) cannot
+///   reproduce; and they carry no wrappable code, only import boilerplate crozier
+///   already lays out. Formatting them would break the byte match for no benefit.
+fn format_python_files(pkg: &str, files: &mut [GeneratedFile]) -> Result<()> {
+    let core_root = PathBuf::from(format!("src/{pkg}/core"));
+    for file in files.iter_mut() {
+        let is_py = file.path.extension().and_then(|e| e.to_str()) == Some("py");
+        let is_vendored = file.path.starts_with(&core_root);
+        let is_init = file.path.file_name().and_then(|n| n.to_str()) == Some("__init__.py");
+        let has_code = file.contents.chars().any(|c| !c.is_whitespace());
+        if is_py && !is_vendored && !is_init && has_code {
+            let name = file.path.to_string_lossy();
+            file.contents =
+                crate::pyfmt::format_source(&name, &file.contents, crate::pyfmt::LINE_LENGTH)?;
+        }
+    }
+    Ok(())
 }
 
 /// Write each generated file under `root`, creating parent directories as needed.

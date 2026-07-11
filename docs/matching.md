@@ -148,12 +148,20 @@ ships identical `core/` files into every SDK. crozier vendors them under
 `assets/core/` (Apache-2.0; see `NOTICE`) and emits them verbatim, substituting
 only the SDK name/version in `client_wrapper.py`.
 
-**Line wrapping.** Fern runs `ruff format` (line length 120) over its output.
-crozier reproduces it without a runtime Python dependency: the emitter builds a
-[`Doc`](../src/wrap.rs) tree per type expression and `wrap::layout` renders it
-with ruff's recursive right-hand-split — keep a statement on one line if it fits,
-else explode the outermost bracket, and if the contents still overflow, one
-element per line with a trailing comma.
+**Line wrapping.** Fern runs `ruff format` (line length 120) over its output, so
+crozier delegates the wrapping to the same tool. The emitters build each
+statement on one line (a small [`Doc`](../src/wrap.rs) expression rendered flat),
+and a post-pass ([`pyfmt`](../src/pyfmt.rs)) runs `ruff format` over the generated
+`.py` files. `ruff` is therefore a **generation-time dependency**, invoked over
+the CLI (not the unstable `ruff_python_formatter` library crates) and pinned to
+`0.11.5` in CI to match Fern's fixtures; its formatter output is byte-identical,
+on the shapes crozier emits, across `0.11`–`0.15`. Two classes of file are left
+unformatted: the vendored `core/` runtime (already Fern's own `ruff`-formatted
+source — reformatting it does not commute with the comment-strip comparison), and
+the hand-laid-out `__init__.py` aggregators (whose leading blank lines are a
+comment-strip artifact of Fern's multi-line header that a one-line header plus
+`ruff`, which caps module-top blanks at two, cannot reproduce). Both are built to
+Fern's exact bytes directly.
 
 ## Known gaps (roadmap)
 

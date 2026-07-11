@@ -33,10 +33,14 @@ jobs:
       # use, so the pinned toolchain is the single source of truth. Pre-install
       # the dev cargo subcommands as fast prebuilt binaries so `just bootstrap`
       # finds them and skips building from source.
-      - name: Install cargo tools
+      # `ruff` is a generation-time dependency: crozier defers Python line
+      # wrapping to `ruff format`, so the e2e (and every `crozier generate`)
+      # needs it on PATH. Pinned to the version Fern's fixtures were produced
+      # with, so the gate is deterministic across the OS matrix.
+      - name: Install cargo tools and ruff
         uses: taiki-e/install-action@v2
         with:
-          tool: cargo-nextest,cargo-llvm-cov,cargo-deny,cargo-machete
+          tool: cargo-nextest,cargo-llvm-cov,cargo-deny,cargo-machete,ruff@0.11.5
 
       - name: Bootstrap
         run: just bootstrap

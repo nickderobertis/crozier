@@ -67,6 +67,17 @@ pub enum Error {
         /// The template engine's message.
         message: String,
     },
+
+    /// The `ruff` formatter could not be run, or rejected the generated source.
+    /// crozier defers Python line-wrapping to `ruff format`, so a missing or
+    /// failing `ruff` is a hard error with an actionable message.
+    #[error("formatting {file} with ruff failed: {message}")]
+    Format {
+        /// The logical output file being formatted.
+        file: String,
+        /// What went wrong and how to fix it (e.g. install `ruff`).
+        message: String,
+    },
 }
 
 /// Convenience alias for crozier results.
