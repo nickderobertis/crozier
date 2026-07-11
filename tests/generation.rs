@@ -1016,6 +1016,22 @@ fn integer_enum_alias_and_ref_body_are_emittable() {
     assert!(raw.contains("\"content-type\": \"application/json\""));
 }
 
+/// A schema used only as an inlined (`$ref`-object) request body is not emitted as
+/// a standalone type; one also used elsewhere (a response) is kept.
+#[test]
+fn request_body_only_type_is_dropped_but_reused_type_is_kept() {
+    let files = render(
+        "openapi: 3.0.1\ninfo:\n  title: B\npaths:\n  /a:\n    post:\n      operationId: things_make\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema:\n                $ref: \"#/components/schemas/Thing\"\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n              $ref: \"#/components/schemas/MakeRequest\"\ncomponents:\n  schemas:\n    Thing:\n      type: object\n      properties:\n        id:\n          type: string\n    MakeRequest:\n      type: object\n      properties:\n        name:\n          type: string\n",
+    );
+    // `Thing` is a response type — kept; `MakeRequest` is only an inlined body — dropped.
+    assert!(files.contains_key("src/acme/types/thing.py"));
+    assert!(!files.contains_key("src/acme/types/make_request.py"));
+    // Its fields were still hoisted onto the request method.
+    assert!(files["src/acme/things/raw_client.py"].contains("name:"));
+    // The aggregator omits the dropped type.
+    assert!(!files["src/acme/types/__init__.py"].contains("MakeRequest"));
+}
+
 /// An `apiKey` scheme without its required `name` is rejected at the boundary
 /// (rather than emitting a client with an empty header name).
 #[test]

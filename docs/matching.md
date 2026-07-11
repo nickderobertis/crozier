@@ -199,10 +199,14 @@ target/release/crozier generate \
    empirically (the `Types*` types in reverse declaration order, then the rest
    alphabetically). It matches the corpus byte-for-byte; a spec with a different
    type-namespace layout may need the true endpoint-traversal derivation.
-4. **Request/response inline-schema hoisting** (`inline-request-response`).
-   Component-schema hoisting is done; Fern also hoists inline request/response
-   bodies (e.g. `SearchResponse`, `SearchRequestNeighbor`) into named models, which
-   arrive with the endpoint layer.
+4. **Request/response inline-schema hoisting** (`inline-request-response`, partial).
+   A component schema used *only* as an inlined (plain-object `$ref`) request body
+   is no longer emitted as a standalone type — Fern inlines its fields onto the
+   request method and drops the type (verified in `auth-schemes`' `TokenRequest`,
+   `schema-constraints`' `CreateAccountRequest`, `servers-webhooks`'
+   `CreateSubscriptionRequest`). Still to do: hoisting *inline* (non-`$ref`)
+   request/response bodies into new named models (`SearchResponse`,
+   `SearchRequestNeighbor`).
 5. **Cookie parameters** (`cookie-parameters`). Path, query, and header params are
    emittable; a `cookie` param (`ParameterLocation::Cookie`) puts an operation
    outside today's subset.

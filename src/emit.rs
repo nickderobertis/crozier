@@ -2416,10 +2416,9 @@ impl<'a> ExampleCtx<'a> {
             Some(TypeDecl::DiscriminatedUnion(u)) => match u.members.first() {
                 Some(m) => {
                     self.referenced.insert(m.class_name.clone());
-                    let mut args = vec![(
-                        Some(u.discriminant_property.clone()),
-                        Example::Atom(format!("\"{}\"", m.discriminant)),
-                    )];
+                    // The discriminant field carries a default (`= "circle"`), so
+                    // Fern's example omits it and sets only the required fields.
+                    let mut args = Vec::new();
                     for f in m.fields.iter().filter(|f| f.spec_required) {
                         let ty = f.type_ref.clone();
                         args.push((

@@ -79,6 +79,113 @@ fn auth_model(doc: &OpenApi) -> Auth {
     }
 }
 
+/// Collect every generated-type name a [`TypeRef`] references, descending through
+/// optionals, collections, and unions.
+fn collect_named(t: &TypeRef, set: &mut std::collections::HashSet<String>) {
+    match t {
+        TypeRef::Named(n) => {
+            set.insert(n.clone());
+        }
+        TypeRef::Optional(i) | TypeRef::List(i) | TypeRef::Set(i) => collect_named(i, set),
+        TypeRef::Dict(k, v) => {
+            collect_named(k, set);
+            collect_named(v, set);
+        }
+        TypeRef::Union(vs) => vs.iter().for_each(|v| collect_named(v, set)),
+        TypeRef::Primitive(_) | TypeRef::Literal(_) => {}
+    }
+}
+
+/// Class names referenced by anything other than an inlined request body: type
+/// fields/bases/alias targets/union members, and endpoint responses, parameters,
+/// error bodies, single (non-inlined) bodies, and inlined-body field types.
+fn referenced_type_names(
+    types: &[TypeDecl],
+    endpoints: &[Endpoint],
+) -> std::collections::HashSet<String> {
+    let mut set = std::collections::HashSet::new();
+    for decl in types {
+        match decl {
+            TypeDecl::Object(o) => {
+                o.bases.iter().for_each(|b| {
+                    set.insert(b.clone());
+                });
+                o.fields
+                    .iter()
+                    .for_each(|f| collect_named(&f.type_ref, &mut set));
+            }
+            TypeDecl::Alias(a) => collect_named(&a.target, &mut set),
+            TypeDecl::DiscriminatedUnion(u) => u
+                .members
+                .iter()
+                .flat_map(|m| &m.fields)
+                .for_each(|f| collect_named(&f.type_ref, &mut set)),
+        }
+    }
+    for ep in endpoints {
+        if let Some(r) = &ep.response {
+            collect_named(r, &mut set);
+        }
+        ep.path_params
+            .iter()
+            .for_each(|p| collect_named(&p.type_ref, &mut set));
+        ep.query_params
+            .iter()
+            .for_each(|p| collect_named(&p.type_ref, &mut set));
+        ep.header_params
+            .iter()
+            .for_each(|p| collect_named(&p.type_ref, &mut set));
+        ep.errors
+            .iter()
+            .for_each(|e| collect_named(&e.body_type, &mut set));
+        match &ep.request_body {
+            Some(RequestBody::Single(s)) => collect_named(&s.type_ref, &mut set),
+            Some(RequestBody::Inline(fields)) => {
+                fields
+                    .iter()
+                    .for_each(|f| collect_named(&f.type_ref, &mut set));
+            }
+            Some(RequestBody::Bytes) | None => {}
+        }
+    }
+    set
+}
+
+/// Class names of schemas used as an inlined (plain-object `$ref`) request body —
+/// the candidates Fern omits from the type layer. Mirrors the `$ref`-object branch
+/// of [`resolve_request_body`].
+fn inline_body_source_names(doc: &OpenApi) -> std::collections::HashSet<String> {
+    let mut set = std::collections::HashSet::new();
+    for item in doc.paths.values() {
+        for (_, op) in item.operations() {
+            let Some(rb) = &op.request_body else { continue };
+            let Some(schema) = rb
+                .content
+                .get("application/json")
+                .and_then(|mt| mt.schema.as_ref())
+            else {
+                continue;
+            };
+            let Some(reference) = &schema.reference else {
+                continue;
+            };
+            let Some(target) = resolve_ref(doc, reference) else {
+                continue;
+            };
+            let is_enum = string_enum_values(target).is_some() || is_int_enum(target);
+            let is_union = target.one_of.is_some() || target.any_of.is_some();
+            if !is_enum
+                && !is_union
+                && !is_map(target)
+                && (!target.properties.is_empty() || target.all_of.is_some())
+            {
+                set.insert(ref_to_class(reference));
+            }
+        }
+    }
+    set
+}
+
 /// Whether every operation carries a non-empty security requirement (its own, or
 /// the document default). An SDK with any unauthenticated operation makes the
 /// credential optional. Returns `false` for a spec with no operations.
@@ -460,6 +567,17 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
     // wrapper, so it runs after the type layer is built.
     let endpoints = endpoints(doc, &builder.types);
     let errors = error_classes(&endpoints);
+
+    // Fern does not emit a standalone type for a schema used *only* as an inlined
+    // (plain-object `$ref`) request body — its fields live on the request method
+    // instead. Drop such a type unless it is referenced elsewhere (a response, a
+    // field, a parameter, a non-inlined body, ...).
+    let referenced = referenced_type_names(&builder.types, &endpoints);
+    let inline_sources = inline_body_source_names(doc);
+    builder
+        .types
+        .retain(|d| !inline_sources.contains(d.name()) || referenced.contains(d.name()));
+
     Ir {
         package_name: config.package_name.as_str().to_string(),
         project_name: config.project_name.clone(),
