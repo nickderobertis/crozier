@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.8](https://github.com/nickderobertis/crozier/compare/v0.0.7...v0.0.8) - 2026-07-11
+
+### Other
+
+- delegate formatting to ruff and move presentational rendering to templates ([#33](https://github.com/nickderobertis/crozier/pull/33))
+
 ## [0.0.7](https://github.com/nickderobertis/crozier/compare/v0.0.6...v0.0.7) - 2026-07-11
 
 ### Added
