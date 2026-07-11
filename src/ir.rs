@@ -237,6 +237,8 @@ fn referenced_type_names(
                     .for_each(|f| collect_named(&f.type_ref, &mut set));
             }
             TypeDecl::Alias(a) => collect_named(&a.target, &mut set),
+            // An enum references no other generated types (its members are strings).
+            TypeDecl::Enum(_) => {}
             TypeDecl::DiscriminatedUnion(u) => u
                 .members
                 .iter()
@@ -544,9 +546,11 @@ pub struct TagTypeDecl {
 pub enum TypeDecl {
     /// A pydantic model.
     Object(ObjectType),
-    /// A type alias (`Name = <expr>`), e.g. a union, an extensible enum, or a
-    /// scalar alias.
+    /// A type alias (`Name = <expr>`), e.g. a union, a scalar alias, or an
+    /// integer enum (`Name = int`).
     Alias(AliasType),
+    /// A string enum rendered as a real `enum.Enum` class.
+    Enum(EnumType),
     /// A discriminated union: a set of per-variant wrapper models plus a
     /// `Name = typing.Union[..]` alias, all in one module (Fern's `Shape_Circle`
     /// / `Shape_Square` pattern).
@@ -561,6 +565,7 @@ impl TypeDecl {
         match self {
             TypeDecl::Object(o) => &o.name,
             TypeDecl::Alias(a) => &a.name,
+            TypeDecl::Enum(e) => &e.name,
             TypeDecl::DiscriminatedUnion(d) => &d.name,
         }
     }
@@ -571,6 +576,7 @@ impl TypeDecl {
         match self {
             TypeDecl::Object(o) => &o.module,
             TypeDecl::Alias(a) => &a.module,
+            TypeDecl::Enum(e) => &e.module,
             TypeDecl::DiscriminatedUnion(d) => &d.module,
         }
     }
@@ -671,6 +677,55 @@ pub struct AliasType {
     pub target: TypeRef,
     /// Optional docstring.
     pub docstring: Option<String>,
+}
+
+/// A named string enum rendered as a real `enum.Enum` class (Fern's
+/// `enum_type: python_enums` mode, which crozier targets — see docs/matching.md).
+/// Each member's Python name is the SCREAMING_SNAKE form of its wire value and its
+/// `visit` callback parameter the snake_case form; the wire value is preserved.
+#[derive(Debug)]
+pub struct EnumType {
+    /// Enum class name.
+    pub name: String,
+    /// Module (file stem).
+    pub module: String,
+    /// The members, in declaration order.
+    pub members: Vec<EnumMember>,
+    /// Optional docstring.
+    pub docstring: Option<String>,
+}
+
+/// One member of an [`EnumType`].
+#[derive(Debug)]
+pub struct EnumMember {
+    /// The Python member identifier (`SCREAMING_SNAKE` of the value).
+    pub name: String,
+    /// The wire value (the enum's string).
+    pub value: String,
+    /// The `visit` callback parameter name (`snake_case` of the value).
+    pub visit_param: String,
+}
+
+/// Build an [`EnumType`] from a schema's string-enum values, deriving each
+/// member's Python name and `visit` parameter from its wire value.
+fn build_enum(name: &str, values: Vec<String>, docstring: Option<String>) -> EnumType {
+    let members = values
+        .into_iter()
+        .map(|value| {
+            let snake = naming::to_snake_case(&value);
+            EnumMember {
+                name: snake.to_ascii_uppercase(),
+                visit_param: snake,
+                value,
+            }
+        })
+        .collect();
+    EnumType {
+        name: name.to_string(),
+        module: naming::module_name(name),
+        members,
+        docstring,
+    }
 }
 
 /// A resolved type reference.
@@ -834,6 +889,12 @@ fn build_endpoint(
         root_types: types,
         out: Vec::new(),
     };
+    // The operation's PascalCase context (from the operationId, never the tag) —
+    // hoisted request/response types derive from it. `{ctx}Request` scopes the
+    // types Fern synthesizes for the request: nested inline bodies and, below,
+    // inline enums on request parameters.
+    let pascal_ctx = endpoint_pascal_context(op, http_method, path);
+    let request_ctx = format!("{pascal_ctx}Request");
     let mut path_params: Vec<PathParam> = op
         .parameters
         .iter()
@@ -855,10 +916,15 @@ fn build_endpoint(
         .map(|p| QueryParam {
             wire_name: p.name.clone(),
             py_name: naming::field_name(&p.name),
+            // An inline string enum hoists to a named `{ctx}Request{Prop}` alias
+            // in the tag's `types/` package (Fern's `ListWidgetsRequestLevel`);
+            // a `$ref`/scalar passes through `base_type_ref`.
             type_ref: p
                 .schema
                 .as_ref()
-                .map_or(TypeRef::Primitive(Prim::Any), base_type_ref),
+                .map_or(TypeRef::Primitive(Prim::Any), |s| {
+                    hoister.hoist_param_enum(&request_ctx, &p.name, s)
+                }),
             required: p.required == Some(true),
             docstring: clean_doc(p.description.as_deref()),
         })
@@ -906,8 +972,7 @@ fn build_endpoint(
     let errors = resolve_errors(op);
     // The success response: a `$ref`/scalar/container passes straight through; an
     // inline object body is hoisted into a `{Ctx}Response` model, where `Ctx` is
-    // the operation's PascalCase context (from the operationId, never the tag).
-    let pascal_ctx = endpoint_pascal_context(op, http_method, path);
+    // the operation's PascalCase context (computed above, from the operationId).
     let response = match success_response_schema(op) {
         Some(schema) if is_inline_struct(schema) => {
             let name = format!("{pascal_ctx}Response");
@@ -918,8 +983,7 @@ fn build_endpoint(
     };
 
     // A request body is either absent, within the subset crozier can render, or
-    // unsupported. Its inline nested objects hoist under a `{Ctx}Request` context.
-    let request_ctx = format!("{pascal_ctx}Request");
+    // unsupported. Its inline nested objects hoist under the `{Ctx}Request` context.
     let request_body = op
         .request_body
         .as_ref()
@@ -1307,6 +1371,26 @@ impl InlineHoister<'_> {
         base_type_ref(prop_schema)
     }
 
+    /// Hoist an inline string enum on a request parameter's schema into a named
+    /// extensible-enum alias `{request_ctx}{Prop}` in the tag's `types/` package,
+    /// matching Fern (a `level` query param on `listWidgets` →
+    /// `ListWidgetsRequestLevel`). A `$ref` or non-enum schema passes through
+    /// [`base_type_ref`] unchanged.
+    fn hoist_param_enum(&mut self, request_ctx: &str, param: &str, schema: &Schema) -> TypeRef {
+        if schema.reference.is_none() {
+            if let Some(values) = string_enum_values(schema) {
+                let name = format!("{request_ctx}{}", naming::class_name(param));
+                self.out.push(TypeDecl::Enum(build_enum(
+                    &name,
+                    values,
+                    clean_doc(schema.description.as_deref()),
+                )));
+                return TypeRef::Named(name);
+            }
+        }
+        base_type_ref(schema)
+    }
+
     /// Whether a type serializes through the convert wrapper — true when it
     /// references a generated object/union, whether a package-root type or one of
     /// the inline types just hoisted.
@@ -1386,6 +1470,8 @@ fn type_needs_convert(t: &TypeRef, types: &[TypeDecl]) -> bool {
             TypeDecl::Alias(a) => a.name == *name && matches!(a.target, TypeRef::Union(_)),
             // A discriminated union's wrapper models carry field aliases too.
             TypeDecl::DiscriminatedUnion(u) => u.name == *name,
+            // An enum is a plain `str` value — no field aliases to respect.
+            TypeDecl::Enum(_) => false,
         }),
         TypeRef::Optional(inner) | TypeRef::List(inner) | TypeRef::Set(inner) => {
             type_needs_convert(inner, types)
@@ -1736,6 +1822,14 @@ impl Builder<'_> {
             return;
         }
 
+        // A `type: string` enum becomes a real `enum.Enum` class (integer enums
+        // stay `Name = int` — see [`base_type_ref`] — and fall through to the alias).
+        if let Some(values) = string_enum_values(schema) {
+            self.types
+                .push(TypeDecl::Enum(build_enum(name, values, docstring)));
+            return;
+        }
+
         // Object with properties, an `allOf`, or an explicit `type: object`.
         if !schema.properties.is_empty() || schema.all_of.is_some() || is_object_type(schema) {
             self.add_object(name, module, schema, docstring);
@@ -1854,19 +1948,16 @@ impl Builder<'_> {
     }
 
     /// The type of a property, hoisting an inline string enum to a named
-    /// extensible-enum type `{Owner}{Prop}` (as Fern does for `typesAnimal`).
+    /// `enum.Enum` class `{Owner}{Prop}` (as Fern does for `typesAnimal`).
     fn field_type_ref(&mut self, owner: &str, prop: &str, prop_schema: &Schema) -> TypeRef {
         if prop_schema.reference.is_none() {
             if let Some(values) = string_enum_values(prop_schema) {
                 let hoisted = format!("{owner}{}", naming::class_name(prop));
-                let module = naming::module_name(&hoisted);
-                let target = extensible_enum(values);
-                self.push_alias(
+                self.types.push(TypeDecl::Enum(build_enum(
                     &hoisted,
-                    module,
-                    target,
+                    values,
                     clean_doc(prop_schema.description.as_deref()),
-                );
+                )));
                 return TypeRef::Named(hoisted);
             }
         }

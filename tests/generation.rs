@@ -19,6 +19,7 @@ fn render(spec: &str) -> HashMap<String, String> {
         output: PathBuf::from("unused"),
         package_name: Some("acme".to_string()),
         project_name: Some("acme".to_string()),
+        audiences: Vec::new(),
     })
     .expect("render succeeds");
     files
@@ -160,16 +161,27 @@ fn union_alias_and_scalar_alias_render() {
 }
 
 #[test]
-fn string_enum_renders_as_extensible_union() {
-    // Fern renders an OpenAPI string enum as an extensible enum, not an
-    // `enum.Enum` class.
+fn string_enum_renders_as_enum_class() {
+    // crozier renders an OpenAPI string enum as a real `enum.Enum` class (Fern's
+    // `enum_type: python_enums` shape), with SCREAMING_SNAKE members over the wire
+    // values and a `visit` dispatch method — not an open `Literal` union.
     let files = render(RICH_SPEC);
     let color = &files["src/acme/types/color.py"];
+    assert!(color.contains("class Color(str, enum.Enum):"), "{color}");
+    assert!(color.contains("    RED = \"red\"\n"), "{color}");
+    assert!(color.contains("    GREEN = \"green\"\n"), "{color}");
     assert!(
-        color.contains("Color = typing.Union[typing.Literal[\"red\", \"green\"], typing.Any]"),
-        "extensible enum: {color}"
+        color.contains("    def visit(self, red: typing.Callable[[], T_Result], green: typing.Callable[[], T_Result]) -> T_Result:"),
+        "{color}"
     );
-    assert!(!color.contains("enum.Enum"));
+    assert!(
+        color.contains("        if self is Color.RED:\n            return red()\n"),
+        "{color}"
+    );
+    assert!(
+        !color.contains("typing.Literal"),
+        "no Literal union: {color}"
+    );
 }
 
 #[test]
@@ -192,6 +204,7 @@ fn generate_writes_files_to_disk() {
         output: out.clone(),
         package_name: Some("acme".to_string()),
         project_name: None,
+        audiences: Vec::new(),
     })
     .expect("generate succeeds");
     assert!(!files.is_empty());
@@ -212,6 +225,7 @@ fn default_package_name_derives_from_title() {
         output: PathBuf::from("unused"),
         package_name: None,
         project_name: None,
+        audiences: Vec::new(),
     })
     .unwrap();
     assert!(files.iter().any(|f| f.path.starts_with("src/my_cool_api")));
@@ -316,8 +330,9 @@ fn nullable_map_makes_value_type_optional() {
 
 #[test]
 fn wide_string_enum_wraps_like_ruff() {
-    // A string enum whose one-line form exceeds ruff's 120-col limit is exploded:
-    // the Union onto its own lines and the Literal one value per line.
+    // A string enum with many members: the members list one-per-line, and the
+    // `visit` signature — too wide for ruff's 120-col limit — explodes one callback
+    // parameter per line.
     let members: Vec<String> = (0..12)
         .map(|i| format!("        - VALUE_NUMBER_{i:02}_WITH_PADDING\n"))
         .collect();
@@ -326,15 +341,25 @@ fn wide_string_enum_wraps_like_ruff() {
         members.concat()
     );
     let big = render(&spec)["src/acme/types/big.py"].clone();
+    assert!(big.contains("class Big(str, enum.Enum):"), "{big}");
     assert!(
-        big.contains("Big = typing.Union[\n    typing.Literal[\n"),
-        "expected exploded union: {big}"
-    );
-    assert!(
-        big.contains("        \"VALUE_NUMBER_00_WITH_PADDING\",\n"),
+        big.contains("    VALUE_NUMBER_00_WITH_PADDING = \"VALUE_NUMBER_00_WITH_PADDING\"\n"),
         "{big}"
     );
-    assert!(big.contains("    ],\n    typing.Any,\n]"), "{big}");
+    // ruff explodes the wide `visit` signature: `def visit(` then `self,` and each
+    // callback parameter on its own line.
+    assert!(
+        big.contains("    def visit(\n        self,\n"),
+        "exploded visit: {big}"
+    );
+    assert!(
+        big.contains("        value_number_00_with_padding: typing.Callable[[], T_Result],\n"),
+        "{big}"
+    );
+    assert!(
+        big.contains("        if self is Big.VALUE_NUMBER_00_WITH_PADDING:\n"),
+        "{big}"
+    );
 }
 
 #[test]
@@ -782,8 +807,12 @@ components:
     let zero = &files["src/acme/types/pet_zero.py"];
     assert!(zero.contains("class PetZero(Dog):"), "{zero}");
     assert!(zero.contains("    kind: PetZeroKind\n"), "{zero}");
-    assert!(files["src/acme/types/pet_zero_kind.py"]
-        .contains("PetZeroKind = typing.Union[typing.Literal[\"dog\"], typing.Any]"));
+    let kind = &files["src/acme/types/pet_zero_kind.py"];
+    assert!(
+        kind.contains("class PetZeroKind(str, enum.Enum):"),
+        "{kind}"
+    );
+    assert!(kind.contains("    DOG = \"dog\"\n"), "{kind}");
     // Variant 1: no base, so it extends UniversalBaseModel; its field is optional.
     let one = &files["src/acme/types/pet_one.py"];
     assert!(one.contains("class PetOne(UniversalBaseModel):"), "{one}");
@@ -814,6 +843,7 @@ fn empty_title_falls_back_to_client_package() {
         output: PathBuf::from("unused"),
         package_name: None,
         project_name: None,
+        audiences: Vec::new(),
     })
     .unwrap();
     assert!(files.iter().any(|f| f.path.starts_with("src/client")));
@@ -1284,6 +1314,7 @@ fn api_key_scheme_without_name_is_rejected() {
         output: PathBuf::from("unused"),
         package_name: Some("acme".to_string()),
         project_name: Some("acme".to_string()),
+        audiences: Vec::new(),
     })
     .expect_err("missing apiKey name must fail");
     assert!(err.to_string().contains("apiKey security scheme"));
@@ -1392,4 +1423,218 @@ fn inline_request_body_hoists_nested_objects_into_tag_types() {
     );
     // The package root re-exports the hoisted types through the tag submodule.
     assert!(files["src/acme/__init__.py"].contains("InlinedSearchResponse"));
+}
+
+/// Render a spec with an `x-crozier-audiences` filter, returning path -> contents.
+fn render_with_audiences(spec: &str, audiences: &[&str]) -> HashMap<String, String> {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let path = dir.path().join("api.yml");
+    std::fs::write(&path, spec).unwrap();
+    let files = render_files(GenerateArgs {
+        spec: path,
+        output: PathBuf::from("unused"),
+        package_name: Some("acme".to_string()),
+        project_name: Some("acme".to_string()),
+        audiences: audiences.iter().map(|s| s.to_string()).collect(),
+    })
+    .expect("render succeeds");
+    files
+        .into_iter()
+        .map(|f| (f.path.to_string_lossy().into_owned(), f.contents))
+        .collect()
+}
+
+/// `x-crozier-audiences` spec (issue #41 gap 3): a public op referencing
+/// `Widget`→`WidgetDetail`, an internal op referencing `Stats`, and an *unlabelled*
+/// op referencing `Thing`.
+const AUDIENCE_SPEC: &str = r##"
+openapi: 3.0.1
+info:
+  title: Aud
+paths:
+  /widgets:
+    get:
+      operationId: widgets_list
+      tags: [widgets]
+      x-crozier-audiences: [public]
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Widget" }
+  /stats:
+    get:
+      operationId: admin_stats
+      tags: [admin]
+      x-crozier-audiences: [internal]
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Stats" }
+  /things:
+    get:
+      operationId: things_list
+      tags: [things]
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Thing" }
+components:
+  schemas:
+    Widget:
+      type: object
+      properties:
+        detail: { $ref: "#/components/schemas/WidgetDetail" }
+    WidgetDetail:
+      type: object
+      properties:
+        note: { type: string }
+    Stats:
+      type: object
+      properties:
+        count: { type: integer }
+    Thing:
+      type: object
+      properties:
+        id: { type: string }
+"##;
+
+#[test]
+fn audience_filter_prunes_to_matching_ops_and_closure() {
+    // Filtering to `public` keeps the public op and the unlabelled op (unlabelled
+    // ops survive any filter), plus the transitive schema closure they reference
+    // (Widget -> WidgetDetail, Thing) — and drops the internal op's client and its
+    // internal-only Stats type.
+    let files = render_with_audiences(AUDIENCE_SPEC, &["public"]);
+    assert!(
+        files.contains_key("src/acme/widgets/client.py"),
+        "public op kept"
+    );
+    assert!(
+        files.contains_key("src/acme/things/client.py"),
+        "unlabelled op kept"
+    );
+    assert!(
+        !files.contains_key("src/acme/admin/client.py"),
+        "internal op dropped"
+    );
+    assert!(
+        files.contains_key("src/acme/types/widget.py"),
+        "referenced type kept"
+    );
+    assert!(
+        files.contains_key("src/acme/types/widget_detail.py"),
+        "transitively referenced type kept"
+    );
+    assert!(
+        files.contains_key("src/acme/types/thing.py"),
+        "unlabelled op's type kept"
+    );
+    assert!(
+        !files.contains_key("src/acme/types/stats.py"),
+        "type only the dropped op referenced is pruned"
+    );
+}
+
+#[test]
+fn no_audience_filter_generates_the_whole_api() {
+    // Without a filter, every operation and schema is generated.
+    let files = render_with_audiences(AUDIENCE_SPEC, &[]);
+    for m in ["widgets", "admin", "things"] {
+        assert!(
+            files.contains_key(&format!("src/acme/{m}/client.py")),
+            "{m} present"
+        );
+    }
+    for t in ["widget", "widget_detail", "stats", "thing"] {
+        assert!(
+            files.contains_key(&format!("src/acme/types/{t}.py")),
+            "{t} present"
+        );
+    }
+}
+
+#[test]
+fn audience_closure_follows_every_ref_shape() {
+    // The transitive closure must walk a `$ref` through every schema construct:
+    // a property, an array `items`, `additionalProperties`, `allOf`/`oneOf`/`anyOf`
+    // members, and a discriminator mapping. A public op references `Root`, which
+    // reaches one type through each; all must survive `--audience public`.
+    let spec = r##"
+openapi: 3.0.1
+info:
+  title: Cl
+paths:
+  /root:
+    get:
+      operationId: root_get
+      tags: [root]
+      x-crozier-audiences: [public]
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Root" }
+components:
+  schemas:
+    Root:
+      allOf:
+        - $ref: "#/components/schemas/ViaAllOf"
+      properties:
+        prop: { $ref: "#/components/schemas/ViaProp" }
+        list:
+          type: array
+          items: { $ref: "#/components/schemas/ViaItems" }
+        map:
+          type: object
+          additionalProperties: { $ref: "#/components/schemas/ViaAddl" }
+        choice:
+          oneOf:
+            - $ref: "#/components/schemas/ViaOneOf"
+        alt:
+          anyOf:
+            - $ref: "#/components/schemas/ViaAnyOf"
+        shape: { $ref: "#/components/schemas/Shape" }
+    ViaAllOf: { type: object, properties: { a: { type: string } } }
+    ViaProp: { type: object, properties: { a: { type: string } } }
+    ViaItems: { type: object, properties: { a: { type: string } } }
+    ViaAddl: { type: object, properties: { a: { type: string } } }
+    ViaOneOf: { type: object, properties: { a: { type: string } } }
+    ViaAnyOf: { type: object, properties: { a: { type: string } } }
+    Shape:
+      oneOf:
+        - $ref: "#/components/schemas/Circle"
+      discriminator:
+        propertyName: kind
+        mapping:
+          circle: "#/components/schemas/Circle"
+    Circle:
+      type: object
+      properties:
+        kind: { type: string }
+    Unreached: { type: object, properties: { a: { type: string } } }
+"##;
+    let files = render_with_audiences(spec, &["public"]);
+    for t in [
+        "via_all_of",
+        "via_prop",
+        "via_items",
+        "via_addl",
+        "via_one_of",
+        "via_any_of",
+        "circle",
+    ] {
+        assert!(
+            files.contains_key(&format!("src/acme/types/{t}.py")),
+            "closure should reach {t}; got {:?}",
+            files
+                .keys()
+                .filter(|k| k.contains("types/"))
+                .collect::<Vec<_>>()
+        );
+    }
+    // A type no surviving operation references is pruned even though unlabelled.
+    assert!(!files.contains_key("src/acme/types/unreached.py"));
 }

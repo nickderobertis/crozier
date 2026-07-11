@@ -785,14 +785,14 @@ client.endpoints_content_type.endpoints_content_type_post_json_patch_content_wit
 <dd>
 
 ```python
-from fern import FernApi
+from fern import FernApi, TypesWeatherReport
 
 client = FernApi(
     token="YOUR_TOKEN",
     base_url="https://yourhost.com/path/to/api",
 )
 client.endpoints_enum.endpoints_enum_get_and_return_enum(
-    request="SUNNY",
+    request=TypesWeatherReport.SUNNY,
 )
 
 ```
@@ -3250,7 +3250,7 @@ client.endpoints_put.endpoints_put_add(
 <dd>
 
 ```python
-from fern import FernApi, TypesAnimalZero
+from fern import FernApi, TypesAnimalZero, TypesAnimalZeroAnimal
 
 client = FernApi(
     token="YOUR_TOKEN",
@@ -3260,7 +3260,7 @@ client.endpoints_union.endpoints_union_get_and_return_union(
     request=TypesAnimalZero(
         name="name",
         likes_to_woof=True,
-        animal="dog",
+        animal=TypesAnimalZeroAnimal.DOG,
     ),
 )
 

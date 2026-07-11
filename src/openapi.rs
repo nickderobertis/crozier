@@ -160,6 +160,13 @@ pub struct Operation {
     /// Tags; the first groups the operation into a client.
     #[serde(default)]
     pub tags: Vec<String>,
+    /// `x-crozier-audiences`: audience labels this operation belongs to. Empty
+    /// means unlabelled — kept under any `--audience` filter (see
+    /// [`filter_by_audience`]). crozier brands its own extension rather than reading
+    /// Fern's `x-fern-audiences`, exactly as it emits `X-Crozier-*` SDK headers where
+    /// Fern emits `X-Fern-*`.
+    #[serde(rename = "x-crozier-audiences", default)]
+    pub audiences: Vec<String>,
     /// A human description; becomes the method docstring's summary line.
     #[serde(default)]
     pub description: Option<String>,
@@ -436,4 +443,113 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     }
 
     Ok(doc)
+}
+
+/// Prune the document to a set of audiences (the `x-crozier-audiences` filter,
+/// issue #41 gap 3). No-op when `audiences` is empty (the whole API is generated).
+///
+/// Mirrors Fern's audience behaviour (over crozier's own extension): keep an
+/// operation when it carries a matching audience **or** carries none at all
+/// (unlabelled operations are always kept); drop one labelled only with
+/// non-matching audiences. Then emit just the **transitive `$ref` closure** of the
+/// surviving operations' parameter, request, and response schemas — every other
+/// `components.schemas` entry (even unlabelled ones no surviving operation reaches,
+/// like an internal-only type) is removed, so
+/// the pruned SDK is self-contained. Property/schema-level `x-crozier-audiences`
+/// are not yet honoured (a follow-up); only operation-level filtering is applied.
+pub fn filter_by_audience(doc: &mut OpenApi, audiences: &[String]) {
+    if audiences.is_empty() {
+        return;
+    }
+    let keep = |op: &Operation| {
+        op.audiences.is_empty() || op.audiences.iter().any(|a| audiences.contains(a))
+    };
+    for item in doc.paths.values_mut() {
+        for slot in [
+            &mut item.get,
+            &mut item.post,
+            &mut item.put,
+            &mut item.delete,
+            &mut item.patch,
+        ] {
+            if slot.as_ref().is_some_and(|op| !keep(op)) {
+                *slot = None;
+            }
+        }
+    }
+    // Drop paths whose every operation was filtered out.
+    doc.paths.retain(|_, item| !item.operations().is_empty());
+
+    // Seed the closure with every schema the surviving operations reference.
+    let mut seed = std::collections::BTreeSet::new();
+    for item in doc.paths.values() {
+        for (_, op) in item.operations() {
+            for p in &op.parameters {
+                if let Some(s) = &p.schema {
+                    collect_schema_refs(s, &mut seed);
+                }
+            }
+            let bodies = op
+                .request_body
+                .iter()
+                .flat_map(|rb| rb.content.values())
+                .chain(op.responses.values().flat_map(|r| r.content.values()));
+            for mt in bodies {
+                if let Some(s) = &mt.schema {
+                    collect_schema_refs(s, &mut seed);
+                }
+            }
+        }
+    }
+
+    // Expand transitively through the referenced schemas, then retain only those.
+    let mut reached = std::collections::BTreeSet::new();
+    let mut queue: Vec<String> = seed.into_iter().collect();
+    while let Some(key) = queue.pop() {
+        if !reached.insert(key.clone()) {
+            continue;
+        }
+        if let Some(schema) = doc.components.schemas.get(&key) {
+            let mut refs = std::collections::BTreeSet::new();
+            collect_schema_refs(schema, &mut refs);
+            queue.extend(refs.into_iter().filter(|r| !reached.contains(r)));
+        }
+    }
+    doc.components.schemas.retain(|k, _| reached.contains(k));
+}
+
+/// Collect every `#/components/schemas/*` reference reachable within a schema
+/// node (the node itself if it is a `$ref`, plus nested properties, array items,
+/// `additionalProperties`, `allOf`/`oneOf`/`anyOf` members, and discriminator
+/// mappings), inserting each target's schema key into `out`.
+fn collect_schema_refs(schema: &Schema, out: &mut std::collections::BTreeSet<String>) {
+    const PREFIX: &str = "#/components/schemas/";
+    if let Some(key) = schema
+        .reference
+        .as_deref()
+        .and_then(|r| r.strip_prefix(PREFIX))
+    {
+        out.insert(key.to_string());
+    }
+    for s in schema.properties.values() {
+        collect_schema_refs(s, out);
+    }
+    if let Some(items) = &schema.items {
+        collect_schema_refs(items, out);
+    }
+    if let Some(AdditionalProperties::Schema(s)) = &schema.additional_properties {
+        collect_schema_refs(s, out);
+    }
+    for member in [&schema.one_of, &schema.any_of, &schema.all_of]
+        .into_iter()
+        .flatten()
+        .flatten()
+    {
+        collect_schema_refs(member, out);
+    }
+    if let Some(disc) = &schema.discriminator {
+        for key in disc.mapping.values().filter_map(|r| r.strip_prefix(PREFIX)) {
+            out.insert(key.to_string());
+        }
+    }
 }

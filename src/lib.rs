@@ -45,12 +45,17 @@ pub struct GenerateArgs {
     pub package_name: Option<String>,
     /// Override the distribution name recorded in `version.py`.
     pub project_name: Option<String>,
+    /// `x-crozier-audiences` filter: when non-empty, prune generation to the
+    /// operations carrying a matching audience (or none) plus the transitive
+    /// schema closure they reference. Empty generates the whole API.
+    pub audiences: Vec<String>,
 }
 
 /// Run the full pipeline: parse the spec, build the IR, render, and write files.
 /// Returns the files written so the caller can report a count.
 pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
-    let doc = openapi::load(&args.spec)?;
+    let mut doc = openapi::load(&args.spec)?;
+    openapi::filter_by_audience(&mut doc, &args.audiences);
     // The config constructor validates the package name (a `PackageName`), so an
     // invalid, traversal-prone value can never reach the filesystem below.
     let config = GenerateConfig::new(
@@ -72,7 +77,8 @@ pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
 /// Render the files for a spec without writing them — used by tests to compare
 /// generated contents against fixtures in-process.
 pub fn render_files(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
-    let doc = openapi::load(&args.spec)?;
+    let mut doc = openapi::load(&args.spec)?;
+    openapi::filter_by_audience(&mut doc, &args.audiences);
     let config = GenerateConfig::new(
         args.spec.clone(),
         args.output.clone(),

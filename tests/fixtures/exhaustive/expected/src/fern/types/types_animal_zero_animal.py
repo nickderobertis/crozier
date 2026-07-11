@@ -1,5 +1,14 @@
 
 
+import enum
 import typing
 
-TypesAnimalZeroAnimal = typing.Union[typing.Literal["dog"], typing.Any]
+T_Result = typing.TypeVar("T_Result")
+
+
+class TypesAnimalZeroAnimal(str, enum.Enum):
+    DOG = "dog"
+
+    def visit(self, dog: typing.Callable[[], T_Result]) -> T_Result:
+        if self is TypesAnimalZeroAnimal.DOG:
+            return dog()

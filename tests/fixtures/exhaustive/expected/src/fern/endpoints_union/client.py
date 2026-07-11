@@ -44,7 +44,7 @@ class EndpointsUnionClient:
 
         Examples
         --------
-        from fern import FernApi, TypesAnimalZero
+        from fern import FernApi, TypesAnimalZero, TypesAnimalZeroAnimal
 
         client = FernApi(
             token="YOUR_TOKEN",
@@ -54,7 +54,7 @@ class EndpointsUnionClient:
             request=TypesAnimalZero(
                 name="name",
                 likes_to_woof=True,
-                animal="dog",
+                animal=TypesAnimalZeroAnimal.DOG,
             ),
         )
         """
@@ -99,7 +99,7 @@ class AsyncEndpointsUnionClient:
         --------
         import asyncio
 
-        from fern import AsyncFernApi, TypesAnimalZero
+        from fern import AsyncFernApi, TypesAnimalZero, TypesAnimalZeroAnimal
 
         client = AsyncFernApi(
             token="YOUR_TOKEN",
@@ -112,7 +112,7 @@ class AsyncEndpointsUnionClient:
                 request=TypesAnimalZero(
                     name="name",
                     likes_to_woof=True,
-                    animal="dog",
+                    animal=TypesAnimalZeroAnimal.DOG,
                 ),
             )
 
