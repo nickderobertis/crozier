@@ -75,9 +75,16 @@ fixtures-candidates:
     #!/usr/bin/env bash
     set -uo pipefail
     out=$(cargo test --locked --test e2e -- --ignored --nocapture report_matched_candidates 2>&1)
-    echo "$out"
-    grep -q 'candidate file(s) across all corpora' <<<"$out" \
-      || { echo "fixtures-candidates: report_matched_candidates produced no report — renamed or removed in tests/e2e.rs?" >&2; exit 1; }
+    if grep -q 'candidate file(s) across all corpora' <<<"$out"; then
+      # Quiet on success: print only the report the user asked for, not cargo's
+      # build/test scaffolding — from the first corpus header through the summary.
+      awk '/^=== /{p=1} p; /candidate file\(s\) across all corpora/{p=0}' <<<"$out"
+    else
+      # Drift (test renamed → 0 tests run) or a failed self-check: surface it all.
+      echo "$out" >&2
+      echo "fixtures-candidates: no report from report_matched_candidates — renamed/removed in tests/e2e.rs, or its self-check failed" >&2
+      exit 1
+    fi
 
 # Install/refresh the llmlint toolchain (oneharness + llmlint). Idempotent.
 setup-llmlint:

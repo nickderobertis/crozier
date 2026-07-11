@@ -12,9 +12,9 @@
 # Usage:  scripts/fixture-new.sh <name>
 #
 # llmlint: ignore-file[tool_output_is_signal] this is a scaffolder: its success
-# output — the created path plus a paste-ready Corpus literal and the wiring steps —
-# IS the deliverable, the way `cargo new` / `git init` print next steps, not
-# incidental chatter. The steps mirror tests/fixtures/AGENTS.md.
+# output — the created path plus the wiring steps — IS the deliverable, the way
+# `cargo new` / `git init` print next steps, not incidental chatter. The steps
+# mirror tests/fixtures/AGENTS.md.
 set -euo pipefail
 
 name="${1:-}"
@@ -52,14 +52,8 @@ cat >&2 <<EOF
 fixture-new: next steps —
   1. Replace tests/fixtures/$name/openapi.yml with the real spec.
   2. Generate Fern's golden tree:  scripts/generate-fern-fixture.sh $name
-  3. Add this to FEATURE_TARGETS in tests/e2e.rs:
-
-    Corpus {
-        api: "$name",
-        package_name: "fern",
-        project_name: "default_package_name",
-        matched: &[],
-    },
-
+  3. Wire it into tests/e2e.rs: copy an existing FEATURE_TARGETS entry, set
+     api: "$name" and matched: &[] (empty to start). Copying a real entry keeps
+     the Corpus shape single-sourced — no hand-mirrored struct to drift.
   4. Grow \`matched\` as generation lands:  just fixtures-candidates
 EOF
