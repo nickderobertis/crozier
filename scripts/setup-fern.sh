@@ -29,6 +29,15 @@
 # failures log-and-continue rather than block startup.
 set -uo pipefail
 
+# Run asynchronously: the SessionStart hook reads this directive off stdout's first
+# line and lets the rest run in the background, so a cold `cargo build --release`
+# never delays session startup. The tradeoff is a race — work that needs a
+# generated fixture right at startup may arrive before this finishes; the generate
+# script gates each prerequisite with an actionable error if so. asyncTimeout is
+# generous enough for a cold release build. Nothing else writes stdout (log() and
+# the installers below go to stderr), so this stays the sole stdout line.
+echo '{"async": true, "asyncTimeout": 900000}'
+
 repo_root="$(cd "$(dirname "$0")/.." && pwd)"
 
 log() { printf 'setup-fern: %s\n' "$*" >&2; }
