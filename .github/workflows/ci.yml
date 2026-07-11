@@ -140,6 +140,8 @@ jobs:
         run: |
           ./scripts/setup-llmlint.sh
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Validate llmlint config
+        run: just lint-llm-validate --diff-base origin/main
       - name: Lint changed files
         env:
           # oneharness drives the `claude` CLI, which reads CLAUDE_CODE_OAUTH_TOKEN
