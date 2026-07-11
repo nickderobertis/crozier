@@ -255,11 +255,13 @@ fn openapi_31_nullable_type_list_uses_primary() {
 }
 
 #[test]
-fn additional_properties_true_maps_to_any() {
+fn additional_properties_true_maps_to_open_dict() {
     let files = render(
         "openapi: 3.0.0\ninfo:\n  title: A\ncomponents:\n  schemas:\n    Bag:\n      type: object\n      properties:\n        data:\n          type: object\n          additionalProperties: true\n",
     );
-    assert!(files["src/acme/types/bag.py"].contains("data: typing.Optional[typing.Any] = None"));
+    // Fern types an open map (`additionalProperties: true`) as a dict to unknown.
+    assert!(files["src/acme/types/bag.py"]
+        .contains("data: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None"));
 }
 
 #[test]
@@ -1014,6 +1016,21 @@ fn integer_enum_alias_and_ref_body_are_emittable() {
     let raw = &files["src/acme/levels/raw_client.py"];
     assert!(raw.contains("request: Level"));
     assert!(raw.contains("\"content-type\": \"application/json\""));
+}
+
+/// A `readOnly` property is optional even when listed in `required` (it is
+/// server-populated), and `additionalProperties: true` maps to an open dict.
+#[test]
+fn read_only_field_is_optional_and_open_map_is_dict() {
+    let files = render(
+        "openapi: 3.0.1\ninfo:\n  title: R\ncomponents:\n  schemas:\n    Rec:\n      type: object\n      required:\n        - id\n        - name\n      properties:\n        id:\n          type: string\n          readOnly: true\n        name:\n          type: string\n        extra:\n          type: object\n          additionalProperties: true\n",
+    );
+    let rec = &files["src/acme/types/rec.py"];
+    // `id` is readOnly → optional despite being required; `name` stays required.
+    assert!(rec.contains("id: typing.Optional[str] = None"));
+    assert!(rec.contains("name: str\n"));
+    assert!(rec
+        .contains("extra: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None"));
 }
 
 /// A schema used only as an inlined (`$ref`-object) request body is not emitted as

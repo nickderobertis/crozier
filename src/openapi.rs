@@ -300,6 +300,10 @@ pub struct Schema {
     /// OpenAPI 3.0 nullability.
     #[serde(default)]
     pub nullable: Option<bool>,
+    /// `readOnly`: a server-populated property. Fern renders it as an optional
+    /// field even when listed in `required`.
+    #[serde(rename = "readOnly", default)]
+    pub read_only: Option<bool>,
     /// A `oneOf`/`anyOf` discriminator: the property that selects the variant and
     /// (optionally) an explicit value → `$ref` mapping.
     #[serde(default)]

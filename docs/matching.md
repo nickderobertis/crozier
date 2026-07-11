@@ -223,11 +223,14 @@ target/release/crozier generate \
    (`shape.py`, `circle.py`, `square.py`, `types/__init__.py`) matches in
    `discriminated-unions`; the endpoint/docs layer awaits the auth + endpoint work.
    A discriminator without an explicit `mapping` still falls back to a plain union.
-8. **Schema annotations and constraints** (`schema-constraints`). `readOnly`/
-   `writeOnly` (request-vs-response field splitting), `deprecated`, `default`,
-   validation keywords (`minLength`/`maxLength`/`pattern`/`minimum`/`maximum`/
-   `minItems`/`maxItems`, i.e. pydantic constraints), and `example`/`examples` are
-   all fields the `Schema` model does not read.
+8. **Schema annotations and constraints** (`schema-constraints`, mostly matched).
+   Fern ignores the validation keywords (`minLength`/`pattern`/`minimum`/`maxItems`/
+   …), `default`, and `deprecated` in its generated models, so crozier does too;
+   a `readOnly` property is now rendered optional even when `required` (it is
+   server-populated), and `additionalProperties: true` maps to
+   `Dict[str, Optional[Any]]`. The whole `schema-constraints` type + endpoint layer
+   matches (only the README example placeholder differs). Not yet exercised:
+   request-vs-response splitting for a `writeOnly` field that is also `required`.
 9. **Document-level `servers`/`webhooks`/`callbacks`** (`servers-webhooks`). The
    base URL is hardcoded in the runtime; `servers`, `webhooks`, and `callbacks` are
    absent from the serde model, so multi-server specs and event-driven definitions

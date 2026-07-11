@@ -1252,7 +1252,10 @@ impl Builder<'_> {
             if strip.as_deref() == Some(prop.as_str()) {
                 continue;
             }
-            let spec_required = required.contains(&prop.as_str());
+            // A `readOnly` property is server-populated, so Fern treats it as
+            // optional (and never a required input) even if listed in `required`.
+            let spec_required =
+                required.contains(&prop.as_str()) && prop_schema.read_only != Some(true);
             let optional = is_optional(prop_schema) || !spec_required;
             fields.push(Field {
                 wire_name: prop.clone(),
@@ -1467,6 +1470,12 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
                 }
                 TypeRef::Dict(Box::new(TypeRef::Primitive(Prim::Str)), Box::new(val))
             }
+            // `additionalProperties: true` is an open map to unknown values, which
+            // Fern types as `Dict[str, Optional[Any]]`.
+            Some(AdditionalProperties::Bool(true)) => TypeRef::Dict(
+                Box::new(TypeRef::Primitive(Prim::Str)),
+                Box::new(TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)))),
+            ),
             _ => TypeRef::Primitive(Prim::Any),
         },
         _ => TypeRef::Primitive(Prim::Any),
