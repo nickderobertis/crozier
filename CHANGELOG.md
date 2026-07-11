@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.11](https://github.com/nickderobertis/crozier/compare/v0.0.10...v0.0.11) - 2026-07-11
+
+### Added
+
+- generate valid clients for real-world specs (issue #40) ([#42](https://github.com/nickderobertis/crozier/pull/42))
+
 ## [0.0.10](https://github.com/nickderobertis/crozier/compare/v0.0.9...v0.0.10) - 2026-07-11
 
 ### Added
