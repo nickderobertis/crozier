@@ -52,6 +52,22 @@ const STDLIB_MODULES: &[&str] = &[
     "abc",
 ];
 
+/// The location of the file whose imports are being collected, relative to the
+/// package root — it decides the relative path to a referenced generated type
+/// (how many leading dots, and whether via a tag's `types/` subpackage).
+#[derive(Clone, Default)]
+enum RefLoc {
+    /// A module in the package-root `types/` package (`src/{pkg}/types/`).
+    #[default]
+    RootTypes,
+    /// A module in a tag's `types/` package (`src/{pkg}/{tag}/types/`).
+    TagTypes(String),
+    /// A tag client file (`src/{pkg}/{tag}/raw_client.py` or `client.py`).
+    Client(String),
+    /// The `errors/` package (`src/{pkg}/errors/`).
+    Errors,
+}
+
 /// Collects imports and renders them in Fern's order: group 1 is stdlib
 /// (`import`s then `from`s), group 2 is everything else (`import`s then `from`s),
 /// separated by a blank line. Names within a `from` and the statements within a
@@ -62,9 +78,48 @@ struct Imports {
     plain: BTreeMap<String, Option<String>>,
     /// `from module import a, b`, module -> sorted names.
     from: BTreeMap<String, BTreeSet<String>>,
+    /// This file's location, for resolving relative imports of generated types.
+    loc: RefLoc,
+    /// Names of tag-scoped (hoisted) types → their owning tag directory. A name
+    /// absent from this map is a package-root type.
+    tag_types: BTreeMap<String, String>,
 }
 
 impl Imports {
+    /// A fresh collector for a file at `loc`, aware of the tag-scoped type map so
+    /// references resolve to the right relative path.
+    fn at(loc: RefLoc, tag_types: &BTreeMap<String, String>) -> Self {
+        Imports {
+            loc,
+            tag_types: tag_types.clone(),
+            ..Default::default()
+        }
+    }
+
+    /// Register the import for a referenced generated type, choosing the relative
+    /// module path from this file's [`RefLoc`] and whether the type is tag-scoped.
+    fn add_type(&mut self, class: &str) {
+        let m = naming::module_name(class);
+        let path = match self.tag_types.get(class) {
+            // A tag-scoped type lives at `{pkg}.{tag}.types.{m}`.
+            Some(tag) => match &self.loc {
+                RefLoc::TagTypes(cur) if cur == tag => format!(".{m}"),
+                RefLoc::Client(cur) if cur == tag => format!(".types.{m}"),
+                RefLoc::TagTypes(_) | RefLoc::Client(_) | RefLoc::Errors => {
+                    format!("..{tag}.types.{m}")
+                }
+                RefLoc::RootTypes => format!(".{tag}.types.{m}"),
+            },
+            // A package-root type lives at `{pkg}.types.{m}`.
+            None => match &self.loc {
+                RefLoc::RootTypes => format!(".{m}"),
+                RefLoc::TagTypes(_) => format!("...types.{m}"),
+                RefLoc::Client(_) | RefLoc::Errors => format!("..types.{m}"),
+            },
+        };
+        self.add_from(&path, class);
+    }
+
     fn add_plain(&mut self, module: &str) {
         self.plain.entry(module.to_string()).or_insert(None);
     }
@@ -149,8 +204,7 @@ fn render_type(t: &TypeRef, imports: &mut Imports) -> Doc {
             }
         },
         TypeRef::Named(class) => {
-            let module = naming::module_name(class);
-            imports.add_from(&format!(".{module}"), class);
+            imports.add_type(class);
             Doc::atom(class.clone())
         }
         TypeRef::Optional(inner) => {
@@ -330,6 +384,14 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     let mut files = Vec::new();
     let pkg = &ir.package_name;
 
+    // Map each tag-scoped (hoisted) type name to its owning tag directory, so
+    // references from anywhere resolve to the right relative import path.
+    let tag_map: BTreeMap<String, String> = ir
+        .tag_types
+        .iter()
+        .map(|t| (t.decl.name().to_string(), t.module.clone()))
+        .collect();
+
     // version.py
     let version = render(
         &env,
@@ -350,11 +412,36 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
 
     // One file per generated type.
     for decl in &ir.types {
-        let file = render_type_decl(&env, decl)?;
+        let file = render_type_decl(&env, decl, RefLoc::RootTypes, &tag_map)?;
         files.push(GeneratedFile {
             path: PathBuf::from(format!("src/{pkg}/types/{}.py", decl.module())),
             contents: file,
         });
+    }
+
+    // Tag-scoped hoisted types (inline request/response bodies), each in its tag's
+    // own `types/` package, plus a lazy-loader `__init__.py` per such package.
+    let mut tag_type_modules: BTreeMap<&str, Vec<&TypeDecl>> = BTreeMap::new();
+    for tt in &ir.tag_types {
+        tag_type_modules
+            .entry(&tt.module)
+            .or_default()
+            .push(&tt.decl);
+    }
+    for (module, decls) in &tag_type_modules {
+        for decl in decls {
+            let file = render_type_decl(
+                &env,
+                decl,
+                RefLoc::TagTypes((*module).to_string()),
+                &tag_map,
+            )?;
+            files.push(GeneratedFile {
+                path: PathBuf::from(format!("src/{pkg}/{module}/types/{}.py", decl.module())),
+                contents: file,
+            });
+        }
+        files.push(tag_types_init_file(&env, pkg, module, decls)?);
     }
 
     // Fern's static core runtime, emitted verbatim (see assets/README.md), plus
@@ -369,12 +456,17 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     }
 
     // One package marker per endpoint client module. Fern's `__init__.py` here is
-    // a comment-only header, so the comment-stripped form is four blank lines.
+    // a comment-only header (four blank lines once stripped) — unless the tag owns
+    // hoisted inline types, in which case it is a lazy loader re-exporting them.
     for module in &ir.endpoint_modules {
-        files.push(GeneratedFile {
-            path: PathBuf::from(format!("src/{pkg}/{module}/__init__.py")),
-            contents: "\n\n\n\n".to_string(),
-        });
+        if let Some(decls) = tag_type_modules.get(module.as_str()) {
+            files.push(tag_pkg_init_file(&env, pkg, module, decls)?);
+        } else {
+            files.push(GeneratedFile {
+                path: PathBuf::from(format!("src/{pkg}/{module}/__init__.py")),
+                contents: "\n\n\n\n".to_string(),
+            });
+        }
     }
 
     // Per-tag `raw_client.py` and `client.py`, but only for modules whose every
@@ -389,7 +481,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             .filter(|e| &e.module == module)
             .collect();
         if !eps.is_empty() && eps.iter().all(|e| e.emittable) {
-            files.push(raw_client_file(&env, pkg, module, &eps)?);
+            files.push(raw_client_file(&env, pkg, module, &eps, &tag_map)?);
             let cx = ClientCtx {
                 pkg,
                 client_name: &ir.client_name,
@@ -397,6 +489,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 types: &ir.types,
                 auth: &ir.auth,
                 has_environment: ir.environment.is_some(),
+                tag_types: &tag_map,
             };
             files.push(client_file(&env, &cx, &eps)?);
             emittable_modules.push(module);
@@ -420,7 +513,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     // The `errors/` package: one exception class per distinct declared error,
     // plus the lazy-loading `__init__.py` aggregator. Emitted only when there are
     // errors to declare.
-    files.extend(error_files(&env, pkg, &ir.errors)?);
+    files.extend(error_files(&env, pkg, &ir.errors, &tag_map)?);
 
     // Package aggregators: `types/__init__.py` over the type layer, and the
     // package-root `__init__.py` re-exporting types, errors, the endpoint
@@ -429,15 +522,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         files.push(types_init_file(&env, pkg, &ir.types)?);
     }
     if !emittable_modules.is_empty() {
-        files.push(root_init_file(
-            &env,
-            pkg,
-            &ir.client_name,
-            &ir.types,
-            &ir.errors,
-            &emittable_modules,
-            ir.environment.as_ref(),
-        )?);
+        files.push(root_init_file(&env, pkg, ir, &emittable_modules)?);
     }
 
     // Generated `README.md` (usage examples from the first endpoint) and the
@@ -445,7 +530,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     if let Some(readme) = readme_file(ir) {
         files.push(readme);
     }
-    if let Some(reference) = reference_file(&env, ir, &emittable_modules)? {
+    if let Some(reference) = reference_file(&env, ir, &emittable_modules, &tag_map)? {
         files.push(reference);
     }
 
@@ -491,13 +576,14 @@ fn error_files(
     env: &Environment<'static>,
     pkg: &str,
     errors: &[ErrorClass],
+    tag_types: &BTreeMap<String, String>,
 ) -> Result<Vec<GeneratedFile>> {
     if errors.is_empty() {
         return Ok(Vec::new());
     }
     let mut files = Vec::new();
     for err in errors {
-        let mut imports = Imports::default();
+        let mut imports = Imports::at(RefLoc::Errors, tag_types);
         imports.add_plain("typing");
         imports.add_from("..core.api_error", "ApiError");
         // Registers the body type's `..types.<module>` import.
@@ -655,6 +741,64 @@ fn types_init_file(
     })
 }
 
+/// The `{tag}/types/__init__.py` lazy loader over a tag's hoisted inline types.
+/// Each type sits in its own module (`.inlined_search_response`); the block is
+/// alphabetical (the e2e canonicalizes order with isort).
+fn tag_types_init_file(
+    env: &Environment<'static>,
+    pkg: &str,
+    module: &str,
+    decls: &[&TypeDecl],
+) -> Result<GeneratedFile> {
+    let mut named: Vec<(String, String)> = decls
+        .iter()
+        .flat_map(|d| {
+            d.exported_names()
+                .into_iter()
+                .map(|n| (n.to_string(), d.module().to_string()))
+        })
+        .collect();
+    named.sort();
+    let type_checking: String = named
+        .iter()
+        .map(|(n, m)| format!("    from .{m} import {n}\n"))
+        .collect();
+    let pairs: Vec<(String, String)> = named
+        .iter()
+        .map(|(n, m)| (n.clone(), format!(".{m}")))
+        .collect();
+    let names: Vec<String> = named.iter().map(|(n, _)| n.clone()).collect();
+    Ok(GeneratedFile {
+        path: PathBuf::from(format!("src/{pkg}/{module}/types/__init__.py")),
+        contents: render_lazy_loader(env, &type_checking, &pairs, &names)?,
+    })
+}
+
+/// The tag package's `__init__.py` when it owns hoisted types: a lazy loader
+/// re-exporting them from the tag's `.types` subpackage. A tag with no hoisted
+/// types keeps the plain comment-only marker instead.
+fn tag_pkg_init_file(
+    env: &Environment<'static>,
+    pkg: &str,
+    module: &str,
+    decls: &[&TypeDecl],
+) -> Result<GeneratedFile> {
+    let mut names: Vec<String> = decls
+        .iter()
+        .flat_map(|d| d.exported_names().into_iter().map(str::to_string))
+        .collect();
+    names.sort();
+    let type_checking = from_import_block(".types", &names, 4);
+    let pairs: Vec<(String, String)> = names
+        .iter()
+        .map(|n| (n.clone(), ".types".to_string()))
+        .collect();
+    Ok(GeneratedFile {
+        path: PathBuf::from(format!("src/{pkg}/{module}/__init__.py")),
+        contents: render_lazy_loader(env, &type_checking, &pairs, &names)?,
+    })
+}
+
 /// The package-root `__init__.py` lazy loader, re-exporting the type layer, the
 /// errors, the endpoint submodules, the root client, and `__version__`. Every
 /// section is alphabetical; the `TYPE_CHECKING` block groups the imports by
@@ -662,21 +806,30 @@ fn types_init_file(
 fn root_init_file(
     env: &Environment<'static>,
     pkg: &str,
-    client_name: &str,
-    types: &[TypeDecl],
-    errors: &[ErrorClass],
+    ir: &Ir,
     modules: &[&String],
-    environment: Option<&crate::ir::Environment>,
 ) -> Result<GeneratedFile> {
+    let client_name = &ir.client_name;
     let async_name = format!("Async{client_name}");
 
-    let mut type_names: Vec<String> = types
+    let mut type_names: Vec<String> = ir
+        .types
         .iter()
         .flat_map(|t| t.exported_names())
         .map(str::to_string)
         .collect();
     type_names.sort();
-    let mut error_names: Vec<String> = errors.iter().map(|e| e.class_name.clone()).collect();
+    // Hoisted tag types are re-exported at the package root through their tag
+    // submodule (`from .inlined import InlinedSearchResponse`), grouped per tag.
+    let mut hoisted_by_tag: BTreeMap<String, Vec<String>> = BTreeMap::new();
+    for tt in &ir.tag_types {
+        hoisted_by_tag
+            .entry(tt.module.clone())
+            .or_default()
+            .extend(tt.decl.exported_names().into_iter().map(str::to_string));
+    }
+    let environment = ir.environment.as_ref();
+    let mut error_names: Vec<String> = ir.errors.iter().map(|e| e.class_name.clone()).collect();
     error_names.sort();
     let mut module_names: Vec<String> = modules.iter().map(|m| (*m).clone()).collect();
     module_names.sort();
@@ -697,6 +850,9 @@ fn root_init_file(
             std::slice::from_ref(&e.enum_name),
             4,
         ));
+    }
+    for (tag, names) in &hoisted_by_tag {
+        tc.push_str(&from_import_block(&format!(".{tag}"), names, 4));
     }
     tc.push_str(&from_import_block(
         ".version",
@@ -720,6 +876,11 @@ fn root_init_file(
     if let Some(e) = environment {
         pairs.push((e.enum_name.clone(), ".environment".to_string()));
     }
+    for (tag, names) in &hoisted_by_tag {
+        for n in names {
+            pairs.push((n.clone(), format!(".{tag}")));
+        }
+    }
     pairs.push(("__version__".to_string(), ".version".to_string()));
 
     let names: Vec<String> = pairs.iter().map(|(n, _)| n.clone()).collect();
@@ -731,17 +892,18 @@ fn root_init_file(
 
 /// Whether Fern shows a `...` placeholder for an endpoint's body in the README's
 /// abbreviated snippets (versus empty parens). Empirically `...` appears for a
-/// "fully-specified" body: an inline object with *two or more* fields all of which
-/// are required, or a container body. A body with any optional field, a lone
-/// required field, a union, an enum/scalar, or no body renders empty parens (a
-/// single-field inline body — e.g. servers-webhooks' `create` — shows `()`, while
-/// the two-required-field `gettoken` shows `...`).
+/// "non-trivial" body: a container body, or an inline object that either carries
+/// an object/union-typed field (one serialized through the convert wrapper, e.g.
+/// `inline`'s `filter`) or has two-or-more fields all required (`gettoken`). A body
+/// of only scalar fields with any optional one (`createaccount`) or a single field
+/// (`create`), or a union/enum/scalar/no body, renders empty parens.
 fn complex_body(ep: &Endpoint, types: &[TypeDecl]) -> bool {
     match &ep.request_body {
         None => false,
         Some(RequestBody::Bytes) => true,
         Some(RequestBody::Inline(fields)) => {
-            fields.len() >= 2 && fields.iter().all(|f| f.spec_required)
+            fields.iter().any(|f| f.convert)
+                || (fields.len() >= 2 && fields.iter().all(|f| f.spec_required))
         }
         Some(RequestBody::Form(form)) => {
             form.fields.iter().any(|f| f.is_file) || form.fields.iter().all(|f| f.spec_required)
@@ -873,6 +1035,7 @@ fn reference_file(
     env: &Environment<'static>,
     ir: &Ir,
     modules: &[&String],
+    tag_types: &BTreeMap<String, String>,
 ) -> Result<Option<GeneratedFile>> {
     let pkg = &ir.package_name;
     let mut blocks: Vec<String> = vec!["# Reference".to_string()];
@@ -891,7 +1054,7 @@ fn reference_file(
         any = true;
         blocks.push(format!("## {}", naming::to_pascal_case(module)));
         for ep in eps {
-            blocks.push(reference_entry(env, ir, ep, module, pkg)?);
+            blocks.push(reference_entry(env, ir, ep, module, pkg, tag_types)?);
             blocks.push(String::new());
         }
     }
@@ -934,8 +1097,9 @@ fn reference_entry(
     ep: &Endpoint,
     module: &str,
     pkg: &str,
+    tag_types: &BTreeMap<String, String>,
 ) -> Result<String> {
-    let mut imports = Imports::default();
+    let mut imports = Imports::at(RefLoc::Client(module.to_string()), tag_types);
     let mp = method_params(ep, &mut imports);
 
     // The example (sync form). Bytes bodies are filtered out before this point.
@@ -1326,18 +1490,31 @@ fn render_class_body(
     )
 }
 
-/// Render one type declaration to a file body.
-fn render_type_decl(env: &Environment<'static>, decl: &TypeDecl) -> Result<String> {
+/// Render one type declaration to a file body. `loc` is the file's location
+/// (package-root `types/` or a tag's `types/`), which sets the `core`/type import
+/// depth; `tag_types` maps hoisted type names to their tags for those references.
+fn render_type_decl(
+    env: &Environment<'static>,
+    decl: &TypeDecl,
+    loc: RefLoc,
+    tag_types: &BTreeMap<String, String>,
+) -> Result<String> {
+    // A tag type sits one package deeper, so `core` is reached with an extra dot.
+    let core = if matches!(loc, RefLoc::TagTypes(_)) {
+        "...core.pydantic_utilities"
+    } else {
+        "..core.pydantic_utilities"
+    };
     match decl {
         TypeDecl::Object(obj) => {
-            let mut imports = Imports::default();
+            let mut imports = Imports::at(loc, tag_types);
             imports.add_plain("typing");
             imports.add_plain("pydantic");
-            imports.add_from("..core.pydantic_utilities", "IS_PYDANTIC_V2");
+            imports.add_from(core, "IS_PYDANTIC_V2");
             // Bases come from an `allOf`'s `$ref` members; with none, the model
             // extends Fern's `UniversalBaseModel`.
             let bases = if obj.bases.is_empty() {
-                imports.add_from("..core.pydantic_utilities", "UniversalBaseModel");
+                imports.add_from(core, "UniversalBaseModel");
                 "UniversalBaseModel".to_string()
             } else {
                 for base in &obj.bases {
@@ -1372,7 +1549,7 @@ fn render_type_decl(env: &Environment<'static>, decl: &TypeDecl) -> Result<Strin
             )
         }
         TypeDecl::Alias(alias) => {
-            let mut imports = Imports::default();
+            let mut imports = Imports::at(loc, tag_types);
             let target = render_type(&alias.target, &mut imports);
             let assignment = format!("{} = {}", alias.name, target.flat());
             render(
@@ -1484,7 +1661,7 @@ fn raw_type_str_ctx(t: &TypeRef, imports: &mut Imports, seq: bool) -> String {
             "dt.date".to_string()
         }
         TypeRef::Named(class) => {
-            imports.add_from(&format!("..types.{}", naming::module_name(class)), class);
+            imports.add_type(class);
             class.clone()
         }
         TypeRef::Optional(inner) => {
@@ -2274,6 +2451,7 @@ struct ClientCtx<'a> {
     types: &'a [TypeDecl],
     auth: &'a Auth,
     has_environment: bool,
+    tag_types: &'a BTreeMap<String, String>,
 }
 
 /// Assemble a per-tag `client.py`: the sync and async high-level clients that
@@ -2285,7 +2463,7 @@ fn client_file(
     endpoints: &[&Endpoint],
 ) -> Result<GeneratedFile> {
     let stem = naming::to_pascal_case(cx.module);
-    let mut imports = Imports::default();
+    let mut imports = Imports::at(RefLoc::Client(cx.module.to_string()), cx.tag_types);
     imports.add_plain("typing");
     imports.add_from("..core.client_wrapper", "AsyncClientWrapper");
     imports.add_from("..core.client_wrapper", "SyncClientWrapper");
@@ -2904,8 +3082,9 @@ fn raw_client_file(
     pkg: &str,
     module: &str,
     endpoints: &[&Endpoint],
+    tag_types: &BTreeMap<String, String>,
 ) -> Result<GeneratedFile> {
-    let mut imports = Imports::default();
+    let mut imports = Imports::at(RefLoc::Client(module.to_string()), tag_types);
     // Imports every raw client needs regardless of operation shape.
     imports.add_plain("typing");
     imports.add_from("json.decoder", "JSONDecodeError");
@@ -3059,7 +3238,7 @@ mod tests {
     use super::{
         abbrev_call, auth_client_parts, auth_example, auth_wrapper_parts, environment, field_decl,
         raw_method, raw_type_str, render, render_class_body, url_arg, FieldView, Imports, ParamRow,
-        ReferenceEntryView, RenderedField, RootClientView, RootModuleView,
+        RefLoc, ReferenceEntryView, RenderedField, RootClientView, RootModuleView,
     };
     use crate::ir::{
         Auth, BodyField, Endpoint, ErrorResponse, PathParam, Prim, RequestBody, TypeRef,
@@ -3188,7 +3367,8 @@ mod tests {
             env_doc: String::new(),
             base_url_ctor: "        base_url: str,\n".to_string(),
             wrapper_base_url: "base_url".to_string(),
-            example_base_url: "        base_url=\"https://yourhost.com/path/to/api\",\n".to_string(),
+            example_base_url: "        base_url=\"https://yourhost.com/path/to/api\",\n"
+                .to_string(),
             modules: vec![RootModuleView {
                 attr: "endpoints_put".to_string(),
                 cls: "EndpointsPutClient".to_string(),
@@ -3344,7 +3524,10 @@ mod tests {
 
     #[test]
     fn raw_type_str_renders_every_shape() {
-        let mut i = Imports::default();
+        let mut i = Imports::at(
+            RefLoc::Client("m".to_string()),
+            &std::collections::BTreeMap::new(),
+        );
         let str_of = |t: &TypeRef, i: &mut Imports| raw_type_str(t, i);
         assert_eq!(str_of(&TypeRef::Primitive(Prim::Str), &mut i), "str");
         assert_eq!(str_of(&TypeRef::Primitive(Prim::Int), &mut i), "int");

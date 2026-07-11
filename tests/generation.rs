@@ -870,14 +870,21 @@ fn unmapped_error_status_keeps_the_module_unemittable() {
     assert!(!files.contains_key("src/acme/things/raw_client.py"));
 }
 
-/// An inline-object success response (which Fern would hoist into a named type)
-/// is outside the emittable subset — exercising the response-support gate.
+/// An inline-object success response is hoisted into a named `{Tag}{Method}Response`
+/// model in the tag's own `types/` package, and the module becomes emittable.
 #[test]
-fn inline_object_response_keeps_the_module_unemittable() {
+fn inline_object_response_is_hoisted_into_a_tag_type() {
     let files = render(
         "openapi: 3.0.0\ninfo:\n  title: E\npaths:\n  /y:\n    get:\n      operationId: widgets_get\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema:\n                type: object\n                properties:\n                  name:\n                    type: string\n",
     );
-    assert!(!files.contains_key("src/acme/widgets/raw_client.py"));
+    // The response object is hoisted under the tag's `types/` package and the raw
+    // client (now emittable) returns it.
+    let hoisted = "src/acme/widgets/types/widgets_get_response.py";
+    assert!(files.contains_key(hoisted), "expected {hoisted}");
+    assert!(files[hoisted].contains("class WidgetsGetResponse"));
+    let raw = &files["src/acme/widgets/raw_client.py"];
+    assert!(raw.contains("HttpResponse[WidgetsGetResponse]"));
+    assert!(raw.contains("from .types.widgets_get_response import WidgetsGetResponse"));
 }
 
 /// A discriminated `oneOf` with a `mapping` emits per-variant wrapper models over

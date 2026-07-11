@@ -23,6 +23,9 @@ pub struct Ir {
     pub client_name: String,
     /// Generated types, in document order.
     pub types: Vec<TypeDecl>,
+    /// Types hoisted out of an operation's inline request/response body, each
+    /// scoped to its tag's own `types/` package (Fern's `inlined/types/` layout).
+    pub tag_types: Vec<TagTypeDecl>,
     /// Endpoint client module (directory) names, one per operation group, in
     /// first-seen order.
     pub endpoint_modules: Vec<String>,
@@ -458,6 +461,18 @@ pub struct BodyField {
     pub is_file: bool,
 }
 
+/// A type hoisted out of an operation's inline request/response body. Unlike a
+/// top-level [`TypeDecl`] (which lives in the package-root `types/`), a tag type
+/// lives in its owning tag's own `types/` package — Fern's
+/// `inlined/types/inlined_search_response.py` layout.
+#[derive(Debug)]
+pub struct TagTypeDecl {
+    /// The owning tag's client-module (directory) name, e.g. `inlined`.
+    pub module: String,
+    /// The generated type.
+    pub decl: TypeDecl,
+}
+
 /// A generated top-level type.
 #[derive(Debug)]
 pub enum TypeDecl {
@@ -648,8 +663,9 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
     }
     // Endpoint resolution consults the built types to hoist a plain-object `$ref`
     // body's fields and to decide which of them serialize through the convert
-    // wrapper, so it runs after the type layer is built.
-    let endpoints = endpoints(doc, &builder.types);
+    // wrapper, so it runs after the type layer is built. It also hoists inline
+    // request/response bodies into their tags' own `types/` packages.
+    let (endpoints, tag_types) = endpoints(doc, &builder.types);
     let errors = error_classes(&endpoints);
 
     // Fern does not emit a standalone type for a schema used *only* as an inlined
@@ -673,6 +689,7 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         project_name: config.project_name.clone(),
         client_name,
         types: builder.types,
+        tag_types,
         endpoint_modules: endpoint_modules(doc),
         endpoints,
         errors,
@@ -702,15 +719,24 @@ fn error_classes(endpoints: &[Endpoint]) -> Vec<ErrorClass> {
 }
 
 /// Resolve every operation into an [`Endpoint`], in document-traversal order
-/// (paths in document order, methods in a stable per-path order).
-fn endpoints(doc: &OpenApi, types: &[TypeDecl]) -> Vec<Endpoint> {
+/// (paths in document order, methods in a stable per-path order). Inline
+/// request/response bodies are hoisted into per-tag types, collected alongside.
+fn endpoints(doc: &OpenApi, types: &[TypeDecl]) -> (Vec<Endpoint>, Vec<TagTypeDecl>) {
     let mut out = Vec::new();
+    let mut tag_types = Vec::new();
     for (path, item) in &doc.paths {
         for (http_method, op) in item.operations() {
-            out.push(build_endpoint(doc, types, path, http_method, op));
+            out.push(build_endpoint(
+                doc,
+                types,
+                path,
+                http_method,
+                op,
+                &mut tag_types,
+            ));
         }
     }
-    out
+    (out, tag_types)
 }
 
 /// Resolve one operation, deciding whether it is within the subset crozier can
@@ -722,8 +748,16 @@ fn build_endpoint(
     path: &str,
     http_method: &'static str,
     op: &Operation,
+    tag_types: &mut Vec<TagTypeDecl>,
 ) -> Endpoint {
     let module = endpoint_module(&op.operation_id);
+    let method = endpoint_method_name(&op.operation_id);
+    // Inline (non-`$ref`) request/response objects hoist into this tag's own
+    // `types/` package; the hoister accumulates them, keyed to the tag below.
+    let mut hoister = InlineHoister {
+        root_types: types,
+        out: Vec::new(),
+    };
     let mut path_params: Vec<PathParam> = op
         .parameters
         .iter()
@@ -785,15 +819,42 @@ fn build_endpoint(
     let errors = resolve_errors(op);
     let errors_ok = errors.is_some();
     let errors = errors.unwrap_or_default();
-    let response = success_response(op);
+    // The success response: a `$ref`/scalar/container passes straight through; an
+    // inline object body is hoisted into a `{Tag}{Method}Response` model.
+    let response = match success_response_schema(op) {
+        Some(schema) if is_inline_struct(schema) => {
+            let name = format!(
+                "{}{}Response",
+                naming::to_pascal_case(&module),
+                naming::to_pascal_case(&method)
+            );
+            hoister.hoist_object(&name, schema);
+            Some(TypeRef::Named(name))
+        }
+        _ => success_response(op),
+    };
 
     // A request body is either absent, within the subset crozier can render, or
-    // unsupported.
+    // unsupported. Its inline nested objects hoist under a `{Tag}{Method}Request`
+    // context name.
+    let request_ctx = format!(
+        "{}{}Request",
+        naming::to_pascal_case(&module),
+        naming::to_pascal_case(&method)
+    );
     let request_body = op
         .request_body
         .as_ref()
-        .and_then(|rb| resolve_request_body(doc, types, rb));
+        .and_then(|rb| resolve_request_body(doc, types, rb, &mut hoister, &request_ctx));
     let body_ok = op.request_body.is_none() || request_body.is_some();
+
+    // Register the hoisted inline types under this tag's `types/` package.
+    for decl in hoister.out {
+        tag_types.push(TagTypeDecl {
+            module: module.clone(),
+            decl,
+        });
+    }
 
     // A path parameter whose Python name collides with a hoisted body field is
     // suffixed with `_` (the body field keeps the plain name), matching Fern.
@@ -819,7 +880,7 @@ fn build_endpoint(
 
     Endpoint {
         module,
-        method_name: endpoint_method_name(&op.operation_id),
+        method_name: method,
         http_method,
         path: path.to_string(),
         path_params,
@@ -899,6 +960,8 @@ fn resolve_request_body(
     doc: &OpenApi,
     types: &[TypeDecl],
     rb: &crate::openapi::RequestBody,
+    hoister: &mut InlineHoister,
+    request_ctx: &str,
 ) -> Option<RequestBody> {
     // A raw `application/octet-stream` body is a bytes stream, independent of its
     // schema — Fern types it as a fixed `Union[bytes, ...]` and sends `content=`.
@@ -952,9 +1015,10 @@ fn resolve_request_body(
         return None;
     }
     // An inline object body (properties written directly, not behind a `$ref`) is
-    // inlined field-by-field, exactly like a `$ref` object.
+    // inlined field-by-field, exactly like a `$ref` object. Its own nested inline
+    // objects hoist into `{request_ctx}{Prop}` models.
     if !schema.properties.is_empty() {
-        return hoist_inline_object(schema, types).map(RequestBody::Inline);
+        return hoist_inline_object(schema, hoister, request_ctx).map(RequestBody::Inline);
     }
     // An inline map body (`type: object` + `additionalProperties`): a single
     // `request` argument, convert-wrapped when its values are objects/unions. Like
@@ -986,10 +1050,15 @@ fn resolve_request_body(
 }
 
 /// Hoist an inline object body's properties into request [`BodyField`]s. Mirrors
-/// [`hoist_fields`] but resolves an unnamed schema directly. Returns `None` if a
-/// property is an inline string enum (which Fern would hoist into its own named
-/// type — not yet supported for request bodies).
-fn hoist_inline_object(schema: &Schema, types: &[TypeDecl]) -> Option<Vec<BodyField>> {
+/// [`hoist_fields`] but resolves an unnamed schema directly. A nested inline
+/// object property hoists into a `{ctx}{Prop}` model via `hoister`. Returns `None`
+/// if a property is an inline string enum (which Fern would hoist into its own
+/// named type — not yet supported for request bodies).
+fn hoist_inline_object(
+    schema: &Schema,
+    hoister: &mut InlineHoister,
+    ctx: &str,
+) -> Option<Vec<BodyField>> {
     let required: Vec<&str> = schema.required.iter().map(String::as_str).collect();
     let mut fields = Vec::new();
     for (prop, prop_schema) in &schema.properties {
@@ -998,11 +1067,11 @@ fn hoist_inline_object(schema: &Schema, types: &[TypeDecl]) -> Option<Vec<BodyFi
         }
         let spec_required = required.contains(&prop.as_str());
         let optional = is_optional(prop_schema) || !spec_required;
-        let type_ref = base_type_ref(prop_schema);
+        let type_ref = hoister.prop_type_ref(ctx, prop, prop_schema);
         fields.push(BodyField {
             wire_name: prop.clone(),
             py_name: naming::field_name(prop),
-            convert: type_needs_convert(&type_ref, types),
+            convert: hoister.needs_convert(&type_ref),
             type_ref,
             optional,
             spec_required,
@@ -1011,6 +1080,84 @@ fn hoist_inline_object(schema: &Schema, types: &[TypeDecl]) -> Option<Vec<BodyFi
         });
     }
     Some(fields)
+}
+
+/// Hoists inline (non-`$ref`) request/response objects into named tag-scoped
+/// [`ObjectType`]s. Nested inline objects hoist recursively as
+/// `{parent}{PascalCase(prop)}`; `$ref`s and scalars pass through unchanged. Fern
+/// derives these names structurally from the operation and property path, ignoring
+/// any `title` on the inline schema.
+struct InlineHoister<'a> {
+    /// The package-root types, consulted to decide whether a `$ref` field needs
+    /// the `convert_and_respect_annotation_metadata` wrapper.
+    root_types: &'a [TypeDecl],
+    /// The hoisted object types accumulated for the current operation's tag.
+    out: Vec<TypeDecl>,
+}
+
+impl InlineHoister<'_> {
+    /// Build a named [`ObjectType`] from an inline object schema, recursively
+    /// hoisting its nested inline-object properties, and push it to `out`.
+    fn hoist_object(&mut self, name: &str, schema: &Schema) {
+        let required: Vec<&str> = schema.required.iter().map(String::as_str).collect();
+        let mut fields = Vec::new();
+        for (prop, prop_schema) in &schema.properties {
+            let spec_required =
+                required.contains(&prop.as_str()) && prop_schema.read_only != Some(true);
+            let optional = is_optional(prop_schema) || !spec_required;
+            fields.push(Field {
+                wire_name: prop.clone(),
+                py_name: naming::field_name(prop),
+                type_ref: self.prop_type_ref(name, prop, prop_schema),
+                optional,
+                spec_required,
+                docstring: clean_doc(prop_schema.description.as_deref()),
+            });
+        }
+        self.out.push(TypeDecl::Object(ObjectType {
+            name: name.to_string(),
+            module: naming::module_name(name),
+            bases: Vec::new(),
+            fields,
+            docstring: clean_doc(schema.description.as_deref()),
+        }));
+    }
+
+    /// The type of a property, hoisting an inline object (directly or as an array
+    /// item) into `{parent}{PascalCase(prop)}`. A `$ref` or scalar passes through
+    /// [`base_type_ref`].
+    fn prop_type_ref(&mut self, parent: &str, prop: &str, prop_schema: &Schema) -> TypeRef {
+        if prop_schema.reference.is_none() {
+            if is_inline_struct(prop_schema) {
+                let nested = format!("{parent}{}", naming::class_name(prop));
+                self.hoist_object(&nested, prop_schema);
+                return TypeRef::Named(nested);
+            }
+            // An array of inline objects hoists the item type the same way.
+            if prop_schema.ty.as_ref().and_then(|t| t.primary()) == Some("array") {
+                if let Some(item) = prop_schema.items.as_deref() {
+                    if is_inline_struct(item) {
+                        let nested = format!("{parent}{}", naming::class_name(prop));
+                        self.hoist_object(&nested, item);
+                        let inner = TypeRef::Named(nested);
+                        return if prop_schema.unique_items == Some(true) {
+                            TypeRef::Set(Box::new(inner))
+                        } else {
+                            TypeRef::List(Box::new(inner))
+                        };
+                    }
+                }
+            }
+        }
+        base_type_ref(prop_schema)
+    }
+
+    /// Whether a type serializes through the convert wrapper — true when it
+    /// references a generated object/union, whether a package-root type or one of
+    /// the inline types just hoisted.
+    fn needs_convert(&self, t: &TypeRef) -> bool {
+        type_needs_convert(t, self.root_types) || type_needs_convert(t, &self.out)
+    }
 }
 
 /// Hoist a form body's properties into [`BodyField`]s, marking `format: binary`
@@ -1146,17 +1293,11 @@ fn success_response_schema(op: &Operation) -> Option<&Schema> {
     response.content.get("application/json")?.schema.as_ref()
 }
 
-/// Whether crozier can render an operation's success response. Any resolved shape
-/// works (a named model, a scalar, a container) *except* an inline object with
-/// declared properties, which Fern would hoist into its own named response type —
-/// not yet supported (see the request/response hoisting gap in `docs/matching.md`).
-fn response_supported(op: &Operation) -> bool {
-    match success_response_schema(op) {
-        None => true,
-        Some(schema) => {
-            schema.reference.is_some() || (schema.properties.is_empty() && schema.all_of.is_none())
-        }
-    }
+/// Whether crozier can render an operation's success response. Every resolved
+/// shape works: a named model, a scalar, a container, or an inline object (now
+/// hoisted into a named `{Tag}{Method}Response` model, see [`InlineHoister`]).
+fn response_supported(_op: &Operation) -> bool {
+    true
 }
 
 /// The generated Python method name for an operation. Mirrors the module rule
@@ -1519,6 +1660,14 @@ fn is_map(schema: &Schema) -> bool {
 fn is_inline_object(schema: &Schema) -> bool {
     schema.reference.is_none()
         && (!schema.properties.is_empty() || schema.all_of.is_some() || is_object_type(schema))
+}
+
+/// An inline (not `$ref`) object with *declared structure* — properties or an
+/// `allOf`. Unlike [`is_inline_object`] this excludes a bare `type: object` map
+/// (which Fern renders as a `Dict`, not a hoisted model), so it is the test for
+/// hoisting an inline request/response body into a named type.
+fn is_inline_struct(schema: &Schema) -> bool {
+    schema.reference.is_none() && (!schema.properties.is_empty() || schema.all_of.is_some())
 }
 
 /// The English word for a small ordinal, used to name hoisted union variants
