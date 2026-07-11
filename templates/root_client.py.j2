@@ -40,7 +40,7 @@ class {{ class_name }}:
         )
         self._client_wrapper = {{ wrapper }}(
             base_url={{ wrapper_base_url }},
-{{ gh_wrapper }}            {{ wrapper_arg }}={{ wrapper_arg }},
+{{ gh_wrapper }}{{ wrapper_arg }}
             headers=headers,
             httpx_client=httpx_client
             if httpx_client is not None

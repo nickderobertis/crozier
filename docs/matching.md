@@ -180,25 +180,15 @@ here means matching Fern, not `ruff`.
 
 ## Known gaps (roadmap)
 
-The `exhaustive` corpus is fully matched, and eight feature-coverage targets are
+The `exhaustive` corpus is fully matched, and twelve feature-coverage targets are
 **fully matched too** — `auth-schemes`, `discriminated-unions`,
 `schema-constraints`, `integer-enums`, `form-bodies`, `inline-request-response`,
-`cookie-parameters`, and `servers-webhooks`. (The exact matched-file set for each
-corpus is its `matched` array in `tests/e2e.rs`, the single source of truth; counts
-are deliberately not restated here so they cannot drift.) The items below record how
-each shape generates; the remaining unproven paths are called out inline.
-
-Four further **gap targets** vendor a spec but do **not** yet carry a golden
-`expected/` tree (their `matched` array is empty, so the e2e only asserts crozier
-consumes the spec without panicking): `basic-auth` and `oauth-client-credentials`
-(a basic/OAuth2 primary scheme, where the auth model currently falls back to the
-optional-bearer wrapper — items 1 below), `inline-array-request` (a request body
-that is an array of *inline* objects — item 4), and `writeonly-fields` (one schema
-used as both request and response with a required `readOnly`/`writeOnly` field,
-forcing Fern's request-vs-response split — item 8; it also carries a required
-`date` field for the unverified date example placeholder — item 2). Generate their
-golden trees with `scripts/generate-fern-fixture.sh <fixture>` on a Docker host
-(see "Generating a gap target's golden tree" below), then grow the `matched` list.
+`cookie-parameters`, `servers-webhooks`, and the four former gap targets
+`basic-auth`, `oauth-client-credentials`, `inline-array-request`, and
+`writeonly-fields`. (The exact matched-file set for each corpus is its `matched`
+array in `tests/e2e.rs`, the single source of truth; counts are deliberately not
+restated here so they cannot drift.) The items below record how each shape
+generates; the remaining unproven paths are called out inline.
 
 The generated **README/reference** now pick the first endpoint with a request body
 for the worked example and abbreviate the error-handling/advanced snippets to `...`
@@ -220,17 +210,13 @@ target/release/crozier generate \
 
 ### Generating a gap target's golden tree
 
-The gap targets (`basic-auth`, `oauth-client-credentials`, `inline-array-request`,
-`writeonly-fields`) ship only `openapi.yml`. Fern's generator runs only under a
-container runtime, so the golden `expected/` tree is produced on a Docker host, not
-in CI. On such a machine:
+A new gap target ships only `openapi.yml`; its golden `expected/` tree comes from
+Fern, whose generator runs only under a container runtime — so the tree is produced
+on a Docker host, not in CI. On such a machine:
 
 ```
 # prerequisites: Docker running, `npm i -g fern-api`, `cargo build --release`
-scripts/generate-fern-fixture.sh basic-auth          # writes tests/fixtures/basic-auth/expected/
-scripts/generate-fern-fixture.sh oauth-client-credentials
-scripts/generate-fern-fixture.sh inline-array-request
-scripts/generate-fern-fixture.sh writeonly-fields
+scripts/generate-fern-fixture.sh <fixture>   # writes tests/fixtures/<fixture>/expected/
 ```
 
 The script scaffolds a Fern workspace around the vendored spec, runs
@@ -240,6 +226,8 @@ result as `tests/fixtures/<fixture>/expected/`. Commit that tree, then diff croz
 against it and add each byte-matching file to the fixture's `matched` array in
 `tests/e2e.rs` (the e2e starts comparing it immediately). Anything that does not
 match is generator work to land next; keep the file out of `matched` until it does.
+This is exactly how the four former gap targets (`basic-auth`,
+`oauth-client-credentials`, `inline-array-request`, `writeonly-fields`) were closed.
 
 1. **Auth models beyond bearer** (`auth-schemes`, partially implemented).
    `components.securitySchemes` plus each operation's `security` now feed an
@@ -251,13 +239,23 @@ match is generator work to land next; keep the file out of `matched` until it do
    auth model is also threaded through the root `client.py` (constructor param, the
    docstring `Parameters` line, and the `Examples` instantiation) and every worked
    `Examples` snippet (per-tag `client.py`, README, reference), so `auth-schemes`
-   matches its root + per-tag clients and reference under api-key. Not yet handled:
-   basic/OAuth2 primaries (no fixture exercises them; they fall back to the
-   optional-bearer wrapper), and cookie-parameters' global-header promotion.
+   matches its root + per-tag clients and reference under api-key. **HTTP `basic`**
+   is now a first-class primary ([`ir::Auth::Basic`]): a required `username`/
+   `password` pair (each `str` or callable), the `httpx.BasicAuth(...)._auth_header`
+   header wiring, and both credentials threaded through the wrapper, root/per-tag
+   clients, and worked examples — `basic-auth` matches in full. **OAuth2** as a
+   plain-OpenAPI primary (no `x-fern-*` extensions) produces output identical to the
+   optional-bearer fallback, which `oauth-client-credentials` pins in full; a
+   token-provider wrapper would need Fern's OAuth extensions, which the OpenAPI
+   document does not carry. Still unexercised: an *optional* basic primary (no
+   fixture splits basic on `required`).
 2. **Broader example coverage.** The example-value generator is proven against the
-   corpus (objects, unions, enums, containers, maps, datetimes, `long`). Shapes the
-   corpus lacks — e.g. a required `date` example, a nameless-slot enum — carry
-   plausible-but-unverified placeholders; confirm them as new fixtures land.
+   corpus (objects, unions, enums, containers, maps, datetimes, a required `date`
+   via `writeonly-fields`, `long`) and constructs hoisted tag-scoped element types
+   (importing them `from <pkg>.<tag>`, e.g. `inline-array-request`'s
+   `ItemsCreateBatchRequestItem`). Shapes the corpus still lacks — e.g. a
+   nameless-slot enum — carry plausible-but-unverified placeholders; confirm them as
+   new fixtures land.
    *Integer enums* now generate: a `type: integer` enum becomes a plain `Name = int`
    alias (Fern does not build a `Literal` union for them), and a `$ref` integer-enum
    request body is emittable (`json=request` + content-type header, like a string
@@ -280,7 +278,13 @@ match is generator work to land next; keep the file out of `matched` until it do
    ignoring any `title`. An [`ir::InlineHoister`] builds these tag-scoped types; a
    location-aware import resolver (`RefLoc`) picks the right relative path from any
    file, and the tag package/`types` package/root `__init__` re-export them.
-   `inline-request-response` matches in full.
+   `inline-request-response` matches in full. An **inline array body** hoists its
+   *element* the same way, as `{Tag}{Method}RequestItem`
+   (`inline-array-request`'s `ItemsCreateBatchRequestItem`), so the argument is
+   `Sequence[{Ctx}Item]` through the convert wrapper and the worked example
+   constructs it, importing it `from <pkg>.<tag>`; the hoisted-type method segment
+   preserves the operationId's camelCase ([`ir::endpoint_type_method`]:
+   `createBatch` → `CreateBatch`, distinct from the lowercased Python method).
 5. **Cookie parameters + global-header promotion (implemented).** A `cookie` param
    (`ParameterLocation::Cookie`) is dropped from the method signature entirely, and
    an **optional** operation header is promoted to a client-wrapper-level "global"
@@ -310,8 +314,13 @@ match is generator work to land next; keep the file out of `matched` until it do
    a `readOnly` property is now rendered optional even when `required` (it is
    server-populated), and `additionalProperties: true` maps to
    `Dict[str, Optional[Any]]`. The whole `schema-constraints` type + endpoint layer
-   matches (only the README example placeholder differs). Not yet exercised:
-   request-vs-response splitting for a `writeOnly` field that is also `required`.
+   matches (only the README example placeholder differs). When one schema is used as
+   *both* request body and response, Fern orders the inlined request signature and
+   docstring **required-first** (optional `= OMIT` args last, a stable partition that
+   preserves schema order within each group) while the `json={...}` dict keeps pure
+   schema order — so a required `readOnly`/`writeOnly` field lands after the plain
+   required ones. `writeonly-fields` pins this in full. Not yet exercised: dropping a
+   `writeOnly`-only field from the *response* representation (Fern keeps it here).
 9. **Document-level `servers` (implemented); `webhooks`/`callbacks` (ignored).**
    When the document declares `servers`, crozier emits `environment.py` (an
    `enum.Enum` of environments) and threads an `environment` / optional-`base_url`

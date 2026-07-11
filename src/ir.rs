@@ -141,8 +141,8 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
 
 /// The SDK's authentication model, derived from `components.securitySchemes` and
 /// how operations reference them. Only the schemes crozier reproduces byte-for-byte
-/// are distinguished; anything else (basic, oauth2, or no scheme) falls back to an
-/// optional bearer `token`, matching Fern's default client wrapper.
+/// are distinguished; anything else (oauth2 or no scheme) falls back to an optional
+/// bearer `token`, matching Fern's default client wrapper.
 #[derive(Debug, Clone)]
 pub enum Auth {
     /// A `type: apiKey` header credential: a required-or-optional `api_key: str`
@@ -158,6 +158,9 @@ pub enum Auth {
         /// Whether every operation is authenticated (the token is required).
         required: bool,
     },
+    /// HTTP `basic` credentials: a required `username`/`password` pair (each a
+    /// `str` or callable), sent via `httpx.BasicAuth` as `Authorization: Basic`.
+    Basic,
 }
 
 /// Derive the [`Auth`] model: the first declared scheme selects the credential
@@ -179,7 +182,10 @@ fn auth_model(doc: &OpenApi) -> Auth {
         Some(s) if s.ty == SecuritySchemeType::Http && s.scheme == Some(HttpAuthScheme::Bearer) => {
             Auth::Bearer { required }
         }
-        // Basic/oauth2/unknown/no scheme → Fern's default optional bearer token.
+        Some(s) if s.ty == SecuritySchemeType::Http && s.scheme == Some(HttpAuthScheme::Basic) => {
+            Auth::Basic
+        }
+        // oauth2/unknown/no scheme → Fern's default optional bearer token.
         _ => Auth::Bearer { required: false },
     }
 }
@@ -884,13 +890,12 @@ fn build_endpoint(
     let errors = errors.unwrap_or_default();
     // The success response: a `$ref`/scalar/container passes straight through; an
     // inline object body is hoisted into a `{Tag}{Method}Response` model.
+    // The hoisted-type method segment preserves the operationId's camelCase
+    // (`createBatch` → `CreateBatch`), distinct from the lowercased Python `method`.
+    let type_method = endpoint_type_method(&op.operation_id);
     let response = match success_response_schema(op) {
         Some(schema) if is_inline_struct(schema) => {
-            let name = format!(
-                "{}{}Response",
-                naming::to_pascal_case(&module),
-                naming::to_pascal_case(&method)
-            );
+            let name = format!("{}{}Response", naming::to_pascal_case(&module), type_method);
             hoister.hoist_object(&name, schema);
             Some(TypeRef::Named(name))
         }
@@ -900,11 +905,7 @@ fn build_endpoint(
     // A request body is either absent, within the subset crozier can render, or
     // unsupported. Its inline nested objects hoist under a `{Tag}{Method}Request`
     // context name.
-    let request_ctx = format!(
-        "{}{}Request",
-        naming::to_pascal_case(&module),
-        naming::to_pascal_case(&method)
-    );
+    let request_ctx = format!("{}{}Request", naming::to_pascal_case(&module), type_method);
     let request_body = op
         .request_body
         .as_ref()
@@ -1094,8 +1095,19 @@ fn resolve_request_body(
     // An inline array body: a single `request` argument. A container of objects
     // serializes through the convert wrapper; either way, no content-type header.
     if schema.ty.as_ref().and_then(|t| t.primary()) == Some("array") {
-        let item = base_type_ref(schema.items.as_ref()?);
-        let convert = type_needs_convert(&item, types);
+        let items = schema.items.as_ref()?;
+        // An array of *inline* objects hoists its element into `{request_ctx}Item`
+        // (Fern's structural name for an array body's element) in the tag's `types/`
+        // package, so the argument is `Sequence[{Ctx}Item]` rather than
+        // `Sequence[Any]`. An array of `$ref`/scalar items passes through unchanged.
+        let item = if items.reference.is_none() && is_inline_struct(items) {
+            let name = format!("{request_ctx}Item");
+            hoister.hoist_object(&name, items);
+            TypeRef::Named(name)
+        } else {
+            base_type_ref(items)
+        };
+        let convert = hoister.needs_convert(&item);
         return Some(single(
             TypeRef::List(Box::new(item)),
             required,
@@ -1360,6 +1372,20 @@ fn endpoint_method_name(operation_id: &str) -> String {
         naming::to_snake_case(operation_id)
     } else {
         rest.to_lowercase()
+    }
+}
+
+/// The `PascalCase` method segment used in a hoisted inline type's name
+/// (`{Tag}{Method}Request`/`Response`). Unlike [`endpoint_method_name`] — which
+/// lowercases the segment for the Python method identifier — this preserves the
+/// operationId's camelCase word boundaries, so `items_createBatch` yields
+/// `CreateBatch` (Fern's `ItemsCreateBatchRequestItem`), not `Createbatch`.
+fn endpoint_type_method(operation_id: &str) -> String {
+    let (group, rest) = operation_id.rsplit_once('_').unwrap_or(("", operation_id));
+    if group.contains('_') {
+        naming::to_pascal_case(operation_id)
+    } else {
+        naming::to_pascal_case(rest)
     }
 }
 
