@@ -2712,8 +2712,62 @@ pub fn write_files(root: &std::path::Path, files: &[GeneratedFile]) -> Result<()
 
 #[cfg(test)]
 mod tests {
-    use super::{raw_method, raw_type_str, url_arg, Imports};
-    use crate::ir::{BodyField, Endpoint, ErrorResponse, PathParam, Prim, RequestBody, TypeRef};
+    use super::{
+        auth_client_parts, auth_example, auth_wrapper_parts, raw_method, raw_type_str, url_arg,
+        Imports,
+    };
+    use crate::ir::{
+        Auth, BodyField, Endpoint, ErrorResponse, PathParam, Prim, RequestBody, TypeRef,
+    };
+
+    #[test]
+    fn auth_fragments_cover_every_scheme() {
+        // api-key required: public `api_key`, unconditional header, no token helper.
+        let w = auth_wrapper_parts(&Auth::ApiKey {
+            header: "X-API-Key".to_string(),
+            required: true,
+        });
+        assert_eq!(w.param, "        api_key: str,\n");
+        assert_eq!(w.assign, "        self.api_key = api_key\n");
+        assert_eq!(
+            w.header_block,
+            "        headers[\"X-API-Key\"] = self.api_key\n"
+        );
+        assert!(w.token_method.is_empty());
+        assert_eq!(w.super_arg, "api_key=api_key");
+
+        // api-key optional: nullable param and a guarded header write.
+        let w = auth_wrapper_parts(&Auth::ApiKey {
+            header: "X-Key".to_string(),
+            required: false,
+        });
+        assert_eq!(w.param, "        api_key: typing.Optional[str] = None,\n");
+        assert_eq!(
+            w.header_block,
+            "        if self.api_key is not None:\n            headers[\"X-Key\"] = self.api_key\n"
+        );
+
+        // bearer required vs optional: the token helper's signature differs.
+        let req = auth_wrapper_parts(&Auth::Bearer { required: true });
+        assert!(req.token_method.contains("-> str:"));
+        assert!(req.header_block.contains("f\"Bearer {self._get_token()}\""));
+        let opt = auth_wrapper_parts(&Auth::Bearer { required: false });
+        assert!(opt.token_method.contains("-> typing.Optional[str]:"));
+        assert!(opt.param.contains("typing.Optional[typing.Union[str"));
+
+        // The root-client fragments and example arg track the same schemes.
+        let c = auth_client_parts(&Auth::ApiKey {
+            header: "X-API-Key".to_string(),
+            required: true,
+        });
+        assert_eq!(c.ctor_param, "        api_key: str,\n");
+        assert_eq!(c.doc_param, "    api_key : str\n");
+        assert_eq!(c.example_line, "        api_key=\"YOUR_API_KEY\",\n");
+        assert_eq!(
+            auth_example(&Auth::Bearer { required: true }),
+            "token=\"YOUR_TOKEN\""
+        );
+    }
 
     fn endpoint(path: &str, params: Vec<PathParam>, response: Option<TypeRef>) -> Endpoint {
         Endpoint {
