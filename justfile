@@ -67,8 +67,17 @@ fixtures-refresh *args:
 # crozier ALREADY reproduces byte-for-byte but are missing from its `matched` list
 # in tests/e2e.rs, printed as ready-to-paste array entries. Not part of `check`.
 # Run after a generator change to grow the manifest. See tests/fixtures/AGENTS.md.
+# The grep is a drift gate: `cargo test <name>` exits 0 even when the exact-name
+# filter matches nothing, so if `report_matched_candidates` is renamed/removed in
+# tests/e2e.rs this recipe would silently no-op — asserting the report's summary
+# line turns that into a hard failure instead.
 fixtures-candidates:
-    cargo test --locked --test e2e -- --ignored --nocapture report_matched_candidates
+    #!/usr/bin/env bash
+    set -uo pipefail
+    out=$(cargo test --locked --test e2e -- --ignored --nocapture report_matched_candidates 2>&1)
+    echo "$out"
+    grep -q 'candidate file(s) across all corpora' <<<"$out" \
+      || { echo "fixtures-candidates: report_matched_candidates produced no report — renamed or removed in tests/e2e.rs?" >&2; exit 1; }
 
 # Install/refresh the llmlint toolchain (oneharness + llmlint). Idempotent.
 setup-llmlint:

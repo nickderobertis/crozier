@@ -10,6 +10,11 @@
 # `just fixtures-candidates`. See tests/fixtures/AGENTS.md.
 #
 # Usage:  scripts/fixture-new.sh <name>
+#
+# llmlint: ignore-file[tool_output_is_signal] this is a scaffolder: its success
+# output — the created path plus a paste-ready Corpus literal and the wiring steps —
+# IS the deliverable, the way `cargo new` / `git init` print next steps, not
+# incidental chatter. The steps mirror tests/fixtures/AGENTS.md.
 set -euo pipefail
 
 name="${1:-}"

@@ -23,10 +23,14 @@
 # The web container's filesystem is cached after the hook completes, so the npm
 # global install and the compiled target/ persist — only the first session pays.
 #
-# llmlint: ignore-file[robust_shell, tool_output_is_signal] deliberate for a
-# session-startup installer: `set -e` is omitted so a flaky step can't abort the
-# hook — the script owns its exit codes and always exits 0; success stays quiet and
-# failures log-and-continue rather than block startup.
+# llmlint: ignore-file[robust_shell, tool_output_is_signal, cli_output_contract]
+# deliberate for a session-startup installer, matching scripts/setup-llmlint.sh:
+# `set -e` is omitted and the script ALWAYS exits 0 on purpose — a non-zero exit
+# would fail the SessionStart hook and block the whole session over an optional,
+# best-effort setup. Failure is not hidden: it is surfaced on stderr (log-and-
+# continue) and re-gated by generate-fern-fixture.sh's actionable prerequisite
+# checks when a fixture is actually generated. So exit 0 here is "nothing to block
+# startup for", not "everything succeeded".
 set -uo pipefail
 
 # Run asynchronously: the SessionStart hook reads this directive off stdout's first
