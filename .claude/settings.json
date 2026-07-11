@@ -7,6 +7,11 @@
             "command": "bash \"$CLAUDE_PROJECT_DIR/scripts/setup-llmlint.sh\"",
             "timeout": 180,
             "type": "command"
+          },
+          {
+            "command": "bash \"$CLAUDE_PROJECT_DIR/scripts/setup-fern.sh\"",
+            "timeout": 600,
+            "type": "command"
           }
         ],
         "matcher": "startup|resume"
@@ -23,11 +28,14 @@
       "Bash(just format)",
       "Bash(just upgrade)",
       "Bash(just fixtures-refresh)",
+      "Bash(just fixtures-candidates)",
       "Bash(just setup-llmlint)",
+      "Bash(just setup-fern)",
       "Bash(just lint-llm:*)",
       "Bash(just lint-llm-diff:*)",
       "Bash(llmlint:*)",
       "Bash(./scripts/setup-llmlint.sh)",
+      "Bash(./scripts/setup-fern.sh)",
       "Bash(cargo build:*)",
       "Bash(cargo run:*)",
       "Bash(cargo test:*)",
@@ -45,6 +53,7 @@
       "Bash(maturin sdist:*)",
       "Bash(./scripts/install.sh:*)",
       "Bash(./scripts/smoke.sh:*)",
+      "Bash(./scripts/fixture-new.sh:*)",
       "Bash(git status)",
       "Bash(git diff:*)",
       "Bash(git log:*)",

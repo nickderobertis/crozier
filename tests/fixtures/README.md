@@ -47,4 +47,7 @@ Each `<api>/` directory holds:
   CLI), then grow its `matched` list as generation lands.
 
 Each `Corpus` in `tests/e2e.rs` carries the `matched` list that is the source of
-truth for which files are byte-matched today.
+truth for which files are byte-matched today. To add a new fixture or grow a
+`matched` list, see [`AGENTS.md`](AGENTS.md): `scripts/fixture-new.sh <name>`
+scaffolds a fixture, and `just fixtures-candidates` reports which committed files
+crozier already reproduces so growing the manifest is copy-paste.
