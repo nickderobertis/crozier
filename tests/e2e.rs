@@ -202,6 +202,69 @@ const EXHAUSTIVE: Corpus = Corpus {
     ],
 };
 
+/// Feature-coverage target specs: hand-authored OpenAPI documents that exercise
+/// shapes crozier does not fully generate yet (the gaps in docs/matching.md) —
+/// auth schemes beyond bearer, inline request/response hoisting, cookie params,
+/// form bodies, discriminated unions, schema constraints, integer enums, and
+/// document-level servers/webhooks/callbacks.
+///
+/// They carry an empty `matched` list on purpose: each corpus's Fern `expected/`
+/// tree is produced by running Fern's container generator (see
+/// scripts/generate-fern-fixture.sh) and its `matched` list grows as generation
+/// lands. Until then the smoke test below asserts only that crozier consumes each
+/// spec and emits a tree without panicking — the "never panic on a real spec"
+/// invariant — so the specs are live in the harness before generation catches up.
+const FEATURE_TARGETS: &[Corpus] = &[
+    Corpus {
+        api: "auth-schemes",
+        package_name: "seed",
+        project_name: "fern_auth-schemes",
+        matched: &[],
+    },
+    Corpus {
+        api: "inline-request-response",
+        package_name: "seed",
+        project_name: "fern_inline-request-response",
+        matched: &[],
+    },
+    Corpus {
+        api: "cookie-parameters",
+        package_name: "seed",
+        project_name: "fern_cookie-parameters",
+        matched: &[],
+    },
+    Corpus {
+        api: "form-bodies",
+        package_name: "seed",
+        project_name: "fern_form-bodies",
+        matched: &[],
+    },
+    Corpus {
+        api: "discriminated-unions",
+        package_name: "seed",
+        project_name: "fern_discriminated-unions",
+        matched: &[],
+    },
+    Corpus {
+        api: "schema-constraints",
+        package_name: "seed",
+        project_name: "fern_schema-constraints",
+        matched: &[],
+    },
+    Corpus {
+        api: "integer-enums",
+        package_name: "seed",
+        project_name: "fern_integer-enums",
+        matched: &[],
+    },
+    Corpus {
+        api: "servers-webhooks",
+        package_name: "seed",
+        project_name: "fern_servers-webhooks",
+        matched: &[],
+    },
+];
+
 /// Path to a fixture directory under `tests/fixtures/`.
 fn fixture_dir(api: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -263,6 +326,17 @@ fn query_parameters_matches_fern_output_byte_for_byte() {
 #[test]
 fn exhaustive_matches_fern_output_byte_for_byte() {
     assert_corpus_matches(&EXHAUSTIVE);
+}
+
+#[test]
+fn feature_target_specs_generate_without_panicking() {
+    // Each feature-coverage target has an empty `matched` list, so this asserts
+    // crozier consumes the spec and writes a tree (exit 0, "generated" on stderr)
+    // without panicking. As generation lands for a feature, populate that
+    // corpus's `matched` list and the same helper starts byte-comparing files.
+    for target in FEATURE_TARGETS {
+        assert_corpus_matches(target);
+    }
 }
 
 #[test]

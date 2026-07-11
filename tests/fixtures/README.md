@@ -35,6 +35,16 @@ Each `<api>/` directory holds:
   needs a container runtime — see `scripts/generate-fern-fixture.sh` and
   [`../../docs/matching.md`](../../docs/matching.md). Regenerate it (alongside the
   offline corpus) with `just fixtures-refresh exhaustive`.
+- **Feature-coverage targets** — hand-authored specs for the shapes crozier does
+  not fully generate yet (the roadmap gaps in
+  [`../../docs/matching.md`](../../docs/matching.md)): `auth-schemes`,
+  `inline-request-response`, `cookie-parameters`, `form-bodies`,
+  `discriminated-unions`, `schema-constraints`, `integer-enums`, and
+  `servers-webhooks`. Each ships only `openapi.yml` so far; the `FEATURE_TARGETS`
+  corpora in `tests/e2e.rs` carry empty `matched` lists and the smoke test asserts
+  crozier consumes each spec without panicking. Produce a target's Fern `expected/`
+  tree with `scripts/generate-fern-fixture.sh <fixture>` (needs Docker + the fern
+  CLI), then grow its `matched` list as generation lands.
 
 Each `Corpus` in `tests/e2e.rs` carries the `matched` list that is the source of
 truth for which files are byte-matched today.

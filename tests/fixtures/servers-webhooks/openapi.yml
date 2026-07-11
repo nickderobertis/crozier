@@ -1,0 +1,94 @@
+openapi: 3.1.0
+info:
+  title: servers-webhooks
+  version: ""
+servers:
+  - url: https://api.example.com
+    description: Production
+  - url: https://staging.api.example.com
+    description: Staging
+paths:
+  /subscriptions:
+    post:
+      operationId: subscriptions_create
+      tags:
+        - Subscriptions
+      parameters: []
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subscription"
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSubscriptionRequest"
+      callbacks:
+        onEvent:
+          "{$request.body#/callbackUrl}":
+            post:
+              operationId: subscriptions_onEvent
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: "#/components/schemas/Event"
+              responses:
+                "200":
+                  description: ""
+webhooks:
+  newSubscription:
+    post:
+      operationId: webhooks_newSubscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Event"
+      responses:
+        "200":
+          description: ""
+components:
+  schemas:
+    Subscription:
+      title: Subscription
+      type: object
+      properties:
+        id:
+          type: string
+        callbackUrl:
+          type: string
+      required:
+        - id
+        - callbackUrl
+    CreateSubscriptionRequest:
+      title: CreateSubscriptionRequest
+      type: object
+      properties:
+        callbackUrl:
+          type: string
+      required:
+        - callbackUrl
+    Event:
+      title: Event
+      type: object
+      properties:
+        name:
+          type: string
+        payload:
+          type: object
+          additionalProperties: true
+      required:
+        - name
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer

@@ -1,0 +1,54 @@
+openapi: 3.0.1
+info:
+  title: cookie-parameters
+  version: ""
+paths:
+  /session:
+    get:
+      operationId: cookies_getSession
+      tags:
+        - Cookies
+      parameters:
+        - name: session_id
+          in: cookie
+          required: true
+          description: The opaque session identifier.
+          schema:
+            type: string
+        - name: csrf_token
+          in: cookie
+          required: false
+          schema:
+            type: string
+        - name: X-Tenant
+          in: header
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+      security:
+        - BearerAuth: []
+components:
+  schemas:
+    Session:
+      title: Session
+      type: object
+      properties:
+        id:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - expires_at
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer

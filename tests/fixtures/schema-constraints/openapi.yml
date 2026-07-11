@@ -1,0 +1,95 @@
+openapi: 3.0.1
+info:
+  title: schema-constraints
+  version: ""
+paths:
+  /account:
+    post:
+      operationId: accounts_createAccount
+      tags:
+        - Accounts
+      parameters: []
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAccountRequest"
+components:
+  schemas:
+    Account:
+      title: Account
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        username:
+          type: string
+          minLength: 3
+          maxLength: 32
+          pattern: "^[a-z0-9_]+$"
+        password:
+          type: string
+          writeOnly: true
+          minLength: 8
+        age:
+          type: integer
+          minimum: 0
+          maximum: 150
+        balance:
+          type: number
+          format: double
+          default: 0
+        tags:
+          type: array
+          items:
+            type: string
+          minItems: 0
+          maxItems: 10
+        legacy_id:
+          type: integer
+          deprecated: true
+        role:
+          type: string
+          default: member
+          example: admin
+      required:
+        - id
+        - username
+      example:
+        id: 4a7f9c2e-1b3d-4e5f-8a9b-0c1d2e3f4a5b
+        username: ada
+    CreateAccountRequest:
+      title: CreateAccountRequest
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 32
+        password:
+          type: string
+          writeOnly: true
+          minLength: 8
+        age:
+          type: integer
+          minimum: 0
+          maximum: 150
+      required:
+        - username
+        - password
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer

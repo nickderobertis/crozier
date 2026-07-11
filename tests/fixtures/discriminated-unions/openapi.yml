@@ -1,0 +1,70 @@
+openapi: 3.0.1
+info:
+  title: discriminated-unions
+  version: ""
+paths:
+  /shape:
+    post:
+      operationId: shapes_createShape
+      tags:
+        - Shapes
+      parameters: []
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Shape"
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Shape"
+components:
+  schemas:
+    Shape:
+      title: Shape
+      oneOf:
+        - $ref: "#/components/schemas/Circle"
+        - $ref: "#/components/schemas/Square"
+      discriminator:
+        propertyName: type
+        mapping:
+          circle: "#/components/schemas/Circle"
+          square: "#/components/schemas/Square"
+    Circle:
+      title: Circle
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - circle
+        radius:
+          type: number
+          format: double
+      required:
+        - type
+        - radius
+    Square:
+      title: Square
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - square
+        side:
+          type: number
+          format: double
+      required:
+        - type
+        - side
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer

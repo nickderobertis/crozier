@@ -159,22 +159,57 @@ element per line with a trailing comma.
 
 The `exhaustive` corpus is fully matched (all 104 files). The items below are
 generalization gaps — shapes the current spec does not exercise — not
-exhaustive-fixture misses:
+exhaustive-fixture misses. Each gap now has a hand-authored **feature-coverage
+target** under `tests/fixtures/` (registered as a `FEATURE_TARGETS` corpus in
+`tests/e2e.rs` with an empty `matched` list); the smoke test asserts crozier
+consumes the spec without panicking, and the `matched` list grows once the Fern
+`expected/` tree is generated (`scripts/generate-fern-fixture.sh <fixture>`) and
+generation lands. To reproduce the current (incomplete) output for a target:
 
-1. **Auth models beyond bearer.** The root `client.py` and `client_wrapper.py` are
-   coupled to a bearer `token`. Other schemes (api-key, basic, OAuth) need auth
-   modeling in the IR.
+```
+cargo build --release
+target/release/crozier generate \
+  --spec tests/fixtures/<fixture>/openapi.yml \
+  --output /tmp/<fixture> --package-name seed --project-name fern_<fixture>
+```
+
+1. **Auth models beyond bearer** (`auth-schemes`). The root `client.py` and
+   `client_wrapper.py` are coupled to a bearer `token`, and `components.security‐
+   Schemes` is not even in the OpenAPI serde model. Other schemes (api-key, basic,
+   OAuth2 client-credentials) need auth modeling in the IR.
 2. **Broader example coverage.** The example-value generator is proven against the
    corpus (objects, unions, enums, containers, maps, datetimes, `long`). Shapes the
-   corpus lacks — e.g. a required `date` example, a nameless-slot enum — carry
-   plausible-but-unverified placeholders; confirm them as new fixtures land.
+   corpus lacks — e.g. a required `date` example, a nameless-slot enum, integer
+   enums (`integer-enums`) — carry plausible-but-unverified placeholders; confirm
+   them as new fixtures land.
 3. **Fern's `TYPE_CHECKING` traversal order** in `types/__init__.py` is reproduced
    empirically (the `Types*` types in reverse declaration order, then the rest
    alphabetically). It matches the corpus byte-for-byte; a spec with a different
    type-namespace layout may need the true endpoint-traversal derivation.
-4. **Request/response inline-schema hoisting.** Component-schema hoisting is done;
-   Fern also hoists inline request/response bodies (e.g. `SearchResponse`,
-   `SearchRequestNeighbor`), which arrive with the endpoint layer.
+4. **Request/response inline-schema hoisting** (`inline-request-response`).
+   Component-schema hoisting is done; Fern also hoists inline request/response
+   bodies (e.g. `SearchResponse`, `SearchRequestNeighbor`) into named models, which
+   arrive with the endpoint layer.
+5. **Cookie parameters** (`cookie-parameters`). Path, query, and header params are
+   emittable; a `cookie` param (`ParameterLocation::Cookie`) puts an operation
+   outside today's subset.
+6. **Form request bodies** (`form-bodies`). Only `application/json`,
+   `application/octet-stream`, and unknown (`{}`) bodies generate;
+   `multipart/form-data` (file upload) and `application/x-www-form-urlencoded` are
+   not modeled (a `core/force_multipart.py` runtime asset ships, but no emitter
+   path drives it).
+7. **Discriminated unions** (`discriminated-unions`). `oneOf`/`anyOf` map to plain
+   unions; `discriminator` (`propertyName` + `mapping`) is dropped, so tagged
+   unions are not distinguished from bare ones.
+8. **Schema annotations and constraints** (`schema-constraints`). `readOnly`/
+   `writeOnly` (request-vs-response field splitting), `deprecated`, `default`,
+   validation keywords (`minLength`/`maxLength`/`pattern`/`minimum`/`maximum`/
+   `minItems`/`maxItems`, i.e. pydantic constraints), and `example`/`examples` are
+   all fields the `Schema` model does not read.
+9. **Document-level `servers`/`webhooks`/`callbacks`** (`servers-webhooks`). The
+   base URL is hardcoded in the runtime; `servers`, `webhooks`, and `callbacks` are
+   absent from the serde model, so multi-server specs and event-driven definitions
+   are unsupported.
 5. **The endpoint layer (implemented — kept as a reference of the covered
    shapes).** `paths` are read into an operation IR
    ([`ir::Endpoint`]): module, method name, HTTP method, URL, path params, and

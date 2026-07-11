@@ -1,0 +1,63 @@
+openapi: 3.0.1
+info:
+  title: integer-enums
+  version: ""
+paths:
+  /priority:
+    post:
+      operationId: enums_setPriority
+      tags:
+        - Enums
+      parameters:
+        - name: level
+          in: query
+          required: true
+          schema:
+            $ref: "#/components/schemas/Priority"
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ticket"
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HttpStatus"
+components:
+  schemas:
+    Priority:
+      title: Priority
+      type: integer
+      enum:
+        - 1
+        - 2
+        - 3
+    HttpStatus:
+      title: HttpStatus
+      type: integer
+      format: int64
+      enum:
+        - 200
+        - 404
+        - 500
+    Ticket:
+      title: Ticket
+      type: object
+      properties:
+        id:
+          type: string
+        priority:
+          $ref: "#/components/schemas/Priority"
+      required:
+        - id
+        - priority
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
