@@ -472,15 +472,17 @@ paths:
 fn emits_raw_client_only_for_supported_modules() {
     let files = render(ENDPOINTS_SPEC);
 
-    // The supported modules emit a raw client; `err` (a non-2xx response) does
-    // not — only its package marker.
     let raw = files
         .get("src/acme/things/raw_client.py")
         .expect("things raw_client");
-    assert!(
-        !files.contains_key("src/acme/err/raw_client.py"),
-        "err should not emit a raw_client yet"
-    );
+    // `err` declares only a non-2xx (404) response. It used to be silently dropped
+    // (issue #43); now it emits a raw client whose method raises the typed
+    // `NotFoundError` over the `ApiError` fallback.
+    let err = files
+        .get("src/acme/err/raw_client.py")
+        .expect("err raw_client");
+    assert!(err.contains("if _response.status_code == 404:"), "{err}");
+    assert!(err.contains("raise NotFoundError("), "{err}");
     assert!(files.contains_key("src/acme/err/__init__.py"));
 
     // A 2xx response with no content (204) is supported and returns `None`.
@@ -863,16 +865,190 @@ fn renders_exhaustive_endpoint_layer_in_process() {
     assert!(noauth.contains("raise BadRequestError("));
 }
 
-/// A non-2xx status crozier cannot name keeps the operation unemittable (so no
-/// wrong error branch is emitted) — exercising the unmapped-code path.
+/// A non-2xx status crozier cannot name (a non-standard `460`) never suppresses the
+/// method (issue #43): the module still emits, a mapped status (`404`) raises its
+/// typed exception, and the unmapped status is skipped so the operation falls
+/// through to the generic `ApiError`.
 #[test]
-fn unmapped_error_status_keeps_the_module_unemittable() {
+fn unmapped_error_status_is_skipped_but_the_module_still_emits() {
     let files = render(
-        "openapi: 3.0.0\ninfo:\n  title: E\npaths:\n  /x:\n    get:\n      operationId: things_get\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema:\n                type: string\n        \"404\":\n          content:\n            application/json:\n              schema:\n                $ref: \"#/components/schemas/Err\"\ncomponents:\n  schemas:\n    Err:\n      type: object\n      properties:\n        message:\n          type: string\n",
+        "openapi: 3.0.0\ninfo:\n  title: E\npaths:\n  /x:\n    get:\n      operationId: things_get\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema:\n                type: string\n        \"404\":\n          content:\n            application/json:\n              schema:\n                $ref: \"#/components/schemas/Err\"\n        \"460\":\n          description: nonstandard\ncomponents:\n  schemas:\n    Err:\n      type: object\n      properties:\n        message:\n          type: string\n",
     );
-    // The package marker is emitted, but not a (wrong) raw client.
+    // The module is emitted, and the operation is callable.
     assert!(files.contains_key("src/acme/things/__init__.py"));
-    assert!(!files.contains_key("src/acme/things/raw_client.py"));
+    let raw = &files["src/acme/things/raw_client.py"];
+    // The mapped 404 raises its typed exception with the declared body type.
+    assert!(raw.contains("if _response.status_code == 404:"), "{raw}");
+    assert!(raw.contains("raise NotFoundError("), "{raw}");
+    // The unmapped 460 gets no branch — it falls through to the generic ApiError.
+    assert!(!raw.contains("== 460"), "{raw}");
+    assert!(
+        raw.contains("raise ApiError(status_code=_response.status_code"),
+        "{raw}"
+    );
+}
+
+/// Every standard 4xx/5xx status maps to Fern's named exception (issue #43). One
+/// operation declaring the whole range emits a `raise` branch per status and a
+/// generated `errors/` module per class — exercising the full status→name map.
+#[test]
+fn every_standard_error_status_maps_to_its_fern_exception() {
+    // (status, class name, module file stem) — the complete Fern map.
+    let cases: &[(u16, &str, &str)] = &[
+        (400, "BadRequestError", "bad_request_error"),
+        (401, "UnauthorizedError", "unauthorized_error"),
+        (402, "PaymentRequiredError", "payment_required_error"),
+        (403, "ForbiddenError", "forbidden_error"),
+        (404, "NotFoundError", "not_found_error"),
+        (405, "MethodNotAllowedError", "method_not_allowed_error"),
+        (406, "NotAcceptableError", "not_acceptable_error"),
+        (
+            407,
+            "ProxyAuthenticationRequiredError",
+            "proxy_authentication_required_error",
+        ),
+        (408, "RequestTimeoutError", "request_timeout_error"),
+        (409, "ConflictError", "conflict_error"),
+        (410, "GoneError", "gone_error"),
+        (411, "LengthRequiredError", "length_required_error"),
+        (412, "PreconditionFailedError", "precondition_failed_error"),
+        (413, "ContentTooLargeError", "content_too_large_error"),
+        (414, "UriTooLongError", "uri_too_long_error"),
+        (
+            415,
+            "UnsupportedMediaTypeError",
+            "unsupported_media_type_error",
+        ),
+        (
+            416,
+            "RangeNotSatisfiableError",
+            "range_not_satisfiable_error",
+        ),
+        (417, "ExpectationFailedError", "expectation_failed_error"),
+        (418, "ImATeapotError", "im_a_teapot_error"),
+        (421, "MisdirectedRequestError", "misdirected_request_error"),
+        (
+            422,
+            "UnprocessableEntityError",
+            "unprocessable_entity_error",
+        ),
+        (423, "LockedError", "locked_error"),
+        (424, "FailedDependencyError", "failed_dependency_error"),
+        (425, "TooEarlyError", "too_early_error"),
+        (426, "UpgradeRequiredError", "upgrade_required_error"),
+        (428, "PreconditionError", "precondition_error"),
+        (429, "TooManyRequestsError", "too_many_requests_error"),
+        (
+            431,
+            "RequestHeaderFieldsTooLargeError",
+            "request_header_fields_too_large_error",
+        ),
+        (
+            451,
+            "UnavailableForLegalReasonsError",
+            "unavailable_for_legal_reasons_error",
+        ),
+        (500, "InternalServerError", "internal_server_error"),
+        (501, "NotImplementedError", "not_implemented_error"),
+        (502, "BadGatewayError", "bad_gateway_error"),
+        (503, "ServiceUnavailableError", "service_unavailable_error"),
+        (504, "GatewayTimeoutError", "gateway_timeout_error"),
+        (
+            505,
+            "HttpVersionNotSupportedError",
+            "http_version_not_supported_error",
+        ),
+        (
+            506,
+            "VariantAlsoNegotiatesError",
+            "variant_also_negotiates_error",
+        ),
+        (
+            507,
+            "InsufficientStorageError",
+            "insufficient_storage_error",
+        ),
+        (508, "LoopDetectedError", "loop_detected_error"),
+        (510, "NotExtendedError", "not_extended_error"),
+        (
+            511,
+            "NetworkAuthenticationRequiredError",
+            "network_authentication_required_error",
+        ),
+    ];
+    let mut spec = String::from(
+        "openapi: 3.0.0\ninfo:\n  title: E\npaths:\n  /x:\n    get:\n      operationId: things_get\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema:\n                type: string\n",
+    );
+    for (code, _, _) in cases {
+        spec.push_str(&format!(
+            "        \"{code}\":\n          description: err\n"
+        ));
+    }
+    let files = render(&spec);
+    let raw = &files["src/acme/things/raw_client.py"];
+    for (code, class, module) in cases {
+        assert!(
+            raw.contains(&format!("if _response.status_code == {code}:")),
+            "missing branch for {code}"
+        );
+        assert!(
+            raw.contains(&format!("raise {class}(")),
+            "missing raise for {class}"
+        );
+        let err_module = format!("src/acme/errors/{module}.py");
+        let err = files
+            .get(&err_module)
+            .unwrap_or_else(|| panic!("missing {err_module}"));
+        assert!(err.contains(&format!("class {class}(ApiError):")), "{err}");
+        assert!(err.contains(&format!("status_code={code}")), "{err}");
+    }
+}
+
+/// A `text/event-stream` (SSE) response generates Fern's context-managed streaming
+/// shape (issue #43): the raw client is a sync/async context manager over
+/// `httpx_client.stream(...)` decoding events into an iterator of chunks, and the
+/// high-level client yields each chunk.
+#[test]
+fn sse_response_generates_a_streaming_client() {
+    let files = render(
+        "openapi: 3.0.0\ninfo:\n  title: E\npaths:\n  /stream:\n    post:\n      operationId: messages_stream\n      responses:\n        \"200\":\n          description: SSE stream\n          content:\n            text/event-stream: {}\n",
+    );
+    let raw = &files["src/acme/messages/raw_client.py"];
+    // Sync + async context managers over the streaming request, decoding via the
+    // `core/http_sse` runtime into an (Async)Iterator of Optional[Any] chunks.
+    assert!(raw.contains("@contextlib.contextmanager"), "{raw}");
+    assert!(raw.contains("@contextlib.asynccontextmanager"), "{raw}");
+    assert!(
+        raw.contains("self._client_wrapper.httpx_client.stream("),
+        "{raw}"
+    );
+    assert!(
+        raw.contains("_event_source = EventSource(_response)"),
+        "{raw}"
+    );
+    assert!(
+        raw.contains("for _sse in _event_source.iter_sse():"),
+        "{raw}"
+    );
+    assert!(
+        raw.contains("async for _sse in _event_source.aiter_sse():"),
+        "{raw}"
+    );
+    assert!(
+        raw.contains(
+            "-> typing.Iterator[HttpResponse[typing.Iterator[typing.Optional[typing.Any]]]]:"
+        ),
+        "{raw}"
+    );
+    assert!(raw.contains("Yields"), "{raw}");
+    // The high-level client yields each decoded chunk from the raw stream.
+    let client = &files["src/acme/messages/client.py"];
+    assert!(
+        client.contains("-> typing.Iterator[typing.Optional[typing.Any]]:"),
+        "{client}"
+    );
+    assert!(client.contains("yield from r.data"), "{client}");
+    assert!(client.contains("async for _chunk in r.data:"), "{client}");
 }
 
 /// An inline-object success response is hoisted into a named `{Tag}{Method}Response`

@@ -186,13 +186,55 @@ here means matching Fern, not `ruff`.
 The `exhaustive` corpus is fully matched, and **every** feature-coverage target is
 **fully matched too** — `auth-schemes`, `discriminated-unions`,
 `schema-constraints`, `integer-enums`, `form-bodies`, `inline-request-response`,
-`cookie-parameters`, `servers-webhooks`, and the four former gap targets
+`cookie-parameters`, `servers-webhooks`, the four former gap targets
 `basic-auth`, `oauth-client-credentials`, `inline-array-request`, and
-`writeonly-fields`. (The exact matched-file set for each corpus — and the roster of
+`writeonly-fields`, and the two issue-#43 targets `error-responses` and
+`sse-streaming`. (The exact matched-file set for each corpus — and the roster of
 corpora itself — is the `FEATURE_TARGETS`/`matched` data in `tests/e2e.rs`, the
 single source of truth; counts are deliberately not restated here so they cannot
 drift.) The items below record how each shape generates; the remaining unproven
 paths are called out inline.
+
+### Issue #43: error responses, discriminated-union aliases, and SSE streaming
+
+Three gaps found while checking whether crozier could stand in for a fern-python
+SDK. Both real gaps are closed byte-for-byte against a Docker-generated Fern tree;
+the third does not reproduce at the corpus's pinned Fern version.
+
+1. **Operations that declared any non-2xx response were silently dropped**
+   (`error-responses`, gap #1 — the serious one). crozier emitted the response
+   *type* but no client method and wired nothing into the root client, reporting a
+   successful generation of an SDK with no way to call the API — every FastAPI-style
+   spec (a `422` on every operation) lost every endpoint. The cause was
+   [`ir::resolve_errors`] returning "unemittable" whenever an error status was
+   unmapped or its body was not an `application/json` `$ref`. Now an error response
+   **never** gates method generation: [`ir::error_class_name`] maps every standard
+   4xx/5xx status to Fern's typed exception (`404` → `NotFoundError`, `500` →
+   `InternalServerError`, …), an unmapped status (a non-standard `460`) is skipped so
+   the operation falls through to the generic `ApiError` (exactly as Fern does), and
+   the body parses per declared shape — a `$ref` (`Error`), a container
+   (`typing.List[str]`), or `typing.Optional[typing.Any]` for a content-less error.
+   Still open: an *inline object* error body, which Fern hoists to a root
+   `types/{ClassName}Body` model — crozier renders it `typing.Any` today (kept out of
+   the corpus, so unmatched rather than wrong).
+2. **Discriminated-union alias annotation** (gap #2) is **not a gap at the pinned
+   Fern version.** Newer Fern (4.46.x) wraps the alias in
+   `typing_extensions.Annotated[Union[...], pydantic.Field(discriminator="…")]`, but
+   the corpus pins `fern-python-sdk` 4.34.0, whose OpenAPI importer emits a plain
+   `Shape = typing.Union[...]` — which `discriminated-unions` pins and crozier already
+   matches. Adopting the annotated form is deferred to a corpus-wide Fern bump (it
+   would break the committed 4.34.0 fixture today).
+3. **SSE streaming operations were reduced to a `-> None` method** that discarded
+   the stream (`sse-streaming`, gap #3). A `text/event-stream` 2xx response now
+   ([`ir::is_streaming`]) generates Fern's context-managed streaming shape: the raw
+   client is a `@contextlib.(async)contextmanager` over `httpx_client.stream(...)`
+   that decodes events through the vendored `core/http_sse` runtime
+   (`EventSource.iter_sse`/`aiter_sse`) into
+   `typing.(Async)Iterator[typing.Optional[typing.Any]]` chunks, and the high-level
+   client yields each chunk with a worked streaming `Examples` block. The chunk stays
+   `Optional[Any]`: Fern's OpenAPI importer does not resolve the `x-fern-streaming`
+   `chunk-schema-ref` (the same limitation as the OAuth extension), so crozier keys
+   off the content type alone and matches Fern's untyped chunk.
 
 The generated **README/reference** now pick the first endpoint with a request body
 for the worked example and abbreviate the error-handling/advanced snippets to `...`
