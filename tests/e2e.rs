@@ -1692,17 +1692,48 @@ fn runtime_python_env() -> Result<PathBuf, String> {
     }
 }
 
-/// Runtime ("wire") behavior of a generated SDK: byte-matching Fern proves the
-/// source is right; this proves the compiled client *behaves* right. It generates
-/// the exhaustive SDK (the richest fully-matched corpus) and runs the committed
-/// `tests/runtime/wire_test.py` driver against it — the driver injects an
-/// `httpx.MockTransport`, so it asserts on URL/method construction, auth + SDK
-/// header injection, request-body serialization, query encoding, typed
-/// deserialization, and typed error raising, for the sync and async clients. This
-/// is the in-process analog of Fern's WireMock wire tests (Docker/Enterprise-gated
-/// output crozier does not emit). See docs/matching.md.
+/// Run the committed wire-test recorder (`tests/runtime/wire_test.py`) against the
+/// SDK rooted at `src`, returning its canonical-JSON recording of the client's
+/// runtime behavior. Panics with the driver's stderr if it does not exit cleanly.
+fn record_sdk_behavior(py: &Path, src: &Path) -> String {
+    let driver = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/runtime/wire_test.py");
+    let output = std::process::Command::new(py)
+        .arg(&driver)
+        .env("CROZIER_SDK_SRC", src)
+        .output()
+        .expect("run the runtime wire-test driver");
+    assert!(
+        output.status.success(),
+        "wire-test driver failed for {}:\n{}{}",
+        src.display(),
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr),
+    );
+    String::from_utf8(output.stdout).expect("driver output is UTF-8")
+}
+
+/// Runtime ("wire") behavior of a generated SDK, verified **differentially
+/// against Fern**: byte-matching Fern proves the source is right and
+/// `assert_valid_python` proves it compiles, but neither proves the compiled
+/// client issues the right HTTP request or parses the response. Rather than
+/// hand-author the expected behavior, this derives it from Fern: it runs the same
+/// recorder ([`tests/runtime/wire_test.py`]) against **both** the committed Fern
+/// fixture SDK (`exhaustive/expected/src`, which is real, runnable Fern output)
+/// and the crozier-generated SDK, and asserts the two recordings are identical.
+///
+/// The recorder injects an `httpx.MockTransport` (the generated client accepts an
+/// `httpx_client`) and captures, per journey, the outgoing request (method, URL,
+/// headers, serialized body) and the outcome (the response model dumped to a dict,
+/// or the typed error's class/status/body) — covering request construction, auth +
+/// SDK-identity headers, body field-aliasing and `OMIT` filtering, query encoding,
+/// typed pydantic deserialization, and typed error raising, sync and async. The
+/// *only* allowed difference is the deliberate SDK-identity branding (`X-Crozier-*`
+/// vs `X-Fern-*`), which the recorder canonicalizes on both sides exactly as
+/// `normalize_sdk_headers` does for the byte-diff. This is the in-process analog of
+/// Fern's own WireMock wire tests (Docker/Enterprise-gated output crozier does not
+/// emit). See docs/matching.md.
 #[test]
-fn generated_sdk_runtime_behavior() {
+fn crozier_matches_fern_runtime_behavior() {
     let out = tempfile::tempdir().expect("tempdir");
     let spec = fixture_dir("exhaustive").join("openapi.yml");
     crozier()
@@ -1733,18 +1764,32 @@ fn generated_sdk_runtime_behavior() {
         }
     };
 
-    let driver = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/runtime/wire_test.py");
-    let output = std::process::Command::new(&py)
-        .arg(&driver)
-        .env("CROZIER_SDK_SRC", out.path().join("src"))
-        .output()
-        .expect("run the runtime wire-test driver");
-    assert!(
-        output.status.success(),
-        "runtime wire tests failed:\n{}{}",
-        String::from_utf8_lossy(&output.stdout),
-        String::from_utf8_lossy(&output.stderr),
-    );
+    let fern_src = fixture_dir("exhaustive").join("expected/src");
+    let fern = record_sdk_behavior(&py, &fern_src);
+    let crozier = record_sdk_behavior(&py, &out.path().join("src"));
+
+    if fern != crozier {
+        // Both recordings are canonical JSON (sorted keys, one field per line), so
+        // a line diff points straight at the diverging behavior. A line-count
+        // mismatch (a whole field added/removed) misaligns a zip, so fall back to
+        // the full recordings in that case.
+        let detail = if fern.lines().count() == crozier.lines().count() {
+            fern.lines()
+                .zip(crozier.lines())
+                .enumerate()
+                .filter(|(_, (f, c))| f != c)
+                .map(|(i, (f, c))| {
+                    format!("  line {}:\n    fern:    {f}\n    crozier: {c}\n", i + 1)
+                })
+                .collect()
+        } else {
+            format!("--- fern ---\n{fern}\n--- crozier ---\n{crozier}")
+        };
+        panic!(
+            "crozier's generated client behaves differently from Fern's at runtime \
+             (beyond the normalized SDK-identity headers):\n{detail}"
+        );
+    }
 }
 
 #[test]

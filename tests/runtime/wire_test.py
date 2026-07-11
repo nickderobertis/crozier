@@ -1,25 +1,30 @@
-"""Runtime ("wire") behavior checks for a crozier-generated Python SDK.
+"""Record the runtime ("wire") behavior of a generated Python SDK.
 
-Byte-matching Fern proves the *source* is right; this proves the generated
-client *behaves* right when imported and called. It is the in-process analog of
-Fern's own wire tests — Fern spins up a WireMock server in Docker and asserts,
-via WireMock's admin API, that the SDK issued the expected HTTP request, then
-checks the canned response deserializes. crozier does not emit that Docker/
-WireMock tree (it is Fern generated output gated behind an Enterprise
-`enable_wire_tests` flag, which none of the corpora set), so this driver does
-the same job with `httpx.MockTransport`: the generated client accepts an
-`httpx_client`, so we inject one whose transport captures the outgoing request
-and returns a scripted response — exercising URL/method construction, auth and
-SDK-identity header injection, request-body serialization (field aliasing and
-`OMIT` filtering), query-parameter encoding, typed pydantic deserialization, and
-typed error raising, for both the sync and async clients.
+Byte-matching Fern proves the generated *source* is right and `compileall`
+proves it is valid Python; this proves the compiled client *behaves* right when
+imported and called. Rather than hand-assert expected values, this driver
+*records* what the client does and the Rust e2e harness (`tests/e2e.rs`) runs it
+against **both** the committed Fern fixture SDK and the crozier-generated SDK and
+asserts the two recordings are identical — so the expected behavior is derived
+from Fern, not authored here. The only differences allowed are the deliberate,
+non-behavioral ones the byte-diff already normalizes (crozier's `X-Crozier-*`
+SDK-identity headers vs Fern's `X-Fern-*`), which this driver canonicalizes on
+both sides exactly as `tests/e2e.rs::normalize_sdk_headers` does.
 
-Run against an SDK generated from `tests/fixtures/exhaustive/openapi.yml` with
-`--package-name fern`. The generated `src/` directory is passed in the
-`CROZIER_SDK_SRC` environment variable; the only third-party imports are the
-SDK's own runtime dependencies (`httpx`, `pydantic`). Exits non-zero, listing
-every failure, if any journey does not behave as expected; the Rust e2e harness
-(`tests/e2e.rs`) drives this and asserts success.
+The generated client accepts an `httpx_client`, so each journey injects one whose
+`httpx.MockTransport` captures the outgoing request and returns a scripted
+response — exercising URL/method construction, header injection, request-body
+serialization (field aliasing and `OMIT` filtering), query encoding, typed
+pydantic deserialization, and typed error raising, for the sync and async
+clients. It records, per journey, the request (method, URL, canonicalized
+headers, body) and the outcome (the response model dumped to a dict, or the typed
+error's class/status/body), then prints the whole recording as canonical JSON.
+
+The SDK's `src/` directory is passed in `CROZIER_SDK_SRC`; the only third-party
+imports are the SDK's own runtime dependencies (`httpx`, `pydantic`). A journey
+that cannot complete its structural contract (e.g. a declared 4xx that fails to
+raise) exits non-zero so a broken journey fails loudly instead of matching
+trivially.
 """
 
 import asyncio
@@ -37,7 +42,6 @@ import httpx  # noqa: E402  (import after the generated src/ is on sys.path)
 
 from fern import AsyncFernApi, FernApi  # noqa: E402
 from fern.errors.bad_request_error import BadRequestError  # noqa: E402
-from fern.types.types_object_with_optional_field import TypesObjectWithOptionalField  # noqa: E402
 
 BASE_URL = "https://api.example.test"
 TOKEN = "secret-token"
@@ -56,6 +60,52 @@ def _capture(status, payload):
     return httpx.MockTransport(handler), box
 
 
+def _canonical_headers(headers):
+    """Normalize request headers to the behavior we mean to compare, applied
+    identically to both SDKs. Lower-case the names (httpx lookup is
+    case-insensitive) and neutralize the deliberate SDK-identity differences the
+    byte-diff also normalizes: drop the packaging `SDK-Name`/`SDK-Version` headers
+    and rename the `X-Crozier-`/`X-Fern-` language header to a single canonical
+    key. Everything else — auth, content-type, and httpx's own headers — must
+    match verbatim."""
+    out = {}
+    for name, value in headers.items():
+        key = name.lower()
+        if key in ("x-fern-sdk-name", "x-crozier-sdk-name", "x-fern-sdk-version", "x-crozier-sdk-version"):
+            continue
+        if key in ("x-fern-language", "x-crozier-language"):
+            key = "x-sdk-language"
+        out[key] = value
+    return out
+
+
+def _body(request):
+    """The request body as JSON when it is JSON, else the raw text, else None."""
+    content = request.content
+    if not content:
+        return None
+    try:
+        return json.loads(content)
+    except (ValueError, UnicodeDecodeError):
+        return content.decode("utf-8", "replace")
+
+
+def _request_record(request):
+    return {
+        "method": request.method,
+        "url": str(request.url),
+        "headers": _canonical_headers(request.headers),
+        "body": _body(request),
+    }
+
+
+def _dump(model):
+    """Dump a generated pydantic model to a plain dict, on pydantic v1 or v2."""
+    if hasattr(model, "model_dump"):
+        return model.model_dump()
+    return model.dict()
+
+
 def _sync_client(status, payload, *, token=TOKEN):
     transport, box = _capture(status, payload)
     client = FernApi(base_url=BASE_URL, token=token, httpx_client=httpx.Client(transport=transport))
@@ -63,80 +113,65 @@ def _sync_client(status, payload, *, token=TOKEN):
 
 
 def request_construction_and_response():
-    """A POST with an inlined object body: URL/method, bearer auth + crozier's
-    SDK-identity headers, body field-aliasing (`long_`->`long`, ...) with unset
-    optionals filtered out, and the JSON response parsed into a pydantic model."""
+    """A POST with an inlined object body: URL/method, bearer auth + SDK-identity
+    headers, body field-aliasing (`long_`->`long`, ...) with unset optionals
+    filtered out, and the JSON response parsed into a pydantic model."""
     client, box = _sync_client(200, {"string": "world", "long": 7, "bool": False, "list": ["x"]})
     result = client.endpoints_object.endpoints_object_get_and_return_with_optional_field(
         string="hello", integer=1, long_=42, bool_=True, list_=["a", "b"]
     )
-
-    req = box["request"]
-    assert req.method == "POST", req.method
-    assert str(req.url) == f"{BASE_URL}/object/get-and-return-with-optional-field", str(req.url)
-    assert req.headers["Authorization"] == f"Bearer {TOKEN}", req.headers.get("Authorization")
-    assert req.headers["X-Crozier-Language"] == "Python", req.headers.get("X-Crozier-Language")
-    assert req.headers["X-Crozier-SDK-Name"] == "default_package_name", req.headers.get("X-Crozier-SDK-Name")
-    assert req.headers["content-type"] == "application/json", req.headers.get("content-type")
-
-    # Only the fields we passed are sent, under their wire (aliased) names; the
-    # dozen other optional fields are dropped rather than sent as null.
-    sent = json.loads(req.content)
-    assert sent == {"string": "hello", "integer": 1, "long": 42, "bool": True, "list": ["a", "b"]}, sent
-
-    # The 2xx JSON body is deserialized into the generated model, un-aliased.
-    assert isinstance(result, TypesObjectWithOptionalField), type(result)
-    assert result.string == "world"
-    assert result.long_ == 7
-    assert result.bool_ is False
-    assert result.list_ == ["x"]
+    return {
+        "request": _request_record(box["request"]),
+        "outcome": {"model": type(result).__name__, "data": _dump(result)},
+    }
 
 
 def no_auth_omits_authorization():
-    """With no token, the Authorization header is absent but the SDK-identity
+    """With no token the Authorization header is absent, but the SDK-identity
     headers are still sent — the unauthenticated path stays wired up."""
     client, box = _sync_client(200, True, token=None)
-    client.noauth.postwithnoauth(request={"ping": 1})
-
-    req = box["request"]
-    assert "Authorization" not in req.headers, dict(req.headers)
-    assert req.headers["X-Crozier-Language"] == "Python"
-    assert json.loads(req.content) == {"ping": 1}
+    result = client.noauth.postwithnoauth(request={"ping": 1})
+    return {
+        "request": _request_record(box["request"]),
+        "outcome": {"model": type(result).__name__, "data": result},
+    }
 
 
 def typed_error_is_raised():
     """A declared 4xx becomes a generated typed exception whose `body` is the
-    parsed error model, not a raw dict."""
+    parsed error model, not a raw dict. Failing to raise is a hard error."""
     client, box = _sync_client(400, {"message": "bad thing"}, token=None)
     try:
         client.noauth.postwithnoauth(request={"ping": 1})
     except BadRequestError as err:
-        assert err.status_code == 400, err.status_code
-        assert err.body.message == "bad thing", err.body
-    else:
-        raise AssertionError("expected BadRequestError for a 400 response")
+        return {
+            "request": _request_record(box["request"]),
+            "outcome": {"error": type(err).__name__, "status": err.status_code, "body": _dump(err.body)},
+        }
+    raise AssertionError("expected BadRequestError for a 400 response, none raised")
 
 
 def query_parameters_are_encoded():
     """Keyword query args are encoded onto the URL, not the body."""
     client, box = _sync_client(200, {"items": [], "next": None})
-    client.endpoints_pagination.endpoints_pagination_list_items(cursor="abc", limit=10)
-
-    req = box["request"]
-    assert req.method == "GET", req.method
-    assert req.url.params.get("cursor") == "abc", str(req.url)
-    assert req.url.params.get("limit") == "10", str(req.url)
+    result = client.endpoints_pagination.endpoints_pagination_list_items(cursor="abc", limit=10)
+    return {
+        "request": _request_record(box["request"]),
+        "outcome": {"model": type(result).__name__, "data": _dump(result)},
+    }
 
 
 def raw_response_exposes_underlying_http():
-    """`.with_raw_response` returns the parsed data plus access to the response
-    headers, without a second network round-trip."""
+    """`.with_raw_response` returns the parsed data plus access to the response,
+    without a second network round-trip."""
     client, box = _sync_client(200, {"string": "raw"})
     raw = client.endpoints_object.with_raw_response.endpoints_object_get_and_return_with_optional_field(string="s")
-
-    assert isinstance(raw.data, TypesObjectWithOptionalField), type(raw.data)
-    assert raw.data.string == "raw"
-    assert isinstance(raw.headers, dict)
+    if not isinstance(raw.headers, dict):
+        raise AssertionError(f"raw response headers should be a dict, got {type(raw.headers)}")
+    return {
+        "request": _request_record(box["request"]),
+        "outcome": {"model": type(raw.data).__name__, "data": _dump(raw.data)},
+    }
 
 
 def async_request_and_response():
@@ -150,14 +185,12 @@ def async_request_and_response():
         result = await client.endpoints_object.endpoints_object_get_and_return_with_optional_field(
             string="hi", long_=1
         )
-        req = box["request"]
-        assert req.method == "POST", req.method
-        assert req.headers["Authorization"] == f"Bearer {TOKEN}"
-        assert isinstance(result, TypesObjectWithOptionalField), type(result)
-        assert result.string == "async-world"
-        assert result.long_ == 9
+        return {
+            "request": _request_record(box["request"]),
+            "outcome": {"model": type(result).__name__, "data": _dump(result)},
+        }
 
-    asyncio.run(run())
+    return asyncio.run(run())
 
 
 JOURNEYS = [
@@ -171,22 +204,13 @@ JOURNEYS = [
 
 
 def main():
-    failures = []
+    recording = {}
     for journey in JOURNEYS:
-        try:
-            journey()
-        except Exception as err:  # noqa: BLE001 — collect every failure, not just the first
-            import traceback
-
-            failures.append(f"{journey.__name__}: {err}\n{traceback.format_exc()}")
-
-    if failures:
-        print(f"{len(failures)}/{len(JOURNEYS)} runtime journey(s) failed:", file=sys.stderr)
-        for failure in failures:
-            print(f"\n--- {failure}", file=sys.stderr)
-        sys.exit(1)
-
-    print(f"runtime wire tests: {len(JOURNEYS)} journeys passed")
+        # A journey that raises is a hard failure (exit non-zero via the uncaught
+        # exception) — it must never silently record nothing and match trivially.
+        recording[journey.__name__] = journey()
+    json.dump(recording, sys.stdout, indent=2, sort_keys=True, default=str)
+    sys.stdout.write("\n")
 
 
 if __name__ == "__main__":

@@ -108,23 +108,33 @@ the journeys a user actually takes, independent of the golden fixtures:
   with a message when no Python interpreter is on `PATH` (same posture as the
   coverage tier); GitHub's ubuntu/macos/windows runners all ship one, so the gate
   always runs it.
-- **The generated SDK behaves right at runtime.** Compiling proves the source is
-  legal Python; it does not prove the *client* issues the right HTTP request or
-  parses the response. `generated_sdk_runtime_behavior` generates the `exhaustive`
-  SDK and runs the committed driver [`tests/runtime/wire_test.py`](../tests/runtime/wire_test.py)
-  against it (in a cached venv holding the SDK's only runtime deps, `httpx` +
-  `pydantic`). The generated client accepts an `httpx_client`, so the driver
+- **The generated SDK behaves right at runtime — verified differentially against
+  Fern.** Compiling proves the source is legal Python; it does not prove the
+  *client* issues the right HTTP request or parses the response. Rather than
+  hand-author the expected behavior, `crozier_matches_fern_runtime_behavior`
+  *derives* it from Fern: the committed recorder
+  [`tests/runtime/wire_test.py`](../tests/runtime/wire_test.py) is run against
+  **both** the committed Fern fixture SDK (`exhaustive/expected/src` — real,
+  runnable Fern output) and the crozier-generated SDK, and their recordings must be
+  **identical**. The generated client accepts an `httpx_client`, so the recorder
   injects one whose `httpx.MockTransport` captures the outgoing request and returns
-  a scripted response — asserting URL/method construction, bearer-auth and
-  `X-Crozier-*` SDK-identity header injection, request-body serialization (wire
-  aliasing and `OMIT` filtering), query encoding, typed pydantic deserialization,
-  and typed error raising, for the sync **and** async clients. This is the
-  in-process analog of Fern's own wire tests — Fern runs a WireMock server in
-  Docker and verifies the request via its admin API, but that whole `tests/wire/`
-  tree is generated output gated behind an Enterprise `enable_wire_tests` flag that
-  none of the corpora set, so crozier does not emit it and reproduces the behavior
-  without Docker. Like the validity check it skips when Python/venv/deps are
-  unavailable, but is a **hard failure under `CI`** so the gate stays honest.
+  a scripted response, recording per journey the request (method, URL, headers,
+  serialized body) and the outcome (the response model dumped to a dict, or the
+  typed error's class/status/body). Between them the journeys cover URL/method
+  construction, bearer auth and SDK-identity header injection, request-body
+  serialization (wire aliasing and `OMIT` filtering), query encoding, typed
+  pydantic deserialization, and typed error raising, for the sync **and** async
+  clients. The **only** allowed difference is the deliberate SDK-identity branding
+  (`X-Crozier-*` vs `X-Fern-*`), canonicalized on both sides exactly as
+  `normalize_sdk_headers` does for the byte-diff — any other divergence fails the
+  test. This is the in-process analog of Fern's own wire tests (Fern runs a
+  WireMock server in Docker and verifies the request via its admin API), but that
+  `tests/wire/` tree is generated output gated behind an Enterprise
+  `enable_wire_tests` flag none of the corpora set, so crozier does not emit it and
+  reproduces the behavior without Docker. It runs in a cached venv holding the
+  SDK's only runtime deps (`httpx` + `pydantic`); like the validity check it skips
+  when Python/venv/deps are unavailable, but is a **hard failure under `CI`** so the
+  gate stays honest.
 - **Default naming.** The common bare invocation (no `--package-name` /
   `--project-name`) is exercised: the package directory is `snake_case(title)` and
   `version.py` records the same name.
