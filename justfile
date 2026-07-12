@@ -72,6 +72,13 @@ upgrade:
 fixtures-refresh *args:
     ./scripts/fixtures-refresh.sh {{args}}
 
+
+# Fetch the link-only real-world corpus source repositories into .local/corpus
+# (or a caller-provided destination). Golden generation remains explicit because
+# licensing must be reviewed per spec before anything is committed.
+fetch-corpus *args:
+    ./scripts/fetch-corpus.sh {{args}}
+
 # Coverage-growth aid: for each corpus, report which committed fixture files
 # crozier ALREADY reproduces byte-for-byte but are missing from its `matched` list
 # in tests/e2e.rs, printed as ready-to-paste array entries. Not part of `check`.
