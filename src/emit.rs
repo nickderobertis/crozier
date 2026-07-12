@@ -1792,6 +1792,7 @@ fn render_discriminated_union(
     let mut imports = Imports::default();
     imports.add_plain("typing");
     imports.add_plain("pydantic");
+    imports.add_plain("typing_extensions");
     imports.add_from("..core.pydantic_utilities", "IS_PYDANTIC_V2");
     imports.add_from("..core.pydantic_utilities", "UniversalBaseModel");
 
@@ -1829,10 +1830,14 @@ fn render_discriminated_union(
         .iter()
         .map(|m| Doc::atom(m.class_name.clone()))
         .collect();
+    // Fern wraps a discriminated union's alias in
+    // `typing_extensions.Annotated[Union[...], pydantic.Field(discriminator="…")]`
+    // (issue #50 part 2) so pydantic can dispatch on the tag — a plain
+    // `Union[...]` cannot. `ruff` wraps the line if it exceeds the width.
+    let union_expr = Doc::group("typing.Union[", variants, "]").flat();
     let alias = format!(
-        "{} = {}",
-        union.name,
-        Doc::group("typing.Union[", variants, "]").flat()
+        "{} = typing_extensions.Annotated[{union_expr}, pydantic.Field(discriminator=\"{}\")]",
+        union.name, union.discriminant_property
     );
 
     Ok(format!(

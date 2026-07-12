@@ -5,6 +5,7 @@ from __future__ import annotations
 import typing
 
 import pydantic
+import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 
 
@@ -36,4 +37,4 @@ class Shape_Square(UniversalBaseModel):
             extra = pydantic.Extra.allow
 
 
-Shape = typing.Union[Shape_Circle, Shape_Square]
+Shape = typing_extensions.Annotated[typing.Union[Shape_Circle, Shape_Square], pydantic.Field(discriminator="type")]

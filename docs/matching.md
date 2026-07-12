@@ -252,13 +252,15 @@ the third does not reproduce at the corpus's pinned Fern version.
    Still open: an *inline object* error body, which Fern hoists to a root
    `types/{ClassName}Body` model — crozier renders it `typing.Any` today (kept out of
    the corpus, so unmatched rather than wrong).
-2. **Discriminated-union alias annotation** (gap #2) is **not a gap at the pinned
-   Fern version.** Newer Fern (4.46.x) wraps the alias in
-   `typing_extensions.Annotated[Union[...], pydantic.Field(discriminator="…")]`, but
-   the corpus pins `fern-python-sdk` 4.34.0, whose OpenAPI importer emits a plain
-   `Shape = typing.Union[...]` — which `discriminated-unions` pins and crozier already
-   matches. Adopting the annotated form is deferred to a corpus-wide Fern bump (it
-   would break the committed 4.34.0 fixture today).
+2. **Discriminated-union alias annotation** (gap #2) is **now closed** (issue #50
+   part 2). Fern wraps the alias in
+   `typing_extensions.Annotated[Union[...], pydantic.Field(discriminator="…")]` so
+   pydantic can dispatch on the tag; a plain `Shape = typing.Union[...]` cannot.
+   This landed in `fern-python-sdk` 4.35.0, so the corpus was bumped 4.34.0 → 4.35.0
+   to pin it — a deliberately **minimal** bump: 4.35.0's only output change over
+   4.34.0 is this annotation (the 104-file `exhaustive` tree differs by only the
+   `.fern/metadata.json` version string), so no other generator work was needed.
+   [`emit::render_discriminated_union`] now emits the annotated alias.
 3. **SSE streaming operations were reduced to a `-> None` method** that discarded
    the stream (`sse-streaming`, gap #3). A `text/event-stream` 2xx response now
    ([`ir::is_streaming`]) generates Fern's context-managed streaming shape: the raw
@@ -384,7 +386,8 @@ This is exactly how the four former gap targets (`basic-auth`,
 7. **Discriminated unions (implemented).** A `oneOf`/`anyOf` with a `discriminator`
    (`propertyName` + `mapping`) becomes Fern's `{Union}_{Variant}` wrapper models —
    each carrying the discriminant as a `typing.Literal[..]` field plus the referenced
-   model's other fields — over a `{Union} = typing.Union[..]` alias, and the
+   model's other fields — over a `{Union} = typing_extensions.Annotated[typing.Union[..],
+   pydantic.Field(discriminator="…")]` alias (issue #50 part 2), and the
    discriminant property is stripped from each member's own model. The type layer
    (`shape.py`, `circle.py`, `square.py`, `types/__init__.py`) matches in
    `discriminated-unions`; the endpoint/docs layer awaits the auth + endpoint work.
@@ -630,12 +633,12 @@ keep the identifier legal (`_01_00_AM`) and the whole tree compiles. This is the
 same posture as the arbitrary-spec validity check — where Fern errors, the bar is
 "valid Python," not byte-parity.
 
-Not addressed here: **discriminated-union alias annotation** (issue #50 part 2).
-The pinned Fern (`fern-python-sdk` 4.34.0) emits a plain `Shape = typing.Union[…]`
-(the committed `discriminated-unions` fixture proves it); the
-`Annotated[Union[…], pydantic.Field(discriminator=…)]` form is newer-Fern only, so
-adopting it would break the byte-match against the current corpus. It stays
-deferred to a corpus-wide Fern bump (same call as issue #43 gap #2).
+Issue #50 **part 2** (the **discriminated-union alias annotation**) is closed by the
+same PR family: the corpus was bumped 4.34.0 → 4.35.0 and
+[`emit::render_discriminated_union`] now emits
+`typing_extensions.Annotated[Union[…], pydantic.Field(discriminator=…)]`. See the
+issue-#43 gap #2 note above for why the bump is minimal (4.35.0's only output change
+over 4.34.0 is this annotation).
 
 > **Regenerating these golden trees.** `scripts/generate-fern-fixture.sh` pins the
 > Fern CLI to the corpus version via `fern.config.json` and installs the *packaged*
