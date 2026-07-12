@@ -224,7 +224,10 @@ The `exhaustive` corpus is fully matched, and **every** feature-coverage target 
 `basic-auth`, `oauth-client-credentials`, `inline-array-request`, and
 `writeonly-fields`, the two issue-#43 targets `error-responses` and
 `sse-streaming`, the issue-#50 target `enum-name-sanitization`, and the issue-#57
-target `enum-receiver-collision`. (The exact
+target `enum-receiver-collision` — with three **partially** matched targets whose
+headline files match while a residual feature is still unimplemented:
+`recursive-types`, `nested-core-imports`, and `malformed-property-schema` (issues
+#84–#86, below). (The exact
 matched-file set for each corpus — and the roster of
 corpora itself — is the `FEATURE_TARGETS`/`matched` data in `tests/e2e.rs`, the
 single source of truth; counts are deliberately not restated here so they cannot
@@ -291,6 +294,50 @@ target/release/crozier generate \
   --spec tests/fixtures/<fixture>/openapi.yml \
   --output /tmp/<fixture> --package-name fern --project-name default_package_name
 ```
+
+### Issues #84–#86: recursive schemas and malformed nodes
+
+Three shapes that made crozier emit broken code — or crash — where Fern tolerates
+the document. Each has a hand-authored feature-coverage target with the full Fern
+`expected/` tree committed.
+
+1. **Recursive schemas** (`recursive-types`, issue #84). A self-referential model
+   (`TreeNode` containing a list of itself) emitted `from .tree_node import
+   TreeNode` — a module importing the name it defines (a circular import at load) —
+   and a recursive discriminated union overflowed the generator's stack. Both are
+   fixed the way Fern does it: a type that closes a reference cycle back to itself
+   renders the cyclic field as a **string forward reference** under `from __future__
+   import annotations`, and the model is repaired at load time with
+   `update_forward_refs`. A same-file cycle (a self-reference, or a variant
+   referencing its own union alias) needs no import; a cross-module cycle (the
+   `$ref`-variant schema `AndNode.children: List["Node"]`) **defers** its import to
+   after the class body so it does not fire mid-load. The cycle set is computed by
+   [`emit::forward_ref_map`] over the type-reference graph (a discriminated union
+   contributes an edge to each of its mapped variant schemas, so a variant that
+   recurses through the union is seen). Example synthesis, which walks the same
+   graph for the README/reference, terminates a recursive list at `[]` rather than
+   recursing forever ([`emit`]'s example cycle guard). Discriminated-union wrappers
+   are now named after the discriminant **value** (`Node_And`), matching Fern —
+   previously the referenced schema name (`Node_AndNode`) when the two differed.
+   Still partial: a recursive `oneOf` with **inline** (untitled, unmapped) variants
+   needs discriminator-mapping *inference* to match Fern's structure; crozier no
+   longer crashes on it, but that inference is a separate feature, so those files
+   stay out of `matched`.
+2. **Nested-type `core` import depth** (`nested-core-imports`, issue #85). A
+   per-operation hoisted type at `{pkg}/{tag}/types/…` reached `core.serialization`
+   with a hardcoded `..core` — correct only at the root nesting level, a
+   `ModuleNotFoundError` one level deeper. Every `core.*` import now routes through
+   [`emit::Imports::add_core`], which picks the dot count from the file's actual
+   package depth (`...core` for a tag's `types/`), matching the depth already used
+   for `core.pydantic_utilities`.
+3. **JSON-array property node** (`malformed-property-schema`, issue #86). A
+   `required: [..]` list misplaced *inside* `properties` reads as a property whose
+   value is a JSON array; serde's derived struct deserialization filled `Schema`
+   fields positionally from that array, turning the first element into a bogus
+   `$ref` and emitting a dangling type import. The `properties` deserializer now
+   degrades any non-object value to a `malformed` unknown node
+   ([`openapi`]'s `de_properties`), which renders as Fern's `Optional[Any]` —
+   matching Fern's tolerance of the same document.
 
 ### Generating a gap target's golden tree
 

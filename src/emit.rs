@@ -98,6 +98,18 @@ struct Imports {
     /// Names of tag-scoped (hoisted) types → their owning tag directory. A name
     /// absent from this map is a package-root type.
     tag_types: BTreeMap<String, String>,
+    /// Referenced type names that must render as string forward references
+    /// (`"TreeNode"`) because importing them eagerly would close an import cycle
+    /// (issue #84). A same-file self-reference needs no import at all; a
+    /// cross-module cycle import is deferred to [`Imports::deferred`].
+    forward: std::collections::HashSet<String>,
+    /// The module (file stem) of the type being emitted, so a forward reference to
+    /// a type in *this* file is recognised and left un-imported.
+    cur_module: String,
+    /// `from … import …` lines for forward references in *other* modules, emitted
+    /// after the class body (a deferred import) so the module loads without the
+    /// cycle firing at import time.
+    deferred: BTreeSet<String>,
 }
 
 impl Imports {
@@ -111,11 +123,11 @@ impl Imports {
         }
     }
 
-    /// Register the import for a referenced generated type, choosing the relative
-    /// module path from this file's [`RefLoc`] and whether the type is tag-scoped.
-    fn add_type(&mut self, class: &str) {
+    /// The relative module path a referenced generated type is imported from,
+    /// chosen from this file's [`RefLoc`] and whether the type is tag-scoped.
+    fn type_import_path(&self, class: &str) -> String {
         let m = naming::module_name(class);
-        let path = match self.tag_types.get(class) {
+        match self.tag_types.get(class) {
             // A tag-scoped type lives at `{pkg}.{tag}.types.{m}`.
             Some(tag) => match &self.loc {
                 RefLoc::TagTypes(cur) if cur == tag => format!(".{m}"),
@@ -131,8 +143,43 @@ impl Imports {
                 RefLoc::TagTypes(_) => format!("...types.{m}"),
                 RefLoc::Client(_) | RefLoc::Errors => format!("..types.{m}"),
             },
-        };
+        }
+    }
+
+    /// Register the import for a referenced generated type. A type flagged as a
+    /// forward reference (issue #84) is *not* imported eagerly: a same-file
+    /// reference needs no import, and a cross-module one is deferred to after the
+    /// class body so its cycle does not fire at import time.
+    fn add_type(&mut self, class: &str) {
+        if self.forward.contains(class) {
+            if naming::module_name(class) != self.cur_module {
+                let path = self.type_import_path(class);
+                self.deferred.insert(format!("from {path} import {class}"));
+            }
+            return;
+        }
+        let path = self.type_import_path(class);
         self.add_from(&path, class);
+    }
+
+    /// The dotted prefix that reaches the package-root `core` package from this
+    /// file's location. Every generated file sits one package below the root
+    /// (`{pkg}/types/`, `{pkg}/{tag}/`, `{pkg}/errors/`) except a tag's `types/`
+    /// (`{pkg}/{tag}/types/`), which is two deep and needs the extra dot.
+    fn core_prefix(&self) -> &'static str {
+        match self.loc {
+            RefLoc::TagTypes(_) => "...core",
+            RefLoc::RootTypes | RefLoc::Client(_) | RefLoc::Errors => "..core",
+        }
+    }
+
+    /// Register a `from {..}core.{submodule} import {name}` at the depth this
+    /// file's location requires — so `core.*` helpers resolve uniformly rather
+    /// than with a hardcoded dot count that only holds at the root nesting level
+    /// (issue #85).
+    fn add_core(&mut self, submodule: &str, name: &str) {
+        let module = format!("{}.{submodule}", self.core_prefix());
+        self.add_from(&module, name);
     }
 
     fn add_plain(&mut self, module: &str) {
@@ -220,7 +267,13 @@ fn render_type(t: &TypeRef, imports: &mut Imports) -> Doc {
         },
         TypeRef::Named(class) => {
             imports.add_type(class);
-            Doc::atom(class.clone())
+            // A forward reference (issue #84) renders as a quoted string so the
+            // annotation needs no eager import of a not-yet-defined name.
+            if imports.forward.contains(class) {
+                Doc::atom(format!("\"{class}\""))
+            } else {
+                Doc::atom(class.clone())
+            }
         }
         TypeRef::Optional(inner) => {
             imports.add_plain("typing");
@@ -311,7 +364,7 @@ fn render_field(field: &Field, imports: &mut Imports) -> RenderedField {
     // in `pydantic.Field`.
     let annotation = if field.needs_alias() {
         imports.add_plain("typing_extensions");
-        imports.add_from("..core.serialization", "FieldMetadata");
+        imports.add_core("serialization", "FieldMetadata");
         Doc::group(
             "typing_extensions.Annotated[",
             vec![
@@ -400,6 +453,106 @@ fn environment() -> Environment<'static> {
 }
 
 /// Generate every file crozier currently emits for an IR.
+/// Collect every named-type reference reachable within a resolved type.
+fn collect_named_refs(t: &TypeRef, out: &mut Vec<String>) {
+    match t {
+        TypeRef::Named(n) => out.push(n.clone()),
+        TypeRef::Optional(i) | TypeRef::List(i) | TypeRef::Set(i) => collect_named_refs(i, out),
+        TypeRef::Dict(k, v) => {
+            collect_named_refs(k, out);
+            collect_named_refs(v, out);
+        }
+        TypeRef::Union(vs) => vs.iter().for_each(|v| collect_named_refs(v, out)),
+        TypeRef::Primitive(_) | TypeRef::Literal(_) => {}
+    }
+}
+
+/// The named types a declaration references (base classes plus every field's
+/// type), for building the type-reference graph that finds recursive cycles.
+fn decl_refs(decl: &TypeDecl) -> Vec<String> {
+    let mut out = Vec::new();
+    match decl {
+        TypeDecl::Object(o) => {
+            out.extend(o.bases.iter().cloned());
+            for f in &o.fields {
+                collect_named_refs(&f.type_ref, &mut out);
+            }
+        }
+        TypeDecl::Alias(a) => collect_named_refs(&a.target, &mut out),
+        TypeDecl::DiscriminatedUnion(u) => {
+            // A union can be any of its mapped variant schemas — that edge is what
+            // exposes a variant that recurses back through the union (issue #84).
+            out.extend(u.variant_targets.iter().cloned());
+            for m in &u.members {
+                for f in &m.fields {
+                    collect_named_refs(&f.type_ref, &mut out);
+                }
+            }
+        }
+        TypeDecl::Enum(_) => {}
+    }
+    out
+}
+
+/// For every generated type, the subset of its own references that close a cycle
+/// back to it — the references crozier must emit as string forward references
+/// with a deferred/omitted import so the module graph loads (issue #84).
+///
+/// A reference `A → B` is a back-edge when `B` can reach `A` again through the
+/// type graph (a self-reference is the degenerate `A → A`). Fern renders exactly
+/// these as `"B"` and repairs them at class-definition time with
+/// `update_forward_refs`.
+fn forward_ref_map(
+    types: &[TypeDecl],
+    tag_types: &[crate::ir::TagTypeDecl],
+) -> std::collections::HashMap<String, std::collections::HashSet<String>> {
+    use std::collections::{HashMap, HashSet};
+
+    // Adjacency: type name → the names it references.
+    let mut edges: HashMap<String, Vec<String>> = HashMap::new();
+    for decl in types.iter().chain(tag_types.iter().map(|t| &t.decl)) {
+        edges
+            .entry(decl.name().to_string())
+            .or_default()
+            .extend(decl_refs(decl));
+    }
+
+    // Whether `target` is reachable from `start` following ≥1 edge.
+    let reaches = |start: &str, target: &str| -> bool {
+        let mut stack: Vec<&str> = edges
+            .get(start)
+            .into_iter()
+            .flatten()
+            .map(String::as_str)
+            .collect();
+        let mut seen: HashSet<&str> = HashSet::new();
+        while let Some(node) = stack.pop() {
+            if node == target {
+                return true;
+            }
+            if seen.insert(node) {
+                stack.extend(edges.get(node).into_iter().flatten().map(String::as_str));
+            }
+        }
+        false
+    };
+
+    let mut map: HashMap<String, HashSet<String>> = HashMap::new();
+    for decl in types.iter().chain(tag_types.iter().map(|t| &t.decl)) {
+        let name = decl.name();
+        let mut forward = HashSet::new();
+        for r in decl_refs(decl) {
+            if reaches(&r, name) {
+                forward.insert(r);
+            }
+        }
+        if !forward.is_empty() {
+            map.insert(name.to_string(), forward);
+        }
+    }
+    map
+}
+
 pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     let env = environment();
     let mut files = Vec::new();
@@ -412,6 +565,11 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         .iter()
         .map(|t| (t.decl.name().to_string(), t.module.clone()))
         .collect();
+
+    // Recursive types: per type, the references that must render as string forward
+    // references (issue #84). Empty for the common acyclic case.
+    let forward_map = forward_ref_map(&ir.types, &ir.tag_types);
+    let empty_forward = std::collections::HashSet::new();
 
     // version.py
     let version = render(
@@ -433,7 +591,15 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
 
     // One file per generated type.
     for decl in &ir.types {
-        let file = render_type_decl(&env, decl, RefLoc::RootTypes, &tag_map, ir.extra_fields)?;
+        let forward = forward_map.get(decl.name()).unwrap_or(&empty_forward);
+        let file = render_type_decl(
+            &env,
+            decl,
+            RefLoc::RootTypes,
+            &tag_map,
+            ir.extra_fields,
+            forward,
+        )?;
         files.push(GeneratedFile {
             path: PathBuf::from(format!("src/{pkg}/types/{}.py", decl.module())),
             contents: file,
@@ -451,12 +617,14 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     }
     for (module, decls) in &tag_type_modules {
         for decl in decls {
+            let forward = forward_map.get(decl.name()).unwrap_or(&empty_forward);
             let file = render_type_decl(
                 &env,
                 decl,
                 RefLoc::TagTypes((*module).to_string()),
                 &tag_map,
                 ir.extra_fields,
+                forward,
             )?;
             files.push(GeneratedFile {
                 path: PathBuf::from(format!("src/{pkg}/{module}/types/{}.py", decl.module())),
@@ -1075,6 +1243,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
             auth: &ir.auth,
             has_environment: ir.environment.is_some(),
             global_headers: &ir.global_headers,
+            building: Default::default(),
         };
         build_example(first, false, &first.module, pkg, &ir.client_name, &mut ctx)?.join("\n")
     };
@@ -1088,6 +1257,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
             auth: &ir.auth,
             has_environment: ir.environment.is_some(),
             global_headers: &ir.global_headers,
+            building: Default::default(),
         };
         build_example(first, true, &first.module, pkg, &ir.client_name, &mut ctx)?.join("\n")
     };
@@ -1194,6 +1364,7 @@ fn reference_entry(
         auth: &ir.auth,
         has_environment: ir.environment.is_some(),
         global_headers: &ir.global_headers,
+        building: Default::default(),
     };
     let example = build_example(ep, false, module, pkg, &ir.client_name, &mut ctx)
         .unwrap_or_default()
@@ -1703,23 +1874,22 @@ fn render_type_decl(
     loc: RefLoc,
     tag_types: &BTreeMap<String, String>,
     extra: ExtraFields,
+    forward: &std::collections::HashSet<String>,
 ) -> Result<String> {
-    // A tag type sits one package deeper, so `core` is reached with an extra dot.
-    let core = if matches!(loc, RefLoc::TagTypes(_)) {
-        "...core.pydantic_utilities"
-    } else {
-        "..core.pydantic_utilities"
-    };
     match decl {
         TypeDecl::Object(obj) => {
             let mut imports = Imports::at(loc, tag_types);
+            // A recursive model's cyclic field references render as string forward
+            // references and skip/defer their imports (issue #84).
+            imports.forward = forward.clone();
+            imports.cur_module = obj.module.clone();
             imports.add_plain("typing");
             imports.add_plain("pydantic");
-            imports.add_from(core, "IS_PYDANTIC_V2");
+            imports.add_core("pydantic_utilities", "IS_PYDANTIC_V2");
             // Bases come from an `allOf`'s `$ref` members; with none, the model
             // extends Fern's `UniversalBaseModel`.
             let bases = if obj.bases.is_empty() {
-                imports.add_from(core, "UniversalBaseModel");
+                imports.add_core("pydantic_utilities", "UniversalBaseModel");
                 "UniversalBaseModel".to_string()
             } else {
                 for base in &obj.bases {
@@ -1738,6 +1908,32 @@ fn render_type_decl(
                     }
                 })
                 .collect();
+            if !forward.is_empty() {
+                // A recursive model: `from __future__ import annotations` lets the
+                // string forward refs resolve lazily, and `update_forward_refs`
+                // rebuilds the model once the referenced names exist.
+                imports.add_core("pydantic_utilities", "update_forward_refs");
+                let body = render_class_body(env, obj.docstring.clone(), fields, extra)?;
+                let mut file = format!(
+                    "{HEADER}\n\nfrom __future__ import annotations\n\n{}\n\n\nclass {}({}):\n{}",
+                    imports.render(),
+                    obj.name,
+                    bases,
+                    body.trim_end(),
+                );
+                // Two blank lines, then any deferred cross-module forward-ref
+                // imports (a blank line after them), then the forward-ref repair.
+                file.push_str("\n\n\n");
+                if !imports.deferred.is_empty() {
+                    for line in &imports.deferred {
+                        file.push_str(line);
+                        file.push('\n');
+                    }
+                    file.push('\n');
+                }
+                file.push_str(&format!("update_forward_refs({})\n", obj.name));
+                return Ok(file);
+            }
             let (config_dict_args, extra_kind) = extra_config(extra);
             let view = ObjectView {
                 header: HEADER,
@@ -1772,7 +1968,9 @@ fn render_type_decl(
             )
         }
         TypeDecl::Enum(e) => render_enum(env, e),
-        TypeDecl::DiscriminatedUnion(union) => render_discriminated_union(env, union, extra),
+        TypeDecl::DiscriminatedUnion(union) => {
+            render_discriminated_union(env, union, extra, loc, tag_types, forward)
+        }
     }
 }
 
@@ -1827,13 +2025,21 @@ fn render_discriminated_union(
     env: &Environment<'static>,
     union: &crate::ir::DiscriminatedUnion,
     extra: ExtraFields,
+    loc: RefLoc,
+    tag_types: &BTreeMap<String, String>,
+    forward: &std::collections::HashSet<String>,
 ) -> Result<String> {
-    let mut imports = Imports::default();
+    let mut imports = Imports::at(loc, tag_types);
+    // A recursive variant references the union by string forward reference
+    // (issue #84); a same-module ref (the common case — the union alias lives in
+    // this file) needs no import.
+    imports.forward = forward.clone();
+    imports.cur_module = union.module.clone();
     imports.add_plain("typing");
     imports.add_plain("pydantic");
     imports.add_plain("typing_extensions");
-    imports.add_from("..core.pydantic_utilities", "IS_PYDANTIC_V2");
-    imports.add_from("..core.pydantic_utilities", "UniversalBaseModel");
+    imports.add_core("pydantic_utilities", "IS_PYDANTIC_V2");
+    imports.add_core("pydantic_utilities", "UniversalBaseModel");
 
     let mut classes: Vec<String> = Vec::new();
     for member in &union.members {
@@ -1879,11 +2085,36 @@ fn render_discriminated_union(
         union.name, union.discriminant_property
     );
 
+    // A recursive variant is repaired at load time: import `update_forward_refs`
+    // and, right after the alias, call it on each wrapper that carries a forward
+    // reference (issue #84). Non-recursive unions emit no such trailer.
+    let mut trailer = String::new();
+    if !forward.is_empty() {
+        imports.add_core("pydantic_utilities", "update_forward_refs");
+        for member in &union.members {
+            if member
+                .fields
+                .iter()
+                .any(|f| type_uses_forward(&f.type_ref, forward))
+            {
+                trailer.push_str(&format!("\nupdate_forward_refs({})", member.class_name));
+            }
+        }
+    }
+
     Ok(format!(
-        "{HEADER}\n\nfrom __future__ import annotations\n\n{}\n\n\n{}\n\n\n{alias}\n",
+        "{HEADER}\n\nfrom __future__ import annotations\n\n{}\n\n\n{}\n\n\n{alias}{trailer}\n",
         imports.render(),
         classes.join("\n\n\n")
     ))
+}
+
+/// Whether a resolved type references any name that must render as a forward
+/// reference — i.e. the enclosing model needs an `update_forward_refs` repair.
+fn type_uses_forward(t: &TypeRef, forward: &std::collections::HashSet<String>) -> bool {
+    let mut names = Vec::new();
+    collect_named_refs(t, &mut names);
+    names.iter().any(|n| forward.contains(n))
 }
 
 /// Render a resolved type to its flat Python expression for the raw client,
@@ -3144,6 +3375,7 @@ fn client_stream_docstring(
         auth: cx.auth,
         has_environment: cx.has_environment,
         global_headers: cx.global_headers,
+        building: Default::default(),
     };
     if let Some(ex_lines) = build_example(ep, is_async, cx.module, cx.pkg, cx.client_name, &mut ctx)
     {
@@ -3210,6 +3442,7 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
         auth: cx.auth,
         has_environment: cx.has_environment,
         global_headers: cx.global_headers,
+        building: Default::default(),
     };
     // With an example, one blank line separates the `Returns` block from
     // `Examples`; without one, close straight after (like the raw docstring).
@@ -3380,6 +3613,11 @@ struct ExampleCtx<'a> {
     /// Promoted global headers, shown as `tenant="YOUR_TENANT"` example lines
     /// before the auth credential in the client instantiation.
     global_headers: &'a [GlobalHeader],
+    /// Named types currently being expanded on the active path, so a recursive
+    /// schema (a tree node, a recursive union) terminates instead of overflowing
+    /// the stack (issue #84): a list of an ancestor type renders empty, matching
+    /// Fern's `children=[]`.
+    building: std::collections::HashSet<String>,
 }
 
 /// The slot a string value sits in, which decides its placeholder text: a named
@@ -3410,6 +3648,22 @@ impl<'a> ExampleCtx<'a> {
                 .insert((tt.module.clone(), name.to_string()));
         } else {
             self.referenced.insert(name.to_string());
+        }
+    }
+
+    /// Whether a type reaches, through optionals/aliases/unions, a named type
+    /// currently being expanded — i.e. constructing an example for it would
+    /// re-enter an ancestor and loop. Drives the empty-list break for recursive
+    /// schemas (issue #84).
+    fn resolves_to_building(&self, t: &TypeRef) -> bool {
+        match t {
+            TypeRef::Named(n) => {
+                self.building.contains(n)
+                    || matches!(self.find(n), Some(TypeDecl::Alias(a)) if self.resolves_to_building(&a.target))
+            }
+            TypeRef::Optional(inner) => self.resolves_to_building(inner),
+            TypeRef::Union(variants) => variants.iter().any(|v| self.resolves_to_building(v)),
+            _ => false,
         }
     }
 
@@ -3465,7 +3719,14 @@ impl<'a> ExampleCtx<'a> {
             )]),
             TypeRef::Optional(inner) => self.value(inner, slot),
             TypeRef::List(inner) | TypeRef::Set(inner) => {
-                Example::List(vec![self.value(inner, Slot::Plain)])
+                // A list whose element is a type currently being expanded would
+                // recurse forever (a tree node, a recursive union); Fern renders it
+                // empty (`children=[]`), which also terminates the walk (issue #84).
+                if self.resolves_to_building(inner) {
+                    Example::List(vec![])
+                } else {
+                    Example::List(vec![self.value(inner, Slot::Plain)])
+                }
             }
             TypeRef::Dict(_, v) => {
                 if self.resolves_to_any(v) {
@@ -3498,6 +3759,23 @@ impl<'a> ExampleCtx<'a> {
     /// The example for a named type: an object is constructed from its
     /// spec-required fields (base classes first); an alias resolves to its target.
     fn named_value(&mut self, name: &str, slot: Slot) -> Example {
+        // A named type already on the active path is a cycle. Recursion normally
+        // terminates at the empty-list break (a recursive field is a list), so this
+        // is only reached by a direct (non-list) self-reference; break with `None`
+        // rather than overflow the stack (issue #84).
+        if self.building.contains(name) {
+            return Example::Atom("None".to_string());
+        }
+        let inserted = self.building.insert(name.to_string());
+        let result = self.named_value_inner(name, slot);
+        if inserted {
+            self.building.remove(name);
+        }
+        result
+    }
+
+    /// The body of [`named_value`], wrapped by the cycle-guard bookkeeping.
+    fn named_value_inner(&mut self, name: &str, slot: Slot) -> Example {
         match self.find(name) {
             Some(TypeDecl::Object(obj)) => {
                 self.record_ref(name);
