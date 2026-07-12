@@ -45,6 +45,9 @@ pub struct Ir {
     /// `environment.py` and threads an `environment`/optional-`base_url` through
     /// the root client.
     pub environment: Option<Environment>,
+    /// How generated pydantic models treat unknown fields (Fern's
+    /// `pydantic_config.extra_fields`); drives every model's `extra` config.
+    pub extra_fields: crate::settings::ExtraFields,
 }
 
 /// The generated server-environment enum (`environment.py`). Fern maps the
@@ -819,10 +822,14 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         .types
         .retain(|d| !inline_sources.contains(d.name()) || referenced.contains(d.name()));
 
-    let client_name = format!(
-        "{}Api",
-        naming::to_pascal_case(config.package_name.as_str())
-    );
+    // The root client class name is Fern's `client_class_name` when given
+    // (issue #61), else derived from the package name as `{PascalCase}Api`.
+    let client_name = config.client_class_name.clone().unwrap_or_else(|| {
+        format!(
+            "{}Api",
+            naming::to_pascal_case(config.package_name.as_str())
+        )
+    });
     let environment = environment_model(doc, &client_name);
 
     Ir {
@@ -837,6 +844,7 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         auth: auth_model(doc),
         global_headers: global,
         environment,
+        extra_fields: config.extra_fields,
     }
 }
 
