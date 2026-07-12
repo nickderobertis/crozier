@@ -25,6 +25,10 @@ struct Corpus {
     /// Whether to pass `--audience-strict` (exclude un-annotated operations,
     /// matching Fern's exclusive filtering). Only meaningful with `audiences`.
     audience_strict: bool,
+    /// `--client-class-name` to drive crozier with (Fern's `client_class_name`);
+    /// `None` lets crozier derive the root client class from the package name, as
+    /// every corpus but `client-class-name` does.
+    client_class_name: Option<&'static str>,
     matched: &'static [&'static str],
 }
 
@@ -35,6 +39,7 @@ const QUERY_PARAMETERS: Corpus = Corpus {
     project_name: "fern_query-parameters-openapi",
     audiences: &[],
     audience_strict: false,
+    client_class_name: None,
     matched: &[
         "src/seed/version.py",
         "src/seed/py.typed",
@@ -67,6 +72,7 @@ const EXHAUSTIVE: Corpus = Corpus {
     project_name: "default_package_name",
     audiences: &[],
     audience_strict: false,
+    client_class_name: None,
     matched: &[
         "src/fern/version.py",
         "src/fern/py.typed",
@@ -231,6 +237,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         project_name: "default_package_name",
         audiences: &[],
         audience_strict: false,
+        client_class_name: None,
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -282,6 +289,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         project_name: "default_package_name",
         audiences: &[],
         audience_strict: false,
+        client_class_name: None,
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -328,6 +336,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         project_name: "default_package_name",
         audiences: &[],
         audience_strict: false,
+        client_class_name: None,
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -369,6 +378,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         project_name: "default_package_name",
         audiences: &[],
         audience_strict: false,
+        client_class_name: None,
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -411,6 +421,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         project_name: "default_package_name",
         audiences: &[],
         audience_strict: false,
+        client_class_name: None,
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -454,6 +465,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         project_name: "default_package_name",
         audiences: &[],
         audience_strict: false,
+        client_class_name: None,
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -496,6 +508,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         project_name: "default_package_name",
         audiences: &[],
         audience_strict: false,
+        client_class_name: None,
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -539,6 +552,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         project_name: "default_package_name",
         audiences: &[],
         audience_strict: false,
+        client_class_name: None,
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -590,6 +604,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         project_name: "default_package_name",
         audiences: &[],
         audience_strict: false,
+        client_class_name: None,
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -633,6 +648,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         project_name: "default_package_name",
         audiences: &[],
         audience_strict: false,
+        client_class_name: None,
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -684,6 +700,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         project_name: "default_package_name",
         audiences: &[],
         audience_strict: false,
+        client_class_name: None,
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -733,6 +750,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         project_name: "default_package_name",
         audiences: &[],
         audience_strict: false,
+        client_class_name: None,
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -789,6 +807,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         project_name: "default_package_name",
         audiences: &[],
         audience_strict: false,
+        client_class_name: None,
         matched: &[
             "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
@@ -824,6 +843,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         project_name: "default_package_name",
         audiences: &[],
         audience_strict: false,
+        client_class_name: None,
         matched: &[
             "src/fern/client.py",
             "src/fern/core/__init__.py",
@@ -862,6 +882,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         project_name: "default_package_name",
         audiences: &[],
         audience_strict: false,
+        client_class_name: None,
         matched: &[
             "src/fern/client.py",
             "src/fern/core/__init__.py",
@@ -906,6 +927,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         project_name: "default_package_name",
         audiences: &[],
         audience_strict: false,
+        client_class_name: None,
         matched: &[
             ".fern/metadata.json",
             "src/fern/client.py",
@@ -954,6 +976,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         project_name: "default_package_name",
         audiences: &[],
         audience_strict: false,
+        client_class_name: None,
         matched: &[
             ".fern/metadata.json",
             "pyproject.toml",
@@ -1005,6 +1028,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         project_name: "default_package_name",
         audiences: &[],
         audience_strict: false,
+        client_class_name: None,
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -1054,6 +1078,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         project_name: "default_package_name",
         audiences: &["public"],
         audience_strict: false,
+        client_class_name: None,
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -1105,6 +1130,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         project_name: "default_package_name",
         audiences: &["public"],
         audience_strict: true,
+        client_class_name: None,
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -1158,6 +1184,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         project_name: "default_package_name",
         audiences: &[],
         audience_strict: false,
+        client_class_name: None,
         matched: &[
             ".fern/metadata.json",
             "src/fern/client.py",
@@ -1200,6 +1227,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         project_name: "default_package_name",
         audiences: &[],
         audience_strict: false,
+        client_class_name: None,
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -1251,6 +1279,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         project_name: "default_package_name",
         audiences: &[],
         audience_strict: false,
+        client_class_name: None,
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -1283,6 +1312,55 @@ const FEATURE_TARGETS: &[Corpus] = &[
             "src/fern/types/widget.py",
             "src/fern/types/widget_binding.py",
             "src/fern/types/widget_owner.py",
+            "src/fern/version.py",
+            "src/fern/widgets/__init__.py",
+            "src/fern/widgets/client.py",
+            "src/fern/widgets/raw_client.py",
+        ],
+    },
+    // Issue #61: `--client-class-name` overrides the generated root client class
+    // name (Fern's `client_class_name`), so `AcmeClient`/`AsyncAcmeClient` replace
+    // the package-derived `FernApi`. Driven with `--client-class-name AcmeClient`;
+    // the whole 33-file tree byte-matches Fern's, threading the name through the
+    // root `client.py`, the package `__init__.py` re-exports, the per-tag client's
+    // worked examples, and the README/reference snippets.
+    Corpus {
+        api: "client-class-name",
+        package_name: "fern",
+        project_name: "default_package_name",
+        audiences: &[],
+        audience_strict: false,
+        client_class_name: Some("AcmeClient"),
+        matched: &[
+            ".fern/metadata.json",
+            "README.md",
+            "pyproject.toml",
+            "reference.md",
+            "requirements.txt",
+            "src/fern/__init__.py",
+            "src/fern/client.py",
+            "src/fern/core/__init__.py",
+            "src/fern/core/api_error.py",
+            "src/fern/core/client_wrapper.py",
+            "src/fern/core/datetime_utils.py",
+            "src/fern/core/file.py",
+            "src/fern/core/force_multipart.py",
+            "src/fern/core/http_client.py",
+            "src/fern/core/http_response.py",
+            "src/fern/core/http_sse/__init__.py",
+            "src/fern/core/http_sse/_api.py",
+            "src/fern/core/http_sse/_decoders.py",
+            "src/fern/core/http_sse/_exceptions.py",
+            "src/fern/core/http_sse/_models.py",
+            "src/fern/core/jsonable_encoder.py",
+            "src/fern/core/pydantic_utilities.py",
+            "src/fern/core/query_encoder.py",
+            "src/fern/core/remove_none_from_dict.py",
+            "src/fern/core/request_options.py",
+            "src/fern/core/serialization.py",
+            "src/fern/py.typed",
+            "src/fern/types/__init__.py",
+            "src/fern/types/widget.py",
             "src/fern/version.py",
             "src/fern/widgets/__init__.py",
             "src/fern/widgets/client.py",
@@ -1452,6 +1530,11 @@ fn generate_corpus(c: &Corpus) -> tempfile::TempDir {
         ])
         .args(c.audiences.iter().flat_map(|a| ["--audience", a]))
         .args(c.audience_strict.then_some("--audience-strict"))
+        .args(
+            c.client_class_name
+                .iter()
+                .flat_map(|n| ["--client-class-name", n]),
+        )
         .assert()
         .success()
         .stderr(predicate::str::contains("generated"));

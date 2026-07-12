@@ -54,6 +54,11 @@ struct GenerateCmd {
     #[arg(long)]
     project_name: Option<String>,
 
+    /// Name of the generated root client class (Fern's `client_class_name`).
+    /// Defaults to `{PascalCase(package_name)}Api`.
+    #[arg(long)]
+    client_class_name: Option<String>,
+
     /// `x-crozier-audiences` filter (repeatable). When given, only operations
     /// carrying a matching audience — or none at all — are generated, along with
     /// the transitive closure of schemas they reference. Omit to generate the
@@ -89,6 +94,7 @@ pub fn run(cli: Cli) -> std::result::Result<(), String> {
                 output: cmd.output.clone(),
                 package_name: cmd.package_name,
                 project_name: cmd.project_name,
+                client_class_name: cmd.client_class_name,
                 audiences: cmd.audiences,
                 audience_strict: cmd.audience_strict,
             })

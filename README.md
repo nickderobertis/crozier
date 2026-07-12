@@ -76,6 +76,11 @@ crozier generate \
   Defaults to a `snake_case` of the API title.
 - `--project-name` — the distribution name recorded in `version.py`. Defaults to
   the package name.
+- `--client-class-name` — the name of the generated root client class (Fern's
+  `client_class_name`). Defaults to `{PascalCase(package_name)}Api`.
+- `--audience` — repeatable `x-crozier-audiences` filter; generate only the
+  operations carrying a matching audience (or none), plus the schemas they
+  reference. Omit to generate the whole API.
 
 crozier exits `0` on success (with a one-line summary on stderr) and `1` on any
 error, printing the exact problem and a suggested fix.

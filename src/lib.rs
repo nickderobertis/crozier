@@ -45,6 +45,9 @@ pub struct GenerateArgs {
     pub package_name: Option<String>,
     /// Override the distribution name recorded in `version.py`.
     pub project_name: Option<String>,
+    /// Override the generated root client class name (Fern's `client_class_name`);
+    /// defaults to `{PascalCase(package_name)}Api`.
+    pub client_class_name: Option<String>,
     /// `x-crozier-audiences` filter: when non-empty, prune generation to the
     /// operations carrying a matching audience (or none) plus the transitive
     /// schema closure they reference. Empty generates the whole API.
@@ -67,6 +70,7 @@ pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
         args.output.clone(),
         args.package_name,
         args.project_name,
+        args.client_class_name,
         &doc.info.title,
     )?;
     let ir = ir::build(&doc, &config);
@@ -88,6 +92,7 @@ pub fn render_files(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
         args.output.clone(),
         args.package_name,
         args.project_name,
+        args.client_class_name,
         &doc.info.title,
     )?;
     let ir = ir::build(&doc, &config);
