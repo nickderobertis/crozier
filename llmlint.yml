@@ -15,6 +15,15 @@ files:
     # never LLM-judged. This top-level exclude is the single source of truth (the
     # diff-scoped run self-discovers files and honors it; needs llmlint >= 0.3.12).
     - "tests/fixtures/**"
+    # screencomp visual-docs artifacts — generated captures, not hand-written
+    # code: the committed SVG screenshots (each ~370KB of base64-embedded font),
+    # the animated GIF, the digest baseline, and the vendored binary font. They
+    # are not authored source to judge, and feeding the megabytes of base64 to the
+    # judge overflows it (it returns no parseable JSON). The scripts that PRODUCE
+    # them (scripts/screenshots.sh, scripts/demo-gif.py) are code and stay linted.
+    - "docs/screenshots/**"
+    - "shots/**"
+    - "screenshots/fonts/**"
 rationales: true
 agents:
   default:
