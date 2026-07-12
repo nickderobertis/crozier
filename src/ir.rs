@@ -2088,6 +2088,35 @@ impl Builder<'_> {
                     }
                 }
             }
+            // A property-level `anyOf`/`oneOf` (undiscriminated) hoists to a named
+            // `Union` alias `{Owner}{Prop}` (Fern: `CustomField.value` →
+            // `CustomFieldValue`). A `nullable` member is wrapped `Optional`, as Fern
+            // does for the alias — kept local to the hoist so inline unions elsewhere
+            // are unchanged.
+            if let Some(members) = prop_schema.any_of.as_ref().or(prop_schema.one_of.as_ref()) {
+                if prop_schema.discriminator.is_none() {
+                    let variants: Vec<TypeRef> = members
+                        .iter()
+                        .map(|m| {
+                            let ty = base_type_ref(m);
+                            if m.nullable == Some(true) {
+                                TypeRef::Optional(Box::new(ty))
+                            } else {
+                                ty
+                            }
+                        })
+                        .collect();
+                    let name = format!("{owner}{}", naming::class_name(prop));
+                    let module = naming::module_name(&name);
+                    self.push_alias(
+                        &name,
+                        module,
+                        TypeRef::Union(variants),
+                        clean_doc(prop_schema.description.as_deref()),
+                    );
+                    return TypeRef::Named(name);
+                }
+            }
         }
         base_type_ref(prop_schema)
     }
