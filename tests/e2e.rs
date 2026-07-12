@@ -2317,3 +2317,75 @@ fn strict_audience_excludes_unannotated_ops_through_the_binary() {
     assert!(strict.join("src/aud/types/widget_detail.py").is_file());
     assert_valid_python(&strict);
 }
+
+/// A minimal one-schema OpenAPI document for the config-layer e2e journeys —
+/// enough to drive a real `crozier generate` without a fixture corpus.
+const TINY_SPEC: &str = "openapi: 3.0.0\ninfo:\n  title: Tiny\ncomponents:\n  schemas:\n    Thing:\n      type: object\n      properties:\n        name: { type: string }\n";
+
+#[test]
+fn config_file_is_discovered_in_the_working_directory() {
+    // A `crozier.yml` in the working directory is picked up with no `--config`
+    // flag; relative paths in it resolve against that directory.
+    let dir = tempfile::tempdir().expect("tempdir");
+    std::fs::write(dir.path().join("api.yml"), TINY_SPEC).unwrap();
+    std::fs::write(
+        dir.path().join("crozier.yml"),
+        "generators:\n  admin:\n    spec: ./api.yml\n    output: ./out\n    package-name: admin\n",
+    )
+    .unwrap();
+
+    // No selector → run the single configured generator.
+    crozier()
+        .current_dir(dir.path())
+        .arg("generate")
+        .assert()
+        .success()
+        .stderr(predicate::str::contains("generated"));
+    assert!(dir.path().join("out/src/admin/types/thing.py").is_file());
+}
+
+#[test]
+fn env_var_overrides_config_and_cli_overrides_env() {
+    // Precedence CLI > CROZIER_* env > config file, through the real process env.
+    let base = "spec: ./api.yml\ngenerators:\n  python:\n    output: ./out\n    package-name: fromconfig\n";
+
+    // env beats config: no CLI override, so CROZIER_PACKAGE_NAME wins.
+    let a = tempfile::tempdir().expect("tempdir");
+    std::fs::write(a.path().join("api.yml"), TINY_SPEC).unwrap();
+    std::fs::write(a.path().join("crozier.yml"), base).unwrap();
+    crozier()
+        .current_dir(a.path())
+        .env("CROZIER_PACKAGE_NAME", "fromenv")
+        .args(["generate", "python"])
+        .assert()
+        .success();
+    assert!(a.path().join("out/src/fromenv/types/thing.py").is_file());
+
+    // CLI beats env: --package-name wins over CROZIER_PACKAGE_NAME.
+    let b = tempfile::tempdir().expect("tempdir");
+    std::fs::write(b.path().join("api.yml"), TINY_SPEC).unwrap();
+    std::fs::write(b.path().join("crozier.yml"), base).unwrap();
+    crozier()
+        .current_dir(b.path())
+        .env("CROZIER_PACKAGE_NAME", "fromenv")
+        .args(["generate", "python", "--package-name", "fromcli"])
+        .assert()
+        .success();
+    assert!(b.path().join("out/src/fromcli/types/thing.py").is_file());
+}
+
+#[test]
+fn generate_all_runs_every_configured_generator_through_the_binary() {
+    // Bare `crozier` (no subcommand) generates every configured generator.
+    let dir = tempfile::tempdir().expect("tempdir");
+    std::fs::write(dir.path().join("api.yml"), TINY_SPEC).unwrap();
+    std::fs::write(
+        dir.path().join("crozier.yml"),
+        "spec: ./api.yml\ngenerators:\n  a:\n    output: ./a\n    package-name: a\n  b:\n    output: ./b\n    package-name: b\n",
+    )
+    .unwrap();
+
+    crozier().current_dir(dir.path()).assert().success();
+    assert!(dir.path().join("a/src/a/types/thing.py").is_file());
+    assert!(dir.path().join("b/src/b/types/thing.py").is_file());
+}

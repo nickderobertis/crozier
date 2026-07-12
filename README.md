@@ -62,8 +62,11 @@ checksum (or the attestation), and put the `crozier` binary on your `PATH`.
 
 ## Usage
 
+The fastest path needs no config file — the built-in `python` generator runs
+straight from flags:
+
 ```sh
-crozier generate \
+crozier generate python \
   --spec path/to/openapi.yml \
   --output ./generated \
   --package-name my_api \
@@ -76,9 +79,54 @@ crozier generate \
   Defaults to a `snake_case` of the API title.
 - `--project-name` — the distribution name recorded in `version.py`. Defaults to
   the package name.
+- `--audience` (repeatable) / `--audience-strict` — prune generation to
+  `x-crozier-audiences`.
 
 crozier exits `0` on success (with a one-line summary on stderr) and `1` on any
 error, printing the exact problem and a suggested fix.
+
+## Configuration
+
+crozier runs one or more **named generators**. You can drive them purely from
+flags (above), from a `crozier.yml`, or any mix — every setting resolves per
+field as:
+
+```text
+CLI flag  >  CROZIER_* env var  >  crozier.yml (generator over shared)  >  built-in default
+```
+
+A `crozier.yml` in the working directory is picked up automatically. Top-level
+keys are shared defaults; each entry under `generators:` is one SDK to emit:
+
+```yaml
+# Shared across every generator
+spec: ./openapi.yml
+audiences: [public]
+
+generators:
+  python:              # overrides the built-in `python` generator
+    output: ./sdks/python
+    package-name: my_api
+    project-name: my-api
+  admin:               # a second generator (also Python for now)
+    type: python
+    spec: ./admin-openapi.yml
+    output: ./sdks/admin
+    package-name: admin_api
+```
+
+- `crozier` or `crozier generate` — run **every** configured generator (or the
+  built-in `python` when nothing is configured).
+- `crozier generate <name>` — run one generator by name (`python` always works,
+  even with no config file).
+- `--config <path>` (repeatable, later wins) selects config files instead of
+  auto-discovery; `--no-config` ignores config files entirely; `CROZIER_CONFIG`
+  names a file via the environment.
+
+Per-generation flags (`--spec`, `--output`, …) apply to a single generator, so
+they are rejected when more than one would run — name one, or set the values in
+`crozier.yml`. See [`docs/configuration.md`](docs/configuration.md) for the full
+reference.
 
 ## Development
 
