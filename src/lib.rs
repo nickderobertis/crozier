@@ -68,6 +68,7 @@ pub struct GenerateArgs {
 /// Returns the files written so the caller can report a count.
 pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     let mut doc = openapi::load(&args.spec)?;
+    openapi::filter_ignored(&mut doc);
     openapi::filter_by_audience(&mut doc, &args.audiences, args.audience_strict);
     // The config constructor validates the package name (a `PackageName`), so an
     // invalid, traversal-prone value can never reach the filesystem below.
@@ -93,6 +94,7 @@ pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
 /// generated contents against fixtures in-process.
 pub fn render_files(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     let mut doc = openapi::load(&args.spec)?;
+    openapi::filter_ignored(&mut doc);
     openapi::filter_by_audience(&mut doc, &args.audiences, args.audience_strict);
     let config = GenerateConfig::new(
         args.spec.clone(),

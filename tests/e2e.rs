@@ -2570,6 +2570,100 @@ fn strict_audience_excludes_unannotated_ops_through_the_binary() {
     assert_valid_python(&strict);
 }
 
+#[test]
+fn ignore_extension_prunes_marked_ops_through_the_binary_and_stays_valid() {
+    // Drive the real binary over a spec carrying both ignore spellings (issue #78).
+    // `x-fern-ignore` and `x-crozier-ignore` each drop their operation and the type
+    // it exclusively referenced, while an explicit `x-crozier-ignore: false`
+    // overrides a sibling `x-fern-ignore: true` (the Overlay un-ignore pattern). The
+    // pruned SDK must still compile — no dangling import to a removed type.
+    let ignore_spec = r##"
+openapi: 3.0.3
+info: { title: Widget API, version: 1.0.0 }
+paths:
+  /keep:
+    get:
+      operationId: keepOp
+      tags: [keep]
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Keep" }
+  /fern:
+    get:
+      operationId: fernIgnoredOp
+      tags: [fern]
+      x-fern-ignore: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OnlyFern" }
+  /crozier:
+    get:
+      operationId: crozierIgnoredOp
+      tags: [crozier]
+      x-crozier-ignore: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OnlyCrozier" }
+  /unignore:
+    get:
+      operationId: unignoreOp
+      tags: [unignore]
+      x-fern-ignore: true
+      x-crozier-ignore: false
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Kept" }
+components:
+  schemas:
+    Keep: { type: object, properties: { note: { type: string } } }
+    Kept: { type: object, properties: { note: { type: string } } }
+    OnlyFern: { type: object, properties: { note: { type: string } } }
+    OnlyCrozier: { type: object, properties: { note: { type: string } } }
+"##;
+    let dir = tempfile::tempdir().expect("tempdir");
+    let spec = dir.path().join("widget.yml");
+    std::fs::write(&spec, ignore_spec).unwrap();
+    let out = dir.path().join("out");
+    crozier()
+        .args(["generate", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&out)
+        .args(["--package-name", "widgetapi"])
+        .assert()
+        .success();
+
+    // Kept and un-ignored ops (and their types) are generated.
+    assert!(out.join("src/widgetapi/keep/client.py").is_file());
+    assert!(out.join("src/widgetapi/types/keep.py").is_file());
+    assert!(
+        out.join("src/widgetapi/unignore/client.py").is_file(),
+        "x-crozier-ignore: false keeps the op despite x-fern-ignore: true"
+    );
+    assert!(out.join("src/widgetapi/types/kept.py").is_file());
+
+    // Both ignore spellings drop their client and their exclusive type.
+    assert!(
+        !out.join("src/widgetapi/fern").exists(),
+        "x-fern-ignore op should be pruned"
+    );
+    assert!(
+        !out.join("src/widgetapi/crozier").exists(),
+        "x-crozier-ignore op should be pruned"
+    );
+    assert!(!out.join("src/widgetapi/types/only_fern.py").exists());
+    assert!(!out.join("src/widgetapi/types/only_crozier.py").exists());
+    assert_valid_python(&out);
+}
+
 /// A minimal one-schema OpenAPI document for the config-layer e2e journeys —
 /// enough to drive a real `crozier generate` without a fixture corpus.
 const TINY_SPEC: &str = "openapi: 3.0.0\ninfo:\n  title: Tiny\ncomponents:\n  schemas:\n    Thing:\n      type: object\n      properties:\n        name: { type: string }\n";

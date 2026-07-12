@@ -1753,3 +1753,196 @@ components:
     // A type no surviving operation references is pruned even though unlabelled.
     assert!(!files.contains_key("src/acme/types/unreached.py"));
 }
+
+/// Ignore extension (issue #78): a kept op, a `x-fern-ignore` op, and a
+/// `x-crozier-ignore` op, each referencing an otherwise-unshared type. Both ignore
+/// spellings must drop the op *and* its exclusive type.
+const IGNORE_SPEC: &str = r##"
+openapi: 3.0.1
+info:
+  title: Ign
+paths:
+  /keep:
+    get:
+      operationId: keep_list
+      tags: [keep]
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Keep" }
+  /fern:
+    get:
+      operationId: fern_list
+      tags: [fern]
+      x-fern-ignore: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OnlyFern" }
+  /crozier:
+    get:
+      operationId: crozier_list
+      tags: [crozier]
+      x-crozier-ignore: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OnlyCrozier" }
+components:
+  schemas:
+    Keep: { type: object, properties: { note: { type: string } } }
+    OnlyFern: { type: object, properties: { note: { type: string } } }
+    OnlyCrozier: { type: object, properties: { note: { type: string } } }
+"##;
+
+#[test]
+fn ignore_extension_drops_ops_and_their_exclusive_types_through_the_pipeline() {
+    let files = render(IGNORE_SPEC);
+    // The kept op's client and type are generated.
+    assert!(files.contains_key("src/acme/keep/client.py"), "kept op");
+    assert!(files.contains_key("src/acme/types/keep.py"), "kept type");
+    // Both ignore spellings drop their client...
+    assert!(
+        !files.contains_key("src/acme/fern/client.py"),
+        "x-fern-ignore op dropped"
+    );
+    assert!(
+        !files.contains_key("src/acme/crozier/client.py"),
+        "x-crozier-ignore op dropped"
+    );
+    // ...and the type each ignored op was the sole reference to.
+    assert!(
+        !files.contains_key("src/acme/types/only_fern.py"),
+        "x-fern-ignore op's exclusive type pruned"
+    );
+    assert!(
+        !files.contains_key("src/acme/types/only_crozier.py"),
+        "x-crozier-ignore op's exclusive type pruned"
+    );
+}
+
+#[test]
+fn crozier_ignore_false_overrides_fern_ignore_true_through_the_pipeline() {
+    // The Overlay "ignore-all-then-un-ignore-a-few" pattern: `x-fern-ignore: true`
+    // marks the op ignored, but an explicit `x-crozier-ignore: false` keeps it.
+    let spec = r##"
+openapi: 3.0.1
+info:
+  title: Ign
+paths:
+  /keep:
+    get:
+      operationId: keep_list
+      tags: [keep]
+      x-fern-ignore: true
+      x-crozier-ignore: false
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Keep" }
+components:
+  schemas:
+    Keep: { type: object, properties: { note: { type: string } } }
+"##;
+    let files = render(spec);
+    assert!(
+        files.contains_key("src/acme/keep/client.py"),
+        "op kept by x-crozier-ignore: false despite x-fern-ignore: true"
+    );
+    assert!(files.contains_key("src/acme/types/keep.py"), "type kept");
+}
+
+#[test]
+fn schema_level_ignore_drops_the_component_but_keeps_standalone_types() {
+    // A component marked `x-crozier-ignore` is not emitted; a standalone component
+    // no operation references is still emitted (a full generation would emit it).
+    let spec = r##"
+openapi: 3.0.1
+info:
+  title: Ign
+paths:
+  /keep:
+    get:
+      operationId: keep_list
+      tags: [keep]
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Keep" }
+components:
+  schemas:
+    Keep: { type: object, properties: { note: { type: string } } }
+    Internal:
+      x-fern-ignore: true
+      type: object
+      properties: { note: { type: string } }
+    Standalone: { type: object, properties: { note: { type: string } } }
+"##;
+    let files = render(spec);
+    assert!(
+        files.contains_key("src/acme/types/keep.py"),
+        "referenced type kept"
+    );
+    assert!(
+        files.contains_key("src/acme/types/standalone.py"),
+        "standalone unreferenced type still emitted"
+    );
+    assert!(
+        !files.contains_key("src/acme/types/internal.py"),
+        "schema-level ignore drops the component"
+    );
+}
+
+#[test]
+fn fern_audiences_spelling_filters_like_the_crozier_one() {
+    // Dual-header policy applied to `--audience`: a spec annotated only with
+    // `x-fern-audiences` filters exactly as the `x-crozier-audiences` spelling would.
+    let spec = r##"
+openapi: 3.0.1
+info:
+  title: Aud
+paths:
+  /widgets:
+    get:
+      operationId: widgets_list
+      tags: [widgets]
+      x-fern-audiences: [public]
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Widget" }
+  /stats:
+    get:
+      operationId: admin_stats
+      tags: [admin]
+      x-fern-audiences: [internal]
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Stats" }
+components:
+  schemas:
+    Widget: { type: object, properties: { id: { type: string } } }
+    Stats: { type: object, properties: { count: { type: integer } } }
+"##;
+    let files = render_with_audiences(spec, &["public"]);
+    assert!(
+        files.contains_key("src/acme/widgets/client.py"),
+        "public op kept"
+    );
+    assert!(
+        !files.contains_key("src/acme/admin/client.py"),
+        "internal op dropped via x-fern-audiences"
+    );
+    assert!(
+        !files.contains_key("src/acme/types/stats.py"),
+        "internal type pruned"
+    );
+}
