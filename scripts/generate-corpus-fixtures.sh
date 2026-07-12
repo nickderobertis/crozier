@@ -5,7 +5,9 @@
 # tests/fixtures/<name>/openapi.yml, and then Fern generation runs.
 set -euo pipefail
 
-repo_root="$(cd "$(dirname "$0")/.." && pwd)"
+script_dir="$(cd "$(dirname "$0")" && pwd)"
+. "$script_dir/corpus-lib.sh"
+repo_root="$(cd "$script_dir/.." && pwd)"
 manifest="$repo_root/tests/fixtures/CORPUS.md"
 mode=all
 dry_run=0
@@ -39,41 +41,6 @@ done
 
 [ -f "$manifest" ] || { echo "generate-corpus-fixtures: missing $manifest" >&2; exit 1; }
 
-fixture_for() {
-  case "$1" in
-    fern-seed-query-parameters) printf '%s\n' query-parameters-openapi ;;
-    fern-exhaustive) printf '%s\n' exhaustive ;;
-    *) printf '%s\n' "$1" ;;
-  esac
-}
-
-github_clone_url() {
-  case "$1" in
-    https://github.com/*/tree/*)
-      local trimmed path owner repo
-      trimmed="${1#https://github.com/}"
-      owner="${trimmed%%/*}"
-      path="${trimmed#*/}"
-      repo="${path%%/*}"
-      printf 'https://github.com/%s/%s\n' "$owner" "$repo"
-      ;;
-    *) printf '%s\n' "$1" ;;
-  esac
-}
-
-fetch_repo() {
-  local name="$1" url="$2" ref="$3" target="$fetch_root/$name"
-  mkdir -p "$fetch_root"
-  if [ -d "$target/.git" ]; then
-    git -C "$target" fetch --quiet --tags origin
-  else
-    git clone --quiet --filter=blob:none "$(github_clone_url "$url")" "$target"
-  fi
-  if [ "$ref" != HEAD ]; then
-    git -C "$target" checkout --quiet "$ref"
-  fi
-  printf '%s\n' "$target"
-}
 
 discover_openapi() {
   local root="$1" candidates count
@@ -99,23 +66,10 @@ discover_openapi() {
   esac
 }
 
-rows="$({
-  awk -F '|' '
-    NR > 6 {
-      name=$3; url=$5; ref=$6; decision=$8;
-      gsub(/^[ `]+|[ `]+$/, "", name);
-      gsub(/^[ ]+|[ ]+$/, "", url);
-      gsub(/^[ `]+|[ `]+$/, "", ref);
-      gsub(/^[ ]+|[ ]+$/, "", decision);
-      if (name != "") print name "\t" url "\t" ref "\t" decision;
-    }
-  ' "$manifest"
-})"
-
 plan=()
 while IFS=$'\t' read -r name url ref decision; do
   [ -n "$name" ] || continue
-  fixture="$(fixture_for "$name")"
+  fixture="$(corpus_fixture_for "$name")"
   fixture_dir="$repo_root/tests/fixtures/$fixture"
   spec="$fixture_dir/openapi.yml"
 
@@ -129,7 +83,7 @@ while IFS=$'\t' read -r name url ref decision; do
       echo "generate-corpus-fixtures: committed row $name points at missing $spec" >&2
       exit 1
     fi
-    repo_dir="$(fetch_repo "$name" "$url" "$ref")"
+    repo_dir="$(corpus_fetch_repo "$fetch_root" "$name" "$url" "$ref")"
     discovered="$(discover_openapi "$repo_dir")" || {
       echo "generate-corpus-fixtures: could not discover exactly one OpenAPI spec for $name from $url" >&2
       exit 1
@@ -142,7 +96,7 @@ while IFS=$'\t' read -r name url ref decision; do
   fi
 
   plan+=("$fixture|$source_desc")
-done <<<"$rows"
+done < <(corpus_rows "$manifest")
 
 if [ "${#plan[@]}" -eq 0 ]; then
   echo "generate-corpus-fixtures: no corpus rows selected" >&2
