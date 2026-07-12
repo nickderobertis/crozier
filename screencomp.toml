@@ -13,10 +13,10 @@ title = "CLI screenshots"
 marker = "screencomp"        # [A-Za-z0-9_-]; one sticky comment per marker
 embed_limit = 10             # embed images inline when <= N shots differ (0 disables)
 
-# One card per facet of the CLI, all scripted in scripts/screenshots.sh. The
-# `help` card carries a `command` toggle the gallery flips between the top-level
-# `crozier --help` (`main`) and `crozier generate --help` (`generate`). The
-# `generate`, `model`, and `error` cards have no toggles.
+# One card per command, all scripted in scripts/screenshots.sh: `help` (a
+# `command` toggle the gallery flips between the top-level `crozier --help`
+# (`main`) and `crozier generate --help` (`generate`)), `generate`, `model`,
+# `config`, `init`, and `error`. Only `help` has a toggle.
 [[toggle]]
 key = "command"
 label = "Command"
@@ -25,8 +25,9 @@ values = ["main", "generate"]
 [guard]
 # Local pre-push guard (.githooks/pre-push): re-capture only when something that
 # can change the rendered CLI output changes — the arg/help/error surface, the
-# generator + its templates and vendored assets (the `generate` tree, the `model`
-# file, and the GIF are real generated output), or the capture machinery itself.
+# settings/config layering and its JSON Schema, the generator + its templates and
+# vendored assets (the `generate` tree, the `model` file, and the GIF are real
+# generated output), or the capture machinery + demo config itself.
 paths = [
   "src/cli.rs",
   "src/error.rs",
@@ -38,6 +39,8 @@ paths = [
   "src/wrap.rs",
   "src/pyfmt.rs",
   "src/config.rs",
+  "src/settings.rs",
+  "src/schema.rs",
   "templates/**",
   "assets/**",
   "scripts/screenshots.sh",

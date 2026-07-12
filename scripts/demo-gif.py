@@ -60,7 +60,7 @@ def run_summary(binp: str, spec: str, work: str) -> str:
     path in the message is the bare `sdk`, stable on every machine)."""
     env = dict(os.environ)
     proc = subprocess.run(
-        [binp, "generate", "--spec", spec, "--output", "sdk",
+        [binp, "generate", "python", "--no-config", "--spec", spec, "--output", "sdk",
          "--package-name", "petstore", "--project-name", "petstore"],
         cwd=work, env=env, capture_output=True, text=True,
     )
@@ -108,7 +108,7 @@ def type_frames(frames: list, base: list, command: str) -> None:
 
 def build_frames(binp: str, spec: str, work: str, model: list[str]) -> list:
     summary = run_summary(binp, spec, work)
-    gen_cmd = "crozier generate --spec petstore.yml --output sdk"
+    gen_cmd = "crozier generate python --spec petstore.yml --output sdk"
     cat_cmd = "cat sdk/src/petstore/types/pet_status.py"
 
     frames: list = []

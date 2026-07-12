@@ -2,6 +2,11 @@
   "schema": 1,
   "shots": [
     {
+      "name": "config",
+      "toggles": {},
+      "hash": "3624b835ff2dd72cb95ee98c82e61c4fe3bb3f81b03e250f7e7890035e46579b"
+    },
+    {
       "name": "error",
       "toggles": {},
       "hash": "49474a79f9c64947d9b5d2a632f7eadb42003d50c78bbc58fc81294fc5e40403"
@@ -9,21 +14,26 @@
     {
       "name": "generate",
       "toggles": {},
-      "hash": "557b4d7533de2bf142bfaa1314becca6a3cdd3e63a584be3eed55c7f5d705439"
+      "hash": "00fb601c8dd7b9ef006bb002f5cc61a39814c221d3974d72d4ba7a09b2438c63"
     },
     {
       "name": "help",
       "toggles": {
         "command": "generate"
       },
-      "hash": "2adc11f1bb737d1caa376d62ac0619e1ba5ae5ff7b9de719d8b23d5042bd070a"
+      "hash": "b6685543ec9c753e0587b537229919210d44bcfb661d09ce07b0b34ed09bc9e2"
     },
     {
       "name": "help",
       "toggles": {
         "command": "main"
       },
-      "hash": "375860b4e08accbb123d2591cb3dfa7b74851c51ec47e1413c2288f2234f1d97"
+      "hash": "a2f6a4fd1719519ec1f261ede40072057f1a13f940a669d80c9de4fa80fce579"
+    },
+    {
+      "name": "init",
+      "toggles": {},
+      "hash": "5846d7ec1d8eb1b05a1c1178725254f8b99f9059c426916cbd2af7053c4abac8"
     },
     {
       "name": "model",

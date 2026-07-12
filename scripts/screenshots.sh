@@ -19,15 +19,20 @@
 # path) are kept out of the frame by running from a scratch dir and using
 # relative paths, so nothing needs normalizing.
 #
-# Scenes — one card per facet of the CLI, so the gallery documents the whole
-# surface (crozier's one real command, `generate`, seen from every angle):
-#   help      the CLI surface, with a `command` toggle the gallery flips between
-#             the top-level `crozier --help` (`main`) and `crozier generate
-#             --help` (`generate`).
-#   generate  a real run: the invocation, crozier's one-line summary, and the
-#             tree of files it wrote — the whole SDK, from one OpenAPI document.
+# Scenes — one card per command, so the gallery documents the whole CLI surface:
+#   help      the surface, with a `command` toggle the gallery flips between the
+#             top-level `crozier --help` (`main`, listing every subcommand) and
+#             `crozier generate --help` (`generate`, every flag).
+#   generate  a real run of the built-in `python` generator: the invocation,
+#             crozier's one-line summary, and the tree of files it wrote — the
+#             whole SDK, from one OpenAPI document.
 #   model     one of the generated files (types/pet.py): the pydantic model
 #             crozier emits, byte-for-byte Fern's — the product, on screen.
+#   config    `crozier config` against a demo crozier.yml with shared defaults and
+#             two named generators — every field resolved to its layer
+#             (shared/generator/default). The layered-config surface, shown.
+#   init      `crozier init` writing a starter crozier.yml (with the JSON Schema
+#             modeline editors complete against).
 #   error     a malformed document rejected at the boundary with an actionable
 #             message and a non-zero exit — the validation invariant, shown.
 #
@@ -55,6 +60,7 @@ SHOTS_OUT="${SHOTS_OUT:-shots/current/$arch}"
 font="$repo_root/screenshots/fonts/JetBrainsMono-Regular.ttf"
 spec="$repo_root/screenshots/petstore.yml"
 broken="$repo_root/screenshots/broken.yml"
+config_yml="$repo_root/screenshots/crozier.yml"
 docs_dir="$repo_root/docs/screenshots"
 
 if ! command -v freeze >/dev/null 2>&1; then
@@ -150,17 +156,19 @@ out="$tmp_state/help-generate.ansi"
 { prompt "crozier generate --help"; echo; "$crozier_bin" generate --help; } >"$out" 2>&1 || true
 render_scene "help" '{"command":"generate"}' "help-generate.svg" "$out"
 
-# --- generate: a real run + the tree it wrote ---------------------------------
+# --- generate: a real run of the built-in `python` generator + the tree --------
 # Run from a scratch dir with a RELATIVE --output, so crozier's summary prints
 # the bare `sdk` (its `output.display()` echoes the arg verbatim) — no per-machine
 # temp path leaks into the frame. The tree is `find` sorted with LC_ALL=C so the
 # ordering is identical on every filesystem, then indented into a plain tree.
+# `--no-config` keeps the run flag-driven (no crozier.yml discovery) so the scene
+# is self-contained.
 work="$tmp_state/work"
 mkdir -p "$work"
 out="$tmp_state/generate.ansi"
 {
-  prompt "crozier generate --spec petstore.yml --output sdk --package-name petstore"
-  ( cd "$work" && "$crozier_bin" generate --spec "$spec" --output sdk \
+  prompt "crozier generate python --spec petstore.yml --output sdk --package-name petstore"
+  ( cd "$work" && "$crozier_bin" generate python --no-config --spec "$spec" --output sdk \
       --package-name petstore --project-name petstore ) 2>&1
   echo
   prompt "find sdk -print | sort"
@@ -179,14 +187,50 @@ out="$tmp_state/model.ansi"
 } >"$out" || true
 render_scene "model" "{}" "model.svg" "$out"
 
+# --- config: the effective config + its per-field sources ---------------------
+# Copy the demo crozier.yml (and the spec it references) into a scratch dir and
+# run `crozier config` there, so `config` auto-discovers it and the run is
+# hermetic. It prints the config file's absolute path — per-machine — so normalize
+# the scratch prefix to `./`, leaving the natural `./crozier.yml`, exactly stable.
+cfg_dir="$tmp_state/cfg"
+mkdir -p "$cfg_dir"
+cp "$config_yml" "$cfg_dir/crozier.yml"
+cp "$spec" "$cfg_dir/petstore.yml"
+out="$tmp_state/config.ansi"
+{
+  prompt "crozier config"
+  ( cd "$cfg_dir" && "$crozier_bin" config ) 2>&1 | sed "s|$cfg_dir/|./|g"
+} >"$out" || true
+render_scene "config" "{}" "config.svg" "$out"
+
+# --- init: write a starter crozier.yml ----------------------------------------
+# Run in a clean dir so `init` writes to a bare `crozier.yml` (its message is the
+# relative path) and nothing is auto-discovered; then show the file it wrote.
+init_dir="$tmp_state/init"
+mkdir -p "$init_dir"
+out="$tmp_state/init.ansi"
+{
+  prompt "crozier init"
+  ( cd "$init_dir" && "$crozier_bin" init ) 2>&1
+  echo
+  prompt "cat crozier.yml"
+  cat "$init_dir/crozier.yml"
+} >"$out" || true
+render_scene "init" "{}" "init.svg" "$out"
+
 # --- error: a malformed document rejected at the boundary ---------------------
 # crozier validates the OpenAPI document at the boundary: a malformed spec fails
-# with a non-zero exit and an actionable message, never a panic. Run with a
-# relative spec path so the message reads `broken.yml`, stable on every machine.
+# with a non-zero exit and an actionable message, never a panic. Run from a clean
+# dir holding only broken.yml — no crozier.yml to auto-discover, so the single
+# built-in generator runs and the failure is the OpenAPI boundary check (not a
+# config-arity error). The relative spec path keeps the message stable everywhere.
+err_dir="$tmp_state/err"
+mkdir -p "$err_dir"
+cp "$broken" "$err_dir/broken.yml"
 out="$tmp_state/error.ansi"
 {
   prompt "crozier generate --spec broken.yml --output sdk"
-  ( cd "$repo_root/screenshots" && "$crozier_bin" generate --spec broken.yml --output "$tmp_state/never" ) 2>&1 || true
+  ( cd "$err_dir" && "$crozier_bin" generate --spec broken.yml --output sdk ) 2>&1 || true
 } >"$out" || true
 render_scene "error" "{}" "error.svg" "$out"
 
