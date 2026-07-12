@@ -2040,7 +2040,10 @@ components:
     let files = render(spec);
     let node = &files["src/acme/types/node.py"];
     // The wrapper is named after the discriminant value, not the target schema.
-    assert!(node.contains("class Node_And("), "value-named wrapper:\n{node}");
+    assert!(
+        node.contains("class Node_And("),
+        "value-named wrapper:\n{node}"
+    );
     assert!(
         node.contains(r#"typing.List["Node"]"#),
         "the recursive variant field is a same-file forward ref:\n{node}"
