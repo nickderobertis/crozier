@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.15](https://github.com/nickderobertis/crozier/compare/v0.0.14...v0.0.15) - 2026-07-12
+
+### Fixed
+
+- emit Annotated discriminated-union alias; bump corpus to Fern 4.35.0 (issue #50) ([#55](https://github.com/nickderobertis/crozier/pull/55))
+
 ## [0.0.14](https://github.com/nickderobertis/crozier/compare/v0.0.13...v0.0.14) - 2026-07-11
 
 ### Fixed
