@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.22](https://github.com/nickderobertis/crozier/compare/v0.0.21...v0.0.22) - 2026-07-12
+
+### Fixed
+
+- sanitize non-identifier request-body/query property names ([#75](https://github.com/nickderobertis/crozier/pull/75))
+
 ## [0.0.21](https://github.com/nickderobertis/crozier/compare/v0.0.20...v0.0.21) - 2026-07-12
 
 ### Other
