@@ -48,8 +48,12 @@ jobs:
       container: rust:1.96.0-bookworm
       capture-command: |
         export RUSTUP_TOOLCHAIN=1.96.0
-        # freeze — renders the deterministic SVGs (prebuilt, no Go needed).
-        curl -fsSL -o /tmp/freeze.tgz https://github.com/charmbracelet/freeze/releases/download/v0.2.2/freeze_0.2.2_Linux_x86_64.tar.gz
+        # freeze — renders the deterministic SVGs (prebuilt, no Go needed). Pinned
+        # to .freeze-version, the single source of truth `just screenshots-tools`
+        # reads too, so the local and CI renderers can't silently diverge (a
+        # version skew would change the SVG bytes and break the digest gate).
+        freeze_ver="$(cat .freeze-version)"
+        curl -fsSL -o /tmp/freeze.tgz "https://github.com/charmbracelet/freeze/releases/download/v${freeze_ver}/freeze_${freeze_ver}_Linux_x86_64.tar.gz"
         tar -xzf /tmp/freeze.tgz -C /tmp
         install "$(find /tmp -type f -name freeze | head -1)" /usr/local/bin/freeze
         # ruff — crozier defers Python wrapping to it (prebuilt, pinned to .ruff-version).

@@ -46,5 +46,10 @@ paths = [
   "scripts/screenshots.sh",
   "scripts/demo-gif.py",
   "screenshots/**",
+  # The pinned tool versions that determine the rendered bytes: freeze (the SVG
+  # renderer) and ruff (formats the generated code the `model`/`generate`/GIF
+  # scenes show). A bump to either can change a capture.
+  ".freeze-version",
+  ".ruff-version",
 ]
 gallery = "shots/review"

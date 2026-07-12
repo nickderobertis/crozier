@@ -2,13 +2,6 @@
 # `just bootstrap` must work from a clean clone; `just check` is the full gate
 # and must fail on any issue (no warnings-only mode).
 
-# Renderer for the terminal screenshots (`just screenshots`). NOT part of the
-# gate or `just bootstrap`: screenshots are informational. CI's Visual-docs
-# workflow installs this same pinned version; `just screenshots-tools` installs
-# it locally on demand. screencomp (the classify/gallery/PR-comment tool) is
-# installed separately — see https://github.com/nickderobertis/screencomp.
-freeze-version := "0.2.2"
-
 # List available recipes.
 default:
     @just --list
@@ -136,10 +129,11 @@ lint-llm-diff base="origin/main" *args:
 # of the gate; CI's Visual-docs workflow owns the comparison, and the pre-push
 # guard re-captures locally on drift. See screenshots/AGENTS.md.
 
-# Install the pinned screenshot renderer (`freeze`) on demand. Needs Go.
+# Install the screenshot renderer (`freeze`) on demand, pinned to `.freeze-version`
+# (the single source of truth CI's Visual-docs capture reads too). Needs Go.
 screenshots-tools:
     @command -v go >/dev/null || { echo "go not found: needed to install freeze; see https://go.dev/dl" >&2; exit 1; }
-    go install github.com/charmbracelet/freeze@v{{freeze-version}}
+    go install github.com/charmbracelet/freeze@v"$(cat .freeze-version)"
     @echo "installed freeze to $(go env GOPATH)/bin (ensure it is on PATH)"
 
 # Capture the screenshots: drive the real binary against screenshots/petstore.yml,
