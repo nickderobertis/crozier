@@ -19,6 +19,7 @@ fn render(spec: &str) -> HashMap<String, String> {
         output: PathBuf::from("unused"),
         package_name: Some("acme".to_string()),
         project_name: Some("acme".to_string()),
+        client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
     })
@@ -205,6 +206,7 @@ fn generate_writes_files_to_disk() {
         output: out.clone(),
         package_name: Some("acme".to_string()),
         project_name: None,
+        client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
     })
@@ -227,6 +229,7 @@ fn default_package_name_derives_from_title() {
         output: PathBuf::from("unused"),
         package_name: None,
         project_name: None,
+        client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
     })
@@ -846,6 +849,7 @@ fn empty_title_falls_back_to_client_package() {
         output: PathBuf::from("unused"),
         package_name: None,
         project_name: None,
+        client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
     })
@@ -1324,6 +1328,7 @@ fn api_key_scheme_without_name_is_rejected() {
         output: PathBuf::from("unused"),
         package_name: Some("acme".to_string()),
         project_name: Some("acme".to_string()),
+        client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
     })
@@ -1354,6 +1359,50 @@ fn servers_generate_environment_and_thread_root_client() {
     assert!(!client.contains("https://yourhost.com/path/to/api"));
 
     assert!(files["src/acme/__init__.py"].contains("AcmeApiEnvironment"));
+}
+
+/// `--client-class-name` (Fern's `client_class_name`) overrides the root client
+/// class name, which otherwise derives from the package name as `{Pascal}Api`.
+/// The override replaces the base name everywhere it flows: the root `client.py`
+/// sync/async classes, the package `__init__` re-exports, and — with servers in
+/// play — the `{ClientName}Environment` enum keyed off it.
+#[test]
+fn client_class_name_overrides_derived_root_client_name() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let path = dir.path().join("api.yml");
+    std::fs::write(
+        &path,
+        "openapi: 3.0.1\ninfo:\n  title: Srv\nservers:\n  - url: https://api.example.com\n    description: Production\npaths:\n  /session:\n    get:\n      operationId: cookies_getSession\n      tags: [Cookies]\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema: { $ref: \"#/components/schemas/Session\" }\n      security:\n        - BearerAuth: []\ncomponents:\n  schemas:\n    Session:\n      type: object\n      required: [id]\n      properties:\n        id: { type: string }\n  securitySchemes:\n    BearerAuth: { type: http, scheme: bearer }\n",
+    )
+    .unwrap();
+    let files: HashMap<String, String> = render_files(GenerateArgs {
+        spec: path,
+        output: PathBuf::from("unused"),
+        package_name: Some("acme".to_string()),
+        project_name: Some("acme".to_string()),
+        client_class_name: Some("AcmeSdk".to_string()),
+        audiences: Vec::new(),
+        audience_strict: false,
+    })
+    .expect("render succeeds")
+    .into_iter()
+    .map(|f| (f.path.to_string_lossy().into_owned(), f.contents))
+    .collect();
+
+    let client = &files["src/acme/client.py"];
+    assert!(client.contains("class AcmeSdk:"), "{client}");
+    assert!(client.contains("class AsyncAcmeSdk:"), "{client}");
+    // The package-derived default name is gone entirely.
+    assert!(!client.contains("AcmeApi"), "{client}");
+
+    // The re-exports and the environment enum both key off the overridden name.
+    let init = &files["src/acme/__init__.py"];
+    assert!(
+        init.contains("AcmeSdk") && init.contains("AsyncAcmeSdk"),
+        "{init}"
+    );
+    assert!(files["src/acme/environment.py"].contains("class AcmeSdkEnvironment(enum.Enum):"));
+    assert!(!init.contains("AcmeApi"), "{init}");
 }
 
 /// A `cookie` parameter is dropped from the method signature entirely, and an
@@ -1455,6 +1504,7 @@ fn render_with_audiences_mode(
         output: PathBuf::from("unused"),
         package_name: Some("acme".to_string()),
         project_name: Some("acme".to_string()),
+        client_class_name: None,
         audiences: audiences.iter().map(|s| s.to_string()).collect(),
         audience_strict: strict,
     })
