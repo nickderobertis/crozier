@@ -1172,7 +1172,13 @@ fn discriminated_union_emits_variant_wrappers_and_strips_discriminant() {
     let shape = &files["src/acme/types/shape.py"];
     assert!(shape.contains("class Shape_Circle(UniversalBaseModel):"));
     assert!(shape.contains("type: typing.Literal[\"circle\"] = \"circle\""));
-    assert!(shape.contains("Shape = typing.Union[Shape_Circle, Shape_Square]"));
+    // The alias is wrapped in `Annotated[..., pydantic.Field(discriminator=...)]`
+    // so pydantic dispatches on the tag (issue #50 part 2; Fern 4.35.0+).
+    assert!(shape.contains(
+        "Shape = typing_extensions.Annotated[typing.Union[Shape_Circle, Shape_Square], \
+         pydantic.Field(discriminator=\"type\")]"
+    ));
+    assert!(shape.contains("import typing_extensions"));
     assert!(shape.contains("from __future__ import annotations"));
 
     // The member model keeps its own (non-discriminant) fields and drops `type`;

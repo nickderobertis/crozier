@@ -32,7 +32,7 @@ Test fixtures (attribution and statement of changes, per Apache-2.0 §4(b), §4(
     crozier is verified against.
   * The exhaustive fixture's expected output (tests/fixtures/exhaustive/expected/)
     was produced by running Fern's published Python generator image
-    fernapi/fern-python-sdk:4.34.0 locally over the vendored exhaustive OpenAPI
+    fernapi/fern-python-sdk:4.35.0 locally over the vendored exhaustive OpenAPI
     document (see scripts/generate-fern-fixture.sh), rather than copied from the
     fern repository. It is otherwise treated identically to the vendored output.
   * Change made to the vendored Python output: source-code comments were removed

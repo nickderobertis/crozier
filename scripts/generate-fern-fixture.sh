@@ -36,7 +36,7 @@ valid_fixture_name "$FIXTURE" || {
 }
 # The fern-python-sdk generator version whose output we target. Bump together
 # with the vendored spec + fixtures so the corpus stays internally consistent.
-FERN_PYTHON_VERSION="${2:-4.34.0}"
+FERN_PYTHON_VERSION="${2:-4.35.0}"
 # The Fern CLI version, pinned via fern.config.json's `version` (the `fern` npm
 # package is only a launcher; this field selects the actual CLI it runs). Matches
 # the corpus's `.fern/metadata.json` cliVersion so regenerated output stays

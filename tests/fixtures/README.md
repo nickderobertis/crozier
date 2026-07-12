@@ -7,7 +7,7 @@ These fixtures are the golden target crozier is verified against. They are
   vendored from [fern-api/fern](https://github.com/fern-api/fern), commit
   `3a471b03d4778f291849adc03bacfcd40340fc26`. The `exhaustive/expected/` tree is
   instead produced by running Fern's published Python generator image
-  (`fernapi/fern-python-sdk:4.34.0`) locally over `exhaustive/openapi.yml` — see
+  (`fernapi/fern-python-sdk:4.35.0`) locally over `exhaustive/openapi.yml` — see
   `scripts/generate-fern-fixture.sh`.
 - **License / attribution:** [`../../licenses/fern-APACHE-2.0.txt`](../../licenses/fern-APACHE-2.0.txt)
   and [`../../NOTICE`](../../NOTICE) (with the statement of changes required by
