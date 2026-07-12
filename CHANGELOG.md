@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.17](https://github.com/nickderobertis/crozier/compare/v0.0.16...v0.0.17) - 2026-07-12
+
+### Added
+
+- add --audience-strict for exclusive audience subsetting ([#64](https://github.com/nickderobertis/crozier/pull/64))
+
 ## [0.0.16](https://github.com/nickderobertis/crozier/compare/v0.0.15...v0.0.16) - 2026-07-12
 
 ### Fixed
