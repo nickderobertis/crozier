@@ -27,7 +27,7 @@ Each `<api>/` directory holds:
 
 ## Corpus
 
-The issue #77 real-world corpus discovery queue lives in [`CORPUS.md`](CORPUS.md). Link-only entries are intentionally not committed as specs until their license and immutable source ref are reviewed; fetch their source repositories with `just fetch-corpus --dry-run` to inspect the plan or `just fetch-corpus [dest]` to clone them under `.local/corpus` by default.
+The issue #77 real-world corpus discovery queue lives in [`CORPUS.md`](CORPUS.md). Link-only entries are intentionally not committed as specs until their license and immutable source ref are reviewed; fetch their source repositories with `just fetch-corpus --dry-run` to inspect the plan or `just fetch-corpus [dest]` to clone them under `.local/corpus` by default. Once entries are pinned, licensed, and vendored, `just fixtures-generate-corpus` regenerates their Fern golden `expected/` trees; it fails rather than silently skipping link-only rows.
 
 - **`query-parameters-openapi/`** — offline; refresh with `just fixtures-refresh`
   (needs no Docker). Its `expected/` tree is committed.
