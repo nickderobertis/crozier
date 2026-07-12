@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.20](https://github.com/nickderobertis/crozier/compare/v0.0.19...v0.0.20) - 2026-07-12
+
+### Added
+
+- add --extra-fields for pydantic extra behavior ([#70](https://github.com/nickderobertis/crozier/pull/70))
+
 ## [0.0.19](https://github.com/nickderobertis/crozier/compare/v0.0.18...v0.0.19) - 2026-07-12
 
 ### Added
