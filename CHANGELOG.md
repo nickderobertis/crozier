@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.23](https://github.com/nickderobertis/crozier/compare/v0.0.22...v0.0.23) - 2026-07-12
+
+### Added
+
+- honor x-crozier-ignore/x-fern-ignore and accept both extension spellings ([#80](https://github.com/nickderobertis/crozier/pull/80))
+
 ## [0.0.22](https://github.com/nickderobertis/crozier/compare/v0.0.21...v0.0.22) - 2026-07-12
 
 ### Fixed
