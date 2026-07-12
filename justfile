@@ -80,9 +80,9 @@ fetch-corpus *args:
     ./scripts/fetch-corpus.sh {{args}}
 
 
-# Generate Fern golden `expected/` trees for the issue #77 corpus. The default
-# `--all` mode refuses to skip link-only rows; pass `--committed` to refresh only
-# rows that are already pinned, licensed, and vendored. Needs Docker + fern.
+# Fetch missing link-only source repos, discover/vendor their OpenAPI specs, and
+# generate Fern golden `expected/` trees for the issue #77 corpus. Pass
+# `--committed` to refresh only rows already vendored. Needs Docker + fern.
 fixtures-generate-corpus *args:
     ./scripts/generate-corpus-fixtures.sh {{args}}
 
