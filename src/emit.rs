@@ -2004,6 +2004,11 @@ fn render_enum(env: &Environment<'static>, e: &crate::ir::EnumType) -> Result<St
     );
     body.push_str(&e.name);
     body.push_str("(str, enum.Enum):\n");
+    if let Some(doc) = &e.docstring {
+        // Fern renders the schema description as a class docstring, then a blank
+        // line before the first member.
+        body.push_str(&format!("    \"\"\"\n    {doc}\n    \"\"\"\n\n"));
+    }
     for m in &e.members {
         body.push_str(&format!(
             "    {} = \"{}\"\n",

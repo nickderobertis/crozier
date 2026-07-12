@@ -155,7 +155,11 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
             required,
         })
         .collect();
-    headers.sort_by(|a, b| a.required.cmp(&b.required).then_with(|| a.py_name.cmp(&b.py_name)));
+    headers.sort_by(|a, b| {
+        a.required
+            .cmp(&b.required)
+            .then_with(|| a.py_name.cmp(&b.py_name))
+    });
     headers
 }
 
@@ -1641,7 +1645,9 @@ fn method_from_groupless_id(id: &str, tag: Option<&str>) -> String {
     let method = if tag_snake.is_empty() {
         &snake
     } else {
-        snake.strip_prefix(&format!("{tag_snake}_")).unwrap_or(&snake)
+        snake
+            .strip_prefix(&format!("{tag_snake}_"))
+            .unwrap_or(&snake)
     };
     finalize_method_name(method)
 }
