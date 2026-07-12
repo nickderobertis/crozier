@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.19](https://github.com/nickderobertis/crozier/compare/v0.0.18...v0.0.19) - 2026-07-12
+
+### Added
+
+- layered config with named generators, JSON Schema, and init/config/schema commands ([#68](https://github.com/nickderobertis/crozier/pull/68))
+
 ## [0.0.18](https://github.com/nickderobertis/crozier/compare/v0.0.17...v0.0.18) - 2026-07-12
 
 ### Added
