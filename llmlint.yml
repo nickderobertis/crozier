@@ -5,7 +5,8 @@
 # diff); the diff-scoped run is the blocking PR check, not part of `check`.
 # Rules come from the pinned plugins below; tune one in place with
 # `override: true`. Bump a plugin's `@version` pin to pull new rules.
-version: 1
+# `llmlint validate` gates this file's own `version:` — bump it on every change.
+version: 2
 files:
   # No `include`: llmlint lints the whole tree (exclude + .gitignore honored).
   # List committed files that shouldn't be judged (lock files, generated output).
