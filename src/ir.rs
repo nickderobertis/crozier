@@ -106,42 +106,57 @@ fn env_member_name(description: &str) -> String {
     out.trim_end_matches('_').to_string()
 }
 
-/// An operation header promoted to a client-wrapper-level field. Fern lifts an
-/// *optional* operation header out of the method (a required one stays per-method,
-/// e.g. exhaustive's `X-TEST-ENDPOINT-HEADER`) and applies it as a global header
-/// set once at client construction — `X-Tenant` becomes the `tenant` field.
+/// An operation header promoted to a client-wrapper-level field. Fern lifts a
+/// header carried by *every* operation out of the methods and applies it once at
+/// client construction — `X-Tenant` becomes the `tenant` constructor field. A
+/// header on only some operations stays a per-method parameter (e.g. exhaustive's
+/// `X-TEST-ENDPOINT-HEADER`). `required` drives the rendering: a required global
+/// header is a mandatory `str` constructor arg set unconditionally, an optional one
+/// is `Optional[str] = None` set only when provided.
 #[derive(Debug, Clone)]
 pub struct GlobalHeader {
     /// The wire header name (the `headers` dict key), e.g. `X-Tenant`.
     pub wire_name: String,
     /// The Python field/parameter name, e.g. `tenant` (the `X-` prefix dropped).
     pub py_name: String,
+    /// Whether the header is required on every operation (so the constructor arg is
+    /// mandatory and the `get_headers` assignment is unconditional).
+    pub required: bool,
 }
 
 /// Collect the operation headers Fern promotes to client-wrapper-level fields: a
-/// header that is *optional* in every operation it appears in, in first-seen order.
-/// A header that is required anywhere stays a per-method parameter.
+/// header present on **every** operation (a ubiquitous header like `X-App-Id` is an
+/// SDK-wide setting, not a per-call argument). A header on a subset of operations
+/// stays a per-method parameter. Fern orders the promoted headers optional-first,
+/// then alphabetically by field name.
 fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
-    // name → whether every occurrence so far is optional, in first-seen order.
-    let mut seen: IndexMap<String, bool> = IndexMap::new();
+    let mut total = 0usize;
+    // wire name → (operations carrying it, required in every one so far), first-seen.
+    let mut seen: IndexMap<String, (usize, bool)> = IndexMap::new();
     for item in doc.paths.values() {
         for (_, op) in item.operations() {
+            total += 1;
+            let mut in_op: std::collections::HashSet<&str> = std::collections::HashSet::new();
             for p in &op.parameters {
-                if p.location == Some(ParameterLocation::Header) {
-                    let optional = p.required != Some(true);
-                    let entry = seen.entry(p.name.clone()).or_insert(true);
-                    *entry = *entry && optional;
+                if p.location == Some(ParameterLocation::Header) && in_op.insert(p.name.as_str()) {
+                    let entry = seen.entry(p.name.clone()).or_insert((0, true));
+                    entry.0 += 1;
+                    entry.1 = entry.1 && p.required == Some(true);
                 }
             }
         }
     }
-    seen.into_iter()
-        .filter(|(_, optional)| *optional)
-        .map(|(wire_name, _)| GlobalHeader {
+    let mut headers: Vec<GlobalHeader> = seen
+        .into_iter()
+        .filter(|(_, (count, _))| total > 0 && *count == total)
+        .map(|(wire_name, (_, required))| GlobalHeader {
             py_name: naming::field_name(header_param_stem(&wire_name)),
             wire_name,
+            required,
         })
-        .collect()
+        .collect();
+    headers.sort_by(|a, b| a.required.cmp(&b.required).then_with(|| a.py_name.cmp(&b.py_name)));
+    headers
 }
 
 /// The SDK's authentication model, derived from `components.securitySchemes` and

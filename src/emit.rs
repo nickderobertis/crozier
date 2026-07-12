@@ -1731,10 +1731,18 @@ fn client_wrapper_file(
     let a = auth_wrapper_parts(auth);
     // Promoted global headers: a constructor parameter, an assignment, a
     // `get_headers` block, and a `super().__init__` argument — all emitted before
-    // the auth credential's, matching Fern's ordering.
+    // the auth credential's, matching Fern's ordering. A required header is a
+    // mandatory `str` set unconditionally; an optional one is `Optional[str] = None`
+    // set only when provided.
     let gh_param: String = global_headers
         .iter()
-        .map(|h| format!("        {}: typing.Optional[str] = None,\n", h.py_name))
+        .map(|h| {
+            if h.required {
+                format!("        {}: str,\n", h.py_name)
+            } else {
+                format!("        {}: typing.Optional[str] = None,\n", h.py_name)
+            }
+        })
         .collect();
     let gh_assign: String = global_headers
         .iter()
@@ -1743,11 +1751,19 @@ fn client_wrapper_file(
     let gh_header: String = global_headers
         .iter()
         .map(|h| {
-            format!(
-                "        if self._{0} is not None:\n            headers[\"{1}\"] = self._{0}\n",
-                h.py_name,
-                escape_py_str(&h.wire_name)
-            )
+            if h.required {
+                format!(
+                    "        headers[\"{1}\"] = self._{0}\n",
+                    h.py_name,
+                    escape_py_str(&h.wire_name)
+                )
+            } else {
+                format!(
+                    "        if self._{0} is not None:\n            headers[\"{1}\"] = self._{0}\n",
+                    h.py_name,
+                    escape_py_str(&h.wire_name)
+                )
+            }
         })
         .collect();
     let gh_super: String = global_headers
@@ -1761,6 +1777,10 @@ fn client_wrapper_file(
         "        self._headers = headers\n        self._base_url = base_url\n        self._timeout = timeout\n\n    def get_headers(self) -> typing.Dict[str, str]:\n        headers: typing.Dict[str, str] = {{\n            \"X-Crozier-Language\": \"Python\",\n            \"X-Crozier-SDK-Name\": \"{project_name}\",\n            \"X-Crozier-SDK-Version\": \"{DEFAULT_SDK_VERSION}\",\n            **(self.get_custom_headers() or {{}}),\n        }}\n"
     );
     let mut c = String::new();
+    // Lead with the generated-file header (like every other emitted module): it
+    // survives `ruff format` and the e2e comment-strip folds it to the blank lines
+    // Fern's own stripped header leaves, so the leading layout matches.
+    c.push_str(HEADER);
     c.push_str("\n\nimport typing\n\nimport httpx\nfrom .http_client import AsyncHttpClient, HttpClient\n\n\nclass BaseClientWrapper:\n    def __init__(\n        self,\n        *,\n");
     c.push_str(&gh_param);
     c.push_str(&a.param);
@@ -4151,7 +4171,11 @@ fn format_python_files(pkg: &str, files: &mut [GeneratedFile]) -> Result<()> {
     let core_root = PathBuf::from(format!("src/{pkg}/core"));
     for file in files.iter_mut() {
         let is_py = file.path.extension().and_then(|e| e.to_str()) == Some("py");
-        let is_vendored = file.path.starts_with(&core_root);
+        // The `core/` tree is vendored verbatim (already ruff-formatted) EXCEPT
+        // `client_wrapper.py`, which crozier generates from the auth/global-header
+        // model and so must be wrapped like every other generated file.
+        let is_vendored = file.path.starts_with(&core_root)
+            && file.path.file_name().and_then(|n| n.to_str()) != Some("client_wrapper.py");
         let has_code = file.contents.chars().any(|c| !c.is_whitespace());
         if is_py && !is_vendored && has_code {
             let name = file.path.to_string_lossy();
