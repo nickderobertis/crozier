@@ -161,8 +161,9 @@ pub struct Operation {
     #[serde(default)]
     pub tags: Vec<String>,
     /// `x-crozier-audiences`: audience labels this operation belongs to. Empty
-    /// means unlabelled — kept under any `--audience` filter (see
-    /// [`filter_by_audience`]). crozier brands its own extension rather than reading
+    /// means unlabelled — kept under a permissive `--audience` filter but excluded
+    /// by `--audience-strict` (see [`filter_by_audience`]). crozier brands its own
+    /// extension rather than reading
     /// Fern's `x-fern-audiences`, exactly as it emits `X-Crozier-*` SDK headers where
     /// Fern emits `X-Fern-*`.
     #[serde(rename = "x-crozier-audiences", default)]
@@ -448,21 +449,30 @@ pub fn load(path: &Path) -> Result<OpenApi> {
 /// Prune the document to a set of audiences (the `x-crozier-audiences` filter,
 /// issue #41 gap 3). No-op when `audiences` is empty (the whole API is generated).
 ///
-/// Mirrors Fern's audience behaviour (over crozier's own extension): keep an
-/// operation when it carries a matching audience **or** carries none at all
-/// (unlabelled operations are always kept); drop one labelled only with
-/// non-matching audiences. Then emit just the **transitive `$ref` closure** of the
+/// The default (permissive) mode keeps an operation when it carries a matching
+/// audience **or** carries none at all (unlabelled operations are always kept),
+/// dropping only ops labelled solely with non-matching audiences. When `strict` is
+/// set, un-annotated operations are also excluded, so **only** operations carrying
+/// a matching audience survive — Fern's exclusive filtering, the way to carve a
+/// minimal, self-contained SDK out of a mostly-un-annotated API (issue #62).
+///
+/// Either way, crozier then emits just the **transitive `$ref` closure** of the
 /// surviving operations' parameter, request, and response schemas — every other
 /// `components.schemas` entry (even unlabelled ones no surviving operation reaches,
 /// like an internal-only type) is removed, so
 /// the pruned SDK is self-contained. Property/schema-level `x-crozier-audiences`
 /// are not yet honoured (a follow-up); only operation-level filtering is applied.
-pub fn filter_by_audience(doc: &mut OpenApi, audiences: &[String]) {
+pub fn filter_by_audience(doc: &mut OpenApi, audiences: &[String], strict: bool) {
     if audiences.is_empty() {
         return;
     }
     let keep = |op: &Operation| {
-        op.audiences.is_empty() || op.audiences.iter().any(|a| audiences.contains(a))
+        if op.audiences.is_empty() {
+            // Un-annotated ops: kept in permissive mode, excluded in strict mode.
+            !strict
+        } else {
+            op.audiences.iter().any(|a| audiences.contains(a))
+        }
     };
     for item in doc.paths.values_mut() {
         for slot in [

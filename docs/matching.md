@@ -598,7 +598,20 @@ corpus).
   the spec's `x-fern-audiences`). Property-/schema-level audiences are not yet
   honoured (a follow-up); only operation-level filtering is applied.
 
-All three new fixtures are the *packaged* SDK form (like exhaustive), reproduced with
+- **Strict audience subsetting** (`audience-filter-strict`, issue #62). The
+  permissive default above keeps un-annotated operations under any `--audience`
+  filter, so it cannot carve a *strict* subset from a mostly-un-annotated API.
+  `--audience-strict` excludes un-annotated operations too, so only operations
+  carrying a matching audience survive — Fern's exclusive behaviour. The fixture
+  spec is `audience-filter` plus an *un-annotated* `/health` operation; Fern's
+  `audiences: [public]` filter drops both the internal `getStats` op and the
+  un-annotated `healthCheck` op, so the golden is exactly the `public` subset
+  (`listWidgets` + `Widget`→`WidgetDetail`). `crozier generate --audience public
+  --audience-strict` byte-matches it, while the permissive default would keep
+  `healthCheck`. Regenerated the same way (`FERN_AUDIENCES=public
+  scripts/generate-fern-fixture.sh audience-filter-strict`).
+
+These fixtures are the *packaged* SDK form (like exhaustive), reproduced with
 `fern generate --preview` (see the regeneration note below).
 
 ## Enum name sanitization (issue #50)

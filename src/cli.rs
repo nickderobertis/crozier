@@ -60,6 +60,13 @@ struct GenerateCmd {
     /// whole API.
     #[arg(long = "audience")]
     audiences: Vec<String>,
+
+    /// Restrict `--audience` to a *strict* subset: generate only operations that
+    /// carry a matching audience, excluding un-annotated ones. Matches Fern's
+    /// exclusive filtering — the way to carve a minimal, self-contained SDK out of
+    /// a mostly-un-annotated API. No effect without `--audience`.
+    #[arg(long = "audience-strict")]
+    audience_strict: bool,
 }
 
 /// Parse an explicit argument list and run — the in-process entry point used by
@@ -83,6 +90,7 @@ pub fn run(cli: Cli) -> std::result::Result<(), String> {
                 package_name: cmd.package_name,
                 project_name: cmd.project_name,
                 audiences: cmd.audiences,
+                audience_strict: cmd.audience_strict,
             })
             .map_err(|e| e.to_string())?;
             eprintln!(

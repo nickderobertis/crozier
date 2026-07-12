@@ -1,0 +1,65 @@
+# Strict audience subsetting (issue #62). Same dual-vocabulary split as
+# `audience-filter`: Fern reads `x-fern-audiences` to produce the golden tree,
+# crozier reads `x-crozier-audiences`; both hold identical values so the tools
+# filter identically. Unlike `audience-filter`, this spec carries an *un-annotated*
+# operation (`/health`, no audiences) alongside the labelled ones. Fern's audience
+# filter is exclusive, so `audiences: [public]` drops both the internal op AND the
+# un-annotated one — the subset crozier reproduces only under `--audience-strict`.
+openapi: 3.0.3
+info: { title: Widget API, version: 1.0.0 }
+paths:
+  /widgets:
+    get:
+      operationId: listWidgets
+      tags: [widgets]
+      x-fern-audiences: [public]
+      x-crozier-audiences: [public]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Widget' }
+  /admin/stats:
+    get:
+      operationId: getStats
+      tags: [admin]
+      x-fern-audiences: [internal]
+      x-crozier-audiences: [internal]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Stats' }
+  /health:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Health' }
+components:
+  schemas:
+    Widget:
+      type: object
+      properties:
+        id: { type: string }
+        detail: { $ref: '#/components/schemas/WidgetDetail' }
+    WidgetDetail:
+      type: object
+      properties:
+        note: { type: string }
+    Stats:
+      type: object
+      properties:
+        count: { type: integer }
+    Health:
+      type: object
+      properties:
+        ok: { type: boolean }

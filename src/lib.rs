@@ -49,13 +49,17 @@ pub struct GenerateArgs {
     /// operations carrying a matching audience (or none) plus the transitive
     /// schema closure they reference. Empty generates the whole API.
     pub audiences: Vec<String>,
+    /// Strict audience subsetting: when `true`, un-annotated operations are
+    /// excluded so only operations carrying a matching audience survive (Fern's
+    /// exclusive behaviour). No effect when `audiences` is empty.
+    pub audience_strict: bool,
 }
 
 /// Run the full pipeline: parse the spec, build the IR, render, and write files.
 /// Returns the files written so the caller can report a count.
 pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     let mut doc = openapi::load(&args.spec)?;
-    openapi::filter_by_audience(&mut doc, &args.audiences);
+    openapi::filter_by_audience(&mut doc, &args.audiences, args.audience_strict);
     // The config constructor validates the package name (a `PackageName`), so an
     // invalid, traversal-prone value can never reach the filesystem below.
     let config = GenerateConfig::new(
@@ -78,7 +82,7 @@ pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
 /// generated contents against fixtures in-process.
 pub fn render_files(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     let mut doc = openapi::load(&args.spec)?;
-    openapi::filter_by_audience(&mut doc, &args.audiences);
+    openapi::filter_by_audience(&mut doc, &args.audiences, args.audience_strict);
     let config = GenerateConfig::new(
         args.spec.clone(),
         args.output.clone(),
