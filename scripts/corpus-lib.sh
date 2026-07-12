@@ -50,3 +50,23 @@ corpus_fetch_repo() {
   fi
   printf '%s\n' "$target"
 }
+
+corpus_is_direct_spec_url() {
+  case "$1" in
+    http://*.json|https://*.json|http://*.yaml|https://*.yaml|http://*.yml|https://*.yml) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+corpus_fetch_source() {
+  local fetch_root="$1" name="$2" url="$3" ref="$4"
+  if corpus_is_direct_spec_url "$url"; then
+    local ext="${url##*.}" target_dir="$fetch_root/$name" target
+    mkdir -p "$target_dir"
+    target="$target_dir/openapi.$ext"
+    curl -fsSL -A crozier-fixture-builder "$url" -o "$target"
+    printf '%s\n' "$target"
+  else
+    corpus_fetch_repo "$fetch_root" "$name" "$url" "$ref"
+  fi
+}

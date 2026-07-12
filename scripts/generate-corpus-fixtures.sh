@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Fetch (when needed) and generate Fern golden `expected/` trees for the issue #77
-# corpus. Existing committed fixture specs are reused; link-only rows are cloned
-# from their source URL, an OpenAPI document is discovered, vendored as
-# tests/fixtures/<name>/openapi.yml, and then Fern generation runs.
+# corpus. Existing committed fixture specs are reused. URL-only rows are fetched
+# into the ignored cache under .local/corpus and passed directly to Fern so source
+# specs do not need to be vendored just to refresh generated output.
 set -euo pipefail
 
 script_dir="$(cd "$(dirname "$0")" && pwd)"
@@ -21,9 +21,9 @@ Usage: scripts/generate-corpus-fixtures.sh [--all|--committed] [--dry-run] [--fe
                This is the default.
   --committed  Generate only rows already marked `committed` in CORPUS.md.
   --dry-run    Print the generation plan, including source/discovered spec, without
-               copying specs or running Fern.
+               running Fern or writing fixture output.
   --fetch-root DIR
-               Clone link-only source repositories under DIR (default .local/corpus).
+               Cache direct specs and source repositories under DIR (default .local/corpus).
 USAGE
 }
 
@@ -77,22 +77,22 @@ while IFS=$'\t' read -r name url ref decision; do
     continue
   fi
 
-  source_desc="committed"
+  source_desc="$spec"
   if [ ! -f "$spec" ]; then
     if [ "$decision" = committed ]; then
       echo "generate-corpus-fixtures: committed row $name points at missing $spec" >&2
       exit 1
     fi
-    repo_dir="$(corpus_fetch_repo "$fetch_root" "$name" "$url" "$ref")"
-    discovered="$(discover_openapi "$repo_dir")" || {
-      echo "generate-corpus-fixtures: could not discover exactly one OpenAPI spec for $name from $url" >&2
-      exit 1
-    }
-    source_desc="$discovered"
-    if [ "$dry_run" -eq 0 ]; then
-      mkdir -p "$fixture_dir"
-      cp "$discovered" "$spec"
+    source_path="$(corpus_fetch_source "$fetch_root" "$name" "$url" "$ref")"
+    if [ -f "$source_path" ]; then
+      discovered="$source_path"
+    else
+      discovered="$(discover_openapi "$source_path")" || {
+        echo "generate-corpus-fixtures: could not discover exactly one OpenAPI spec for $name from $url" >&2
+        exit 1
+      }
     fi
+    source_desc="$discovered"
   fi
 
   plan+=("$fixture|$source_desc")
@@ -110,6 +110,6 @@ for item in "${plan[@]}"; do
     printf '%s\t%s\n' "$fixture" "$source_desc"
   else
     echo "generate-corpus-fixtures: generating $fixture (spec source: $source_desc)" >&2
-    "$repo_root/scripts/generate-fern-fixture.sh" "$fixture"
+    "$repo_root/scripts/generate-fern-fixture.sh" "$fixture" "${FERN_PYTHON_VERSION-}" "$source_desc"
   fi
 done

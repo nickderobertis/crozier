@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Fetch link-only corpus source repositories from tests/fixtures/CORPUS.md.
+# Fetch URL-backed corpus sources from tests/fixtures/CORPUS.md into the ignored cache.
 set -euo pipefail
 
 script_dir="$(cd "$(dirname "$0")" && pwd)"
@@ -19,14 +19,14 @@ mkdir -p "$dest_root"
 corpus_rows "$manifest" |
 while IFS=$'\t' read -r name url ref decision; do
   [ -n "$name" ] || continue
-  [ "$decision" = link-only ] || continue
+  [ "$decision" = link-ok ] || continue
   if [ "$dry_run" -eq 1 ]; then
     printf '%s\t%s\t%s\n' "$name" "$url" "$ref"
     continue
   fi
-  corpus_fetch_repo "$dest_root" "$name" "$url" "$ref" >/dev/null
+  corpus_fetch_source "$dest_root" "$name" "$url" "$ref" >/dev/null
 done
 
 if [ "$dry_run" -eq 0 ]; then
-  echo "fetch-corpus: fetched link-only corpus repos into $dest_root" >&2
+  echo "fetch-corpus: fetched link-ok corpus sources into $dest_root" >&2
 fi
