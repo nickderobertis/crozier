@@ -78,6 +78,104 @@ pub enum Error {
         /// What went wrong and how to fix it (e.g. install `ruff`).
         message: String,
     },
+
+    /// A config file could not be read (a `--config` / `CROZIER_CONFIG` path, or
+    /// a discovered `crozier.yml`).
+    #[error("could not read config {path}: {source}")]
+    ReadConfig {
+        /// The config path that failed to read.
+        path: PathBuf,
+        /// The underlying IO error.
+        source: std::io::Error,
+    },
+
+    /// An explicitly named config file (`--config` or `CROZIER_CONFIG`) does not
+    /// exist. A *discovered* file that is absent is simply no config, not an
+    /// error — only a file the user named is required to be there.
+    #[error("config file not found: {path}")]
+    ConfigNotFound {
+        /// The named path that is missing.
+        path: PathBuf,
+    },
+
+    /// A config file was read but is not valid (bad YAML, an unknown field, or an
+    /// unknown generator type).
+    #[error("invalid config {path}: {message}")]
+    ParseConfig {
+        /// The config path being parsed.
+        path: PathBuf,
+        /// A human-readable parse/validation error.
+        message: String,
+    },
+
+    /// A `CROZIER_*` environment override could not be parsed (e.g. a
+    /// non-boolean `CROZIER_AUDIENCE_STRICT`).
+    #[error("invalid environment override: {message}")]
+    InvalidEnvOverride {
+        /// What is wrong and which variable it came from.
+        message: String,
+    },
+
+    /// A generator was requested by name but is neither configured nor a built-in.
+    #[error("unknown generator {name:?}; available: {available}")]
+    UnknownGenerator {
+        /// The requested generator name.
+        name: String,
+        /// The comma-separated names that could be run instead.
+        available: String,
+    },
+
+    /// A generator has no OpenAPI spec after layering CLI, environment, and
+    /// config — there is nothing to generate from.
+    #[error(
+        "generator {name:?} has no spec: set `spec` in a config file, \
+         `CROZIER_SPEC`, or pass `--spec`"
+    )]
+    MissingSpec {
+        /// The generator that is missing a spec.
+        name: String,
+    },
+
+    /// A generator has no output directory after layering CLI, environment, and
+    /// config — there is nowhere to write.
+    #[error(
+        "generator {name:?} has no output directory: set `output` in a config \
+         file, `CROZIER_OUTPUT`, or pass `--output`"
+    )]
+    MissingOutput {
+        /// The generator that is missing an output directory.
+        name: String,
+    },
+
+    /// Per-generation CLI overrides (`--spec`/`--output`/…) were passed while
+    /// more than one generator would run, so they cannot be attributed to one.
+    #[error(
+        "per-generation flags (--spec/--output/--package-name/--project-name/\
+         --audience/--audience-strict) apply to a single generator, but {count} \
+         would run; name one (e.g. `crozier generate <name>`) or set the values \
+         in the config file"
+    )]
+    OverridesWithMultipleGenerators {
+        /// How many generators the current selection would run.
+        count: usize,
+    },
+
+    /// `crozier init` was asked to write a config file that already exists, and
+    /// `--force` was not given.
+    #[error("{path} already exists; pass --force to overwrite")]
+    ConfigExists {
+        /// The path that would be overwritten.
+        path: PathBuf,
+    },
+
+    /// A config file could not be written (`crozier init`).
+    #[error("could not write {path}: {source}")]
+    WriteConfig {
+        /// The path that failed to write.
+        path: PathBuf,
+        /// The underlying IO error.
+        source: std::io::Error,
+    },
 }
 
 /// Convenience alias for crozier results.

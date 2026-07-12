@@ -2400,3 +2400,323 @@ fn strict_audience_excludes_unannotated_ops_through_the_binary() {
     assert!(strict.join("src/aud/types/widget_detail.py").is_file());
     assert_valid_python(&strict);
 }
+
+/// A minimal one-schema OpenAPI document for the config-layer e2e journeys —
+/// enough to drive a real `crozier generate` without a fixture corpus.
+const TINY_SPEC: &str = "openapi: 3.0.0\ninfo:\n  title: Tiny\ncomponents:\n  schemas:\n    Thing:\n      type: object\n      properties:\n        name: { type: string }\n";
+
+#[test]
+fn config_file_is_discovered_in_the_working_directory() {
+    // A `crozier.yml` in the working directory is picked up with no `--config`
+    // flag; relative paths in it resolve against that directory.
+    let dir = tempfile::tempdir().expect("tempdir");
+    std::fs::write(dir.path().join("api.yml"), TINY_SPEC).unwrap();
+    std::fs::write(
+        dir.path().join("crozier.yml"),
+        "generators:\n  admin:\n    spec: ./api.yml\n    output: ./out\n    package-name: admin\n",
+    )
+    .unwrap();
+
+    // No selector → run the single configured generator.
+    crozier()
+        .current_dir(dir.path())
+        .arg("generate")
+        .assert()
+        .success()
+        .stderr(predicate::str::contains("generated"));
+    assert!(dir.path().join("out/src/admin/types/thing.py").is_file());
+}
+
+#[test]
+fn env_var_overrides_config_and_cli_overrides_env() {
+    // Precedence CLI > CROZIER_* env > config file, through the real process env.
+    let base = "spec: ./api.yml\ngenerators:\n  python:\n    output: ./out\n    package-name: fromconfig\n";
+
+    // env beats config: no CLI override, so CROZIER_PACKAGE_NAME wins.
+    let a = tempfile::tempdir().expect("tempdir");
+    std::fs::write(a.path().join("api.yml"), TINY_SPEC).unwrap();
+    std::fs::write(a.path().join("crozier.yml"), base).unwrap();
+    crozier()
+        .current_dir(a.path())
+        .env("CROZIER_PACKAGE_NAME", "fromenv")
+        .args(["generate", "python"])
+        .assert()
+        .success();
+    assert!(a.path().join("out/src/fromenv/types/thing.py").is_file());
+
+    // CLI beats env: --package-name wins over CROZIER_PACKAGE_NAME.
+    let b = tempfile::tempdir().expect("tempdir");
+    std::fs::write(b.path().join("api.yml"), TINY_SPEC).unwrap();
+    std::fs::write(b.path().join("crozier.yml"), base).unwrap();
+    crozier()
+        .current_dir(b.path())
+        .env("CROZIER_PACKAGE_NAME", "fromenv")
+        .args(["generate", "python", "--package-name", "fromcli"])
+        .assert()
+        .success();
+    assert!(b.path().join("out/src/fromcli/types/thing.py").is_file());
+}
+
+#[test]
+fn generate_all_runs_every_configured_generator_through_the_binary() {
+    // Bare `crozier` (no subcommand) generates every configured generator.
+    let dir = tempfile::tempdir().expect("tempdir");
+    std::fs::write(dir.path().join("api.yml"), TINY_SPEC).unwrap();
+    std::fs::write(
+        dir.path().join("crozier.yml"),
+        "spec: ./api.yml\ngenerators:\n  a:\n    output: ./a\n    package-name: a\n  b:\n    output: ./b\n    package-name: b\n",
+    )
+    .unwrap();
+
+    crozier().current_dir(dir.path()).assert().success();
+    assert!(dir.path().join("a/src/a/types/thing.py").is_file());
+    assert!(dir.path().join("b/src/b/types/thing.py").is_file());
+}
+
+#[test]
+fn init_then_config_round_trips_through_the_binary() {
+    // `crozier init` (default path) writes a discoverable `crozier.yml`; `crozier
+    // config` then reports it with per-field sources on stdout.
+    let dir = tempfile::tempdir().expect("tempdir");
+    crozier()
+        .current_dir(dir.path())
+        .arg("init")
+        .assert()
+        .success()
+        .stderr(predicate::str::contains("wrote"));
+    assert!(dir.path().join("crozier.yml").is_file());
+
+    crozier()
+        .current_dir(dir.path())
+        .arg("config")
+        .assert()
+        .success()
+        // The discovered file is reported, and each field carries its source.
+        .stdout(
+            predicate::str::contains("config files:").and(predicate::str::contains("crozier.yml")),
+        )
+        .stdout(predicate::str::contains("generator `python`"))
+        .stdout(predicate::str::contains("(shared)"))
+        .stdout(predicate::str::contains("(generator)"));
+}
+
+#[test]
+fn config_flag_selects_one_generator_through_the_binary() {
+    // Explicit `--config` + `generate <name>` runs only that config-defined
+    // generator, leaving the others untouched.
+    let dir = tempfile::tempdir().expect("tempdir");
+    std::fs::write(dir.path().join("api.yml"), TINY_SPEC).unwrap();
+    let cfg = dir.path().join("gen.yml");
+    std::fs::write(
+        &cfg,
+        "spec: ./api.yml\ngenerators:\n  admin:\n    output: ./admin\n    package-name: admin\n  extra:\n    output: ./extra\n    package-name: extra\n",
+    )
+    .unwrap();
+
+    crozier()
+        .current_dir(dir.path())
+        .arg("--config")
+        .arg(&cfg)
+        .args(["generate", "admin"])
+        .assert()
+        .success()
+        .stderr(predicate::str::contains("generated"));
+    assert!(dir.path().join("admin/src/admin/types/thing.py").is_file());
+    assert!(
+        !dir.path().join("extra").exists(),
+        "only the named generator runs"
+    );
+}
+
+#[test]
+fn crozier_config_env_var_names_the_file_through_the_binary() {
+    // `CROZIER_CONFIG` points at a config outside the working directory.
+    let dir = tempfile::tempdir().expect("tempdir");
+    std::fs::write(dir.path().join("api.yml"), TINY_SPEC).unwrap();
+    let cfg = dir.path().join("elsewhere.yml");
+    std::fs::write(
+        &cfg,
+        "spec: ./api.yml\ngenerators:\n  python:\n    output: ./out\n    package-name: viaenv\n",
+    )
+    .unwrap();
+
+    crozier()
+        .current_dir(dir.path())
+        .env("CROZIER_CONFIG", &cfg)
+        .args(["generate", "python"])
+        .assert()
+        .success();
+    assert!(dir.path().join("out/src/viaenv/types/thing.py").is_file());
+}
+
+#[test]
+fn unknown_generator_exits_nonzero_with_an_actionable_message() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    crozier()
+        .current_dir(dir.path())
+        .args(["--no-config", "generate", "typescript"])
+        .assert()
+        .failure()
+        .code(1)
+        .stderr(
+            predicate::str::contains("unknown generator").and(predicate::str::contains("python")),
+        );
+}
+
+#[test]
+fn per_generation_flags_with_multiple_generators_exit_nonzero() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    std::fs::write(dir.path().join("api.yml"), TINY_SPEC).unwrap();
+    std::fs::write(
+        dir.path().join("crozier.yml"),
+        "spec: ./api.yml\ngenerators:\n  a:\n    output: ./a\n  b:\n    output: ./b\n",
+    )
+    .unwrap();
+
+    crozier()
+        .current_dir(dir.path())
+        .args(["generate", "--package-name", "x"])
+        .assert()
+        .failure()
+        .code(1)
+        .stderr(predicate::str::contains("single generator"));
+}
+
+#[test]
+fn init_force_overwrites_and_refuses_without_it_through_the_binary() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let cfg = dir.path().join("crozier.yml");
+    std::fs::write(&cfg, "spec: ./seed.yml\n").unwrap();
+
+    // Refuses to clobber (exit 1) without --force.
+    crozier()
+        .current_dir(dir.path())
+        .arg("init")
+        .assert()
+        .failure()
+        .code(1)
+        .stderr(predicate::str::contains("already exists"));
+    // --force overwrites with the starter.
+    crozier()
+        .current_dir(dir.path())
+        .args(["init", "--force"])
+        .assert()
+        .success()
+        .stderr(predicate::str::contains("wrote"));
+    assert!(std::fs::read_to_string(&cfg)
+        .unwrap()
+        .contains("generators:"));
+}
+
+#[test]
+fn config_selects_one_generator_and_honors_no_config_through_the_binary() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    std::fs::write(
+        dir.path().join("crozier.yml"),
+        "spec: ./api.yml\ngenerators:\n  a:\n    output: ./a\n  b:\n    output: ./b\n",
+    )
+    .unwrap();
+
+    // `config <name>` shows only that generator.
+    crozier()
+        .current_dir(dir.path())
+        .args(["config", "a"])
+        .assert()
+        .success()
+        .stdout(
+            predicate::str::contains("generator `a`")
+                .and(predicate::str::contains("generator `b`").not()),
+        );
+    // `--no-config` ignores the discovered file → the built-in python only.
+    crozier()
+        .current_dir(dir.path())
+        .args(["--no-config", "config"])
+        .assert()
+        .success()
+        .stdout(
+            predicate::str::contains("none (built-in defaults)")
+                .and(predicate::str::contains("generator `python`")),
+        );
+}
+
+#[test]
+fn schema_command_prints_the_config_json_schema() {
+    // `crozier schema` emits exactly the derived schema, as valid JSON.
+    let out = crozier()
+        .arg("schema")
+        .output()
+        .expect("run crozier schema");
+    assert!(out.status.success(), "schema command exits 0");
+    let printed: serde_json::Value =
+        serde_json::from_slice(&out.stdout).expect("schema stdout is valid JSON");
+    // It is the same schema the drift test pins and `init` references.
+    assert_eq!(printed, crozier::schema::build());
+    // Sanity: it describes the config, including the merged `client-class-name`.
+    assert_eq!(printed["$id"], crozier::schema::SCHEMA_URL);
+    assert!(printed["properties"]["generators"].is_object());
+    assert!(printed["$defs"]["GeneratorSettings"]["properties"]
+        .get("client-class-name")
+        .is_some());
+}
+
+#[test]
+fn multiple_config_files_layer_later_wins_through_the_binary() {
+    // Repeatable `--config`: the later file wins per field, and an untouched field
+    // from the earlier file survives — through the real process.
+    let dir = tempfile::tempdir().expect("tempdir");
+    std::fs::write(dir.path().join("api.yml"), TINY_SPEC).unwrap();
+    let base = dir.path().join("base.yml");
+    let over = dir.path().join("over.yml");
+    std::fs::write(
+        &base,
+        "spec: ./api.yml\ngenerators:\n  python:\n    output: ./out\n    package-name: frombase\n",
+    )
+    .unwrap();
+    std::fs::write(
+        &over,
+        "generators:\n  python:\n    package-name: fromover\n",
+    )
+    .unwrap();
+
+    crozier()
+        .current_dir(dir.path())
+        .arg("--config")
+        .arg(&base)
+        .arg("--config")
+        .arg(&over)
+        .args(["generate", "python"])
+        .assert()
+        .success();
+    // package-name comes from the later file; spec/output survive from the first.
+    assert!(dir.path().join("out/src/fromover/types/thing.py").is_file());
+}
+
+#[test]
+fn client_class_name_is_configurable_via_the_config_file() {
+    // The field #65 added as a flag is also a first-class config value: setting it
+    // in `crozier.yml` renames the generated root client class, same as the flag.
+    let dir = tempfile::tempdir().expect("tempdir");
+    let cfg = dir.path().join("crozier.yml");
+    std::fs::write(
+        &cfg,
+        format!(
+            "generators:\n  python:\n    spec: {}\n    output: ./out\n    package-name: fern\n    client-class-name: AcmeClient\n",
+            fixture_dir("client-class-name").join("openapi.yml").display()
+        ),
+    )
+    .unwrap();
+
+    crozier()
+        .current_dir(dir.path())
+        .arg("--config")
+        .arg(&cfg)
+        .args(["generate", "python"])
+        .assert()
+        .success();
+    let client = std::fs::read_to_string(dir.path().join("out/src/fern/client.py"))
+        .expect("client.py generated");
+    assert!(
+        client.contains("class AcmeClient"),
+        "config-set client-class-name should reach generation"
+    );
+}

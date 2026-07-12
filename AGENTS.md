@@ -20,8 +20,21 @@ binary, with one **generation-time dependency**: `crozier generate` shells out t
 `ruff format` (over the CLI) to wrap the emitted Python, so `ruff` must be on
 PATH — a missing one is an actionable error, not a panic. Generators are Rust +
 [minijinja](https://github.com/mitsuhiko/minijinja) templates — there is no
-plugin-in-target-language model and no per-project config file: the OpenAPI
-document plus a few naming flags are the entire input.
+plugin-in-target-language model: the OpenAPI document plus a few naming settings
+are the entire input. Those settings resolve per field as CLI > `CROZIER_*` env
+> `crozier.yml` (generator over shared top-level) > built-in default, across one
+or more **named generators** (`python` is the only type today, and a built-in so
+`crozier generate python` needs no config). `crozier`/`crozier generate` run the
+whole configured set; `crozier generate <name>` runs one. The schema, layering,
+and file discovery live in `src/settings.rs` (pure + unit-tested; the env reader
+is injected); `src/cli.rs` applies them and adds `init` (write a starter config),
+`config` (print the effective config with per-field sources), and `schema`
+(print the JSON Schema). The public
+JSON Schema is *derived* from the config types via `schemars`
+(`src/schema.rs`) and committed as `assets/crozier.schema.json` — after changing
+a config field, regenerate it with `CROZIER_UPDATE_SCHEMA=1 cargo test --lib
+schema` or the drift test fails. See
+[`docs/configuration.md`](docs/configuration.md).
 
 The north star: **`crozier`'s output, with comments stripped, equals Fern's
 output with comments stripped.** See [`docs/matching.md`](docs/matching.md) for

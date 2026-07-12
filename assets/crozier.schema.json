@@ -1,0 +1,151 @@
+{
+  "$defs": {
+    "GeneratorSettings": {
+      "additionalProperties": false,
+      "description": "One generator's settings, as written under `generators.<name>` (or as the\ntop-level shared defaults, which share this shape minus `type`). Every field\nis optional: an absent field falls through to the next layer down. Unknown\nfields are rejected so a typo fails loudly instead of being ignored.",
+      "properties": {
+        "audience-strict": {
+          "description": "Strict audience subsetting (exclude un-annotated operations).",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "audiences": {
+          "description": "`x-crozier-audiences` filter; empty generates the whole API.",
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "client-class-name": {
+          "description": "Root client class name (Fern's `client_class_name`); defaults to\n`{PascalCase(package_name)}Api`.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "output": {
+          "description": "Directory to write the generated SDK into.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "package-name": {
+          "description": "Python package (import) name; defaults to a snake_case of the API title.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "project-name": {
+          "description": "Distribution name recorded in `version.py`; defaults to the package name.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "spec": {
+          "description": "Path to the OpenAPI document to read.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "type": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GeneratorType"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The generator kind. Defaults to [`GeneratorType::Python`] when unset."
+        }
+      },
+      "type": "object"
+    },
+    "GeneratorType": {
+      "description": "The kind of SDK a generator emits. Python is the only target today; the field\nexists so a config can be explicit and forward-compatible, and so an unknown\nvalue (a typo, or a target crozier does not have) fails loudly at parse time.",
+      "oneOf": [
+        {
+          "const": "python",
+          "description": "The Python generator.",
+          "type": "string"
+        }
+      ]
+    }
+  },
+  "$id": "https://raw.githubusercontent.com/nickderobertis/crozier/main/assets/crozier.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "A parsed `crozier.yml`: the shared top-level defaults plus the named\ngenerators. The top-level fields reuse [`GeneratorSettings`]' meaning but are\nshared across every generator (the `type` there is ignored — it is per\ngenerator). `generators` preserves declaration order so `crozier generate`\n(no name) runs them deterministically in file order.",
+  "properties": {
+    "audience-strict": {
+      "description": "Shared default strict-audience flag.",
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "audiences": {
+      "description": "Shared default audience filter.",
+      "items": {
+        "type": "string"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "client-class-name": {
+      "description": "Shared default root client class name.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "generators": {
+      "additionalProperties": {
+        "$ref": "#/$defs/GeneratorSettings"
+      },
+      "description": "The named generator instances (one SDK each), in declaration order.",
+      "type": "object"
+    },
+    "output": {
+      "description": "Shared default output directory.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "package-name": {
+      "description": "Shared default Python package name.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "project-name": {
+      "description": "Shared default distribution name.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "spec": {
+      "description": "Shared default OpenAPI document for every generator.",
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "title": "crozier configuration",
+  "type": "object"
+}
