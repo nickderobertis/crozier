@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nickderobertis/crozier/main/assets/crozier.schema.json
+# Demo config for the `config` screenshot: shared top-level defaults plus two
+# named generators, so the capture shows crozier resolving each field to its
+# layer (shared / generator / default).
+spec: ./petstore.yml
+audiences: [public]
+
+generators:
+  python: # the built-in Python generator, overridden here
+    output: ./sdk/python
+    package-name: petstore
+    extra-fields: ignore
+  admin: # a second generator (also Python for now)
+    type: python
+    output: ./sdk/admin
+    package-name: petstore_admin
+    client-class-name: AdminClient

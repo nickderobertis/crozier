@@ -13,6 +13,7 @@ bootstrap:
     cargo fetch --locked
     @./scripts/install-dev-tools.sh
     @./scripts/install-ruff.sh
+    @git config core.hooksPath .githooks && echo "enabled .githooks (visual-regression pre-push guard)"
 
 # Full quality gate. Fails on any issue. e2e is part of the gate, not opt-in.
 check: fmt-check lint test test-e2e supply-chain doc
@@ -121,3 +122,41 @@ lint-llm-validate *args:
 # Blocking `llmlint` PR check; run before pushing. BASE defaults to origin/main.
 lint-llm-diff base="origin/main" *args:
     llmlint --diff git --diff-base {{base}} {{args}}
+
+# --- Terminal screenshots (informational; never part of `check`) --------------
+# Deterministic SVGs of the real CLI output, rendered by `freeze` from a vendored
+# pinned font and gated/galleried/PR-commented by screencomp. Regenerating is out
+# of the gate; CI's Visual-docs workflow owns the comparison, and the pre-push
+# guard re-captures locally on drift. See screenshots/AGENTS.md.
+
+# Install the screenshot renderer (`freeze`) on demand, pinned to `.freeze-version`
+# (the single source of truth CI's Visual-docs capture reads too). Needs Go.
+screenshots-tools:
+    @command -v go >/dev/null || { echo "go not found: needed to install freeze; see https://go.dev/dl" >&2; exit 1; }
+    go install github.com/charmbracelet/freeze@v"$(cat .freeze-version)"
+    @echo "installed freeze to $(go env GOPATH)/bin (ensure it is on PATH)"
+
+# Capture the screenshots: drive the real binary against screenshots/petstore.yml,
+# render each scene to shots/current/<arch>/ + docs/screenshots/. Needs `freeze`
+# and `ruff` on PATH (the latter is crozier's generation-time dependency).
+screenshots:
+    @bash scripts/screenshots.sh
+
+# Regenerate the animated demo GIF (docs/screenshots/demo.gif — the README hero:
+# a real `generate` run, then the generated enum streaming in). Drives the REAL
+# release binary against the demo spec, then draws faithful frames with the
+# vendored JetBrains Mono font (Pillow only — no ttyd/ffmpeg). Informational, NOT
+# hash-gated (a GIF isn't byte-reproducible), so regenerate on demand and commit
+# the result. Needs Python 3 + Pillow (`pip install Pillow`).
+screenshots-gif:
+    @command -v python3 >/dev/null || { echo "python3 not found: needed to render the demo GIF" >&2; exit 1; }
+    @python3 -c "import PIL" 2>/dev/null || { echo "Pillow not installed: pip install Pillow" >&2; exit 1; }
+    cargo build --release --locked --bin crozier
+    python3 scripts/demo-gif.py
+
+# Refresh the committed baseline manifest from a fresh capture (after an intended
+# output change). Commit shots/baseline/*.json + docs/screenshots/ alongside.
+screenshots-bless: screenshots
+    @command -v screencomp >/dev/null || { echo "screencomp not installed: https://github.com/nickderobertis/screencomp#install" >&2; exit 1; }
+    screencomp manifest --input shots/current --output shots/baseline/$(uname -m | sed 's/amd64/x86_64/;s/aarch64/arm64/').json
+    @echo "baseline refreshed; commit shots/baseline/ + docs/screenshots/"

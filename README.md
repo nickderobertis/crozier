@@ -14,6 +14,54 @@ Python is the only target today; more will follow.
 > output for those files. See [`docs/matching.md`](docs/matching.md) for exactly
 > what is matched and the roadmap.
 
+## See it in action
+
+One OpenAPI document in, a complete typed Python SDK out — `crozier generate`
+writes the whole package in one shot, then you can read the code it produced:
+
+![Animated demo: typing crozier generate --spec petstore.yml --output sdk, crozier reporting it wrote 35 files, then cat-ing the generated PetStatus enum as it streams in with syntax highlighting](docs/screenshots/demo.gif)
+
+The output is byte-for-byte Fern's. Here is the `Pet` model crozier emitted from a
+handful of lines of schema — a real generated file, not a hand-written sample:
+
+![The generated types/pet.py: a pydantic Pet(UniversalBaseModel) with Optional id, name, status and owner fields and the pydantic v1/v2 config block](docs/screenshots/model.svg)
+
+`crozier generate python` takes the document and a couple of naming flags and
+writes the SDK — the models, enums, the per-endpoint client, and Fern's `core/`
+runtime — into `--output`:
+
+![Terminal: crozier generate python --spec petstore.yml --output sdk --package-name petstore, the generated 35 files into sdk summary, and a tree of the written package showing src/petstore with core, types, list_pets, client.py and pyproject.toml](docs/screenshots/generate.svg)
+
+Or drive one — or several — named generators from a `crozier.yml` instead of
+flags. `crozier config` shows the effective settings for every generator and the
+layer each value resolved from (CLI flag > `CROZIER_*` env > file > default):
+
+![Terminal: crozier config against a crozier.yml with shared defaults and two generators (python and admin), each field shown with its resolved value and source layer — shared, generator, or default](docs/screenshots/config.svg)
+
+`crozier init` drops a starter `crozier.yml` carrying a JSON Schema modeline, so
+editors complete and validate it against crozier's own config schema:
+
+![Terminal: crozier init writing crozier.yml, then cat-ing it — a yaml-language-server $schema modeline, shared spec, and a generators block with the built-in python generator](docs/screenshots/init.svg)
+
+<details>
+<summary>The full command surface (<code>crozier --help</code> and <code>crozier generate --help</code>)</summary>
+
+![crozier --help: the top-level usage listing the generate, init, config and schema subcommands](docs/screenshots/help-main.svg)
+
+![crozier generate --help: every flag — spec, output, package-name, project-name, client-class-name, audience, audience-strict and extra-fields](docs/screenshots/help-generate.svg)
+
+</details>
+
+A malformed document is rejected at the boundary with an actionable message and a
+non-zero exit — never a panic:
+
+![crozier rejecting broken.yml with the message: invalid OpenAPI document broken.yml, missing openapi version field, is this an OpenAPI document?](docs/screenshots/error.svg)
+
+> These are real captures of the CLI, rendered from its actual output by
+> [`just screenshots`](screenshots/AGENTS.md) and gated by
+> [screencomp](https://github.com/nickderobertis/screencomp) — change what a
+> command prints and the committed image (and its digest) changes with it.
+
 ## Install
 
 **From PyPI (fastest — a prebuilt binary, no Rust toolchain):** crozier ships as

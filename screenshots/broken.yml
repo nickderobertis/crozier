@@ -1,0 +1,6 @@
+# A paths fragment mistakenly passed as a full OpenAPI document — it has no
+# top-level `openapi` version field, so crozier rejects it at the boundary.
+paths:
+  /pets:
+    get:
+      operationId: listPets

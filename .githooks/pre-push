@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+# Local visual-regression guard: before a push, if any file that can change the
+# CLI's rendered output changed (the [guard].paths globs in screencomp.toml), and
+# the screenshot toolchain is installed, re-capture into a TEMP tree and classify
+# it against the committed baseline (shots/baseline/<arch>.json). On drift, ABORT
+# the push with the one command that fixes it — so the CI Visual-docs gate never
+# fails you by surprise.
+#
+# It is deliberately read-only w.r.t. the working tree: the capture goes to a temp
+# dir, never docs/screenshots/, so it can only stop a push, never mutate it. When
+# the tools aren't installed it prints a hint and lets the push through — CI is the
+# real gate; this is the fast local mirror of it.
+#
+# Enabled by `just bootstrap` (git config core.hooksPath .githooks). Skip a single
+# push with `git push --no-verify`.
+set -euo pipefail
+
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
+
+# What is being pushed? Diff the local ref about to go up against its upstream (or
+# origin/main as a fallback). If we can't resolve a base, don't guess — let CI gate.
+base=""
+if git rev-parse --abbrev-ref --symbolic-full-name '@{upstream}' >/dev/null 2>&1; then
+  base="@{upstream}"
+elif git rev-parse --verify --quiet origin/main >/dev/null; then
+  base="origin/main"
+else
+  exit 0
+fi
+changed="$(git diff --name-only "$base"...HEAD 2>/dev/null || true)"
+[ -n "$changed" ] || exit 0
+
+# Ask screencomp whether any changed path is screenshot-relevant (pure glob match
+# against [guard].paths). Exit 3 = relevant; 0 = not; anything else = be safe and
+# skip. No screencomp? Nothing to guard with — let CI handle it.
+command -v screencomp >/dev/null 2>&1 || exit 0
+scope_status=0
+printf '%s\n' "$changed" | screencomp scope --changed-from - --exit-code >/dev/null 2>&1 || scope_status=$?
+[ "$scope_status" -eq 3 ] || exit 0
+
+# A relevant file changed. If the renderer isn't installed we can't verify locally
+# — warn and defer to CI rather than blocking the push.
+if ! command -v freeze >/dev/null 2>&1; then
+  echo "pre-push: screenshot-relevant files changed, but 'freeze' isn't installed" >&2
+  echo "          — skipping the local visual check (CI's Visual-docs gate still runs)." >&2
+  echo "          Install it with 'just screenshots-tools' to check before pushing." >&2
+  exit 0
+fi
+
+arch="$(uname -m)"
+case "$arch" in
+  x86_64 | amd64) arch="x86_64" ;;
+  arm64 | aarch64) arch="arm64" ;;
+esac
+baseline="shots/baseline/${arch}.json"
+if [ ! -f "$baseline" ]; then
+  echo "pre-push: no committed baseline at $baseline — run 'just screenshots-bless' to seed it." >&2
+  exit 0
+fi
+
+tmp="$(mktemp -d)"
+trap 'rm -rf "$tmp"' EXIT
+echo "pre-push: CLI output may have changed — re-capturing to verify against $baseline …" >&2
+SHOTS_OUT="$tmp/$arch" bash scripts/screenshots.sh >/dev/null 2>"$tmp/log" || {
+  echo "pre-push: capture failed; see below (push not blocked — CI will re-check)." >&2
+  cat "$tmp/log" >&2
+  exit 0
+}
+
+status=0
+screencomp classify --baseline-manifest "$baseline" --current "$tmp" --arch "$arch" --exit-code || status=$?
+if [ "$status" -eq 3 ]; then
+  echo "" >&2
+  echo "pre-push: the CLI's rendered output drifted from the committed baseline." >&2
+  echo "          If the change is intended, refresh it and commit:" >&2
+  echo "              just screenshots-bless && git add shots/baseline docs/screenshots" >&2
+  echo "          Then push again (or 'git push --no-verify' to skip this check)." >&2
+  exit 1
+fi
+exit "$status"

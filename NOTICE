@@ -42,6 +42,15 @@ Test fixtures (attribution and statement of changes, per Apache-2.0 §4(b), §4(
   * Fern's own API-definition files were intentionally NOT used. crozier consumes
     only the OpenAPI document.
 
+Vendored font (documentation tooling only — not shipped in the crate or wheels):
+
+  * screenshots/fonts/JetBrainsMono-Regular.ttf is JetBrains Mono, Copyright 2020
+    The JetBrains Mono Project Authors, licensed under the SIL Open Font License,
+    Version 1.1. A copy of that license is retained at screenshots/fonts/OFL.txt.
+    It is embedded into the README's terminal screenshots (docs/screenshots/) to
+    make them byte-reproducible for the screencomp visual-regression gate; it is
+    excluded from the published crate (Cargo.toml `include`) and the PyPI wheels.
+
 crozier's own Rust source is an independent, clean-room implementation: it does
 not copy Fern's generator, it reproduces Fern's generated *output* format, which
 is the explicit goal of this project. The one exception is the runtime library

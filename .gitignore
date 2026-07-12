@@ -14,6 +14,13 @@ llmlint.buildout.yml
 /out
 /.crozier-tmp
 
+# screencomp visual-docs: the committed digest baseline (shots/baseline/) and the
+# README images (docs/screenshots/) ARE tracked; the regenerated capture trees and
+# the rendered gallery are throwaway.
+/shots/current
+/shots/review
+/site
+
 # maturin / Python packaging build output (wheels + sdist)
 /dist
 
