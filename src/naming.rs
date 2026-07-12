@@ -171,10 +171,18 @@ fn digit_word(word: &str) -> Option<&'static str> {
 /// the `visit` parameter (`0: Active` → words `[zero, active]`; `1: InActive` →
 /// `[one, in, active]`).
 fn enum_words(value: &str) -> Vec<String> {
-    let spaced: String = value
-        .chars()
-        .map(|c| if c.is_ascii_alphanumeric() { c } else { ' ' })
-        .collect();
+    let mut spaced = String::new();
+    for c in value.chars() {
+        if c == '*' {
+            // Fern spells a bare `*` wildcard enum value the word "all"
+            // (`"*"` → `ALL`); every other non-alphanumeric is a word boundary.
+            spaced.push_str(" all ");
+        } else if c.is_ascii_alphanumeric() {
+            spaced.push(c);
+        } else {
+            spaced.push(' ');
+        }
+    }
     split_words(&spaced)
         .into_iter()
         .map(|w| digit_word(&w).map_or(w, str::to_string))
