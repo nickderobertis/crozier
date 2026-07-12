@@ -2050,6 +2050,21 @@ impl Builder<'_> {
                 )));
                 return TypeRef::Named(hoisted);
             }
+            // An inline object *with declared properties* hoists to its own named
+            // model `{Owner}{Prop}` (Fern: `Meta.cursors` → `MetaCursors`), rather
+            // than degrading to `typing.Any`. A bare `type: object` map (no
+            // properties) is left to `base_type_ref`.
+            if !prop_schema.properties.is_empty() {
+                let name = format!("{owner}{}", naming::class_name(prop));
+                let module = naming::module_name(&name);
+                self.add_object(
+                    &name,
+                    module,
+                    prop_schema,
+                    clean_doc(prop_schema.description.as_deref()),
+                );
+                return TypeRef::Named(name);
+            }
         }
         base_type_ref(prop_schema)
     }
