@@ -2416,3 +2416,142 @@ fn init_then_config_round_trips_through_the_binary() {
         .stdout(predicate::str::contains("(shared)"))
         .stdout(predicate::str::contains("(generator)"));
 }
+
+#[test]
+fn config_flag_selects_one_generator_through_the_binary() {
+    // Explicit `--config` + `generate <name>` runs only that config-defined
+    // generator, leaving the others untouched.
+    let dir = tempfile::tempdir().expect("tempdir");
+    std::fs::write(dir.path().join("api.yml"), TINY_SPEC).unwrap();
+    let cfg = dir.path().join("gen.yml");
+    std::fs::write(
+        &cfg,
+        "spec: ./api.yml\ngenerators:\n  admin:\n    output: ./admin\n    package-name: admin\n  extra:\n    output: ./extra\n    package-name: extra\n",
+    )
+    .unwrap();
+
+    crozier()
+        .current_dir(dir.path())
+        .arg("--config")
+        .arg(&cfg)
+        .args(["generate", "admin"])
+        .assert()
+        .success()
+        .stderr(predicate::str::contains("generated"));
+    assert!(dir.path().join("admin/src/admin/types/thing.py").is_file());
+    assert!(
+        !dir.path().join("extra").exists(),
+        "only the named generator runs"
+    );
+}
+
+#[test]
+fn crozier_config_env_var_names_the_file_through_the_binary() {
+    // `CROZIER_CONFIG` points at a config outside the working directory.
+    let dir = tempfile::tempdir().expect("tempdir");
+    std::fs::write(dir.path().join("api.yml"), TINY_SPEC).unwrap();
+    let cfg = dir.path().join("elsewhere.yml");
+    std::fs::write(
+        &cfg,
+        "spec: ./api.yml\ngenerators:\n  python:\n    output: ./out\n    package-name: viaenv\n",
+    )
+    .unwrap();
+
+    crozier()
+        .current_dir(dir.path())
+        .env("CROZIER_CONFIG", &cfg)
+        .args(["generate", "python"])
+        .assert()
+        .success();
+    assert!(dir.path().join("out/src/viaenv/types/thing.py").is_file());
+}
+
+#[test]
+fn unknown_generator_exits_nonzero_with_an_actionable_message() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    crozier()
+        .current_dir(dir.path())
+        .args(["--no-config", "generate", "typescript"])
+        .assert()
+        .failure()
+        .code(1)
+        .stderr(
+            predicate::str::contains("unknown generator").and(predicate::str::contains("python")),
+        );
+}
+
+#[test]
+fn per_generation_flags_with_multiple_generators_exit_nonzero() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    std::fs::write(dir.path().join("api.yml"), TINY_SPEC).unwrap();
+    std::fs::write(
+        dir.path().join("crozier.yml"),
+        "spec: ./api.yml\ngenerators:\n  a:\n    output: ./a\n  b:\n    output: ./b\n",
+    )
+    .unwrap();
+
+    crozier()
+        .current_dir(dir.path())
+        .args(["generate", "--package-name", "x"])
+        .assert()
+        .failure()
+        .code(1)
+        .stderr(predicate::str::contains("single generator"));
+}
+
+#[test]
+fn init_force_overwrites_and_refuses_without_it_through_the_binary() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let cfg = dir.path().join("crozier.yml");
+    std::fs::write(&cfg, "spec: ./seed.yml\n").unwrap();
+
+    // Refuses to clobber (exit 1) without --force.
+    crozier()
+        .current_dir(dir.path())
+        .arg("init")
+        .assert()
+        .failure()
+        .code(1)
+        .stderr(predicate::str::contains("already exists"));
+    // --force overwrites with the starter.
+    crozier()
+        .current_dir(dir.path())
+        .args(["init", "--force"])
+        .assert()
+        .success()
+        .stderr(predicate::str::contains("wrote"));
+    assert!(std::fs::read_to_string(&cfg)
+        .unwrap()
+        .contains("generators:"));
+}
+
+#[test]
+fn config_selects_one_generator_and_honors_no_config_through_the_binary() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    std::fs::write(
+        dir.path().join("crozier.yml"),
+        "spec: ./api.yml\ngenerators:\n  a:\n    output: ./a\n  b:\n    output: ./b\n",
+    )
+    .unwrap();
+
+    // `config <name>` shows only that generator.
+    crozier()
+        .current_dir(dir.path())
+        .args(["config", "a"])
+        .assert()
+        .success()
+        .stdout(
+            predicate::str::contains("generator `a`")
+                .and(predicate::str::contains("generator `b`").not()),
+        );
+    // `--no-config` ignores the discovered file → the built-in python only.
+    crozier()
+        .current_dir(dir.path())
+        .args(["--no-config", "config"])
+        .assert()
+        .success()
+        .stdout(
+            predicate::str::contains("none (built-in defaults)")
+                .and(predicate::str::contains("generator `python`")),
+        );
+}
