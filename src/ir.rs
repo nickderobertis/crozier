@@ -611,6 +611,10 @@ pub struct DiscriminatedUnion {
     pub discriminant_property: String,
     /// The variant wrapper models, in mapping order.
     pub members: Vec<UnionMember>,
+    /// The class names of the schemas the discriminator maps to (e.g. `AndNode`,
+    /// `LeafNode`). Kept so the recursion analysis can see that the union can *be*
+    /// one of those schemas — the edge that reveals a recursive variant (issue #84).
+    pub variant_targets: Vec<String>,
     /// Optional docstring.
     pub docstring: Option<String>,
 }
@@ -1956,20 +1960,26 @@ impl Builder<'_> {
             return None;
         }
         let mut members = Vec::new();
+        let mut variant_targets = Vec::new();
         for (value, reference) in &disc.mapping {
             let target_key = reference.rsplit('/').next().unwrap_or(reference);
             let target = self.schemas.get(target_key)?;
             members.push(UnionMember {
-                class_name: format!("{name}_{}", naming::class_name(target_key)),
+                // Fern names the wrapper after the discriminant *value*
+                // (`Node_And`), not the referenced schema (`AndNode`) — the two
+                // coincide only when the mapping key equals the schema name.
+                class_name: format!("{name}_{}", naming::class_name(value)),
                 discriminant: value.clone(),
                 fields: member_fields(target, &disc.property_name),
             });
+            variant_targets.push(naming::class_name(target_key));
         }
         Some(DiscriminatedUnion {
             name: name.to_string(),
             module: module.to_string(),
             discriminant_property: disc.property_name.clone(),
             members,
+            variant_targets,
             docstring,
         })
     }
@@ -2103,6 +2113,11 @@ fn full_type_ref(schema: &Schema) -> TypeRef {
 /// Map a schema to its base type expression, never adding a top-level
 /// `Optional` (the caller decides optionality for fields).
 fn base_type_ref(schema: &Schema) -> TypeRef {
+    // A node the document put where a schema object was expected but that carried a
+    // non-object value (issue #86) degrades to Fern's unknown type, `Optional[Any]`.
+    if schema.malformed {
+        return TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)));
+    }
     if let Some(reference) = &schema.reference {
         return TypeRef::Named(ref_to_class(reference));
     }

@@ -1,0 +1,30 @@
+openapi: 3.0.3
+info:
+  title: fern
+  version: 1.0.0
+paths:
+  /widgets/{widget_id}/update:
+    post:
+      operationId: updateWidget
+      tags:
+        - Widgets
+      parameters:
+        - name: widget_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                details:
+                  type: object
+                  properties:
+                    displayName:
+                      type: string
+      responses:
+        "200":
+          description: OK

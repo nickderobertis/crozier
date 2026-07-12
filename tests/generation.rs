@@ -1946,3 +1946,199 @@ components:
         "internal type pruned"
     );
 }
+
+/// A self-referential model renders the recursive field as a string forward
+/// reference, opts into deferred annotations, and repairs the model with
+/// `update_forward_refs` — never a self-import (issue #84).
+#[test]
+fn self_referential_model_uses_forward_references() {
+    let spec = r##"
+openapi: 3.0.3
+info: { title: Rec API }
+paths:
+  /tree:
+    post:
+      operationId: put_tree
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TreeNode" }
+      responses: { "200": { description: ok } }
+components:
+  schemas:
+    TreeNode:
+      type: object
+      properties:
+        value: { type: string }
+        children:
+          type: array
+          items: { $ref: "#/components/schemas/TreeNode" }
+"##;
+    let files = render(spec);
+    let tree = &files["src/acme/types/tree_node.py"];
+    assert!(
+        tree.contains("from __future__ import annotations"),
+        "recursive model opts into deferred annotations:\n{tree}"
+    );
+    assert!(
+        tree.contains(r#"typing.List["TreeNode"]"#),
+        "the recursive field is a string forward ref:\n{tree}"
+    );
+    assert!(
+        tree.contains("update_forward_refs(TreeNode)"),
+        "the forward ref is repaired at load time:\n{tree}"
+    );
+    assert!(
+        !tree.contains("from .tree_node import TreeNode"),
+        "a module never imports the name it defines:\n{tree}"
+    );
+}
+
+/// A recursive discriminated union: the variant that references the union renders
+/// it as a forward ref (a same-file union needs no import) and repairs only that
+/// wrapper; the referenced schema defers its cross-module import (issue #84).
+#[test]
+fn recursive_discriminated_union_uses_forward_references() {
+    let spec = r##"
+openapi: 3.0.3
+info: { title: Rec API }
+paths:
+  /pred:
+    post:
+      operationId: put_pred
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Node" }
+      responses: { "200": { description: ok } }
+components:
+  schemas:
+    Node:
+      oneOf:
+        - $ref: "#/components/schemas/AndNode"
+        - $ref: "#/components/schemas/LeafNode"
+      discriminator:
+        propertyName: kind
+        mapping:
+          and: "#/components/schemas/AndNode"
+          leaf: "#/components/schemas/LeafNode"
+    AndNode:
+      type: object
+      required: [kind, children]
+      properties:
+        kind: { type: string, enum: [and] }
+        children:
+          type: array
+          items: { $ref: "#/components/schemas/Node" }
+    LeafNode:
+      type: object
+      required: [kind, name]
+      properties:
+        kind: { type: string, enum: [leaf] }
+        name: { type: string }
+"##;
+    let files = render(spec);
+    let node = &files["src/acme/types/node.py"];
+    // The wrapper is named after the discriminant value, not the target schema.
+    assert!(node.contains("class Node_And("), "value-named wrapper:\n{node}");
+    assert!(
+        node.contains(r#"typing.List["Node"]"#),
+        "the recursive variant field is a same-file forward ref:\n{node}"
+    );
+    assert!(
+        node.contains("update_forward_refs(Node_And)")
+            && !node.contains("update_forward_refs(Node_Leaf)"),
+        "only the recursive wrapper is repaired:\n{node}"
+    );
+    // The referenced schema defers its cross-module import to after the class.
+    let and_node = &files["src/acme/types/and_node.py"];
+    let (before_class, after_class) = and_node
+        .split_once("class AndNode(")
+        .expect("AndNode class body");
+    assert!(
+        !before_class.contains("from .node import Node"),
+        "the cross-module cyclic import is not eager:\n{and_node}"
+    );
+    assert!(
+        after_class.contains("from .node import Node")
+            && after_class.contains("update_forward_refs(AndNode)"),
+        "the cyclic import is deferred and repaired:\n{and_node}"
+    );
+}
+
+/// A property whose schema node is a JSON array (a `required` list misplaced
+/// inside `properties`) degrades to `Optional[Any]` rather than synthesizing a
+/// bogus type and a dangling import (issue #86).
+#[test]
+fn malformed_property_schema_degrades_to_any() {
+    let spec = r##"
+openapi: 3.1.0
+info: { title: Bad API }
+paths:
+  /search:
+    get:
+      operationId: search
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  widgets:
+                    type: array
+                    items: { type: string }
+                  required: [widgets]
+"##;
+    let files = render(spec);
+    let resp = &files["src/acme/search/types/search_response.py"];
+    assert!(
+        resp.contains("required: typing.Optional[typing.Optional[typing.Any]]"),
+        "the array-valued node degrades to the unknown type:\n{resp}"
+    );
+    assert!(
+        !resp.contains("import Required") && !files.contains_key("src/acme/types/widgets.py"),
+        "no bogus type is synthesized or imported:\n{resp}"
+    );
+}
+
+/// A per-operation nested type reaches the package-root `core` package at the
+/// correct relative depth — `...core` from `{pkg}/{tag}/types/…`, not the
+/// depth-wrong `..core` a fixed prefix would emit (issue #85).
+#[test]
+fn nested_operation_type_imports_core_at_correct_depth() {
+    let spec = r##"
+openapi: 3.0.3
+info: { title: Nested API }
+paths:
+  /widgets/update:
+    post:
+      operationId: update_widget
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                details:
+                  type: object
+                  properties:
+                    displayName: { type: string }
+      responses: { "200": { description: ok } }
+"##;
+    let files = render(spec);
+    let nested = &files["src/acme/update/types/update_widget_request_details.py"];
+    assert!(
+        nested.contains("from ...core.serialization import FieldMetadata"),
+        "an aliased field reaches core.serialization three levels up:\n{nested}"
+    );
+    assert!(
+        nested.contains("from ...core.pydantic_utilities import"),
+        "core.pydantic_utilities uses the same depth:\n{nested}"
+    );
+    assert!(
+        !nested.contains("from ..core."),
+        "no import uses the depth-wrong two-dot prefix:\n{nested}"
+    );
+}

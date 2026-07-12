@@ -363,8 +363,10 @@ pub struct Schema {
     /// Format qualifier (`date-time`, `uuid`, `base64`, ...).
     #[serde(default)]
     pub format: Option<String>,
-    /// Object properties, in document order.
-    #[serde(default)]
+    /// Object properties, in document order. Deserialized leniently: a property
+    /// whose value is not a schema object degrades to a malformed unknown node
+    /// rather than aborting the parse (issue #86).
+    #[serde(default, deserialize_with = "de_properties")]
     pub properties: IndexMap<String, Schema>,
     /// Required property names.
     #[serde(default)]
@@ -414,6 +416,14 @@ pub struct Schema {
     /// by `x-crozier-ignore` when both appear (see [`Schema::ignored`]).
     #[serde(rename = "x-fern-ignore", default)]
     pub ignore_fern: Option<bool>,
+    /// Set when this node stood where a schema object was expected but the document
+    /// carried a non-object value there (e.g. a JSON array, from a `required` list
+    /// misplaced inside `properties`). Not a wire field — the `properties`
+    /// deserializer sets it so the node degrades to Fern's unknown type
+    /// (`Optional[Any]`) instead of serde positionally parsing the sequence into a
+    /// bogus `$ref` (issue #86).
+    #[serde(skip)]
+    pub malformed: bool,
 }
 
 impl Schema {
@@ -424,6 +434,93 @@ impl Schema {
     #[must_use]
     pub fn ignored(&self) -> bool {
         self.ignore_crozier.or(self.ignore_fern).unwrap_or(false)
+    }
+}
+
+/// Deserialize an object's `properties` map, tolerating a value that is not a
+/// schema object. serde's derived struct deserialization fills fields positionally
+/// from a JSON/YAML sequence, so a `required: [..]` list misplaced *inside*
+/// `properties` would otherwise be read as a property whose first element becomes a
+/// bogus `$ref` (issue #86). Instead, any non-map value degrades to a malformed
+/// node that renders as Fern's unknown type — matching Fern's tolerance of the
+/// same document.
+fn de_properties<'de, D>(deserializer: D) -> std::result::Result<IndexMap<String, Schema>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let raw: IndexMap<String, MaybeSchema> = IndexMap::deserialize(deserializer)?;
+    Ok(raw.into_iter().map(|(k, v)| (k, v.0)).collect())
+}
+
+/// A property value that is either a real schema object or — when the document put
+/// a non-object there — a [`Schema::malformed`] degrade-to-unknown node.
+struct MaybeSchema(Schema);
+
+impl<'de> Deserialize<'de> for MaybeSchema {
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        deserializer.deserialize_any(MaybeSchemaVisitor)
+    }
+}
+
+struct MaybeSchemaVisitor;
+
+impl<'de> serde::de::Visitor<'de> for MaybeSchemaVisitor {
+    type Value = MaybeSchema;
+
+    fn expecting(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        f.write_str("a schema object or a non-object value to degrade")
+    }
+
+    /// A map is a real schema — delegate to the derived struct deserializer.
+    fn visit_map<A>(self, map: A) -> std::result::Result<Self::Value, A::Error>
+    where
+        A: serde::de::MapAccess<'de>,
+    {
+        Schema::deserialize(serde::de::value::MapAccessDeserializer::new(map)).map(MaybeSchema)
+    }
+
+    /// A sequence where a schema was expected: drain it and degrade.
+    fn visit_seq<A>(self, mut seq: A) -> std::result::Result<Self::Value, A::Error>
+    where
+        A: serde::de::SeqAccess<'de>,
+    {
+        while seq.next_element::<serde::de::IgnoredAny>()?.is_some() {}
+        Ok(MaybeSchema(malformed_schema()))
+    }
+
+    // Any other scalar standing in for a schema degrades the same way.
+    fn visit_str<E>(self, _v: &str) -> std::result::Result<Self::Value, E> {
+        Ok(MaybeSchema(malformed_schema()))
+    }
+    fn visit_bool<E>(self, _v: bool) -> std::result::Result<Self::Value, E> {
+        Ok(MaybeSchema(malformed_schema()))
+    }
+    fn visit_i64<E>(self, _v: i64) -> std::result::Result<Self::Value, E> {
+        Ok(MaybeSchema(malformed_schema()))
+    }
+    fn visit_u64<E>(self, _v: u64) -> std::result::Result<Self::Value, E> {
+        Ok(MaybeSchema(malformed_schema()))
+    }
+    fn visit_f64<E>(self, _v: f64) -> std::result::Result<Self::Value, E> {
+        Ok(MaybeSchema(malformed_schema()))
+    }
+    fn visit_none<E>(self) -> std::result::Result<Self::Value, E> {
+        Ok(MaybeSchema(malformed_schema()))
+    }
+    fn visit_unit<E>(self) -> std::result::Result<Self::Value, E> {
+        Ok(MaybeSchema(malformed_schema()))
+    }
+}
+
+/// A schema node flagged [`Schema::malformed`]: an unknown value in every other
+/// respect, so it renders as Fern's `Optional[Any]`.
+fn malformed_schema() -> Schema {
+    Schema {
+        malformed: true,
+        ..Schema::default()
     }
 }
 

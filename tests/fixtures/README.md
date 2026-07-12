@@ -41,8 +41,10 @@ The issue #77 real-world corpus discovery queue lives in [`CORPUS.md`](CORPUS.md
   not fully generate yet (the roadmap gaps in
   [`../../docs/matching.md`](../../docs/matching.md)): `auth-schemes`,
   `inline-request-response`, `cookie-parameters`, `form-bodies`,
-  `discriminated-unions`, `schema-constraints`, `integer-enums`, and
-  `servers-webhooks`. Each ships only `openapi.yml` so far; the `FEATURE_TARGETS`
+  `discriminated-unions`, `schema-constraints`, `integer-enums`,
+  `servers-webhooks`, and the issue-#84–#86 targets `recursive-types`,
+  `nested-core-imports`, and `malformed-property-schema`. Each ships only
+  `openapi.yml` so far; the `FEATURE_TARGETS`
   corpora in `tests/e2e.rs` carry empty `matched` lists and the smoke test asserts
   crozier consumes each spec without panicking. Produce a target's Fern `expected/`
   tree with `scripts/generate-fern-fixture.sh <fixture>` (needs Docker + the fern
