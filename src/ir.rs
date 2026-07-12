@@ -45,6 +45,9 @@ pub struct Ir {
     /// `environment.py` and threads an `environment`/optional-`base_url` through
     /// the root client.
     pub environment: Option<Environment>,
+    /// How generated pydantic models treat unknown fields (Fern's
+    /// `pydantic_config.extra_fields`); drives every model's `extra` config.
+    pub extra_fields: crate::settings::ExtraFields,
 }
 
 /// The generated server-environment enum (`environment.py`). Fern maps the
@@ -841,6 +844,7 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         auth: auth_model(doc),
         global_headers: global,
         environment,
+        extra_fields: config.extra_fields,
     }
 }
 

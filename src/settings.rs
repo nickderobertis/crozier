@@ -67,6 +67,41 @@ impl GeneratorType {
     }
 }
 
+/// How generated pydantic models treat unknown fields on a response — Fern's
+/// `pydantic_config.extra_fields`, a **Python-generator-specific** knob (there is
+/// no cross-generator meaning, so it lives only on a generator, never on the
+/// shared top-level). Drives the emitted `model_config` / `Config` `extra`:
+///
+/// - [`Allow`](ExtraFields::Allow) (default) keeps unknown fields on the model.
+/// - [`Ignore`](ExtraFields::Ignore) silently drops them — the common choice for
+///   an API client, so a server adding a field over time neither breaks nor
+///   carries untyped data.
+/// - [`Forbid`](ExtraFields::Forbid) rejects them (a validation error).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Deserialize, JsonSchema, clap::ValueEnum)]
+#[serde(rename_all = "lowercase")]
+pub enum ExtraFields {
+    /// Keep unknown fields on the model (pydantic `extra="allow"`).
+    #[default]
+    Allow,
+    /// Drop unknown fields silently (pydantic `extra="ignore"`).
+    Ignore,
+    /// Reject unknown fields (pydantic `extra="forbid"`).
+    Forbid,
+}
+
+impl ExtraFields {
+    /// The canonical lowercase name (`allow`/`ignore`/`forbid`), matching the
+    /// config value, the CLI value, and pydantic's `Extra.<name>` member.
+    #[must_use]
+    pub fn as_str(self) -> &'static str {
+        match self {
+            ExtraFields::Allow => "allow",
+            ExtraFields::Ignore => "ignore",
+            ExtraFields::Forbid => "forbid",
+        }
+    }
+}
+
 /// One generator's settings, as written under `generators.<name>` (or as the
 /// top-level shared defaults, which share this shape minus `type`). Every field
 /// is optional: an absent field falls through to the next layer down. Unknown
@@ -92,6 +127,11 @@ pub struct GeneratorSettings {
     pub audiences: Option<Vec<String>>,
     /// Strict audience subsetting (exclude un-annotated operations).
     pub audience_strict: Option<bool>,
+    /// How generated pydantic models treat unknown fields (Fern's
+    /// `pydantic_config.extra_fields`). Python-generator-specific, so it lives
+    /// here and not among the shared top-level defaults. Defaults to
+    /// [`ExtraFields::Allow`] when unset.
+    pub extra_fields: Option<ExtraFields>,
 }
 
 /// A parsed `crozier.yml`: the shared top-level defaults plus the named
@@ -144,6 +184,8 @@ pub struct CliOverrides {
     pub audiences: Option<Vec<String>>,
     /// `--audience-strict`; `None` when the flag was absent.
     pub audience_strict: Option<bool>,
+    /// `--extra-fields`; `None` when the flag was absent.
+    pub extra_fields: Option<ExtraFields>,
 }
 
 impl CliOverrides {
@@ -158,6 +200,7 @@ impl CliOverrides {
             && self.client_class_name.is_none()
             && self.audiences.is_none()
             && self.audience_strict.is_none()
+            && self.extra_fields.is_none()
     }
 }
 
@@ -222,6 +265,7 @@ fn merge_generator(base: GeneratorSettings, over: GeneratorSettings) -> Generato
         client_class_name: over.client_class_name.or(base.client_class_name),
         audiences: over.audiences.or(base.audiences),
         audience_strict: over.audience_strict.or(base.audience_strict),
+        extra_fields: over.extra_fields.or(base.extra_fields),
     }
 }
 
@@ -234,7 +278,8 @@ fn merge_generator(base: GeneratorSettings, over: GeneratorSettings) -> Generato
 /// Names mirror the config fields and CLI flags: `CROZIER_SPEC`,
 /// `CROZIER_OUTPUT`, `CROZIER_PACKAGE_NAME`, `CROZIER_PROJECT_NAME`,
 /// `CROZIER_CLIENT_CLASS_NAME`, `CROZIER_AUDIENCES` (comma-separated),
-/// `CROZIER_AUDIENCE_STRICT`.
+/// `CROZIER_AUDIENCE_STRICT`, `CROZIER_EXTRA_FIELDS`
+/// (`allow`/`ignore`/`forbid`).
 pub fn env_overrides(get: impl Fn(&str) -> Option<String>) -> Result<GeneratorSettings> {
     let read = |name: &str| get(name).filter(|v| !v.is_empty());
 
@@ -246,6 +291,17 @@ pub fn env_overrides(get: impl Fn(&str) -> Option<String>) -> Result<GeneratorSe
     };
     let audiences = read("CROZIER_AUDIENCES").map(|v| split_list(&v));
 
+    let extra_fields = match read("CROZIER_EXTRA_FIELDS") {
+        None => None,
+        Some(v) => Some(
+            parse_extra_fields(&v).ok_or_else(|| Error::InvalidEnvOverride {
+                message: format!(
+                    "`CROZIER_EXTRA_FIELDS` must be `allow`, `ignore`, or `forbid`, got `{v}`"
+                ),
+            })?,
+        ),
+    };
+
     Ok(GeneratorSettings {
         generator_type: None,
         spec: read("CROZIER_SPEC").map(PathBuf::from),
@@ -255,7 +311,18 @@ pub fn env_overrides(get: impl Fn(&str) -> Option<String>) -> Result<GeneratorSe
         client_class_name: read("CROZIER_CLIENT_CLASS_NAME"),
         audiences,
         audience_strict,
+        extra_fields,
     })
+}
+
+/// Parse a case-insensitive `extra-fields` value (`allow`/`ignore`/`forbid`).
+fn parse_extra_fields(v: &str) -> Option<ExtraFields> {
+    match v.to_ascii_lowercase().as_str() {
+        "allow" => Some(ExtraFields::Allow),
+        "ignore" => Some(ExtraFields::Ignore),
+        "forbid" => Some(ExtraFields::Forbid),
+        _ => None,
+    }
 }
 
 /// Parse a permissive boolean (`true`/`false`/`1`/`0`, case-insensitive).
@@ -373,6 +440,13 @@ pub fn resolve(
         .or(per.and_then(|p| p.audience_strict))
         .or(config.audience_strict)
         .unwrap_or(false);
+    // `extra-fields` is Python-generator-specific: no shared top-level layer, so
+    // the chain is CLI > env > per-generator > the built-in `allow` default.
+    let extra_fields = cli
+        .extra_fields
+        .or(env.extra_fields)
+        .or(per.and_then(|p| p.extra_fields))
+        .unwrap_or_default();
 
     Ok(GenerateArgs {
         spec,
@@ -382,6 +456,7 @@ pub fn resolve(
         client_class_name,
         audiences,
         audience_strict,
+        extra_fields,
     })
 }
 
@@ -549,6 +624,16 @@ pub fn explain(
             env.audience_strict.map(|b| b.to_string()),
             per.and_then(|p| p.audience_strict).map(|b| b.to_string()),
             config.audience_strict.map(|b| b.to_string()),
+        ),
+        // Python-generator-specific: no shared top-level layer, so the shared
+        // column is always empty and the built-in default is `allow`.
+        field(
+            "extra-fields",
+            cli.extra_fields.map(|e| e.as_str().to_string()),
+            env.extra_fields.map(|e| e.as_str().to_string()),
+            per.and_then(|p| p.extra_fields)
+                .map(|e| e.as_str().to_string()),
+            None,
         ),
     ]
 }
@@ -734,6 +819,24 @@ mod tests {
     }
 
     #[test]
+    fn env_extra_fields_parses_case_insensitively() {
+        for (raw, expected) in [
+            ("allow", ExtraFields::Allow),
+            ("IGNORE", ExtraFields::Ignore),
+            ("Forbid", ExtraFields::Forbid),
+        ] {
+            let e = env_overrides(env_get(&[("CROZIER_EXTRA_FIELDS", raw)])).unwrap();
+            assert_eq!(e.extra_fields, Some(expected), "{raw}");
+        }
+    }
+
+    #[test]
+    fn env_bad_extra_fields_is_rejected() {
+        let err = env_overrides(env_get(&[("CROZIER_EXTRA_FIELDS", "keep")])).unwrap_err();
+        assert!(err.to_string().contains("CROZIER_EXTRA_FIELDS"), "{err}");
+    }
+
+    #[test]
     fn run_set_named_config_generator() {
         let c = parsed("generators:\n  admin:\n    spec: ./a.yml");
         assert_eq!(run_set(&c, Some("admin")).unwrap(), ["admin"]);
@@ -783,6 +886,70 @@ mod tests {
         assert_eq!(args.output, PathBuf::from("./cli-out"));
         // package-name: env beats per-gen and top.
         assert_eq!(args.package_name.as_deref(), Some("env"));
+    }
+
+    #[test]
+    fn extra_fields_is_generator_specific() {
+        // It parses under a generator, layers CLI > env > per-generator, and
+        // defaults to `allow` — with no shared top-level layer.
+        let config = parsed(
+            "generators:\n  python:\n    spec: ./a.yml\n    output: ./o\n    extra-fields: ignore",
+        );
+        let args = resolve(
+            "python",
+            &config,
+            &GeneratorSettings::default(),
+            &CliOverrides::default(),
+        )
+        .unwrap();
+        assert_eq!(args.extra_fields, ExtraFields::Ignore);
+
+        // Env beats the per-generator value; CLI beats env.
+        let env = env_overrides(env_get(&[("CROZIER_EXTRA_FIELDS", "forbid")])).unwrap();
+        let args = resolve("python", &config, &env, &CliOverrides::default()).unwrap();
+        assert_eq!(args.extra_fields, ExtraFields::Forbid);
+        let cli = CliOverrides {
+            extra_fields: Some(ExtraFields::Allow),
+            ..CliOverrides::default()
+        };
+        let args = resolve("python", &config, &env, &cli).unwrap();
+        assert_eq!(args.extra_fields, ExtraFields::Allow);
+
+        // Unset everywhere → the built-in `allow` default.
+        let bare = parsed("generators:\n  python:\n    spec: ./a.yml\n    output: ./o");
+        let args = resolve(
+            "python",
+            &bare,
+            &GeneratorSettings::default(),
+            &CliOverrides::default(),
+        )
+        .unwrap();
+        assert_eq!(args.extra_fields, ExtraFields::Allow);
+    }
+
+    #[test]
+    fn extra_fields_is_rejected_at_the_shared_top_level() {
+        // Being Python-generator-specific, it is not a shared top-level field, so a
+        // top-level `extra-fields` fails loudly (deny_unknown_fields) rather than
+        // being silently applied to every generator.
+        let err = parse("extra-fields: ignore").unwrap_err();
+        assert!(err.contains("extra-fields"), "{err}");
+    }
+
+    #[test]
+    fn explain_attributes_extra_fields_and_omits_shared_layer() {
+        let config = parsed(
+            "generators:\n  python:\n    spec: ./a.yml\n    output: ./o\n    extra-fields: forbid",
+        );
+        let env = env_overrides(env_get(&[("CROZIER_EXTRA_FIELDS", "ignore")])).unwrap();
+        let report = explain("python", &config, &env, &CliOverrides::default());
+        let ef = report
+            .iter()
+            .find(|f| f.field == "extra-fields")
+            .expect("extra-fields present");
+        // Env beats the per-generator value; there is no shared layer to consult.
+        assert_eq!(ef.value.as_deref(), Some("ignore"));
+        assert_eq!(ef.source, Source::Env);
     }
 
     #[test]

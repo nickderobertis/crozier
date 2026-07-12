@@ -18,10 +18,10 @@ scripted; the two `expected/`-producing paths differ by source:
   drop in the real spec, then `scripts/generate-fern-fixture.sh <name>` (Docker +
   the `fern` CLI) generates and installs `expected/`. Two env vars drive Fern's
   optional generator config for the spec/flag a fixture exercises:
-  `FERN_AUDIENCES=public[,internal]` (audience filtering) and
-  `CLIENT_CLASS_NAME=<Name>` (the root client class name, issue #61) — match them
-  to the crozier flags the corpus is driven with (`--audience`,
-  `--client-class-name`).
+  `FERN_AUDIENCES=public[,internal]` (audience filtering), `CLIENT_CLASS_NAME=<Name>`
+  (the root client class name, issue #61), and `EXTRA_FIELDS=allow|ignore|forbid`
+  (pydantic extra-fields behavior, issue #63) — match them to the crozier flags the
+  corpus is driven with (`--audience`, `--client-class-name`, `--extra-fields`).
 
 Then wire a `Corpus { api, package_name, project_name, matched: &[] }` into
 `tests/e2e.rs` (`FEATURE_TARGETS`, or a `const` for a headline corpus). Start

@@ -20,6 +20,7 @@ use crate::ir::{
     TagTypeDecl, TypeDecl, TypeRef,
 };
 use crate::naming;
+use crate::settings::ExtraFields;
 use crate::wrap::Doc;
 
 /// The header comment crozier writes atop every generated file. It differs from
@@ -280,6 +281,12 @@ struct ObjectView {
     /// The class docstring's raw text (the template applies the `docstring` filter).
     docstring: Option<String>,
     fields: Vec<FieldView>,
+    /// The `pydantic.ConfigDict(...)` argument list for the v2 `model_config`
+    /// (`extra="allow", frozen=True`, or just `frozen=True` for `ignore`).
+    config_dict_args: String,
+    /// The v1 `Config`'s `pydantic.Extra.<extra_kind>` member (`allow`/`ignore`/
+    /// `forbid`).
+    extra_kind: &'static str,
 }
 
 /// One field as the object template consumes it: the flat declaration line
@@ -426,7 +433,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
 
     // One file per generated type.
     for decl in &ir.types {
-        let file = render_type_decl(&env, decl, RefLoc::RootTypes, &tag_map)?;
+        let file = render_type_decl(&env, decl, RefLoc::RootTypes, &tag_map, ir.extra_fields)?;
         files.push(GeneratedFile {
             path: PathBuf::from(format!("src/{pkg}/types/{}.py", decl.module())),
             contents: file,
@@ -449,6 +456,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 decl,
                 RefLoc::TagTypes((*module).to_string()),
                 &tag_map,
+                ir.extra_fields,
             )?;
             files.push(GeneratedFile {
                 path: PathBuf::from(format!("src/{pkg}/{module}/types/{}.py", decl.module())),
@@ -1635,6 +1643,25 @@ fn render_docstring(doc: &str, indent: usize) -> String {
 struct ClassBodyView {
     docstring: Option<String>,
     fields: Vec<FieldView>,
+    /// The `pydantic.ConfigDict(...)` argument list for the v2 `model_config`.
+    config_dict_args: String,
+    /// The v1 `Config`'s `pydantic.Extra.<extra_kind>` member.
+    extra_kind: &'static str,
+}
+
+/// The two `extra`-fields fragments a pydantic model body needs: the v2
+/// `pydantic.ConfigDict(...)` argument list, and the v1 `pydantic.Extra.<name>`
+/// member. Fern **omits** the `extra=` kwarg under pydantic v2 for `ignore` (v2's
+/// own default, so `pydantic.ConfigDict(frozen=True)`), while the v1 `Config`
+/// always spells the member out.
+fn extra_config(extra: ExtraFields) -> (String, &'static str) {
+    let args = match extra {
+        ExtraFields::Ignore => "frozen=True".to_string(),
+        ExtraFields::Allow | ExtraFields::Forbid => {
+            format!("extra=\"{}\", frozen=True", extra.as_str())
+        }
+    };
+    (args, extra.as_str())
 }
 
 /// The flat field declaration line, `name: annotation = default`. `ruff format`
@@ -1650,8 +1677,15 @@ fn render_class_body(
     env: &Environment<'static>,
     docstring: Option<String>,
     fields: Vec<FieldView>,
+    extra: ExtraFields,
 ) -> Result<String> {
-    let view = ClassBodyView { docstring, fields };
+    let (config_dict_args, extra_kind) = extra_config(extra);
+    let view = ClassBodyView {
+        docstring,
+        fields,
+        config_dict_args,
+        extra_kind,
+    };
     render(
         env,
         "class_body.py",
@@ -1668,6 +1702,7 @@ fn render_type_decl(
     decl: &TypeDecl,
     loc: RefLoc,
     tag_types: &BTreeMap<String, String>,
+    extra: ExtraFields,
 ) -> Result<String> {
     // A tag type sits one package deeper, so `core` is reached with an extra dot.
     let core = if matches!(loc, RefLoc::TagTypes(_)) {
@@ -1703,6 +1738,7 @@ fn render_type_decl(
                     }
                 })
                 .collect();
+            let (config_dict_args, extra_kind) = extra_config(extra);
             let view = ObjectView {
                 header: HEADER,
                 imports: imports.render(),
@@ -1710,6 +1746,8 @@ fn render_type_decl(
                 bases,
                 docstring: obj.docstring.clone(),
                 fields,
+                config_dict_args,
+                extra_kind,
             };
             render(
                 env,
@@ -1734,7 +1772,7 @@ fn render_type_decl(
             )
         }
         TypeDecl::Enum(e) => render_enum(env, e),
-        TypeDecl::DiscriminatedUnion(union) => render_discriminated_union(env, union),
+        TypeDecl::DiscriminatedUnion(union) => render_discriminated_union(env, union, extra),
     }
 }
 
@@ -1788,6 +1826,7 @@ fn render_enum(env: &Environment<'static>, e: &crate::ir::EnumType) -> Result<St
 fn render_discriminated_union(
     env: &Environment<'static>,
     union: &crate::ir::DiscriminatedUnion,
+    extra: ExtraFields,
 ) -> Result<String> {
     let mut imports = Imports::default();
     imports.add_plain("typing");
@@ -1817,7 +1856,7 @@ fn render_discriminated_union(
                 docstring: rf.docstring,
             })
             .collect();
-        let body = render_class_body(env, None, fields)?;
+        let body = render_class_body(env, None, fields, extra)?;
         classes.push(format!(
             "class {}(UniversalBaseModel):\n{}",
             member.class_name,
@@ -3880,7 +3919,13 @@ mod tests {
     /// feedback loop for layout/filter changes (no binary, no `ruff`). Returns the
     /// body exactly as emitted, before the file-level `ruff format` pass.
     fn class_body(docstring: Option<&str>, fields: Vec<FieldView>) -> String {
-        render_class_body(&environment(), docstring.map(str::to_string), fields).expect("renders")
+        render_class_body(
+            &environment(),
+            docstring.map(str::to_string),
+            fields,
+            crate::settings::ExtraFields::Allow,
+        )
+        .expect("renders")
     }
 
     /// Render any registered template with a serializable view — the direct
@@ -3954,6 +3999,42 @@ mod tests {
     fn class_body_renders_class_docstring_then_a_blank_line() {
         let body = class_body(Some("A model."), vec![field("a: str", None)]);
         assert!(body.starts_with("    \"\"\"\n    A model.\n    \"\"\"\n\n    a: str\n"));
+    }
+
+    /// The `extra-fields` config drives both pydantic-version config blocks. Fern
+    /// omits the v2 `extra=` kwarg for `ignore` (v2's own default) but always spells
+    /// out the v1 `pydantic.Extra.<name>` member — verified against real Fern output
+    /// in `tests/fixtures/pydantic-extra-fields`.
+    #[test]
+    fn class_body_extra_fields_drives_both_config_blocks() {
+        let render = |extra| {
+            render_class_body(&environment(), None, vec![field("a: str", None)], extra)
+                .expect("renders")
+        };
+
+        let allow = render(crate::settings::ExtraFields::Allow);
+        assert!(
+            allow.contains("pydantic.ConfigDict(extra=\"allow\", frozen=True)")
+                && allow.contains("extra = pydantic.Extra.allow"),
+            "{allow}"
+        );
+
+        // `ignore` drops the v2 `extra=` kwarg (v2 defaults to ignore) but keeps
+        // the explicit v1 member.
+        let ignore = render(crate::settings::ExtraFields::Ignore);
+        assert!(
+            ignore.contains("pydantic.ConfigDict(frozen=True)")
+                && !ignore.contains("extra=\"ignore\"")
+                && ignore.contains("extra = pydantic.Extra.ignore"),
+            "{ignore}"
+        );
+
+        let forbid = render(crate::settings::ExtraFields::Forbid);
+        assert!(
+            forbid.contains("pydantic.ConfigDict(extra=\"forbid\", frozen=True)")
+                && forbid.contains("extra = pydantic.Extra.forbid"),
+            "{forbid}"
+        );
     }
 
     #[test]

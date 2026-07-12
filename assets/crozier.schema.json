@@ -1,5 +1,25 @@
 {
   "$defs": {
+    "ExtraFields": {
+      "description": "How generated pydantic models treat unknown fields on a response — Fern's\n`pydantic_config.extra_fields`, a **Python-generator-specific** knob (there is\nno cross-generator meaning, so it lives only on a generator, never on the\nshared top-level). Drives the emitted `model_config` / `Config` `extra`:\n\n- [`Allow`](ExtraFields::Allow) (default) keeps unknown fields on the model.\n- [`Ignore`](ExtraFields::Ignore) silently drops them — the common choice for\n  an API client, so a server adding a field over time neither breaks nor\n  carries untyped data.\n- [`Forbid`](ExtraFields::Forbid) rejects them (a validation error).",
+      "oneOf": [
+        {
+          "const": "allow",
+          "description": "Keep unknown fields on the model (pydantic `extra=\"allow\"`).",
+          "type": "string"
+        },
+        {
+          "const": "ignore",
+          "description": "Drop unknown fields silently (pydantic `extra=\"ignore\"`).",
+          "type": "string"
+        },
+        {
+          "const": "forbid",
+          "description": "Reject unknown fields (pydantic `extra=\"forbid\"`).",
+          "type": "string"
+        }
+      ]
+    },
     "GeneratorSettings": {
       "additionalProperties": false,
       "description": "One generator's settings, as written under `generators.<name>` (or as the\ntop-level shared defaults, which share this shape minus `type`). Every field\nis optional: an absent field falls through to the next layer down. Unknown\nfields are rejected so a typo fails loudly instead of being ignored.",
@@ -27,6 +47,17 @@
             "string",
             "null"
           ]
+        },
+        "extra-fields": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExtraFields"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "How generated pydantic models treat unknown fields (Fern's\n`pydantic_config.extra_fields`). Python-generator-specific, so it lives\nhere and not among the shared top-level defaults. Defaults to\n[`ExtraFields::Allow`] when unset."
         },
         "output": {
           "description": "Directory to write the generated SDK into.",

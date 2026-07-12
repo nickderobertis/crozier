@@ -710,6 +710,28 @@ adds the `client_class_name` line to the generator config); the value is recorde
 in `.fern/metadata.json`'s `generatorConfig`, which the e2e already normalizes out
 (`normalize_metadata`), so the provenance difference does not gate.
 
+## Pydantic extra-fields behavior (issue #63)
+
+Generated pydantic models always set `extra="allow"` — an unknown field on a
+response is kept on the model. `--extra-fields <allow|ignore|forbid>` (Fern's
+`pydantic_config.extra_fields`) now drives that, threaded from the CLI/env/config
+layer through [`config::GenerateConfig`] and [`ir::Ir`] into every model body
+([`emit::extra_config`]). It is a **Python-generator-specific** setting: it lives
+only under a generator (or the `--extra-fields` flag / `CROZIER_EXTRA_FIELDS` env),
+never among the shared top-level config defaults.
+
+The one subtlety — and the reason a real Fern fixture pins it — is an asymmetry
+between the two pydantic-version config blocks Fern emits. Under **pydantic v2**,
+`ignore` drops the `extra=` kwarg entirely (`pydantic.ConfigDict(frozen=True)`,
+since v2's own default is `ignore`), while `allow`/`forbid` spell it out
+(`extra="allow"`/`extra="forbid"`). The **v1** `Config` always writes the explicit
+member (`extra = pydantic.Extra.<name>`). `pydantic-extra-fields` — the two-endpoint
+`widgets` API generated with `extra_fields: ignore` — byte-matches Fern's whole
+33-file tree, so `Widget`'s model reproduces that asymmetry exactly. Regenerate the
+golden tree by passing `EXTRA_FIELDS=ignore` to `scripts/generate-fern-fixture.sh`;
+like the enum/client-class-name config, Fern records it in `.fern/metadata.json`'s
+`generatorConfig`, which the e2e normalizes out (`normalize_metadata`).
+
 ## Coverage note
 
 The gate measures coverage with `cargo llvm-cov --fail-under-lines 95`, which
