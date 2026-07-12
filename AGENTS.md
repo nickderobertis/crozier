@@ -65,6 +65,11 @@ Use the `just` recipes; do not hand-roll equivalents.
 - `just lint-llm` / `just lint-llm-diff` — LLM-judge tier (llmlint), separate from
   `check` and non-deterministic; config in `llmlint.yml`. `just setup-llmlint`
   installs it.
+- `just screenshots` / `just screenshots-gif` / `just screenshots-bless` — the
+  README's CLI captures, gated by screencomp (separate from `check`; drift fails
+  the `visual-docs` PR check). Re-bless + commit `shots/baseline/` +
+  `docs/screenshots/` after an intended output change. See
+  [`screenshots/AGENTS.md`](screenshots/AGENTS.md).
 
 ## Commits, releases, and merging
 

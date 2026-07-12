@@ -1,0 +1,46 @@
+openapi: 3.0.0
+info:
+  title: Petstore API
+  version: 1.0.0
+paths:
+  /pets:
+    get:
+      operationId: listPets
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/PetStatus"
+      responses:
+        "200":
+          description: A list of pets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Pet"
+components:
+  schemas:
+    PetStatus:
+      type: string
+      enum: [available, pending, sold]
+    Owner:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+    Pet:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        status:
+          $ref: "#/components/schemas/PetStatus"
+        owner:
+          $ref: "#/components/schemas/Owner"

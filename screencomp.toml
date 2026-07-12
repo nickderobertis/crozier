@@ -1,0 +1,47 @@
+# screencomp configuration — the visual-regression gate for crozier's CLI output.
+# See https://github.com/nickderobertis/screencomp and screenshots/AGENTS.md.
+
+[capture]
+# Captures run on one arch lane. crozier's shots are deterministic SVGs (a
+# vendored, pinned font embedded into each file), so the bytes are identical on
+# every arch and runner; one lane is enough and its committed baseline is
+# shots/baseline/x86_64.json.
+arches = ["x86_64"]
+
+[comment]
+title = "CLI screenshots"
+marker = "screencomp"        # [A-Za-z0-9_-]; one sticky comment per marker
+embed_limit = 10             # embed images inline when <= N shots differ (0 disables)
+
+# One card per facet of the CLI, all scripted in scripts/screenshots.sh. The
+# `help` card carries a `command` toggle the gallery flips between the top-level
+# `crozier --help` (`main`) and `crozier generate --help` (`generate`). The
+# `generate`, `model`, and `error` cards have no toggles.
+[[toggle]]
+key = "command"
+label = "Command"
+values = ["main", "generate"]
+
+[guard]
+# Local pre-push guard (.githooks/pre-push): re-capture only when something that
+# can change the rendered CLI output changes — the arg/help/error surface, the
+# generator + its templates and vendored assets (the `generate` tree, the `model`
+# file, and the GIF are real generated output), or the capture machinery itself.
+paths = [
+  "src/cli.rs",
+  "src/error.rs",
+  "src/openapi.rs",
+  "src/normalize.rs",
+  "src/ir.rs",
+  "src/naming.rs",
+  "src/emit.rs",
+  "src/wrap.rs",
+  "src/pyfmt.rs",
+  "src/config.rs",
+  "templates/**",
+  "assets/**",
+  "scripts/screenshots.sh",
+  "scripts/demo-gif.py",
+  "screenshots/**",
+]
+gallery = "shots/review"

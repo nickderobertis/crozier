@@ -1,0 +1,60 @@
+# Terminal screenshots via screencomp's reusable workflow. The capture step is
+# ours (scripts/screenshots.sh); screencomp owns the classify gate, the HTML
+# gallery, the GitHub Pages deploy, and the sticky before/after PR comment.
+#
+# Which CPU arch(es) CI captures is read from [capture].arches in screencomp.toml
+# — one lane per arch. crozier's shots are deterministic SVGs (a vendored, pinned
+# font), so a single x86_64 lane covers every machine; no pinned capture container
+# is needed for byte-stability. This gate is SEPARATE from `just check` (the Rust
+# gate) and from `llmlint` — a drift in the CLI's rendered output fails here.
+name: Visual docs
+
+on:
+  pull_request:
+    # `closed` lets screencomp delete this PR's gh-pages preview once it closes,
+    # so stale /pr-<n>/ galleries do not accumulate on the branch.
+    types: [opened, synchronize, reopened, closed]
+  push:
+    branches: [main]
+  schedule:
+    # Monthly: prune the gh-pages gallery history so committed images do not grow
+    # the branch without bound (keeps the 20 most recent versions; see below).
+    - cron: "27 4 1 * *"
+
+permissions:
+  contents: write       # push the gh-pages gallery
+  pull-requests: write  # post the diff comment
+
+jobs:
+  visual-docs:
+    uses: nickderobertis/screencomp/.github/workflows/visual-docs-reusable.yml@v0.4.2
+    with:
+      # Strict gate (the safe default): CI FAILS if the capture drifts from the
+      # committed baseline (shots/baseline/<arch>.json). Regenerate it locally
+      # with `just screenshots-bless` (the pre-push guard prompts you) and commit.
+      fail-on-drift: true
+      # Keep the gh-pages gallery bounded: delete this PR's preview on close and
+      # prune history on the monthly schedule above.
+      gh-pages-maintenance: true
+      gh-pages-history-versions: 20
+      # The capture-command runs INSIDE this container (the reusable workflow's
+      # default is a Playwright image for web apps). Ours needs Rust to build the
+      # binary, so pin the image to crozier's toolchain (rust-toolchain.toml:
+      # 1.96.0); it carries curl/git/tar via buildpack-deps. RUSTUP_TOOLCHAIN
+      # bypasses rust-toolchain.toml so we build with the image's toolchain
+      # instead of syncing its extra components/targets (the SVG bytes don't
+      # depend on the compiler anyway). The reusable workflow exports $SHOTS_OUT
+      # as shots/current/<arch>; the script writes captures.json + the SVGs.
+      container: rust:1.96.0-bookworm
+      capture-command: |
+        export RUSTUP_TOOLCHAIN=1.96.0
+        # freeze — renders the deterministic SVGs (prebuilt, no Go needed).
+        curl -fsSL -o /tmp/freeze.tgz https://github.com/charmbracelet/freeze/releases/download/v0.2.2/freeze_0.2.2_Linux_x86_64.tar.gz
+        tar -xzf /tmp/freeze.tgz -C /tmp
+        install "$(find /tmp -type f -name freeze | head -1)" /usr/local/bin/freeze
+        # ruff — crozier defers Python wrapping to it (prebuilt, pinned to .ruff-version).
+        ruff_ver="$(cat .ruff-version)"
+        curl -fsSL -o /tmp/ruff.tgz "https://github.com/astral-sh/ruff/releases/download/${ruff_ver}/ruff-x86_64-unknown-linux-gnu.tar.gz"
+        tar -xzf /tmp/ruff.tgz -C /tmp
+        install "$(find /tmp -type f -name ruff | head -1)" /usr/local/bin/ruff
+        bash scripts/screenshots.sh
