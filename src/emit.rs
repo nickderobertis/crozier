@@ -1372,14 +1372,18 @@ fn reference_entry(
 
     // The parameter rows, in signature order, then `request_options`.
     let mut params: Vec<ParamRow> = Vec::new();
-    for (name, ty) in &mp.path {
+    for (name, ty, desc) in &mp.path {
+        let suffix = match desc {
+            Some(d) => format!(" — {d}"),
+            None => " ".to_string(),
+        };
         params.push(ParamRow {
             name: name.clone(),
             annot: ty.clone(),
-            suffix: " ".to_string(),
+            suffix,
         });
     }
-    for dp in mp.query.iter().chain(&mp.header).chain(&mp.body) {
+    for dp in ordered_keyword_params(&mp.query, &mp.header, &mp.body) {
         let suffix = match &dp.description {
             Some(d) => format!(" — {d}"),
             None => " ".to_string(),
@@ -2243,8 +2247,8 @@ fn url_arg(ep: &Endpoint) -> String {
 struct MethodParams {
     /// The response Python type (`None` when the endpoint returns no content).
     inner: String,
-    /// Positional path parameters: `(py_name, annotation)`.
-    path: Vec<(String, String)>,
+    /// Positional path parameters: `(py_name, annotation, description)`.
+    path: Vec<(String, String, Option<String>)>,
     /// Keyword-only query parameters.
     query: Vec<DocParam>,
     /// Keyword-only header parameters.
@@ -2261,10 +2265,16 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
         .as_ref()
         .map_or_else(|| "None".to_string(), |t| raw_type_str(t, imports));
 
-    let path: Vec<(String, String)> = ep
+    let path: Vec<(String, String, Option<String>)> = ep
         .path_params
         .iter()
-        .map(|pp| (pp.py_name.clone(), raw_type_str(&pp.type_ref, imports)))
+        .map(|pp| {
+            (
+                pp.py_name.clone(),
+                raw_type_str(&pp.type_ref, imports),
+                pp.docstring.clone(),
+            )
+        })
         .collect();
 
     // Query and header parameters become keyword-only arguments; each carries an
@@ -2432,13 +2442,15 @@ fn doc_arg(dp: &DocParam) -> Doc {
 /// type.
 fn signature(ep: &Endpoint, mp: &MethodParams, return_type: &str, is_async: bool) -> String {
     let mut args: Vec<Doc> = vec![Doc::atom("self")];
-    for (name, ty) in &mp.path {
+    for (name, ty, _) in &mp.path {
         args.push(Doc::atom(format!("{name}: {ty}")));
     }
     args.push(Doc::atom("*"));
-    args.extend(mp.query.iter().map(doc_arg));
-    args.extend(mp.header.iter().map(doc_arg));
-    args.extend(mp.body.iter().map(doc_arg));
+    args.extend(
+        ordered_keyword_params(&mp.query, &mp.header, &mp.body)
+            .into_iter()
+            .map(doc_arg),
+    );
     args.push(Doc::atom(
         "request_options: typing.Optional[RequestOptions] = None",
     ));
@@ -2487,12 +2499,30 @@ struct DocParam {
     description: Option<String>,
 }
 
+/// The endpoint's keyword parameters in Fern's declaration order: every *required*
+/// argument (no default) first, then the optional ones, each group preserving the
+/// query → header → body grouping. Fern lists a required argument (e.g. a mandatory
+/// body field) ahead of an optional query parameter, rather than grouping strictly
+/// by kind.
+fn ordered_keyword_params<'a>(
+    query: &'a [DocParam],
+    header: &'a [DocParam],
+    body: &'a [DocParam],
+) -> Vec<&'a DocParam> {
+    let (required, optional): (Vec<&DocParam>, Vec<&DocParam>) = query
+        .iter()
+        .chain(header)
+        .chain(body)
+        .partition(|dp| dp.default.is_none());
+    required.into_iter().chain(optional).collect()
+}
+
 /// The method docstring (indent 8): an optional summary line, a `Parameters`
 /// section (path params, query params, the request body, then `request_options`),
 /// and a `Returns` section.
 fn raw_docstring(
     ep: &Endpoint,
-    param_types: &[(String, String)],
+    param_types: &[(String, String, Option<String>)],
     query_params: &[DocParam],
     header_params: &[DocParam],
     body_params: &[DocParam],
@@ -2508,8 +2538,11 @@ fn raw_docstring(
     }
     lines.push("        Parameters".to_string());
     lines.push("        ----------".to_string());
-    for (name, ty) in param_types {
+    for (name, ty, desc) in param_types {
         lines.push(format!("        {name} : {ty}"));
+        if let Some(desc) = desc {
+            lines.push(format!("            {desc}"));
+        }
         lines.push(String::new());
     }
     // Query params, header params, then the request body/fields, each: a
@@ -2522,9 +2555,9 @@ fn raw_docstring(
         }
         lines.push(String::new());
     };
-    query_params.iter().for_each(&mut push_param);
-    header_params.iter().for_each(&mut push_param);
-    body_params.iter().for_each(&mut push_param);
+    for dp in ordered_keyword_params(query_params, header_params, body_params) {
+        push_param(dp);
+    }
     lines.push("        request_options : typing.Optional[RequestOptions]".to_string());
     lines.push("            Request-specific configuration.".to_string());
     lines.push(String::new());
@@ -2634,14 +2667,37 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
 /// buffered `.request(...)` path ([`raw_body`]) and the streaming `.stream(...)`
 /// path ([`raw_stream_body`]) so both serialize a body identically.
 fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mut Imports) {
-    // Query parameters map wire name to the Python argument in a `params` dict.
+    // Query parameters map wire name to the Python argument in a `params` dict. An
+    // object/union-typed parameter serializes through the convert wrapper (Fern
+    // respects its field aliases), exactly as an inlined body field does.
     if !ep.query_params.is_empty() {
         lines.push("            params={".to_string());
         for qp in &ep.query_params {
-            lines.push(format!(
-                "                \"{}\": {},",
-                qp.wire_name, qp.py_name
-            ));
+            if qp.convert {
+                imports.add_from(
+                    "..core.serialization",
+                    "convert_and_respect_annotation_metadata",
+                );
+                let annotation = raw_type_str_ctx(&qp.type_ref, imports, true);
+                let call = Doc::group(
+                    format!(
+                        "                \"{}\": convert_and_respect_annotation_metadata(",
+                        qp.wire_name
+                    ),
+                    vec![
+                        Doc::atom(format!("object_={}", qp.py_name)),
+                        Doc::atom(format!("annotation={annotation}")),
+                        Doc::atom("direction=\"write\""),
+                    ],
+                    ")",
+                );
+                lines.push(format!("{},", call.flat()));
+            } else {
+                lines.push(format!(
+                    "                \"{}\": {},",
+                    qp.wire_name, qp.py_name
+                ));
+            }
         }
         lines.push("            },".to_string());
     }
@@ -2886,8 +2942,11 @@ fn raw_stream_docstring(ep: &Endpoint, mp: &MethodParams, return_type: &str) -> 
     let mut lines: Vec<String> = vec!["        \"\"\"".to_string()];
     lines.push("        Parameters".to_string());
     lines.push("        ----------".to_string());
-    for (name, ty) in &mp.path {
+    for (name, ty, desc) in &mp.path {
         lines.push(format!("        {name} : {ty}"));
+        if let Some(desc) = desc {
+            lines.push(format!("            {desc}"));
+        }
         lines.push(String::new());
     }
     let mut push_param = |dp: &DocParam| {
@@ -2897,9 +2956,9 @@ fn raw_stream_docstring(ep: &Endpoint, mp: &MethodParams, return_type: &str) -> 
         }
         lines.push(String::new());
     };
-    mp.query.iter().for_each(&mut push_param);
-    mp.header.iter().for_each(&mut push_param);
-    mp.body.iter().for_each(&mut push_param);
+    ordered_keyword_params(&mp.query, &mp.header, &mp.body)
+        .into_iter()
+        .for_each(&mut push_param);
     lines.push("        request_options : typing.Optional[RequestOptions]".to_string());
     lines.push("            Request-specific configuration.".to_string());
     lines.push(String::new());
@@ -3296,10 +3355,10 @@ fn client_method(cx: &ClientCtx, ep: &Endpoint, is_async: bool, imports: &mut Im
     // `request_options`, laid out with ruff's right-hand-split (line length 120).
     let await_ = if is_async { "await " } else { "" };
     let mut call_args: Vec<Doc> = Vec::new();
-    for (name, _) in &mp.path {
+    for (name, _, _) in &mp.path {
         call_args.push(Doc::atom(name.clone()));
     }
-    for dp in mp.query.iter().chain(&mp.header).chain(&mp.body) {
+    for dp in ordered_keyword_params(&mp.query, &mp.header, &mp.body) {
         call_args.push(Doc::atom(format!("{}={}", dp.name, dp.name)));
     }
     call_args.push(Doc::atom("request_options=request_options"));
@@ -3333,10 +3392,10 @@ fn client_stream_method(
     // Delegation call arguments, in signature order (path positionally, the rest as
     // keywords, then `request_options`) — identical to the buffered high-level method.
     let mut call_args: Vec<Doc> = Vec::new();
-    for (name, _) in &mp.path {
+    for (name, _, _) in &mp.path {
         call_args.push(Doc::atom(name.clone()));
     }
-    for dp in mp.query.iter().chain(&mp.header).chain(&mp.body) {
+    for dp in ordered_keyword_params(&mp.query, &mp.header, &mp.body) {
         call_args.push(Doc::atom(format!("{}={}", dp.name, dp.name)));
     }
     call_args.push(Doc::atom("request_options=request_options"));
@@ -3369,8 +3428,11 @@ fn client_stream_docstring(
     let mut lines: Vec<String> = vec!["        \"\"\"".to_string()];
     lines.push("        Parameters".to_string());
     lines.push("        ----------".to_string());
-    for (name, ty) in &mp.path {
+    for (name, ty, desc) in &mp.path {
         lines.push(format!("        {name} : {ty}"));
+        if let Some(desc) = desc {
+            lines.push(format!("            {desc}"));
+        }
         lines.push(String::new());
     }
     let mut push_param = |dp: &DocParam| {
@@ -3380,9 +3442,9 @@ fn client_stream_docstring(
         }
         lines.push(String::new());
     };
-    mp.query.iter().for_each(&mut push_param);
-    mp.header.iter().for_each(&mut push_param);
-    mp.body.iter().for_each(&mut push_param);
+    ordered_keyword_params(&mp.query, &mp.header, &mp.body)
+        .into_iter()
+        .for_each(&mut push_param);
     lines.push("        request_options : typing.Optional[RequestOptions]".to_string());
     lines.push("            Request-specific configuration.".to_string());
     lines.push(String::new());
@@ -3432,8 +3494,11 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
     }
     lines.push("        Parameters".to_string());
     lines.push("        ----------".to_string());
-    for (name, ty) in &mp.path {
+    for (name, ty, desc) in &mp.path {
         lines.push(format!("        {name} : {ty}"));
+        if let Some(desc) = desc {
+            lines.push(format!("            {desc}"));
+        }
         lines.push(String::new());
     }
     let mut push_param = |dp: &DocParam| {
@@ -3443,9 +3508,9 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
         }
         lines.push(String::new());
     };
-    mp.query.iter().for_each(&mut push_param);
-    mp.header.iter().for_each(&mut push_param);
-    mp.body.iter().for_each(&mut push_param);
+    ordered_keyword_params(&mp.query, &mp.header, &mp.body)
+        .into_iter()
+        .for_each(&mut push_param);
     lines.push("        request_options : typing.Optional[RequestOptions]".to_string());
     lines.push("            Request-specific configuration.".to_string());
     lines.push(String::new());
@@ -4693,6 +4758,7 @@ mod tests {
                 wire_name: "id".to_string(),
                 py_name: "id".to_string(),
                 type_ref: TypeRef::Primitive(Prim::Str),
+                docstring: None,
             }],
             Some(TypeRef::Primitive(Prim::Str)),
         );
@@ -4831,6 +4897,7 @@ mod tests {
                 wire_name: "id".to_string(),
                 py_name: "id".to_string(),
                 type_ref: TypeRef::Primitive(Prim::Str),
+                docstring: None,
             }],
             Some(TypeRef::Named("Resp".to_string())),
         );
@@ -4873,6 +4940,7 @@ mod tests {
             py_name: "tag".to_string(),
             type_ref: TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
             required: true,
+            convert: false,
             docstring: None,
         }];
         let out = raw_method(&ep, false, &mut i);

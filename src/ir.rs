@@ -402,6 +402,8 @@ pub struct PathParam {
     pub py_name: String,
     /// The parameter's type.
     pub type_ref: TypeRef,
+    /// Optional description, shown under the parameter in the docstring.
+    pub docstring: Option<String>,
 }
 
 /// A resolved query parameter, rendered as a keyword-only method argument and a
@@ -416,6 +418,10 @@ pub struct QueryParam {
     pub type_ref: TypeRef,
     /// Whether the parameter is required; optional params get `Optional[..] = None`.
     pub required: bool,
+    /// Whether the value serializes through `convert_and_respect_annotation_metadata`
+    /// in the `params` dict — true for an object/union type carrying field aliases,
+    /// as Fern wraps an object-typed query parameter.
+    pub convert: bool,
     /// Optional description, shown under the parameter in the docstring.
     pub docstring: Option<String>,
 }
@@ -956,6 +962,7 @@ fn build_endpoint(
                 .schema
                 .as_ref()
                 .map_or(TypeRef::Primitive(Prim::Any), base_type_ref),
+            docstring: clean_doc(p.description.as_deref()),
         })
         .collect();
 
@@ -963,20 +970,25 @@ fn build_endpoint(
         .parameters
         .iter()
         .filter(|p| p.location == Some(ParameterLocation::Query))
-        .map(|p| QueryParam {
-            wire_name: p.name.clone(),
-            py_name: naming::field_name(&p.name),
-            // An inline string enum hoists to a named `{ctx}Request{Prop}` alias
-            // in the tag's `types/` package (Fern's `ListWidgetsRequestLevel`);
-            // a `$ref`/scalar passes through `base_type_ref`.
-            type_ref: p
+        .map(|p| {
+            // An inline string enum hoists to a named `{ctx}Request{Prop}` alias in
+            // the tag's `types/` package (Fern's `ListWidgetsRequestLevel`); a
+            // `$ref`/scalar passes through `base_type_ref`.
+            let type_ref = p
                 .schema
                 .as_ref()
                 .map_or(TypeRef::Primitive(Prim::Any), |s| {
                     hoister.hoist_param_enum(&request_ctx, &p.name, s)
-                }),
-            required: p.required == Some(true),
-            docstring: clean_doc(p.description.as_deref()),
+                });
+            let convert = type_needs_convert(&type_ref, types);
+            QueryParam {
+                wire_name: p.name.clone(),
+                py_name: naming::field_name(&p.name),
+                type_ref,
+                required: p.required == Some(true),
+                convert,
+                docstring: clean_doc(p.description.as_deref()),
+            }
         })
         .collect();
 
