@@ -464,7 +464,8 @@ operationIds and property names. Real vendor specs are messier, and three shapes
 that used to make crozier emit invalid Python or hard-error now generate legal —
 and, for the shapes below, byte-matched — output. Each has its own gap-target
 corpus (`digit-leading-property`, `operation-id-non-identifier`,
-`missing-operation-id`), whose `matched` list is defined in `tests/e2e.rs`.
+`bracketed-property-names`, `missing-operation-id`), whose `matched` list is
+defined in `tests/e2e.rs`.
 
 - **Digit-leading property name** (`2fa_enabled`). [`naming::field_name`] prefixes
   `f_` when the snake-cased name would start with a digit, and the wire name is
@@ -476,6 +477,17 @@ corpus (`digit-leading-property`, `operation-id-non-identifier`,
   name derived from an operationId to `_`; legal names (every other fixture) pass
   through untouched. The method names snake-case to `get_all_widgets`/`verify_code`
   and the inline response hoists to `VerifyCodeResponse`, matching Fern.
+
+- **Non-identifier property name** (`filter[name]`, `page[size]`). The bracketed
+  JSON:API / Rails / Stripe convention for nested form and query params isn't a
+  valid Python identifier; crozier once emitted it verbatim as a function
+  parameter, producing source `ruff format` refuses to parse (issue #74).
+  [`naming::field_name`] now folds every non-alphanumeric run to a word boundary
+  before snake-casing (`filter[name]` → `filter_name`, `page[size]` →
+  `page_size`), while the raw bracketed name rides along as the wire
+  serialization key (`needs_alias` fires) — byte-for-byte Fern's parameters and
+  `data`/`params` dict keys. The whole `bracketed-property-names` corpus matches,
+  including its raw and high-level `widgets` clients.
 
 - **Missing `operationId`** (optional in OpenAPI). Instead of hard-erroring,
   [`ir::endpoint_method_name`] synthesizes the method from the route:
