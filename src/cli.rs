@@ -51,6 +51,13 @@ enum Command {
     /// Generate an SDK from an OpenAPI document.
     Generate(GenerateCmd),
 
+    /// Write a starter `crozier.yml` (with a JSON Schema modeline for editor
+    /// completion) to the working directory.
+    Init(InitCmd),
+
+    /// Show the effective configuration and where each value comes from.
+    Config(ConfigCmd),
+
     /// Internal: strip Python `#` comments from a file to stdout. Used by the
     /// fixture tooling so the committed fixtures and the e2e share one stripper.
     #[command(hide = true)]
@@ -58,6 +65,27 @@ enum Command {
         /// The `.py` file to strip.
         file: PathBuf,
     },
+}
+
+/// Arguments to `crozier init`.
+#[derive(Parser)]
+struct InitCmd {
+    /// Where to write the config. Defaults to `crozier.yml` in the working
+    /// directory.
+    #[arg(long, value_name = "PATH")]
+    output: Option<PathBuf>,
+
+    /// Overwrite an existing file instead of refusing.
+    #[arg(long)]
+    force: bool,
+}
+
+/// Arguments to `crozier config`.
+#[derive(Parser)]
+struct ConfigCmd {
+    /// Show only this generator. Omit to show every configured generator (or the
+    /// built-in `python`).
+    generator: Option<String>,
 }
 
 /// Arguments to `crozier generate`.
@@ -140,6 +168,11 @@ pub fn run(cli: Cli) -> std::result::Result<(), String> {
             &cmd.overrides(),
         )
         .map_err(|e| e.to_string()),
+        Some(Command::Init(cmd)) => do_init(&cmd).map_err(|e| e.to_string()),
+        Some(Command::Config(cmd)) => {
+            do_config(&cli.config, cli.no_config, cmd.generator.as_deref())
+                .map_err(|e| e.to_string())
+        }
         Some(Command::InternalStrip { file }) => {
             let source = std::fs::read_to_string(&file)
                 .map_err(|e| format!("could not read {}: {e}", file.display()))?;
@@ -187,6 +220,89 @@ fn do_generate(
             );
         } else {
             eprintln!("generated {} files into {}", files.len(), output.display());
+        }
+    }
+    Ok(())
+}
+
+/// The body written by `crozier init`, after the schema modeline. A minimal
+/// config: one shared default and one generator of each canonical type (only
+/// `python` today).
+const STARTER_CONFIG: &str = "\
+# crozier configuration.
+# Docs: https://github.com/nickderobertis/crozier/blob/main/docs/configuration.md
+#
+# Settings resolve per field as:
+#   CLI flag > CROZIER_* env > this file (generator over shared) > built-in default
+#
+# Top-level keys are shared defaults inherited by every generator.
+spec: ./openapi.yml
+
+generators:
+  # The built-in Python generator. `crozier generate python` runs this;
+  # `crozier` (or `crozier generate`) runs every generator listed here.
+  python:
+    type: python
+    output: ./sdk/python
+    # package-name: my_api    # defaults to a snake_case of the API title
+    # project-name: my-api    # defaults to the package name
+";
+
+/// Write a starter `crozier.yml`, refusing to clobber an existing file unless
+/// `--force` was given. The file leads with a `$schema` modeline so editors give
+/// completion/validation against the published schema.
+fn do_init(cmd: &InitCmd) -> crate::Result<()> {
+    let path = cmd
+        .output
+        .clone()
+        .unwrap_or_else(|| PathBuf::from("crozier.yml"));
+    if path.exists() && !cmd.force {
+        return Err(crate::Error::ConfigExists { path });
+    }
+    let contents = format!("{}{STARTER_CONFIG}", crate::schema::modeline());
+    std::fs::write(&path, contents).map_err(|source| crate::Error::WriteConfig {
+        path: path.clone(),
+        source,
+    })?;
+    eprintln!("wrote {}", path.display());
+    Ok(())
+}
+
+/// Print the effective configuration for the selected generator(s): the config
+/// files consulted, then each field's resolved value and the layer it came from.
+/// Never requires `spec`/`output` — this is for inspecting a config before a run.
+fn do_config(
+    config_paths: &[PathBuf],
+    no_config: bool,
+    selected: Option<&str>,
+) -> crate::Result<()> {
+    let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
+    let explicit = resolve_config_paths(config_paths, std::env::var("CROZIER_CONFIG").ok());
+    let loaded = settings::load(&explicit, no_config, &cwd)?;
+    let env = if no_config {
+        crate::settings::GeneratorSettings::default()
+    } else {
+        settings::env_overrides(|name| std::env::var(name).ok())?
+    };
+
+    if loaded.files.is_empty() {
+        println!("config files: none (built-in defaults)");
+    } else {
+        let files: Vec<String> = loaded
+            .files
+            .iter()
+            .map(|p| p.display().to_string())
+            .collect();
+        println!("config files: {}", files.join(", "));
+    }
+
+    let names = settings::run_set(&loaded.config, selected)?;
+    let empty_cli = CliOverrides::default();
+    for name in &names {
+        println!("\ngenerator `{name}`");
+        for f in settings::explain(name, &loaded.config, &env, &empty_cli) {
+            let value = f.value.as_deref().unwrap_or("(unset)");
+            println!("  {:<16} {:<28} ({})", f.field, value, f.source.label());
         }
     }
     Ok(())

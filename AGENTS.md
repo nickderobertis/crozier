@@ -27,7 +27,12 @@ or more **named generators** (`python` is the only type today, and a built-in so
 `crozier generate python` needs no config). `crozier`/`crozier generate` run the
 whole configured set; `crozier generate <name>` runs one. The schema, layering,
 and file discovery live in `src/settings.rs` (pure + unit-tested; the env reader
-is injected); `src/cli.rs` applies them. See
+is injected); `src/cli.rs` applies them and adds `init` (write a starter config)
+and `config` (print the effective config with per-field sources). The public
+JSON Schema is *derived* from the config types via `schemars`
+(`src/schema.rs`) and committed as `assets/crozier.schema.json` — after changing
+a config field, regenerate it with `CROZIER_UPDATE_SCHEMA=1 cargo test --lib
+schema` or the drift test fails. See
 [`docs/configuration.md`](docs/configuration.md).
 
 The north star: **`crozier`'s output, with comments stripped, equals Fern's

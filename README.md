@@ -95,6 +95,18 @@ field as:
 CLI flag  >  CROZIER_* env var  >  crozier.yml (generator over shared)  >  built-in default
 ```
 
+Run `crozier init` to drop a starter `crozier.yml` in the working directory. It
+leads with a JSON Schema modeline —
+
+```yaml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nickderobertis/crozier/main/assets/crozier.schema.json
+```
+
+— so editors with the YAML language server give **field completion and
+validation** against the [published schema](assets/crozier.schema.json) (derived
+from crozier's own config types, so it never drifts). Run `crozier config` to
+print the effective settings and the layer each value came from.
+
 A `crozier.yml` in the working directory is picked up automatically. Top-level
 keys are shared defaults; each entry under `generators:` is one SDK to emit:
 
@@ -119,6 +131,8 @@ generators:
   built-in `python` when nothing is configured).
 - `crozier generate <name>` — run one generator by name (`python` always works,
   even with no config file).
+- `crozier init` — write a starter `crozier.yml` (`--output`, `--force`).
+- `crozier config [<name>]` — show the effective config and each value's source.
 - `--config <path>` (repeatable, later wins) selects config files instead of
   auto-discovery; `--no-config` ignores config files entirely; `CROZIER_CONFIG`
   names a file via the environment.

@@ -265,6 +265,83 @@ fn missing_config_file_is_an_error() {
 }
 
 #[test]
+fn init_writes_a_config_with_the_schema_modeline() {
+    let dir = tempfile::tempdir().unwrap();
+    let cfg = dir.path().join("crozier.yml");
+    run_from(["crozier", "init", "--output", cfg.to_str().unwrap()]).expect("init ok");
+
+    let body = std::fs::read_to_string(&cfg).unwrap();
+    // The `$schema` modeline leads the file so the YAML language server uses it.
+    assert!(
+        body.starts_with("# yaml-language-server: $schema="),
+        "{body}"
+    );
+    assert!(body.contains("crozier.schema.json"), "{body}");
+    // The generated starter parses and declares the built-in python generator.
+    let parsed = crozier::settings::parse(&body).expect("starter config parses");
+    assert!(parsed.generators.contains_key("python"));
+}
+
+#[test]
+fn init_refuses_to_clobber_without_force() {
+    let dir = tempfile::tempdir().unwrap();
+    let cfg = dir.path().join("crozier.yml");
+    std::fs::write(&cfg, "spec: ./x.yml").unwrap();
+
+    let err = run_from(["crozier", "init", "--output", cfg.to_str().unwrap()]).unwrap_err();
+    assert!(err.contains("already exists"), "{err}");
+    // --force overwrites with the starter.
+    run_from([
+        "crozier",
+        "init",
+        "--output",
+        cfg.to_str().unwrap(),
+        "--force",
+    ])
+    .expect("force overwrite ok");
+    assert!(std::fs::read_to_string(&cfg)
+        .unwrap()
+        .contains("generators:"));
+}
+
+#[test]
+fn config_inspects_without_a_spec() {
+    // `config` reports the layered config even when spec/output are incomplete —
+    // it never runs generation, so a missing spec is fine.
+    let (dir, spec, out) = spec_and_out();
+    let cfg = dir.path().join("crozier.yml");
+    std::fs::write(
+        &cfg,
+        format!(
+            "spec: {}\ngenerators:\n  python:\n    output: {}\n  admin:\n    output: {}\n",
+            spec.display(),
+            out.display(),
+            dir.path().join("admin").display()
+        ),
+    )
+    .unwrap();
+
+    // All generators, one generator, and the built-in-only (no-config) path.
+    run_from(["crozier", "--config", cfg.to_str().unwrap(), "config"]).expect("config all ok");
+    run_from([
+        "crozier",
+        "--config",
+        cfg.to_str().unwrap(),
+        "config",
+        "admin",
+    ])
+    .expect("config one ok");
+    run_from(["crozier", "--no-config", "config"]).expect("config built-in ok");
+    drop(dir);
+}
+
+#[test]
+fn config_unknown_generator_errors() {
+    let err = run_from(["crozier", "--no-config", "config", "nope"]).unwrap_err();
+    assert!(err.contains("unknown generator"), "{err}");
+}
+
+#[test]
 fn internal_strip_runs() {
     let dir = tempfile::tempdir().unwrap();
     let file = dir.path().join("x.py");

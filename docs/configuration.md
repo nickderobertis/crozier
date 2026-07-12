@@ -15,11 +15,13 @@ built-in's defaults.
 
 ## Commands
 
-| Command | What it runs |
+| Command | What it does |
 | --- | --- |
-| `crozier` | Every configured generator (the built-in `python` when none are configured). |
+| `crozier` | Generate with every configured generator (the built-in `python` when none are configured). |
 | `crozier generate` | Same as bare `crozier`. |
-| `crozier generate <name>` | The one generator named `<name>` (a config entry, or the built-in `python`). |
+| `crozier generate <name>` | Generate with the one generator named `<name>` (a config entry, or the built-in `python`). |
+| `crozier init` | Write a starter `crozier.yml` (`--output <path>`, `--force`). |
+| `crozier config [<name>]` | Print the effective config and the layer each value came from. |
 
 ## Precedence
 
@@ -88,6 +90,40 @@ generators:
 
 Unknown fields and unknown generator types are rejected at parse time, with the
 offending file's path in the error. Generators run in declaration order.
+
+### Editor support (JSON Schema)
+
+`crozier init` writes the config with a modeline on the first line:
+
+```yaml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nickderobertis/crozier/main/assets/crozier.schema.json
+```
+
+Editors with the [YAML language server](https://github.com/redhat-developer/yaml-language-server)
+(VS Code, Neovim, …) then offer field completion, hover docs, and validation
+against the published schema. The schema is **derived from crozier's own config
+types** (`schemars`), so it never drifts from what the tool accepts; the
+committed `assets/crozier.schema.json` is pinned to the generator by a test
+(regenerate with `CROZIER_UPDATE_SCHEMA=1 cargo test --lib schema`).
+
+### Inspecting the effective config
+
+`crozier config` loads the config exactly as a run would and prints, per
+generator, each field's resolved value and the layer it came from (`cli`, `env`,
+`generator`, `shared`, or `default`) — without running generation, so an
+incomplete config is fine to inspect:
+
+```text
+$ crozier config
+config files: crozier.yml
+
+generator `python`
+  type             python                       (generator)
+  spec             ./openapi.yml                (shared)
+  output           ./sdk/python                 (generator)
+  package-name     (unset)                      (default)
+  ...
+```
 
 ## Examples
 

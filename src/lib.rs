@@ -24,6 +24,7 @@ pub mod naming;
 pub mod normalize;
 pub mod openapi;
 pub mod pyfmt;
+pub mod schema;
 pub mod settings;
 pub mod wrap;
 

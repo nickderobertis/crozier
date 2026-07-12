@@ -25,6 +25,7 @@
 use std::path::{Path, PathBuf};
 
 use indexmap::IndexMap;
+use schemars::JsonSchema;
 use serde::Deserialize;
 
 use crate::error::{Error, Result};
@@ -48,18 +49,29 @@ pub const CONFIG_NAMES: &[&str] = &[
 /// The kind of SDK a generator emits. Python is the only target today; the field
 /// exists so a config can be explicit and forward-compatible, and so an unknown
 /// value (a typo, or a target crozier does not have) fails loudly at parse time.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, JsonSchema)]
 #[serde(rename_all = "lowercase")]
 pub enum GeneratorType {
     /// The Python generator.
     Python,
 }
 
+impl GeneratorType {
+    /// The canonical lowercase name (`python`), matching the config value and
+    /// the built-in generator's name.
+    #[must_use]
+    pub fn as_str(self) -> &'static str {
+        match self {
+            GeneratorType::Python => "python",
+        }
+    }
+}
+
 /// One generator's settings, as written under `generators.<name>` (or as the
 /// top-level shared defaults, which share this shape minus `type`). Every field
 /// is optional: an absent field falls through to the next layer down. Unknown
 /// fields are rejected so a typo fails loudly instead of being ignored.
-#[derive(Debug, Clone, Default, PartialEq, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Deserialize, JsonSchema)]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct GeneratorSettings {
     /// The generator kind. Defaults to [`GeneratorType::Python`] when unset.
@@ -84,7 +96,7 @@ pub struct GeneratorSettings {
 /// shared across every generator (the `type` there is ignored — it is per
 /// generator). `generators` preserves declaration order so `crozier generate`
 /// (no name) runs them deterministically in file order.
-#[derive(Debug, Clone, Default, PartialEq, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Deserialize, JsonSchema)]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct FileConfig {
     /// Shared default OpenAPI document for every generator.
@@ -99,8 +111,12 @@ pub struct FileConfig {
     pub audiences: Option<Vec<String>>,
     /// Shared default strict-audience flag.
     pub audience_strict: Option<bool>,
-    /// The named generator instances, in declaration order.
+    /// The named generator instances (one SDK each), in declaration order.
+    // Described to `schemars` as a plain string-keyed map (same JSON shape) so
+    // the schema does not depend on the indexmap feature; serde keeps the
+    // `IndexMap` at runtime so declaration order is preserved.
     #[serde(default)]
+    #[schemars(with = "std::collections::BTreeMap<String, GeneratorSettings>")]
     pub generators: IndexMap<String, GeneratorSettings>,
 }
 
@@ -348,6 +364,167 @@ pub fn resolve(
         audiences,
         audience_strict,
     })
+}
+
+/// Which layer supplied a resolved value, for `crozier config`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Source {
+    /// A command-line flag.
+    Cli,
+    /// A `CROZIER_*` environment variable.
+    Env,
+    /// The generator's own `generators.<name>` entry.
+    Generator,
+    /// The shared top-level config value.
+    Shared,
+    /// The built-in default (no layer supplied a value).
+    Default,
+}
+
+impl Source {
+    /// A short label for display (`cli`, `env`, `generator`, `shared`,
+    /// `default`).
+    #[must_use]
+    pub fn label(self) -> &'static str {
+        match self {
+            Source::Cli => "cli",
+            Source::Env => "env",
+            Source::Generator => "generator",
+            Source::Shared => "shared",
+            Source::Default => "default",
+        }
+    }
+}
+
+/// One resolved field for `crozier config`: its display value (or `None` when
+/// unset everywhere) and the layer that supplied it.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FieldSource {
+    /// The field name as written in a config file (kebab-case).
+    pub field: &'static str,
+    /// The effective value rendered for display, or `None` when unset.
+    pub value: Option<String>,
+    /// Where the value came from.
+    pub source: Source,
+}
+
+/// The first layer to supply a value wins; record which one did. Falls to
+/// [`Source::Default`] when every layer is empty.
+fn pick(layers: &[(Source, Option<String>)]) -> (Option<String>, Source) {
+    for (src, val) in layers {
+        if let Some(v) = val {
+            return (Some(v.clone()), *src);
+        }
+    }
+    (None, Source::Default)
+}
+
+/// One field's precedence chain, as display strings, from a value-extractor.
+fn field(
+    name: &'static str,
+    cli: Option<String>,
+    env: Option<String>,
+    gen_val: Option<String>,
+    shared: Option<String>,
+) -> FieldSource {
+    let (value, source) = pick(&[
+        (Source::Cli, cli),
+        (Source::Env, env),
+        (Source::Generator, gen_val),
+        (Source::Shared, shared),
+    ]);
+    FieldSource {
+        field: name,
+        value,
+        source,
+    }
+}
+
+/// Explain how each field of one generator resolves, without requiring `spec`
+/// or `output` — the inspection counterpart of [`resolve`], used by
+/// `crozier config`. `type` always resolves (defaulting to `python`).
+pub fn explain(
+    name: &str,
+    config: &FileConfig,
+    env: &GeneratorSettings,
+    cli: &CliOverrides,
+) -> Vec<FieldSource> {
+    let per = config.generators.get(name);
+    let path = |p: &PathBuf| p.display().to_string();
+    let list = |v: &[String]| {
+        if v.is_empty() {
+            "[]".to_string()
+        } else {
+            v.join(", ")
+        }
+    };
+
+    // `type` has no CLI/env form and defaults to `python`.
+    let type_field = {
+        let (value, source) = pick(&[(
+            Source::Generator,
+            per.and_then(|p| p.generator_type)
+                .map(|t| t.as_str().to_string()),
+        )]);
+        match value {
+            Some(v) => FieldSource {
+                field: "type",
+                value: Some(v),
+                source,
+            },
+            None => FieldSource {
+                field: "type",
+                value: Some(BUILTIN_PYTHON.to_string()),
+                source: Source::Default,
+            },
+        }
+    };
+
+    vec![
+        type_field,
+        field(
+            "spec",
+            cli.spec.as_ref().map(path),
+            env.spec.as_ref().map(path),
+            per.and_then(|p| p.spec.as_ref()).map(path),
+            config.spec.as_ref().map(path),
+        ),
+        field(
+            "output",
+            cli.output.as_ref().map(path),
+            env.output.as_ref().map(path),
+            per.and_then(|p| p.output.as_ref()).map(path),
+            config.output.as_ref().map(path),
+        ),
+        field(
+            "package-name",
+            cli.package_name.clone(),
+            env.package_name.clone(),
+            per.and_then(|p| p.package_name.clone()),
+            config.package_name.clone(),
+        ),
+        field(
+            "project-name",
+            cli.project_name.clone(),
+            env.project_name.clone(),
+            per.and_then(|p| p.project_name.clone()),
+            config.project_name.clone(),
+        ),
+        field(
+            "audiences",
+            cli.audiences.as_deref().map(list),
+            env.audiences.as_deref().map(list),
+            per.and_then(|p| p.audiences.as_deref()).map(list),
+            config.audiences.as_deref().map(list),
+        ),
+        field(
+            "audience-strict",
+            cli.audience_strict.map(|b| b.to_string()),
+            env.audience_strict.map(|b| b.to_string()),
+            per.and_then(|p| p.audience_strict).map(|b| b.to_string()),
+            config.audience_strict.map(|b| b.to_string()),
+        ),
+    ]
 }
 
 /// The first config file present in `dir`, by [`CONFIG_NAMES`] priority. No walk
@@ -718,5 +895,65 @@ mod tests {
         let c = parsed("generators:\n  python:\n    spec: ./a.yml");
         let err = run_set(&c, Some("nope")).unwrap_err().to_string();
         assert_eq!(err.matches("python").count(), 1, "{err}");
+    }
+
+    fn field_of<'a>(report: &'a [FieldSource], name: &str) -> &'a FieldSource {
+        report
+            .iter()
+            .find(|f| f.field == name)
+            .expect("field present")
+    }
+
+    #[test]
+    fn explain_attributes_each_field_to_its_layer() {
+        let config = parsed(
+            "spec: ./top.yml\npackage-name: top\ngenerators:\n  python:\n    output: ./gen-out\n    package-name: gen",
+        );
+        let env = env_overrides(env_get(&[("CROZIER_PROJECT_NAME", "envproj")])).unwrap();
+        let cli = CliOverrides {
+            spec: Some(PathBuf::from("./cli.yml")),
+            ..CliOverrides::default()
+        };
+        let report = explain("python", &config, &env, &cli);
+
+        let spec = field_of(&report, "spec");
+        assert_eq!(spec.value.as_deref(), Some("./cli.yml"));
+        assert_eq!(spec.source, Source::Cli);
+
+        let output = field_of(&report, "output");
+        assert_eq!(output.value.as_deref(), Some("./gen-out"));
+        assert_eq!(output.source, Source::Generator);
+
+        // per-generator `package-name` beats the shared top-level.
+        let pkg = field_of(&report, "package-name");
+        assert_eq!(pkg.value.as_deref(), Some("gen"));
+        assert_eq!(pkg.source, Source::Generator);
+
+        let proj = field_of(&report, "project-name");
+        assert_eq!(proj.value.as_deref(), Some("envproj"));
+        assert_eq!(proj.source, Source::Env);
+    }
+
+    #[test]
+    fn explain_defaults_type_and_unset_fields() {
+        let report = explain(
+            "python",
+            &FileConfig::default(),
+            &GeneratorSettings::default(),
+            &CliOverrides::default(),
+        );
+        let ty = field_of(&report, "type");
+        assert_eq!(ty.value.as_deref(), Some("python"));
+        assert_eq!(ty.source, Source::Default);
+        // spec/output are unset everywhere → no value, default source.
+        let spec = field_of(&report, "spec");
+        assert_eq!(spec.value, None);
+        assert_eq!(spec.source, Source::Default);
+        // audiences render as `[]` only when a layer sets them; unset stays None.
+        assert_eq!(field_of(&report, "audiences").value, None);
+        assert_eq!(field_of(&report, "audience-strict").source, Source::Default);
+        // Every source has a stable label.
+        assert_eq!(Source::Cli.label(), "cli");
+        assert_eq!(Source::Shared.label(), "shared");
     }
 }

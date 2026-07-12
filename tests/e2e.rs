@@ -2389,3 +2389,30 @@ fn generate_all_runs_every_configured_generator_through_the_binary() {
     assert!(dir.path().join("a/src/a/types/thing.py").is_file());
     assert!(dir.path().join("b/src/b/types/thing.py").is_file());
 }
+
+#[test]
+fn init_then_config_round_trips_through_the_binary() {
+    // `crozier init` (default path) writes a discoverable `crozier.yml`; `crozier
+    // config` then reports it with per-field sources on stdout.
+    let dir = tempfile::tempdir().expect("tempdir");
+    crozier()
+        .current_dir(dir.path())
+        .arg("init")
+        .assert()
+        .success()
+        .stderr(predicate::str::contains("wrote"));
+    assert!(dir.path().join("crozier.yml").is_file());
+
+    crozier()
+        .current_dir(dir.path())
+        .arg("config")
+        .assert()
+        .success()
+        // The discovered file is reported, and each field carries its source.
+        .stdout(
+            predicate::str::contains("config files:").and(predicate::str::contains("crozier.yml")),
+        )
+        .stdout(predicate::str::contains("generator `python`"))
+        .stdout(predicate::str::contains("(shared)"))
+        .stdout(predicate::str::contains("(generator)"));
+}

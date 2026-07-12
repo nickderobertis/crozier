@@ -159,6 +159,23 @@ pub enum Error {
         /// How many generators the current selection would run.
         count: usize,
     },
+
+    /// `crozier init` was asked to write a config file that already exists, and
+    /// `--force` was not given.
+    #[error("{path} already exists; pass --force to overwrite")]
+    ConfigExists {
+        /// The path that would be overwritten.
+        path: PathBuf,
+    },
+
+    /// A config file could not be written (`crozier init`).
+    #[error("could not write {path}: {source}")]
+    WriteConfig {
+        /// The path that failed to write.
+        path: PathBuf,
+        /// The underlying IO error.
+        source: std::io::Error,
+    },
 }
 
 /// Convenience alias for crozier results.
