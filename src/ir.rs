@@ -2065,6 +2065,29 @@ impl Builder<'_> {
                 );
                 return TypeRef::Named(name);
             }
+            // An array of inline objects hoists the item to `{Owner}{Prop}Item` and
+            // types the property as a sequence of it (Fern: `Pipeline.stages` →
+            // `List[PipelineStagesItem]`).
+            if prop_schema.ty.as_ref().and_then(|t| t.primary()) == Some("array") {
+                if let Some(items) = &prop_schema.items {
+                    if items.reference.is_none() && !items.properties.is_empty() {
+                        let name = format!("{owner}{}Item", naming::class_name(prop));
+                        let module = naming::module_name(&name);
+                        self.add_object(
+                            &name,
+                            module,
+                            items,
+                            clean_doc(items.description.as_deref()),
+                        );
+                        let item = Box::new(TypeRef::Named(name));
+                        return if prop_schema.unique_items == Some(true) {
+                            TypeRef::Set(item)
+                        } else {
+                            TypeRef::List(item)
+                        };
+                    }
+                }
+            }
         }
         base_type_ref(prop_schema)
     }
