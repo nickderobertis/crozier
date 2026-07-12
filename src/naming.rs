@@ -85,9 +85,15 @@ pub fn module_name(class_name: &str) -> String {
 /// Both transforms make [`crate::ir::Field::needs_alias`] fire, so the wire name
 /// is preserved as a `FieldMetadata` alias — matching Fern (`2fa_enabled` →
 /// `f_2fa_enabled`).
+///
+/// Property names that aren't valid identifiers — the bracketed JSON:API / Rails
+/// / Stripe convention (`filter[name]`, `page[size]`) most of all — are folded
+/// into the `snake_case` the same way Fern does: every non-alphanumeric run is a
+/// word boundary, so `filter[name]` → `filter_name` (issue #74). The raw wire
+/// name still rides along as the serialization key, since `needs_alias` fires.
 #[must_use]
 pub fn field_name(wire_name: &str) -> String {
-    let snake = to_snake_case(wire_name);
+    let snake = to_snake_case(&fold_non_identifier(wire_name));
     if snake.starts_with(|c: char| c.is_ascii_digit()) {
         format!("f_{snake}")
     } else if is_reserved(&snake) {
@@ -95,6 +101,17 @@ pub fn field_name(wire_name: &str) -> String {
     } else {
         snake
     }
+}
+
+/// Replace every character that can't appear in a Python identifier with a space
+/// so [`split_words`] treats it as a word boundary. `_`, `-`, `.`, and space are
+/// already boundaries there, so a name that was already identifier-legal folds to
+/// the exact same words — this only changes names that would otherwise emit
+/// illegal Python (`filter[name]` → `filter name`).
+fn fold_non_identifier(name: &str) -> String {
+    name.chars()
+        .map(|c| if c.is_ascii_alphanumeric() { c } else { ' ' })
+        .collect()
 }
 
 /// Coerce a derived name into a legal Python identifier: any character that is
@@ -262,6 +279,22 @@ mod tests {
         assert_eq!(field_name("uuid"), "uuid_");
         assert_eq!(field_name("name"), "name");
         assert_eq!(field_name("tags"), "tags");
+    }
+
+    #[test]
+    fn bracketed_property_names_fold_to_snake_identifiers() {
+        // Issue #74: JSON:API / Rails / Stripe bracketed params aren't valid
+        // Python identifiers; Fern folds them to snake_case and keeps the raw
+        // name as the wire key (which `needs_alias` handles).
+        assert_eq!(field_name("filter[name]"), "filter_name");
+        assert_eq!(field_name("filter[color]"), "filter_color");
+        assert_eq!(field_name("page[size]"), "page_size");
+        assert_eq!(field_name("hours[day]"), "hours_day");
+        // Deeper nesting collapses each bracket run to a single boundary; no
+        // trailing underscore from the closing bracket.
+        assert_eq!(field_name("filter[user][name]"), "filter_user_name");
+        // A leading-digit result still gets the `f_` guard after folding.
+        assert_eq!(field_name("[2fa]enabled"), "f_2fa_enabled");
     }
 
     #[test]

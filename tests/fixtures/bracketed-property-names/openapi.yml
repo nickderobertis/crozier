@@ -1,0 +1,46 @@
+openapi: 3.0.3
+info:
+  title: Widget API
+  version: 1.0.0
+paths:
+  /widgets/search:
+    post:
+      # Bracketed property names — the JSON:API / Rails / Stripe convention for
+      # nested form/query params — aren't valid Python identifiers. crozier once
+      # emitted `filter[name]` verbatim as a function parameter, producing source
+      # that `ruff format` refuses to parse (issue #74). It must sanitize the
+      # identifier (`filter[name]` -> `filter_name`) while keeping the raw name as
+      # the wire serialization key, matching Fern.
+      operationId: searchWidgets
+      tags: [widgets]
+      parameters:
+        - name: page[size]
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: page[number]
+          in: query
+          required: false
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                filter[name]:
+                  type: string
+                filter[color]:
+                  type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer

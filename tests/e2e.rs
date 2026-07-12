@@ -892,6 +892,57 @@ const FEATURE_TARGETS: &[Corpus] = &[
             "src/fern/widgets/types/verify_code_response.py",
         ],
     },
+    // bracketed-property-names: JSON:API / Rails / Stripe bracketed query and
+    // form-body property names (`page[size]`, `filter[name]`) aren't valid Python
+    // identifiers. crozier once emitted them verbatim as function parameters,
+    // producing source `ruff format` refuses to parse (issue #74). It now folds
+    // the identifier to snake_case (`filter[name]` → `filter_name`) while keeping
+    // the raw bracketed name as the wire key, matching Fern's tag client, its raw
+    // client, and the hoisted `SearchWidgetsResponse`.
+    Corpus {
+        api: "bracketed-property-names",
+        package_name: "fern",
+        project_name: "default_package_name",
+        audiences: &[],
+        audience_strict: false,
+        client_class_name: None,
+        extra_fields: None,
+        matched: &[
+            ".fern/metadata.json",
+            "README.md",
+            "pyproject.toml",
+            "reference.md",
+            "requirements.txt",
+            "src/fern/__init__.py",
+            "src/fern/client.py",
+            "src/fern/core/__init__.py",
+            "src/fern/core/api_error.py",
+            "src/fern/core/client_wrapper.py",
+            "src/fern/core/datetime_utils.py",
+            "src/fern/core/file.py",
+            "src/fern/core/force_multipart.py",
+            "src/fern/core/http_client.py",
+            "src/fern/core/http_response.py",
+            "src/fern/core/http_sse/__init__.py",
+            "src/fern/core/http_sse/_api.py",
+            "src/fern/core/http_sse/_decoders.py",
+            "src/fern/core/http_sse/_exceptions.py",
+            "src/fern/core/http_sse/_models.py",
+            "src/fern/core/jsonable_encoder.py",
+            "src/fern/core/pydantic_utilities.py",
+            "src/fern/core/query_encoder.py",
+            "src/fern/core/remove_none_from_dict.py",
+            "src/fern/core/request_options.py",
+            "src/fern/core/serialization.py",
+            "src/fern/py.typed",
+            "src/fern/version.py",
+            "src/fern/widgets/__init__.py",
+            "src/fern/widgets/client.py",
+            "src/fern/widgets/raw_client.py",
+            "src/fern/widgets/types/__init__.py",
+            "src/fern/widgets/types/search_widgets_response.py",
+        ],
+    },
     // missing-operation-id: an operation with no `operationId` (valid OpenAPI) once
     // hard-errored. crozier groups it by its `widgets` tag and synthesizes the
     // method name from the route (`GET /widgets` → `list_widgets`), matching Fern's
@@ -2207,6 +2258,44 @@ fn digit_leading_property_gets_f_prefix_and_alias() {
     assert!(
         thing.contains("FieldMetadata(alias=\"2fa_enabled\")"),
         "the wire name should be preserved as a FieldMetadata alias: {thing}"
+    );
+}
+
+#[test]
+fn bracketed_property_names_generate_valid_python() {
+    // Issue #74: bracketed JSON:API / Rails / Stripe params (`filter[name]`,
+    // `page[size]`) aren't legal identifiers. crozier once emitted them verbatim
+    // as function parameters, so `ruff format` refused to parse the file and the
+    // whole SDK was discarded. Both the query params and the urlencoded form-body
+    // properties must sanitize to legal snake_case identifiers while keeping the
+    // raw bracketed name as the wire key. `generate_ok` compiles every module, so
+    // reaching this point already proves the output parses.
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  \
+         /widgets/search:\n    post:\n      operationId: searchWidgets\n      tags: [widgets]\n      \
+         parameters:\n        - { name: \"page[size]\", in: query, required: false, schema: { type: \
+         integer } }\n      requestBody:\n        content:\n          application/x-www-form-urlencoded:\n            \
+         schema:\n              type: object\n              properties:\n                \"filter[name]\": { type: \
+         string }\n                \"filter[color]\": { type: string }\n      responses:\n        \
+         '200': { description: OK, content: { application/json: { schema: { type: object, properties: \
+         { count: { type: integer } } } } } }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
+    // The parameters are legal identifiers...
+    assert!(
+        raw.contains("filter_name:") && raw.contains("filter_color:") && raw.contains("page_size:"),
+        "bracketed params should fold to snake_case identifiers: {raw}"
+    );
+    // ...while the raw bracketed name stays the wire serialization key.
+    assert!(
+        raw.contains("\"filter[name]\": filter_name") && raw.contains("\"page[size]\": page_size"),
+        "the raw bracketed name should remain the wire key: {raw}"
+    );
+    // The broken form must be gone entirely.
+    assert!(
+        !raw.contains("filter[name]:"),
+        "the illegal `filter[name]` identifier must not appear: {raw}"
     );
 }
 
