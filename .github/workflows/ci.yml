@@ -52,16 +52,46 @@ jobs:
   # every gate + install leg succeeded (a skipped/failed `needs` is not success).
   gate:
     name: gate
-    needs: [check, install, package]
+    needs: [check, install, package, live-e2e]
     if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Require all gate jobs to have succeeded
         run: |
-          if [ "${{ needs.check.result }}" != "success" ] || [ "${{ needs.install.result }}" != "success" ] || [ "${{ needs.package.result }}" != "success" ]; then
-            echo "::error::a required gate job did not succeed (check=${{ needs.check.result }}, install=${{ needs.install.result }}, package=${{ needs.package.result }})" >&2
+          if [ "${{ needs.check.result }}" != "success" ] || [ "${{ needs.install.result }}" != "success" ] || [ "${{ needs.package.result }}" != "success" ] || [ "${{ needs.live-e2e.result }}" != "success" ]; then
+            echo "::error::a required gate job did not succeed (check=${{ needs.check.result }}, install=${{ needs.install.result }}, package=${{ needs.package.result }}, live-e2e=${{ needs.live-e2e.result }})" >&2
             exit 1
           fi
+
+  # Live runtime e2e, SEPARATE from `just check` so the core gate stays Node-free:
+  # boot a Prism OpenAPI mock server from each fixture's spec and drive the generated
+  # SDK through every documented endpoint, asserting a value of the method's declared
+  # return type comes back over real HTTP. Complements the byte-diff e2e (source) and
+  # the wire tests (request/response shaping vs Fern). Linux-only, like supply-chain.
+  live-e2e:
+    name: live-e2e
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: extractions/setup-just@v2
+      # Prism (the mock server) is a Node CLI; install the pinned version globally so
+      # `prism` is on PATH (conftest prefers it over an `npx` fetch). Keep the version
+      # in step with tests/live_e2e/conftest.py:PRISM_PKG.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm install -g @stoplight/prism-cli@5.14.2
+      # uv backs the test venv (httpx/pydantic/pytest/pyyaml) and the ruff install.
+      - uses: astral-sh/setup-uv@v8.3.2
+      # ruff is crozier's generation-time dependency (it shells out to `ruff format`);
+      # install-ruff.sh pins it and exposes ~/.local/bin on PATH for later steps.
+      - name: Install ruff
+        run: ./scripts/install-ruff.sh
+      # cargo is preinstalled and honors rust-toolchain.toml on first use; the recipe
+      # builds the release binary the suite drives.
+      - name: Live e2e
+        run: just test-live-e2e
 
   # Prove the PUBLISHED crate builds: `cargo publish --dry-run` packages the crate
   # (honoring Cargo.toml's `include`) and compiles from that tarball. This is the

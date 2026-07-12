@@ -81,6 +81,11 @@ Use the `just` recipes; do not hand-roll equivalents.
 - `just check` — full gate (fmt check, clippy `-D warnings`, tests incl. e2e with
   coverage, `cargo deny`, `cargo machete`, doc). Must pass before any commit/PR.
 - `just test` / `just test-e2e` / `just lint` / `just format` — individual steps.
+- `just test-live-e2e` — live runtime e2e: boot a Prism OpenAPI mock server per
+  fixture and drive the generated SDK through every documented endpoint, asserting
+  typed responses come back. Spec-driven; separate from `check` (keeps the gate
+  Node-free) but a required CI leg. Needs Node/Prism + uv. See
+  [`tests/live_e2e/AGENTS.md`](tests/live_e2e/AGENTS.md).
 - `just upgrade` — `cargo update`, then re-run `just check`.
 - `just fixtures-refresh` — re-vendor the Fern reference fixtures (see below).
 - `just lint-llm` / `just lint-llm-diff` — LLM-judge tier (llmlint), separate from
@@ -99,7 +104,8 @@ Use the `just` recipes; do not hand-roll equivalents.
   is the PR title. Queue with `gh pr merge --auto --squash`; merged branches
   auto-delete. Admins may break-glass.
 - **All gating checks required:** `gate` (aggregates the e2e-inclusive `check`
-  and `install` matrix legs), `commitlint` (PR-title Conventional Commits), and
+  and `install` matrix legs plus the `package` and `live-e2e` legs), `commitlint`
+  (PR-title Conventional Commits), and
   `llmlint` — plus linear history, conversation resolution, no
   force-push/branch-deletion. **Required secrets:** `CLAUDE_CODE_OAUTH_TOKEN`
   (llmlint's Claude Code harness) and `RELEASE_PLZ_TOKEN` (a PAT for releases)
