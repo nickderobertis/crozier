@@ -151,6 +151,11 @@ pub struct PathItem {
     /// `PATCH` operation.
     #[serde(default)]
     pub patch: Option<Operation>,
+    /// Parameters declared once on the path item and shared by every operation
+    /// under it (a common real-world pattern for path params). Merged into each
+    /// operation at load time by [`normalize_parameters`]; empty after that pass.
+    #[serde(default)]
+    pub parameters: Vec<Parameter>,
 }
 
 impl PathItem {
@@ -255,10 +260,17 @@ impl Operation {
     }
 }
 
-/// An operation parameter (path/query/header/cookie). Only inline parameters are
-/// modeled; a `$ref` parameter deserializes with an empty name and no location.
-#[derive(Debug, Default, Deserialize)]
+/// An operation parameter (path/query/header/cookie). A `$ref` parameter carries
+/// its pointer in [`Parameter::reference`] and is resolved against
+/// `components.parameters` at load time (see [`normalize_parameters`]); after that
+/// pass every surviving parameter is inline.
+#[derive(Debug, Default, Clone, Deserialize)]
 pub struct Parameter {
+    /// A `$ref` pointer to a `components.parameters` entry, e.g.
+    /// `#/components/parameters/consumerId`. Resolved to the referenced parameter
+    /// by [`normalize_parameters`]; `None` for an inline parameter.
+    #[serde(rename = "$ref", default)]
+    pub reference: Option<String>,
     /// Parameter name (the wire name; also the path placeholder for `in: path`).
     #[serde(default)]
     pub name: String,
@@ -344,6 +356,11 @@ pub struct Components {
     /// Named schemas, in document order.
     #[serde(default)]
     pub schemas: IndexMap<String, Schema>,
+    /// Reusable parameters (`components.parameters`), in document order. A `$ref`
+    /// parameter on an operation resolves against this map at load time (see
+    /// [`normalize_parameters`]).
+    #[serde(default)]
+    pub parameters: IndexMap<String, Parameter>,
     /// Declared authentication schemes, in document order.
     #[serde(rename = "securitySchemes", default)]
     pub security_schemes: IndexMap<String, SecurityScheme>,
@@ -579,7 +596,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
         .and_then(|e| e.to_str())
         .map(str::to_ascii_lowercase);
 
-    let doc: OpenApi = match ext.as_deref() {
+    let mut doc: OpenApi = match ext.as_deref() {
         Some("yml" | "yaml") => serde_yaml_ng::from_str(&text).map_err(|e| Error::ParseSpec {
             path: path.to_path_buf(),
             message: e.to_string(),
@@ -630,7 +647,71 @@ pub fn load(path: &Path) -> Result<OpenApi> {
         }
     }
 
+    normalize_parameters(&mut doc);
+
     Ok(doc)
+}
+
+/// Resolve a parameter that is a `$ref` into `components.parameters` to the
+/// referenced parameter; an inline parameter (or an unresolvable pointer) is
+/// returned unchanged. Only `#/components/parameters/*` pointers are resolved, one
+/// level deep — the shape real specs use.
+fn resolve_parameter(param: &Parameter, defs: &IndexMap<String, Parameter>) -> Parameter {
+    if let Some(name) = param
+        .reference
+        .as_deref()
+        .and_then(|r| r.strip_prefix("#/components/parameters/"))
+    {
+        if let Some(target) = defs.get(name) {
+            return target.clone();
+        }
+    }
+    param.clone()
+}
+
+/// Fold `components.parameters` `$ref`s and path-item-level parameters into each
+/// operation's own parameter list, so downstream generation sees one flat, inline
+/// list per operation.
+///
+/// OpenAPI lets any parameter be a `$ref` into `components.parameters` (real specs
+/// share common query/header params like `raw` or `consumerId` this way) and lets
+/// parameters be declared once on a path item, shared by every method on that path
+/// (the usual home for path params like `{id}`). crozier's generation reads only
+/// `operation.parameters` and only inline entries, so without this pass a shared or
+/// referenced parameter is dropped — the endpoint loses it entirely, or a path
+/// parameter's `{placeholder}` is interpolated against a name that never made it
+/// into the method signature. Here every path-level and operation-level `$ref` is
+/// resolved, then the resolved path-level parameters are merged into each
+/// operation, with an operation-level parameter overriding a path-level one of the
+/// same name and location (per the spec). Inert on specs that already inline every
+/// parameter per operation (every synthetic fixture), so it changes no existing
+/// output.
+fn normalize_parameters(doc: &mut OpenApi) {
+    let defs = doc.components.parameters.clone();
+    for item in doc.paths.values_mut() {
+        let shared: Vec<Parameter> = item
+            .parameters
+            .iter()
+            .map(|p| resolve_parameter(p, &defs))
+            .collect();
+        for slot in item.operation_slots() {
+            let Some(op) = slot else { continue };
+            let mut merged = shared.clone();
+            for own in &op.parameters {
+                let own = resolve_parameter(own, &defs);
+                if let Some(existing) = merged
+                    .iter_mut()
+                    .find(|p| p.name == own.name && p.location == own.location)
+                {
+                    *existing = own;
+                } else {
+                    merged.push(own);
+                }
+            }
+            op.parameters = merged;
+        }
+        item.parameters = Vec::new();
+    }
 }
 
 /// Prune the document to a set of audiences (the `x-crozier-audiences` /
@@ -1044,5 +1125,81 @@ components:
         filter_by_audience(&mut doc, &["public".to_string()], false);
         assert_eq!(op_ids(&doc), ["pub"]);
         assert_eq!(schema_keys(&doc), ["Pub"]);
+    }
+
+    const REF_PARAMS_SPEC: &str = r##"
+openapi: 3.0.0
+info: { title: T }
+paths:
+  /items/{itemId}:
+    parameters:
+      - $ref: "#/components/parameters/ItemId"
+    get:
+      operationId: getItem
+      parameters:
+        - $ref: "#/components/parameters/Verbose"
+        - name: inline
+          in: query
+          schema: { type: string }
+      responses:
+        "200": { description: OK }
+components:
+  parameters:
+    ItemId: { name: itemId, in: path, required: true, schema: { type: string } }
+    Verbose: { name: verbose, in: query, required: false, schema: { type: boolean } }
+"##;
+
+    /// `normalize_parameters` folds a path-item-level `$ref` parameter and an
+    /// operation-level `$ref` parameter into the operation, resolving both against
+    /// `components.parameters`, while an inline parameter is left as-is. Without
+    /// this the operation would generate with none of its declared parameters (a
+    /// broken client), which is why real specs that lean on parameter indirection
+    /// need it. Path-level parameters lead, then the operation's own, in order.
+    #[test]
+    fn normalize_parameters_resolves_and_merges_refs() {
+        let mut doc = parse(REF_PARAMS_SPEC);
+        normalize_parameters(&mut doc);
+        let op = doc.paths["/items/{itemId}"].get.as_ref().unwrap();
+        let resolved: Vec<(&str, Option<ParameterLocation>)> = op
+            .parameters
+            .iter()
+            .map(|p| (p.name.as_str(), p.location))
+            .collect();
+        assert_eq!(
+            resolved,
+            [
+                ("itemId", Some(ParameterLocation::Path)),
+                ("verbose", Some(ParameterLocation::Query)),
+                ("inline", Some(ParameterLocation::Query)),
+            ]
+        );
+        // The shared path-item parameter list is consumed once merged.
+        assert!(doc.paths["/items/{itemId}"].parameters.is_empty());
+    }
+
+    /// An operation-level parameter overrides a path-level one sharing its name and
+    /// location (OpenAPI's rule), rather than appearing twice.
+    #[test]
+    fn normalize_parameters_operation_overrides_path_level() {
+        let mut doc = parse(
+            r##"
+openapi: 3.0.0
+info: { title: T }
+paths:
+  /x/{id}:
+    parameters:
+      - { name: id, in: path, required: true, description: shared, schema: { type: string } }
+    get:
+      operationId: getX
+      parameters:
+        - { name: id, in: path, required: true, description: overridden, schema: { type: string } }
+      responses:
+        "200": { description: OK }
+"##,
+        );
+        normalize_parameters(&mut doc);
+        let op = doc.paths["/x/{id}"].get.as_ref().unwrap();
+        assert_eq!(op.parameters.len(), 1);
+        assert_eq!(op.parameters[0].description.as_deref(), Some("overridden"));
     }
 }
