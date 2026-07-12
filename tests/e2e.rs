@@ -1161,6 +1161,56 @@ const FEATURE_TARGETS: &[Corpus] = &[
             "src/fern/widgets/raw_client.py",
         ],
     },
+    // issue #57: an enum value that sanitizes to the `visit(self, …)` receiver
+    // name `self` must escape its `visit()` parameter (`self` → `self_`), or the
+    // method emits a duplicate `self` argument — valid enough to pass the final
+    // `ruff format` but a SyntaxError at import. Fern escapes `self` and leaves
+    // `cls` alone (an ordinary parameter on an instance method never shadows the
+    // receiver), so `WidgetOwner` pins the escape and `WidgetBinding` pins the
+    // deliberate non-escape.
+    Corpus {
+        api: "enum-receiver-collision",
+        package_name: "fern",
+        project_name: "default_package_name",
+        audiences: &[],
+        matched: &[
+            ".fern/metadata.json",
+            "README.md",
+            "pyproject.toml",
+            "reference.md",
+            "requirements.txt",
+            "src/fern/__init__.py",
+            "src/fern/client.py",
+            "src/fern/core/__init__.py",
+            "src/fern/core/api_error.py",
+            "src/fern/core/client_wrapper.py",
+            "src/fern/core/datetime_utils.py",
+            "src/fern/core/file.py",
+            "src/fern/core/force_multipart.py",
+            "src/fern/core/http_client.py",
+            "src/fern/core/http_response.py",
+            "src/fern/core/http_sse/__init__.py",
+            "src/fern/core/http_sse/_api.py",
+            "src/fern/core/http_sse/_decoders.py",
+            "src/fern/core/http_sse/_exceptions.py",
+            "src/fern/core/http_sse/_models.py",
+            "src/fern/core/jsonable_encoder.py",
+            "src/fern/core/pydantic_utilities.py",
+            "src/fern/core/query_encoder.py",
+            "src/fern/core/remove_none_from_dict.py",
+            "src/fern/core/request_options.py",
+            "src/fern/core/serialization.py",
+            "src/fern/py.typed",
+            "src/fern/types/__init__.py",
+            "src/fern/types/widget.py",
+            "src/fern/types/widget_binding.py",
+            "src/fern/types/widget_owner.py",
+            "src/fern/version.py",
+            "src/fern/widgets/__init__.py",
+            "src/fern/widgets/client.py",
+            "src/fern/widgets/raw_client.py",
+        ],
+    },
 ];
 
 /// Path to a fixture directory under `tests/fixtures/`.

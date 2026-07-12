@@ -223,7 +223,8 @@ The `exhaustive` corpus is fully matched, and **every** feature-coverage target 
 `cookie-parameters`, `servers-webhooks`, the four former gap targets
 `basic-auth`, `oauth-client-credentials`, `inline-array-request`, and
 `writeonly-fields`, the two issue-#43 targets `error-responses` and
-`sse-streaming`, and the issue-#50 target `enum-name-sanitization`. (The exact
+`sse-streaming`, the issue-#50 target `enum-name-sanitization`, and the issue-#57
+target `enum-receiver-collision`. (The exact
 matched-file set for each corpus — and the roster of
 corpora itself — is the `FEATURE_TARGETS`/`matched` data in `tests/e2e.rs`, the
 single source of truth; counts are deliberately not restated here so they cannot
@@ -632,6 +633,23 @@ target, so it is covered by the compile-only
 keep the identifier legal (`_01_00_AM`) and the whole tree compiles. This is the
 same posture as the arbitrary-spec validity check — where Fern errors, the bar is
 "valid Python," not byte-parity.
+
+### Enum `visit()` receiver collision (issue #57)
+
+One value in the same `visit()`-parameter path stayed broken after #50: an enum
+value that sanitizes to the method receiver name **`self`** (e.g. an ownership
+enum `["self", "spouse", "child"]`). The member upper-cases to `SELF` (fine), but
+the `visit()` parameter is the lower-cased `self`, which duplicates the method's
+own `self` receiver — a `SyntaxError: duplicate argument 'self'` at import, though
+it is grammatically valid enough to pass the final `ruff format` and ship a
+non-importable module. [`naming::enum_visit_param`] now escapes a value that
+sanitizes to `self` with the same trailing `_` it applies to keywords (`self` →
+`self_`), and the `return self_()` body call follows since both derive from the
+same param. **`cls` is deliberately left unescaped:** `visit` is an ordinary
+instance method, so a `cls` parameter is legal and shadows nothing — Fern escapes
+`self` but not `cls`, and matching Fern is the contract. `enum-receiver-collision`
+pins both: `WidgetOwner` (the `self` → `self_` escape) and `WidgetBinding` (the
+`cls` non-escape) byte-match Fern's whole tree.
 
 Issue #50 **part 2** (the **discriminated-union alias annotation**) is closed by the
 same PR family: the corpus was bumped 4.34.0 → 4.35.0 and

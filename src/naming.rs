@@ -192,10 +192,20 @@ pub fn enum_member_name(value: &str) -> String {
 
 /// The `snake_case` `visit` callback parameter for an enum wire value, sanitized
 /// to a legal Python name (Fern's `snake_case.safe_name`): `global` → `global_`
-/// (keyword), `0: Active` → `zero_active`.
+/// (keyword), `0: Active` → `zero_active`. The method receiver `self` is escaped
+/// the same way (issue #57): the `visit(self, …)` signature would otherwise emit a
+/// duplicate `self` argument — grammatically valid Python that passes `ruff format`
+/// but fails at import — so a value sanitizing to `self` gets the trailing `_`
+/// (`self` → `self_`). `cls` is deliberately *not* escaped: `visit` is an ordinary
+/// instance method, so a `cls` parameter is legal and does not shadow the receiver
+/// — Fern leaves it alone, and matching Fern is the contract.
 #[must_use]
 pub fn enum_visit_param(value: &str) -> String {
-    finalize_enum_ident(enum_words(value).join("_"))
+    let mut name = finalize_enum_ident(enum_words(value).join("_"));
+    if name == "self" {
+        name.push('_');
+    }
+    name
 }
 
 /// Names Fern suffixes with `_` (keeping the wire name as an alias): Python hard
@@ -278,6 +288,22 @@ mod tests {
         assert_eq!(enum_visit_param("0: Active"), "zero_active");
         assert_eq!(enum_member_name("1: InActive"), "ONE_IN_ACTIVE");
         assert_eq!(enum_visit_param("1: InActive"), "one_in_active");
+    }
+
+    #[test]
+    fn enum_receiver_value_escapes_the_visit_param() {
+        // Issue #57: a value that sanitizes to the `visit(self, …)` receiver name
+        // `self` would emit a duplicate `self` argument (invalid at import though
+        // `ruff` accepts it); the visit param is escaped like a keyword, while the
+        // member upper-cases to `SELF` (never a receiver collision) and is untouched.
+        assert_eq!(enum_member_name("self"), "SELF");
+        assert_eq!(enum_visit_param("self"), "self_");
+        // Casing that sanitizes to `self` is escaped too.
+        assert_eq!(enum_visit_param("Self"), "self_");
+        // `cls` is NOT escaped: `visit` is an instance method, so a `cls` parameter
+        // is legal and does not shadow the receiver — Fern leaves it alone.
+        assert_eq!(enum_member_name("cls"), "CLS");
+        assert_eq!(enum_visit_param("cls"), "cls");
     }
 
     #[test]
