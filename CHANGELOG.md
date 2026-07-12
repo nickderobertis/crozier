@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.24](https://github.com/nickderobertis/crozier/compare/v0.0.23...v0.0.24) - 2026-07-12
+
+### Other
+
+- generate issue 77 fixtures from source links
+
 ## [0.0.23](https://github.com/nickderobertis/crozier/compare/v0.0.22...v0.0.23) - 2026-07-12
 
 ### Added
