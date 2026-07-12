@@ -18,10 +18,13 @@
 #   - fern CLI:  npm i -g fern-api    (invoked as `fern`)
 #   - crozier built (for the comment stripper):  cargo build --release
 #
-# Usage:  scripts/generate-fern-fixture.sh [FIXTURE] [FERN_PYTHON_VERSION]
+# Usage:  scripts/generate-fern-fixture.sh [FIXTURE] [FERN_PYTHON_VERSION] [SPEC_PATH]
 #   FIXTURE             fixture dir under tests/fixtures/ (default: exhaustive).
 #                       e.g. auth-schemes, inline-request-response, integer-enums.
 #   FERN_PYTHON_VERSION defaults to the pin below (matches the vendored specs).
+#   SPEC_PATH           optional OpenAPI file to generate from instead of
+#                       tests/fixtures/<fixture>/openapi.yml; useful for fetched,
+#                       unvendored source specs.
 set -euo pipefail
 
 . "$(cd "$(dirname "$0")" && pwd)/lib.sh"
@@ -37,6 +40,7 @@ valid_fixture_name "$FIXTURE" || {
 # The fern-python-sdk generator version whose output we target. Bump together
 # with the vendored spec + fixtures so the corpus stays internally consistent.
 FERN_PYTHON_VERSION="${2:-4.35.0}"
+SPEC_OVERRIDE="${3:-}"
 # The Fern CLI version, pinned via fern.config.json's `version` (the `fern` npm
 # package is only a launcher; this field selects the actual CLI it runs). Matches
 # the corpus's `.fern/metadata.json` cliVersion so regenerated output stays
@@ -44,7 +48,7 @@ FERN_PYTHON_VERSION="${2:-4.35.0}"
 FERN_CLI_VERSION="${FERN_CLI_VERSION:-5.67.1}"
 
 repo_root="$(cd "$(dirname "$0")/.." && pwd)"
-spec="$repo_root/tests/fixtures/$FIXTURE/openapi.yml"
+spec="${SPEC_OVERRIDE:-$repo_root/tests/fixtures/$FIXTURE/openapi.yml}"
 dest="$repo_root/tests/fixtures/$FIXTURE/expected"
 
 need() { command -v "$1" >/dev/null 2>&1 || { echo "generate-fern-fixture: '$1' not found — $2" >&2; exit 1; }; }

@@ -42,6 +42,18 @@ Test fixtures (attribution and statement of changes, per Apache-2.0 §4(b), §4(
   * Fern's own API-definition files were intentionally NOT used. crozier consumes
     only the OpenAPI document.
 
+Additional issue #77 real-world OpenAPI source specs:
+
+  * Source: APIs.guru OpenAPI Directory (https://apis.guru/openapi-directory/),
+    individual immutable API/version URLs listed in tests/fixtures/CORPUS.md.
+  * Source specs for the issue #77 corpus are intentionally not vendored. The
+    refresh script downloads them into the ignored .local/corpus cache, passes
+    the cached file directly to Fern, and commits only Fern-generated expected
+    output. The per-spec license name is retained in tests/fixtures/CORPUS.md
+    beside each source URL.
+  * Change made to downloaded source specs before generation: none. No schema
+    transformation is applied.
+
 Vendored font (documentation tooling only — not shipped in the crate or wheels):
 
   * screenshots/fonts/JetBrainsMono-Regular.ttf is JetBrains Mono, Copyright 2020

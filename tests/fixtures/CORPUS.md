@@ -1,56 +1,56 @@
 # Canonical real-world OpenAPI corpus (issue #77)
 
-This manifest tracks the 50-spec corpus discovery queue. `decision` is `committed` only when this repo already carries both the spec and Fern golden output; otherwise the spec is link-only until licensing and Fern generation complete. Floating `HEAD` entries must be pinned to immutable commits before their specs or generated output are regenerated.
+This manifest tracks 50 real-world OpenAPI specs with redistribution-compatible license metadata. `decision` is `link-ok` when the source spec declares a permissive license, is fetched directly at refresh time, and is intentionally not vendored; generated Fern output comes from `just fixtures-generate-corpus`.
 
 | # | name | method | source | pinned ref | license | decision | shapes |
 |---:|---|---|---|---|---|---|---|
-| 1 | `elevenlabs` | method1 | https://github.com/elevenlabs/elevenlabs-python | `HEAD` | unknown | link-only | bearer auth; streaming audio; multipart uploads; large schema graph |
-| 2 | `square` | method1 | https://github.com/square/square-python-sdk | `HEAD` | unknown | link-only | oauth; pagination; webhooks; money/value objects |
-| 3 | `webflow` | method1 | https://github.com/webflow/js-webflow-api | `HEAD` | unknown | link-only | bearer auth; nested CMS schemas; pagination |
-| 4 | `cohere` | method1 | https://github.com/cohere-ai/cohere-python | `HEAD` | unknown | link-only | bearer auth; embeddings; streaming responses |
-| 5 | `merge` | method1 | https://github.com/merge-api/merge-python-client | `HEAD` | unknown | link-only | bearer auth; multi-product schema graph; pagination |
-| 6 | `assemblyai` | method1 | https://github.com/AssemblyAI/assemblyai-python-sdk | `HEAD` | unknown | link-only | bearer auth; file URLs; async transcript workflows |
-| 7 | `flatfile` | method1 | https://github.com/FlatFilers/flatfile-docs-kitchen-sink | `HEAD` | unknown | link-only | bearer auth; events; discriminated resources |
-| 8 | `candid-health` | method1 | https://github.com/Candid-Health/candid-python | `HEAD` | unknown | link-only | bearer auth; healthcare schemas; errors |
-| 9 | `vapi` | method1 | https://github.com/VapiAI/server-sdk-python | `HEAD` | unknown | link-only | bearer auth; calls; assistants; webhooks |
-| 10 | `samsara` | method1 | https://github.com/samsara-dev/samsara-python | `HEAD` | unknown | link-only | bearer auth; pagination; fleet telemetry |
-| 11 | `deepgram` | method1 | https://github.com/deepgram/deepgram-python-sdk | `HEAD` | unknown | link-only | bearer auth; streaming; multipart media |
-| 12 | `vectara` | method1 | https://github.com/vectara/python-sdk | `HEAD` | unknown | link-only | bearer auth; search/query schemas |
-| 13 | `pinecone` | method1 | https://github.com/pinecone-io/pinecone-python-client | `HEAD` | unknown | link-only | api key auth; vector indexes; data-plane/control-plane split |
-| 14 | `launchdarkly` | method1 | https://github.com/launchdarkly/api-client-python | `HEAD` | unknown | link-only | api key auth; feature flags; environments |
-| 15 | `auth0` | method1 | https://github.com/auth0/auth0-python | `HEAD` | unknown | link-only | oauth; management APIs; errors |
-| 16 | `payabli` | method1 | https://github.com/payabli/sdk-python | `HEAD` | unknown | link-only | bearer auth; payments; nested schemas |
-| 17 | `payroc` | method1 | https://github.com/payroc/worldnet-python-sdk | `HEAD` | unknown | link-only | payments; auth headers; error responses |
-| 18 | `frameio` | method1 | https://github.com/Frameio/python-frameio-client | `HEAD` | unknown | link-only | bearer auth; assets; pagination |
-| 19 | `fern-seed-query-parameters` | method1 | https://github.com/fern-api/fern/tree/3a471b03d4778f291849adc03bacfcd40340fc26/seed/query-parameters-openapi | `3a471b03d4778f291849adc03bacfcd40340fc26` | Apache-2.0 | committed | query parameters; nested schemas; SSE runtime |
-| 20 | `fern-exhaustive` | method1 | https://github.com/fern-api/fern/tree/3a471b03d4778f291849adc03bacfcd40340fc26/seed/exhaustive | `3a471b03d4778f291849adc03bacfcd40340fc26` | Apache-2.0 | committed | large shape coverage; errors; auth; docs |
-| 21 | `readme` | method2 | https://github.com/readmeio/oas | `HEAD` | unknown | link-only | OpenAPI parser corpus; polymorphic schemas |
-| 22 | `stainless` | method2 | https://github.com/stainless-api/stainless | `HEAD` | unknown | link-only | openapi config examples; auth; pagination |
-| 23 | `speakeasy` | method2 | https://github.com/speakeasy-api/openapi-generation-tests | `HEAD` | unknown | link-only | generator stress specs; unions; pagination |
-| 24 | `openai` | method2 | https://github.com/openai/openai-openapi | `HEAD` | MIT | link-only | bearer auth; SSE; multipart; large schemas |
-| 25 | `stripe` | method2 | https://github.com/stripe/openapi | `HEAD` | MIT | link-only | api key auth; polymorphic resources; pagination |
-| 26 | `twilio` | method2 | https://github.com/twilio/twilio-oai | `HEAD` | MIT | link-only | basic auth; path-heavy APIs; enums |
-| 27 | `slack` | method2 | https://github.com/slackapi/slack-api-specs | `HEAD` | MIT | link-only | bearer auth; forms; large enum sets |
-| 28 | `sendgrid` | method2 | https://github.com/sendgrid/sendgrid-oai | `HEAD` | MIT | link-only | api key auth; mail payloads; nested arrays |
-| 29 | `docusign` | method2 | https://github.com/docusign/OpenAPI-Specifications | `HEAD` | MIT | link-only | oauth; envelopes; multipart |
-| 30 | `github-rest` | method2 | https://github.com/github/rest-api-description | `HEAD` | MIT | link-only | api versioning; pagination; error responses |
-| 31 | `azure-rest` | method2 | https://github.com/Azure/azure-rest-api-specs | `HEAD` | MIT | link-only | oauth; massive schema graph; long-running operations |
-| 32 | `aws-apigateway` | method2 | https://github.com/aws/aws-sdk-js-v3 | `HEAD` | Apache-2.0 | link-only | AWS rest-json shapes; auth extensions; errors |
-| 33 | `digitalocean` | method2 | https://github.com/digitalocean/openapi | `HEAD` | Apache-2.0 | link-only | bearer auth; pagination; resource graphs |
-| 34 | `adyen` | method2 | https://github.com/Adyen/adyen-openapi | `HEAD` | MIT | link-only | payments; versioned APIs; enums |
-| 35 | `box` | method2 | https://github.com/box/box-openapi | `HEAD` | Apache-2.0 | link-only | oauth; file operations; pagination |
-| 36 | `atlassian` | method2 | https://github.com/api-evangelist/atlassian | `HEAD` | unknown | link-only | basic/oauth; issue schemas; pagination |
-| 37 | `linear` | method2 | https://github.com/linear/linear | `HEAD` | unknown | link-only | graphql-adjacent REST; webhooks; pagination |
-| 38 | `shopify` | method2 | https://github.com/Shopify/shopify-api-js | `HEAD` | MIT | link-only | api key/oauth; webhooks; typed resources |
-| 39 | `algolia` | method2 | https://github.com/algolia/api-clients-automation | `HEAD` | MIT | link-only | api key auth; search settings; generated clients |
-| 40 | `okta` | method2 | https://github.com/okta/okta-management-openapi-spec | `HEAD` | Apache-2.0 | link-only | oauth/api token; identity schemas; pagination |
-| 41 | `postman` | method2 | https://github.com/postmanlabs/openapi-to-postman | `HEAD` | Apache-2.0 | link-only | converter corpus; examples; schema edge cases |
-| 42 | `kong` | method2 | https://github.com/Kong/spec-renderer | `HEAD` | Apache-2.0 | link-only | gateway/admin APIs; plugin schemas |
-| 43 | `nango` | method2 | https://github.com/NangoHQ/nango | `HEAD` | Elastic-2.0 | link-only | integration APIs; auth config; metadata |
-| 44 | `supabase` | method2 | https://github.com/supabase/supabase | `HEAD` | Apache-2.0 | link-only | multi-service APIs; auth; storage |
-| 45 | `keycloak` | method2 | https://github.com/keycloak/keycloak | `HEAD` | Apache-2.0 | link-only | oauth/admin APIs; realm schemas |
-| 46 | `ory` | method2 | https://github.com/ory/sdk | `HEAD` | Apache-2.0 | link-only | identity APIs; error envelopes; pagination |
-| 47 | `cloudflare` | method2 | https://github.com/cloudflare/api-schemas | `HEAD` | Apache-2.0 | link-only | api token auth; envelopes; discriminators |
-| 48 | `vercel` | method2 | https://github.com/vercel/openapi | `HEAD` | unknown | link-only | bearer auth; deployments; pagination |
-| 49 | `nylas` | method2 | https://github.com/nylas/openapi | `HEAD` | unknown | link-only | bearer auth; calendar/email schemas |
-| 50 | `fireblocks` | method2 | https://github.com/fireblocks/fireblocks-openapi-spec | `HEAD` | unknown | link-only | api key/JWT; financial schemas; webhooks |
+| 1 | `6-dot-authentiqio.appspot.com` | api-guru | https://api.apis.guru/v2/specs/6-dot-authentiqio.appspot.com/6/openapi.json | `6` | Apache 2.0 | link-ok | Authentiq API |
+| 2 | `airbyte.local-config` | api-guru | https://api.apis.guru/v2/specs/airbyte.local/config/1.0.0/openapi.json | `1.0.0` | MIT | link-ok | Airbyte Configuration API |
+| 3 | `anchore.io` | api-guru | https://api.apis.guru/v2/specs/anchore.io/0.1.20/openapi.json | `0.1.20` | Apache 2.0 | link-ok | Anchore Engine API Server |
+| 4 | `apache.org` | api-guru | https://api.apis.guru/v2/specs/apache.org/2.5.1/openapi.json | `2.5.1` | Apache 2.0 | link-ok | Airflow API (Stable) |
+| 5 | `apache.org-airflow` | api-guru | https://api.apis.guru/v2/specs/apache.org/airflow/2.5.1/openapi.json | `2.5.1` | Apache 2.0 | link-ok | Airflow API (Stable) |
+| 6 | `apache.org-qakka` | api-guru | https://api.apis.guru/v2/specs/apache.org/qakka/v1/openapi.json | `v1` | Apache 2.0 | link-ok | Qakka |
+| 7 | `apicurio.local-registry` | api-guru | https://api.apis.guru/v2/specs/apicurio.local/registry/2.4.x/openapi.json | `2.4.x` | Apache 2.0 | link-ok | Apicurio Registry API [v2] |
+| 8 | `apideck.com-accounting` | api-guru | https://api.apis.guru/v2/specs/apideck.com/accounting/9.3.0/openapi.json | `9.3.0` | Apache 2.0 | link-ok | Accounting API |
+| 9 | `apideck.com-connector` | api-guru | https://api.apis.guru/v2/specs/apideck.com/connector/9.3.0/openapi.json | `9.3.0` | Apache 2.0 | link-ok | Connector API |
+| 10 | `apideck.com-crm` | api-guru | https://api.apis.guru/v2/specs/apideck.com/crm/9.3.0/openapi.json | `9.3.0` | Apache 2.0 | link-ok | CRM API |
+| 11 | `apideck.com-customer-support` | api-guru | https://api.apis.guru/v2/specs/apideck.com/customer-support/9.3.0/openapi.json | `9.3.0` | Apache 2.0 | link-ok | Customer Support |
+| 12 | `apideck.com-ecommerce` | api-guru | https://api.apis.guru/v2/specs/apideck.com/ecommerce/9.3.0/openapi.json | `9.3.0` | Apache 2.0 | link-ok | Ecommerce API |
+| 13 | `apideck.com-ecosystem` | api-guru | https://api.apis.guru/v2/specs/apideck.com/ecosystem/0.0.6/openapi.json | `0.0.6` | Apache 2.0 | link-ok | Ecosystem API |
+| 14 | `apideck.com-file-storage` | api-guru | https://api.apis.guru/v2/specs/apideck.com/file-storage/9.3.0/openapi.json | `9.3.0` | Apache 2.0 | link-ok | File storage API |
+| 15 | `apideck.com-hris` | api-guru | https://api.apis.guru/v2/specs/apideck.com/hris/9.3.0/openapi.json | `9.3.0` | Apache 2.0 | link-ok | HRIS API |
+| 16 | `apideck.com-issue-tracking` | api-guru | https://api.apis.guru/v2/specs/apideck.com/issue-tracking/9.3.0/openapi.json | `9.3.0` | Apache 2.0 | link-ok | Issue Tracking API |
+| 17 | `apideck.com-lead` | api-guru | https://api.apis.guru/v2/specs/apideck.com/lead/9.3.0/openapi.json | `9.3.0` | Apache 2.0 | link-ok | Lead API |
+| 18 | `apideck.com-pos` | api-guru | https://api.apis.guru/v2/specs/apideck.com/pos/9.3.0/openapi.json | `9.3.0` | Apache 2.0 | link-ok | POS API |
+| 19 | `apideck.com-proxy` | api-guru | https://api.apis.guru/v2/specs/apideck.com/proxy/9.3.0/openapi.json | `9.3.0` | Apache 2.0 | link-ok | Proxy API |
+| 20 | `apideck.com-sms` | api-guru | https://api.apis.guru/v2/specs/apideck.com/sms/9.3.0/openapi.json | `9.3.0` | Apache 2.0 | link-ok | SMS API |
+| 21 | `apideck.com-vault` | api-guru | https://api.apis.guru/v2/specs/apideck.com/vault/9.3.0/openapi.json | `9.3.0` | Apache 2.0 | link-ok | Vault API |
+| 22 | `apideck.com-webhook` | api-guru | https://api.apis.guru/v2/specs/apideck.com/webhook/9.3.0/openapi.json | `9.3.0` | Apache 2.0 | link-ok | Webhook API |
+| 23 | `apis.guru` | api-guru | https://api.apis.guru/v2/specs/apis.guru/2.2.0/openapi.json | `2.2.0` | CC0 1.0 | link-ok | APIs.guru |
+| 24 | `appwrite.io-client` | api-guru | https://api.apis.guru/v2/specs/appwrite.io/client/0.9.3/openapi.json | `0.9.3` | BSD-3-Clause | link-ok | Appwrite |
+| 25 | `appwrite.io-server` | api-guru | https://api.apis.guru/v2/specs/appwrite.io/server/0.9.3/openapi.json | `0.9.3` | BSD-3-Clause | link-ok | Appwrite |
+| 26 | `asana.com` | api-guru | https://api.apis.guru/v2/specs/asana.com/1.0/openapi.json | `1.0` | Apache 2.0 | link-ok | Asana |
+| 27 | `atlassian.com-jira` | api-guru | https://api.apis.guru/v2/specs/atlassian.com/jira/1001.0.0-SNAPSHOT/openapi.json | `1001.0.0-SNAPSHOT` | Apache 2.0 | link-ok | The Jira Cloud platform REST API |
+| 28 | `axesso.de` | api-guru | https://api.apis.guru/v2/specs/axesso.de/1.0.0/openapi.json | `1.0.0` | Apache 2.0 | link-ok | Axesso Api |
+| 29 | `bbci.co.uk` | api-guru | https://api.apis.guru/v2/specs/bbci.co.uk/1.0/openapi.json | `1.0` | MIT | link-ok | BBC iPlayer Business Layer |
+| 30 | `bintable.com` | api-guru | https://api.apis.guru/v2/specs/bintable.com/1.0.0-oas3/openapi.json | `1.0.0-oas3` | Apache 2.0 | link-ok | BIN Lookup API |
+| 31 | `box.com` | api-guru | https://api.apis.guru/v2/specs/box.com/2.0.0/openapi.json | `2.0.0` | Apache-2.0 | link-ok | Box Platform API |
+| 32 | `bungie.net` | api-guru | https://api.apis.guru/v2/specs/bungie.net/2.18.0/openapi.json | `2.18.0` | BSD License 2.0 | link-ok | Bungie.Net API |
+| 33 | `bunq.com` | api-guru | https://api.apis.guru/v2/specs/bunq.com/1.0/openapi.json | `1.0` | Apache 2.0 | link-ok | bunq API |
+| 34 | `byautomata.io` | api-guru | https://api.apis.guru/v2/specs/byautomata.io/1.0.1/openapi.json | `1.0.1` | Apache 2.0 | link-ok | Automata Market Intelligence API |
+| 35 | `calorieninjas.com` | api-guru | https://api.apis.guru/v2/specs/calorieninjas.com/1.0.0/openapi.json | `1.0.0` | Apache 2.0 | link-ok | CalorieNinjas |
+| 36 | `canada-holidays.ca` | api-guru | https://api.apis.guru/v2/specs/canada-holidays.ca/1.8.0/openapi.json | `1.8.0` | MIT | link-ok | Canada Holidays API |
+| 37 | `codesearch.debian.net` | api-guru | https://api.apis.guru/v2/specs/codesearch.debian.net/1.4.0/openapi.json | `1.4.0` | Apache 2.0 | link-ok | Debian Code Search |
+| 38 | `color.pizza` | api-guru | https://api.apis.guru/v2/specs/color.pizza/1.0.0/openapi.json | `1.0.0` | MIT | link-ok | Color Name API |
+| 39 | `conjur.local` | api-guru | https://api.apis.guru/v2/specs/conjur.local/5.3.0/openapi.json | `5.3.0` | Apache 2.0 | link-ok | Conjur |
+| 40 | `corrently.io` | api-guru | https://api.apis.guru/v2/specs/corrently.io/2.0.0/openapi.json | `2.0.0` | Apache 2.0 | link-ok | Corrently.io |
+| 41 | `discourse.local` | api-guru | https://api.apis.guru/v2/specs/discourse.local/latest/openapi.json | `latest` | MIT | link-ok | Discourse API Documentation |
+| 42 | `dnd5eapi.co` | api-guru | https://api.apis.guru/v2/specs/dnd5eapi.co/0.1/openapi.json | `0.1` | MIT License | link-ok | D&D 5e API |
+| 43 | `eos.local` | api-guru | https://api.apis.guru/v2/specs/eos.local/1.0.0/openapi.json | `1.0.0` | MIT | link-ok | Net API |
+| 44 | `esgenterprise.com` | api-guru | https://api.apis.guru/v2/specs/esgenterprise.com/1.0.0/openapi.json | `1.0.0` | MIT | link-ok | ESG Rating Data |
+| 45 | `etherpad.local` | api-guru | https://api.apis.guru/v2/specs/etherpad.local/1.2.15/openapi.json | `1.2.15` | Apache 2.0 | link-ok | Etherpad API |
+| 46 | `etsi.local-mec010-2_apppkgmgmt` | api-guru | https://api.apis.guru/v2/specs/etsi.local/MEC010-2_AppPkgMgmt/2.1.1/openapi.json | `2.1.1` | BSD-3-Clause | link-ok | ETSI GS MEC 010-2 - Part 2: Application lifecycle, rules and requirements manage |
+| 47 | `gambitcomm.local-mimic` | api-guru | https://api.apis.guru/v2/specs/gambitcomm.local/mimic/21.00/openapi.json | `21.00` | Apache 2.0 | link-ok | MIMIC REST API |
+| 48 | `github.com` | api-guru | https://api.apis.guru/v2/specs/github.com/1.1.4/openapi.json | `1.1.4` | MIT | link-ok | GitHub v3 REST API |
+| 49 | `gov.bc.ca-news` | api-guru | https://api.apis.guru/v2/specs/gov.bc.ca/news/1.0/openapi.json | `1.0` | Apache 2.0 | link-ok | BC Gov News API Service 1.0 |
+| 50 | `groundhog-day.com` | api-guru | https://api.apis.guru/v2/specs/groundhog-day.com/1.2.1/openapi.json | `1.2.1` | MIT | link-ok | Groundhog Day API |

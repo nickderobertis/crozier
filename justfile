@@ -79,6 +79,13 @@ fixtures-refresh *args:
 fetch-corpus *args:
     ./scripts/fetch-corpus.sh {{args}}
 
+
+# Fetch missing link-only source repos, discover/vendor their OpenAPI specs, and
+# generate Fern golden `expected/` trees for the issue #77 corpus. Pass
+# `--committed` to refresh only rows already vendored. Needs Docker + fern.
+fixtures-generate-corpus *args:
+    ./scripts/generate-corpus-fixtures.sh {{args}}
+
 # Coverage-growth aid: for each corpus, report which committed fixture files
 # crozier ALREADY reproduces byte-for-byte but are missing from its `matched` list
 # in tests/e2e.rs, printed as ready-to-paste array entries. Not part of `check`.
