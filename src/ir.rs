@@ -2098,7 +2098,18 @@ impl Builder<'_> {
                     let variants: Vec<TypeRef> = members
                         .iter()
                         .map(|m| {
-                            let ty = base_type_ref(m);
+                            // A bare `type: object` union member is an open map to
+                            // Fern (`Dict[str, Optional[Any]]`), not `Any`.
+                            let ty = if is_bare_object(m) {
+                                TypeRef::Dict(
+                                    Box::new(TypeRef::Primitive(Prim::Str)),
+                                    Box::new(TypeRef::Optional(Box::new(TypeRef::Primitive(
+                                        Prim::Any,
+                                    )))),
+                                )
+                            } else {
+                                base_type_ref(m)
+                            };
                             if m.nullable == Some(true) {
                                 TypeRef::Optional(Box::new(ty))
                             } else {
@@ -2180,6 +2191,16 @@ fn is_map(schema: &Schema) -> bool {
 fn is_inline_object(schema: &Schema) -> bool {
     schema.reference.is_none()
         && (!schema.properties.is_empty() || schema.all_of.is_some() || is_object_type(schema))
+}
+
+/// A bare `type: object` with no declared structure (no properties, `allOf`, or
+/// `additionalProperties`) — an open map Fern types as `Dict[str, Optional[Any]]`.
+fn is_bare_object(schema: &Schema) -> bool {
+    schema.reference.is_none()
+        && schema.properties.is_empty()
+        && schema.all_of.is_none()
+        && schema.additional_properties.is_none()
+        && is_object_type(schema)
 }
 
 /// An inline (not `$ref`) object with *declared structure* — properties or an
