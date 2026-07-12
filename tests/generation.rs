@@ -20,6 +20,7 @@ fn render(spec: &str) -> HashMap<String, String> {
         package_name: Some("acme".to_string()),
         project_name: Some("acme".to_string()),
         audiences: Vec::new(),
+        audience_strict: false,
     })
     .expect("render succeeds");
     files
@@ -205,6 +206,7 @@ fn generate_writes_files_to_disk() {
         package_name: Some("acme".to_string()),
         project_name: None,
         audiences: Vec::new(),
+        audience_strict: false,
     })
     .expect("generate succeeds");
     assert!(!files.is_empty());
@@ -226,6 +228,7 @@ fn default_package_name_derives_from_title() {
         package_name: None,
         project_name: None,
         audiences: Vec::new(),
+        audience_strict: false,
     })
     .unwrap();
     assert!(files.iter().any(|f| f.path.starts_with("src/my_cool_api")));
@@ -844,6 +847,7 @@ fn empty_title_falls_back_to_client_package() {
         package_name: None,
         project_name: None,
         audiences: Vec::new(),
+        audience_strict: false,
     })
     .unwrap();
     assert!(files.iter().any(|f| f.path.starts_with("src/client")));
@@ -1321,6 +1325,7 @@ fn api_key_scheme_without_name_is_rejected() {
         package_name: Some("acme".to_string()),
         project_name: Some("acme".to_string()),
         audiences: Vec::new(),
+        audience_strict: false,
     })
     .expect_err("missing apiKey name must fail");
     assert!(err.to_string().contains("apiKey security scheme"));
@@ -1433,6 +1438,15 @@ fn inline_request_body_hoists_nested_objects_into_tag_types() {
 
 /// Render a spec with an `x-crozier-audiences` filter, returning path -> contents.
 fn render_with_audiences(spec: &str, audiences: &[&str]) -> HashMap<String, String> {
+    render_with_audiences_mode(spec, audiences, false)
+}
+
+/// As [`render_with_audiences`], but toggles the strict flag (`--audience-strict`).
+fn render_with_audiences_mode(
+    spec: &str,
+    audiences: &[&str],
+    strict: bool,
+) -> HashMap<String, String> {
     let dir = tempfile::tempdir().expect("tempdir");
     let path = dir.path().join("api.yml");
     std::fs::write(&path, spec).unwrap();
@@ -1442,6 +1456,7 @@ fn render_with_audiences(spec: &str, audiences: &[&str]) -> HashMap<String, Stri
         package_name: Some("acme".to_string()),
         project_name: Some("acme".to_string()),
         audiences: audiences.iter().map(|s| s.to_string()).collect(),
+        audience_strict: strict,
     })
     .expect("render succeeds");
     files
@@ -1541,6 +1556,43 @@ fn audience_filter_prunes_to_matching_ops_and_closure() {
     assert!(
         !files.contains_key("src/acme/types/stats.py"),
         "type only the dropped op referenced is pruned"
+    );
+}
+
+#[test]
+fn strict_audience_filter_excludes_unlabelled_ops() {
+    // Strict mode (`--audience-strict`) carves a *minimal* subset: only ops
+    // carrying a matching audience survive. Unlike the permissive default, the
+    // unlabelled `things` op — and its `Thing` type, which no surviving op reaches
+    // — are pruned, matching Fern's exclusive filtering (issue #62).
+    let files = render_with_audiences_mode(AUDIENCE_SPEC, &["public"], true);
+    assert!(
+        files.contains_key("src/acme/widgets/client.py"),
+        "public op kept"
+    );
+    assert!(
+        !files.contains_key("src/acme/things/client.py"),
+        "unlabelled op dropped under strict"
+    );
+    assert!(
+        !files.contains_key("src/acme/admin/client.py"),
+        "internal op dropped"
+    );
+    assert!(
+        files.contains_key("src/acme/types/widget.py"),
+        "referenced type kept"
+    );
+    assert!(
+        files.contains_key("src/acme/types/widget_detail.py"),
+        "transitively referenced type kept"
+    );
+    assert!(
+        !files.contains_key("src/acme/types/thing.py"),
+        "unlabelled op's type pruned under strict"
+    );
+    assert!(
+        !files.contains_key("src/acme/types/stats.py"),
+        "internal-only type pruned"
     );
 }
 

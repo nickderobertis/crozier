@@ -22,6 +22,9 @@ struct Corpus {
     /// `--audience` filters to drive crozier with (`x-crozier-audiences`);
     /// empty means the whole API is generated, matching most corpora.
     audiences: &'static [&'static str],
+    /// Whether to pass `--audience-strict` (exclude un-annotated operations,
+    /// matching Fern's exclusive filtering). Only meaningful with `audiences`.
+    audience_strict: bool,
     matched: &'static [&'static str],
 }
 
@@ -31,6 +34,7 @@ const QUERY_PARAMETERS: Corpus = Corpus {
     package_name: "seed",
     project_name: "fern_query-parameters-openapi",
     audiences: &[],
+    audience_strict: false,
     matched: &[
         "src/seed/version.py",
         "src/seed/py.typed",
@@ -62,6 +66,7 @@ const EXHAUSTIVE: Corpus = Corpus {
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
+    audience_strict: false,
     matched: &[
         "src/fern/version.py",
         "src/fern/py.typed",
@@ -225,6 +230,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         package_name: "fern",
         project_name: "default_package_name",
         audiences: &[],
+        audience_strict: false,
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -275,6 +281,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         package_name: "fern",
         project_name: "default_package_name",
         audiences: &[],
+        audience_strict: false,
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -320,6 +327,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         package_name: "fern",
         project_name: "default_package_name",
         audiences: &[],
+        audience_strict: false,
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -360,6 +368,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         package_name: "fern",
         project_name: "default_package_name",
         audiences: &[],
+        audience_strict: false,
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -401,6 +410,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         package_name: "fern",
         project_name: "default_package_name",
         audiences: &[],
+        audience_strict: false,
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -443,6 +453,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         package_name: "fern",
         project_name: "default_package_name",
         audiences: &[],
+        audience_strict: false,
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -484,6 +495,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         package_name: "fern",
         project_name: "default_package_name",
         audiences: &[],
+        audience_strict: false,
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -526,6 +538,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         package_name: "fern",
         project_name: "default_package_name",
         audiences: &[],
+        audience_strict: false,
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -576,6 +589,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         package_name: "fern",
         project_name: "default_package_name",
         audiences: &[],
+        audience_strict: false,
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -618,6 +632,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         package_name: "fern",
         project_name: "default_package_name",
         audiences: &[],
+        audience_strict: false,
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -668,6 +683,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         package_name: "fern",
         project_name: "default_package_name",
         audiences: &[],
+        audience_strict: false,
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -716,6 +732,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         package_name: "fern",
         project_name: "default_package_name",
         audiences: &[],
+        audience_strict: false,
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -771,6 +788,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         package_name: "fern",
         project_name: "default_package_name",
         audiences: &[],
+        audience_strict: false,
         matched: &[
             "src/fern/core/__init__.py",
             "src/fern/core/api_error.py",
@@ -805,6 +823,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         package_name: "fern",
         project_name: "default_package_name",
         audiences: &[],
+        audience_strict: false,
         matched: &[
             "src/fern/client.py",
             "src/fern/core/__init__.py",
@@ -842,6 +861,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         package_name: "fern",
         project_name: "default_package_name",
         audiences: &[],
+        audience_strict: false,
         matched: &[
             "src/fern/client.py",
             "src/fern/core/__init__.py",
@@ -885,6 +905,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         package_name: "fern",
         project_name: "default_package_name",
         audiences: &[],
+        audience_strict: false,
         matched: &[
             ".fern/metadata.json",
             "src/fern/client.py",
@@ -932,6 +953,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         package_name: "fern",
         project_name: "default_package_name",
         audiences: &[],
+        audience_strict: false,
         matched: &[
             ".fern/metadata.json",
             "pyproject.toml",
@@ -982,6 +1004,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         package_name: "fern",
         project_name: "default_package_name",
         audiences: &[],
+        audience_strict: false,
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -1030,6 +1053,58 @@ const FEATURE_TARGETS: &[Corpus] = &[
         package_name: "fern",
         project_name: "default_package_name",
         audiences: &["public"],
+        audience_strict: false,
+        matched: &[
+            ".fern/metadata.json",
+            "README.md",
+            "pyproject.toml",
+            "reference.md",
+            "requirements.txt",
+            "src/fern/__init__.py",
+            "src/fern/client.py",
+            "src/fern/core/__init__.py",
+            "src/fern/core/api_error.py",
+            "src/fern/core/client_wrapper.py",
+            "src/fern/core/datetime_utils.py",
+            "src/fern/core/file.py",
+            "src/fern/core/force_multipart.py",
+            "src/fern/core/http_client.py",
+            "src/fern/core/http_response.py",
+            "src/fern/core/http_sse/__init__.py",
+            "src/fern/core/http_sse/_api.py",
+            "src/fern/core/http_sse/_decoders.py",
+            "src/fern/core/http_sse/_exceptions.py",
+            "src/fern/core/http_sse/_models.py",
+            "src/fern/core/jsonable_encoder.py",
+            "src/fern/core/pydantic_utilities.py",
+            "src/fern/core/query_encoder.py",
+            "src/fern/core/remove_none_from_dict.py",
+            "src/fern/core/request_options.py",
+            "src/fern/core/serialization.py",
+            "src/fern/py.typed",
+            "src/fern/types/__init__.py",
+            "src/fern/types/widget.py",
+            "src/fern/types/widget_detail.py",
+            "src/fern/version.py",
+            "src/fern/widgets/__init__.py",
+            "src/fern/widgets/client.py",
+            "src/fern/widgets/raw_client.py",
+        ],
+    },
+    // audience-filter-strict (issue #62): the `audience-filter` spec plus an
+    // *un-annotated* operation (`/health`, no audiences). Fern's audience filter is
+    // exclusive, so `audiences: [public]` drops both the internal `getStats` op AND
+    // the un-annotated `healthCheck` op — the golden here is that strict subset.
+    // crozier reproduces it only under `--audience-strict`; the permissive default
+    // would keep `healthCheck`. The surviving tree is therefore identical to
+    // `audience-filter`'s (public op + `Widget`→`WidgetDetail`), proving that strict
+    // mode excludes the un-annotated op exactly as Fern does.
+    Corpus {
+        api: "audience-filter-strict",
+        package_name: "fern",
+        project_name: "default_package_name",
+        audiences: &["public"],
+        audience_strict: true,
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -1082,6 +1157,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         package_name: "fern",
         project_name: "default_package_name",
         audiences: &[],
+        audience_strict: false,
         matched: &[
             ".fern/metadata.json",
             "src/fern/client.py",
@@ -1123,6 +1199,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         package_name: "fern",
         project_name: "default_package_name",
         audiences: &[],
+        audience_strict: false,
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -1173,6 +1250,7 @@ const FEATURE_TARGETS: &[Corpus] = &[
         package_name: "fern",
         project_name: "default_package_name",
         audiences: &[],
+        audience_strict: false,
         matched: &[
             ".fern/metadata.json",
             "README.md",
@@ -1373,6 +1451,7 @@ fn generate_corpus(c: &Corpus) -> tempfile::TempDir {
             c.project_name,
         ])
         .args(c.audiences.iter().flat_map(|a| ["--audience", a]))
+        .args(c.audience_strict.then_some("--audience-strict"))
         .assert()
         .success()
         .stderr(predicate::str::contains("generated"));
@@ -2175,4 +2254,66 @@ fn audience_filter_prunes_through_the_binary_and_stays_valid() {
     assert!(pub_only.join("src/aud/types/widget.py").is_file());
     assert!(pub_only.join("src/aud/types/widget_detail.py").is_file());
     assert_valid_python(&pub_only);
+}
+
+#[test]
+fn strict_audience_excludes_unannotated_ops_through_the_binary() {
+    // Drive the real binary over the `audience-filter-strict` spec (which carries an
+    // un-annotated `/health` op) both permissive and strict, proving the issue #62
+    // contrast the byte-match cannot: the same `--audience public` keeps the
+    // un-annotated op by default but drops it under `--audience-strict`, and both
+    // pruned subsets still compile.
+    let dir = tempfile::tempdir().expect("tempdir");
+    let spec = fixture_dir("audience-filter-strict").join("openapi.yml");
+
+    // Permissive `--audience public`: the un-annotated `health` op is *kept* (the
+    // documented "or none at all" rule); only the internal `admin` op is pruned.
+    let permissive = dir.path().join("permissive");
+    crozier()
+        .args(["generate", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&permissive)
+        .args(["--package-name", "aud", "--audience", "public"])
+        .assert()
+        .success();
+    assert!(permissive.join("src/aud/widgets/client.py").is_file());
+    assert!(
+        permissive.join("src/aud/health/client.py").is_file(),
+        "un-annotated health op should be kept by permissive --audience public"
+    );
+    assert!(!permissive.join("src/aud/admin").exists());
+    assert_valid_python(&permissive);
+
+    // Strict `--audience public --audience-strict`: the un-annotated `health` op and
+    // its `Health` type are *also* pruned, leaving only the public subset — Fern's
+    // exclusive behaviour.
+    let strict = dir.path().join("strict");
+    crozier()
+        .args(["generate", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&strict)
+        .args([
+            "--package-name",
+            "aud",
+            "--audience",
+            "public",
+            "--audience-strict",
+        ])
+        .assert()
+        .success();
+    assert!(strict.join("src/aud/widgets/client.py").is_file());
+    assert!(
+        !strict.join("src/aud/health").exists(),
+        "un-annotated health op should be pruned by --audience-strict"
+    );
+    assert!(
+        !strict.join("src/aud/types/health.py").exists(),
+        "un-annotated op's Health type should be pruned by --audience-strict"
+    );
+    assert!(!strict.join("src/aud/admin").exists());
+    assert!(strict.join("src/aud/types/widget.py").is_file());
+    assert!(strict.join("src/aud/types/widget_detail.py").is_file());
+    assert_valid_python(&strict);
 }
