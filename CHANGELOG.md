@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.16](https://github.com/nickderobertis/crozier/compare/v0.0.15...v0.0.16) - 2026-07-12
+
+### Fixed
+
+- escape enum visit() param colliding with self receiver ([#57](https://github.com/nickderobertis/crozier/pull/57)) ([#58](https://github.com/nickderobertis/crozier/pull/58))
+
 ## [0.0.15](https://github.com/nickderobertis/crozier/compare/v0.0.14...v0.0.15) - 2026-07-12
 
 ### Fixed
