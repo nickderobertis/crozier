@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.21](https://github.com/nickderobertis/crozier/compare/v0.0.20...v0.0.21) - 2026-07-12
+
+### Other
+
+- showcase the CLI with screencomp-gated terminal screenshots ([#72](https://github.com/nickderobertis/crozier/pull/72))
+
 ## [0.0.20](https://github.com/nickderobertis/crozier/compare/v0.0.19...v0.0.20) - 2026-07-12
 
 ### Added
