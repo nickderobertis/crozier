@@ -22,6 +22,7 @@ built-in's defaults.
 | `crozier generate <name>` | Generate with the one generator named `<name>` (a config entry, or the built-in `python`). |
 | `crozier init` | Write a starter `crozier.yml` (`--output <path>`, `--force`). |
 | `crozier config [<name>]` | Print the effective config and the layer each value came from. |
+| `crozier schema` | Print the config JSON Schema to stdout. |
 
 ## Precedence
 
@@ -32,19 +33,20 @@ CLI flag  >  CROZIER_* env var  >  generators.<name>.<field>  >  top-level <fiel
 ```
 
 - **CLI flags** — `--spec`, `--output`, `--package-name`, `--project-name`,
-  `--audience` (repeatable), `--audience-strict`. These apply to a *single*
-  generator; passing them while more than one would run is an error (name one,
-  or move the values into the config file).
+  `--client-class-name`, `--audience` (repeatable), `--audience-strict`. These
+  apply to a *single* generator; passing them while more than one would run is an
+  error (name one, or move the values into the config file).
 - **Environment** — `CROZIER_SPEC`, `CROZIER_OUTPUT`, `CROZIER_PACKAGE_NAME`,
-  `CROZIER_PROJECT_NAME`, `CROZIER_AUDIENCES` (comma-separated),
-  `CROZIER_AUDIENCE_STRICT`. Empty values count as unset. These are a global
-  override layer applied to every selected generator.
+  `CROZIER_PROJECT_NAME`, `CROZIER_CLIENT_CLASS_NAME`, `CROZIER_AUDIENCES`
+  (comma-separated), `CROZIER_AUDIENCE_STRICT`. Empty values count as unset.
+  These are a global override layer applied to every selected generator.
 - **Config file** — a `generators.<name>` value beats the shared top-level value
   of the same field.
 - **Built-in defaults** — `package-name` defaults to a `snake_case` of the API
-  title; `project-name` defaults to the package name; audiences default to empty
-  (the whole API). `spec` and `output` have no default — a generator resolved
-  without either is an actionable error.
+  title; `project-name` defaults to the package name; `client-class-name`
+  defaults to `{PascalCase(package-name)}Api`; audiences default to empty (the
+  whole API). `spec` and `output` have no default — a generator resolved without
+  either is an actionable error.
 
 ## The config file
 
@@ -80,6 +82,7 @@ generators:
     output: ./sdks/python
     package-name: my_api
     project-name: my-api
+    client-class-name: MyApi   # defaults to {PascalCase(package-name)}Api
     audiences: [public]
     audience-strict: false
   admin:

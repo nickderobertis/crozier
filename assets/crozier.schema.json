@@ -21,6 +21,13 @@
             "null"
           ]
         },
+        "client-class-name": {
+          "description": "Root client class name (Fern's `client_class_name`); defaults to\n`{PascalCase(package_name)}Api`.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "output": {
           "description": "Directory to write the generated SDK into.",
           "type": [
@@ -93,6 +100,13 @@
       },
       "type": [
         "array",
+        "null"
+      ]
+    },
+    "client-class-name": {
+      "description": "Shared default root client class name.",
+      "type": [
+        "string",
         "null"
       ]
     },

@@ -79,6 +79,8 @@ crozier generate python \
   Defaults to a `snake_case` of the API title.
 - `--project-name` — the distribution name recorded in `version.py`. Defaults to
   the package name.
+- `--client-class-name` — the name of the generated root client class (Fern's
+  `client_class_name`). Defaults to `{PascalCase(package_name)}Api`.
 - `--audience` (repeatable) / `--audience-strict` — prune generation to
   `x-crozier-audiences`.
 
@@ -133,6 +135,7 @@ generators:
   even with no config file).
 - `crozier init` — write a starter `crozier.yml` (`--output`, `--force`).
 - `crozier config [<name>]` — show the effective config and each value's source.
+- `crozier schema` — print the config JSON Schema to stdout.
 - `--config <path>` (repeatable, later wins) selects config files instead of
   auto-discovery; `--no-config` ignores config files entirely; `CROZIER_CONFIG`
   names a file via the environment.

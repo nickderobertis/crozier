@@ -58,6 +58,10 @@ enum Command {
     /// Show the effective configuration and where each value comes from.
     Config(ConfigCmd),
 
+    /// Print the JSON Schema for `crozier.yml` to stdout (the same schema editors
+    /// use via the `$schema` modeline `crozier init` writes).
+    Schema,
+
     /// Internal: strip Python `#` comments from a file to stdout. Used by the
     /// fixture tooling so the committed fixtures and the e2e share one stripper.
     #[command(hide = true)]
@@ -112,6 +116,11 @@ struct GenerateCmd {
     #[arg(long)]
     project_name: Option<String>,
 
+    /// Name of the generated root client class (Fern's `client_class_name`).
+    /// Defaults to `{PascalCase(package_name)}Api`.
+    #[arg(long)]
+    client_class_name: Option<String>,
+
     /// `x-crozier-audiences` filter (repeatable). When given, only operations
     /// carrying a matching audience — or none at all — are generated, along with
     /// the transitive closure of schemas they reference. Omit to generate the
@@ -137,6 +146,7 @@ impl GenerateCmd {
             output: self.output.clone(),
             package_name: self.package_name.clone(),
             project_name: self.project_name.clone(),
+            client_class_name: self.client_class_name.clone(),
             audiences: (!self.audiences.is_empty()).then(|| self.audiences.clone()),
             audience_strict: self.audience_strict.then_some(true),
         }
@@ -172,6 +182,12 @@ pub fn run(cli: Cli) -> std::result::Result<(), String> {
         Some(Command::Config(cmd)) => {
             do_config(&cli.config, cli.no_config, cmd.generator.as_deref())
                 .map_err(|e| e.to_string())
+        }
+        Some(Command::Schema) => {
+            let json =
+                serde_json::to_string_pretty(&crate::schema::build()).map_err(|e| e.to_string())?;
+            println!("{json}");
+            Ok(())
         }
         Some(Command::InternalStrip { file }) => {
             let source = std::fs::read_to_string(&file)
@@ -302,7 +318,7 @@ fn do_config(
         println!("\ngenerator `{name}`");
         for f in settings::explain(name, &loaded.config, &env, &empty_cli) {
             let value = f.value.as_deref().unwrap_or("(unset)");
-            println!("  {:<16} {:<28} ({})", f.field, value, f.source.label());
+            println!("  {:<17} {:<28} ({})", f.field, value, f.source.label());
         }
     }
     Ok(())

@@ -55,6 +55,10 @@ pub struct GenerateConfig {
     /// The distribution (PyPI) name recorded in `version.py`, e.g.
     /// `fern_my-api`. Defaults to the package name when unset.
     pub project_name: String,
+    /// Override for the generated root client class name (Fern's
+    /// `client_class_name`). `None` derives it from the package name as
+    /// `{PascalCase(package_name)}Api` — see [`crate::ir::build`].
+    pub client_class_name: Option<String>,
 }
 
 impl GenerateConfig {
@@ -68,6 +72,7 @@ impl GenerateConfig {
         output: PathBuf,
         package_name: Option<String>,
         project_name: Option<String>,
+        client_class_name: Option<String>,
         title: &str,
     ) -> Result<Self> {
         let package_name = match package_name {
@@ -80,6 +85,7 @@ impl GenerateConfig {
             output,
             package_name,
             project_name,
+            client_class_name,
         })
     }
 }

@@ -85,6 +85,9 @@ pub struct GeneratorSettings {
     pub package_name: Option<String>,
     /// Distribution name recorded in `version.py`; defaults to the package name.
     pub project_name: Option<String>,
+    /// Root client class name (Fern's `client_class_name`); defaults to
+    /// `{PascalCase(package_name)}Api`.
+    pub client_class_name: Option<String>,
     /// `x-crozier-audiences` filter; empty generates the whole API.
     pub audiences: Option<Vec<String>>,
     /// Strict audience subsetting (exclude un-annotated operations).
@@ -107,6 +110,8 @@ pub struct FileConfig {
     pub package_name: Option<String>,
     /// Shared default distribution name.
     pub project_name: Option<String>,
+    /// Shared default root client class name.
+    pub client_class_name: Option<String>,
     /// Shared default audience filter.
     pub audiences: Option<Vec<String>>,
     /// Shared default strict-audience flag.
@@ -133,6 +138,8 @@ pub struct CliOverrides {
     pub package_name: Option<String>,
     /// `--project-name`.
     pub project_name: Option<String>,
+    /// `--client-class-name`.
+    pub client_class_name: Option<String>,
     /// `--audience` (repeatable); `None` when none were passed.
     pub audiences: Option<Vec<String>>,
     /// `--audience-strict`; `None` when the flag was absent.
@@ -148,6 +155,7 @@ impl CliOverrides {
             && self.output.is_none()
             && self.package_name.is_none()
             && self.project_name.is_none()
+            && self.client_class_name.is_none()
             && self.audiences.is_none()
             && self.audience_strict.is_none()
     }
@@ -196,6 +204,7 @@ pub fn merge(base: FileConfig, over: FileConfig) -> FileConfig {
         output: over.output.or(base.output),
         package_name: over.package_name.or(base.package_name),
         project_name: over.project_name.or(base.project_name),
+        client_class_name: over.client_class_name.or(base.client_class_name),
         audiences: over.audiences.or(base.audiences),
         audience_strict: over.audience_strict.or(base.audience_strict),
         generators,
@@ -210,6 +219,7 @@ fn merge_generator(base: GeneratorSettings, over: GeneratorSettings) -> Generato
         output: over.output.or(base.output),
         package_name: over.package_name.or(base.package_name),
         project_name: over.project_name.or(base.project_name),
+        client_class_name: over.client_class_name.or(base.client_class_name),
         audiences: over.audiences.or(base.audiences),
         audience_strict: over.audience_strict.or(base.audience_strict),
     }
@@ -223,7 +233,8 @@ fn merge_generator(base: GeneratorSettings, over: GeneratorSettings) -> Generato
 ///
 /// Names mirror the config fields and CLI flags: `CROZIER_SPEC`,
 /// `CROZIER_OUTPUT`, `CROZIER_PACKAGE_NAME`, `CROZIER_PROJECT_NAME`,
-/// `CROZIER_AUDIENCES` (comma-separated), `CROZIER_AUDIENCE_STRICT`.
+/// `CROZIER_CLIENT_CLASS_NAME`, `CROZIER_AUDIENCES` (comma-separated),
+/// `CROZIER_AUDIENCE_STRICT`.
 pub fn env_overrides(get: impl Fn(&str) -> Option<String>) -> Result<GeneratorSettings> {
     let read = |name: &str| get(name).filter(|v| !v.is_empty());
 
@@ -241,6 +252,7 @@ pub fn env_overrides(get: impl Fn(&str) -> Option<String>) -> Result<GeneratorSe
         output: read("CROZIER_OUTPUT").map(PathBuf::from),
         package_name: read("CROZIER_PACKAGE_NAME"),
         project_name: read("CROZIER_PROJECT_NAME"),
+        client_class_name: read("CROZIER_CLIENT_CLASS_NAME"),
         audiences,
         audience_strict,
     })
@@ -342,6 +354,12 @@ pub fn resolve(
         .or_else(|| env.project_name.clone())
         .or_else(|| per.and_then(|p| p.project_name.clone()))
         .or_else(|| config.project_name.clone());
+    let client_class_name = cli
+        .client_class_name
+        .clone()
+        .or_else(|| env.client_class_name.clone())
+        .or_else(|| per.and_then(|p| p.client_class_name.clone()))
+        .or_else(|| config.client_class_name.clone());
     let audiences = cli
         .audiences
         .clone()
@@ -361,6 +379,7 @@ pub fn resolve(
         output,
         package_name,
         project_name,
+        client_class_name,
         audiences,
         audience_strict,
     })
@@ -509,6 +528,13 @@ pub fn explain(
             env.project_name.clone(),
             per.and_then(|p| p.project_name.clone()),
             config.project_name.clone(),
+        ),
+        field(
+            "client-class-name",
+            cli.client_class_name.clone(),
+            env.client_class_name.clone(),
+            per.and_then(|p| p.client_class_name.clone()),
+            config.client_class_name.clone(),
         ),
         field(
             "audiences",
@@ -932,6 +958,29 @@ mod tests {
         let proj = field_of(&report, "project-name");
         assert_eq!(proj.value.as_deref(), Some("envproj"));
         assert_eq!(proj.source, Source::Env);
+    }
+
+    #[test]
+    fn client_class_name_layers_and_resolves() {
+        // Layers like any scalar (per-gen beats shared) and reaches GenerateArgs.
+        let config = parsed(
+            "client-class-name: SharedApi\ngenerators:\n  python:\n    spec: ./a.yml\n    output: ./o\n    client-class-name: GenApi",
+        );
+        let args = resolve(
+            "python",
+            &config,
+            &GeneratorSettings::default(),
+            &CliOverrides::default(),
+        )
+        .unwrap();
+        assert_eq!(args.client_class_name.as_deref(), Some("GenApi"));
+
+        // CLI and env win over the config, and `explain` attributes the source.
+        let env = env_overrides(env_get(&[("CROZIER_CLIENT_CLASS_NAME", "EnvApi")])).unwrap();
+        let report = explain("python", &config, &env, &CliOverrides::default());
+        let ccn = field_of(&report, "client-class-name");
+        assert_eq!(ccn.value.as_deref(), Some("EnvApi"));
+        assert_eq!(ccn.source, Source::Env);
     }
 
     #[test]

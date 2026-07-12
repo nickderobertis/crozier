@@ -74,6 +74,14 @@ if [ -n "${FERN_AUDIENCES:-}" ]; then
   IFS=',' read -ra _auds <<<"$FERN_AUDIENCES"
   for _a in "${_auds[@]}"; do audiences_block+="      - ${_a}"$'\n'; done
 fi
+# Optional client class name override (issue #61): CLIENT_CLASS_NAME=<Name> sets
+# Fern's `client_class_name`, renaming the generated root client class. Empty →
+# Fern derives it from the API title (its default). Kept a single config line so
+# it slots under the generator's `config:` block below.
+client_class_name_block=""
+if [ -n "${CLIENT_CLASS_NAME:-}" ]; then
+  client_class_name_block="          client_class_name: ${CLIENT_CLASS_NAME}"$'\n'
+fi
 cat > "$workdir/fern/generators.yml" <<YAML
 api:
   path: openapi/openapi.yml
@@ -83,7 +91,7 @@ ${audiences_block}    generators:
       - name: fernapi/fern-python-sdk
         version: ${FERN_PYTHON_VERSION}
         config:
-          # crozier renders string enums as real \`enum.Enum\` classes (issue #41
+${client_class_name_block}          # crozier renders string enums as real \`enum.Enum\` classes (issue #41
           # gap 2b), which is Fern's opt-in \`python_enums\` mode rather than its
           # out-of-the-box open-\`Literal\`-union default. The whole golden corpus
           # therefore targets \`python_enums\`; keep this in lockstep with the
