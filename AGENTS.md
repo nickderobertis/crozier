@@ -40,6 +40,14 @@ The north star: **`crozier`'s output, with comments stripped, equals Fern's
 output with comments stripped.** See [`docs/matching.md`](docs/matching.md) for
 the strategy, the fixture corpus, and what is implemented vs. planned.
 
+Being a Fern drop-in extends to its `x-*` vendor extensions (audience labels,
+per-node ignore, …). The standing **dual-header policy**: read *both* the
+`x-fern-*` and `x-crozier-*` spelling of every supported extension, but treat
+`x-crozier-*` as canonical — it wins when both appear on a node, it's the only
+spelling crozier ever *emits*, and any new extension inherits this by default.
+Precedence lives in the `src/openapi.rs` field accessors, not scattered at call
+sites. See [`docs/matching.md`](docs/matching.md#fern-compatible-extension-policy).
+
 ## Two standing goals on every task
 
 The user drives product features; their request is the priority. Carry two goals

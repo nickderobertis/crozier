@@ -4,6 +4,26 @@
 //! schemas are [`IndexMap`]s so their document order survives into generated
 //! field order and file order. Only the fields crozier consumes are modeled;
 //! unknown keys are ignored so real-world specs still parse.
+//!
+//! # Fern-compatible extensions
+//!
+//! crozier honours a handful of `x-*` vendor extensions that steer generation
+//! (audience labels, per-node ignore). Every one follows a single **dual-header
+//! policy** so a spec authored for Fern works against crozier unchanged:
+//!
+//! - **Input is permissive.** Both the `x-crozier-*` and the Fern `x-fern-*`
+//!   spelling are read for every supported extension.
+//! - **`x-crozier-*` is canonical.** It is the form crozier documents and the form
+//!   that *wins* when both spellings appear on the same node — the `x-fern-*`
+//!   value applies only as a fallback when the `x-crozier-*` one is absent. This is
+//!   what lets an explicit `x-crozier-ignore: false` override an `x-fern-ignore:
+//!   true`.
+//! - **crozier only ever emits the crozier variant.** It never writes `x-fern-*`,
+//!   mirroring how it renders `X-Crozier-*` SDK headers where Fern emits `X-Fern-*`.
+//!
+//! The precedence is applied in the field accessors ([`Operation::audiences`],
+//! [`Operation::ignored`], [`Schema::ignored`]); the paired serde fields exist only
+//! to carry the two raw spellings.
 
 use std::path::Path;
 
@@ -149,6 +169,18 @@ impl PathItem {
         .filter_map(|(method, op)| op.as_ref().map(|o| (method, o)))
         .collect()
     }
+
+    /// Mutable references to each method slot, in the same stable order as
+    /// [`PathItem::operations`], for filters that clear operations in place.
+    fn operation_slots(&mut self) -> [&mut Option<Operation>; 5] {
+        [
+            &mut self.get,
+            &mut self.post,
+            &mut self.put,
+            &mut self.delete,
+            &mut self.patch,
+        ]
+    }
 }
 
 /// A single API operation.
@@ -160,14 +192,26 @@ pub struct Operation {
     /// Tags; the first groups the operation into a client.
     #[serde(default)]
     pub tags: Vec<String>,
-    /// `x-crozier-audiences`: audience labels this operation belongs to. Empty
-    /// means unlabelled — kept under a permissive `--audience` filter but excluded
-    /// by `--audience-strict` (see [`filter_by_audience`]). crozier brands its own
-    /// extension rather than reading
-    /// Fern's `x-fern-audiences`, exactly as it emits `X-Crozier-*` SDK headers where
-    /// Fern emits `X-Fern-*`.
+    /// `x-crozier-audiences`: audience labels this operation belongs to (canonical
+    /// spelling). Read via [`Operation::audiences`], which also honours the
+    /// `x-fern-audiences` variant per the [dual-header policy](self#fern-compatible-extensions).
     #[serde(rename = "x-crozier-audiences", default)]
-    pub audiences: Vec<String>,
+    audiences_crozier: Option<Vec<String>>,
+    /// `x-fern-audiences`: the Fern spelling of the audience labels, accepted so a
+    /// spec authored for Fern filters unchanged. Superseded by
+    /// `x-crozier-audiences` when both appear (see [`Operation::audiences`]).
+    #[serde(rename = "x-fern-audiences", default)]
+    audiences_fern: Option<Vec<String>>,
+    /// `x-crozier-ignore`: exclude this operation from generation (canonical
+    /// spelling). Read via [`Operation::ignored`], which also honours the
+    /// `x-fern-ignore` variant per the [dual-header policy](self#fern-compatible-extensions).
+    #[serde(rename = "x-crozier-ignore", default)]
+    ignore_crozier: Option<bool>,
+    /// `x-fern-ignore`: the Fern spelling of the ignore flag, accepted so a
+    /// Fern-annotated spec drops the same operations. Superseded by
+    /// `x-crozier-ignore` when both appear (see [`Operation::ignored`]).
+    #[serde(rename = "x-fern-ignore", default)]
+    ignore_fern: Option<bool>,
     /// A human description; becomes the method docstring's summary line.
     #[serde(default)]
     pub description: Option<String>,
@@ -184,6 +228,31 @@ pub struct Operation {
     /// document default (no auth); `None` inherits it.
     #[serde(default)]
     pub security: Option<Vec<SecurityRequirement>>,
+}
+
+impl Operation {
+    /// The operation's audience labels, canonicalizing on the `x-crozier-audiences`
+    /// spelling: it wins outright when present, and only when it is absent does the
+    /// `x-fern-audiences` fallback apply (see the [dual-header
+    /// policy](self#fern-compatible-extensions)). Empty means unlabelled.
+    #[must_use]
+    pub fn audiences(&self) -> &[String] {
+        self.audiences_crozier
+            .as_deref()
+            .or(self.audiences_fern.as_deref())
+            .unwrap_or(&[])
+    }
+
+    /// Whether this operation is marked ignored and must be excluded from
+    /// generation. The `x-crozier-ignore` flag is canonical — an explicit
+    /// `x-crozier-ignore: false` keeps the operation even when `x-fern-ignore: true`
+    /// is also present, which is what makes the Overlay-driven "ignore all, then
+    /// un-ignore a few" pattern work (see the [dual-header
+    /// policy](self#fern-compatible-extensions)).
+    #[must_use]
+    pub fn ignored(&self) -> bool {
+        self.ignore_crozier.or(self.ignore_fern).unwrap_or(false)
+    }
 }
 
 /// An operation parameter (path/query/header/cookie). Only inline parameters are
@@ -335,6 +404,27 @@ pub struct Schema {
     /// (optionally) an explicit value → `$ref` mapping.
     #[serde(default)]
     pub discriminator: Option<Discriminator>,
+    /// `x-crozier-ignore`: exclude this component schema from generation (canonical
+    /// spelling). Read via [`Schema::ignored`] rather than directly — that accessor
+    /// applies the precedence — which also honours the `x-fern-ignore` variant per
+    /// the [dual-header policy](self#fern-compatible-extensions).
+    #[serde(rename = "x-crozier-ignore", default)]
+    pub ignore_crozier: Option<bool>,
+    /// `x-fern-ignore`: the Fern spelling of the ignore flag on a schema. Superseded
+    /// by `x-crozier-ignore` when both appear (see [`Schema::ignored`]).
+    #[serde(rename = "x-fern-ignore", default)]
+    pub ignore_fern: Option<bool>,
+}
+
+impl Schema {
+    /// Whether this component schema is marked ignored and must not be emitted. The
+    /// `x-crozier-ignore` flag is canonical: an explicit `false` keeps the schema
+    /// even when `x-fern-ignore: true` is present (see the [dual-header
+    /// policy](self#fern-compatible-extensions)).
+    #[must_use]
+    pub fn ignored(&self) -> bool {
+        self.ignore_crozier.or(self.ignore_fern).unwrap_or(false)
+    }
 }
 
 /// A `oneOf`/`anyOf` discriminator object.
@@ -446,8 +536,9 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     Ok(doc)
 }
 
-/// Prune the document to a set of audiences (the `x-crozier-audiences` filter,
-/// issue #41 gap 3). No-op when `audiences` is empty (the whole API is generated).
+/// Prune the document to a set of audiences (the `x-crozier-audiences` /
+/// `x-fern-audiences` filter, issue #41 gap 3, read via [`Operation::audiences`]).
+/// No-op when `audiences` is empty (the whole API is generated).
 ///
 /// The default (permissive) mode keeps an operation when it carries a matching
 /// audience **or** carries none at all (unlabelled operations are always kept),
@@ -467,21 +558,16 @@ pub fn filter_by_audience(doc: &mut OpenApi, audiences: &[String], strict: bool)
         return;
     }
     let keep = |op: &Operation| {
-        if op.audiences.is_empty() {
+        let labels = op.audiences();
+        if labels.is_empty() {
             // Un-annotated ops: kept in permissive mode, excluded in strict mode.
             !strict
         } else {
-            op.audiences.iter().any(|a| audiences.contains(a))
+            labels.iter().any(|a| audiences.contains(a))
         }
     };
     for item in doc.paths.values_mut() {
-        for slot in [
-            &mut item.get,
-            &mut item.post,
-            &mut item.put,
-            &mut item.delete,
-            &mut item.patch,
-        ] {
+        for slot in item.operation_slots() {
             if slot.as_ref().is_some_and(|op| !keep(op)) {
                 *slot = None;
             }
@@ -490,29 +576,119 @@ pub fn filter_by_audience(doc: &mut OpenApi, audiences: &[String], strict: bool)
     // Drop paths whose every operation was filtered out.
     doc.paths.retain(|_, item| !item.operations().is_empty());
 
-    // Seed the closure with every schema the surviving operations reference.
-    let mut seed = std::collections::BTreeSet::new();
-    for item in doc.paths.values() {
-        for (_, op) in item.operations() {
-            for p in &op.parameters {
-                if let Some(s) = &p.schema {
-                    collect_schema_refs(s, &mut seed);
-                }
-            }
-            let bodies = op
-                .request_body
-                .iter()
-                .flat_map(|rb| rb.content.values())
-                .chain(op.responses.values().flat_map(|r| r.content.values()));
-            for mt in bodies {
-                if let Some(s) = &mt.schema {
-                    collect_schema_refs(s, &mut seed);
-                }
+    // Emit only the transitive `$ref` closure of the surviving operations.
+    let seed = operation_schema_seed(doc.paths.values().flat_map(|i| i.operations()));
+    let reached = expand_schema_closure(doc, seed);
+    doc.components.schemas.retain(|k, _| reached.contains(k));
+}
+
+/// Drop operations and component schemas marked with the ignore extension
+/// (`x-crozier-ignore` / `x-fern-ignore`, issue #78), along with any schema that is
+/// no longer reachable once the ignored operations are gone.
+///
+/// An operation whose [`Operation::ignored`] is set is removed (and its path with
+/// it, if it becomes empty); a component whose [`Schema::ignored`] is set is never
+/// emitted. Beyond those explicit removals, a schema is pruned when it *was*
+/// reachable from a removed operation (or an ignored schema's own `$ref`s) yet is
+/// *not* reachable from any surviving operation — i.e. it fell out of the SDK's
+/// transitive closure as a result of the ignore. Standalone component schemas that
+/// no operation references are left untouched, so this is inert on a spec with no
+/// ignore markers and never changes a full, unfiltered generation.
+///
+/// Unlike [`filter_by_audience`], the ignore honours **both** operation- and
+/// schema-level markers, per the [dual-header policy](self#fern-compatible-extensions).
+pub fn filter_ignored(doc: &mut OpenApi) {
+    let ignored_schemas: std::collections::BTreeSet<String> = doc
+        .components
+        .schemas
+        .iter()
+        .filter(|(_, s)| s.ignored())
+        .map(|(k, _)| k.clone())
+        .collect();
+    let has_ignored_op = doc
+        .paths
+        .values()
+        .flat_map(|i| i.operations())
+        .any(|(_, op)| op.ignored());
+    if ignored_schemas.is_empty() && !has_ignored_op {
+        return;
+    }
+
+    // Schemas reachable from the operations (and schemas) that are being removed.
+    let mut removed_seed = operation_schema_seed(
+        doc.paths
+            .values()
+            .flat_map(|i| i.operations())
+            .filter(|(_, op)| op.ignored()),
+    );
+    for key in &ignored_schemas {
+        removed_seed.insert(key.clone());
+        if let Some(s) = doc.components.schemas.get(key) {
+            collect_schema_refs(s, &mut removed_seed);
+        }
+    }
+    let reachable_from_removed = expand_schema_closure(doc, removed_seed);
+
+    // Remove the ignored operations, then drop paths that are now empty.
+    for item in doc.paths.values_mut() {
+        for slot in item.operation_slots() {
+            if slot.as_ref().is_some_and(|op| op.ignored()) {
+                *slot = None;
             }
         }
     }
+    doc.paths.retain(|_, item| !item.operations().is_empty());
 
-    // Expand transitively through the referenced schemas, then retain only those.
+    // Schemas still reachable from the operations that survived.
+    let kept_seed = operation_schema_seed(doc.paths.values().flat_map(|i| i.operations()));
+    let reachable_from_kept = expand_schema_closure(doc, kept_seed);
+
+    doc.components.schemas.retain(|key, _| {
+        if ignored_schemas.contains(key) {
+            return false;
+        }
+        // Prune a schema that became unreferenced because an ignored op/schema was
+        // its only path in; keep everything a surviving op still reaches and every
+        // standalone schema no operation referenced in the first place.
+        let became_unreferenced =
+            reachable_from_removed.contains(key) && !reachable_from_kept.contains(key);
+        !became_unreferenced
+    });
+}
+
+/// Seed a schema-closure walk with every `#/components/schemas/*` key the given
+/// operations reference directly through their parameter, request-body, and
+/// response schemas.
+fn operation_schema_seed<'a>(
+    ops: impl IntoIterator<Item = (&'static str, &'a Operation)>,
+) -> std::collections::BTreeSet<String> {
+    let mut seed = std::collections::BTreeSet::new();
+    for (_, op) in ops {
+        for p in &op.parameters {
+            if let Some(s) = &p.schema {
+                collect_schema_refs(s, &mut seed);
+            }
+        }
+        let bodies = op
+            .request_body
+            .iter()
+            .flat_map(|rb| rb.content.values())
+            .chain(op.responses.values().flat_map(|r| r.content.values()));
+        for mt in bodies {
+            if let Some(s) = &mt.schema {
+                collect_schema_refs(s, &mut seed);
+            }
+        }
+    }
+    seed
+}
+
+/// Expand a seed set of schema keys to its transitive `$ref` closure through
+/// `components.schemas`.
+fn expand_schema_closure(
+    doc: &OpenApi,
+    seed: std::collections::BTreeSet<String>,
+) -> std::collections::BTreeSet<String> {
     let mut reached = std::collections::BTreeSet::new();
     let mut queue: Vec<String> = seed.into_iter().collect();
     while let Some(key) = queue.pop() {
@@ -525,7 +701,7 @@ pub fn filter_by_audience(doc: &mut OpenApi, audiences: &[String], strict: bool)
             queue.extend(refs.into_iter().filter(|r| !reached.contains(r)));
         }
     }
-    doc.components.schemas.retain(|k, _| reached.contains(k));
+    reached
 }
 
 /// Collect every `#/components/schemas/*` reference reachable within a schema
@@ -561,5 +737,215 @@ fn collect_schema_refs(schema: &Schema, out: &mut std::collections::BTreeSet<Str
         for key in disc.mapping.values().filter_map(|r| r.strip_prefix(PREFIX)) {
             out.insert(key.to_string());
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Parse a YAML spec string into an [`OpenApi`] for the pure-filter unit tests.
+    fn parse(spec: &str) -> OpenApi {
+        serde_yaml_ng::from_str(spec).expect("valid spec")
+    }
+
+    fn op_ids(doc: &OpenApi) -> Vec<String> {
+        doc.paths
+            .values()
+            .flat_map(|i| i.operations())
+            .map(|(_, op)| op.operation_id.clone())
+            .collect()
+    }
+
+    fn schema_keys(doc: &OpenApi) -> Vec<String> {
+        doc.components.schemas.keys().cloned().collect()
+    }
+
+    const IGNORE_SPEC: &str = r##"
+openapi: 3.0.3
+info: { title: Widget API }
+paths:
+  /keep:
+    get:
+      operationId: keepOp
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Keep" } } } }
+  /fern:
+    get:
+      operationId: fernIgnoredOp
+      x-fern-ignore: true
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/OnlyFern" } } } }
+  /crozier:
+    get:
+      operationId: crozierIgnoredOp
+      x-crozier-ignore: true
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/OnlyCrozier" } } } }
+components:
+  schemas:
+    Keep: { type: object, properties: { note: { type: string } } }
+    OnlyFern: { type: object, properties: { note: { type: string } } }
+    OnlyCrozier: { type: object, properties: { note: { type: string } } }
+"##;
+
+    #[test]
+    fn ignore_extension_drops_ops_via_both_spellings_and_their_exclusive_schemas() {
+        let mut doc = parse(IGNORE_SPEC);
+        filter_ignored(&mut doc);
+        // Both `x-fern-ignore` and `x-crozier-ignore` operations are gone.
+        assert_eq!(op_ids(&doc), ["keepOp"]);
+        // The paths of the ignored ops are removed entirely.
+        assert_eq!(doc.paths.keys().cloned().collect::<Vec<_>>(), ["/keep"]);
+        // Schemas only the ignored ops referenced fell out of the closure; the
+        // kept op's schema stays.
+        assert_eq!(schema_keys(&doc), ["Keep"]);
+    }
+
+    #[test]
+    fn crozier_ignore_false_overrides_fern_ignore_true() {
+        // The Overlay pattern: `x-fern-ignore: true` marks the op ignored, but an
+        // explicit `x-crozier-ignore: false` on the same node keeps it.
+        let mut doc = parse(
+            r##"
+openapi: 3.0.3
+info: { title: T }
+paths:
+  /keep:
+    get:
+      operationId: keptDespiteFern
+      x-fern-ignore: true
+      x-crozier-ignore: false
+      responses: { "200": { description: OK } }
+"##,
+        );
+        filter_ignored(&mut doc);
+        assert_eq!(op_ids(&doc), ["keptDespiteFern"]);
+    }
+
+    #[test]
+    fn schema_level_ignore_drops_the_component_but_keeps_referenced_ones() {
+        // `Internal` is ignored outright; `Shared` is referenced by both a kept and
+        // an ignored op, so it survives; `OrphanKept` is a standalone schema no op
+        // references and must be left untouched (a full generation would emit it).
+        let mut doc = parse(
+            r##"
+openapi: 3.0.3
+info: { title: T }
+paths:
+  /keep:
+    get:
+      operationId: keepOp
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Shared" } } } }
+  /drop:
+    get:
+      operationId: dropOp
+      x-crozier-ignore: true
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Internal" } } } }
+components:
+  schemas:
+    Shared: { type: object, properties: { note: { type: string } } }
+    Internal:
+      x-crozier-ignore: true
+      type: object
+      properties: { note: { type: string } }
+    OrphanKept: { type: object, properties: { note: { type: string } } }
+"##,
+        );
+        filter_ignored(&mut doc);
+        assert_eq!(op_ids(&doc), ["keepOp"]);
+        let mut kept = schema_keys(&doc);
+        kept.sort();
+        assert_eq!(kept, ["OrphanKept", "Shared"]);
+    }
+
+    #[test]
+    fn ignore_is_a_no_op_without_any_markers() {
+        // No ignore markers → the doc is untouched, including standalone schemas
+        // that no operation references (so a full generation still emits them).
+        let mut doc = parse(
+            r##"
+openapi: 3.0.3
+info: { title: T }
+paths:
+  /keep:
+    get: { operationId: keepOp, responses: { "200": { description: OK } } }
+components:
+  schemas:
+    Standalone: { type: object, properties: { note: { type: string } } }
+"##,
+        );
+        filter_ignored(&mut doc);
+        assert_eq!(op_ids(&doc), ["keepOp"]);
+        assert_eq!(schema_keys(&doc), ["Standalone"]);
+    }
+
+    #[test]
+    fn audiences_accessor_prefers_crozier_then_falls_back_to_fern() {
+        let both = parse(
+            r##"
+openapi: 3.0.3
+info: { title: T }
+paths:
+  /a:
+    get:
+      operationId: a
+      x-crozier-audiences: [public]
+      x-fern-audiences: [internal]
+      responses: { "200": { description: OK } }
+"##,
+        );
+        let op = both.paths["/a"].get.as_ref().unwrap();
+        // Canonical spelling wins outright when both are present.
+        assert_eq!(op.audiences(), ["public"]);
+
+        let fern_only = parse(
+            r##"
+openapi: 3.0.3
+info: { title: T }
+paths:
+  /a:
+    get:
+      operationId: a
+      x-fern-audiences: [internal]
+      responses: { "200": { description: OK } }
+"##,
+        );
+        // Fern spelling is the fallback when the crozier one is absent.
+        let op = fern_only.paths["/a"].get.as_ref().unwrap();
+        assert_eq!(op.audiences(), ["internal"]);
+    }
+
+    #[test]
+    fn fern_audiences_filter_prunes_like_the_crozier_spelling() {
+        // A spec annotated only for Fern filters under `--audience` unchanged.
+        let mut doc = parse(
+            r##"
+openapi: 3.0.3
+info: { title: T }
+paths:
+  /pub:
+    get:
+      operationId: pub
+      x-fern-audiences: [public]
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Pub" } } } }
+  /int:
+    get:
+      operationId: int
+      x-fern-audiences: [internal]
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Int" } } } }
+components:
+  schemas:
+    Pub: { type: object, properties: { note: { type: string } } }
+    Int: { type: object, properties: { note: { type: string } } }
+"##,
+        );
+        filter_by_audience(&mut doc, &["public".to_string()], false);
+        assert_eq!(op_ids(&doc), ["pub"]);
+        assert_eq!(schema_keys(&doc), ["Pub"]);
     }
 }
