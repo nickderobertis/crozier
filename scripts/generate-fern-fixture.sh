@@ -82,6 +82,14 @@ client_class_name_block=""
 if [ -n "${CLIENT_CLASS_NAME:-}" ]; then
   client_class_name_block="          client_class_name: ${CLIENT_CLASS_NAME}"$'\n'
 fi
+# Optional pydantic extra-fields behavior (issue #63): EXTRA_FIELDS=allow|ignore|forbid
+# sets Fern's `pydantic_config.extra_fields`, which drives the emitted model_config /
+# Config `extra`. Empty → Fern's default (`allow`). Kept a single config line so it
+# slots under the generator's `pydantic_config:` block below.
+extra_fields_block=""
+if [ -n "${EXTRA_FIELDS:-}" ]; then
+  extra_fields_block="            extra_fields: ${EXTRA_FIELDS}"$'\n'
+fi
 cat > "$workdir/fern/generators.yml" <<YAML
 api:
   path: openapi/openapi.yml
@@ -98,6 +106,7 @@ ${client_class_name_block}          # crozier renders string enums as real \`enu
           # generator so a regeneration does not silently flip the enum shape.
           pydantic_config:
             enum_type: python_enums
+${extra_fields_block}
         output:
           location: local-file-system
           path: ../generated/python

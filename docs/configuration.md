@@ -33,20 +33,24 @@ CLI flag  >  CROZIER_* env var  >  generators.<name>.<field>  >  top-level <fiel
 ```
 
 - **CLI flags** — `--spec`, `--output`, `--package-name`, `--project-name`,
-  `--client-class-name`, `--audience` (repeatable), `--audience-strict`. These
-  apply to a *single* generator; passing them while more than one would run is an
-  error (name one, or move the values into the config file).
+  `--client-class-name`, `--audience` (repeatable), `--audience-strict`,
+  `--extra-fields`. These apply to a *single* generator; passing them while more
+  than one would run is an error (name one, or move the values into the config
+  file).
 - **Environment** — `CROZIER_SPEC`, `CROZIER_OUTPUT`, `CROZIER_PACKAGE_NAME`,
   `CROZIER_PROJECT_NAME`, `CROZIER_CLIENT_CLASS_NAME`, `CROZIER_AUDIENCES`
-  (comma-separated), `CROZIER_AUDIENCE_STRICT`. Empty values count as unset.
-  These are a global override layer applied to every selected generator.
+  (comma-separated), `CROZIER_AUDIENCE_STRICT`, `CROZIER_EXTRA_FIELDS`. Empty
+  values count as unset. These are a global override layer applied to every
+  selected generator.
 - **Config file** — a `generators.<name>` value beats the shared top-level value
-  of the same field.
+  of the same field. `extra-fields` is **Python-generator-specific**: it lives
+  only under a generator, never at the shared top level (a top-level
+  `extra-fields` is a parse error).
 - **Built-in defaults** — `package-name` defaults to a `snake_case` of the API
   title; `project-name` defaults to the package name; `client-class-name`
   defaults to `{PascalCase(package-name)}Api`; audiences default to empty (the
-  whole API). `spec` and `output` have no default — a generator resolved without
-  either is an actionable error.
+  whole API); `extra-fields` defaults to `allow`. `spec` and `output` have no
+  default — a generator resolved without either is an actionable error.
 
 ## The config file
 
@@ -85,6 +89,9 @@ generators:
     client-class-name: MyApi   # defaults to {PascalCase(package-name)}Api
     audiences: [public]
     audience-strict: false
+    extra-fields: allow        # allow|ignore|forbid — pydantic behavior for unknown
+                               # response fields (Python-generator-specific; not a
+                               # shared top-level field)
   admin:
     spec: ./admin-openapi.yml
     output: ./sdks/admin

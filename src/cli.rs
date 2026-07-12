@@ -134,6 +134,12 @@ struct GenerateCmd {
     /// a mostly-un-annotated API. No effect without `--audience`.
     #[arg(long = "audience-strict")]
     audience_strict: bool,
+
+    /// How generated pydantic models treat unknown fields on a response (Fern's
+    /// `pydantic_config.extra_fields`). `allow` (default) keeps them, `ignore`
+    /// drops them silently, `forbid` rejects them.
+    #[arg(long = "extra-fields", value_name = "MODE")]
+    extra_fields: Option<crate::settings::ExtraFields>,
 }
 
 impl GenerateCmd {
@@ -149,6 +155,7 @@ impl GenerateCmd {
             client_class_name: self.client_class_name.clone(),
             audiences: (!self.audiences.is_empty()).then(|| self.audiences.clone()),
             audience_strict: self.audience_strict.then_some(true),
+            extra_fields: self.extra_fields,
         }
     }
 }

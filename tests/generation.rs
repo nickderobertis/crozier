@@ -22,6 +22,7 @@ fn render(spec: &str) -> HashMap<String, String> {
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        extra_fields: crozier::settings::ExtraFields::Allow,
     })
     .expect("render succeeds");
     files
@@ -209,6 +210,7 @@ fn generate_writes_files_to_disk() {
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        extra_fields: crozier::settings::ExtraFields::Allow,
     })
     .expect("generate succeeds");
     assert!(!files.is_empty());
@@ -232,6 +234,7 @@ fn default_package_name_derives_from_title() {
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        extra_fields: crozier::settings::ExtraFields::Allow,
     })
     .unwrap();
     assert!(files.iter().any(|f| f.path.starts_with("src/my_cool_api")));
@@ -852,6 +855,7 @@ fn empty_title_falls_back_to_client_package() {
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        extra_fields: crozier::settings::ExtraFields::Allow,
     })
     .unwrap();
     assert!(files.iter().any(|f| f.path.starts_with("src/client")));
@@ -1331,6 +1335,7 @@ fn api_key_scheme_without_name_is_rejected() {
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        extra_fields: crozier::settings::ExtraFields::Allow,
     })
     .expect_err("missing apiKey name must fail");
     assert!(err.to_string().contains("apiKey security scheme"));
@@ -1383,6 +1388,7 @@ fn client_class_name_overrides_derived_root_client_name() {
         client_class_name: Some("AcmeSdk".to_string()),
         audiences: Vec::new(),
         audience_strict: false,
+        extra_fields: crozier::settings::ExtraFields::Allow,
     })
     .expect("render succeeds")
     .into_iter()
@@ -1507,6 +1513,7 @@ fn render_with_audiences_mode(
         client_class_name: None,
         audiences: audiences.iter().map(|s| s.to_string()).collect(),
         audience_strict: strict,
+        extra_fields: crozier::settings::ExtraFields::Allow,
     })
     .expect("render succeeds");
     files

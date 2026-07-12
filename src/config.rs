@@ -59,6 +59,9 @@ pub struct GenerateConfig {
     /// `client_class_name`). `None` derives it from the package name as
     /// `{PascalCase(package_name)}Api` — see [`crate::ir::build`].
     pub client_class_name: Option<String>,
+    /// How generated pydantic models treat unknown fields (Fern's
+    /// `pydantic_config.extra_fields`); drives every model's `extra` config.
+    pub extra_fields: crate::settings::ExtraFields,
 }
 
 impl GenerateConfig {
@@ -73,6 +76,7 @@ impl GenerateConfig {
         package_name: Option<String>,
         project_name: Option<String>,
         client_class_name: Option<String>,
+        extra_fields: crate::settings::ExtraFields,
         title: &str,
     ) -> Result<Self> {
         let package_name = match package_name {
@@ -86,6 +90,7 @@ impl GenerateConfig {
             package_name,
             project_name,
             client_class_name,
+            extra_fields,
         })
     }
 }
