@@ -239,8 +239,9 @@ pub fn is_reserved(name: &str) -> bool {
         "continue", "def", "del", "elif", "else", "except", "finally", "for", "from", "global",
         "if", "import", "in", "is", "lambda", "nonlocal", "not", "or", "pass", "raise", "return",
         "try", "while", "with", "yield",
-        // Builtins/module names Fern munges (confirmed in the exhaustive fixture).
-        "bool", "list", "long", "map", "set", "uuid",
+        // Builtins/module names Fern munges (confirmed in the exhaustive fixture,
+        // plus `all` in the apideck corpus — a REST "list all" method named `all`).
+        "all", "bool", "list", "long", "map", "set", "uuid",
     ];
     RESERVED.contains(&name)
 }

@@ -1596,12 +1596,15 @@ fn endpoint_method_name(op: &Operation, http_method: &str, url: &str) -> String 
         return method_from_grouped_id(id);
     }
     if !id.is_empty() {
-        return naming::sanitize_identifier(&naming::to_snake_case(id));
+        return method_from_groupless_id(id, first_tag(op));
     }
     synthesized_method_name(http_method, url)
 }
 
-/// The method name for a `group_method` operationId (one that contains `_`).
+/// The method name for a `group_method` operationId (one that contains `_`). Fern
+/// takes the method segment verbatim here — an explicit `users_list` stays `list`,
+/// not `list_` — so no reserved-word munging is applied (contrast
+/// [`method_from_groupless_id`], where the name is *derived* and safe-named).
 fn method_from_grouped_id(id: &str) -> String {
     let (group, rest) = id.rsplit_once('_').unwrap_or(("", id));
     let name = if group.contains('_') {
@@ -1610,6 +1613,35 @@ fn method_from_grouped_id(id: &str) -> String {
         rest.to_lowercase()
     };
     naming::sanitize_identifier(&name)
+}
+
+/// The method name for a groupless camelCase operationId (no `_`). Fern drops a
+/// leading run of words matching the operation's tag before deriving the method,
+/// so `activitiesAdd` under tag `Activities` becomes `add`, not `activities_add`
+/// (the tag already names the client the method hangs off). When the id does not
+/// begin with the tag — or the operation has no tag — the whole id is used.
+fn method_from_groupless_id(id: &str, tag: Option<&str>) -> String {
+    let snake = naming::to_snake_case(id);
+    let tag_snake = tag.map(naming::to_snake_case).unwrap_or_default();
+    let method = if tag_snake.is_empty() {
+        &snake
+    } else {
+        snake.strip_prefix(&format!("{tag_snake}_")).unwrap_or(&snake)
+    };
+    finalize_method_name(method)
+}
+
+/// Coerce a derived method name into a legal, Fern-consistent Python identifier:
+/// sanitize it, then append the trailing `_` Fern uses when the name collides with
+/// a reserved word (`all` → `all_`), so a "list all" endpoint does not shadow the
+/// builtin.
+fn finalize_method_name(name: &str) -> String {
+    let ident = naming::sanitize_identifier(name);
+    if naming::is_reserved(&ident) {
+        format!("{ident}_")
+    } else {
+        ident
+    }
 }
 
 /// The `PascalCase` context that names an operation's hoisted inline

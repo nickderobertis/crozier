@@ -17,22 +17,29 @@ required leg (`live-e2e`, aggregated into `gate`).
 - **Spec-driven, not hand-authored.** The endpoint list and the example arguments
   come from the SDK's own generated `reference.md` — one runnable `client.<sub>.
   <method>(...)` usage snippet per typed method, already carrying valid example
-  values. `_driver.py` executes each snippet verbatim except that it repoints the
-  placeholder `base_url` at the running mock. So coverage tracks the spec, and the
-  suite extends to another corpus by adding one line to `conftest.FIXTURES` — no
-  per-endpoint code.
+  values. `_driver.py` executes each snippet, pointing the client at the mock
+  (swapping the placeholder `base_url`, or injecting one when the spec's own
+  `servers` made the snippet omit it). Endpoints are keyed by the full
+  `sub_client.method` path, since a real API reuses a method name (`add`, `all_`)
+  across sub-clients. Coverage tracks the spec, and the suite extends to another
+  corpus by adding one line to `conftest.FIXTURES` — no per-endpoint code.
 - **The mock is Prism** (`@stoplight/prism-cli`, pinned in `conftest.PRISM_PKG`),
-  booted per fixture on an ephemeral port. It serves spec-shaped example responses,
-  so a successful parse is a real deserialization, not a canned dict.
-- **`_relax.py` loosens only the request side.** Prism also validates the *request*
-  and 422s (never reaching a response) when a body is absent or a scalar fails a
-  `format`/`pattern` — and Fern's own example snippets do exactly that (they omit
-  all-optional bodies and pass placeholder `uuid`/`byte` strings). Request
-  construction is already covered exactly by the wire tests, so the mock is fed a
-  copy of the spec with `requestBody.required` cleared and request-body
-  `format`/`pattern`/`required` stripped. **Every response schema — the thing under
-  test — is untouched.** Do not relax anything under `responses` to make a test
-  pass; fix the generator instead.
+  booted per fixture on an ephemeral port in **dynamic, seeded** mode (`-d --seed`):
+  it generates each response *from the schema* rather than echoing the spec's
+  committed `example`, because real specs carry examples that violate their own
+  declared types (a `format: date` field whose example is a full datetime), which
+  the SDK correctly rejects. The fixed seed keeps it reproducible.
+- **`_relax.py` neutralizes only the request side.** Prism also validates the
+  *request* and serves a 4xx (never reaching the success response) when a body is
+  absent, a scalar fails a `format`, a required field is missing, or auth is unmet —
+  and the generated example snippets trip all of these. Request construction, auth
+  included, is covered exactly by the wire tests, so the mock is fed a copy with
+  `security` dropped, `requestBody.required` cleared, and each request-body schema
+  replaced by `{}` (match-anything). Replacing the schema — rather than editing it —
+  is deliberate: a request body is usually a `$ref` into `components.schemas`, which
+  is **shared with responses**, so mutating it in place would weaken the response
+  validation the test relies on. **Nothing under `responses` is touched.** Do not
+  relax responses to make a test pass; fix the generator instead.
 - **The assertion is typed, not just "no error".** `_driver._observe` validates the
   returned value against the method's resolved return type
   (`typing.get_type_hints` + `pydantic.TypeAdapter`). A raised `ApiError` or a
@@ -44,14 +51,29 @@ required leg (`live-e2e`, aggregated into `gate`).
   cannot coexist in one interpreter; `_driver.py` runs as a subprocess per fixture
   (as `tests/runtime/_recorder.py` does), printing its recording as JSON.
 
+## Two corpus kinds
+
+- **Vendored synthetic seeds** (`exhaustive`, …): the spec is committed at
+  `tests/fixtures/<name>/openapi.yml`. `exhaustive` (55 endpoints, 15 sub-clients)
+  is the deliberately complicated seed.
+- **`link-ok` real-world corpus** (`apideck.com-crm`, 40 endpoints across 8
+  sub-clients): a real API from `tests/fixtures/CORPUS.md`. Its licence permits
+  redistribution but, per the corpus policy, **only the generated Fern golden is
+  vendored — not the spec**. The `Fixture.spec_url` points at the pinned upstream
+  URL, and the harness fetches the spec (with retries) at run time. This is the
+  proof that crozier's parameter/response `$ref` resolution and Fern-matching method
+  naming hold up on a messy real-world document, not just curated seeds.
+
 ## Adding a fixture
 
-Add a `Fixture(...)` to `conftest.FIXTURES` with the generation flags crozier is
-driven with (the runtime analog of the byte-diff `Corpus` in `tests/e2e.rs`); the
-package must generate as `fern` so the reference snippets import. Everything else —
-endpoint discovery, the mock, the assertions — is automatic. Pick corpora whose
-generated SDK is runnable end to end; `exhaustive` (55 endpoints across 15
-sub-clients) is the deliberately complicated seed.
+Add a `Fixture(...)` to `conftest.FIXTURES` — the generation flags are the runtime
+analog of the byte-diff `Corpus` in `tests/e2e.rs`; the package must generate as
+`fern` so the reference snippets import. For a real-world corpus entry, set
+`spec_url` to its CORPUS.md row and commit the Fern golden `expected/` (the
+`reference.md` drives collection). Everything else — endpoint discovery, fetch, the
+mock, the assertions — is automatic. Pick corpora whose *Fern* output generates
+cleanly (a spec Fern itself rejects is not a valid target) and whose crozier output
+is runnable end to end.
 
 ## Skip vs fail
 

@@ -45,8 +45,22 @@ def usage_snippets(reference_text):
 
 def _repoint(source, base_url):
     """Rewrite a snippet to hit the mock and capture the endpoint's return value:
-    swap the placeholder `base_url` and bind the call's result to `__result__`."""
-    source = re.sub(r'base_url="[^"]*"', f"base_url={base_url!r}", source)
+    point the client at the mock and bind the call's result to `__result__`.
+
+    A snippet carries an explicit placeholder `base_url` only when the spec has no
+    servers; when it does (common in real specs) the constructor omits it and the
+    client would default to the real server. So swap an existing `base_url` when
+    present, otherwise inject one as the constructor's first argument."""
+    if re.search(r'base_url="[^"]*"', source):
+        source = re.sub(r'base_url="[^"]*"', f"base_url={base_url!r}", source)
+    else:
+        source = re.sub(
+            r"^(client = \w+\()$",
+            rf"\1\n    base_url={base_url!r},",
+            source,
+            count=1,
+            flags=re.MULTILINE,
+        )
     lines = source.splitlines()
     for index, line in enumerate(lines):
         if line.startswith("client."):
@@ -90,20 +104,23 @@ def _observe(sub_client, method, source, base_url):
 
 
 def record(sdk_src, reference_path, base_url):
-    """Run every endpoint snippet and return `{method: observation}`. An endpoint
-    that raises or type-mismatches records `{"ok": False, "error": ...}`; a clean
-    round-trip records `{"ok": True, ...}`."""
+    """Run every endpoint snippet and return `{"sub.method": observation}`. The key
+    is the full `sub_client.method` call path, not the bare method: real specs reuse
+    a method name (`add`, `all_`) across many sub-clients, so keying on the method
+    alone would collapse them. An endpoint that raises or type-mismatches records
+    `{"ok": False, "error": ...}`; a clean round-trip records `{"ok": True, ...}`."""
     sys.path.insert(0, sdk_src)
     text = Path(reference_path).read_text()
     recording = {}
     for sub_client, method, source in usage_snippets(text):
+        endpoint = f"{sub_client}.{method}"
         try:
-            recording[method] = {
+            recording[endpoint] = {
                 "ok": True,
                 **_observe(sub_client, method, source, base_url),
             }
         except Exception as error:  # noqa: BLE001 — recorded, then asserted on by the suite
-            recording[method] = {
+            recording[endpoint] = {
                 "ok": False,
                 "error": f"{type(error).__name__}: {error}",
             }

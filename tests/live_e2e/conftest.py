@@ -28,8 +28,10 @@ from pathlib import Path
 import pytest
 
 # The `client.<sub>.<method>` call that names the endpoint a reference snippet
-# exercises (the client-construction line `client = FernApi(` never matches).
-_CALL_RE = re.compile(r"^client\.\w+\.(\w+)", re.MULTILINE)
+# exercises (the client-construction line `client = FernApi(` never matches). The
+# captured `sub.method` is the endpoint key: real specs reuse a method name across
+# sub-clients, so the sub-client is part of the identity.
+_CALL_RE = re.compile(r"^client\.(\w+\.\w+)", re.MULTILINE)
 
 _ROOT = Path(__file__).resolve().parents[2]
 _FIXTURES = _ROOT / "tests" / "fixtures"
@@ -43,10 +45,17 @@ PRISM_PKG = "@stoplight/prism-cli@5.14.2"
 
 @dataclass(frozen=True)
 class Fixture:
-    """A vendored corpus to drive live, plus the naming flags `crozier` is
-    generated with — the runtime-behavior analog of the byte-diff `Corpus` in
-    `tests/e2e.rs`. The generated package must be importable as `fern` for the
-    `reference.md` snippets to run, so `package_name` is `fern`."""
+    """A corpus to drive live, plus the naming flags `crozier` is generated with —
+    the runtime-behavior analog of the byte-diff `Corpus` in `tests/e2e.rs`. The
+    generated package must be importable as `fern` for the `reference.md` snippets
+    to run, so `package_name` is `fern`.
+
+    `spec_url` distinguishes the two corpus kinds. When `None` the spec is vendored
+    at `tests/fixtures/<name>/openapi.yml` (the synthetic Fern seeds). When set, the
+    spec is a `link-ok` real-world entry from `tests/fixtures/CORPUS.md` — its
+    licence permits redistribution but only the *generated* Fern golden is vendored,
+    so the harness fetches the spec from this pinned URL at run time and drives
+    crozier's output against it. Keep the URL in step with the CORPUS.md row."""
 
     name: str
     package_name: str = "fern"
@@ -55,6 +64,7 @@ class Fixture:
     audience_strict: bool = False
     client_class_name: str | None = None
     extra_fields: str | None = None
+    spec_url: str | None = None
 
     def generate_args(self, spec: Path, out: Path) -> list[str]:
         args = [
@@ -80,10 +90,16 @@ class Fixture:
 
 
 # The corpora driven live. Spec-driven, so this grows by one line as more fixtures
-# gain a runnable SDK; `exhaustive` is the deliberately complicated seed (55 typed
-# endpoints across 15 sub-clients). See tests/live_e2e/AGENTS.md.
+# gain a runnable SDK. `exhaustive` is the deliberately complicated synthetic seed
+# (55 typed endpoints across 15 sub-clients); `apideck.com-crm` is a real-world
+# `link-ok` corpus API (40 endpoints across 8 sub-clients) whose spec is fetched,
+# not vendored. See tests/live_e2e/AGENTS.md.
 FIXTURES: list[Fixture] = [
     Fixture(name="exhaustive"),
+    Fixture(
+        name="apideck.com-crm",
+        spec_url="https://api.apis.guru/v2/specs/apideck.com/crm/9.3.0/openapi.json",
+    ),
 ]
 
 
@@ -92,7 +108,7 @@ def committed_reference(fixture: Fixture) -> Path:
 
 
 def reference_methods(fixture: Fixture) -> list[str]:
-    """Ordered, de-duplicated endpoint method names from a fixture's committed
+    """Ordered, de-duplicated `sub.method` endpoint keys from a fixture's committed
     `reference.md` — the endpoint catalog, resolved at collection time so each
     endpoint is its own reported test case."""
     text = committed_reference(fixture).read_text()
@@ -167,8 +183,34 @@ def _wait_until_listening(port: int, proc: subprocess.Popen, timeout: float = 60
     raise RuntimeError(f"prism did not start listening on {port} within {timeout}s")
 
 
-def _generate_sdk(crozier: str, fixture: Fixture, out: Path):
-    spec = _FIXTURES / fixture.name / "openapi.yml"
+def _spec_path(fixture: Fixture, work: Path) -> Path:
+    """The OpenAPI spec to generate from. Vendored fixtures read
+    `tests/fixtures/<name>/openapi.yml`; a `link-ok` corpus fixture (spec not
+    vendored) is fetched from its pinned URL into `work`, with a few retries since
+    the gate should not flake on a transient network blip."""
+    if fixture.spec_url is None:
+        return _FIXTURES / fixture.name / "openapi.yml"
+    import urllib.request
+
+    dest = work / "openapi.json"
+    last = None
+    for attempt in range(4):
+        try:
+            request = urllib.request.Request(
+                fixture.spec_url, headers={"User-Agent": "crozier-live-e2e"}
+            )
+            with urllib.request.urlopen(request, timeout=30) as response:
+                dest.write_bytes(response.read())
+            return dest
+        except Exception as error:  # noqa: BLE001 — retried, then surfaced
+            last = error
+            time.sleep(2**attempt)
+    raise RuntimeError(
+        f"fetching {fixture.name} spec from {fixture.spec_url} failed: {last}"
+    )
+
+
+def _generate_sdk(crozier: str, fixture: Fixture, spec: Path, out: Path):
     result = subprocess.run(
         [crozier, *fixture.generate_args(spec, out)],
         capture_output=True,
@@ -180,8 +222,7 @@ def _generate_sdk(crozier: str, fixture: Fixture, out: Path):
         )
 
 
-def _relax_spec(python: str, fixture: Fixture, dest: Path):
-    spec = _FIXTURES / fixture.name / "openapi.yml"
+def _relax_spec(python: str, fixture: Fixture, spec: Path, dest: Path):
     result = subprocess.run(
         [python, str(_RELAX), str(spec), str(dest)], capture_output=True, text=True
     )
@@ -227,14 +268,32 @@ def recordings(tmp_path_factory) -> dict[str, dict]:
     try:
         for fixture in FIXTURES:
             work = tmp_path_factory.mktemp(fixture.name)
+            spec = _spec_path(fixture, work)
             sdk = work / "sdk"
-            _generate_sdk(crozier, fixture, sdk)
+            _generate_sdk(crozier, fixture, spec, sdk)
             relaxed = work / "relaxed.openapi.yml"
-            _relax_spec(python, fixture, relaxed)
+            _relax_spec(python, fixture, spec, relaxed)
 
             port = _free_port()
+            # `-d --seed` (dynamic, seeded): generate each response from its schema
+            # rather than echoing the spec's committed `example`. Real specs carry
+            # examples that violate their own declared types (e.g. a `format: date`
+            # field whose example is a full datetime), which the SDK correctly
+            # rejects; schema-generated data respects the declared types, and the
+            # fixed seed keeps it reproducible across the matrix.
             proc = subprocess.Popen(
-                [*prism_cmd, "mock", "-p", str(port), "-h", "127.0.0.1", str(relaxed)],
+                [
+                    *prism_cmd,
+                    "mock",
+                    "-p",
+                    str(port),
+                    "-h",
+                    "127.0.0.1",
+                    "-d",
+                    "--seed",
+                    "1",
+                    str(relaxed),
+                ],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,

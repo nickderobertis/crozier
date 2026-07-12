@@ -320,8 +320,13 @@ pub struct RequestBody {
 }
 
 /// One response entry.
-#[derive(Debug, Default, Deserialize)]
+#[derive(Debug, Default, Clone, Deserialize)]
 pub struct Response {
+    /// A `$ref` pointer to a `components.responses` entry, e.g.
+    /// `#/components/responses/GetActivitiesResponse`. Resolved to the referenced
+    /// response by [`normalize_responses`]; `None` for an inline response.
+    #[serde(rename = "$ref", default)]
+    pub reference: Option<String>,
     /// Human description of the response; Fern surfaces it in the method
     /// docstring's `Returns` section.
     #[serde(default)]
@@ -332,7 +337,7 @@ pub struct Response {
 }
 
 /// A media-type object carrying the body/response schema.
-#[derive(Debug, Default, Deserialize)]
+#[derive(Debug, Default, Clone, Deserialize)]
 pub struct MediaType {
     /// The schema for this media type.
     #[serde(default)]
@@ -361,6 +366,11 @@ pub struct Components {
     /// [`normalize_parameters`]).
     #[serde(default)]
     pub parameters: IndexMap<String, Parameter>,
+    /// Reusable responses (`components.responses`), in document order. A `$ref`
+    /// response on an operation resolves against this map at load time (see
+    /// [`normalize_responses`]).
+    #[serde(default)]
+    pub responses: IndexMap<String, Response>,
     /// Declared authentication schemes, in document order.
     #[serde(rename = "securitySchemes", default)]
     pub security_schemes: IndexMap<String, SecurityScheme>,
@@ -648,8 +658,48 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     }
 
     normalize_parameters(&mut doc);
+    normalize_responses(&mut doc);
 
     Ok(doc)
+}
+
+/// Resolve a response that is a `$ref` into `components.responses` to the
+/// referenced response; an inline response (or an unresolvable pointer) is returned
+/// unchanged. Only `#/components/responses/*` pointers are resolved, one level deep.
+fn resolve_response(response: &Response, defs: &IndexMap<String, Response>) -> Response {
+    if let Some(name) = response
+        .reference
+        .as_deref()
+        .and_then(|r| r.strip_prefix("#/components/responses/"))
+    {
+        if let Some(target) = defs.get(name) {
+            return target.clone();
+        }
+    }
+    response.clone()
+}
+
+/// Inline every `components.responses` `$ref` an operation points at, so generation
+/// sees each response's real `content` (and thus its response model) rather than an
+/// empty `$ref` shell.
+///
+/// Real specs frequently declare a status → response mapping as
+/// `"200": { $ref: "#/components/responses/GetActivitiesResponse" }`, sharing one
+/// response across operations. crozier reads only an inline `Response`, so an
+/// unresolved `$ref` looks like a response with no body — the endpoint generates
+/// `-> None` and the response schema is never reached (and, if it was only reachable
+/// through such a response, never generated). Resolving here restores both. Inert on
+/// specs that inline every response (every synthetic fixture).
+fn normalize_responses(doc: &mut OpenApi) {
+    let defs = doc.components.responses.clone();
+    for item in doc.paths.values_mut() {
+        for slot in item.operation_slots() {
+            let Some(op) = slot else { continue };
+            for response in op.responses.values_mut() {
+                *response = resolve_response(response, &defs);
+            }
+        }
+    }
 }
 
 /// Resolve a parameter that is a `$ref` into `components.parameters` to the
@@ -1175,6 +1225,37 @@ components:
         );
         // The shared path-item parameter list is consumed once merged.
         assert!(doc.paths["/items/{itemId}"].parameters.is_empty());
+    }
+
+    /// `normalize_responses` inlines a `$ref` into `components.responses`, so the
+    /// operation's `"200"` carries the referenced response's `content` (and thus its
+    /// model) instead of an empty `$ref` shell — without which the endpoint would
+    /// generate `-> None`.
+    #[test]
+    fn normalize_responses_resolves_component_refs() {
+        let mut doc = parse(
+            r##"
+openapi: 3.0.0
+info: { title: T }
+paths:
+  /items:
+    get:
+      operationId: getItems
+      responses:
+        "200": { $ref: "#/components/responses/ItemsResponse" }
+components:
+  responses:
+    ItemsResponse:
+      description: A list of items
+      content:
+        application/json: { schema: { $ref: "#/components/schemas/Items" } }
+"##,
+        );
+        normalize_responses(&mut doc);
+        let op = doc.paths["/items"].get.as_ref().unwrap();
+        let ok = &op.responses["200"];
+        assert_eq!(ok.description.as_deref(), Some("A list of items"));
+        assert!(ok.content.contains_key("application/json"));
     }
 
     /// An operation-level parameter overrides a path-level one sharing its name and
