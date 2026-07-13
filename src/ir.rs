@@ -428,7 +428,7 @@ pub struct QueryParam {
     /// as Fern wraps an object-typed query parameter.
     pub convert: bool,
     /// The parameter's `example` as a Python literal; when set, the parameter is
-    /// shown in a worked snippet even if optional ([`example_literal`]).
+    /// shown in a worked snippet even if optional (`example_literal`).
     pub example: Option<String>,
     /// Optional description, shown under the parameter in the docstring.
     pub docstring: Option<String>,
@@ -564,7 +564,7 @@ pub struct BodyField {
     /// which renders as `core.File` and serializes into `files={...}`.
     pub is_file: bool,
     /// The field's `example` as a Python literal, shown in a worked snippet instead
-    /// of a synthesized placeholder ([`example_literal`]).
+    /// of a synthesized placeholder (`example_literal`).
     pub example: Option<String>,
 }
 
@@ -700,7 +700,7 @@ pub struct Field {
     /// Optional field docstring (from the property `description`).
     pub docstring: Option<String>,
     /// The property's `example` as a Python literal, shown in a worked snippet
-    /// instead of a synthesized placeholder ([`example_literal`]).
+    /// instead of a synthesized placeholder (`example_literal`).
     pub example: Option<String>,
 }
 

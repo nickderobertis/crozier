@@ -153,7 +153,7 @@ pub struct PathItem {
     pub patch: Option<Operation>,
     /// Parameters declared once on the path item and shared by every operation
     /// under it (a common real-world pattern for path params). Merged into each
-    /// operation at load time by [`normalize_parameters`]; empty after that pass.
+    /// operation at load time by `normalize_parameters`; empty after that pass.
     #[serde(default)]
     pub parameters: Vec<Parameter>,
 }
@@ -262,13 +262,13 @@ impl Operation {
 
 /// An operation parameter (path/query/header/cookie). A `$ref` parameter carries
 /// its pointer in [`Parameter::reference`] and is resolved against
-/// `components.parameters` at load time (see [`normalize_parameters`]); after that
+/// `components.parameters` at load time (see `normalize_parameters`); after that
 /// pass every surviving parameter is inline.
 #[derive(Debug, Default, Clone, Deserialize)]
 pub struct Parameter {
     /// A `$ref` pointer to a `components.parameters` entry, e.g.
     /// `#/components/parameters/consumerId`. Resolved to the referenced parameter
-    /// by [`normalize_parameters`]; `None` for an inline parameter.
+    /// by `normalize_parameters`; `None` for an inline parameter.
     #[serde(rename = "$ref", default)]
     pub reference: Option<String>,
     /// Parameter name (the wire name; also the path placeholder for `in: path`).
@@ -327,7 +327,7 @@ pub struct RequestBody {
 pub struct Response {
     /// A `$ref` pointer to a `components.responses` entry, e.g.
     /// `#/components/responses/GetActivitiesResponse`. Resolved to the referenced
-    /// response by [`normalize_responses`]; `None` for an inline response.
+    /// response by `normalize_responses`; `None` for an inline response.
     #[serde(rename = "$ref", default)]
     pub reference: Option<String>,
     /// Human description of the response; Fern surfaces it in the method
@@ -366,12 +366,12 @@ pub struct Components {
     pub schemas: IndexMap<String, Schema>,
     /// Reusable parameters (`components.parameters`), in document order. A `$ref`
     /// parameter on an operation resolves against this map at load time (see
-    /// [`normalize_parameters`]).
+    /// `normalize_parameters`).
     #[serde(default)]
     pub parameters: IndexMap<String, Parameter>,
     /// Reusable responses (`components.responses`), in document order. A `$ref`
     /// response on an operation resolves against this map at load time (see
-    /// [`normalize_responses`]).
+    /// `normalize_responses`).
     #[serde(default)]
     pub responses: IndexMap<String, Response>,
     /// Declared authentication schemes, in document order.
