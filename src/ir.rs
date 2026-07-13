@@ -1366,6 +1366,12 @@ fn resolve_request_body(
         if !target.properties.is_empty() || target.all_of.is_some() {
             return hoist_fields(&class, types).map(RequestBody::Inline);
         }
+        // A `$ref` to a bare object (no properties/`allOf` — a free-form `Dict`
+        // alias, e.g. bunq's `AttachmentPublic`) is passed straight through as a
+        // single `json=request` arg, like a map.
+        if is_bare_object(target) {
+            return Some(single(TypeRef::Named(class), required, false, true));
+        }
         return None;
     }
     // An inline object body (properties written directly, not behind a `$ref`) is
