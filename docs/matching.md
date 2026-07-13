@@ -234,6 +234,18 @@ single source of truth; counts are deliberately not restated here so they cannot
 drift.) The items below record how each shape generates; the remaining unproven
 paths are called out inline.
 
+The first **real-world** corpus, `apideck.com-crm` (issue #77), is **fully matched**
+too — all 167 files, byte-for-byte. As a `link-ok` entry its OpenAPI spec is
+fetched, not vendored, so its `apideck_crm_matches_fern_output` test resolves the
+spec from `.local/corpus` (`corpus_spec`), skips when it is absent (the offline
+`check` gate), and enforces the match under `CROZIER_REQUIRE_CORPUS` in the CI
+live-e2e leg (`just test-corpus-match`). Reaching it exercised, on a messy
+real-world document, the `$ref` parameter/response resolution, Fern-matching method
+naming, ubiquitous-header promotion, inline-schema hoisting, and worked-example
+value synthesis (spec `example`s, shown only for a plain-scalar required-and-not-
+nullable field, with an enum rendered as its member); `APIDECK_CRM_GAPS` is now
+empty.
+
 ### Issue #43: error responses, discriminated-union aliases, and SSE streaming
 
 Three gaps found while checking whether crozier could stand in for a fern-python

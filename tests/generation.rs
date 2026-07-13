@@ -2145,3 +2145,226 @@ paths:
         "no import uses the depth-wrong two-dot prefix:\n{nested}"
     );
 }
+
+/// A real-world-shaped API in one spec: `components.parameters` header refs shared
+/// on the path item (a required and an optional one, both riding *every* operation,
+/// so both promote to the client wrapper), a `components.responses` `$ref`, a
+/// tag-prefixed camelCase `operationId` (`activitiesAll` → `all`), inline schema
+/// hoisting (object property, array-of-objects, property `anyOf`), an inline
+/// string-enum query param, an object query param, and spec `example`s on scalar
+/// fields and a query param — the shapes the apideck corpus exercises, distilled so
+/// the offline suite measures them. Mirrors [`docs/matching.md`].
+const CATALOG_SPEC: &str = r##"
+openapi: 3.0.1
+info:
+  title: Catalog
+paths:
+  /activities:
+    parameters:
+      - $ref: "#/components/parameters/AppId"
+      - $ref: "#/components/parameters/Tenant"
+    get:
+      operationId: activitiesAll
+      tags: [Activities]
+      parameters:
+        - name: level
+          in: query
+          schema:
+            type: string
+            enum: [low, high]
+        - name: filter
+          in: query
+          schema:
+            $ref: "#/components/schemas/WidgetFilter"
+        - name: limit
+          in: query
+          required: true
+          schema:
+            type: integer
+          example: 25
+      responses:
+        "200":
+          $ref: "#/components/responses/WidgetList"
+    post:
+      operationId: activitiesAdd
+      tags: [Activities]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Widget"
+      responses:
+        "200":
+          $ref: "#/components/responses/OneWidget"
+components:
+  parameters:
+    AppId:
+      name: X-App-Id
+      in: header
+      required: true
+      schema:
+        type: string
+    Tenant:
+      name: X-Tenant
+      in: header
+      required: false
+      schema:
+        type: string
+  responses:
+    WidgetList:
+      description: A page of widgets
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Widget"
+    OneWidget:
+      description: One widget
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Widget"
+  schemas:
+    WidgetFilter:
+      type: object
+      properties:
+        status:
+          type: string
+    Widget:
+      type: object
+      required: [id, name, active, count]
+      properties:
+        id:
+          type: string
+          example: "wid_123"
+        name:
+          type: string
+          example: "Gadget"
+        active:
+          type: boolean
+          example: true
+        count:
+          type: integer
+          example: 5
+        meta:
+          type: object
+          properties:
+            cursor:
+              type: string
+        stages:
+          type: array
+          items:
+            type: object
+            properties:
+              label:
+                type: string
+        value:
+          anyOf:
+            - type: string
+            - type: object
+"##;
+
+#[test]
+fn catalog_spec_resolves_refs_hoists_inline_schemas_and_promotes_headers() {
+    let files = render(CATALOG_SPEC);
+
+    // Both ubiquitous headers promote to the client wrapper: the required one as a
+    // plain `str`, the optional one as `typing.Optional[str]`.
+    let wrapper = &files["src/acme/core/client_wrapper.py"];
+    assert!(wrapper.contains("app_id: str"), "{wrapper}");
+    assert!(
+        wrapper.contains("tenant: typing.Optional[str]"),
+        "{wrapper}"
+    );
+    // The promoted headers become wire keys on the outgoing request headers dict.
+    assert!(
+        wrapper.contains("headers[\"X-App-Id\"] = self._app_id"),
+        "{wrapper}"
+    );
+
+    // The tag-prefixed camelCase operationId drops the tag: `activitiesAll` → `all`
+    // (not `activities_all`), under the `activities` client.
+    let client = &files["src/acme/activities/client.py"];
+    assert!(
+        client.contains("def all(") || client.contains("def all_("),
+        "{client}"
+    );
+    assert!(client.contains("def add("), "{client}");
+
+    // Inline schemas hoist into named tag types.
+    assert!(
+        files.contains_key("src/acme/types/widget_meta.py"),
+        "inline object property hoisted to WidgetMeta"
+    );
+    assert!(
+        files.contains_key("src/acme/types/widget_stages_item.py"),
+        "array-of-inline-objects hoisted to WidgetStagesItem"
+    );
+    assert!(
+        files.contains_key("src/acme/types/widget_value.py"),
+        "property anyOf hoisted to a WidgetValue union alias"
+    );
+    let widget = &files["src/acme/types/widget.py"];
+    assert!(
+        widget.contains("meta: typing.Optional[WidgetMeta]"),
+        "{widget}"
+    );
+    assert!(
+        widget.contains("stages: typing.Optional[typing.List[WidgetStagesItem]]"),
+        "{widget}"
+    );
+
+    // A spec `example` on a scalar field is shown verbatim in the worked example;
+    // the request body's required fields carry theirs.
+    let reference = &files["reference.md"];
+    assert!(reference.contains("id=\"wid_123\""), "{reference}");
+    assert!(reference.contains("name=\"Gadget\""), "{reference}");
+    assert!(reference.contains("active=True"), "{reference}");
+    assert!(reference.contains("count=5"), "{reference}");
+    // The required query param's example seeds its worked call.
+    assert!(reference.contains("limit=25"), "{reference}");
+}
+
+/// Operations with no `operationId` fall back to synthesized names: a `PUT` becomes
+/// `update_*`, a route with no static resource segment yields a verb-only method,
+/// and — lacking any tag — the client module is the leading path segment. A derived
+/// name colliding with a Python builtin gets Fern's trailing-underscore munge.
+const SYNTH_NAMING_SPEC: &str = r##"
+openapi: 3.0.1
+info:
+  title: Synth
+paths:
+  /inventory:
+    put:
+      responses:
+        "204":
+          description: ""
+  /{id}:
+    delete:
+      responses:
+        "204":
+          description: ""
+  /reports:
+    get:
+      operationId: list
+      responses:
+        "204":
+          description: ""
+"##;
+
+#[test]
+fn synthesized_names_cover_verb_resource_and_reserved_munge() {
+    let files = render(SYNTH_NAMING_SPEC);
+    // `PUT /inventory` with no id → `update_inventory` under the `inventory` client
+    // (module derived from the leading path segment, no tag).
+    let inv = &files["src/acme/inventory/client.py"];
+    assert!(inv.contains("def update_inventory("), "{inv}");
+    // `DELETE /{id}` has no static resource segment → a verb-only `delete` method,
+    // and no static path segment for the module → the `service` fallback group.
+    let svc = &files["src/acme/service/client.py"];
+    assert!(svc.contains("def delete("), "{svc}");
+    // A groupless `list` operationId names its own `list` client and collides with
+    // the builtin → `list_`.
+    let list_client = &files["src/acme/list/client.py"];
+    assert!(list_client.contains("def list_("), "{list_client}");
+}

@@ -106,42 +106,66 @@ fn env_member_name(description: &str) -> String {
     out.trim_end_matches('_').to_string()
 }
 
-/// An operation header promoted to a client-wrapper-level field. Fern lifts an
-/// *optional* operation header out of the method (a required one stays per-method,
-/// e.g. exhaustive's `X-TEST-ENDPOINT-HEADER`) and applies it as a global header
-/// set once at client construction — `X-Tenant` becomes the `tenant` field.
+/// An operation header promoted to a client-wrapper-level field. Fern lifts a
+/// header carried by *every* operation out of the methods and applies it once at
+/// client construction — `X-Tenant` becomes the `tenant` constructor field. A
+/// header on only some operations stays a per-method parameter (e.g. exhaustive's
+/// `X-TEST-ENDPOINT-HEADER`). `required` drives the rendering: a required global
+/// header is a mandatory `str` constructor arg set unconditionally, an optional one
+/// is `Optional[str] = None` set only when provided.
 #[derive(Debug, Clone)]
 pub struct GlobalHeader {
     /// The wire header name (the `headers` dict key), e.g. `X-Tenant`.
     pub wire_name: String,
     /// The Python field/parameter name, e.g. `tenant` (the `X-` prefix dropped).
     pub py_name: String,
+    /// Whether the header is required on every operation (so the constructor arg is
+    /// mandatory and the `get_headers` assignment is unconditional).
+    pub required: bool,
 }
 
 /// Collect the operation headers Fern promotes to client-wrapper-level fields: a
-/// header that is *optional* in every operation it appears in, in first-seen order.
-/// A header that is required anywhere stays a per-method parameter.
+/// header present on **every** operation (a ubiquitous header like `X-App-Id` is an
+/// SDK-wide setting, not a per-call argument). A header on a subset of operations
+/// stays a per-method parameter. Fern orders the promoted headers optional-first,
+/// then alphabetically by field name.
 fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
-    // name → whether every occurrence so far is optional, in first-seen order.
-    let mut seen: IndexMap<String, bool> = IndexMap::new();
+    let mut total = 0usize;
+    // wire name → (operations carrying it, required in every one so far), first-seen.
+    let mut seen: IndexMap<String, (usize, bool)> = IndexMap::new();
     for item in doc.paths.values() {
         for (_, op) in item.operations() {
+            total += 1;
+            let mut in_op: std::collections::HashSet<&str> = std::collections::HashSet::new();
             for p in &op.parameters {
-                if p.location == Some(ParameterLocation::Header) {
-                    let optional = p.required != Some(true);
-                    let entry = seen.entry(p.name.clone()).or_insert(true);
-                    *entry = *entry && optional;
+                if p.location == Some(ParameterLocation::Header) && in_op.insert(p.name.as_str()) {
+                    let entry = seen.entry(p.name.clone()).or_insert((0, true));
+                    entry.0 += 1;
+                    entry.1 = entry.1 && p.required == Some(true);
                 }
             }
         }
     }
-    seen.into_iter()
-        .filter(|(_, optional)| *optional)
-        .map(|(wire_name, _)| GlobalHeader {
+    // Promote a header that rides *every* operation. A required header on a
+    // *single* operation is that call's own argument, not an SDK-wide setting, so
+    // it stays a per-method parameter (Fern only promotes a solo header when it is
+    // optional). With more than one operation, "on every one" is a deliberate
+    // cross-cutting header and promotes regardless of required-ness.
+    let mut headers: Vec<GlobalHeader> = seen
+        .into_iter()
+        .filter(|(_, (count, required))| total > 0 && *count == total && (!*required || total > 1))
+        .map(|(wire_name, (_, required))| GlobalHeader {
             py_name: naming::field_name(header_param_stem(&wire_name)),
             wire_name,
+            required,
         })
-        .collect()
+        .collect();
+    headers.sort_by(|a, b| {
+        a.required
+            .cmp(&b.required)
+            .then_with(|| a.py_name.cmp(&b.py_name))
+    });
+    headers
 }
 
 /// The SDK's authentication model, derived from `components.securitySchemes` and
@@ -383,6 +407,8 @@ pub struct PathParam {
     pub py_name: String,
     /// The parameter's type.
     pub type_ref: TypeRef,
+    /// Optional description, shown under the parameter in the docstring.
+    pub docstring: Option<String>,
 }
 
 /// A resolved query parameter, rendered as a keyword-only method argument and a
@@ -397,6 +423,13 @@ pub struct QueryParam {
     pub type_ref: TypeRef,
     /// Whether the parameter is required; optional params get `Optional[..] = None`.
     pub required: bool,
+    /// Whether the value serializes through `convert_and_respect_annotation_metadata`
+    /// in the `params` dict — true for an object/union type carrying field aliases,
+    /// as Fern wraps an object-typed query parameter.
+    pub convert: bool,
+    /// The parameter's `example` as a Python literal; when set, the parameter is
+    /// shown in a worked snippet even if optional (`example_literal`).
+    pub example: Option<String>,
     /// Optional description, shown under the parameter in the docstring.
     pub docstring: Option<String>,
 }
@@ -530,6 +563,9 @@ pub struct BodyField {
     /// Whether this is a file upload field (`format: binary` in a form body),
     /// which renders as `core.File` and serializes into `files={...}`.
     pub is_file: bool,
+    /// The field's `example` as a Python literal, shown in a worked snippet instead
+    /// of a synthesized placeholder (`example_literal`).
+    pub example: Option<String>,
 }
 
 /// A type hoisted out of an operation's inline request/response body. Unlike a
@@ -663,6 +699,9 @@ pub struct Field {
     pub spec_required: bool,
     /// Optional field docstring (from the property `description`).
     pub docstring: Option<String>,
+    /// The property's `example` as a Python literal, shown in a worked snippet
+    /// instead of a synthesized placeholder (`example_literal`).
+    pub example: Option<String>,
 }
 
 impl Field {
@@ -937,6 +976,7 @@ fn build_endpoint(
                 .schema
                 .as_ref()
                 .map_or(TypeRef::Primitive(Prim::Any), base_type_ref),
+            docstring: clean_doc(p.description.as_deref()),
         })
         .collect();
 
@@ -944,20 +984,32 @@ fn build_endpoint(
         .parameters
         .iter()
         .filter(|p| p.location == Some(ParameterLocation::Query))
-        .map(|p| QueryParam {
-            wire_name: p.name.clone(),
-            py_name: naming::field_name(&p.name),
-            // An inline string enum hoists to a named `{ctx}Request{Prop}` alias
-            // in the tag's `types/` package (Fern's `ListWidgetsRequestLevel`);
-            // a `$ref`/scalar passes through `base_type_ref`.
-            type_ref: p
+        .map(|p| {
+            // An inline string enum hoists to a named `{ctx}Request{Prop}` alias in
+            // the tag's `types/` package (Fern's `ListWidgetsRequestLevel`); a
+            // `$ref`/scalar passes through `base_type_ref`.
+            let type_ref = p
                 .schema
                 .as_ref()
                 .map_or(TypeRef::Primitive(Prim::Any), |s| {
                     hoister.hoist_param_enum(&request_ctx, &p.name, s)
-                }),
-            required: p.required == Some(true),
-            docstring: clean_doc(p.description.as_deref()),
+                });
+            let convert = type_needs_convert(&type_ref, types);
+            // A parameter-level `example` wins; otherwise the schema's own.
+            let example = p
+                .example
+                .as_ref()
+                .or_else(|| p.schema.as_ref().and_then(|s| s.example.as_ref()))
+                .and_then(example_literal);
+            QueryParam {
+                wire_name: p.name.clone(),
+                py_name: naming::field_name(&p.name),
+                type_ref,
+                required: p.required == Some(true),
+                convert,
+                example,
+                docstring: clean_doc(p.description.as_deref()),
+            }
         })
         .collect();
 
@@ -1339,6 +1391,7 @@ fn hoist_inline_object(
             type_ref,
             optional,
             spec_required,
+            example: prop_schema.example.as_ref().and_then(example_literal),
             docstring: clean_doc(prop_schema.description.as_deref()),
             is_file: false,
         });
@@ -1376,6 +1429,7 @@ impl InlineHoister<'_> {
                 optional,
                 spec_required,
                 docstring: clean_doc(prop_schema.description.as_deref()),
+                example: prop_schema.example.as_ref().and_then(example_literal),
             });
         }
         self.out.push(TypeDecl::Object(ObjectType {
@@ -1451,6 +1505,7 @@ fn hoist_form_object(schema: &Schema) -> Vec<BodyField> {
                 docstring: clean_doc(prop_schema.description.as_deref()),
                 convert: false,
                 is_file,
+                example: prop_schema.example.as_ref().and_then(example_literal),
             }
         })
         .collect()
@@ -1486,6 +1541,7 @@ fn hoist_fields(class: &str, types: &[TypeDecl]) -> Option<Vec<BodyField>> {
                 docstring: f.docstring.clone(),
                 convert: type_needs_convert(&f.type_ref, types),
                 is_file: false,
+                example: f.example.clone(),
             })
             .collect(),
     )
@@ -1596,12 +1652,15 @@ fn endpoint_method_name(op: &Operation, http_method: &str, url: &str) -> String 
         return method_from_grouped_id(id);
     }
     if !id.is_empty() {
-        return naming::sanitize_identifier(&naming::to_snake_case(id));
+        return method_from_groupless_id(id, first_tag(op));
     }
     synthesized_method_name(http_method, url)
 }
 
-/// The method name for a `group_method` operationId (one that contains `_`).
+/// The method name for a `group_method` operationId (one that contains `_`). Fern
+/// takes the method segment verbatim here — an explicit `users_list` stays `list`,
+/// not `list_` — so no reserved-word munging is applied (contrast
+/// [`method_from_groupless_id`], where the name is *derived* and safe-named).
 fn method_from_grouped_id(id: &str) -> String {
     let (group, rest) = id.rsplit_once('_').unwrap_or(("", id));
     let name = if group.contains('_') {
@@ -1610,6 +1669,37 @@ fn method_from_grouped_id(id: &str) -> String {
         rest.to_lowercase()
     };
     naming::sanitize_identifier(&name)
+}
+
+/// The method name for a groupless camelCase operationId (no `_`). Fern drops a
+/// leading run of words matching the operation's tag before deriving the method,
+/// so `activitiesAdd` under tag `Activities` becomes `add`, not `activities_add`
+/// (the tag already names the client the method hangs off). When the id does not
+/// begin with the tag — or the operation has no tag — the whole id is used.
+fn method_from_groupless_id(id: &str, tag: Option<&str>) -> String {
+    let snake = naming::to_snake_case(id);
+    let tag_snake = tag.map(naming::to_snake_case).unwrap_or_default();
+    let method = if tag_snake.is_empty() {
+        &snake
+    } else {
+        snake
+            .strip_prefix(&format!("{tag_snake}_"))
+            .unwrap_or(&snake)
+    };
+    finalize_method_name(method)
+}
+
+/// Coerce a derived method name into a legal, Fern-consistent Python identifier:
+/// sanitize it, then append the trailing `_` Fern uses when the name collides with
+/// a reserved word (`all` → `all_`), so a "list all" endpoint does not shadow the
+/// builtin.
+fn finalize_method_name(name: &str) -> String {
+    let ident = naming::sanitize_identifier(name);
+    if naming::is_reserved(&ident) {
+        format!("{ident}_")
+    } else {
+        ident
+    }
 }
 
 /// The `PascalCase` context that names an operation's hoisted inline
@@ -1811,6 +1901,7 @@ fn append_member_fields(
             optional: is_optional(prop_schema) || !spec_required,
             spec_required,
             docstring: clean_doc(prop_schema.description.as_deref()),
+            example: prop_schema.example.as_ref().and_then(example_literal),
         });
     }
 }
@@ -1937,6 +2028,7 @@ impl Builder<'_> {
                 optional,
                 spec_required,
                 docstring: clean_doc(prop_schema.description.as_deref()),
+                example: prop_schema.example.as_ref().and_then(example_literal),
             });
         }
     }
@@ -1996,6 +2088,84 @@ impl Builder<'_> {
                     clean_doc(prop_schema.description.as_deref()),
                 )));
                 return TypeRef::Named(hoisted);
+            }
+            // An inline object *with declared properties* hoists to its own named
+            // model `{Owner}{Prop}` (Fern: `Meta.cursors` → `MetaCursors`), rather
+            // than degrading to `typing.Any`. A bare `type: object` map (no
+            // properties) is left to `base_type_ref`.
+            if !prop_schema.properties.is_empty() {
+                let name = format!("{owner}{}", naming::class_name(prop));
+                let module = naming::module_name(&name);
+                self.add_object(
+                    &name,
+                    module,
+                    prop_schema,
+                    clean_doc(prop_schema.description.as_deref()),
+                );
+                return TypeRef::Named(name);
+            }
+            // An array of inline objects hoists the item to `{Owner}{Prop}Item` and
+            // types the property as a sequence of it (Fern: `Pipeline.stages` →
+            // `List[PipelineStagesItem]`).
+            if prop_schema.ty.as_ref().and_then(|t| t.primary()) == Some("array") {
+                if let Some(items) = &prop_schema.items {
+                    if items.reference.is_none() && !items.properties.is_empty() {
+                        let name = format!("{owner}{}Item", naming::class_name(prop));
+                        let module = naming::module_name(&name);
+                        self.add_object(
+                            &name,
+                            module,
+                            items,
+                            clean_doc(items.description.as_deref()),
+                        );
+                        let item = Box::new(TypeRef::Named(name));
+                        return if prop_schema.unique_items == Some(true) {
+                            TypeRef::Set(item)
+                        } else {
+                            TypeRef::List(item)
+                        };
+                    }
+                }
+            }
+            // A property-level `anyOf`/`oneOf` (undiscriminated) hoists to a named
+            // `Union` alias `{Owner}{Prop}` (Fern: `CustomField.value` →
+            // `CustomFieldValue`). A `nullable` member is wrapped `Optional`, as Fern
+            // does for the alias — kept local to the hoist so inline unions elsewhere
+            // are unchanged.
+            if let Some(members) = prop_schema.any_of.as_ref().or(prop_schema.one_of.as_ref()) {
+                if prop_schema.discriminator.is_none() {
+                    let variants: Vec<TypeRef> = members
+                        .iter()
+                        .map(|m| {
+                            // A bare `type: object` union member is an open map to
+                            // Fern (`Dict[str, Optional[Any]]`), not `Any`.
+                            let ty = if is_bare_object(m) {
+                                TypeRef::Dict(
+                                    Box::new(TypeRef::Primitive(Prim::Str)),
+                                    Box::new(TypeRef::Optional(Box::new(TypeRef::Primitive(
+                                        Prim::Any,
+                                    )))),
+                                )
+                            } else {
+                                base_type_ref(m)
+                            };
+                            if m.nullable == Some(true) {
+                                TypeRef::Optional(Box::new(ty))
+                            } else {
+                                ty
+                            }
+                        })
+                        .collect();
+                    let name = format!("{owner}{}", naming::class_name(prop));
+                    let module = naming::module_name(&name);
+                    self.push_alias(
+                        &name,
+                        module,
+                        TypeRef::Union(variants),
+                        clean_doc(prop_schema.description.as_deref()),
+                    );
+                    return TypeRef::Named(name);
+                }
             }
         }
         base_type_ref(prop_schema)
@@ -2060,6 +2230,16 @@ fn is_map(schema: &Schema) -> bool {
 fn is_inline_object(schema: &Schema) -> bool {
     schema.reference.is_none()
         && (!schema.properties.is_empty() || schema.all_of.is_some() || is_object_type(schema))
+}
+
+/// A bare `type: object` with no declared structure (no properties, `allOf`, or
+/// `additionalProperties`) — an open map Fern types as `Dict[str, Optional[Any]]`.
+fn is_bare_object(schema: &Schema) -> bool {
+    schema.reference.is_none()
+        && schema.properties.is_empty()
+        && schema.all_of.is_none()
+        && schema.additional_properties.is_none()
+        && is_object_type(schema)
 }
 
 /// An inline (not `$ref`) object with *declared structure* — properties or an
@@ -2247,6 +2427,21 @@ fn clean_doc(desc: Option<&str>) -> Option<String> {
         None
     } else {
         Some(text.to_string())
+    }
+}
+
+/// Render an OpenAPI `example` scalar as the Python literal Fern shows in a worked
+/// snippet (`"SpaceX"`, `10`, `True`). Returns `None` for a value Fern does not
+/// inline as a leaf — null, or a composite object/array.
+fn example_literal(value: &serde_json::Value) -> Option<String> {
+    match value {
+        serde_json::Value::String(s) => Some(format!(
+            "\"{}\"",
+            s.replace('\\', "\\\\").replace('"', "\\\"")
+        )),
+        serde_json::Value::Bool(b) => Some(if *b { "True" } else { "False" }.to_string()),
+        serde_json::Value::Number(n) => Some(n.to_string()),
+        _ => None,
     }
 }
 

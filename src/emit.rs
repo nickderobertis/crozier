@@ -1372,14 +1372,18 @@ fn reference_entry(
 
     // The parameter rows, in signature order, then `request_options`.
     let mut params: Vec<ParamRow> = Vec::new();
-    for (name, ty) in &mp.path {
+    for (name, ty, desc) in &mp.path {
+        let suffix = match desc {
+            Some(d) => format!(" — {d}"),
+            None => " ".to_string(),
+        };
         params.push(ParamRow {
             name: name.clone(),
             annot: ty.clone(),
-            suffix: " ".to_string(),
+            suffix,
         });
     }
-    for dp in mp.query.iter().chain(&mp.header).chain(&mp.body) {
+    for dp in ordered_keyword_params(&mp.query, &mp.header, &mp.body) {
         let suffix = match &dp.description {
             Some(d) => format!(" — {d}"),
             None => " ".to_string(),
@@ -1731,10 +1735,18 @@ fn client_wrapper_file(
     let a = auth_wrapper_parts(auth);
     // Promoted global headers: a constructor parameter, an assignment, a
     // `get_headers` block, and a `super().__init__` argument — all emitted before
-    // the auth credential's, matching Fern's ordering.
+    // the auth credential's, matching Fern's ordering. A required header is a
+    // mandatory `str` set unconditionally; an optional one is `Optional[str] = None`
+    // set only when provided.
     let gh_param: String = global_headers
         .iter()
-        .map(|h| format!("        {}: typing.Optional[str] = None,\n", h.py_name))
+        .map(|h| {
+            if h.required {
+                format!("        {}: str,\n", h.py_name)
+            } else {
+                format!("        {}: typing.Optional[str] = None,\n", h.py_name)
+            }
+        })
         .collect();
     let gh_assign: String = global_headers
         .iter()
@@ -1743,11 +1755,19 @@ fn client_wrapper_file(
     let gh_header: String = global_headers
         .iter()
         .map(|h| {
-            format!(
-                "        if self._{0} is not None:\n            headers[\"{1}\"] = self._{0}\n",
-                h.py_name,
-                escape_py_str(&h.wire_name)
-            )
+            if h.required {
+                format!(
+                    "        headers[\"{1}\"] = self._{0}\n",
+                    h.py_name,
+                    escape_py_str(&h.wire_name)
+                )
+            } else {
+                format!(
+                    "        if self._{0} is not None:\n            headers[\"{1}\"] = self._{0}\n",
+                    h.py_name,
+                    escape_py_str(&h.wire_name)
+                )
+            }
         })
         .collect();
     let gh_super: String = global_headers
@@ -1761,6 +1781,10 @@ fn client_wrapper_file(
         "        self._headers = headers\n        self._base_url = base_url\n        self._timeout = timeout\n\n    def get_headers(self) -> typing.Dict[str, str]:\n        headers: typing.Dict[str, str] = {{\n            \"X-Crozier-Language\": \"Python\",\n            \"X-Crozier-SDK-Name\": \"{project_name}\",\n            \"X-Crozier-SDK-Version\": \"{DEFAULT_SDK_VERSION}\",\n            **(self.get_custom_headers() or {{}}),\n        }}\n"
     );
     let mut c = String::new();
+    // Lead with the generated-file header (like every other emitted module): it
+    // survives `ruff format` and the e2e comment-strip folds it to the blank lines
+    // Fern's own stripped header leaves, so the leading layout matches.
+    c.push_str(HEADER);
     c.push_str("\n\nimport typing\n\nimport httpx\nfrom .http_client import AsyncHttpClient, HttpClient\n\n\nclass BaseClientWrapper:\n    def __init__(\n        self,\n        *,\n");
     c.push_str(&gh_param);
     c.push_str(&a.param);
@@ -1984,6 +2008,11 @@ fn render_enum(env: &Environment<'static>, e: &crate::ir::EnumType) -> Result<St
     );
     body.push_str(&e.name);
     body.push_str("(str, enum.Enum):\n");
+    if let Some(doc) = &e.docstring {
+        // Fern renders the schema description as a class docstring, then a blank
+        // line before the first member.
+        body.push_str(&format!("    \"\"\"\n    {doc}\n    \"\"\"\n\n"));
+    }
     for m in &e.members {
         body.push_str(&format!(
             "    {} = \"{}\"\n",
@@ -2218,8 +2247,8 @@ fn url_arg(ep: &Endpoint) -> String {
 struct MethodParams {
     /// The response Python type (`None` when the endpoint returns no content).
     inner: String,
-    /// Positional path parameters: `(py_name, annotation)`.
-    path: Vec<(String, String)>,
+    /// Positional path parameters: `(py_name, annotation, description)`.
+    path: Vec<(String, String, Option<String>)>,
     /// Keyword-only query parameters.
     query: Vec<DocParam>,
     /// Keyword-only header parameters.
@@ -2236,10 +2265,16 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
         .as_ref()
         .map_or_else(|| "None".to_string(), |t| raw_type_str(t, imports));
 
-    let path: Vec<(String, String)> = ep
+    let path: Vec<(String, String, Option<String>)> = ep
         .path_params
         .iter()
-        .map(|pp| (pp.py_name.clone(), raw_type_str(&pp.type_ref, imports)))
+        .map(|pp| {
+            (
+                pp.py_name.clone(),
+                raw_type_str(&pp.type_ref, imports),
+                pp.docstring.clone(),
+            )
+        })
         .collect();
 
     // Query and header parameters become keyword-only arguments; each carries an
@@ -2407,13 +2442,15 @@ fn doc_arg(dp: &DocParam) -> Doc {
 /// type.
 fn signature(ep: &Endpoint, mp: &MethodParams, return_type: &str, is_async: bool) -> String {
     let mut args: Vec<Doc> = vec![Doc::atom("self")];
-    for (name, ty) in &mp.path {
+    for (name, ty, _) in &mp.path {
         args.push(Doc::atom(format!("{name}: {ty}")));
     }
     args.push(Doc::atom("*"));
-    args.extend(mp.query.iter().map(doc_arg));
-    args.extend(mp.header.iter().map(doc_arg));
-    args.extend(mp.body.iter().map(doc_arg));
+    args.extend(
+        ordered_keyword_params(&mp.query, &mp.header, &mp.body)
+            .into_iter()
+            .map(doc_arg),
+    );
     args.push(Doc::atom(
         "request_options: typing.Optional[RequestOptions] = None",
     ));
@@ -2462,12 +2499,30 @@ struct DocParam {
     description: Option<String>,
 }
 
+/// The endpoint's keyword parameters in Fern's declaration order: every *required*
+/// argument (no default) first, then the optional ones, each group preserving the
+/// query → header → body grouping. Fern lists a required argument (e.g. a mandatory
+/// body field) ahead of an optional query parameter, rather than grouping strictly
+/// by kind.
+fn ordered_keyword_params<'a>(
+    query: &'a [DocParam],
+    header: &'a [DocParam],
+    body: &'a [DocParam],
+) -> Vec<&'a DocParam> {
+    let (required, optional): (Vec<&DocParam>, Vec<&DocParam>) = query
+        .iter()
+        .chain(header)
+        .chain(body)
+        .partition(|dp| dp.default.is_none());
+    required.into_iter().chain(optional).collect()
+}
+
 /// The method docstring (indent 8): an optional summary line, a `Parameters`
 /// section (path params, query params, the request body, then `request_options`),
 /// and a `Returns` section.
 fn raw_docstring(
     ep: &Endpoint,
-    param_types: &[(String, String)],
+    param_types: &[(String, String, Option<String>)],
     query_params: &[DocParam],
     header_params: &[DocParam],
     body_params: &[DocParam],
@@ -2483,8 +2538,11 @@ fn raw_docstring(
     }
     lines.push("        Parameters".to_string());
     lines.push("        ----------".to_string());
-    for (name, ty) in param_types {
+    for (name, ty, desc) in param_types {
         lines.push(format!("        {name} : {ty}"));
+        if let Some(desc) = desc {
+            lines.push(format!("            {desc}"));
+        }
         lines.push(String::new());
     }
     // Query params, header params, then the request body/fields, each: a
@@ -2497,9 +2555,9 @@ fn raw_docstring(
         }
         lines.push(String::new());
     };
-    query_params.iter().for_each(&mut push_param);
-    header_params.iter().for_each(&mut push_param);
-    body_params.iter().for_each(&mut push_param);
+    for dp in ordered_keyword_params(query_params, header_params, body_params) {
+        push_param(dp);
+    }
     lines.push("        request_options : typing.Optional[RequestOptions]".to_string());
     lines.push("            Request-specific configuration.".to_string());
     lines.push(String::new());
@@ -2609,14 +2667,37 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
 /// buffered `.request(...)` path ([`raw_body`]) and the streaming `.stream(...)`
 /// path ([`raw_stream_body`]) so both serialize a body identically.
 fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mut Imports) {
-    // Query parameters map wire name to the Python argument in a `params` dict.
+    // Query parameters map wire name to the Python argument in a `params` dict. An
+    // object/union-typed parameter serializes through the convert wrapper (Fern
+    // respects its field aliases), exactly as an inlined body field does.
     if !ep.query_params.is_empty() {
         lines.push("            params={".to_string());
         for qp in &ep.query_params {
-            lines.push(format!(
-                "                \"{}\": {},",
-                qp.wire_name, qp.py_name
-            ));
+            if qp.convert {
+                imports.add_from(
+                    "..core.serialization",
+                    "convert_and_respect_annotation_metadata",
+                );
+                let annotation = raw_type_str_ctx(&qp.type_ref, imports, true);
+                let call = Doc::group(
+                    format!(
+                        "                \"{}\": convert_and_respect_annotation_metadata(",
+                        qp.wire_name
+                    ),
+                    vec![
+                        Doc::atom(format!("object_={}", qp.py_name)),
+                        Doc::atom(format!("annotation={annotation}")),
+                        Doc::atom("direction=\"write\""),
+                    ],
+                    ")",
+                );
+                lines.push(format!("{},", call.flat()));
+            } else {
+                lines.push(format!(
+                    "                \"{}\": {},",
+                    qp.wire_name, qp.py_name
+                ));
+            }
         }
         lines.push("            },".to_string());
     }
@@ -2861,8 +2942,11 @@ fn raw_stream_docstring(ep: &Endpoint, mp: &MethodParams, return_type: &str) -> 
     let mut lines: Vec<String> = vec!["        \"\"\"".to_string()];
     lines.push("        Parameters".to_string());
     lines.push("        ----------".to_string());
-    for (name, ty) in &mp.path {
+    for (name, ty, desc) in &mp.path {
         lines.push(format!("        {name} : {ty}"));
+        if let Some(desc) = desc {
+            lines.push(format!("            {desc}"));
+        }
         lines.push(String::new());
     }
     let mut push_param = |dp: &DocParam| {
@@ -2872,9 +2956,9 @@ fn raw_stream_docstring(ep: &Endpoint, mp: &MethodParams, return_type: &str) -> 
         }
         lines.push(String::new());
     };
-    mp.query.iter().for_each(&mut push_param);
-    mp.header.iter().for_each(&mut push_param);
-    mp.body.iter().for_each(&mut push_param);
+    ordered_keyword_params(&mp.query, &mp.header, &mp.body)
+        .into_iter()
+        .for_each(&mut push_param);
     lines.push("        request_options : typing.Optional[RequestOptions]".to_string());
     lines.push("            Request-specific configuration.".to_string());
     lines.push(String::new());
@@ -3016,15 +3100,30 @@ fn root_client_class(
         || "base_url".to_string(),
         |_| "_get_base_url(base_url=base_url, environment=environment)".to_string(),
     );
-    // Promoted global headers: an optional docstring/ctor/example/wrapper line
-    // each, emitted right after `base_url` and before the auth credential.
+    // Promoted global headers: a docstring/ctor/example/wrapper line each, emitted
+    // right after `base_url` and before the auth credential. A required header is a
+    // mandatory `str`; an optional one is `Optional[str] = None` — matching the
+    // client wrapper.
     let gh_doc: String = global_headers
         .iter()
-        .map(|h| format!("    {} : typing.Optional[str]\n", h.py_name))
+        .map(|h| {
+            let ty = if h.required {
+                "str"
+            } else {
+                "typing.Optional[str]"
+            };
+            format!("    {} : {ty}\n", h.py_name)
+        })
         .collect();
     let gh_ctor: String = global_headers
         .iter()
-        .map(|h| format!("        {}: typing.Optional[str] = None,\n", h.py_name))
+        .map(|h| {
+            if h.required {
+                format!("        {}: str,\n", h.py_name)
+            } else {
+                format!("        {}: typing.Optional[str] = None,\n", h.py_name)
+            }
+        })
         .collect();
     let gh_example: String = global_headers
         .iter()
@@ -3271,10 +3370,10 @@ fn client_method(cx: &ClientCtx, ep: &Endpoint, is_async: bool, imports: &mut Im
     // `request_options`, laid out with ruff's right-hand-split (line length 120).
     let await_ = if is_async { "await " } else { "" };
     let mut call_args: Vec<Doc> = Vec::new();
-    for (name, _) in &mp.path {
+    for (name, _, _) in &mp.path {
         call_args.push(Doc::atom(name.clone()));
     }
-    for dp in mp.query.iter().chain(&mp.header).chain(&mp.body) {
+    for dp in ordered_keyword_params(&mp.query, &mp.header, &mp.body) {
         call_args.push(Doc::atom(format!("{}={}", dp.name, dp.name)));
     }
     call_args.push(Doc::atom("request_options=request_options"));
@@ -3308,10 +3407,10 @@ fn client_stream_method(
     // Delegation call arguments, in signature order (path positionally, the rest as
     // keywords, then `request_options`) — identical to the buffered high-level method.
     let mut call_args: Vec<Doc> = Vec::new();
-    for (name, _) in &mp.path {
+    for (name, _, _) in &mp.path {
         call_args.push(Doc::atom(name.clone()));
     }
-    for dp in mp.query.iter().chain(&mp.header).chain(&mp.body) {
+    for dp in ordered_keyword_params(&mp.query, &mp.header, &mp.body) {
         call_args.push(Doc::atom(format!("{}={}", dp.name, dp.name)));
     }
     call_args.push(Doc::atom("request_options=request_options"));
@@ -3344,8 +3443,11 @@ fn client_stream_docstring(
     let mut lines: Vec<String> = vec!["        \"\"\"".to_string()];
     lines.push("        Parameters".to_string());
     lines.push("        ----------".to_string());
-    for (name, ty) in &mp.path {
+    for (name, ty, desc) in &mp.path {
         lines.push(format!("        {name} : {ty}"));
+        if let Some(desc) = desc {
+            lines.push(format!("            {desc}"));
+        }
         lines.push(String::new());
     }
     let mut push_param = |dp: &DocParam| {
@@ -3355,9 +3457,9 @@ fn client_stream_docstring(
         }
         lines.push(String::new());
     };
-    mp.query.iter().for_each(&mut push_param);
-    mp.header.iter().for_each(&mut push_param);
-    mp.body.iter().for_each(&mut push_param);
+    ordered_keyword_params(&mp.query, &mp.header, &mp.body)
+        .into_iter()
+        .for_each(&mut push_param);
     lines.push("        request_options : typing.Optional[RequestOptions]".to_string());
     lines.push("            Request-specific configuration.".to_string());
     lines.push(String::new());
@@ -3407,8 +3509,11 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
     }
     lines.push("        Parameters".to_string());
     lines.push("        ----------".to_string());
-    for (name, ty) in &mp.path {
+    for (name, ty, desc) in &mp.path {
         lines.push(format!("        {name} : {ty}"));
+        if let Some(desc) = desc {
+            lines.push(format!("            {desc}"));
+        }
         lines.push(String::new());
     }
     let mut push_param = |dp: &DocParam| {
@@ -3418,9 +3523,9 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
         }
         lines.push(String::new());
     };
-    mp.query.iter().for_each(&mut push_param);
-    mp.header.iter().for_each(&mut push_param);
-    mp.body.iter().for_each(&mut push_param);
+    ordered_keyword_params(&mp.query, &mp.header, &mp.body)
+        .into_iter()
+        .for_each(&mut push_param);
     lines.push("        request_options : typing.Optional[RequestOptions]".to_string());
     lines.push("            Request-specific configuration.".to_string());
     lines.push(String::new());
@@ -3784,8 +3889,14 @@ impl<'a> ExampleCtx<'a> {
                 let fields = self.object_fields(obj);
                 let args = fields
                     .into_iter()
-                    .filter(|(_, _, _, required)| *required)
-                    .map(|(py, wire, ty, _)| (Some(py), self.value(&ty, Slot::Named(&wire))))
+                    .filter(|(_, _, _, required, _)| *required)
+                    .map(|(py, wire, ty, _, example)| {
+                        let v = match example.filter(|_| example_scalar(&ty)) {
+                            Some(ex) => Example::Atom(ex),
+                            None => self.value(&ty, Slot::Named(&wire)),
+                        };
+                        (Some(py), v)
+                    })
                     .collect::<Vec<_>>();
                 Example::Call(name.to_string(), args)
             }
@@ -3831,7 +3942,17 @@ impl<'a> ExampleCtx<'a> {
 
     /// An object's fields including those inherited from its base classes (bases
     /// first, in declaration order): `(py_name, wire_name, type, spec_required)`.
-    fn object_fields(&self, obj: &ObjectType) -> Vec<(String, String, TypeRef, bool)> {
+    #[allow(
+        clippy::type_complexity,
+        reason = "a positional 5-tuple local to example synthesis: it is built here \
+                  and immediately destructured by the two callers (named_value and \
+                  the recursive base-class walk); a named struct would add a type \
+                  for a shape that never escapes this module"
+    )]
+    fn object_fields(
+        &self,
+        obj: &ObjectType,
+    ) -> Vec<(String, String, TypeRef, bool, Option<String>)> {
         let mut out = Vec::new();
         for base in &obj.bases {
             if let Some(TypeDecl::Object(b)) = self.find(base) {
@@ -3844,6 +3965,7 @@ impl<'a> ExampleCtx<'a> {
                 f.wire_name.clone(),
                 f.type_ref.clone(),
                 f.spec_required,
+                f.example.clone(),
             ));
         }
         out
@@ -3852,6 +3974,35 @@ impl<'a> ExampleCtx<'a> {
 
 /// Build the worked `Examples` block for a method as logical (indent-0) lines,
 /// or `None` when the request is not exampleable (a raw bytes body).
+/// Whether a spec `example` is shown verbatim for a field of this type. Fern uses
+/// the literal only for a plain scalar (a `str`/number/`bool`); a named type (enum,
+/// object, union) gets its own synthesized example (an enum member, a constructor),
+/// and a `datetime`/`date`/container is built through a call, so the raw literal
+/// would be wrong there.
+fn example_scalar(t: &TypeRef) -> bool {
+    match t {
+        TypeRef::Optional(inner) => example_scalar(inner),
+        TypeRef::Primitive(p) => {
+            matches!(
+                p,
+                Prim::Str | Prim::Int | Prim::Long | Prim::Float | Prim::Bool
+            )
+        }
+        _ => false,
+    }
+}
+
+/// Whether a type is the unknown `Any` value (optionally wrapped). A required field
+/// of this type is still shown in a worked example, unlike a required-but-nullable
+/// concrete field, so it is exempt from the nullable exclusion.
+fn is_any_type(t: &TypeRef) -> bool {
+    match t {
+        TypeRef::Optional(inner) => is_any_type(inner),
+        TypeRef::Primitive(Prim::Any) => true,
+        _ => false,
+    }
+}
+
 fn build_example(
     ep: &Endpoint,
     is_async: bool,
@@ -3872,8 +4023,16 @@ fn build_example(
         let v = ctx.value(&pp.type_ref, Slot::Named(&pp.wire_name));
         args.push((Some(pp.py_name.clone()), v));
     }
-    for qp in ep.query_params.iter().filter(|q| q.required) {
-        let v = if let TypeRef::List(inner) = &qp.type_ref {
+    // Fern shows a query parameter in the worked example when it is required OR
+    // carries a spec `example` (the value it then displays).
+    for qp in ep
+        .query_params
+        .iter()
+        .filter(|q| q.required || (q.example.is_some() && example_scalar(&q.type_ref)))
+    {
+        let v = if let Some(ex) = qp.example.as_ref().filter(|_| example_scalar(&qp.type_ref)) {
+            Example::Atom(ex.clone())
+        } else if let TypeRef::List(inner) = &qp.type_ref {
             Example::List(vec![ctx.value(inner, Slot::Named(&qp.wire_name))])
         } else {
             ctx.value(&qp.type_ref, Slot::Named(&qp.wire_name))
@@ -3890,8 +4049,19 @@ fn build_example(
             args.push((Some("request".to_string()), v));
         }
         Some(RequestBody::Inline(fields)) => {
-            for f in fields.iter().filter(|f| f.spec_required) {
-                let v = ctx.value(&f.type_ref, Slot::Named(&f.wire_name));
+            // Fern's worked example shows a required field unless it is *nullable*
+            // (a required-but-nullable field like apideck's `company_name` is
+            // omitted). A required field with an unknown (`Any`) type is still shown
+            // (exhaustive's `unknown`), so the exclusion keys on nullability — an
+            // `optional` field with a concrete (non-`Any`) type — not `optional` alone.
+            for f in fields
+                .iter()
+                .filter(|f| f.spec_required && (!f.optional || is_any_type(&f.type_ref)))
+            {
+                let v = match f.example.as_ref().filter(|_| example_scalar(&f.type_ref)) {
+                    Some(ex) => Example::Atom(ex.clone()),
+                    None => ctx.value(&f.type_ref, Slot::Named(&f.wire_name)),
+                };
                 args.push((Some(f.py_name.clone()), v));
             }
         }
@@ -4151,7 +4321,11 @@ fn format_python_files(pkg: &str, files: &mut [GeneratedFile]) -> Result<()> {
     let core_root = PathBuf::from(format!("src/{pkg}/core"));
     for file in files.iter_mut() {
         let is_py = file.path.extension().and_then(|e| e.to_str()) == Some("py");
-        let is_vendored = file.path.starts_with(&core_root);
+        // The `core/` tree is vendored verbatim (already ruff-formatted) EXCEPT
+        // `client_wrapper.py`, which crozier generates from the auth/global-header
+        // model and so must be wrapped like every other generated file.
+        let is_vendored = file.path.starts_with(&core_root)
+            && file.path.file_name().and_then(|n| n.to_str()) != Some("client_wrapper.py");
         let has_code = file.contents.chars().any(|c| !c.is_whitespace());
         if is_py && !is_vendored && has_code {
             let name = file.path.to_string_lossy();
@@ -4664,6 +4838,7 @@ mod tests {
                 wire_name: "id".to_string(),
                 py_name: "id".to_string(),
                 type_ref: TypeRef::Primitive(Prim::Str),
+                docstring: None,
             }],
             Some(TypeRef::Primitive(Prim::Str)),
         );
@@ -4691,6 +4866,7 @@ mod tests {
                 docstring: None,
                 convert: false,
                 is_file: false,
+                example: None,
             },
             // An optional list → `Optional[Sequence[..]] = OMIT` in request context.
             BodyField {
@@ -4702,6 +4878,7 @@ mod tests {
                 docstring: None,
                 convert: false,
                 is_file: false,
+                example: None,
             },
             // A convert field → convert-wrapped json entry keyed by the wire name.
             BodyField {
@@ -4713,6 +4890,7 @@ mod tests {
                 docstring: None,
                 convert: true,
                 is_file: false,
+                example: None,
             },
         ]));
         let out = raw_method(&ep, false, &mut i);
@@ -4802,6 +4980,7 @@ mod tests {
                 wire_name: "id".to_string(),
                 py_name: "id".to_string(),
                 type_ref: TypeRef::Primitive(Prim::Str),
+                docstring: None,
             }],
             Some(TypeRef::Named("Resp".to_string())),
         );
@@ -4844,6 +5023,8 @@ mod tests {
             py_name: "tag".to_string(),
             type_ref: TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
             required: true,
+            convert: false,
+            example: None,
             docstring: None,
         }];
         let out = raw_method(&ep, false, &mut i);

@@ -48,6 +48,25 @@ test-e2e:
 test-runtime:
     cargo nextest run --locked -E 'binary(e2e) and test(crozier_matches_fern_runtime_behavior)'
 
+# Live e2e: boot a Prism OpenAPI mock server from each fixture's spec and drive the
+# generated SDK through every documented endpoint, asserting a value of the method's
+# declared return type comes back over real HTTP. Spec-driven (the endpoints and
+# example args come from the SDK's generated reference.md), so it grows to more
+# fixtures via conftest.FIXTURES. SEPARATE from `check` to keep the core gate
+# Node-free; CI runs it as its own required leg. Needs Node/Prism + uv + ruff; see
+# tests/live_e2e/AGENTS.md.
+test-live-e2e *args:
+    ./scripts/live-e2e.sh {{args}}
+
+# Enforce the real-world corpus byte-match: fetch the `link-ok` corpus specs (not
+# vendored; see tests/fixtures/CORPUS.md) and byte-compare crozier's output for the
+# vendored Fern goldens (apideck-crm today). SEPARATE from `check` because it needs
+# network to fetch the specs; CI runs it in the live-e2e leg. `CROZIER_REQUIRE_CORPUS`
+# turns a missing spec from a skip into a hard failure so the leg can't no-op.
+test-corpus-match:
+    ./scripts/fetch-corpus.sh
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_crm_matches_fern_output
+
 # Format the codebase in place.
 format:
     cargo fmt --all
