@@ -1617,7 +1617,14 @@ fn type_needs_convert(t: &TypeRef, types: &[TypeDecl]) -> bool {
     match t {
         TypeRef::Named(name) => types.iter().any(|d| match d {
             TypeDecl::Object(o) => o.name == *name,
-            TypeDecl::Alias(a) => a.name == *name && matches!(a.target, TypeRef::Union(_)),
+            // A union alias always converts; any other alias converts when its target
+            // does — e.g. `Error = List[ErrorItem]` converts because `ErrorItem`
+            // carries field aliases (bunq's `Sequence[Error]` body field).
+            TypeDecl::Alias(a) => {
+                a.name == *name
+                    && (matches!(a.target, TypeRef::Union(_))
+                        || type_needs_convert(&a.target, types))
+            }
             // A discriminated union's wrapper models carry field aliases too.
             TypeDecl::DiscriminatedUnion(u) => u.name == *name,
             // An enum is a plain `str` value — no field aliases to respect.

@@ -2328,6 +2328,7 @@ const BUNQ_MATCHED: &[&str] = &[
     "src/fern/schedule/raw_client.py",
     "src/fern/schedule_instance/__init__.py",
     "src/fern/schedule_instance/client.py",
+    "src/fern/schedule_instance/raw_client.py",
     "src/fern/schedule_payment/__init__.py",
     "src/fern/schedule_payment/client.py",
     "src/fern/schedule_payment/raw_client.py",
