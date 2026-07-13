@@ -45,7 +45,10 @@ today for that spec. It grows as generation lands; a file is only added once it
 matches exactly. After a generator change, `just fixtures-candidates` reports
 which committed fixture files crozier now reproduces byte-for-byte but that aren't
 yet listed — as ready-to-paste array entries — so growing the manifest is
-copy-paste, not a manual tree diff. See [`../tests/fixtures/AGENTS.md`](../tests/fixtures/AGENTS.md).
+copy-paste, not a manual tree diff. Its inverse, `just fixtures-diff`, prints the
+normalized diff of the files crozier *doesn't* yet match (the same bytes the gate
+compares, so comments and SDK headers don't muddy it) — the "why doesn't this
+match" half of the loop. See [`../tests/fixtures/AGENTS.md`](../tests/fixtures/AGENTS.md).
 
 Currently matched for `query-parameters-openapi`:
 
