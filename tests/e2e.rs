@@ -1800,10 +1800,22 @@ fn assert_corpus_matches(c: &Corpus) {
             .unwrap_or_else(|e| panic!("crozier did not write {rel}: {e}"));
         let expected = std::fs::read_to_string(fixtures.join("expected").join(rel))
             .unwrap_or_else(|e| panic!("missing fixture {rel}: {e}"));
-        assert!(
-            generated_matches_fixture(rel, &generated, &expected),
-            "generated {rel} does not match the Fern fixture"
-        );
+        if !generated_matches_fixture(rel, &generated, &expected) {
+            // Show the exact gate-relevant diff inline instead of a bare "does not
+            // match" — the normalized bytes the comparison actually decides on, so a
+            // regression is diagnosable straight from the test output (no second
+            // generate-and-diff pass). `just fixtures-diff` prints the same thing on
+            // demand for a file not (yet) in `matched`.
+            let (actual, expected) = normalized_pair(rel, &generated, &expected);
+            let diff = unified_diff(&expected, &actual).unwrap_or_default();
+            panic!(
+                "generated {rel} does not match the Fern fixture \
+                 (normalized diff; `-` = Fern golden, `+` = crozier). \
+                 Reproduce with `just fixtures-diff {} {rel}`; fix the generator, \
+                 never the fixture.\n{diff}",
+                c.api
+            );
+        }
     }
 }
 
@@ -1858,9 +1870,20 @@ fn generate_corpus(c: &Corpus) -> tempfile::TempDir {
 /// packaging-only `SDK-Name`/`SDK-Version` lines are deliberate, non-behavioral
 /// differences in tool branding/packaging.
 fn generated_matches_fixture(rel: &str, generated: &str, expected: &str) -> bool {
+    let (actual, expected) = normalized_pair(rel, generated, expected);
+    actual == expected
+}
+
+/// The exact `(actual, expected)` strings the gate compares for `rel`, after the
+/// per-file normalization described on [`generated_matches_fixture`]. Factored out
+/// so the match check and the diff reporters share one definition of "the bytes
+/// that decide the match" — a printed diff is then precisely what the gate sees,
+/// never a raw diff polluted by comments, SDK-identity headers, or `__init__.py`
+/// import order that the gate already normalizes away.
+fn normalized_pair(rel: &str, generated: &str, expected: &str) -> (String, String) {
     let generated = normalize_sdk_headers(generated);
     let expected = normalize_sdk_headers(expected);
-    let (actual, expected) = if rel.ends_with("__init__.py") {
+    if rel.ends_with("__init__.py") {
         (
             normalize_init(&crozier::strip_python_comments(&generated)),
             normalize_init(&expected),
@@ -1874,8 +1897,90 @@ fn generated_matches_fixture(rel: &str, generated: &str, expected: &str) -> bool
         )
     } else {
         (generated, expected)
-    };
-    actual == expected
+    }
+}
+
+/// A minimal unified-style line diff of two already-normalized texts, dependency-free
+/// (the suite avoids a diff crate for one use, as [`walk_files`] avoids `walkdir`).
+/// Lines only in `expected` are prefixed `-`, only in `actual` `+`, shared lines a
+/// space; runs of unchanged lines beyond `CONTEXT` around each change collapse to a
+/// `⋮ (N unchanged line(s))` marker so a one-line drift in a large file prints a few
+/// lines, not the whole file. Returns `None` when the two are byte-identical.
+fn unified_diff(expected: &str, actual: &str) -> Option<String> {
+    if expected == actual {
+        return None;
+    }
+    const CONTEXT: usize = 3;
+    let a: Vec<&str> = expected.lines().collect();
+    let b: Vec<&str> = actual.lines().collect();
+    let (n, m) = (a.len(), b.len());
+
+    // Longest-common-subsequence lengths, filled from the bottom-right.
+    let mut lcs = vec![vec![0u32; m + 1]; n + 1];
+    for i in (0..n).rev() {
+        for j in (0..m).rev() {
+            lcs[i][j] = if a[i] == b[j] {
+                lcs[i + 1][j + 1] + 1
+            } else {
+                lcs[i + 1][j].max(lcs[i][j + 1])
+            };
+        }
+    }
+
+    // Backtrack into an edit script of (sign, line) ops.
+    let mut ops: Vec<(char, &str)> = Vec::new();
+    let (mut i, mut j) = (0usize, 0usize);
+    while i < n && j < m {
+        if a[i] == b[j] {
+            ops.push((' ', a[i]));
+            i += 1;
+            j += 1;
+        } else if lcs[i + 1][j] >= lcs[i][j + 1] {
+            ops.push(('-', a[i]));
+            i += 1;
+        } else {
+            ops.push(('+', b[j]));
+            j += 1;
+        }
+    }
+    while i < n {
+        ops.push(('-', a[i]));
+        i += 1;
+    }
+    while j < m {
+        ops.push(('+', b[j]));
+        j += 1;
+    }
+
+    // Keep every change, plus CONTEXT unchanged lines on each side; collapse the rest.
+    let keep: Vec<bool> = (0..ops.len())
+        .map(|k| {
+            let lo = k.saturating_sub(CONTEXT);
+            let hi = (k + CONTEXT).min(ops.len() - 1);
+            (lo..=hi).any(|x| ops[x].0 != ' ')
+        })
+        .collect();
+
+    let mut out = String::new();
+    let mut elided = 0usize;
+    for (k, (sign, line)) in ops.iter().enumerate() {
+        if keep[k] {
+            if elided > 0 {
+                out.push_str(&format!("      ⋮ ({elided} unchanged line(s))\n"));
+                elided = 0;
+            }
+            out.push(*sign);
+            out.push(' ');
+            out.push_str(line);
+            out.push('\n');
+        } else {
+            elided += 1;
+        }
+    }
+    if elided > 0 {
+        out.push_str(&format!("      ⋮ ({elided} unchanged line(s))\n"));
+    }
+    Some(out)
 }
 
 #[test]
@@ -3020,6 +3125,131 @@ fn report_matched_candidates() {
         }
     }
     println!("\n{total} new candidate file(s) across all corpora.");
+}
+
+/// Mismatch-investigation aid — NOT a gate (ignored by default). The inverse of
+/// [`report_matched_candidates`]: instead of reporting files that now match, it
+/// prints the normalized unified diff of every committed fixture file crozier does
+/// NOT reproduce byte-for-byte — exactly the bytes the gate compares (comments,
+/// SDK-identity headers, and `__init__.py` import order already normalized out via
+/// [`normalized_pair`]), with `-` = Fern golden and `+` = crozier. This is the
+/// "why doesn't this file match" loop as one command; run it via `just fixtures-diff`.
+///
+/// Scope with two env vars (the `just` recipe forwards its positional args):
+/// `CROZIER_DIFF_CORPUS=<api>` limits to one corpus, `CROZIER_DIFF_FILE=<substr>`
+/// to fixture paths containing `<substr>`. Pure reporter — it never asserts on a
+/// diff (a diff is the point), but it guards against a silently-broken walk that
+/// would print "no differences" as a false negative.
+#[test]
+#[ignore = "mismatch-investigation aid, not a gate; run via `just fixtures-diff`"]
+fn report_fixture_diffs() {
+    let corpus_filter = std::env::var("CROZIER_DIFF_CORPUS")
+        .ok()
+        .filter(|s| !s.is_empty());
+    let file_filter = std::env::var("CROZIER_DIFF_FILE")
+        .ok()
+        .filter(|s| !s.is_empty());
+
+    let mut corpora: Vec<&Corpus> = vec![&QUERY_PARAMETERS, &EXHAUSTIVE];
+    corpora.extend(FEATURE_TARGETS.iter());
+    // apideck's spec is fetched, not vendored; include it only when present, so the
+    // reporter skips it exactly as the byte-diff gate does on an offline checkout.
+    if corpus_spec(APIDECK_CRM.api).is_some() {
+        corpora.push(&APIDECK_CRM);
+    }
+    if let Some(f) = &corpus_filter {
+        corpora.retain(|c| c.api == f.as_str());
+        assert!(
+            !corpora.is_empty(),
+            "CROZIER_DIFF_CORPUS={f:?} matched no corpus (or its spec is unfetched)"
+        );
+    }
+
+    let mut total = 0usize;
+    for c in corpora {
+        let expected_root = fixture_dir(c.api).join("expected");
+        let matched: std::collections::HashSet<&str> = c.matched.iter().copied().collect();
+        let out = generate_corpus(c);
+
+        let files = walk_files(&expected_root);
+        // Guard the pipeline: a corpus always has expected files, so an empty walk
+        // means a broken path — fail loudly rather than reporting "no differences".
+        // Skipped when a file filter is set (it may legitimately match nothing).
+        if file_filter.is_none() {
+            assert!(
+                !files.is_empty(),
+                "{}: no files under {} — the fixture walk is broken",
+                c.api,
+                expected_root.display()
+            );
+        }
+
+        println!("\n=== {} ===", c.api);
+        let mut printed = 0usize;
+        for rel in files {
+            if let Some(f) = &file_filter {
+                if !rel.contains(f.as_str()) {
+                    continue;
+                }
+            }
+            let Ok(expected) = std::fs::read_to_string(expected_root.join(&rel)) else {
+                continue; // binary/unreadable — nothing in the corpus is today.
+            };
+            let generated = match std::fs::read_to_string(out.path().join(&rel)) {
+                Ok(g) => g,
+                Err(_) => {
+                    println!("\n--- {rel} ---\n  crozier did not emit this file.");
+                    printed += 1;
+                    continue;
+                }
+            };
+            if generated_matches_fixture(&rel, &generated, &expected) {
+                continue;
+            }
+            let (actual, expected) = normalized_pair(&rel, &generated, &expected);
+            let diff = unified_diff(&expected, &actual).unwrap_or_default();
+            // A file already in `matched` differing is a regression, not a coverage
+            // gap — flag it so it reads differently from a not-yet-matched file.
+            let tag = if matched.contains(rel.as_str()) {
+                " [REGRESSION — in `matched`]"
+            } else {
+                ""
+            };
+            println!("\n--- {rel}{tag} (`-` Fern golden, `+` crozier) ---\n{diff}");
+            printed += 1;
+        }
+        if printed == 0 {
+            println!("  no differences.");
+        }
+        total += printed;
+    }
+    println!("\n{total} differing file(s) across the reported corpora.");
+}
+
+/// [`unified_diff`] correctness — a real self-test so the diff the reporters and the
+/// gate's failure message print is trustworthy (this binary is coverage-excluded, so
+/// the assertions here are the guardrail).
+#[test]
+fn unified_diff_reports_only_real_changes() {
+    // Identical input → no diff.
+    assert_eq!(unified_diff("a\nb\nc", "a\nb\nc"), None);
+
+    // A single changed line surfaces as a `-`/`+` pair; unchanged neighbours stay ` `.
+    let d = unified_diff("a\nb\nc", "a\nB\nc").expect("differs");
+    assert!(d.contains("- b"), "want the golden line: {d}");
+    assert!(d.contains("+ B"), "want the crozier line: {d}");
+    assert!(d.contains("  a") && d.contains("  c"), "want context: {d}");
+
+    // Far-apart changes collapse the unchanged middle to an elision marker.
+    let big = (0..40)
+        .map(|n| n.to_string())
+        .collect::<Vec<_>>()
+        .join("\n");
+    let mut lines: Vec<String> = big.lines().map(String::from).collect();
+    lines[0] = "changed".into();
+    let d = unified_diff(&big, &lines.join("\n")).expect("differs");
+    assert!(d.contains("unchanged line(s)"), "want elision marker: {d}");
+    assert!(!d.contains("\n  20\n"), "middle should be elided: {d}");
 }
 
 /// Every file under `root`, as `/`-separated paths relative to `root`, sorted.

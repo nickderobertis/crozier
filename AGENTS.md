@@ -93,6 +93,10 @@ Use the `just` recipes; do not hand-roll equivalents.
   when a spec is unfetched (so `check` stays offline).
 - `just upgrade` — `cargo update`, then re-run `just check`.
 - `just fixtures-refresh` — re-vendor the Fern reference fixtures (see below).
+- `just fixtures-candidates` / `just fixtures-diff` — the fixture-match loop:
+  `candidates` reports files crozier now matches (to add to `matched`); `diff`
+  prints the normalized diff of files it doesn't (to fix the generator). Neither
+  gates. See [`tests/fixtures/AGENTS.md`](tests/fixtures/AGENTS.md).
 - `just lint-llm` / `just lint-llm-diff` — LLM-judge tier (llmlint), separate from
   `check` and non-deterministic; config in `llmlint.yml`. `just setup-llmlint`
   installs it.
