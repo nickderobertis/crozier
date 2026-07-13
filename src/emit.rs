@@ -3977,7 +3977,10 @@ fn example_scalar(t: &TypeRef) -> bool {
     match t {
         TypeRef::Optional(inner) => example_scalar(inner),
         TypeRef::Primitive(p) => {
-            matches!(p, Prim::Str | Prim::Int | Prim::Long | Prim::Float | Prim::Bool)
+            matches!(
+                p,
+                Prim::Str | Prim::Int | Prim::Long | Prim::Float | Prim::Bool
+            )
         }
         _ => false,
     }

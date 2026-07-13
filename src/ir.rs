@@ -2430,9 +2430,10 @@ fn clean_doc(desc: Option<&str>) -> Option<String> {
 /// inline as a leaf — null, or a composite object/array.
 fn example_literal(value: &serde_json::Value) -> Option<String> {
     match value {
-        serde_json::Value::String(s) => {
-            Some(format!("\"{}\"", s.replace('\\', "\\\\").replace('"', "\\\"")))
-        }
+        serde_json::Value::String(s) => Some(format!(
+            "\"{}\"",
+            s.replace('\\', "\\\\").replace('"', "\\\"")
+        )),
         serde_json::Value::Bool(b) => Some(if *b { "True" } else { "False" }.to_string()),
         serde_json::Value::Number(n) => Some(n.to_string()),
         _ => None,

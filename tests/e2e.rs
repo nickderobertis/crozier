@@ -1946,8 +1946,7 @@ fn apideck_crm_matches_fern_output() {
     // Every declared gap must still differ, so a closed one is removed from the list.
     for gap in APIDECK_CRM_GAPS {
         let generated = std::fs::read_to_string(out.path().join(gap)).unwrap_or_default();
-        let expected =
-            std::fs::read_to_string(expected_root.join(gap)).unwrap_or_default();
+        let expected = std::fs::read_to_string(expected_root.join(gap)).unwrap_or_default();
         assert!(
             !generated_matches_fixture(gap, &generated, &expected),
             "apideck gap `{gap}` now matches Fern — remove it from APIDECK_CRM_GAPS"
