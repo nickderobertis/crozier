@@ -35,6 +35,18 @@ file crozier now reproduces byte-for-byte that isn't yet listed, as ready-to-pas
 array entries. Paste them into that corpus's `matched`; the gate then locks them
 in. This is the loop — not a manual tree diff.
 
+## Why a file *doesn't* match — `just fixtures-diff`
+
+The inverse tool. `just fixtures-diff [<corpus> [<file-substring>]]` prints the
+**normalized** unified diff of every fixture file crozier does *not* reproduce
+(`-` = Fern golden, `+` = crozier). It diffs exactly the bytes the gate compares —
+comments, SDK-identity headers, and `__init__.py` import order are already
+normalized out — so a raw `diff tempdir fixture` won't mislead you with
+differences the gate ignores. Narrow to one file with the substring arg while
+iterating on the generator. The gate's own failure message prints the same diff
+inline, so a regression in a `matched` file is diagnosable straight from
+`just test-e2e` without a second pass.
+
 ## Non-negotiable
 
 - **A file joins `matched` only after crozier byte-matches it.** Never edit a

@@ -30,6 +30,7 @@
       "Bash(just upgrade)",
       "Bash(just fixtures-refresh)",
       "Bash(just fixtures-candidates)",
+      "Bash(just fixtures-diff:*)",
       "Bash(just setup-llmlint)",
       "Bash(just setup-fern)",
       "Bash(just lint-llm:*)",

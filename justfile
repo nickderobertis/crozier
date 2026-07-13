@@ -128,6 +128,31 @@ fixtures-candidates:
       exit 1
     fi
 
+# Mismatch-investigation aid (inverse of `fixtures-candidates`): print the
+# normalized unified diff of every committed fixture file crozier does NOT
+# reproduce byte-for-byte — exactly the bytes the gate compares (`-` = Fern
+# golden, `+` = crozier; comments, SDK headers, and __init__ import order already
+# normalized out), so what you see is what to fix. Optional args narrow scope:
+# `just fixtures-diff <corpus> <file-substring>`. Not part of `check`. Run it to
+# see WHY a file doesn't match; see tests/fixtures/AGENTS.md. Same drift guard as
+# `fixtures-candidates`: assert the report's summary line so a renamed
+# `report_fixture_diffs` fails loudly instead of silently no-op'ing.
+fixtures-diff corpus="" file="":
+    #!/usr/bin/env bash
+    set -uo pipefail
+    out=$(CROZIER_DIFF_CORPUS="{{corpus}}" CROZIER_DIFF_FILE="{{file}}" \
+      cargo test --locked --test e2e -- --ignored --nocapture report_fixture_diffs 2>&1)
+    if grep -q 'differing file(s) across the reported corpora' <<<"$out"; then
+      # Quiet on success: print only the report (corpus headers, diffs, summary),
+      # not cargo's build/test scaffolding.
+      awk '/^=== /{p=1} p; /differing file\(s\) across the reported corpora/{p=0}' <<<"$out"
+    else
+      # Drift (test renamed → 0 tests run) or a bad-corpus/broken-walk assertion.
+      echo "$out" >&2
+      echo "fixtures-diff: no report from report_fixture_diffs — renamed/removed in tests/e2e.rs, or the corpus filter matched nothing" >&2
+      exit 1
+    fi
+
 # Install/refresh the llmlint toolchain (oneharness + llmlint). Idempotent.
 setup-llmlint:
     ./scripts/setup-llmlint.sh
