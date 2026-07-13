@@ -2505,6 +2505,8 @@ const BUNQ_MATCHED: &[&str] = &[
     "src/fern/types/draft_payment_read.py",
     "src/fern/types/draft_payment_response.py",
     "src/fern/types/draft_payment_update.py",
+    "src/fern/types/error.py",
+    "src/fern/types/error_item.py",
     "src/fern/types/event_listing.py",
     "src/fern/types/event_object.py",
     "src/fern/types/event_read.py",

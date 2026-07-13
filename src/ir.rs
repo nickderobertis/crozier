@@ -2085,6 +2085,27 @@ impl Builder<'_> {
             return;
         }
 
+        // A top-level array of inline objects: Fern hoists the element into its own
+        // named `{Name}Item` model and aliases `Name = List[{Name}Item]` (bunq's
+        // `Error` → `Error = typing.List[ErrorItem]`), rather than `List[Any]`.
+        if schema.ty.as_ref().and_then(|t| t.primary()) == Some("array") {
+            if let Some(items) = &schema.items {
+                if is_inline_struct(items) {
+                    let item_name = format!("{name}Item");
+                    let item_module = naming::module_name(&item_name);
+                    let item_doc = clean_doc(items.description.as_deref());
+                    self.add_object(&item_name, item_module, items, item_doc);
+                    self.push_alias(
+                        name,
+                        module,
+                        TypeRef::List(Box::new(TypeRef::Named(item_name))),
+                        docstring,
+                    );
+                    return;
+                }
+            }
+        }
+
         // Everything else is an alias: a union, an extensible enum, a scalar, or
         // an unknown type. `full_type_ref` carries any `Optional` wrapping.
         self.push_alias(name, module, full_type_ref(schema), docstring);
