@@ -529,6 +529,14 @@ impl RequestBody {
             RequestBody::Bytes | RequestBody::Form(_) => false,
         }
     }
+
+    /// Whether the body is *always sent whole* — an inline body every one of whose
+    /// fields is required, so no field is `OMIT`ted. Fern keeps the explicit
+    /// `content-type` header for such a body even when it is documented; a documented
+    /// body with any optional field (a possible empty payload) drops it.
+    pub fn all_fields_required(&self) -> bool {
+        matches!(self, RequestBody::Inline(fields) if !fields.is_empty() && fields.iter().all(|f| !f.optional))
+    }
 }
 
 /// A request body passed as one `request` argument.

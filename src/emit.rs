@@ -2881,14 +2881,18 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         Some(RequestBody::Form(form)) => {
             (!form.multipart).then_some("application/x-www-form-urlencoded")
         }
-        // A JSON body carries the `content-type` header when it either accompanies a
-        // path/header param, or is *undocumented* — Fern drops the explicit header for
-        // a body whose spec declared a `description` (bunq's `description: ""`) and
-        // that rides no other header-forcing param, leaving the content-type to httpx.
+        // A JSON body carries the `content-type` header when it accompanies a
+        // path/header param, is *undocumented*, or is *always sent whole* (every field
+        // required, so no `OMIT`). Fern drops the explicit header only for a
+        // documented body with at least one optional field — which may serialize to
+        // nothing — that rides no header-forcing param (bunq's `CREATE_Avatar`,
+        // `CREATE_DeviceServer`), leaving the content-type to httpx; an all-required
+        // body (`CREATE_SessionServer`) keeps it.
         Some(body)
             if !ep.header_params.is_empty()
                 || !ep.path_params.is_empty()
-                || (body.content_type_header() && !ep.body_documented) =>
+                || (body.content_type_header()
+                    && (!ep.body_documented || body.all_fields_required())) =>
         {
             Some("application/json")
         }
