@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.26](https://github.com/nickderobertis/crozier/compare/v0.0.25...v0.0.26) - 2026-07-13
+
+### Added
+
+- spec-driven live-e2e mock-server suite and enforced real-world byte-match (apideck) ([#92](https://github.com/nickderobertis/crozier/pull/92))
+
 ## [0.0.25](https://github.com/nickderobertis/crozier/compare/v0.0.24...v0.0.25) - 2026-07-12
 
 ### Fixed
