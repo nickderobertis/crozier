@@ -92,6 +92,11 @@ jobs:
       # builds the release binary the suite drives.
       - name: Live e2e
         run: just test-live-e2e
+      # Enforce the real-world corpus byte-match here too: this leg already has the
+      # network to fetch the `link-ok` specs (the offline `check` gate cannot), so it
+      # byte-compares crozier's output against the committed Fern goldens.
+      - name: Corpus byte-match
+        run: just test-corpus-match
 
   # Prove the PUBLISHED crate builds: `cargo publish --dry-run` packages the crate
   # (honoring Cargo.toml's `include`) and compiles from that tarball. This is the

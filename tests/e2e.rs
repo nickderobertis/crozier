@@ -1656,6 +1656,22 @@ fn fixture_dir(api: &str) -> PathBuf {
         .join(api)
 }
 
+/// The OpenAPI spec a corpus generates from. A vendored corpus ships its
+/// `openapi.yml`; a `link-ok` corpus (`tests/fixtures/CORPUS.md`, spec not
+/// redistributed) is fetched into `.local/corpus/<api>/openapi.json` by
+/// `scripts/fetch-corpus.sh` — `None` when that fetch has not run.
+fn corpus_spec(api: &str) -> Option<PathBuf> {
+    let vendored = fixture_dir(api).join("openapi.yml");
+    if vendored.exists() {
+        return Some(vendored);
+    }
+    let fetched = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(".local/corpus")
+        .join(api)
+        .join("openapi.json");
+    fetched.exists().then_some(fetched)
+}
+
 /// Fresh `crozier` command bound to the built binary.
 fn crozier() -> Command {
     Command::cargo_bin("crozier").expect("crozier binary is built for tests")
@@ -1799,7 +1815,7 @@ fn generate_corpus(c: &Corpus) -> tempfile::TempDir {
     let out = tempfile::tempdir().expect("tempdir");
     crozier()
         .args(["generate", "--spec"])
-        .arg(fixture_dir(c.api).join("openapi.yml"))
+        .arg(corpus_spec(c.api).unwrap_or_else(|| fixture_dir(c.api).join("openapi.yml")))
         .arg("--output")
         .arg(out.path())
         .args([
@@ -1870,6 +1886,84 @@ fn query_parameters_matches_fern_output_byte_for_byte() {
 #[test]
 fn exhaustive_matches_fern_output_byte_for_byte() {
     assert_corpus_matches(&EXHAUSTIVE);
+}
+
+/// `apideck.com-crm`: a real-world `link-ok` corpus API (issue #77). Its OpenAPI
+/// spec is fetched, not vendored (`corpus_spec`); its full Fern golden is
+/// committed. crozier reproduces it byte-for-byte except [`APIDECK_CRM_GAPS`].
+const APIDECK_CRM: Corpus = Corpus {
+    api: "apideck.com-crm",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[],
+};
+
+/// Files crozier does not yet reproduce for `apideck.com-crm` — the worked usage
+/// snippets, whose example-value synthesis (spec `example`s, and which optional
+/// query params to show) crozier does not match yet. The gap shrinks as it closes;
+/// the test guards that every entry still genuinely differs.
+const APIDECK_CRM_GAPS: &[&str] = &[
+    "reference.md",
+    "src/fern/client.py",
+    "src/fern/activities/client.py",
+    "src/fern/companies/client.py",
+    "src/fern/contacts/client.py",
+    "src/fern/leads/client.py",
+    "src/fern/notes/client.py",
+    "src/fern/opportunities/client.py",
+    "src/fern/pipelines/client.py",
+    "src/fern/users/client.py",
+];
+
+/// Enforce the real-world apideck byte-match. The spec is `link-ok` (fetched by
+/// `scripts/fetch-corpus.sh` into `.local/corpus`, not vendored), so this **skips**
+/// when the spec is absent — including the offline `check` gate, which never
+/// fetches — and **fails** when `CROZIER_REQUIRE_CORPUS` is set (the CI corpus leg
+/// fetches the spec, then sets it), so the enforced leg can never silently no-op.
+#[test]
+fn apideck_crm_matches_fern_output() {
+    if corpus_spec(APIDECK_CRM.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the apideck corpus spec is not fetched; \
+             run scripts/fetch-corpus.sh first"
+        );
+        eprintln!("skipping apideck byte-match: spec not fetched (run scripts/fetch-corpus.sh)");
+        return;
+    }
+    let out = generate_corpus(&APIDECK_CRM);
+    let expected_root = fixture_dir(APIDECK_CRM.api).join("expected");
+    let mut diverged = Vec::new();
+    for rel in walk_files(&expected_root) {
+        if APIDECK_CRM_GAPS.contains(&rel.as_str()) {
+            continue;
+        }
+        let generated = std::fs::read_to_string(out.path().join(&rel))
+            .unwrap_or_else(|e| panic!("crozier did not write {rel}: {e}"));
+        let expected = std::fs::read_to_string(expected_root.join(&rel))
+            .unwrap_or_else(|e| panic!("missing fixture {rel}: {e}"));
+        if !generated_matches_fixture(&rel, &generated, &expected) {
+            diverged.push(rel);
+        }
+    }
+    assert!(
+        diverged.is_empty(),
+        "apideck diverged from Fern (fix the generator, or add to APIDECK_CRM_GAPS):\n{diverged:#?}"
+    );
+    // Every declared gap must still differ, so a closed one is removed from the list.
+    for gap in APIDECK_CRM_GAPS {
+        let generated = std::fs::read_to_string(out.path().join(gap)).unwrap_or_default();
+        let expected =
+            std::fs::read_to_string(expected_root.join(gap)).unwrap_or_default();
+        assert!(
+            !generated_matches_fixture(gap, &generated, &expected),
+            "apideck gap `{gap}` now matches Fern — remove it from APIDECK_CRM_GAPS"
+        );
+    }
 }
 
 #[test]

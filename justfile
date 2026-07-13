@@ -58,6 +58,15 @@ test-runtime:
 test-live-e2e *args:
     ./scripts/live-e2e.sh {{args}}
 
+# Enforce the real-world corpus byte-match: fetch the `link-ok` corpus specs (not
+# vendored; see tests/fixtures/CORPUS.md) and byte-compare crozier's output for the
+# vendored Fern goldens (apideck-crm today). SEPARATE from `check` because it needs
+# network to fetch the specs; CI runs it in the live-e2e leg. `CROZIER_REQUIRE_CORPUS`
+# turns a missing spec from a skip into a hard failure so the leg can't no-op.
+test-corpus-match:
+    ./scripts/fetch-corpus.sh
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_crm_matches_fern_output
+
 # Format the codebase in place.
 format:
     cargo fmt --all
