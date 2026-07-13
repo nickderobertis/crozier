@@ -558,6 +558,72 @@ fn forward_ref_map(
     map
 }
 
+/// The types that transitively reference a type in a cycle (including the cyclic
+/// types themselves). Fern emits `from __future__ import annotations` +
+/// `update_forward_refs` for exactly these — even when no individual field of the
+/// type is a string forward reference (a `DraftPayment` whose `schedule` field
+/// reaches a cycle it is not part of still needs the trailer). Computed by reverse
+/// reachability from the cyclic types over the reference graph.
+fn types_reaching_cycle(
+    types: &[TypeDecl],
+    tag_types: &[crate::ir::TagTypeDecl],
+) -> std::collections::HashSet<String> {
+    use std::collections::{HashMap, HashSet};
+
+    let mut edges: HashMap<String, Vec<String>> = HashMap::new();
+    for decl in types.iter().chain(tag_types.iter().map(|t| &t.decl)) {
+        edges
+            .entry(decl.name().to_string())
+            .or_default()
+            .extend(decl_refs(decl));
+    }
+    let reaches = |start: &str, target: &str| -> bool {
+        let mut stack: Vec<&str> = edges
+            .get(start)
+            .into_iter()
+            .flatten()
+            .map(String::as_str)
+            .collect();
+        let mut seen: HashSet<&str> = HashSet::new();
+        while let Some(node) = stack.pop() {
+            if node == target {
+                return true;
+            }
+            if seen.insert(node) {
+                stack.extend(edges.get(node).into_iter().flatten().map(String::as_str));
+            }
+        }
+        false
+    };
+
+    // A type is cyclic when it can reach itself. Reverse edges, then flood from the
+    // cyclic set: every type that can reach a cyclic one is caught.
+    let cyclic: Vec<&str> = edges
+        .keys()
+        .map(String::as_str)
+        .filter(|n| reaches(n, n))
+        .collect();
+    let mut reverse: HashMap<&str, Vec<&str>> = HashMap::new();
+    for (from, tos) in &edges {
+        for to in tos {
+            reverse.entry(to.as_str()).or_default().push(from.as_str());
+        }
+    }
+    let mut out: HashSet<String> = HashSet::new();
+    let mut stack: Vec<&str> = cyclic.clone();
+    for c in &cyclic {
+        out.insert((*c).to_string());
+    }
+    while let Some(node) = stack.pop() {
+        for &pred in reverse.get(node).into_iter().flatten() {
+            if out.insert(pred.to_string()) {
+                stack.push(pred);
+            }
+        }
+    }
+    out
+}
+
 pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     let env = environment();
     let mut files = Vec::new();
@@ -574,6 +640,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     // Recursive types: per type, the references that must render as string forward
     // references (issue #84). Empty for the common acyclic case.
     let forward_map = forward_ref_map(&ir.types, &ir.tag_types);
+    let reaching_cycle = types_reaching_cycle(&ir.types, &ir.tag_types);
     let empty_forward = std::collections::HashSet::new();
 
     // version.py
@@ -604,6 +671,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             &tag_map,
             ir.extra_fields,
             forward,
+            reaching_cycle.contains(decl.name()),
         )?;
         files.push(GeneratedFile {
             path: PathBuf::from(format!("src/{pkg}/types/{}.py", decl.module())),
@@ -630,6 +698,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 &tag_map,
                 ir.extra_fields,
                 forward,
+                reaching_cycle.contains(decl.name()),
             )?;
             files.push(GeneratedFile {
                 path: PathBuf::from(format!("src/{pkg}/{module}/types/{}.py", decl.module())),
@@ -1906,6 +1975,9 @@ fn render_type_decl(
     tag_types: &BTreeMap<String, String>,
     extra: ExtraFields,
     forward: &std::collections::HashSet<String>,
+    // Whether this type reaches a cycle and so emits `from __future__` +
+    // `update_forward_refs`, even if `forward` (its own quoted field refs) is empty.
+    needs_forward: bool,
 ) -> Result<String> {
     match decl {
         TypeDecl::Object(obj) => {
@@ -1939,7 +2011,7 @@ fn render_type_decl(
                     }
                 })
                 .collect();
-            if !forward.is_empty() {
+            if !forward.is_empty() || needs_forward {
                 // A recursive model: `from __future__ import annotations` lets the
                 // string forward refs resolve lazily, and `update_forward_refs`
                 // rebuilds the model once the referenced names exist.
