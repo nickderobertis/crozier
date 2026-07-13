@@ -317,6 +317,12 @@ pub struct RequestBody {
     /// Whether the body is required.
     #[serde(default)]
     pub required: Option<bool>,
+    /// A human description of the body. Its mere *presence* (even empty) changes
+    /// Fern's output: an undocumented JSON body emits an explicit `content-type`
+    /// header, a documented one leaves it to the transport (see
+    /// [`crate::ir`]'s endpoint content-type logic).
+    #[serde(default)]
+    pub description: Option<String>,
     /// Content, keyed by media type (e.g. `application/json`).
     #[serde(default)]
     pub content: IndexMap<String, MediaType>,

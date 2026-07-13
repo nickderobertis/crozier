@@ -401,6 +401,11 @@ pub struct Endpoint {
     pub header_params: Vec<HeaderParam>,
     /// The JSON request body, when the operation has one crozier can emit.
     pub request_body: Option<RequestBody>,
+    /// Whether the spec's `requestBody` declared a `description` (even an empty one).
+    /// Fern omits the explicit `content-type` header for a documented JSON body with
+    /// no path/header params, and keeps it for an undocumented one — bunq documents
+    /// every body (`description: ""`), the synthetic seeds document none.
+    pub body_documented: bool,
     /// The success response body type, or `None` when the endpoint returns no
     /// content.
     pub response: Option<TypeRef>,
@@ -1134,6 +1139,10 @@ fn build_endpoint(
         query_params,
         header_params,
         request_body,
+        body_documented: op
+            .request_body
+            .as_ref()
+            .is_some_and(|rb| rb.description.is_some()),
         response,
         response_doc: success_response_doc(op),
         errors,

@@ -2804,10 +2804,14 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         Some(RequestBody::Form(form)) => {
             (!form.multipart).then_some("application/x-www-form-urlencoded")
         }
+        // A JSON body carries the `content-type` header when it either accompanies a
+        // path/header param, or is *undocumented* — Fern drops the explicit header for
+        // a body whose spec declared a `description` (bunq's `description: ""`) and
+        // that rides no other header-forcing param, leaving the content-type to httpx.
         Some(body)
-            if body.content_type_header()
-                || !ep.header_params.is_empty()
-                || !ep.path_params.is_empty() =>
+            if !ep.header_params.is_empty()
+                || !ep.path_params.is_empty()
+                || (body.content_type_header() && !ep.body_documented) =>
         {
             Some("application/json")
         }
@@ -4731,6 +4735,7 @@ mod tests {
             query_params: Vec::new(),
             header_params: Vec::new(),
             request_body: None,
+            body_documented: false,
             response,
             response_doc: None,
             errors: Vec::new(),
