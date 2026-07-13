@@ -373,10 +373,12 @@ fn wide_string_enum_wraps_like_ruff() {
 
 #[test]
 fn emits_endpoint_package_markers_with_fern_module_names() {
-    // A `group_method` operationId names its own client from the prefix (snake-cased
-    // when the prefix has an underscore, else lowercased), and Fern ignores the tag
-    // there. A groupless operationId is grouped by its first tag instead, and — with
-    // no tag either — falls back to snake-casing the whole id.
+    // An underscore-bearing operationId groups by its prefix (snake-cased) only when
+    // that prefix *is* the tag (`my_group_doThing` under `MyGroup`); when the prefix
+    // differs from the tag, Fern groups by the **tag** instead (`soloThing_doOther`
+    // under `Solo` → `solo`, not `solothing` — bunq's `SCREAMING_Mixed` operationIds).
+    // A groupless operationId is grouped by its first tag, and — with no tag either —
+    // falls back to snake-casing the whole id.
     let spec = "\
 openapi: 3.0.0
 info:
@@ -399,8 +401,8 @@ paths:
       operationId: bareid
 ";
     let files = render(spec);
-    // grouped→prefix (tag ignored), grouped→prefix, groupless→tag, groupless→id.
-    for module in ["my_group", "solothing", "bare_things", "bareid"] {
+    // grouped-prefix==tag→prefix, grouped-prefix≠tag→tag, groupless→tag, groupless→id.
+    for module in ["my_group", "solo", "bare_things", "bareid"] {
         let init = files
             .get(&format!("src/acme/{module}/__init__.py"))
             .unwrap_or_else(|| panic!("expected {module}/__init__.py; got {:?}", files.keys()));

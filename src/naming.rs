@@ -46,10 +46,27 @@ pub fn split_words(input: &str) -> Vec<String> {
     words
 }
 
-/// `snake_case` of an identifier.
+/// `snake_case` of an identifier. A word that follows one ending in a digit *and*
+/// containing a letter (`Cvc2`) is joined without an underscore, matching Fern's
+/// module/method names (`CardGeneratedCvc2Create` → `card_generated_cvc2create`,
+/// `GeneratedCvc2_for` → `generated_cvc2for`). This join is snake-only — the class
+/// name (`to_pascal_case`) keeps `Cvc2Create`. A standalone digit word (`2`, from
+/// `2Factor`) does not absorb the next word.
 #[must_use]
 pub fn to_snake_case(input: &str) -> String {
-    split_words(input).join("_")
+    let mut out = String::new();
+    for word in split_words(input) {
+        let after_digit_word = out.ends_with(|p: char| p.is_ascii_digit())
+            && out.rsplit('_').next().is_some_and(|w| {
+                w.ends_with(|p: char| p.is_ascii_digit())
+                    && w.chars().any(|c| c.is_ascii_alphabetic())
+            });
+        if !out.is_empty() && !after_digit_word {
+            out.push('_');
+        }
+        out.push_str(&word);
+    }
+    out
 }
 
 /// `PascalCase` of an identifier.

@@ -28,6 +28,40 @@ Then wire a `Corpus { api, package_name, project_name, matched: &[] }` into
 `matched` **empty** — the smoke test then only asserts crozier consumes the spec
 without panicking.
 
+## Choosing a real-world spec — Fern must accept it FIRST
+
+A candidate is only viable if **Fern itself generates it cleanly** (`fern check`
+passes); crozier byte-matching Fern's output is meaningless if Fern rejected the
+spec. Fern's real gate is stricter than "valid OpenAPI", and most raw public specs
+fail it, so **screen before you spend a Docker generate**. The two failure modes
+that kill most specs:
+
+- **Inline request-body name collisions.** Fern coins `<Operation>Request` for a
+  request body defined inline (no `$ref`); two endpoints that coin the same name
+  across sub-clients are a hard error (`X is already declared in Y.yml`). Specs
+  whose request bodies are all `$ref`s to named `components.schemas` avoid this.
+- **Example / declared-type mismatches.** A `format: date` field whose `example`
+  is a full datetime (or an integer `enum` value with no `x-fern-enum` name) is a
+  hard error. Screen `format: date` examples and numeric `enum`s.
+
+`scripts/`-free pre-screen: parse the spec and count, per operation, request bodies
+without a `$ref` schema, plus `format: date` fields whose example contains a time.
+Zero of both is the green light; then run `scripts/generate-fern-fixture.sh`.
+
+### Specs already tried and REJECTED (do not re-attempt without a fix upstream)
+
+Fern rejected these raw specs — an agent burned a full generate on each, so they
+are logged here to stop the next one repeating it. Fern's *own* published SDK for
+these is built from a spec with Fern overrides applied, not the raw document.
+
+| spec | source | why Fern rejects it |
+|---|---|---|
+| `deepgram` | `deepgram/deepgram-api-specs@main/openapi.yml` | 342 errors: duplicate inline `ListRequest` across sub-clients, and integer enums (`16000`, `48000`, …) with no `x-fern-enum` names |
+| `asana` (api-guru `asana.com/1.0`) | already attempted by a prior agent too | 17 errors: inline request-body collisions (`AddFollowersRequest`, `RemoveFollowersRequest`, `ProjectSaveAsTemplateRequest`) and `date` fields with datetime examples |
+
+Accepted so far: `apideck.com-crm` (fully matched) and `bunq.com` (all request
+bodies `$ref`ed; fully matched, all 956 files — see [`../../docs/matching.md`](../../docs/matching.md)).
+
 ## Growing `matched` — don't diff by hand
 
 After a generator change, `just fixtures-candidates` reports every `expected/`

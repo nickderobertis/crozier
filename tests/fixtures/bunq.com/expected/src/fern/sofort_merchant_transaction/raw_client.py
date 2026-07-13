@@ -1,0 +1,252 @@
+
+
+import typing
+from json.decoder import JSONDecodeError
+
+from ..core.api_error import ApiError
+from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from ..core.http_response import AsyncHttpResponse, HttpResponse
+from ..core.jsonable_encoder import jsonable_encoder
+from ..core.pydantic_utilities import parse_obj_as
+from ..core.request_options import RequestOptions
+from ..errors.bad_request_error import BadRequestError
+from ..types.sofort_merchant_transaction_listing import SofortMerchantTransactionListing
+from ..types.sofort_merchant_transaction_read import SofortMerchantTransactionRead
+
+
+class RawSofortMerchantTransactionClient:
+    def __init__(self, *, client_wrapper: SyncClientWrapper):
+        self._client_wrapper = client_wrapper
+
+    def list_all_sofort_merchant_transaction_for_user_monetary_account(
+        self, user_id: int, monetary_account_id: int, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> HttpResponse[typing.List[SofortMerchantTransactionListing]]:
+        """
+        View for requesting Sofort transactions and polling their status.
+
+        Parameters
+        ----------
+        user_id : int
+
+
+        monetary_account_id : int
+
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[typing.List[SofortMerchantTransactionListing]]
+            View for requesting Sofort transactions and polling their status.
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/sofort-merchant-transaction",
+            method="GET",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    typing.List[SofortMerchantTransactionListing],
+                    parse_obj_as(
+                        type_=typing.List[SofortMerchantTransactionListing],
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    def read_sofort_merchant_transaction_for_user_monetary_account(
+        self,
+        user_id: int,
+        monetary_account_id: int,
+        item_id: int,
+        *,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[SofortMerchantTransactionRead]:
+        """
+        View for requesting Sofort transactions and polling their status.
+
+        Parameters
+        ----------
+        user_id : int
+
+
+        monetary_account_id : int
+
+
+        item_id : int
+
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[SofortMerchantTransactionRead]
+            View for requesting Sofort transactions and polling their status.
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/sofort-merchant-transaction/{jsonable_encoder(item_id)}",
+            method="GET",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    SofortMerchantTransactionRead,
+                    parse_obj_as(
+                        type_=SofortMerchantTransactionRead,
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+
+class AsyncRawSofortMerchantTransactionClient:
+    def __init__(self, *, client_wrapper: AsyncClientWrapper):
+        self._client_wrapper = client_wrapper
+
+    async def list_all_sofort_merchant_transaction_for_user_monetary_account(
+        self, user_id: int, monetary_account_id: int, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> AsyncHttpResponse[typing.List[SofortMerchantTransactionListing]]:
+        """
+        View for requesting Sofort transactions and polling their status.
+
+        Parameters
+        ----------
+        user_id : int
+
+
+        monetary_account_id : int
+
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[typing.List[SofortMerchantTransactionListing]]
+            View for requesting Sofort transactions and polling their status.
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/sofort-merchant-transaction",
+            method="GET",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    typing.List[SofortMerchantTransactionListing],
+                    parse_obj_as(
+                        type_=typing.List[SofortMerchantTransactionListing],
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def read_sofort_merchant_transaction_for_user_monetary_account(
+        self,
+        user_id: int,
+        monetary_account_id: int,
+        item_id: int,
+        *,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[SofortMerchantTransactionRead]:
+        """
+        View for requesting Sofort transactions and polling their status.
+
+        Parameters
+        ----------
+        user_id : int
+
+
+        monetary_account_id : int
+
+
+        item_id : int
+
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[SofortMerchantTransactionRead]
+            View for requesting Sofort transactions and polling their status.
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/sofort-merchant-transaction/{jsonable_encoder(item_id)}",
+            method="GET",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    SofortMerchantTransactionRead,
+                    parse_obj_as(
+                        type_=SofortMerchantTransactionRead,
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

@@ -31,6 +31,11 @@ pub struct Ir {
     /// Endpoint client module (directory) names, one per operation group, in
     /// first-seen order.
     pub endpoint_modules: Vec<String>,
+    /// The `reference.md` section title for each module, keyed by module name.
+    /// Verbatim tag (`attachment-public`) for an underscore-style operationId,
+    /// PascalCase tag (`Widgets`) for a camelCase one, PascalCase group when
+    /// untagged (`EndpointsContainer`) — see `module_title` for the full rule.
+    pub endpoint_module_titles: std::collections::BTreeMap<String, String>,
     /// Every operation, in document-traversal order, resolved for emission.
     pub endpoints: Vec<Endpoint>,
     /// Generated exception classes, one per distinct declared error response.
@@ -77,16 +82,34 @@ impl Environment {
 /// `PRODUCTION` when there is no usable description.
 fn environment_model(doc: &OpenApi, client_name: &str) -> Option<Environment> {
     let first = doc.servers.first()?;
-    let member_name = first
-        .description
-        .as_deref()
-        .map(env_member_name)
-        .filter(|n| !n.is_empty())
-        .unwrap_or_else(|| "PRODUCTION".to_string());
+    // A server with a templated URL (`{basePath}` variables) is named `DEFAULT` — its
+    // member value is the variables resolved to their defaults (bunq). A concrete-URL
+    // server takes its member name from its description, even across several servers
+    // (the `servers-webhooks` seed's Production/Staging pair keeps `PRODUCTION`).
+    let member_name = if !first.variables.is_empty() {
+        "DEFAULT".to_string()
+    } else {
+        first
+            .description
+            .as_deref()
+            .map(env_member_name)
+            .filter(|n| !n.is_empty())
+            .unwrap_or_else(|| "PRODUCTION".to_string())
+    };
     Some(Environment {
         enum_name: format!("{client_name}Environment"),
-        member: (member_name, first.url.clone()),
+        member: (member_name, resolve_server_url(first)),
     })
+}
+
+/// Substitute a server URL's `{var}` placeholders with each variable's `default`
+/// (`https://.../{basePath}` → `https://.../v1`), matching Fern.
+fn resolve_server_url(server: &crate::openapi::Server) -> String {
+    let mut url = server.url.clone();
+    for (name, var) in &server.variables {
+        url = url.replace(&format!("{{{name}}}"), &var.default);
+    }
+    url
 }
 
 /// Turn a server description into a Python enum member identifier: uppercased,
@@ -127,8 +150,10 @@ pub struct GlobalHeader {
 /// Collect the operation headers Fern promotes to client-wrapper-level fields: a
 /// header present on **every** operation (a ubiquitous header like `X-App-Id` is an
 /// SDK-wide setting, not a per-call argument). A header on a subset of operations
-/// stays a per-method parameter. Fern orders the promoted headers optional-first,
-/// then alphabetically by field name.
+/// stays a per-method parameter. Fern orders the promoted headers optional-first —
+/// keeping the optional group in the spec's first-appearance order, and the required
+/// group by field name — and never promotes a transport-managed header (`User-Agent`,
+/// which the HTTP client sets itself), even when it rides every operation.
 fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
     let mut total = 0usize;
     // wire name → (operations carrying it, required in every one so far), first-seen.
@@ -150,22 +175,42 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
     // *single* operation is that call's own argument, not an SDK-wide setting, so
     // it stays a per-method parameter (Fern only promotes a solo header when it is
     // optional). With more than one operation, "on every one" is a deliberate
-    // cross-cutting header and promotes regardless of required-ness.
+    // cross-cutting header and promotes regardless of required-ness. `User-Agent` is
+    // never promoted — the client owns it — so it is dropped even when ubiquitous.
     let mut headers: Vec<GlobalHeader> = seen
         .into_iter()
-        .filter(|(_, (count, required))| total > 0 && *count == total && (!*required || total > 1))
+        .filter(|(wire_name, (count, required))| {
+            total > 0
+                && *count == total
+                && (!*required || total > 1)
+                && !is_transport_managed_header(wire_name)
+        })
         .map(|(wire_name, (_, required))| GlobalHeader {
             py_name: naming::field_name(header_param_stem(&wire_name)),
             wire_name,
             required,
         })
         .collect();
+    // Optional-first. The `sort_by` is stable, so optional headers keep the
+    // first-appearance order they already carry from `seen` (an insertion-ordered
+    // map); required headers sort by field name (apideck's `app_id`/`consumer_id`).
     headers.sort_by(|a, b| {
-        a.required
-            .cmp(&b.required)
-            .then_with(|| a.py_name.cmp(&b.py_name))
+        a.required.cmp(&b.required).then_with(|| {
+            if a.required {
+                a.py_name.cmp(&b.py_name)
+            } else {
+                std::cmp::Ordering::Equal
+            }
+        })
     });
     headers
+}
+
+/// Whether a header is managed by the HTTP transport itself and so is never surfaced
+/// as an SDK parameter — Fern excludes `User-Agent` from global-header promotion even
+/// when it rides every operation (the generated client sets its own).
+fn is_transport_managed_header(wire_name: &str) -> bool {
+    wire_name.eq_ignore_ascii_case("user-agent")
 }
 
 /// The SDK's authentication model, derived from `components.securitySchemes` and
@@ -307,11 +352,14 @@ fn referenced_type_names(
     set
 }
 
-/// Class names of schemas used as an inlined (plain-object `$ref`) request body —
-/// the candidates Fern omits from the type layer. Mirrors the `$ref`-object branch
-/// of [`resolve_request_body`].
+/// Class names of schemas used as an inlined (plain-object `$ref`) request body by
+/// **exactly one** operation — the candidates Fern omits from the type layer.
+/// Mirrors the `$ref`-object branch of [`resolve_request_body`]. A schema shared as
+/// the body of two or more operations (bunq's create+update pairs share
+/// `PermittedIp`, `CardGeneratedCvc2`, …) is kept as a standalone type even though it
+/// is still inlined into each method, so only single-use bodies are returned.
 fn inline_body_source_names(doc: &OpenApi) -> std::collections::HashSet<String> {
-    let mut set = std::collections::HashSet::new();
+    let mut counts: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
     for item in doc.paths.values() {
         for (_, op) in item.operations() {
             let Some(rb) = &op.request_body else { continue };
@@ -335,11 +383,14 @@ fn inline_body_source_names(doc: &OpenApi) -> std::collections::HashSet<String> 
                 && !is_map(target)
                 && (!target.properties.is_empty() || target.all_of.is_some())
             {
-                set.insert(ref_to_class(reference));
+                *counts.entry(ref_to_class(reference)).or_default() += 1;
             }
         }
     }
-    set
+    counts
+        .into_iter()
+        .filter_map(|(name, uses)| (uses == 1).then_some(name))
+        .collect()
 }
 
 /// Whether every operation carries a non-empty security requirement (its own, or
@@ -379,6 +430,11 @@ pub struct Endpoint {
     pub header_params: Vec<HeaderParam>,
     /// The JSON request body, when the operation has one crozier can emit.
     pub request_body: Option<RequestBody>,
+    /// Whether the spec's `requestBody` declared a `description` (even an empty one).
+    /// Fern omits the explicit `content-type` header for a documented JSON body with
+    /// no path/header params, and keeps it for an undocumented one — bunq documents
+    /// every body (`description: ""`), the synthetic seeds document none.
+    pub body_documented: bool,
     /// The success response body type, or `None` when the endpoint returns no
     /// content.
     pub response: Option<TypeRef>,
@@ -495,6 +551,14 @@ impl RequestBody {
             RequestBody::Inline(_) => true,
             RequestBody::Bytes | RequestBody::Form(_) => false,
         }
+    }
+
+    /// Whether the body is *always sent whole* — an inline body every one of whose
+    /// fields is required, so no field is `OMIT`ted. Fern keeps the explicit
+    /// `content-type` header for such a body even when it is documented; a documented
+    /// body with any optional field (a possible empty payload) drops it.
+    pub fn all_fields_required(&self) -> bool {
+        matches!(self, RequestBody::Inline(fields) if !fields.is_empty() && fields.iter().all(|f| !f.optional))
     }
 }
 
@@ -865,6 +929,12 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         .types
         .retain(|d| !inline_sources.contains(d.name()) || referenced.contains(d.name()));
 
+    // Fern also emits a standalone package-root type for each error response whose
+    // body is an inline object, named `{ErrorClassName}Body` (bunq's 400
+    // `GenericError` → `BadRequestErrorBody`). The error *class* still types its body
+    // as `Any`; this model is referenced only through the `types/` aggregators.
+    hoist_error_body_types(doc, &mut builder);
+
     // The root client class name is Fern's `client_class_name` when given
     // (issue #61), else derived from the package name as `{PascalCase}Api`.
     let client_name = config.client_class_name.clone().unwrap_or_else(|| {
@@ -882,6 +952,7 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         types: builder.types,
         tag_types,
         endpoint_modules: endpoint_modules(doc),
+        endpoint_module_titles: endpoint_module_titles(doc),
         endpoints,
         errors,
         auth: auth_model(doc),
@@ -976,7 +1047,7 @@ fn build_endpoint(
                 .schema
                 .as_ref()
                 .map_or(TypeRef::Primitive(Prim::Any), base_type_ref),
-            docstring: clean_doc(p.description.as_deref()),
+            docstring: declared_doc(p.description.as_deref()),
         })
         .collect();
 
@@ -1017,10 +1088,13 @@ fn build_endpoint(
         .parameters
         .iter()
         // A header promoted to a client-wrapper-level global field is dropped from
-        // the method signature entirely (it is set once at client construction).
+        // the method signature entirely (it is set once at client construction), as
+        // is a transport-managed header (`User-Agent`) — Fern never surfaces either
+        // as a per-call argument.
         .filter(|p| {
             p.location == Some(ParameterLocation::Header)
                 && !global_headers.contains(p.name.as_str())
+                && !is_transport_managed_header(&p.name)
         })
         .map(|p| HeaderParam {
             wire_name: p.name.clone(),
@@ -1109,6 +1183,10 @@ fn build_endpoint(
         query_params,
         header_params,
         request_body,
+        body_documented: op
+            .request_body
+            .as_ref()
+            .is_some_and(|rb| rb.description.is_some()),
         response,
         response_doc: success_response_doc(op),
         errors,
@@ -1207,8 +1285,54 @@ fn error_body_type(resp: &Response) -> TypeRef {
         .get("application/json")
         .and_then(|c| c.schema.as_ref())
     {
-        Some(schema) => base_type_ref(schema),
+        // A named `$ref`, scalar, or container keeps its resolved type. An inline
+        // object (bunq's `GenericError`, `{Error: ...}`) or an otherwise-untyped body
+        // resolves to bare `Any`, which Fern renders as `Optional[Any]` — the same as
+        // a body-less error.
+        Some(schema) => match base_type_ref(schema) {
+            TypeRef::Primitive(Prim::Any) => {
+                TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)))
+            }
+            other => other,
+        },
         None => TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any))),
+    }
+}
+
+/// Hoist a standalone `{ErrorClassName}Body` model for each error response whose
+/// body is an inline object (bunq's shared 400 `GenericError` → `BadRequestErrorBody`),
+/// deduplicated by name so a body reused across every endpoint is emitted once. The
+/// error class itself keeps its `Any` body (see [`error_body_type`]); this type lives
+/// in the package-root `types/`, reachable only through the aggregators.
+fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
+    let mut seen = std::collections::HashSet::new();
+    for (_, item) in &doc.paths {
+        for (_, op) in item.operations() {
+            for (code, resp) in &op.responses {
+                if code.starts_with('2') {
+                    continue;
+                }
+                let Ok(status) = code.parse::<u16>() else {
+                    continue;
+                };
+                let Some(class) = error_class_name(status) else {
+                    continue;
+                };
+                let Some(schema) = resp
+                    .content
+                    .get("application/json")
+                    .and_then(|c| c.schema.as_ref())
+                else {
+                    continue;
+                };
+                if is_inline_struct(schema) {
+                    let name = format!("{class}Body");
+                    if seen.insert(name.clone()) {
+                        builder.add_named(&name, schema);
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -1316,6 +1440,12 @@ fn resolve_request_body(
         // A `$ref` to a plain object is inlined field-by-field.
         if !target.properties.is_empty() || target.all_of.is_some() {
             return hoist_fields(&class, types).map(RequestBody::Inline);
+        }
+        // A `$ref` to a bare object (no properties/`allOf` — a free-form `Dict`
+        // alias, e.g. bunq's `AttachmentPublic`) is passed straight through as a
+        // single `json=request` arg, like a map.
+        if is_bare_object(target) {
+            return Some(single(TypeRef::Named(class), required, false, true));
         }
         return None;
     }
@@ -1428,7 +1558,7 @@ impl InlineHoister<'_> {
                 type_ref: self.prop_type_ref(name, prop, prop_schema),
                 optional,
                 spec_required,
-                docstring: clean_doc(prop_schema.description.as_deref()),
+                docstring: declared_doc(prop_schema.description.as_deref()),
                 example: prop_schema.example.as_ref().and_then(example_literal),
             });
         }
@@ -1554,7 +1684,14 @@ fn type_needs_convert(t: &TypeRef, types: &[TypeDecl]) -> bool {
     match t {
         TypeRef::Named(name) => types.iter().any(|d| match d {
             TypeDecl::Object(o) => o.name == *name,
-            TypeDecl::Alias(a) => a.name == *name && matches!(a.target, TypeRef::Union(_)),
+            // A union alias always converts; any other alias converts when its target
+            // does — e.g. `Error = List[ErrorItem]` converts because `ErrorItem`
+            // carries field aliases (bunq's `Sequence[Error]` body field).
+            TypeDecl::Alias(a) => {
+                a.name == *name
+                    && (matches!(a.target, TypeRef::Union(_))
+                        || type_needs_convert(&a.target, types))
+            }
             // A discriminated union's wrapper models carry field aliases too.
             TypeDecl::DiscriminatedUnion(u) => u.name == *name,
             // An enum is a plain `str` value — no field aliases to respect.
@@ -1648,13 +1785,22 @@ fn first_tag(op: &Operation) -> Option<&str> {
 ///   route (`GET /widgets` → `list_widgets`).
 fn endpoint_method_name(op: &Operation, http_method: &str, url: &str) -> String {
     let id = op.operation_id.trim();
+    if id.is_empty() {
+        return synthesized_method_name(http_method, url);
+    }
     if id.contains('_') {
-        return method_from_grouped_id(id);
+        // A `group_method` operationId whose prefix *is* the group (matches the tag,
+        // or there is no tag) has its group stripped, Fern-style (`widgets_getWidget`
+        // → `getwidget`, `endpoints_container_get…` → `endpoints_container_get…`).
+        // When the prefix is unrelated to the tag (bunq's `CREATE_AttachmentPublic`
+        // under `attachment-public` — a verb, not the group), the tag is the group
+        // and the whole id, snake-cased, is the method (`create_attachment_public`).
+        if group_prefix_is_tag(op, id) {
+            return method_from_grouped_id(id);
+        }
+        return naming::sanitize_identifier(&naming::to_snake_case(id));
     }
-    if !id.is_empty() {
-        return method_from_groupless_id(id, first_tag(op));
-    }
-    synthesized_method_name(http_method, url)
+    method_from_groupless_id(id, first_tag(op))
 }
 
 /// The method name for a `group_method` operationId (one that contains `_`). Fern
@@ -1781,25 +1927,102 @@ fn endpoint_modules(doc: &OpenApi) -> Vec<String> {
     modules
 }
 
+/// The `reference.md` / sub-client section title for each module. Keyed by module
+/// name, first title wins. See [`module_title`] for the casing rule.
+fn endpoint_module_titles(doc: &OpenApi) -> std::collections::BTreeMap<String, String> {
+    let mut titles = std::collections::BTreeMap::new();
+    for (url, item) in &doc.paths {
+        for (_, op) in item.operations() {
+            titles
+                .entry(endpoint_module(op, url))
+                .or_insert_with(|| module_title(op, url));
+        }
+    }
+    titles
+}
+
+/// The section title for one operation's module.
+///
+/// Fern's casing depends on how the operation was grouped. When the group comes
+/// from a plain camelCase operationId or the tag alone (`searchWidgets`+`widgets`,
+/// `companiesAdd`+`Companies`), Fern titles the section with the **PascalCase** tag
+/// (`Widgets`, `Companies`). But when the operationId carries an underscore
+/// separator (bunq's `CREATE_AttachmentPublic`), Fern keeps the tag **verbatim**
+/// (`attachment-public`, `content`). An untagged group falls back to the PascalCase
+/// operationId/path prefix (`EndpointsContainer`).
+fn module_title(op: &Operation, url: &str) -> String {
+    let id = op.operation_id.trim();
+    if id.contains('_') {
+        // Grouped by the operationId prefix → PascalCase; grouped by tag → verbatim.
+        if group_prefix_is_tag(op, id) {
+            return naming::to_pascal_case(&module_from_grouped_id(id));
+        }
+        return first_tag(op).expect("mismatch implies a tag").to_string();
+    }
+    if let Some(tag) = first_tag(op) {
+        return naming::to_pascal_case(tag);
+    }
+    naming::to_pascal_case(&endpoint_module(op, url))
+}
+
 /// The client module (directory) name for an operation.
 ///
-/// A `group_method` operationId names its own client from the prefix, and Fern
-/// ignores tags there (`endpoints_content_type`, `inlinedrequests`). A groupless
-/// operationId is grouped by the first tag instead (`get-all-widgets` under tag
-/// `widgets` → `widgets`); with neither a group nor a tag, it falls back to the
-/// whole id, then the leading path segment.
+/// Fern groups by the first **tag** whenever the operation has one — even if the
+/// operationId also contains an underscore. bunq's `CREATE_AttachmentPublic` under
+/// tag `attachment-public` groups as `attachment_public`, not `create`; the
+/// underscore prefix there is a verb, not the SDK group. Only an untagged operation
+/// falls back to the `group_method` operationId prefix (`endpoints_content_type`,
+/// `inlinedrequests`), then the whole id, then the leading path segment. Where the
+/// operationId prefix *does* equal the tag (`widgets_getWidget` under `Widgets`),
+/// both rules agree, so tag-grouped corpora already matched stay byte-identical.
 fn endpoint_module(op: &Operation, url: &str) -> String {
     let id = op.operation_id.trim();
     if id.contains('_') {
-        return module_from_grouped_id(id);
+        // Untagged, or the prefix is the group → group by the operationId prefix.
+        // Otherwise the prefix is unrelated to the tag (bunq) → the tag is the group.
+        if group_prefix_is_tag(op, id) {
+            return module_from_grouped_id(id);
+        }
+        return snake_module(first_tag(op).expect("mismatch implies a tag"));
     }
     if let Some(tag) = first_tag(op) {
-        return naming::sanitize_identifier(&naming::to_snake_case(tag));
+        return snake_module(tag);
     }
     if !id.is_empty() {
         return naming::sanitize_identifier(&naming::to_snake_case(id));
     }
     naming::sanitize_identifier(&naming::to_snake_case(&path_group(url)))
+}
+
+/// The snake-cased, identifier-safe module name a tag maps to (`attachment-public`
+/// → `attachment_public`).
+fn snake_module(tag: &str) -> String {
+    naming::sanitize_identifier(&naming::to_snake_case(tag))
+}
+
+/// Whether an operation should be grouped by its `group_method` operationId prefix
+/// rather than by its tag. True when the operation has no tag (the prefix is all we
+/// have), or when the prefix *is* the tag — the operationId genuinely encodes the
+/// group (`inlinedRequests_post…` under tag `InlinedRequests`, `endpoints_container_…`
+/// under `EndpointsContainer`). False when a tag is present but the prefix is
+/// unrelated to it (bunq's `CREATE_…`/`READ_…` verbs under resource tags), where Fern
+/// groups by the tag and keeps the whole operationId as the method. Comparison is on
+/// the alphanumeric-only lowercasing of each, so `inlinedrequests` ≡ `InlinedRequests`
+/// and `endpoints_container` ≡ `EndpointsContainer` but `create` ≢ `attachment-public`.
+fn group_prefix_is_tag(op: &Operation, id: &str) -> bool {
+    match first_tag(op) {
+        None => true,
+        Some(tag) => alnum_lower(&module_from_grouped_id(id)) == alnum_lower(tag),
+    }
+}
+
+/// Lowercase, keeping only ASCII alphanumerics — the separator-insensitive key used
+/// to test whether an operationId's group prefix and a tag name the same group.
+fn alnum_lower(s: &str) -> String {
+    s.chars()
+        .filter(char::is_ascii_alphanumeric)
+        .flat_map(char::to_lowercase)
+        .collect()
 }
 
 /// The module name from a `group_method` operationId (one that contains `_`):
@@ -1900,7 +2123,7 @@ fn append_member_fields(
             type_ref: base_type_ref(prop_schema),
             optional: is_optional(prop_schema) || !spec_required,
             spec_required,
-            docstring: clean_doc(prop_schema.description.as_deref()),
+            docstring: declared_doc(prop_schema.description.as_deref()),
             example: prop_schema.example.as_ref().and_then(example_literal),
         });
     }
@@ -1952,10 +2175,47 @@ impl Builder<'_> {
             return;
         }
 
+        // A bare `type: object` with no properties, `allOf`, or `additionalProperties`
+        // is a free-form object: Fern aliases it to `Dict[str, Optional[Any]]` (bunq's
+        // `AttachmentPublic`, `Whitelist`, …), not an empty model class.
+        if is_bare_object(schema) {
+            self.push_alias(
+                name,
+                module,
+                TypeRef::Dict(
+                    Box::new(TypeRef::Primitive(Prim::Str)),
+                    Box::new(TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)))),
+                ),
+                docstring,
+            );
+            return;
+        }
+
         // Object with properties, an `allOf`, or an explicit `type: object`.
         if !schema.properties.is_empty() || schema.all_of.is_some() || is_object_type(schema) {
             self.add_object(name, module, schema, docstring);
             return;
+        }
+
+        // A top-level array of inline objects: Fern hoists the element into its own
+        // named `{Name}Item` model and aliases `Name = List[{Name}Item]` (bunq's
+        // `Error` → `Error = typing.List[ErrorItem]`), rather than `List[Any]`.
+        if schema.ty.as_ref().and_then(|t| t.primary()) == Some("array") {
+            if let Some(items) = &schema.items {
+                if is_inline_struct(items) {
+                    let item_name = format!("{name}Item");
+                    let item_module = naming::module_name(&item_name);
+                    let item_doc = clean_doc(items.description.as_deref());
+                    self.add_object(&item_name, item_module, items, item_doc);
+                    self.push_alias(
+                        name,
+                        module,
+                        TypeRef::List(Box::new(TypeRef::Named(item_name))),
+                        docstring,
+                    );
+                    return;
+                }
+            }
         }
 
         // Everything else is an alias: a union, an extensible enum, a scalar, or
@@ -2027,7 +2287,7 @@ impl Builder<'_> {
                 type_ref: self.field_type_ref(owner, prop, prop_schema),
                 optional,
                 spec_required,
-                docstring: clean_doc(prop_schema.description.as_deref()),
+                docstring: declared_doc(prop_schema.description.as_deref()),
                 example: prop_schema.example.as_ref().and_then(example_literal),
             });
         }
@@ -2430,6 +2690,19 @@ fn clean_doc(desc: Option<&str>) -> Option<String> {
     }
 }
 
+/// A description that preserves a distinction Fern renders but [`clean_doc`] erases:
+/// `None` when the spec omits `description` entirely, `Some("")` when it declares an
+/// empty one, `Some(text)` otherwise. The empty-vs-absent distinction is visible in
+/// Fern's output for path parameters (a blank docstring slot vs none) and for model
+/// fields (a `pydantic.Field(default=None)` + empty docstring vs a bare `= None`).
+/// bunq declares `description: ""` on many nodes; the synthetic seeds omit it.
+fn declared_doc(desc: Option<&str>) -> Option<String> {
+    // Preserve the description verbatim (Fern does not trim it — a trailing space in
+    // `"The URL to visit to "` survives into the docstring); only presence vs absence
+    // matters for the empty-slot rendering.
+    desc.map(str::to_string)
+}
+
 /// Render an OpenAPI `example` scalar as the Python literal Fern shows in a worked
 /// snippet (`"SpaceX"`, `10`, `True`). Returns `None` for a value Fern does not
 /// inline as a leaf — null, or a composite object/array.
@@ -2557,6 +2830,64 @@ mod tests {
         assert_eq!(
             module_from_grouped_id("noReqBody_getWithNoRequestBody"),
             "noreqbody"
+        );
+    }
+
+    fn op(operation_id: &str, tag: &str) -> crate::openapi::Operation {
+        serde_json::from_value(serde_json::json!({
+            "operationId": operation_id,
+            "tags": [tag],
+        }))
+        .expect("operation deserializes from operationId + tag")
+    }
+
+    #[test]
+    fn tag_wins_over_a_verb_prefix_operationid() {
+        use super::{endpoint_method_name, endpoint_module};
+        // bunq: the operationId is `VERB_Resource` with an underscore, but the prefix
+        // (`create`) is not the tag (`attachment-public`). Fern groups by the tag and
+        // keeps the whole id, snake-cased, as the method.
+        let o = op("CREATE_AttachmentPublic", "attachment-public");
+        assert_eq!(
+            endpoint_module(&o, "/attachment-public"),
+            "attachment_public"
+        );
+        assert_eq!(
+            endpoint_method_name(&o, "POST", "/attachment-public"),
+            "create_attachment_public"
+        );
+        // A multi-word tag with hyphens still maps cleanly.
+        let o = op("List_all_Content_for_AttachmentPublic", "content");
+        assert_eq!(endpoint_module(&o, "/x"), "content");
+        assert_eq!(
+            endpoint_method_name(&o, "GET", "/x"),
+            "list_all_content_for_attachment_public"
+        );
+    }
+
+    #[test]
+    fn operationid_prefix_that_is_the_tag_still_groups_by_the_prefix() {
+        use super::{endpoint_method_name, endpoint_module};
+        // The synthetic seeds: the operationId prefix *is* the tag, so grouping and
+        // method-stripping are unchanged (both rules agree) — this is what keeps the
+        // apideck/exhaustive corpora byte-identical after the tag-first change.
+        let o = op(
+            "inlinedRequests_postWithObjectBodyandResponse",
+            "InlinedRequests",
+        );
+        assert_eq!(endpoint_module(&o, "/x"), "inlinedrequests");
+        assert_eq!(
+            endpoint_method_name(&o, "POST", "/x"),
+            "postwithobjectbodyandresponse"
+        );
+        let o = op(
+            "endpoints_container_getAndReturnListOfPrimitives",
+            "EndpointsContainer",
+        );
+        assert_eq!(endpoint_module(&o, "/x"), "endpoints_container");
+        assert_eq!(
+            endpoint_method_name(&o, "GET", "/x"),
+            "endpoints_container_get_and_return_list_of_primitives"
         );
     }
 

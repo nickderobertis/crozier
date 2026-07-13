@@ -542,7 +542,12 @@ fn forward_ref_map(
         let name = decl.name();
         let mut forward = HashSet::new();
         for r in decl_refs(decl) {
-            if reaches(&r, name) {
+            // Render `r` as a string forward reference (deferred import) when it
+            // closes a cycle back to this type, OR when `r` is itself recursive (in a
+            // cycle of its own). Importing a recursive type eagerly can trip its
+            // module's own import cycle even from an acyclic referrer, so Fern defers
+            // every reference *into* a cycle, not only the back-edges of one.
+            if reaches(&r, name) || reaches(&r, &r) {
                 forward.insert(r);
             }
         }
@@ -551,6 +556,72 @@ fn forward_ref_map(
         }
     }
     map
+}
+
+/// The types that transitively reference a type in a cycle (including the cyclic
+/// types themselves). Fern emits `from __future__ import annotations` +
+/// `update_forward_refs` for exactly these — even when no individual field of the
+/// type is a string forward reference (a `DraftPayment` whose `schedule` field
+/// reaches a cycle it is not part of still needs the trailer). Computed by reverse
+/// reachability from the cyclic types over the reference graph.
+fn types_reaching_cycle(
+    types: &[TypeDecl],
+    tag_types: &[crate::ir::TagTypeDecl],
+) -> std::collections::HashSet<String> {
+    use std::collections::{HashMap, HashSet};
+
+    let mut edges: HashMap<String, Vec<String>> = HashMap::new();
+    for decl in types.iter().chain(tag_types.iter().map(|t| &t.decl)) {
+        edges
+            .entry(decl.name().to_string())
+            .or_default()
+            .extend(decl_refs(decl));
+    }
+    let reaches = |start: &str, target: &str| -> bool {
+        let mut stack: Vec<&str> = edges
+            .get(start)
+            .into_iter()
+            .flatten()
+            .map(String::as_str)
+            .collect();
+        let mut seen: HashSet<&str> = HashSet::new();
+        while let Some(node) = stack.pop() {
+            if node == target {
+                return true;
+            }
+            if seen.insert(node) {
+                stack.extend(edges.get(node).into_iter().flatten().map(String::as_str));
+            }
+        }
+        false
+    };
+
+    // A type is cyclic when it can reach itself. Reverse edges, then flood from the
+    // cyclic set: every type that can reach a cyclic one is caught.
+    let cyclic: Vec<&str> = edges
+        .keys()
+        .map(String::as_str)
+        .filter(|n| reaches(n, n))
+        .collect();
+    let mut reverse: HashMap<&str, Vec<&str>> = HashMap::new();
+    for (from, tos) in &edges {
+        for to in tos {
+            reverse.entry(to.as_str()).or_default().push(from.as_str());
+        }
+    }
+    let mut out: HashSet<String> = HashSet::new();
+    let mut stack: Vec<&str> = cyclic.clone();
+    for c in &cyclic {
+        out.insert((*c).to_string());
+    }
+    while let Some(node) = stack.pop() {
+        for &pred in reverse.get(node).into_iter().flatten() {
+            if out.insert(pred.to_string()) {
+                stack.push(pred);
+            }
+        }
+    }
+    out
 }
 
 pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
@@ -569,6 +640,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     // Recursive types: per type, the references that must render as string forward
     // references (issue #84). Empty for the common acyclic case.
     let forward_map = forward_ref_map(&ir.types, &ir.tag_types);
+    let reaching_cycle = types_reaching_cycle(&ir.types, &ir.tag_types);
     let empty_forward = std::collections::HashSet::new();
 
     // version.py
@@ -599,6 +671,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             &tag_map,
             ir.extra_fields,
             forward,
+            reaching_cycle.contains(decl.name()),
         )?;
         files.push(GeneratedFile {
             path: PathBuf::from(format!("src/{pkg}/types/{}.py", decl.module())),
@@ -625,6 +698,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 &tag_map,
                 ir.extra_fields,
                 forward,
+                reaching_cycle.contains(decl.name()),
             )?;
             files.push(GeneratedFile {
                 path: PathBuf::from(format!("src/{pkg}/{module}/types/{}.py", decl.module())),
@@ -1178,15 +1252,17 @@ fn is_complex_type(t: &TypeRef, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) -
 }
 
 /// Render an abbreviated call `<prefix>(...)` for the README snippets: empty parens
-/// when the body is not complex, else a `...` placeholder, ruff-wrapped at width 88
-/// (the snippet line length) onto its own line when the flat form overflows.
+/// when the body is not complex, else a `...` placeholder wrapped onto its own line
+/// when the flat form overflows. Fern's snippet writer targets an 80-column width
+/// here (not the project's ruff `line-length`), so bunq's 83-column raw-response call
+/// wraps while its 58-column error call stays flat.
 fn abbrev_call(indent: usize, prefix: &str, complex: bool) -> String {
     let pad = " ".repeat(indent);
     if !complex {
         return format!("{pad}{prefix}()");
     }
     let flat = format!("{pad}{prefix}(...)");
-    if flat.len() <= 88 {
+    if flat.len() <= 80 {
         flat
     } else {
         format!("{pad}{prefix}(\n{}...\n{pad})", " ".repeat(indent + 4))
@@ -1304,7 +1380,12 @@ fn reference_file(
             continue;
         }
         any = true;
-        blocks.push(format!("## {}", naming::to_pascal_case(module)));
+        let title = ir
+            .endpoint_module_titles
+            .get(*module)
+            .cloned()
+            .unwrap_or_else(|| naming::to_pascal_case(module));
+        blocks.push(format!("## {title}"));
         for ep in eps {
             blocks.push(reference_entry(env, ir, ep, module, pkg, tag_types)?);
             blocks.push(String::new());
@@ -1373,6 +1454,9 @@ fn reference_entry(
     // The parameter rows, in signature order, then `request_options`.
     let mut params: Vec<ParamRow> = Vec::new();
     for (name, ty, desc) in &mp.path {
+        // A *declared* description — even the empty string — gets the ` — {desc}`
+        // separator (Fern emits the em-dash whenever the parameter carries a
+        // `description` key); only an omitted (`None`) one gets the bare space.
         let suffix = match desc {
             Some(d) => format!(" — {d}"),
             None => " ".to_string(),
@@ -1899,6 +1983,9 @@ fn render_type_decl(
     tag_types: &BTreeMap<String, String>,
     extra: ExtraFields,
     forward: &std::collections::HashSet<String>,
+    // Whether this type reaches a cycle and so emits `from __future__` +
+    // `update_forward_refs`, even if `forward` (its own quoted field refs) is empty.
+    needs_forward: bool,
 ) -> Result<String> {
     match decl {
         TypeDecl::Object(obj) => {
@@ -1932,7 +2019,7 @@ fn render_type_decl(
                     }
                 })
                 .collect();
-            if !forward.is_empty() {
+            if !forward.is_empty() || needs_forward {
                 // A recursive model: `from __future__ import annotations` lets the
                 // string forward refs resolve lazily, and `update_forward_refs`
                 // rebuilds the model once the referenced names exist.
@@ -2539,11 +2626,7 @@ fn raw_docstring(
     lines.push("        Parameters".to_string());
     lines.push("        ----------".to_string());
     for (name, ty, desc) in param_types {
-        lines.push(format!("        {name} : {ty}"));
-        if let Some(desc) = desc {
-            lines.push(format!("            {desc}"));
-        }
-        lines.push(String::new());
+        push_path_param(&mut lines, name, ty, desc);
     }
     // Query params, header params, then the request body/fields, each: a
     // `name : annotation` line, an optional indented description, and a trailing
@@ -2572,6 +2655,22 @@ fn raw_docstring(
     }
     lines.push("        \"\"\"".to_string());
     lines.join("\n")
+}
+
+/// Render one path parameter's docstring block: its `name : ty` line, then the
+/// description slot, then a trailing blank line. Fern fills the slot when the spec
+/// gives a non-empty description, emits a *blank* slot when it declares an empty one
+/// (`Some("")`, e.g. bunq's path params — two blank lines total), and omits the slot
+/// entirely when it declares none (`None`, the exhaustive seed — one blank line).
+/// See [`crate::ir`]'s `path_param_doc`.
+fn push_path_param(lines: &mut Vec<String>, name: &str, ty: &str, desc: &Option<String>) {
+    lines.push(format!("        {name} : {ty}"));
+    match desc {
+        Some(d) if !d.is_empty() => lines.push(format!("            {d}")),
+        Some(_) => lines.push(String::new()),
+        None => {}
+    }
+    lines.push(String::new());
 }
 
 /// Push the `Returns` description under the return type: each line of the
@@ -2790,10 +2889,18 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         Some(RequestBody::Form(form)) => {
             (!form.multipart).then_some("application/x-www-form-urlencoded")
         }
+        // A JSON body carries the `content-type` header when it accompanies a
+        // path/header param, is *undocumented*, or is *always sent whole* (every field
+        // required, so no `OMIT`). Fern drops the explicit header only for a
+        // documented body with at least one optional field — which may serialize to
+        // nothing — that rides no header-forcing param (bunq's `CREATE_Avatar`,
+        // `CREATE_DeviceServer`), leaving the content-type to httpx; an all-required
+        // body (`CREATE_SessionServer`) keeps it.
         Some(body)
-            if body.content_type_header()
-                || !ep.header_params.is_empty()
-                || !ep.path_params.is_empty() =>
+            if !ep.header_params.is_empty()
+                || !ep.path_params.is_empty()
+                || (body.content_type_header()
+                    && (!ep.body_documented || body.all_fields_required())) =>
         {
             Some("application/json")
         }
@@ -2943,11 +3050,7 @@ fn raw_stream_docstring(ep: &Endpoint, mp: &MethodParams, return_type: &str) -> 
     lines.push("        Parameters".to_string());
     lines.push("        ----------".to_string());
     for (name, ty, desc) in &mp.path {
-        lines.push(format!("        {name} : {ty}"));
-        if let Some(desc) = desc {
-            lines.push(format!("            {desc}"));
-        }
-        lines.push(String::new());
+        push_path_param(&mut lines, name, ty, desc);
     }
     let mut push_param = |dp: &DocParam| {
         lines.push(format!("        {} : {}", dp.name, dp.annotation));
@@ -3141,9 +3244,20 @@ fn root_client_class(
         .collect();
     let module_views: Vec<RootModuleView> = modules
         .iter()
-        .map(|m| RootModuleView {
-            attr: (*m).clone(),
-            cls: tag_client_name(m, is_async),
+        .map(|m| {
+            let cls = tag_client_name(m, is_async);
+            // The lazy `from .{attr}.client import {cls}` sits at 12 spaces of indent.
+            // Fern's printer wraps this single-name import into the parenthesized,
+            // trailing-comma form once the flat line passes 107 columns; ruff (run at
+            // `line-length = 120`) then preserves that shape via its magic trailing
+            // comma, and leaves the shorter flat lines untouched. crozier must make the
+            // same call itself — ruff will not split a single-name import for it.
+            let wrap = 12 + "from .".len() + m.len() + ".client import ".len() + cls.len() > 107;
+            RootModuleView {
+                attr: (*m).clone(),
+                cls,
+                wrap,
+            }
         })
         .collect();
     let view = RootClientView {
@@ -3187,6 +3301,10 @@ fn root_client_class(
 struct RootModuleView {
     attr: String,
     cls: String,
+    /// Whether the lazy import line overflows Fern's 107-column threshold and must be
+    /// emitted in the parenthesized multi-line form (a single-name import ruff won't
+    /// split, so its magic trailing comma just preserves whichever shape we emit).
+    wrap: bool,
 }
 
 /// The view model for `root_client.py.j2` (the `FernApi`/`AsyncFernApi` class).
@@ -3444,11 +3562,7 @@ fn client_stream_docstring(
     lines.push("        Parameters".to_string());
     lines.push("        ----------".to_string());
     for (name, ty, desc) in &mp.path {
-        lines.push(format!("        {name} : {ty}"));
-        if let Some(desc) = desc {
-            lines.push(format!("            {desc}"));
-        }
-        lines.push(String::new());
+        push_path_param(&mut lines, name, ty, desc);
     }
     let mut push_param = |dp: &DocParam| {
         lines.push(format!("        {} : {}", dp.name, dp.annotation));
@@ -3510,11 +3624,7 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
     lines.push("        Parameters".to_string());
     lines.push("        ----------".to_string());
     for (name, ty, desc) in &mp.path {
-        lines.push(format!("        {name} : {ty}"));
-        if let Some(desc) = desc {
-            lines.push(format!("            {desc}"));
-        }
-        lines.push(String::new());
+        push_path_param(&mut lines, name, ty, desc);
     }
     let mut push_param = |dp: &DocParam| {
         lines.push(format!("        {} : {}", dp.name, dp.annotation));
@@ -3827,14 +3937,30 @@ impl<'a> ExampleCtx<'a> {
                 // A list whose element is a type currently being expanded would
                 // recurse forever (a tree node, a recursive union); Fern renders it
                 // empty (`children=[]`), which also terminates the walk (issue #84).
+                // The element inherits the list's slot, so a `List[str]` field's
+                // example uses the field name (`all_field=["all_field"]`).
                 if self.resolves_to_building(inner) {
                     Example::List(vec![])
                 } else {
-                    Example::List(vec![self.value(inner, Slot::Plain)])
+                    Example::List(vec![self.value(inner, slot)])
                 }
             }
             TypeRef::Dict(_, v) => {
-                if self.resolves_to_any(v) {
+                // A *directly* free-form value (`Optional[Any]`/`Any` — a bare-object
+                // alias like bunq's `AttachmentPublic`) takes the `{"key": "value"}`
+                // example Fern gives a bare `Any`. A value that only *resolves* to Any
+                // through a named alias (a documented-unknown map) renders empty.
+                let directly_any = matches!(v.as_ref(), TypeRef::Primitive(Prim::Any))
+                    || matches!(
+                        v.as_ref(),
+                        TypeRef::Optional(inner) if matches!(inner.as_ref(), TypeRef::Primitive(Prim::Any))
+                    );
+                if directly_any {
+                    Example::Dict(vec![(
+                        "key".to_string(),
+                        Example::Atom("\"value\"".to_string()),
+                    )])
+                } else if self.resolves_to_any(v) {
                     Example::Dict(vec![])
                 } else {
                     let val = self.value(v, Slot::Map);
@@ -4540,6 +4666,7 @@ mod tests {
             modules: vec![RootModuleView {
                 attr: "endpoints_put".to_string(),
                 cls: "EndpointsPutClient".to_string(),
+                wrap: false,
             }],
         };
         let out = render_tmpl("root_client.py", &view);
@@ -4729,6 +4856,7 @@ mod tests {
             query_params: Vec::new(),
             header_params: Vec::new(),
             request_body: None,
+            body_documented: false,
             response,
             response_doc: None,
             errors: Vec::new(),

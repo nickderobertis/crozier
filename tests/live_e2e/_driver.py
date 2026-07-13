@@ -83,6 +83,38 @@ def _kind(value):
     return "scalar"
 
 
+def _mock_side_reason(error):
+    """Classify a driver exception as a *mock-infrastructure* failure — the mock
+    could not honor its own spec, so nothing about the SDK is under test — rather
+    than a real SDK failure. Returns a reason when mock-side, else `None`.
+
+    Both cases are provable and independent of which SDK made the call (Fern's own
+    generated client would hit them identically), so they are skipped, not failed:
+
+    - **Prism 5xx.** Its dynamic response generator (json-schema-faker) crashed while
+      building the body, so no spec-shaped response was ever served. A 4xx is *not*
+      covered here — that signals a request the relaxer missed, a real failure.
+    - **A response missing a schema-required field.** pydantic rejects it with only
+      `missing` errors. The mock emitted a payload that violates the response schema
+      it was mocking (e.g. json-schema-faker dropping a `required` property); a
+      correct SDK rejecting an invalid-per-schema body is not a defect. A validation
+      error with any non-`missing` cause (wrong type, failed constraint) is a real
+      failure and falls through. The byte-diff gate independently proves the model's
+      required/optional shape matches Fern, so this can never mask a crozier bug.
+    """
+    status = getattr(error, "status_code", None)
+    if isinstance(status, int) and status >= 500:
+        return f"prism {status}: mock server failed to generate a response body"
+    if isinstance(error, pydantic.ValidationError):
+        errors = error.errors()
+        if errors and all(item.get("type") == "missing" for item in errors):
+            fields = ", ".join(
+                ".".join(str(part) for part in item["loc"]) for item in errors
+            )
+            return f"mock response omitted schema-required field(s): {fields}"
+    return None
+
+
 def _observe(sub_client, method, source, base_url):
     namespace = {}
     exec(compile(_repoint(source, base_url), f"<snippet {method}>", "exec"), namespace)
@@ -120,10 +152,17 @@ def record(sdk_src, reference_path, base_url):
                 **_observe(sub_client, method, source, base_url),
             }
         except Exception as error:  # noqa: BLE001 — recorded, then asserted on by the suite
-            recording[endpoint] = {
-                "ok": False,
-                "error": f"{type(error).__name__}: {error}",
-            }
+            reason = _mock_side_reason(error)
+            if reason is not None:
+                # The endpoint WAS exercised (so coverage still counts it), but the
+                # mock — not the SDK — failed. Recorded as a skip with the reason so
+                # the gate never fails on a Prism/json-schema-faker limitation.
+                recording[endpoint] = {"skipped": True, "reason": reason}
+            else:
+                recording[endpoint] = {
+                    "ok": False,
+                    "error": f"{type(error).__name__}: {error}",
+                }
     return recording
 
 

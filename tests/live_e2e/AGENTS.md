@@ -47,6 +47,17 @@ required leg (`live-e2e`, aggregated into `gate`).
   endpoint recorded a clean round-trip, that the sweep covered *exactly* the
   reference's endpoints (no silent drop/rename), and that real pydantic models come
   back (no trivial all-primitive pass).
+- **Mock-side failures are skipped, not failed.** A large real spec outruns Prism's
+  dynamic response generator: some endpoints 5xx (json-schema-faker crashes) and some
+  return a body that omits a field its *own* response schema marks `required`. Both
+  are the mock failing to honor the spec, provably independent of which SDK calls it
+  (Fern's own client hits them identically), so `_driver._mock_side_reason`
+  classifies exactly these two cases — an `ApiError` with `status_code >= 500`, and a
+  `pydantic.ValidationError` whose every error is `missing` — as a **skip** carrying
+  the reason. Everything else (a 4xx, a wrong-type field, a failed constraint) still
+  fails the gate. This can't mask a crozier bug: the byte-diff e2e independently
+  proves each model's required/optional shape against Fern. Do **not** widen this to
+  silence a real failure — fix the generator instead.
 - **One SDK per subprocess.** Every fixture's package is named `fern`, so two
   cannot coexist in one interpreter; `_driver.py` runs as a subprocess per fixture
   (as `tests/runtime/_recorder.py` does), printing its recording as JSON.
@@ -57,7 +68,8 @@ required leg (`live-e2e`, aggregated into `gate`).
   `tests/fixtures/<name>/openapi.yml`. `exhaustive` (55 endpoints, 15 sub-clients)
   is the deliberately complicated seed.
 - **`link-ok` real-world corpus** (`apideck.com-crm`, 40 endpoints across 8
-  sub-clients): a real API from `tests/fixtures/CORPUS.md`. Its licence permits
+  sub-clients; `bunq.com`, 421 endpoints across 118 sub-clients — the at-scale
+  target): a real API from `tests/fixtures/CORPUS.md`. Its licence permits
   redistribution but, per the corpus policy, **only the generated Fern golden is
   vendored — not the spec**. The `Fixture.spec_url` points at the pinned upstream
   URL, and the harness fetches the spec (with retries) at run time. This is the
