@@ -1009,7 +1009,7 @@ fn build_endpoint(
                 .schema
                 .as_ref()
                 .map_or(TypeRef::Primitive(Prim::Any), base_type_ref),
-            docstring: path_param_doc(p.description.as_deref()),
+            docstring: declared_doc(p.description.as_deref()),
         })
         .collect();
 
@@ -1477,7 +1477,7 @@ impl InlineHoister<'_> {
                 type_ref: self.prop_type_ref(name, prop, prop_schema),
                 optional,
                 spec_required,
-                docstring: clean_doc(prop_schema.description.as_deref()),
+                docstring: declared_doc(prop_schema.description.as_deref()),
                 example: prop_schema.example.as_ref().and_then(example_literal),
             });
         }
@@ -1997,7 +1997,7 @@ fn append_member_fields(
             type_ref: base_type_ref(prop_schema),
             optional: is_optional(prop_schema) || !spec_required,
             spec_required,
-            docstring: clean_doc(prop_schema.description.as_deref()),
+            docstring: declared_doc(prop_schema.description.as_deref()),
             example: prop_schema.example.as_ref().and_then(example_literal),
         });
     }
@@ -2140,7 +2140,7 @@ impl Builder<'_> {
                 type_ref: self.field_type_ref(owner, prop, prop_schema),
                 optional,
                 spec_required,
-                docstring: clean_doc(prop_schema.description.as_deref()),
+                docstring: declared_doc(prop_schema.description.as_deref()),
                 example: prop_schema.example.as_ref().and_then(example_literal),
             });
         }
@@ -2543,13 +2543,13 @@ fn clean_doc(desc: Option<&str>) -> Option<String> {
     }
 }
 
-/// A path parameter's docstring description, preserving a distinction Fern renders
-/// but [`clean_doc`] erases: `None` when the spec omits `description` entirely (no
-/// docstring slot at all), `Some("")` when it declares an empty one (Fern still
-/// emits the blank description line), `Some(text)` otherwise. bunq's path params
-/// declare `description: ""`; the exhaustive seed's omit it — the two must render
-/// differently.
-fn path_param_doc(desc: Option<&str>) -> Option<String> {
+/// A description that preserves a distinction Fern renders but [`clean_doc`] erases:
+/// `None` when the spec omits `description` entirely, `Some("")` when it declares an
+/// empty one, `Some(text)` otherwise. The empty-vs-absent distinction is visible in
+/// Fern's output for path parameters (a blank docstring slot vs none) and for model
+/// fields (a `pydantic.Field(default=None)` + empty docstring vs a bare `= None`).
+/// bunq declares `description: ""` on many nodes; the synthetic seeds omit it.
+fn declared_doc(desc: Option<&str>) -> Option<String> {
     desc.map(|d| d.trim().to_string())
 }
 
