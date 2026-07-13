@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.27](https://github.com/nickderobertis/crozier/compare/v0.0.26...v0.0.27) - 2026-07-13
+
+### Added
+
+- fully byte-match the bunq.com real-world corpus ([#95](https://github.com/nickderobertis/crozier/pull/95))
+
 ## [0.0.26](https://github.com/nickderobertis/crozier/compare/v0.0.25...v0.0.26) - 2026-07-13
 
 ### Added

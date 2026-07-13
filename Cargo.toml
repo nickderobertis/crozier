@@ -1,6 +1,6 @@
 [package]
 name = "crozier"
-version = "0.0.26"
+version = "0.0.27"
 edition = "2021"
 description = "Ultra-fast OpenAPI-to-SDK code generator that matches Fern's output, byte for byte."
 license = "Apache-2.0"
