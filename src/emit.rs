@@ -542,7 +542,12 @@ fn forward_ref_map(
         let name = decl.name();
         let mut forward = HashSet::new();
         for r in decl_refs(decl) {
-            if reaches(&r, name) {
+            // Render `r` as a string forward reference (deferred import) when it
+            // closes a cycle back to this type, OR when `r` is itself recursive (in a
+            // cycle of its own). Importing a recursive type eagerly can trip its
+            // module's own import cycle even from an acyclic referrer, so Fern defers
+            // every reference *into* a cycle, not only the back-edges of one.
+            if reaches(&r, name) || reaches(&r, &r) {
                 forward.insert(r);
             }
         }
