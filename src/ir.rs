@@ -329,11 +329,14 @@ fn referenced_type_names(
     set
 }
 
-/// Class names of schemas used as an inlined (plain-object `$ref`) request body —
-/// the candidates Fern omits from the type layer. Mirrors the `$ref`-object branch
-/// of [`resolve_request_body`].
+/// Class names of schemas used as an inlined (plain-object `$ref`) request body by
+/// **exactly one** operation — the candidates Fern omits from the type layer.
+/// Mirrors the `$ref`-object branch of [`resolve_request_body`]. A schema shared as
+/// the body of two or more operations (bunq's create+update pairs share
+/// `PermittedIp`, `CardGeneratedCvc2`, …) is kept as a standalone type even though it
+/// is still inlined into each method, so only single-use bodies are returned.
 fn inline_body_source_names(doc: &OpenApi) -> std::collections::HashSet<String> {
-    let mut set = std::collections::HashSet::new();
+    let mut counts: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
     for item in doc.paths.values() {
         for (_, op) in item.operations() {
             let Some(rb) = &op.request_body else { continue };
@@ -357,11 +360,14 @@ fn inline_body_source_names(doc: &OpenApi) -> std::collections::HashSet<String> 
                 && !is_map(target)
                 && (!target.properties.is_empty() || target.all_of.is_some())
             {
-                set.insert(ref_to_class(reference));
+                *counts.entry(ref_to_class(reference)).or_default() += 1;
             }
         }
     }
-    set
+    counts
+        .into_iter()
+        .filter_map(|(name, uses)| (uses == 1).then_some(name))
+        .collect()
 }
 
 /// Whether every operation carries a non-empty security requirement (its own, or
