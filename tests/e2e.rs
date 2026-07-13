@@ -1902,22 +1902,11 @@ const APIDECK_CRM: Corpus = Corpus {
     matched: &[],
 };
 
-/// Files crozier does not yet reproduce for `apideck.com-crm` — the worked usage
-/// snippets, whose example-value synthesis (spec `example`s, and which optional
-/// query params to show) crozier does not match yet. The gap shrinks as it closes;
-/// the test guards that every entry still genuinely differs.
-const APIDECK_CRM_GAPS: &[&str] = &[
-    "reference.md",
-    "src/fern/client.py",
-    "src/fern/activities/client.py",
-    "src/fern/companies/client.py",
-    "src/fern/contacts/client.py",
-    "src/fern/leads/client.py",
-    "src/fern/notes/client.py",
-    "src/fern/opportunities/client.py",
-    "src/fern/pipelines/client.py",
-    "src/fern/users/client.py",
-];
+/// Files crozier does not yet reproduce for `apideck.com-crm`. Now **empty** —
+/// crozier matches the whole golden byte-for-byte. Kept (with its guard) so a
+/// future regression that can only be quarantined lands here explicitly rather than
+/// weakening the assertion; the test fails if an entry here already matches.
+const APIDECK_CRM_GAPS: &[&str] = &[];
 
 /// Enforce the real-world apideck byte-match. The spec is `link-ok` (fetched by
 /// `scripts/fetch-corpus.sh` into `.local/corpus`, not vendored), so this **skips**

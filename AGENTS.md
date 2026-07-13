@@ -88,9 +88,9 @@ Use the `just` recipes; do not hand-roll equivalents.
   [`tests/live_e2e/AGENTS.md`](tests/live_e2e/AGENTS.md).
 - `just test-corpus-match` — enforce the real-world corpus byte-match: fetch the
   `link-ok` corpus specs (not vendored) and byte-compare crozier's output against
-  the committed Fern goldens (`apideck.com-crm` today, matched file-by-file bar the
-  documented `APIDECK_CRM_GAPS`). Needs network; runs in the CI live-e2e leg, and
-  the byte-diff test skips when a spec is unfetched (so `check` stays offline).
+  the committed Fern goldens (`apideck.com-crm` today, matched file-by-file — all
+  167). Needs network; runs in the CI live-e2e leg, and the byte-diff test skips
+  when a spec is unfetched (so `check` stays offline).
 - `just upgrade` — `cargo update`, then re-run `just check`.
 - `just fixtures-refresh` — re-vendor the Fern reference fixtures (see below).
 - `just lint-llm` / `just lint-llm-diff` — LLM-judge tier (llmlint), separate from

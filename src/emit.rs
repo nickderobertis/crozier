@@ -3100,15 +3100,30 @@ fn root_client_class(
         || "base_url".to_string(),
         |_| "_get_base_url(base_url=base_url, environment=environment)".to_string(),
     );
-    // Promoted global headers: an optional docstring/ctor/example/wrapper line
-    // each, emitted right after `base_url` and before the auth credential.
+    // Promoted global headers: a docstring/ctor/example/wrapper line each, emitted
+    // right after `base_url` and before the auth credential. A required header is a
+    // mandatory `str`; an optional one is `Optional[str] = None` — matching the
+    // client wrapper.
     let gh_doc: String = global_headers
         .iter()
-        .map(|h| format!("    {} : typing.Optional[str]\n", h.py_name))
+        .map(|h| {
+            let ty = if h.required {
+                "str"
+            } else {
+                "typing.Optional[str]"
+            };
+            format!("    {} : {ty}\n", h.py_name)
+        })
         .collect();
     let gh_ctor: String = global_headers
         .iter()
-        .map(|h| format!("        {}: typing.Optional[str] = None,\n", h.py_name))
+        .map(|h| {
+            if h.required {
+                format!("        {}: str,\n", h.py_name)
+            } else {
+                format!("        {}: typing.Optional[str] = None,\n", h.py_name)
+            }
+        })
         .collect();
     let gh_example: String = global_headers
         .iter()
@@ -3874,8 +3889,14 @@ impl<'a> ExampleCtx<'a> {
                 let fields = self.object_fields(obj);
                 let args = fields
                     .into_iter()
-                    .filter(|(_, _, _, required)| *required)
-                    .map(|(py, wire, ty, _)| (Some(py), self.value(&ty, Slot::Named(&wire))))
+                    .filter(|(_, _, _, required, _)| *required)
+                    .map(|(py, wire, ty, _, example)| {
+                        let v = match example.filter(|_| example_scalar(&ty)) {
+                            Some(ex) => Example::Atom(ex),
+                            None => self.value(&ty, Slot::Named(&wire)),
+                        };
+                        (Some(py), v)
+                    })
                     .collect::<Vec<_>>();
                 Example::Call(name.to_string(), args)
             }
@@ -3921,7 +3942,11 @@ impl<'a> ExampleCtx<'a> {
 
     /// An object's fields including those inherited from its base classes (bases
     /// first, in declaration order): `(py_name, wire_name, type, spec_required)`.
-    fn object_fields(&self, obj: &ObjectType) -> Vec<(String, String, TypeRef, bool)> {
+    #[allow(clippy::type_complexity)]
+    fn object_fields(
+        &self,
+        obj: &ObjectType,
+    ) -> Vec<(String, String, TypeRef, bool, Option<String>)> {
         let mut out = Vec::new();
         for base in &obj.bases {
             if let Some(TypeDecl::Object(b)) = self.find(base) {
@@ -3934,6 +3959,7 @@ impl<'a> ExampleCtx<'a> {
                 f.wire_name.clone(),
                 f.type_ref.clone(),
                 f.spec_required,
+                f.example.clone(),
             ));
         }
         out
@@ -3942,6 +3968,32 @@ impl<'a> ExampleCtx<'a> {
 
 /// Build the worked `Examples` block for a method as logical (indent-0) lines,
 /// or `None` when the request is not exampleable (a raw bytes body).
+/// Whether a spec `example` is shown verbatim for a field of this type. Fern uses
+/// the literal only for a plain scalar (a `str`/number/`bool`); a named type (enum,
+/// object, union) gets its own synthesized example (an enum member, a constructor),
+/// and a `datetime`/`date`/container is built through a call, so the raw literal
+/// would be wrong there.
+fn example_scalar(t: &TypeRef) -> bool {
+    match t {
+        TypeRef::Optional(inner) => example_scalar(inner),
+        TypeRef::Primitive(p) => {
+            matches!(p, Prim::Str | Prim::Int | Prim::Long | Prim::Float | Prim::Bool)
+        }
+        _ => false,
+    }
+}
+
+/// Whether a type is the unknown `Any` value (optionally wrapped). A required field
+/// of this type is still shown in a worked example, unlike a required-but-nullable
+/// concrete field, so it is exempt from the nullable exclusion.
+fn is_any_type(t: &TypeRef) -> bool {
+    match t {
+        TypeRef::Optional(inner) => is_any_type(inner),
+        TypeRef::Primitive(Prim::Any) => true,
+        _ => false,
+    }
+}
+
 fn build_example(
     ep: &Endpoint,
     is_async: bool,
@@ -3962,8 +4014,16 @@ fn build_example(
         let v = ctx.value(&pp.type_ref, Slot::Named(&pp.wire_name));
         args.push((Some(pp.py_name.clone()), v));
     }
-    for qp in ep.query_params.iter().filter(|q| q.required) {
-        let v = if let TypeRef::List(inner) = &qp.type_ref {
+    // Fern shows a query parameter in the worked example when it is required OR
+    // carries a spec `example` (the value it then displays).
+    for qp in ep
+        .query_params
+        .iter()
+        .filter(|q| q.required || (q.example.is_some() && example_scalar(&q.type_ref)))
+    {
+        let v = if let Some(ex) = qp.example.as_ref().filter(|_| example_scalar(&qp.type_ref)) {
+            Example::Atom(ex.clone())
+        } else if let TypeRef::List(inner) = &qp.type_ref {
             Example::List(vec![ctx.value(inner, Slot::Named(&qp.wire_name))])
         } else {
             ctx.value(&qp.type_ref, Slot::Named(&qp.wire_name))
@@ -3980,8 +4040,19 @@ fn build_example(
             args.push((Some("request".to_string()), v));
         }
         Some(RequestBody::Inline(fields)) => {
-            for f in fields.iter().filter(|f| f.spec_required) {
-                let v = ctx.value(&f.type_ref, Slot::Named(&f.wire_name));
+            // Fern's worked example shows a required field unless it is *nullable*
+            // (a required-but-nullable field like apideck's `company_name` is
+            // omitted). A required field with an unknown (`Any`) type is still shown
+            // (exhaustive's `unknown`), so the exclusion keys on nullability — an
+            // `optional` field with a concrete (non-`Any`) type — not `optional` alone.
+            for f in fields
+                .iter()
+                .filter(|f| f.spec_required && (!f.optional || is_any_type(&f.type_ref)))
+            {
+                let v = match f.example.as_ref().filter(|_| example_scalar(&f.type_ref)) {
+                    Some(ex) => Example::Atom(ex.clone()),
+                    None => ctx.value(&f.type_ref, Slot::Named(&f.wire_name)),
+                };
                 args.push((Some(f.py_name.clone()), v));
             }
         }
@@ -4786,6 +4857,7 @@ mod tests {
                 docstring: None,
                 convert: false,
                 is_file: false,
+                example: None,
             },
             // An optional list → `Optional[Sequence[..]] = OMIT` in request context.
             BodyField {
@@ -4797,6 +4869,7 @@ mod tests {
                 docstring: None,
                 convert: false,
                 is_file: false,
+                example: None,
             },
             // A convert field → convert-wrapped json entry keyed by the wire name.
             BodyField {
@@ -4808,6 +4881,7 @@ mod tests {
                 docstring: None,
                 convert: true,
                 is_file: false,
+                example: None,
             },
         ]));
         let out = raw_method(&ep, false, &mut i);
@@ -4941,6 +5015,7 @@ mod tests {
             type_ref: TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
             required: true,
             convert: false,
+            example: None,
             docstring: None,
         }];
         let out = raw_method(&ep, false, &mut i);

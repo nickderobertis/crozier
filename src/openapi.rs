@@ -286,6 +286,9 @@ pub struct Parameter {
     /// The parameter's value schema.
     #[serde(default)]
     pub schema: Option<Schema>,
+    /// A parameter-level `example` value (Fern shows it in the worked snippet).
+    #[serde(default)]
+    pub example: Option<serde_json::Value>,
 }
 
 /// A parameter's location, per OpenAPI's closed `in` vocabulary. Modeling it as
@@ -422,6 +425,9 @@ pub struct Schema {
     /// Human description; becomes a docstring.
     #[serde(default)]
     pub description: Option<String>,
+    /// A schema-level `example` value (Fern shows it in the worked snippet).
+    #[serde(default)]
+    pub example: Option<serde_json::Value>,
     /// OpenAPI 3.0 nullability.
     #[serde(default)]
     pub nullable: Option<bool>,
