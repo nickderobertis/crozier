@@ -3914,10 +3914,12 @@ impl<'a> ExampleCtx<'a> {
                 // A list whose element is a type currently being expanded would
                 // recurse forever (a tree node, a recursive union); Fern renders it
                 // empty (`children=[]`), which also terminates the walk (issue #84).
+                // The element inherits the list's slot, so a `List[str]` field's
+                // example uses the field name (`all_field=["all_field"]`).
                 if self.resolves_to_building(inner) {
                     Example::List(vec![])
                 } else {
-                    Example::List(vec![self.value(inner, Slot::Plain)])
+                    Example::List(vec![self.value(inner, slot)])
                 }
             }
             TypeRef::Dict(_, v) => {

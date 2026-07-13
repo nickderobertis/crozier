@@ -2151,6 +2151,7 @@ const BUNQ_MATCHED: &[&str] = &[
     "src/fern/credential_password_ip/client.py",
     "src/fern/credential_password_ip/raw_client.py",
     "src/fern/currency_cloud_beneficiary/__init__.py",
+    "src/fern/currency_cloud_beneficiary/client.py",
     "src/fern/currency_cloud_beneficiary/raw_client.py",
     "src/fern/currency_cloud_beneficiary_requirement/__init__.py",
     "src/fern/currency_cloud_beneficiary_requirement/client.py",
