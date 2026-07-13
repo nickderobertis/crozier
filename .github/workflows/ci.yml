@@ -76,12 +76,13 @@ jobs:
       - uses: actions/checkout@v4
       - uses: extractions/setup-just@v2
       # Prism (the mock server) is a Node CLI; install the pinned version globally so
-      # `prism` is on PATH (conftest prefers it over an `npx` fetch). Keep the version
-      # in step with tests/live_e2e/conftest.py:PRISM_PKG.
+      # `prism` is on PATH (conftest prefers it over an `npx` fetch). The version is
+      # single-sourced from tests/live_e2e/conftest.py:PRISM_PKG — read it out here so
+      # the pin can never drift between the workflow and the suite.
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-      - run: npm install -g @stoplight/prism-cli@5.14.2
+      - run: npm install -g "$(grep -oP '^PRISM_PKG = "\K[^"]+' tests/live_e2e/conftest.py)"
       # uv backs the test venv (httpx/pydantic/pytest/pyyaml) and the ruff install.
       - uses: astral-sh/setup-uv@v8.3.2
       # ruff is crozier's generation-time dependency (it shells out to `ruff format`);

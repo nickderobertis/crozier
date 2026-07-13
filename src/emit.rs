@@ -3942,7 +3942,13 @@ impl<'a> ExampleCtx<'a> {
 
     /// An object's fields including those inherited from its base classes (bases
     /// first, in declaration order): `(py_name, wire_name, type, spec_required)`.
-    #[allow(clippy::type_complexity)]
+    #[allow(
+        clippy::type_complexity,
+        reason = "a positional 5-tuple local to example synthesis: it is built here \
+                  and immediately destructured by the two callers (named_value and \
+                  the recursive base-class walk); a named struct would add a type \
+                  for a shape that never escapes this module"
+    )]
     fn object_fields(
         &self,
         obj: &ObjectType,

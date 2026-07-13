@@ -38,8 +38,11 @@ _FIXTURES = _ROOT / "tests" / "fixtures"
 _DRIVER = Path(__file__).parent / "_driver.py"
 _RELAX = Path(__file__).parent / "_relax.py"
 
-# Pinned so the mock server is reproducible across the matrix; CI installs this
-# exact version and puts `prism` on PATH, locally we fall back to `npx`.
+# Pinned so the mock server is reproducible across the matrix. This is the single
+# source of truth for the Prism version: the CI workflow greps the value out of the
+# assignment below to `npm install -g` the same pin (see .github/workflows/ci.yml),
+# and locally we fall back to `npx` with it. Keep the assignment start-of-line and
+# double-quoted so the anchored grep keeps matching it.
 PRISM_PKG = "@stoplight/prism-cli@5.14.2"
 
 
