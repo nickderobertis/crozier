@@ -60,12 +60,24 @@ pub struct OpenApi {
 /// human description (which names the generated environment member).
 #[derive(Debug, Default, Clone, Deserialize)]
 pub struct Server {
-    /// The server base URL (the environment member's value).
+    /// The server base URL (the environment member's value). May contain `{var}`
+    /// placeholders resolved from `variables`.
     #[serde(default)]
     pub url: String,
     /// A human description; uppercased, it names the environment member.
     #[serde(default)]
     pub description: Option<String>,
+    /// URL template variables, each with a `default` Fern substitutes into the URL.
+    #[serde(default)]
+    pub variables: IndexMap<String, ServerVariable>,
+}
+
+/// A server URL template variable. Only the `default` is modeled — Fern substitutes
+/// it into the URL (`{basePath}` → `v1`).
+#[derive(Debug, Clone, Deserialize)]
+pub struct ServerVariable {
+    #[serde(default)]
+    pub default: String,
 }
 
 /// One security requirement: a map of scheme name → scopes. An empty map (`{}`)

@@ -77,16 +77,34 @@ impl Environment {
 /// `PRODUCTION` when there is no usable description.
 fn environment_model(doc: &OpenApi, client_name: &str) -> Option<Environment> {
     let first = doc.servers.first()?;
-    let member_name = first
-        .description
-        .as_deref()
-        .map(env_member_name)
-        .filter(|n| !n.is_empty())
-        .unwrap_or_else(|| "PRODUCTION".to_string());
+    // A server with a templated URL (`{basePath}` variables) is named `DEFAULT` — its
+    // member value is the variables resolved to their defaults (bunq). A concrete-URL
+    // server takes its member name from its description, even across several servers
+    // (the `servers-webhooks` seed's Production/Staging pair keeps `PRODUCTION`).
+    let member_name = if !first.variables.is_empty() {
+        "DEFAULT".to_string()
+    } else {
+        first
+            .description
+            .as_deref()
+            .map(env_member_name)
+            .filter(|n| !n.is_empty())
+            .unwrap_or_else(|| "PRODUCTION".to_string())
+    };
     Some(Environment {
         enum_name: format!("{client_name}Environment"),
-        member: (member_name, first.url.clone()),
+        member: (member_name, resolve_server_url(first)),
     })
+}
+
+/// Substitute a server URL's `{var}` placeholders with each variable's `default`
+/// (`https://.../{basePath}` → `https://.../v1`), matching Fern.
+fn resolve_server_url(server: &crate::openapi::Server) -> String {
+    let mut url = server.url.clone();
+    for (name, var) in &server.variables {
+        url = url.replace(&format!("{{{name}}}"), &var.default);
+    }
+    url
 }
 
 /// Turn a server description into a Python enum member identifier: uppercased,
