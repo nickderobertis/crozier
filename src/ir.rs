@@ -2564,7 +2564,10 @@ fn clean_doc(desc: Option<&str>) -> Option<String> {
 /// fields (a `pydantic.Field(default=None)` + empty docstring vs a bare `= None`).
 /// bunq declares `description: ""` on many nodes; the synthetic seeds omit it.
 fn declared_doc(desc: Option<&str>) -> Option<String> {
-    desc.map(|d| d.trim().to_string())
+    // Preserve the description verbatim (Fern does not trim it — a trailing space in
+    // `"The URL to visit to "` survives into the docstring); only presence vs absence
+    // matters for the empty-slot rendering.
+    desc.map(str::to_string)
 }
 
 /// Render an OpenAPI `example` scalar as the Python literal Fern shows in a worked
