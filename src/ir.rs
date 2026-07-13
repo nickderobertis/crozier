@@ -146,9 +146,14 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
             }
         }
     }
+    // Promote a header that rides *every* operation. A required header on a
+    // *single* operation is that call's own argument, not an SDK-wide setting, so
+    // it stays a per-method parameter (Fern only promotes a solo header when it is
+    // optional). With more than one operation, "on every one" is a deliberate
+    // cross-cutting header and promotes regardless of required-ness.
     let mut headers: Vec<GlobalHeader> = seen
         .into_iter()
-        .filter(|(_, (count, _))| total > 0 && *count == total)
+        .filter(|(_, (count, required))| total > 0 && *count == total && (!*required || total > 1))
         .map(|(wire_name, (_, required))| GlobalHeader {
             py_name: naming::field_name(header_param_stem(&wire_name)),
             wire_name,
