@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.28](https://github.com/nickderobertis/crozier/compare/v0.0.27...v0.0.28) - 2026-07-13
+
+### Added
+
+- add bungie.net as the third real-world corpus, fully byte-matched (1082/1082) ([#97](https://github.com/nickderobertis/crozier/pull/97))
+
 ## [0.0.27](https://github.com/nickderobertis/crozier/compare/v0.0.26...v0.0.27) - 2026-07-13
 
 ### Added
