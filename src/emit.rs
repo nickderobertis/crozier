@@ -3845,7 +3845,21 @@ impl<'a> ExampleCtx<'a> {
                 }
             }
             TypeRef::Dict(_, v) => {
-                if self.resolves_to_any(v) {
+                // A *directly* free-form value (`Optional[Any]`/`Any` — a bare-object
+                // alias like bunq's `AttachmentPublic`) takes the `{"key": "value"}`
+                // example Fern gives a bare `Any`. A value that only *resolves* to Any
+                // through a named alias (a documented-unknown map) renders empty.
+                let directly_any = matches!(v.as_ref(), TypeRef::Primitive(Prim::Any))
+                    || matches!(
+                        v.as_ref(),
+                        TypeRef::Optional(inner) if matches!(inner.as_ref(), TypeRef::Primitive(Prim::Any))
+                    );
+                if directly_any {
+                    Example::Dict(vec![(
+                        "key".to_string(),
+                        Example::Atom("\"value\"".to_string()),
+                    )])
+                } else if self.resolves_to_any(v) {
                     Example::Dict(vec![])
                 } else {
                     let val = self.value(v, Slot::Map);
