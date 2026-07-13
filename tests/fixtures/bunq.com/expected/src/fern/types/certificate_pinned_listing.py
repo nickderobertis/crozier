@@ -1,0 +1,27 @@
+
+
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+
+
+class CertificatePinnedListing(UniversalBaseModel):
+    certificate_chain: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    The certificate chain in .PEM format. Certificates are glued with newline characters.
+    """
+
+    id: typing.Optional[int] = pydantic.Field(default=None)
+    """
+    The id generated for the pinned certificate chain.
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

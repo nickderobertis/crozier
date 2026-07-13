@@ -246,6 +246,61 @@ value synthesis (spec `example`s, shown only for a plain-scalar required-and-not
 nullable field, with an enum rendered as its member); `APIDECK_CRM_GAPS` is now
 empty.
 
+### The `bunq.com` real-world corpus (issue #77): the at-scale target, partially matched
+
+The second real-world `link-ok` corpus, `bunq.com`, is deliberately an order of
+magnitude larger than apideck — **421 endpoints, 617 component schemas, 118 tags**,
+committed as a **956-file** Fern golden. Fern generates it cleanly (`fern check`
+passes) and crozier's SDK round-trips live against it (`bunq.com` in
+`conftest.FIXTURES`; see the mock-side-skip note below). Unlike apideck it is **not**
+fully byte-matched: `bunq_matches_fern_output` locks in the **`BUNQ_MATCHED`** subset
+(the paste-ready output of `just fixtures-candidates`) and the rest is the roadmap
+below. Its guard mirrors apideck's — skip when the fetched spec is absent, enforce
+under `CROZIER_REQUIRE_CORPUS` in `just test-corpus-match`. The gap sorts into four
+buckets, dominant first:
+
+1. **Sub-client grouping (the bulk of the gap).** bunq tags every operation, but its
+   operationIds are `SCREAMING_Mixed` strings that *contain underscores*
+   (`CREATE_AttachmentPublic`, `List_all_Content_for_AttachmentPublic`,
+   `READ_DeviceServer`). Fern groups sub-clients by the **`tags`** array (→ 110
+   tag-named clients: `attachment_public`, `device_server`, …); crozier's
+   `module_and_method` heuristic (`src/ir.rs`) treats a `_` in the operationId as a
+   `group_method` prefix and groups by the **operationId** instead (→ 277
+   operationId-named clients: `create_attachment_for_user`, `list_all_device`, …).
+   So crozier emits a disjoint, finer set of sub-clients: ~330 of Fern's
+   `<client>/client.py`, `raw_client.py`, and `__init__.py` files are absent and
+   ~820 crozier-only ones appear. The fix is to prefer the tag for grouping when an
+   operation carries one, even if its operationId contains `_` — apideck's
+   single-word operationIds never hit this path, so tag-grouping already matches
+   there (see *Tag-based client grouping* below); bunq is the case that separates
+   "operationId has an underscore" from "operationId encodes a group".
+
+2. **Property-less object schemas (part of ~140 differing `types/*.py`).** For an
+   `type: object` schema with **no declared `properties`**, Fern emits a *type alias*
+   — `Whitelist = typing.Dict[str, typing.Optional[typing.Any]]` — where crozier
+   emits an empty `class Whitelist(UniversalBaseModel)`. Same information, different
+   surface; the alias form is the byte-target.
+
+3. **Inline-schema hoisting (the ~44 `types/*.py` Fern emits that crozier does not).**
+   Fern hoists more nested/inline object schemas into their own named `types/`
+   modules (`PermittedIp`, `note_text_*`, `card_generated_cvc2*`, …) than crozier,
+   which inlines them at the use site — so those golden files have no crozier
+   counterpart. apideck's hoisting already matches; bunq exercises deeper nesting.
+
+4. **Structure-dependent scaffolding (a handful of one-offs).** `reference.md`,
+   `README.md`, and the per-client `client_wrapper.py`/`environment.py` differ
+   because they *enumerate* the client tree from bucket 1 (and bunq's two `servers`
+   drive an `environment.py` enum); they fall out once grouping matches.
+
+**Mock-side live-e2e skips.** Driving 421 endpoints through Prism surfaced 28
+endpoints the *mock* — not the SDK — cannot honor: 20 crash Prism's json-schema-faker
+response generator (a 5xx), and 8 return a body that omits a field its own response
+schema marks `required`. Both are provable mock failures independent of the client
+(Fern's own SDK would hit them identically), so `_driver._mock_side_reason`
+classifies them as **skips**, not gate failures — every other failure still gates.
+The byte-diff gate independently proves the affected models' required/optional shape,
+so a skip can never mask a crozier defect. See `tests/live_e2e/AGENTS.md`.
+
 ### Issue #43: error responses, discriminated-union aliases, and SSE streaming
 
 Three gaps found while checking whether crozier could stand in for a fern-python

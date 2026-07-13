@@ -1,0 +1,171 @@
+
+
+import typing
+from json.decoder import JSONDecodeError
+
+from ..core.api_error import ApiError
+from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from ..core.http_response import AsyncHttpResponse, HttpResponse
+from ..core.jsonable_encoder import jsonable_encoder
+from ..core.pydantic_utilities import parse_obj_as
+from ..core.request_options import RequestOptions
+from ..core.serialization import convert_and_respect_annotation_metadata
+from ..errors.bad_request_error import BadRequestError
+from ..types.amount import Amount
+from ..types.confirmation_of_funds_create import ConfirmationOfFundsCreate
+from ..types.pointer import Pointer
+
+
+OMIT = typing.cast(typing.Any, ...)
+
+
+class RawConfirmationOfFundsClient:
+    def __init__(self, *, client_wrapper: SyncClientWrapper):
+        self._client_wrapper = client_wrapper
+
+    def create_confirmation_of_funds_for_user(
+        self,
+        user_id: int,
+        *,
+        amount: Amount,
+        pointer_iban: Pointer,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[ConfirmationOfFundsCreate]:
+        """
+        Used to confirm availability of funds on an account.
+
+        Parameters
+        ----------
+        user_id : int
+
+
+        amount : Amount
+            The amount we want to check for.
+
+        pointer_iban : Pointer
+            The pointer (IBAN) of the account we're querying.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[ConfirmationOfFundsCreate]
+            Used to confirm availability of funds on an account.
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"user/{jsonable_encoder(user_id)}/confirmation-of-funds",
+            method="POST",
+            json={
+                "amount": convert_and_respect_annotation_metadata(object_=amount, annotation=Amount, direction="write"),
+                "pointer_iban": convert_and_respect_annotation_metadata(
+                    object_=pointer_iban, annotation=Pointer, direction="write"
+                ),
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    ConfirmationOfFundsCreate,
+                    parse_obj_as(
+                        type_=ConfirmationOfFundsCreate,
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+
+class AsyncRawConfirmationOfFundsClient:
+    def __init__(self, *, client_wrapper: AsyncClientWrapper):
+        self._client_wrapper = client_wrapper
+
+    async def create_confirmation_of_funds_for_user(
+        self,
+        user_id: int,
+        *,
+        amount: Amount,
+        pointer_iban: Pointer,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[ConfirmationOfFundsCreate]:
+        """
+        Used to confirm availability of funds on an account.
+
+        Parameters
+        ----------
+        user_id : int
+
+
+        amount : Amount
+            The amount we want to check for.
+
+        pointer_iban : Pointer
+            The pointer (IBAN) of the account we're querying.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[ConfirmationOfFundsCreate]
+            Used to confirm availability of funds on an account.
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"user/{jsonable_encoder(user_id)}/confirmation-of-funds",
+            method="POST",
+            json={
+                "amount": convert_and_respect_annotation_metadata(object_=amount, annotation=Amount, direction="write"),
+                "pointer_iban": convert_and_respect_annotation_metadata(
+                    object_=pointer_iban, annotation=Pointer, direction="write"
+                ),
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    ConfirmationOfFundsCreate,
+                    parse_obj_as(
+                        type_=ConfirmationOfFundsCreate,
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

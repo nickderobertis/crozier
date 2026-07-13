@@ -68,6 +68,15 @@ class Fixture:
     client_class_name: str | None = None
     extra_fields: str | None = None
     spec_url: str | None = None
+    # Whether crozier's client *grouping* matches Fern's, so its generated
+    # `reference.md` endpoint keys (`sub_client.method`) equal the committed golden's.
+    # True for a byte-matched corpus (apideck, exhaustive): each Fern-documented
+    # endpoint is cross-checked one-per-test and coverage is asserted key-for-key.
+    # False for a partially-matched corpus (bunq groups sub-clients differently —
+    # see docs/matching.md): the runtime sweep instead proves crozier's *own*
+    # documented endpoints round-trip, and structural parity is left to the byte-diff
+    # gate rather than re-asserted here against a grouping crozier does not yet match.
+    strict_coverage: bool = True
 
     def generate_args(self, spec: Path, out: Path) -> list[str]:
         args = [
@@ -96,12 +105,24 @@ class Fixture:
 # gain a runnable SDK. `exhaustive` is the deliberately complicated synthetic seed
 # (55 typed endpoints across 15 sub-clients); `apideck.com-crm` is a real-world
 # `link-ok` corpus API (40 endpoints across 8 sub-clients) whose spec is fetched,
-# not vendored. See tests/live_e2e/AGENTS.md.
+# not vendored; `bunq.com` is a much larger real-world `link-ok` corpus (421
+# endpoints across 118 sub-clients) that stresses the pipeline at scale. See
+# tests/live_e2e/AGENTS.md.
 FIXTURES: list[Fixture] = [
     Fixture(name="exhaustive"),
     Fixture(
         name="apideck.com-crm",
         spec_url="https://api.apis.guru/v2/specs/apideck.com/crm/9.3.0/openapi.json",
+    ),
+    Fixture(
+        name="bunq.com",
+        spec_url="https://api.apis.guru/v2/specs/bunq.com/1.0/openapi.json",
+        # crozier does not yet reproduce bunq's tag-based sub-client grouping, so its
+        # generated reference keys diverge from the golden's. The runtime sweep still
+        # drives crozier's own reference and asserts every documented endpoint
+        # round-trips (see test_live_e2e.py); the structural gap is the byte-diff
+        # test's concern (docs/matching.md), not this suite's.
+        strict_coverage=False,
     ),
 ]
 
@@ -124,7 +145,12 @@ def pytest_generate_tests(metafunc):
     if "endpoint" not in metafunc.fixturenames:
         return
     cases, ids = [], []
+    # Only strict-coverage fixtures get one-test-per-endpoint keyed off the committed
+    # golden: a partial corpus's generated reference keys don't line up with it (its
+    # sub-client grouping differs), so it is asserted in aggregate over its own sweep.
     for fixture in FIXTURES:
+        if not fixture.strict_coverage:
+            continue
         for method in reference_methods(fixture):
             cases.append((fixture.name, method))
             ids.append(f"{fixture.name}:{method}")
