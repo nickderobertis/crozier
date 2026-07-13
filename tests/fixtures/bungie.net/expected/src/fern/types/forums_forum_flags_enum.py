@@ -1,0 +1,3 @@
+
+
+ForumsForumFlagsEnum = int

@@ -1,0 +1,3 @@
+
+
+DestinyHistoricalStatsDefinitionsDestinyStatsMergeMethod = int

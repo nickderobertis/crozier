@@ -1,0 +1,3 @@
+
+
+ApplicationsApplicationScopes = int

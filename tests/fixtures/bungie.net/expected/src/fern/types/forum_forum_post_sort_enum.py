@@ -1,0 +1,3 @@
+
+
+ForumForumPostSortEnum = int

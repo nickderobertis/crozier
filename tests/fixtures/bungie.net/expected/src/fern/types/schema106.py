@@ -1,0 +1,3 @@
+
+
+Schema106 = int

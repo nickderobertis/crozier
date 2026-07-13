@@ -1,0 +1,37 @@
+
+
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+
+
+class DestinyDefinitionsDestinyUnlockValueDefinition(UniversalBaseModel):
+    """
+    An Unlock Value is an internal integer value, stored on the server and used in a variety of ways, most frequently for the gating/requirement checks that the game performs across all of its main features. They can also be used as the storage data for mapped Progressions, Objectives, and other features that require storage of variable numeric values.
+    """
+
+    hash: typing.Optional[int] = pydantic.Field(default=None)
+    """
+    The unique identifier for this entity. Guaranteed to be unique for the type of entity, but not globally.
+    When entities refer to each other in Destiny content, it is this hash that they are referring to.
+    """
+
+    index: typing.Optional[int] = pydantic.Field(default=None)
+    """
+    The index of the entity as it was found in the investment tables.
+    """
+
+    redacted: typing.Optional[bool] = pydantic.Field(default=None)
+    """
+    If this is true, then there is an entity with this identifier/type combination, but BNet is not yet allowed to show it. Sorry!
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

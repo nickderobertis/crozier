@@ -1,0 +1,3 @@
+
+
+Schema70 = int

@@ -1,0 +1,3 @@
+
+
+FireteamFireteamSlotSearch = int

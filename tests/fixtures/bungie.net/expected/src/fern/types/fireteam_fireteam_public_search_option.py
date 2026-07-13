@@ -1,0 +1,3 @@
+
+
+FireteamFireteamPublicSearchOption = int
