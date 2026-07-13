@@ -1269,18 +1269,32 @@ fn abbrev_call(indent: usize, prefix: &str, complex: bool) -> String {
     }
 }
 
+fn readme_endpoint(ir: &Ir) -> Option<&Endpoint> {
+    ir.endpoints
+        .iter()
+        .find(|e| e.emittable && e.request_body.is_some())
+        .or_else(|| {
+            ir.endpoints.iter().find(|e| {
+                e.emittable
+                    && e.http_method != "GET"
+                    && e.path_params.is_empty()
+                    && e.query_params.is_empty()
+                    && e.header_params.is_empty()
+                    && e.request_body.is_none()
+            })
+        })
+        .or_else(|| ir.endpoints.iter().find(|e| e.emittable))
+}
+
 /// The generated `README.md`: mostly static prose with the SDK name/package
 /// substituted and a worked usage example (sync + async) synthesized from the
 /// first endpoint. Compared verbatim (README is not comment-stripped). Emitted
 /// only when there is an endpoint to demonstrate.
 fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     // Fern demonstrates the first emittable endpoint that has a request body (the
-    // most illustrative call), falling back to the first emittable endpoint.
-    let first = ir
-        .endpoints
-        .iter()
-        .find(|e| e.emittable && e.request_body.is_some())
-        .or_else(|| ir.endpoints.iter().find(|e| e.emittable))?;
+    // most illustrative call). APIs with no body-bearing operations use the first
+    // no-argument non-GET operation before falling back to the first endpoint.
+    let first = readme_endpoint(ir)?;
     let pkg = &ir.package_name;
     let org = naming::to_pascal_case(pkg);
     let async_name = format!("Async{}", ir.client_name);
@@ -1288,7 +1302,8 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     // The abbreviated calls in the error-handling and advanced sections show `...`
     // for an endpoint with a complex (object/container/union) body, else empty
     // parens; the error/raw-response calls are ruff-wrapped at the snippet width 88.
-    let complex = complex_body(first, &ir.types, &ir.tag_types);
+    let complex = (first.request_body.is_none() && first.http_method != "GET")
+        || complex_body(first, &ir.types, &ir.tag_types);
     let err_call = abbrev_call(
         4,
         &format!("client.{}.{}", first.module, first.method_name),
@@ -2892,6 +2907,14 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
             if !files.is_empty() {
                 lines.push(format!("            files={{\n{files}            }},"));
             }
+        }
+    }
+
+    fn type_serializes_as_datetime(t: &TypeRef) -> bool {
+        match t {
+            TypeRef::Primitive(Prim::Date | Prim::Datetime) => true,
+            TypeRef::Optional(inner) => type_serializes_as_datetime(inner),
+            _ => false,
         }
     }
     // The `headers` dict carries a `content-type`: `application/octet-stream` for a
@@ -4500,12 +4523,13 @@ pub fn write_files(root: &std::path::Path, files: &[GeneratedFile]) -> Result<()
 mod tests {
     use super::{
         abbrev_call, auth_client_parts, auth_example_args, auth_wrapper_parts, environment,
-        escape_py_str, field_decl, raw_method, raw_type_str, render, render_class_body, url_arg,
-        FieldView, Imports, ParamRow, RefLoc, ReferenceEntryView, RenderedField, RootClientView,
-        RootModuleView,
+        escape_py_str, field_decl, raw_method, raw_type_str, readme_endpoint, render,
+        render_class_body, url_arg, FieldView, Imports, ParamRow, RefLoc, ReferenceEntryView,
+        RenderedField, RootClientView, RootModuleView,
     };
     use crate::ir::{
-        Auth, BodyField, Endpoint, ErrorResponse, PathParam, Prim, RequestBody, TypeRef,
+        Auth, BodyField, Endpoint, ErrorResponse, Ir, PathParam, Prim, RequestBody, SingleBody,
+        TypeRef,
     };
     use crate::wrap::Doc;
 
@@ -4882,6 +4906,66 @@ mod tests {
         }
     }
 
+    fn ir_with(endpoints: Vec<Endpoint>) -> Ir {
+        Ir {
+            package_name: "fern".to_string(),
+            project_name: "default_package_name".to_string(),
+            client_name: "FernApi".to_string(),
+            types: Vec::new(),
+            tag_types: Vec::new(),
+            endpoint_modules: Vec::new(),
+            endpoint_module_titles: Default::default(),
+            endpoints,
+            errors: Vec::new(),
+            auth: Auth::None,
+            global_headers: Vec::new(),
+            environment: None,
+            extra_fields: crate::settings::ExtraFields::Allow,
+        }
+    }
+
+    #[test]
+    fn readme_endpoint_prefers_body_then_no_arg_non_get() {
+        let mut first_get = endpoint(
+            "/one/{id}",
+            vec![PathParam {
+                wire_name: "id".to_string(),
+                py_name: "id".to_string(),
+                type_ref: TypeRef::Primitive(Prim::Int),
+                docstring: None,
+            }],
+            None,
+        );
+        first_get.method_name = "first_get".to_string();
+        let mut no_arg_post = endpoint("/two", Vec::new(), None);
+        no_arg_post.http_method = "POST";
+        no_arg_post.method_name = "no_arg_post".to_string();
+
+        let ir = ir_with(vec![first_get, no_arg_post]);
+        assert_eq!(
+            readme_endpoint(&ir).map(|e| e.method_name.as_str()),
+            Some("no_arg_post")
+        );
+
+        let mut no_arg_post = endpoint("/two", Vec::new(), None);
+        no_arg_post.http_method = "POST";
+        no_arg_post.method_name = "no_arg_post".to_string();
+        let mut body = endpoint("/three", Vec::new(), None);
+        body.method_name = "body".to_string();
+        body.request_body = Some(RequestBody::Single(SingleBody {
+            type_ref: TypeRef::Primitive(Prim::Str),
+            required: true,
+            convert: false,
+            content_type: true,
+        }));
+
+        let ir = ir_with(vec![body, no_arg_post]);
+        assert_eq!(
+            readme_endpoint(&ir).map(|e| e.method_name.as_str()),
+            Some("body")
+        );
+    }
+
     #[test]
     fn escape_py_str_escapes_quotes_backslashes_and_newlines() {
         // Ordinary spec values are untouched (byte-exact output preserved).
@@ -5178,6 +5262,31 @@ mod tests {
             "{out}"
         );
         assert!(out.contains("\"tag\": tag,"), "{out}");
+    }
+
+    #[test]
+    fn raw_method_serializes_datetime_query_params() {
+        use crate::ir::QueryParam;
+        let mut i = Imports::default();
+        let mut ep = endpoint("/q", vec![], None);
+        ep.query_params = vec![QueryParam {
+            wire_name: "start".to_string(),
+            py_name: "start".to_string(),
+            type_ref: TypeRef::Primitive(Prim::Datetime),
+            required: false,
+            convert: false,
+            example: None,
+            docstring: None,
+        }];
+
+        let out = raw_method(&ep, false, &mut i);
+        assert!(
+            out.contains("\"start\": serialize_datetime(start) if start is not None else None,"),
+            "{out}"
+        );
+        assert!(i
+            .render()
+            .contains("from ..core.datetime_utils import serialize_datetime"));
     }
 
     #[test]
