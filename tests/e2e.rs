@@ -3041,6 +3041,28 @@ const BUNQ: Corpus = Corpus {
     matched: BUNQ_MATCHED,
 };
 
+/// Files crozier reproduces byte-for-byte for `bungie.net`. Starts empty because
+/// its Fern golden must be generated on a Docker host first; grow mechanically
+/// with `just fixtures-candidates` once `tests/fixtures/bungie.net/expected/`
+/// lands.
+const BUNGIE_MATCHED: &[&str] = &[];
+
+/// `bungie.net`: a real-world `link-ok` corpus API (issue #77) chosen as the
+/// schema-heavy counterpart to endpoint-heavy bunq — 869 component schemas across
+/// only 13 tags. Fern accepts the raw spec cleanly and crozier consumes it without
+/// error; its OpenAPI spec is fetched, not vendored (`corpus_spec`), and its Fern
+/// golden is intentionally pending until generated on a Docker host.
+const BUNGIE: Corpus = Corpus {
+    api: "bungie.net",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: BUNGIE_MATCHED,
+};
+
 #[test]
 fn bunq_matches_fern_output() {
     // `link-ok` like apideck: the spec is fetched (not vendored), so this **skips**
@@ -3059,6 +3081,26 @@ fn bunq_matches_fern_output() {
         return;
     }
     assert_corpus_matches(&BUNQ);
+}
+
+#[test]
+fn bungie_matches_fern_output() {
+    // `link-ok` like apideck and bunq: the spec is fetched (not vendored), so this
+    // **skips** when it is absent — including the offline `check` gate — and
+    // **fails** when `CROZIER_REQUIRE_CORPUS` is set (the CI corpus leg fetches
+    // first, then sets it), so the enforced leg can never silently no-op.
+    // `BUNGIE_MATCHED` is intentionally empty until the real Fern golden lands,
+    // so this currently proves crozier consumes the spec and writes an SDK tree.
+    if corpus_spec(BUNGIE.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the bungie corpus spec is not fetched; \
+             run scripts/fetch-corpus.sh first"
+        );
+        eprintln!("skipping bungie byte-match: spec not fetched (run scripts/fetch-corpus.sh)");
+        return;
+    }
+    assert_corpus_matches(&BUNGIE);
 }
 
 #[test]
@@ -3089,6 +3131,12 @@ fn feature_target_specs_generate_without_panicking() {
 fn report_matched_candidates() {
     let mut corpora: Vec<&Corpus> = vec![&QUERY_PARAMETERS, &EXHAUSTIVE, &BUNQ];
     corpora.extend(FEATURE_TARGETS.iter());
+    // bungie's spec is fetched, not vendored, and its `expected/` tree is pending;
+    // include it only once the source spec is available so offline reporter runs do
+    // not walk a missing fixture.
+    if corpus_spec(BUNGIE.api).is_some() {
+        corpora.push(&BUNGIE);
+    }
 
     let mut total = 0usize;
     for c in corpora {
@@ -3182,6 +3230,9 @@ fn report_fixture_diffs() {
     }
     if corpus_spec(BUNQ.api).is_some() {
         corpora.push(&BUNQ);
+    }
+    if corpus_spec(BUNGIE.api).is_some() {
+        corpora.push(&BUNGIE);
     }
     if let Some(f) = &corpus_filter {
         corpora.retain(|c| c.api == f.as_str());

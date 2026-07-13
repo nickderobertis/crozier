@@ -60,15 +60,17 @@ test-live-e2e *args:
 
 # Enforce the real-world corpus byte-match: fetch the `link-ok` corpus specs (not
 # vendored; see tests/fixtures/CORPUS.md) and byte-compare crozier's output for the
-# vendored Fern goldens (apideck-crm fully; bunq's matched subset). SEPARATE from
-# `check` because it needs network to fetch the specs; CI runs it in the live-e2e
-# leg. `CROZIER_REQUIRE_CORPUS` turns a missing spec from a skip into a hard failure
-# so the leg can't no-op. One `cargo test` invocation per corpus keeps a fetch/spec
-# problem attributable to its API rather than hidden in a shared filter.
+# vendored Fern goldens (apideck-crm fully; bunq's matched subset; bungie's
+# pending-golden consume check). SEPARATE from `check` because it needs network to
+# fetch the specs; CI runs it in the live-e2e leg. `CROZIER_REQUIRE_CORPUS` turns a
+# missing spec from a skip into a hard failure so the leg can't no-op. One
+# `cargo test` invocation per corpus keeps a fetch/spec problem attributable to
+# its API rather than hidden in a shared filter.
 test-corpus-match:
     ./scripts/fetch-corpus.sh
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_crm_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e bunq_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e bungie_matches_fern_output
 
 # Format the codebase in place.
 format:
