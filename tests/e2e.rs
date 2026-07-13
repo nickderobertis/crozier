@@ -2066,8 +2066,11 @@ fn apideck_crm_matches_fern_output() {
 /// Fern emits that crozier lays out differently — is categorized in docs/matching.md.
 const BUNQ_MATCHED: &[&str] = &[
     ".fern/metadata.json",
+    "README.md",
     "pyproject.toml",
+    "reference.md",
     "requirements.txt",
+    "src/fern/__init__.py",
     "src/fern/attachment/__init__.py",
     "src/fern/attachment/client.py",
     "src/fern/attachment/raw_client.py",
@@ -2119,6 +2122,7 @@ const BUNQ_MATCHED: &[&str] = &[
     "src/fern/challenge_request/__init__.py",
     "src/fern/challenge_request/client.py",
     "src/fern/challenge_request/raw_client.py",
+    "src/fern/client.py",
     "src/fern/company/__init__.py",
     "src/fern/company/client.py",
     "src/fern/company/raw_client.py",
@@ -2400,6 +2404,7 @@ const BUNQ_MATCHED: &[&str] = &[
     "src/fern/tree_progress/__init__.py",
     "src/fern/tree_progress/client.py",
     "src/fern/tree_progress/raw_client.py",
+    "src/fern/types/__init__.py",
     "src/fern/types/additional_information.py",
     "src/fern/types/address.py",
     "src/fern/types/amount.py",
@@ -2420,6 +2425,7 @@ const BUNQ_MATCHED: &[&str] = &[
     "src/fern/types/avatar.py",
     "src/fern/types/avatar_create.py",
     "src/fern/types/avatar_read.py",
+    "src/fern/types/bad_request_error_body.py",
     "src/fern/types/bank_switch_service_netherlands_incoming.py",
     "src/fern/types/bank_switch_service_netherlands_incoming_payment.py",
     "src/fern/types/bank_switch_service_netherlands_incoming_payment_read.py",
@@ -3173,6 +3179,9 @@ fn report_fixture_diffs() {
     // reporter skips it exactly as the byte-diff gate does on an offline checkout.
     if corpus_spec(APIDECK_CRM.api).is_some() {
         corpora.push(&APIDECK_CRM);
+    }
+    if corpus_spec(BUNQ.api).is_some() {
+        corpora.push(&BUNQ);
     }
     if let Some(f) = &corpus_filter {
         corpora.retain(|c| c.api == f.as_str());

@@ -1252,15 +1252,17 @@ fn is_complex_type(t: &TypeRef, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) -
 }
 
 /// Render an abbreviated call `<prefix>(...)` for the README snippets: empty parens
-/// when the body is not complex, else a `...` placeholder, ruff-wrapped at width 88
-/// (the snippet line length) onto its own line when the flat form overflows.
+/// when the body is not complex, else a `...` placeholder wrapped onto its own line
+/// when the flat form overflows. Fern's snippet writer targets an 80-column width
+/// here (not the project's ruff `line-length`), so bunq's 83-column raw-response call
+/// wraps while its 58-column error call stays flat.
 fn abbrev_call(indent: usize, prefix: &str, complex: bool) -> String {
     let pad = " ".repeat(indent);
     if !complex {
         return format!("{pad}{prefix}()");
     }
     let flat = format!("{pad}{prefix}(...)");
-    if flat.len() <= 88 {
+    if flat.len() <= 80 {
         flat
     } else {
         format!("{pad}{prefix}(\n{}...\n{pad})", " ".repeat(indent + 4))
@@ -1378,7 +1380,12 @@ fn reference_file(
             continue;
         }
         any = true;
-        blocks.push(format!("## {}", naming::to_pascal_case(module)));
+        let title = ir
+            .endpoint_module_titles
+            .get(*module)
+            .cloned()
+            .unwrap_or_else(|| naming::to_pascal_case(module));
+        blocks.push(format!("## {title}"));
         for ep in eps {
             blocks.push(reference_entry(env, ir, ep, module, pkg, tag_types)?);
             blocks.push(String::new());
@@ -1447,11 +1454,12 @@ fn reference_entry(
     // The parameter rows, in signature order, then `request_options`.
     let mut params: Vec<ParamRow> = Vec::new();
     for (name, ty, desc) in &mp.path {
-        // A non-empty description gets the ` — {desc}` suffix; a declared-but-empty
-        // (`Some("")`) or omitted (`None`) one gets the bare separator, as Fern does.
+        // A *declared* description — even the empty string — gets the ` — {desc}`
+        // separator (Fern emits the em-dash whenever the parameter carries a
+        // `description` key); only an omitted (`None`) one gets the bare space.
         let suffix = match desc {
-            Some(d) if !d.is_empty() => format!(" — {d}"),
-            _ => " ".to_string(),
+            Some(d) => format!(" — {d}"),
+            None => " ".to_string(),
         };
         params.push(ParamRow {
             name: name.clone(),
@@ -3236,9 +3244,20 @@ fn root_client_class(
         .collect();
     let module_views: Vec<RootModuleView> = modules
         .iter()
-        .map(|m| RootModuleView {
-            attr: (*m).clone(),
-            cls: tag_client_name(m, is_async),
+        .map(|m| {
+            let cls = tag_client_name(m, is_async);
+            // The lazy `from .{attr}.client import {cls}` sits at 12 spaces of indent.
+            // Fern's printer wraps this single-name import into the parenthesized,
+            // trailing-comma form once the flat line passes 107 columns; ruff (run at
+            // `line-length = 120`) then preserves that shape via its magic trailing
+            // comma, and leaves the shorter flat lines untouched. crozier must make the
+            // same call itself — ruff will not split a single-name import for it.
+            let wrap = 12 + "from .".len() + m.len() + ".client import ".len() + cls.len() > 107;
+            RootModuleView {
+                attr: (*m).clone(),
+                cls,
+                wrap,
+            }
         })
         .collect();
     let view = RootClientView {
@@ -3282,6 +3301,10 @@ fn root_client_class(
 struct RootModuleView {
     attr: String,
     cls: String,
+    /// Whether the lazy import line overflows Fern's 107-column threshold and must be
+    /// emitted in the parenthesized multi-line form (a single-name import ruff won't
+    /// split, so its magic trailing comma just preserves whichever shape we emit).
+    wrap: bool,
 }
 
 /// The view model for `root_client.py.j2` (the `FernApi`/`AsyncFernApi` class).
@@ -4643,6 +4666,7 @@ mod tests {
             modules: vec![RootModuleView {
                 attr: "endpoints_put".to_string(),
                 cls: "EndpointsPutClient".to_string(),
+                wrap: false,
             }],
         };
         let out = render_tmpl("root_client.py", &view);

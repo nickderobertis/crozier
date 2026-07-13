@@ -31,6 +31,11 @@ pub struct Ir {
     /// Endpoint client module (directory) names, one per operation group, in
     /// first-seen order.
     pub endpoint_modules: Vec<String>,
+    /// The `reference.md` section title for each module, keyed by module name.
+    /// Verbatim tag (`attachment-public`) for an underscore-style operationId,
+    /// PascalCase tag (`Widgets`) for a camelCase one, PascalCase group when
+    /// untagged (`EndpointsContainer`) — see `module_title` for the full rule.
+    pub endpoint_module_titles: std::collections::BTreeMap<String, String>,
     /// Every operation, in document-traversal order, resolved for emission.
     pub endpoints: Vec<Endpoint>,
     /// Generated exception classes, one per distinct declared error response.
@@ -924,6 +929,12 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         .types
         .retain(|d| !inline_sources.contains(d.name()) || referenced.contains(d.name()));
 
+    // Fern also emits a standalone package-root type for each error response whose
+    // body is an inline object, named `{ErrorClassName}Body` (bunq's 400
+    // `GenericError` → `BadRequestErrorBody`). The error *class* still types its body
+    // as `Any`; this model is referenced only through the `types/` aggregators.
+    hoist_error_body_types(doc, &mut builder);
+
     // The root client class name is Fern's `client_class_name` when given
     // (issue #61), else derived from the package name as `{PascalCase}Api`.
     let client_name = config.client_class_name.clone().unwrap_or_else(|| {
@@ -941,6 +952,7 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         types: builder.types,
         tag_types,
         endpoint_modules: endpoint_modules(doc),
+        endpoint_module_titles: endpoint_module_titles(doc),
         endpoints,
         errors,
         auth: auth_model(doc),
@@ -1284,6 +1296,43 @@ fn error_body_type(resp: &Response) -> TypeRef {
             other => other,
         },
         None => TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any))),
+    }
+}
+
+/// Hoist a standalone `{ErrorClassName}Body` model for each error response whose
+/// body is an inline object (bunq's shared 400 `GenericError` → `BadRequestErrorBody`),
+/// deduplicated by name so a body reused across every endpoint is emitted once. The
+/// error class itself keeps its `Any` body (see [`error_body_type`]); this type lives
+/// in the package-root `types/`, reachable only through the aggregators.
+fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
+    let mut seen = std::collections::HashSet::new();
+    for (_, item) in &doc.paths {
+        for (_, op) in item.operations() {
+            for (code, resp) in &op.responses {
+                if code.starts_with('2') {
+                    continue;
+                }
+                let Ok(status) = code.parse::<u16>() else {
+                    continue;
+                };
+                let Some(class) = error_class_name(status) else {
+                    continue;
+                };
+                let Some(schema) = resp
+                    .content
+                    .get("application/json")
+                    .and_then(|c| c.schema.as_ref())
+                else {
+                    continue;
+                };
+                if is_inline_struct(schema) {
+                    let name = format!("{class}Body");
+                    if seen.insert(name.clone()) {
+                        builder.add_named(&name, schema);
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -1876,6 +1925,44 @@ fn endpoint_modules(doc: &OpenApi) -> Vec<String> {
         }
     }
     modules
+}
+
+/// The `reference.md` / sub-client section title for each module. Keyed by module
+/// name, first title wins. See [`module_title`] for the casing rule.
+fn endpoint_module_titles(doc: &OpenApi) -> std::collections::BTreeMap<String, String> {
+    let mut titles = std::collections::BTreeMap::new();
+    for (url, item) in &doc.paths {
+        for (_, op) in item.operations() {
+            titles
+                .entry(endpoint_module(op, url))
+                .or_insert_with(|| module_title(op, url));
+        }
+    }
+    titles
+}
+
+/// The section title for one operation's module.
+///
+/// Fern's casing depends on how the operation was grouped. When the group comes
+/// from a plain camelCase operationId or the tag alone (`searchWidgets`+`widgets`,
+/// `companiesAdd`+`Companies`), Fern titles the section with the **PascalCase** tag
+/// (`Widgets`, `Companies`). But when the operationId carries an underscore
+/// separator (bunq's `CREATE_AttachmentPublic`), Fern keeps the tag **verbatim**
+/// (`attachment-public`, `content`). An untagged group falls back to the PascalCase
+/// operationId/path prefix (`EndpointsContainer`).
+fn module_title(op: &Operation, url: &str) -> String {
+    let id = op.operation_id.trim();
+    if id.contains('_') {
+        // Grouped by the operationId prefix → PascalCase; grouped by tag → verbatim.
+        if group_prefix_is_tag(op, id) {
+            return naming::to_pascal_case(&module_from_grouped_id(id));
+        }
+        return first_tag(op).expect("mismatch implies a tag").to_string();
+    }
+    if let Some(tag) = first_tag(op) {
+        return naming::to_pascal_case(tag);
+    }
+    naming::to_pascal_case(&endpoint_module(op, url))
 }
 
 /// The client module (directory) name for an operation.

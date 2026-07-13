@@ -60,7 +60,7 @@ these is built from a spec with Fern overrides applied, not the raw document.
 | `asana` (api-guru `asana.com/1.0`) | already attempted by a prior agent too | 17 errors: inline request-body collisions (`AddFollowersRequest`, `RemoveFollowersRequest`, `ProjectSaveAsTemplateRequest`) and `date` fields with datetime examples |
 
 Accepted so far: `apideck.com-crm` (fully matched) and `bunq.com` (all request
-bodies `$ref`ed; partially matched — see [`../../docs/matching.md`](../../docs/matching.md)).
+bodies `$ref`ed; fully matched, all 956 files — see [`../../docs/matching.md`](../../docs/matching.md)).
 
 ## Growing `matched` — don't diff by hand
 

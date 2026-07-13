@@ -249,17 +249,17 @@ value synthesis (spec `example`s, shown only for a plain-scalar required-and-not
 nullable field, with an enum rendered as its member); `APIDECK_CRM_GAPS` is now
 empty.
 
-### The `bunq.com` real-world corpus (issue #77): the at-scale target, partially matched
+### The `bunq.com` real-world corpus (issue #77): the at-scale target, fully matched
 
 The second real-world `link-ok` corpus, `bunq.com`, is deliberately an order of
 magnitude larger than apideck — **421 endpoints, 617 component schemas, 118 tags**,
 committed as a **956-file** Fern golden. Fern generates it cleanly (`fern check`
 passes) and crozier's SDK round-trips live against it (`bunq.com` in
-`conftest.FIXTURES`; see the mock-side-skip note below). It is **not yet** fully
-byte-matched: `bunq_matches_fern_output` locks in the **`BUNQ_MATCHED`** subset (the
-paste-ready output of `just fixtures-candidates`, ~three quarters of the golden today)
-and the rest is the roadmap below. Its guard mirrors apideck's — skip when the fetched
-spec is absent, enforce under `CROZIER_REQUIRE_CORPUS` in `just test-corpus-match`.
+`conftest.FIXTURES`; see the mock-side-skip note below). It is now **fully
+byte-matched**: `bunq_matches_fern_output` locks in all 956 files via
+**`BUNQ_MATCHED`** (the paste-ready output of `just fixtures-candidates`). Its guard
+mirrors apideck's — skip when the fetched spec is absent, enforce under
+`CROZIER_REQUIRE_CORPUS` in `just test-corpus-match`.
 
 **Fixed while landing bunq** (each guarded so the apideck/exhaustive/feature corpora
 stay byte-identical — none of them exercised these paths):
@@ -281,30 +281,35 @@ stay byte-identical — none of them exercised these paths):
 - **Path-param empty-description docstrings.** A path param whose spec declares an
   *empty* `description` (bunq's `itemId: {description: ""}`) renders a blank docstring
   slot; one that omits `description` entirely (the seeds) renders none — the two now
-  differ (`path_param_doc`/`push_path_param`).
-- **Untyped error-body type.** A `$ref`-to-`components.responses` error whose body is an
-  inline object (bunq's `GenericError`) is typed `typing.Optional[typing.Any]`, matching
-  Fern, rather than bare `typing.Any`.
-
-**Remaining gap** (the roadmap; `BUNQ_MATCHED` grows as each closes):
-
-1. **`content-type` header emission (most `raw_client.py`).** Fern emits
-   `headers={"content-type": "application/json"}` for some JSON-body operations and not
-   others, and the discriminator is not yet pinned: an all-optional inline body with no
-   parameters gets the header in the exhaustive seed (`endpoints_object`) but not in
-   bunq (`CREATE_Avatar`), so it is neither "has a required field" nor "has a
-   parameter". Until the rule is understood, crozier emits it for every inline body
-   (matching the seeds and apideck, diverging on bunq's parameter-less creates). This
-   plus the error-body type sat on the same files, so both had to land together to flip
-   any of them.
-2. **Inline-schema hoisting (the `types/*.py` Fern emits that crozier does not, e.g.
-   `PermittedIp`, `card_generated_cvc2*`, `bad_request_error_body`).** Fern hoists more
-   nested/inline object schemas into their own named modules than crozier, which inlines
-   them at the use site; the golden also snake-cases some hoisted names differently
-   (`card_generated_cvc2create` vs crozier's `card_generated_cvc2_create`).
-3. **Structure-dependent scaffolding.** `reference.md`, `README.md`, `environment.py`
-   (bunq's two `servers` → an environment enum), and `bad_request_error.py` — a handful
-   of one-offs that enumerate or depend on the items above.
+  differ (`path_param_doc`/`push_path_param`). The `reference.md` param table mirrors
+  this: a declared (even empty) description gets the ` — ` separator, an omitted one
+  the bare space.
+- **Untyped error-body type + hoisted `{Error}Body` model.** A `$ref`-to-
+  `components.responses` error whose body is an inline object (bunq's `GenericError`)
+  types the *exception* body `typing.Optional[typing.Any]`, matching Fern; separately
+  Fern hoists that inline body into a package-root `{ErrorClassName}Body` model
+  (`BadRequestErrorBody`), emitted and re-exported through the `types/` aggregators
+  though the exception never references it (`hoist_error_body_types`).
+- **`content-type` header rule.** Fern emits
+  `headers={"content-type": "application/json"}` iff the operation has a path/header
+  param, an *undocumented* body, or a body whose fields are *all required* — so bunq's
+  parameter-less `CREATE_Avatar` (one optional field) gets none while the exhaustive
+  seed's all-required `session_server` does.
+- **Inline-schema hoisting + snake-case digits.** A top-level array of inline objects
+  hoists its element to `{Name}Item`; a snake-cased word ending in a digit merges with
+  the following segment (`Cvc2Create` → `cvc2create`, not `cvc2_create`) while a
+  digit-led boundary (`2Factor` → `2_factor`) is preserved.
+- **Forward references, verbatim descriptions, templated servers.** Cyclic types emit
+  `update_forward_refs`; a request field's description is preserved byte-for-byte
+  (no trim); a `servers` entry with URL variables names its environment member
+  `DEFAULT` and resolves the variable defaults into the base URL.
+- **`reference.md` section titles + doc-snippet wrapping.** A section's `## ` title is
+  the tag verbatim when the operationId carries an underscore separator (bunq's
+  `attachment-public`), else the PascalCase tag (`Widgets`, `Companies`) or, untagged,
+  the PascalCase operationId group (`EndpointsContainer`) — `module_title`. The root
+  `client.py` wraps a lazy sub-client import into ruff's parenthesized, trailing-comma
+  form past 107 columns (ruff won't split a single-name import itself); the `README.md`
+  abbreviated calls wrap at Fern's 80-column snippet width, not the project `line-length`.
 
 **Mock-side live-e2e skips.** Driving 421 endpoints through Prism surfaced 28
 endpoints the *mock* — not the SDK — cannot honor: 20 crash Prism's json-schema-faker
