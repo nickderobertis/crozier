@@ -69,7 +69,7 @@ pub struct Environment {
 }
 
 impl Environment {
-    /// The default member reference used in the root client (`FernApiEnvironment.PRODUCTION`).
+    /// The default member reference used in the root client (`FernApiEnvironment.DEFAULT`).
     #[must_use]
     pub fn default_ref(&self) -> String {
         format!("{}.{}", self.enum_name, self.member.0)
@@ -78,8 +78,9 @@ impl Environment {
 
 /// Derive the [`Environment`] model from the document's `servers`. Reproduces
 /// Fern's single-member behavior: the first server only, its member named by
-/// uppercasing the description (non-identifier characters → `_`), defaulting to
-/// `PRODUCTION` when there is no usable description.
+/// uppercasing the description (non-identifier characters → `_`). A templated
+/// server, or a single concrete server with no usable description, is `DEFAULT`;
+/// described concrete servers keep their description-derived name.
 fn environment_model(doc: &OpenApi, client_name: &str) -> Option<Environment> {
     let first = doc.servers.first()?;
     // A server with a templated URL (`{basePath}` variables) is named `DEFAULT` — its
@@ -94,7 +95,7 @@ fn environment_model(doc: &OpenApi, client_name: &str) -> Option<Environment> {
             .as_deref()
             .map(env_member_name)
             .filter(|n| !n.is_empty())
-            .unwrap_or_else(|| "PRODUCTION".to_string())
+            .unwrap_or_else(|| "DEFAULT".to_string())
     };
     Some(Environment {
         enum_name: format!("{client_name}Environment"),
@@ -250,7 +251,6 @@ fn auth_model(doc: &OpenApi) -> Auth {
     if doc.components.security_schemes.is_empty() {
         return Auth::None;
     }
-    let required = all_operations_authenticated(doc);
     match doc.components.security_schemes.values().next() {
         // `name` is validated non-empty at the boundary (see `openapi::load`).
         Some(s)
@@ -259,10 +259,11 @@ fn auth_model(doc: &OpenApi) -> Auth {
         {
             Auth::ApiKey {
                 header: s.name.clone().unwrap_or_default(),
-                required,
+                required: all_operations_authenticated(doc) || doc.security.is_none(),
             }
         }
         Some(s) if s.ty == SecuritySchemeType::Http && s.scheme == Some(HttpAuthScheme::Bearer) => {
+            let required = all_operations_authenticated(doc);
             Auth::Bearer { required }
         }
         Some(s) if s.ty == SecuritySchemeType::Http && s.scheme == Some(HttpAuthScheme::Basic) => {
@@ -271,6 +272,48 @@ fn auth_model(doc: &OpenApi) -> Auth {
         // oauth2/unknown/no scheme → Fern's default optional bearer token.
         _ => Auth::Bearer { required: false },
     }
+}
+
+fn oauth_scope_enum(doc: &OpenApi) -> Option<EnumType> {
+    use crate::openapi::SecuritySchemeType;
+    let scopes = doc
+        .components
+        .security_schemes
+        .values()
+        .find(|scheme| scheme.ty == SecuritySchemeType::OAuth2)
+        .and_then(|scheme| scheme.flows.as_ref())
+        .and_then(|flows| {
+            flows
+                .authorization_code
+                .as_ref()
+                .or(flows.client_credentials.as_ref())
+                .or(flows.implicit.as_ref())
+                .or(flows.password.as_ref())
+        })
+        .map(|flow| &flow.scopes)?;
+    if scopes.is_empty() {
+        return None;
+    }
+
+    let mut seen_members: std::collections::HashMap<String, usize> =
+        std::collections::HashMap::new();
+    let mut seen_params: std::collections::HashMap<String, usize> =
+        std::collections::HashMap::new();
+    let members = scopes
+        .iter()
+        .map(|(value, doc)| EnumMember {
+            name: dedupe(naming::enum_member_name(value), &mut seen_members),
+            visit_param: dedupe(naming::enum_visit_param(value), &mut seen_params),
+            value: value.clone(),
+            docstring: clean_doc(Some(doc)),
+        })
+        .collect();
+    Some(EnumType {
+        name: "OauthScope".to_string(),
+        module: "oauth_scope".to_string(),
+        members,
+        docstring: None,
+    })
 }
 
 /// Collect every generated-type name a [`TypeRef`] references, descending through
@@ -814,6 +857,8 @@ pub struct EnumMember {
     pub value: String,
     /// The `visit` callback parameter name (`snake_case` of the value).
     pub visit_param: String,
+    /// Optional member docstring.
+    pub docstring: Option<String>,
 }
 
 /// Return `ident` unchanged the first time it is seen, or a `_{n}`-suffixed
@@ -847,6 +892,7 @@ fn build_enum(name: &str, values: Vec<String>, docstring: Option<String>) -> Enu
             name: dedupe(naming::enum_member_name(&value), &mut seen_members),
             visit_param: dedupe(naming::enum_visit_param(&value), &mut seen_params),
             value,
+            docstring: None,
         })
         .collect();
     EnumType {
@@ -910,6 +956,9 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
     };
     for (key, schema) in &doc.components.schemas {
         builder.add_named(&naming::class_name(key), schema);
+    }
+    if let Some(oauth_scope) = oauth_scope_enum(doc) {
+        builder.types.push(TypeDecl::Enum(oauth_scope));
     }
     // Endpoint resolution consults the built types to hoist a plain-object `$ref`
     // body's fields and to decide which of them serialize through the convert
@@ -2620,6 +2669,9 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
     if let Some(reference) = &schema.reference {
         return TypeRef::Named(ref_to_class(reference));
     }
+    if let Some(reference) = single_all_of_ref(schema) {
+        return TypeRef::Named(ref_to_class(reference));
+    }
     if let Some(values) = string_enum_values(schema) {
         // Fern renders an OpenAPI string enum as an extensible enum.
         return extensible_enum(values);
@@ -2649,6 +2701,10 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
                 TypeRef::List(Box::new(item))
             }
         }
+        Some("object") if is_bare_object(schema) => TypeRef::Dict(
+            Box::new(TypeRef::Primitive(Prim::Str)),
+            Box::new(TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)))),
+        ),
         Some("object") => match &schema.additional_properties {
             Some(AdditionalProperties::Schema(value)) => {
                 let mut val = base_type_ref(value);
@@ -2667,6 +2723,14 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
             _ => TypeRef::Primitive(Prim::Any),
         },
         _ => TypeRef::Primitive(Prim::Any),
+    }
+}
+
+fn single_all_of_ref(schema: &Schema) -> Option<&str> {
+    let members = schema.all_of.as_ref()?;
+    match members.as_slice() {
+        [member] => member.reference.as_deref(),
+        _ => None,
     }
 }
 
@@ -2780,8 +2844,9 @@ fn example_literal(value: &serde_json::Value) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::{
-        build_enum, method_from_grouped_id, module_from_grouped_id, scalar_body, singularize,
-        synthesized_method_name, Prim, TypeRef,
+        auth_model, base_type_ref, build_endpoint, build_enum, environment_model,
+        method_from_grouped_id, module_from_grouped_id, oauth_scope_enum, scalar_body, singularize,
+        synthesized_method_name, Auth, Prim, TypeDecl, TypeRef,
     };
     use crate::openapi::{Schema, TypeField};
 
@@ -2802,6 +2867,111 @@ mod tests {
         // The wire values are preserved untouched for the `= "…"` initializers.
         let values: Vec<&str> = e.members.iter().map(|m| m.value.as_str()).collect();
         assert_eq!(values, ["a-b", "a b", "a.b"]);
+    }
+
+    #[test]
+    fn undescribed_single_server_defaults_to_default_environment() {
+        let doc: crate::openapi::OpenApi = serde_json::from_value(serde_json::json!({
+            "servers": [{ "url": "https://api.example.com" }]
+        }))
+        .expect("document deserializes");
+        let env = environment_model(&doc, "FernApi").expect("server yields environment");
+        assert_eq!(env.member.0, "DEFAULT");
+        assert_eq!(env.default_ref(), "FernApiEnvironment.DEFAULT");
+    }
+
+    #[test]
+    fn header_api_key_without_root_security_is_still_required() {
+        let doc: crate::openapi::OpenApi = serde_json::from_value(serde_json::json!({
+            "components": {
+                "securitySchemes": {
+                    "apiKey": {
+                        "type": "apiKey",
+                        "in": "header",
+                        "name": "X-API-Key"
+                    }
+                }
+            },
+            "paths": {
+                "/widgets": {
+                    "get": {
+                        "operationId": "getWidgets",
+                        "responses": { "200": { "description": "OK" } }
+                    }
+                }
+            }
+        }))
+        .expect("document deserializes");
+        let Auth::ApiKey { required, .. } = auth_model(&doc) else {
+            panic!("header api key should select api-key auth");
+        };
+        assert!(required);
+    }
+
+    #[test]
+    fn oauth2_scopes_emit_oauth_scope_enum() {
+        let doc: crate::openapi::OpenApi = serde_json::from_value(serde_json::json!({
+            "components": {
+                "securitySchemes": {
+                    "oauth2": {
+                        "type": "oauth2",
+                        "flows": {
+                            "authorizationCode": {
+                                "authorizationUrl": "https://example.com/auth",
+                                "tokenUrl": "https://example.com/token",
+                                "scopes": {
+                                    "ReadData": "Read data",
+                                    "WriteData": "Write data"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }))
+        .expect("document deserializes");
+        let enum_type = oauth_scope_enum(&doc).expect("oauth scopes produce enum");
+        assert_eq!(enum_type.name, "OauthScope");
+        assert_eq!(
+            enum_type
+                .members
+                .iter()
+                .map(|m| (m.name.as_str(), m.value.as_str(), m.docstring.as_deref()))
+                .collect::<Vec<_>>(),
+            [
+                ("READ_DATA", "ReadData", Some("Read data")),
+                ("WRITE_DATA", "WriteData", Some("Write data")),
+            ]
+        );
+    }
+
+    #[test]
+    fn bare_object_map_values_are_open_dicts() {
+        let schema: Schema = serde_json::from_value(serde_json::json!({
+            "type": "object",
+            "additionalProperties": { "type": "object" }
+        }))
+        .expect("schema deserializes");
+        assert!(matches!(
+            base_type_ref(&schema),
+            TypeRef::Dict(_, ref value)
+                if matches!(
+                    &**value,
+                    TypeRef::Dict(_, inner)
+                        if matches!(&**inner, TypeRef::Optional(any) if matches!(&**any, TypeRef::Primitive(Prim::Any)))
+                )
+        ));
+    }
+
+    #[test]
+    fn bare_objects_are_open_dicts() {
+        let schema: Schema = serde_json::from_value(serde_json::json!({ "type": "object" }))
+            .expect("schema deserializes");
+        assert!(matches!(
+            base_type_ref(&schema),
+            TypeRef::Dict(_, ref value)
+                if matches!(&**value, TypeRef::Optional(any) if matches!(&**any, TypeRef::Primitive(Prim::Any)))
+        ));
     }
 
     fn scalar(ty: &str, format: Option<&str>) -> Option<(TypeRef, bool)> {
@@ -2947,6 +3117,160 @@ mod tests {
         assert_eq!(
             endpoint_method_name(&o, "GET", "/x"),
             "endpoints_container_get_and_return_list_of_primitives"
+        );
+    }
+
+    #[test]
+    fn dotted_operationids_strip_the_group_and_keep_flat_method_names() {
+        use super::{endpoint_method_name, endpoint_module, module_title};
+
+        let o = op("App.GetApplicationApiUsage", "App");
+        assert_eq!(endpoint_module(&o, "/App/ApiUsage/{applicationId}/"), "app");
+        assert_eq!(module_title(&o, "/App/ApiUsage/{applicationId}/"), "App");
+        assert_eq!(
+            endpoint_method_name(&o, "GET", "/App/ApiUsage/{applicationId}/"),
+            "getapplicationapiusage"
+        );
+
+        let o = op("CommunityContent.GetCommunityContent", "CommunityContent");
+        assert_eq!(
+            endpoint_module(&o, "/CommunityContent/Get/"),
+            "communitycontent"
+        );
+        assert_eq!(
+            endpoint_method_name(&o, "GET", "/CommunityContent/Get/"),
+            "getcommunitycontent"
+        );
+
+        let o: crate::openapi::Operation = serde_json::from_value(serde_json::json!({
+            "operationId": ".GetAvailableLocales",
+        }))
+        .expect("operation deserializes");
+        assert_eq!(endpoint_module(&o, "/GetAvailableLocales/"), "_");
+        assert_eq!(module_title(&o, "/GetAvailableLocales/"), "");
+        assert_eq!(
+            endpoint_method_name(&o, "GET", "/GetAvailableLocales/"),
+            "getavailablelocales"
+        );
+    }
+
+    #[test]
+    fn wildcard_success_response_hoists_like_json() {
+        let o: crate::openapi::Operation = serde_json::from_value(serde_json::json!({
+            "operationId": "widgets_list",
+            "tags": ["Widgets"],
+            "responses": {
+                "200": {
+                    "description": "OK",
+                    "content": {
+                        "*/*": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "Response": { "type": "string" },
+                                    "ErrorCode": { "type": "integer", "format": "int32" }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }))
+        .expect("operation deserializes");
+        let mut tag_types = Vec::new();
+        let global_headers = std::collections::HashSet::new();
+        let doc: crate::openapi::OpenApi =
+            serde_json::from_value(serde_json::json!({})).expect("empty document defaults");
+        let ep = build_endpoint(
+            &doc,
+            &[],
+            "/widgets",
+            "GET",
+            &o,
+            &mut tag_types,
+            &global_headers,
+        );
+
+        assert!(matches!(
+            ep.response,
+            Some(TypeRef::Named(ref name)) if name == "WidgetsListResponse"
+        ));
+        assert_eq!(tag_types.len(), 1);
+        assert_eq!(tag_types[0].module, "widgets");
+        let TypeDecl::Object(obj) = &tag_types[0].decl else {
+            panic!("wildcard response should hoist to an object");
+        };
+        assert_eq!(obj.name, "WidgetsListResponse");
+        assert_eq!(
+            obj.fields
+                .iter()
+                .map(|field| field.wire_name.as_str())
+                .collect::<Vec<_>>(),
+            ["ErrorCode", "Response"]
+        );
+    }
+
+    #[test]
+    fn object_fields_treat_single_ref_allof_as_the_ref_type() {
+        let mut builder = super::Builder {
+            types: Vec::new(),
+            schemas: &indexmap::IndexMap::new(),
+            strip_discriminant: std::collections::HashMap::new(),
+        };
+        let schema: Schema = serde_json::from_value(serde_json::json!({
+            "type": "object",
+            "properties": {
+                "wrapped": {
+                    "type": "object",
+                    "allOf": [
+                        { "$ref": "#/components/schemas/WrappedThing" }
+                    ]
+                }
+            }
+        }))
+        .expect("schema deserializes");
+
+        builder.add_object("Owner", "owner".to_string(), &schema, None);
+        let TypeDecl::Object(obj) = &builder.types[0] else {
+            panic!("owner should be an object");
+        };
+        assert!(matches!(
+            obj.fields[0].type_ref,
+            TypeRef::Named(ref name) if name == "WrappedThing"
+        ));
+    }
+
+    #[test]
+    fn path_parameters_follow_url_placeholder_order() {
+        let o: crate::openapi::Operation = serde_json::from_value(serde_json::json!({
+            "operationId": "widgets_get",
+            "parameters": [
+                { "name": "second", "in": "path", "required": true, "schema": { "type": "integer" } },
+                { "name": "first", "in": "path", "required": true, "schema": { "type": "integer" } }
+            ],
+            "responses": { "200": { "description": "OK" } }
+        }))
+        .expect("operation deserializes");
+        let doc: crate::openapi::OpenApi =
+            serde_json::from_value(serde_json::json!({})).expect("empty document defaults");
+        let mut tag_types = Vec::new();
+        let global_headers = std::collections::HashSet::new();
+        let ep = build_endpoint(
+            &doc,
+            &[],
+            "/widgets/{first}/{second}",
+            "GET",
+            &o,
+            &mut tag_types,
+            &global_headers,
+        );
+
+        assert_eq!(
+            ep.path_params
+                .iter()
+                .map(|param| param.wire_name.as_str())
+                .collect::<Vec<_>>(),
+            ["first", "second"]
         );
     }
 

@@ -2098,7 +2098,8 @@ fn render_enum(env: &Environment<'static>, e: &crate::ir::EnumType) -> Result<St
     if let Some(doc) = &e.docstring {
         // Fern renders the schema description as a class docstring, then a blank
         // line before the first member.
-        body.push_str(&format!("    \"\"\"\n    {doc}\n    \"\"\"\n\n"));
+        body.push_str(&render_docstring(doc, 4));
+        body.push_str("\n\n");
     }
     for m in &e.members {
         body.push_str(&format!(
@@ -2106,6 +2107,10 @@ fn render_enum(env: &Environment<'static>, e: &crate::ir::EnumType) -> Result<St
             m.name,
             escape_py_str(&m.value)
         ));
+        if let Some(doc) = &m.docstring {
+            body.push_str(&render_docstring(doc, 4));
+            body.push_str("\n\n");
+        }
     }
     body.push('\n');
     let params: Vec<String> = e
@@ -2791,6 +2796,17 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                     ")",
                 );
                 lines.push(format!("{},", call.flat()));
+            } else if type_serializes_as_datetime(&qp.type_ref) {
+                imports.add_from("..core.datetime_utils", "serialize_datetime");
+                let value = if qp.required {
+                    format!("serialize_datetime({})", qp.py_name)
+                } else {
+                    format!(
+                        "serialize_datetime({}) if {} is not None else None",
+                        qp.py_name, qp.py_name
+                    )
+                };
+                lines.push(format!("                \"{}\": {value},", qp.wire_name));
             } else {
                 lines.push(format!(
                     "                \"{}\": {},",
