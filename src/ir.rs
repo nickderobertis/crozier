@@ -1050,6 +1050,11 @@ fn build_endpoint(
             docstring: declared_doc(p.description.as_deref()),
         })
         .collect();
+    path_params.sort_by(|a, b| {
+        path_param_position(path, &a.wire_name)
+            .cmp(&path_param_position(path, &b.wire_name))
+            .then_with(|| a.wire_name.cmp(&b.wire_name))
+    });
 
     let query_params: Vec<QueryParam> = op
         .parameters
@@ -1205,6 +1210,15 @@ fn is_streaming(op: &Operation) -> bool {
     op.responses
         .iter()
         .any(|(code, resp)| code.starts_with('2') && resp.content.contains_key("text/event-stream"))
+}
+
+/// Position of a path parameter's `{name}` placeholder in the route. Fern orders
+/// path arguments by URL appearance, even when the OpenAPI `parameters` array is
+/// alphabetical or otherwise shuffled.
+fn path_param_position(path: &str, name: &str) -> Option<usize> {
+    path.split('/')
+        .filter(|segment| segment.starts_with('{') && segment.ends_with('}'))
+        .position(|segment| &segment[1..segment.len() - 1] == name)
 }
 
 /// The success (2xx) response's description, cleaned for the `Returns` docstring.
@@ -1743,19 +1757,27 @@ fn resolve_ref<'a>(doc: &'a OpenApi, reference: &str) -> Option<&'a Schema> {
     doc.components.schemas.get(key)
 }
 
-/// The success (2xx) response's `application/json` body type, if any.
+/// The success (2xx) response's JSON body type, if any.
 fn success_response(op: &Operation) -> Option<TypeRef> {
     success_response_schema(op).map(base_type_ref)
 }
 
-/// The success (2xx) response's `application/json` body schema, if any.
+/// The success (2xx) response's JSON body schema, if any. Fern treats a wildcard
+/// `*/*` response body as JSON when no explicit `application/json` media type is
+/// present; public specs such as bungie.net use that shape for standard response
+/// envelopes.
 fn success_response_schema(op: &Operation) -> Option<&Schema> {
     let response = op
         .responses
         .iter()
         .find(|(code, _)| code.starts_with('2'))
         .map(|(_, r)| r)?;
-    response.content.get("application/json")?.schema.as_ref()
+    response
+        .content
+        .get("application/json")
+        .or_else(|| response.content.get("*/*"))?
+        .schema
+        .as_ref()
 }
 
 /// Whether crozier can render an operation's success response. Every resolved
@@ -1788,6 +1810,9 @@ fn endpoint_method_name(op: &Operation, http_method: &str, url: &str) -> String 
     if id.is_empty() {
         return synthesized_method_name(http_method, url);
     }
+    if id.contains('.') {
+        return method_from_dotted_id(id);
+    }
     if id.contains('_') {
         // A `group_method` operationId whose prefix *is* the group (matches the tag,
         // or there is no tag) has its group stripped, Fern-style (`widgets_getWidget`
@@ -1815,6 +1840,14 @@ fn method_from_grouped_id(id: &str) -> String {
         rest.to_lowercase()
     };
     naming::sanitize_identifier(&name)
+}
+
+/// The method name for a dotted operationId (`Group.Method`). Fern treats the
+/// dotted prefix as the group and lowercases the final segment verbatim, without
+/// snake-casing camel boundaries (`App.GetUsage` → `getusage`).
+fn method_from_dotted_id(id: &str) -> String {
+    let method = id.rsplit_once('.').map_or(id, |(_, rest)| rest);
+    naming::sanitize_identifier(&method.to_ascii_lowercase())
 }
 
 /// The method name for a groupless camelCase operationId (no `_`). Fern drops a
@@ -1952,6 +1985,16 @@ fn endpoint_module_titles(doc: &OpenApi) -> std::collections::BTreeMap<String, S
 /// operationId/path prefix (`EndpointsContainer`).
 fn module_title(op: &Operation, url: &str) -> String {
     let id = op.operation_id.trim();
+    if id.contains('.') {
+        if let Some((group, _)) = id.split_once('.') {
+            if group.is_empty() {
+                return String::new();
+            }
+        }
+        if let Some(tag) = first_tag(op) {
+            return naming::to_pascal_case(tag);
+        }
+    }
     if id.contains('_') {
         // Grouped by the operationId prefix → PascalCase; grouped by tag → verbatim.
         if group_prefix_is_tag(op, id) {
@@ -1977,6 +2020,19 @@ fn module_title(op: &Operation, url: &str) -> String {
 /// both rules agree, so tag-grouped corpora already matched stay byte-identical.
 fn endpoint_module(op: &Operation, url: &str) -> String {
     let id = op.operation_id.trim();
+    if id.contains('.') {
+        if let Some((group, _)) = id.split_once('.') {
+            if group.is_empty() {
+                return "_".to_string();
+            }
+        }
+        if let Some(tag) = first_tag(op) {
+            return snake_module(tag);
+        }
+        return naming::sanitize_identifier(&naming::to_snake_case(
+            id.split_once('.').map_or(id, |(group, _)| group),
+        ));
+    }
     if id.contains('_') {
         // Untagged, or the prefix is the group → group by the operationId prefix.
         // Otherwise the prefix is unrelated to the tag (bunq) → the tag is the group.
@@ -1997,6 +2053,9 @@ fn endpoint_module(op: &Operation, url: &str) -> String {
 /// The snake-cased, identifier-safe module name a tag maps to (`attachment-public`
 /// → `attachment_public`).
 fn snake_module(tag: &str) -> String {
+    if tag.chars().all(|c| c.is_ascii_alphanumeric()) {
+        return naming::sanitize_identifier(&tag.to_ascii_lowercase());
+    }
     naming::sanitize_identifier(&naming::to_snake_case(tag))
 }
 
