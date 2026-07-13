@@ -1373,9 +1373,11 @@ fn reference_entry(
     // The parameter rows, in signature order, then `request_options`.
     let mut params: Vec<ParamRow> = Vec::new();
     for (name, ty, desc) in &mp.path {
+        // A non-empty description gets the ` — {desc}` suffix; a declared-but-empty
+        // (`Some("")`) or omitted (`None`) one gets the bare separator, as Fern does.
         let suffix = match desc {
-            Some(d) => format!(" — {d}"),
-            None => " ".to_string(),
+            Some(d) if !d.is_empty() => format!(" — {d}"),
+            _ => " ".to_string(),
         };
         params.push(ParamRow {
             name: name.clone(),
@@ -2539,11 +2541,7 @@ fn raw_docstring(
     lines.push("        Parameters".to_string());
     lines.push("        ----------".to_string());
     for (name, ty, desc) in param_types {
-        lines.push(format!("        {name} : {ty}"));
-        if let Some(desc) = desc {
-            lines.push(format!("            {desc}"));
-        }
-        lines.push(String::new());
+        push_path_param(&mut lines, name, ty, desc);
     }
     // Query params, header params, then the request body/fields, each: a
     // `name : annotation` line, an optional indented description, and a trailing
@@ -2572,6 +2570,22 @@ fn raw_docstring(
     }
     lines.push("        \"\"\"".to_string());
     lines.join("\n")
+}
+
+/// Render one path parameter's docstring block: its `name : ty` line, then the
+/// description slot, then a trailing blank line. Fern fills the slot when the spec
+/// gives a non-empty description, emits a *blank* slot when it declares an empty one
+/// (`Some("")`, e.g. bunq's path params — two blank lines total), and omits the slot
+/// entirely when it declares none (`None`, the exhaustive seed — one blank line).
+/// See [`crate::ir`]'s `path_param_doc`.
+fn push_path_param(lines: &mut Vec<String>, name: &str, ty: &str, desc: &Option<String>) {
+    lines.push(format!("        {name} : {ty}"));
+    match desc {
+        Some(d) if !d.is_empty() => lines.push(format!("            {d}")),
+        Some(_) => lines.push(String::new()),
+        None => {}
+    }
+    lines.push(String::new());
 }
 
 /// Push the `Returns` description under the return type: each line of the
@@ -2943,11 +2957,7 @@ fn raw_stream_docstring(ep: &Endpoint, mp: &MethodParams, return_type: &str) -> 
     lines.push("        Parameters".to_string());
     lines.push("        ----------".to_string());
     for (name, ty, desc) in &mp.path {
-        lines.push(format!("        {name} : {ty}"));
-        if let Some(desc) = desc {
-            lines.push(format!("            {desc}"));
-        }
-        lines.push(String::new());
+        push_path_param(&mut lines, name, ty, desc);
     }
     let mut push_param = |dp: &DocParam| {
         lines.push(format!("        {} : {}", dp.name, dp.annotation));
@@ -3444,11 +3454,7 @@ fn client_stream_docstring(
     lines.push("        Parameters".to_string());
     lines.push("        ----------".to_string());
     for (name, ty, desc) in &mp.path {
-        lines.push(format!("        {name} : {ty}"));
-        if let Some(desc) = desc {
-            lines.push(format!("            {desc}"));
-        }
-        lines.push(String::new());
+        push_path_param(&mut lines, name, ty, desc);
     }
     let mut push_param = |dp: &DocParam| {
         lines.push(format!("        {} : {}", dp.name, dp.annotation));
@@ -3510,11 +3516,7 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
     lines.push("        Parameters".to_string());
     lines.push("        ----------".to_string());
     for (name, ty, desc) in &mp.path {
-        lines.push(format!("        {name} : {ty}"));
-        if let Some(desc) = desc {
-            lines.push(format!("            {desc}"));
-        }
-        lines.push(String::new());
+        push_path_param(&mut lines, name, ty, desc);
     }
     let mut push_param = |dp: &DocParam| {
         lines.push(format!("        {} : {}", dp.name, dp.annotation));

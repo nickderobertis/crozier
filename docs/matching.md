@@ -252,45 +252,56 @@ The second real-world `link-ok` corpus, `bunq.com`, is deliberately an order of
 magnitude larger than apideck — **421 endpoints, 617 component schemas, 118 tags**,
 committed as a **956-file** Fern golden. Fern generates it cleanly (`fern check`
 passes) and crozier's SDK round-trips live against it (`bunq.com` in
-`conftest.FIXTURES`; see the mock-side-skip note below). Unlike apideck it is **not**
-fully byte-matched: `bunq_matches_fern_output` locks in the **`BUNQ_MATCHED`** subset
-(the paste-ready output of `just fixtures-candidates`) and the rest is the roadmap
-below. Its guard mirrors apideck's — skip when the fetched spec is absent, enforce
-under `CROZIER_REQUIRE_CORPUS` in `just test-corpus-match`. The gap sorts into four
-buckets, dominant first:
+`conftest.FIXTURES`; see the mock-side-skip note below). It is **not yet** fully
+byte-matched: `bunq_matches_fern_output` locks in the **`BUNQ_MATCHED`** subset (the
+paste-ready output of `just fixtures-candidates`, ~three quarters of the golden today)
+and the rest is the roadmap below. Its guard mirrors apideck's — skip when the fetched
+spec is absent, enforce under `CROZIER_REQUIRE_CORPUS` in `just test-corpus-match`.
 
-1. **Sub-client grouping (the bulk of the gap).** bunq tags every operation, but its
-   operationIds are `SCREAMING_Mixed` strings that *contain underscores*
-   (`CREATE_AttachmentPublic`, `List_all_Content_for_AttachmentPublic`,
-   `READ_DeviceServer`). Fern groups sub-clients by the **`tags`** array (→ 110
-   tag-named clients: `attachment_public`, `device_server`, …); crozier's
-   `module_and_method` heuristic (`src/ir.rs`) treats a `_` in the operationId as a
-   `group_method` prefix and groups by the **operationId** instead (→ 277
-   operationId-named clients: `create_attachment_for_user`, `list_all_device`, …).
-   So crozier emits a disjoint, finer set of sub-clients: ~330 of Fern's
-   `<client>/client.py`, `raw_client.py`, and `__init__.py` files are absent and
-   ~820 crozier-only ones appear. The fix is to prefer the tag for grouping when an
-   operation carries one, even if its operationId contains `_` — apideck's
-   single-word operationIds never hit this path, so tag-grouping already matches
-   there (see *Tag-based client grouping* below); bunq is the case that separates
-   "operationId has an underscore" from "operationId encodes a group".
+**Fixed while landing bunq** (each guarded so the apideck/exhaustive/feature corpora
+stay byte-identical — none of them exercised these paths):
 
-2. **Property-less object schemas (part of ~140 differing `types/*.py`).** For an
-   `type: object` schema with **no declared `properties`**, Fern emits a *type alias*
-   — `Whitelist = typing.Dict[str, typing.Optional[typing.Any]]` — where crozier
-   emits an empty `class Whitelist(UniversalBaseModel)`. Same information, different
-   surface; the alias form is the byte-target.
+- **Tag-based sub-client grouping.** bunq tags every operation, but its operationIds
+  are `SCREAMING_Mixed` strings that *contain underscores* (`CREATE_AttachmentPublic`,
+  `List_all_Content_for_AttachmentPublic`). Fern groups by the **`tags`** array;
+  crozier's old heuristic treated any `_` as a `group_method` prefix and grouped by
+  the operationId, producing ~2.5× too many sub-clients. `endpoint_module`/
+  `endpoint_method_name` (`src/ir.rs`) now group by the tag unless the operationId
+  prefix *is* the tag (`inlinedRequests_post…` under `InlinedRequests` — the case the
+  synthetic seeds hit, where both rules agree). This was the bulk of the gap.
+- **Global-header order + `User-Agent`.** Fern lists promoted headers optional-first
+  (optionals in spec order, requireds by field name) and never promotes the
+  transport-managed `User-Agent`; crozier sorted alphabetically and promoted it.
+- **Property-less object → `Dict` alias.** A bare `type: object` with no properties is
+  aliased to `typing.Dict[str, typing.Optional[typing.Any]]` (`is_bare_object`), not an
+  empty model class.
+- **Path-param empty-description docstrings.** A path param whose spec declares an
+  *empty* `description` (bunq's `itemId: {description: ""}`) renders a blank docstring
+  slot; one that omits `description` entirely (the seeds) renders none — the two now
+  differ (`path_param_doc`/`push_path_param`).
+- **Untyped error-body type.** A `$ref`-to-`components.responses` error whose body is an
+  inline object (bunq's `GenericError`) is typed `typing.Optional[typing.Any]`, matching
+  Fern, rather than bare `typing.Any`.
 
-3. **Inline-schema hoisting (the ~44 `types/*.py` Fern emits that crozier does not).**
-   Fern hoists more nested/inline object schemas into their own named `types/`
-   modules (`PermittedIp`, `note_text_*`, `card_generated_cvc2*`, …) than crozier,
-   which inlines them at the use site — so those golden files have no crozier
-   counterpart. apideck's hoisting already matches; bunq exercises deeper nesting.
+**Remaining gap** (the roadmap; `BUNQ_MATCHED` grows as each closes):
 
-4. **Structure-dependent scaffolding (a handful of one-offs).** `reference.md`,
-   `README.md`, and the per-client `client_wrapper.py`/`environment.py` differ
-   because they *enumerate* the client tree from bucket 1 (and bunq's two `servers`
-   drive an `environment.py` enum); they fall out once grouping matches.
+1. **`content-type` header emission (most `raw_client.py`).** Fern emits
+   `headers={"content-type": "application/json"}` for some JSON-body operations and not
+   others, and the discriminator is not yet pinned: an all-optional inline body with no
+   parameters gets the header in the exhaustive seed (`endpoints_object`) but not in
+   bunq (`CREATE_Avatar`), so it is neither "has a required field" nor "has a
+   parameter". Until the rule is understood, crozier emits it for every inline body
+   (matching the seeds and apideck, diverging on bunq's parameter-less creates). This
+   plus the error-body type sat on the same files, so both had to land together to flip
+   any of them.
+2. **Inline-schema hoisting (the `types/*.py` Fern emits that crozier does not, e.g.
+   `PermittedIp`, `card_generated_cvc2*`, `bad_request_error_body`).** Fern hoists more
+   nested/inline object schemas into their own named modules than crozier, which inlines
+   them at the use site; the golden also snake-cases some hoisted names differently
+   (`card_generated_cvc2create` vs crozier's `card_generated_cvc2_create`).
+3. **Structure-dependent scaffolding.** `reference.md`, `README.md`, `environment.py`
+   (bunq's two `servers` → an environment enum), and `bad_request_error.py` — a handful
+   of one-offs that enumerate or depend on the items above.
 
 **Mock-side live-e2e skips.** Driving 421 endpoints through Prism surfaced 28
 endpoints the *mock* — not the SDK — cannot honor: 20 crash Prism's json-schema-faker
