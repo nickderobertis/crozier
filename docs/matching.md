@@ -320,31 +320,39 @@ classifies them as **skips**, not gate failures — every other failure still ga
 The byte-diff gate independently proves the affected models' required/optional shape,
 so a skip can never mask a crozier defect. See `tests/live_e2e/AGENTS.md`.
 
-### The `bungie.net` real-world corpus (issue #77): schema-heavy target, golden pending
+### The `bungie.net` real-world corpus (issue #77): schema-heavy target, fully matched
 
 The third real-world `link-ok` corpus, `bungie.net`, is the schema-layer-heavy
 counterpart to endpoint-heavy bunq: **869 component schemas across only 13 tags**,
-producing roughly 944 SDK files. Fern accepts the raw spec cleanly (`fern check`
-passes), and crozier consumes it without error, so it is a valid byte-match target
-once its Fern golden is generated on a Docker host.
+committed as a **1082-file** Fern golden. Fern generates it cleanly (`fern check`
+passes) and crozier consumes it without error, so it is a valid byte-match target.
+It is now **fully byte-matched**: `bungie_matches_fern_output` locks in all 1082
+files via **`BUNGIE_MATCHED`** (the paste-ready output of `just fixtures-candidates`).
+Its guard mirrors apideck's and bunq's — skip when the fetched spec is absent, enforce
+under `CROZIER_REQUIRE_CORPUS` in `just test-corpus-match`.
 
-`BUNGIE_MATCHED` starts empty on purpose. Until
-`tests/fixtures/bungie.net/expected/` exists, `bungie_matches_fern_output` only
-asserts the fetched spec generates successfully; it skips in the offline gate when
-the spec is absent, and `just test-corpus-match` enforces the consume check after
-`scripts/fetch-corpus.sh`. After the real golden lands, grow `BUNGIE_MATCHED` with
-`just fixtures-candidates` in the usual file-by-file loop.
+**Fixed while landing bungie** (each guarded so the apideck/bunq/exhaustive/feature
+corpora stay byte-identical — none of them exercised these paths):
 
-On a machine with Docker running, the `fern` CLI, and a Rust toolchain, generate
-and commit the real Fern golden with exactly:
+1. **Operation grouping for dotted corpus APIs** (`src/ir.rs`) — operations Fern
+   groups under its `_` root subpackage (`src/fern/_/`) are now emitted there and
+   wired into the root client and `__init__` exports; crozier previously omitted the
+   `_` subpackage entirely.
+2. **Named per-operation response types** (`src/ir.rs`, `src/emit.rs`,
+   `src/openapi.rs`) — Fern synthesizes a `<OperationId>Response` type from each
+   operation's inline response body (Bungie's standard
+   `{ Response, ErrorCode, ThrottleSeconds, Message, … }` envelope — 172
+   `*_response.py` files, the bulk of the gap). crozier now hoists and names them
+   identically, with their `types/__init__.py` lazy-import entries and the client
+   return-type wiring that references them.
+3. **README examples for no-body operations** (`src/emit.rs`) — matched Fern's
+   rendering of the example calls.
+
+To regenerate the golden (needs Docker + the `fern` CLI + a Rust toolchain):
 
 ```
-just bootstrap                                   # or: cargo build --release && ./scripts/install-ruff.sh
 ./scripts/fetch-corpus.sh                        # fetches the bungie spec into .local/corpus/
 just fixtures-generate-corpus --only bungie.net  # runs Fern (Docker) -> tests/fixtures/bungie.net/expected/
-git add tests/fixtures/bungie.net/expected
-git commit -m "test: add bungie.net Fern golden expected tree"
-git push
 ```
 
 ### Issue #43: error responses, discriminated-union aliases, and SSE streaming
