@@ -1,0 +1,3 @@
+
+
+ForumsForumPostCategoryEnums = int

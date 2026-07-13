@@ -12,14 +12,17 @@ manifest="$repo_root/tests/fixtures/CORPUS.md"
 mode=all
 dry_run=0
 fetch_root="$repo_root/.local/corpus"
+only=""
 
 usage() {
   cat >&2 <<'USAGE'
-Usage: scripts/generate-corpus-fixtures.sh [--all|--committed] [--dry-run] [--fetch-root DIR]
+Usage: scripts/generate-corpus-fixtures.sh [--all|--committed] [--only NAME] [--dry-run] [--fetch-root DIR]
 
   --all        Fetch/use every issue #77 manifest row and generate its Fern fixture.
                This is the default.
   --committed  Generate only rows already marked `committed` in CORPUS.md.
+  --only NAME  Generate one manifest row, matching either its CORPUS.md name or
+               its fixture directory name.
   --dry-run    Print the generation plan, including source/discovered spec, without
                running Fern or writing fixture output.
   --fetch-root DIR
@@ -31,6 +34,7 @@ while [ "$#" -gt 0 ]; do
   case "$1" in
     --all) mode=all ;;
     --committed) mode=committed ;;
+    --only) shift; only="${1:?--only needs a corpus name or fixture directory}" ;;
     --dry-run) dry_run=1 ;;
     --fetch-root) shift; fetch_root="${1:?--fetch-root needs a directory}" ;;
     -h|--help) usage; exit 0 ;;
@@ -72,6 +76,10 @@ while IFS=$'\t' read -r name url ref decision; do
   fixture="$(corpus_fixture_for "$name")"
   fixture_dir="$repo_root/tests/fixtures/$fixture"
   spec="$fixture_dir/openapi.yml"
+
+  if [ -n "$only" ] && [ "$only" != "$name" ] && [ "$only" != "$fixture" ]; then
+    continue
+  fi
 
   if [ "$mode" = committed ] && [ "$decision" != committed ]; then
     continue

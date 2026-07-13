@@ -1,0 +1,3 @@
+
+
+FireteamFireteamDateRange = int

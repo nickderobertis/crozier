@@ -103,6 +103,31 @@ pub struct SecurityScheme {
     /// parameter `in` vocabulary.
     #[serde(rename = "in", default)]
     pub location: Option<ParameterLocation>,
+    /// For `type: oauth2`, the available flows and their scope descriptions.
+    #[serde(default)]
+    pub flows: Option<OAuthFlows>,
+}
+
+/// OAuth2 flow declarations. crozier only needs the scope maps to reproduce
+/// Fern's generated `OauthScope` enum.
+#[derive(Debug, Default, Clone, Deserialize)]
+pub struct OAuthFlows {
+    #[serde(rename = "authorizationCode", default)]
+    pub authorization_code: Option<OAuthFlow>,
+    #[serde(rename = "clientCredentials", default)]
+    pub client_credentials: Option<OAuthFlow>,
+    #[serde(default)]
+    pub implicit: Option<OAuthFlow>,
+    #[serde(default)]
+    pub password: Option<OAuthFlow>,
+}
+
+/// One OAuth2 flow.
+#[derive(Debug, Default, Clone, Deserialize)]
+pub struct OAuthFlow {
+    /// Scope value → human description.
+    #[serde(default)]
+    pub scopes: IndexMap<String, String>,
 }
 
 /// The `type` of a security scheme, per OpenAPI's closed vocabulary. An unknown
