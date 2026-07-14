@@ -1520,6 +1520,7 @@ fn build_endpoint(
     }
 }
 
+
 fn parameter_example(doc: &OpenApi, parameter: &crate::openapi::Parameter) -> Option<String> {
     parameter
         .example
@@ -3557,7 +3558,23 @@ fn example_literal(value: &serde_json::Value) -> Option<String> {
         )),
         serde_json::Value::Bool(b) => Some(if *b { "True" } else { "False" }.to_string()),
         serde_json::Value::Number(n) => Some(n.to_string()),
-        _ => None,
+        serde_json::Value::Array(values) => Some(format!(
+            "[{}]",
+            values
+                .iter()
+                .map(example_literal)
+                .collect::<Option<Vec<_>>>()?
+                .join(", ")
+        )),
+        serde_json::Value::Object(values) => Some(format!(
+            "{{{}}}",
+            values
+                .iter()
+                .map(|(key, value)| Some(format!("\"{key}\": {}", example_literal(value)?)))
+                .collect::<Option<Vec<_>>>()?
+                .join(", ")
+        )),
+        serde_json::Value::Null => None,
     }
 }
 

@@ -6301,6 +6301,20 @@ fn component_examples_populate_inlined_body_fields() {
 }
 
 #[test]
+fn component_examples_populate_composite_body_fields() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          application/json:\n            schema: { $ref: '#/components/schemas/CreateWidget' }\n      responses:\n        '204': { description: Created }\ncomponents:\n  schemas:\n    CreateWidget:\n      type: object\n      example: { labels: [regional, global], properties: { custom: value } }\n      properties:\n        labels: { type: array, items: { type: string } }\n        properties: { type: object, additionalProperties: { type: string } }\n",
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/widgets/client.py"))
+        .expect("widgets client is generated");
+    assert!(
+        client.contains("labels=[\"regional\", \"global\"]")
+            && client.contains("properties={\"custom\": \"value\"}"),
+        "component examples should populate composite request fields: {client}"
+    );
+}
+
+#[test]
 fn readme_marks_composed_object_bodies_as_complex() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          application/json:\n            schema: { $ref: '#/components/schemas/CreateWidget' }\n      responses:\n        '204': { description: Created }\ncomponents:\n  schemas:\n    WidgetBase:\n      type: object\n      properties:\n        name: { type: string }\n    CreateWidget:\n      allOf:\n        - { $ref: '#/components/schemas/WidgetBase' }\n        - type: object\n          properties:\n            active: { type: boolean }\n",

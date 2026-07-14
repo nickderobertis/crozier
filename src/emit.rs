@@ -4433,6 +4433,11 @@ impl<'a> ExampleCtx<'a> {
         if self.example_is_scalar(t) {
             return Some(Example::Atom(example.to_string()));
         }
+        if matches!(t, TypeRef::List(_) | TypeRef::Set(_) | TypeRef::Dict(_, _))
+            && (example.starts_with('[') || example.starts_with('{'))
+        {
+            return Some(Example::Atom(example.to_string()));
+        }
         let TypeRef::Named(name) = t else {
             return None;
         };
