@@ -1979,23 +1979,42 @@ fn hoist_fields(class: &str, types: &[TypeDecl]) -> Option<Vec<BodyField>> {
         TypeDecl::Object(o) if o.name == class => Some(o),
         _ => None,
     })?;
-    Some(
-        obj.fields
-            .iter()
-            .map(|f| BodyField {
-                wire_name: f.wire_name.clone(),
-                py_name: f.py_name.clone(),
-                type_ref: f.type_ref.clone(),
-                optional: f.optional,
-                spec_required: f.spec_required,
-                docstring: f.docstring.clone(),
-                convert: type_needs_convert(&f.type_ref, types),
-                is_file: false,
-                collision_prefix: Some(naming::field_name(class)),
-                example: f.example.clone(),
-            })
-            .collect(),
-    )
+    let mut fields = Vec::new();
+    let mut seen = std::collections::HashSet::new();
+    append_request_fields(obj, class, types, &mut seen, &mut fields);
+    Some(fields)
+}
+
+fn append_request_fields(
+    obj: &ObjectType,
+    request_class: &str,
+    types: &[TypeDecl],
+    seen: &mut std::collections::HashSet<String>,
+    out: &mut Vec<BodyField>,
+) {
+    if !seen.insert(obj.name.clone()) {
+        return;
+    }
+    out.extend(obj.fields.iter().map(|f| BodyField {
+        wire_name: f.wire_name.clone(),
+        py_name: f.py_name.clone(),
+        type_ref: f.type_ref.clone(),
+        optional: f.optional,
+        spec_required: f.spec_required,
+        docstring: f.docstring.clone(),
+        convert: type_needs_convert(&f.type_ref, types),
+        is_file: false,
+        collision_prefix: Some(naming::field_name(request_class)),
+        example: f.example.clone(),
+    }));
+    for base in &obj.bases {
+        if let Some(base_obj) = types.iter().find_map(|decl| match decl {
+            TypeDecl::Object(candidate) if candidate.name == *base => Some(candidate),
+            _ => None,
+        }) {
+            append_request_fields(base_obj, request_class, types, seen, out);
+        }
+    }
 }
 
 /// Whether a type serializes through `convert_and_respect_annotation_metadata` —
