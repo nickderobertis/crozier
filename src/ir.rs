@@ -192,9 +192,14 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
             required,
         })
         .collect();
+    // Fern also treats additional header apiKey security schemes as SDK-wide
+    // constructor fields. The first apiKey scheme is the auth credential
+    // (`api_key`); subsequent header schemes are named from their wire header.
+    headers.extend(additional_api_key_global_headers(doc));
     // Optional-first. The `sort_by` is stable, so optional headers keep the
     // first-appearance order they already carry from `seen` (an insertion-ordered
-    // map); required headers sort by field name (apideck's `app_id`/`consumer_id`).
+    // map); required headers sort by field name (apideck's `app_id`/`consumer_id`,
+    // appwrite's `appwrite_key`/`appwrite_locale`/`appwrite_project`).
     headers.sort_by(|a, b| {
         a.required.cmp(&b.required).then_with(|| {
             if a.required {
@@ -205,6 +210,36 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
         })
     });
     headers
+}
+
+fn additional_api_key_global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
+    use crate::openapi::SecuritySchemeType;
+
+    let mut skipped_primary = false;
+    doc.components
+        .security_schemes
+        .values()
+        .filter_map(|scheme| {
+            if scheme.ty != SecuritySchemeType::ApiKey
+                || scheme.location != Some(ParameterLocation::Header)
+            {
+                return None;
+            }
+            if !skipped_primary {
+                skipped_primary = true;
+                return None;
+            }
+            let wire_name = scheme.name.as_ref()?;
+            if is_transport_managed_header(wire_name) {
+                return None;
+            }
+            Some(GlobalHeader {
+                py_name: naming::field_name(header_param_stem(wire_name)),
+                wire_name: wire_name.clone(),
+                required: true,
+            })
+        })
+        .collect()
 }
 
 /// Whether a header is managed by the HTTP transport itself and so is never surfaced
