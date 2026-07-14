@@ -5487,6 +5487,26 @@ fn file_only_multipart_requests_include_empty_data() {
 }
 
 #[test]
+fn inline_json_bodies_matching_response_schema_omit_content_type() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/rules:\n    \
+         post:\n      operationId: createWidgetRule\n      tags: [widgets]\n      requestBody:\n        content:\n          \
+         application/json:\n            schema: { $ref: '#/components/schemas/WidgetRule' }\n        required: true\n      \
+         responses:\n        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/WidgetRule' } } } }\ncomponents:\n  \
+         schemas:\n    WidgetRule:\n      type: object\n      required: [transition]\n      properties:\n        transition: { \
+         type: string, enum: [archive, delete] }\n        count: { type: integer }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
+    assert!(
+        raw.contains("transition: WidgetRuleTransition")
+            && raw.contains("json={")
+            && !raw.contains("\"content-type\": \"application/json\""),
+        "inlined JSON bodies whose request and response share a schema should omit explicit content-type when no route/header params force headers: {raw}"
+    );
+}
+
+#[test]
 fn colliding_query_and_body_fields_serialize_from_query_name() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/{id}:\n    \

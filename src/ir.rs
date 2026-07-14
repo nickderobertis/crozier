@@ -528,6 +528,8 @@ pub struct Endpoint {
     /// Whether the body came through `components.requestBodies`, which Fern treats
     /// like a reusable declaration for content-type emission.
     pub body_component_ref: bool,
+    /// Whether the JSON request body and success response point at the same schema.
+    pub body_response_same_ref: bool,
     /// The success response body type, or `None` when the endpoint returns no
     /// content.
     pub response: Option<TypeRef>,
@@ -1346,6 +1348,7 @@ fn build_endpoint(
             .as_ref()
             .is_some_and(|rb| rb.description.is_some()),
         body_component_ref: op.request_body.as_ref().is_some_and(|rb| rb.component_ref),
+        body_response_same_ref: body_response_same_ref(doc, op),
         response,
         response_doc: success_response_doc(op),
         errors,
@@ -1365,6 +1368,21 @@ fn is_streaming(op: &Operation) -> bool {
     op.responses
         .iter()
         .any(|(code, resp)| code.starts_with('2') && resp.content.contains_key("text/event-stream"))
+}
+
+fn body_response_same_ref(doc: &OpenApi, op: &Operation) -> bool {
+    let effective_security = op.security.as_ref().or(doc.security.as_ref());
+    if effective_security.is_some_and(|reqs| reqs.iter().any(|r| !r.is_empty())) {
+        return false;
+    }
+    let request_ref = op
+        .request_body
+        .as_ref()
+        .and_then(|rb| rb.content.get("application/json"))
+        .and_then(|media| media.schema.as_ref())
+        .and_then(|schema| schema.reference.as_deref());
+    let response_ref = success_response_schema(op).and_then(|schema| schema.reference.as_deref());
+    request_ref.is_some() && request_ref == response_ref
 }
 
 fn is_binary_response(op: &Operation) -> bool {
