@@ -3072,13 +3072,14 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         // `CREATE_DeviceServer`), leaving the content-type to httpx; an all-required
         // body (`CREATE_SessionServer`) keeps it.
         Some(body)
-            if !ep.header_params.is_empty()
-                || !ep.path_params.is_empty()
-                || (body.content_type_header()
-                    && !ep.body_component_ref
-                    && !(matches!(body, RequestBody::Inline(_))
-                        && (ep.body_all_of || ep.body_response_same_ref))
-                    && (!ep.body_documented || body.all_fields_required())) =>
+            if !body.is_wildcard_media()
+                && (!ep.header_params.is_empty()
+                    || !ep.path_params.is_empty()
+                    || (body.content_type_header()
+                        && !ep.body_component_ref
+                        && !(matches!(body, RequestBody::Inline(_))
+                            && (ep.body_all_of || ep.body_response_same_ref))
+                        && (!ep.body_documented || body.all_fields_required()))) =>
         {
             Some("application/json".to_string())
         }

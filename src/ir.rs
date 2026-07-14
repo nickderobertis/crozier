@@ -645,6 +645,11 @@ pub struct FormBody {
 }
 
 impl RequestBody {
+    /// Whether this body came from a wildcard media declaration.
+    pub fn is_wildcard_media(&self) -> bool {
+        matches!(self, Self::Single(body) if body.content_type_override.as_deref() == Some("*/*"))
+    }
+
     /// Whether the request emits the `content-type: application/json` header.
     /// Inlined object bodies always do; a single body carries its own flag; a raw
     /// bytes body carries its own (octet-stream) header instead, handled at emit.
@@ -1823,7 +1828,13 @@ fn resolve_request_body(
         if target.ty.as_ref().and_then(|ty| ty.primary()) == Some("string")
             && target.format.as_deref() == Some("binary")
         {
-            return Some(single(TypeRef::Named(class), required, false, false));
+            return Some(single_with_override(
+                TypeRef::Named(class),
+                required,
+                false,
+                false,
+                (media_type == "*/*").then(|| media_type.to_string()),
+            ));
         }
         // A `$ref` to a union goes through the convert wrapper (its object
         // variants carry field aliases that must be respected on write).

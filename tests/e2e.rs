@@ -5997,6 +5997,19 @@ fn binary_request_media_types_are_preserved() {
 }
 
 #[test]
+fn wildcard_binary_requests_with_path_params_omit_json_content_type() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/{id}/test:\n    put:\n      operationId: testWidget\n      tags: [widgets]\n      parameters:\n        - { name: id, in: path, required: true, schema: { type: string } }\n      requestBody:\n        required: true\n        content:\n          '*/*':\n            schema: { $ref: '#/components/schemas/FileContent' }\n      responses:\n        '204': { description: Tested }\ncomponents:\n  schemas:\n    FileContent: { type: string, format: binary }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
+    assert!(
+        raw.contains("json=request,") && !raw.contains("\"content-type\": \"application/json\""),
+        "wildcard binary-schema requests should not gain JSON headers from path params: {raw}"
+    );
+}
+
+#[test]
 fn binary_requests_ignore_declared_operation_headers() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /import:\n    post:\n      operationId: importWidgets\n      tags: [widgets]\n      parameters:\n        - { name: X-Preserve-Ids, in: header, schema: { type: boolean } }\n      requestBody:\n        content:\n          application/zip:\n            schema: { $ref: '#/components/schemas/FileContent' }\n      responses:\n        '204': { description: Imported }\ncomponents:\n  schemas:\n    FileContent: { type: string, format: binary }\n",
