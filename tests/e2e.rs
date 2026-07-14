@@ -5330,6 +5330,23 @@ fn mixed_error_body_shapes_downgrade_status_class_to_any() {
 }
 
 #[test]
+fn unknown_array_items_are_optional_any_elements() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    \
+         get:\n      operationId: listWidgets\n      tags: [widgets]\n      responses:\n        \
+         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Widget' } } } }\n\
+         components:\n  schemas:\n    Widget:\n      type: object\n      properties:\n        values: { \
+         type: array, items: {} }\n",
+    );
+    let widget = std::fs::read_to_string(out.join("src/acme/types/widget.py"))
+        .expect("Widget model is generated");
+    assert!(
+        widget.contains("values: typing.Optional[typing.List[typing.Optional[typing.Any]]] = None"),
+        "arrays of unknown items should preserve Optional[Any] element types: {widget}"
+    );
+}
+
+#[test]
 fn missing_operation_id_generates_valid_python() {
     // Issue #40 case 3: an operation without an operationId is valid OpenAPI and
     // must generate (crozier synthesizes a name), not hard-error.
