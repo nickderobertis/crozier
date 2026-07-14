@@ -3242,3 +3242,66 @@ components:
     assert!(wrapper.contains("\"X-Secondary-Key\""), "{wrapper}");
     assert!(wrapper.contains("\"Content-Type\""), "{wrapper}");
 }
+
+#[test]
+fn worked_examples_construct_named_models_and_formatted_scalar_values() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Example Shapes, version: 1.0.0 }
+paths:
+  /events:
+    post:
+      operationId: events_create
+      tags: [Events]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateEvent" }
+      responses: { '204': { description: Created } }
+components:
+  schemas:
+    Location:
+      type: object
+      required: [city, coordinates]
+      properties:
+        city: { type: string }
+        coordinates:
+          type: array
+          items: { type: number }
+    CreateEvent:
+      type: object
+      required: [location, starts_at, day, event_id]
+      example:
+        location: { city: Paris, coordinates: [48.8566, 2.3522] }
+        starts_at: '2025-04-03T12:30:00Z'
+        day: '2025-04-03'
+        event_id: '123e4567-e89b-12d3-a456-426614174000'
+      properties:
+        location: { $ref: "#/components/schemas/Location" }
+        starts_at: { type: string, format: date-time }
+        day: { type: string, format: date }
+        event_id: { type: string, format: uuid }
+"##,
+    );
+    let client = &files["src/acme/events/client.py"];
+    assert!(client.contains("location=Location("), "{client}");
+    assert!(client.contains("city=\"city\""), "{client}");
+    assert!(client.contains("coordinates=[1.1]"), "{client}");
+    assert!(
+        client.contains("starts_at=datetime.datetime.fromisoformat("),
+        "{client}"
+    );
+    assert!(
+        client.contains("day=datetime.date.fromisoformat("),
+        "{client}"
+    );
+    assert!(
+        client.contains("event_id=\"123e4567-e89b-12d3-a456-426614174000\""),
+        "{client}"
+    );
+    assert!(
+        client.contains("from acme import AcmeApi, Location"),
+        "{client}"
+    );
+}
