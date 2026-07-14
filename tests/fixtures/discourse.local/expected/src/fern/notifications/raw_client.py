@@ -1,0 +1,183 @@
+
+
+import typing
+from json.decoder import JSONDecodeError
+
+from ..core.api_error import ApiError
+from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from ..core.http_response import AsyncHttpResponse, HttpResponse
+from ..core.pydantic_utilities import parse_obj_as
+from ..core.request_options import RequestOptions
+from .types.get_notifications_response import GetNotificationsResponse
+from .types.mark_notifications_as_read_response import MarkNotificationsAsReadResponse
+
+
+OMIT = typing.cast(typing.Any, ...)
+
+
+class RawNotificationsClient:
+    def __init__(self, *, client_wrapper: SyncClientWrapper):
+        self._client_wrapper = client_wrapper
+
+    def get_notifications(
+        self, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> HttpResponse[GetNotificationsResponse]:
+        """
+        Parameters
+        ----------
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[GetNotificationsResponse]
+            notifications
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            "notifications.json",
+            method="GET",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    GetNotificationsResponse,
+                    parse_obj_as(
+                        type_=GetNotificationsResponse,
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    def mark_notifications_as_read(
+        self, *, id: typing.Optional[int] = OMIT, request_options: typing.Optional[RequestOptions] = None
+    ) -> HttpResponse[MarkNotificationsAsReadResponse]:
+        """
+        Parameters
+        ----------
+        id : typing.Optional[int]
+            (optional) Leave off to mark all notifications as
+            read
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[MarkNotificationsAsReadResponse]
+            notifications marked read
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            "notifications/mark-read.json",
+            method="PUT",
+            json={
+                "id": id,
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    MarkNotificationsAsReadResponse,
+                    parse_obj_as(
+                        type_=MarkNotificationsAsReadResponse,
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+
+class AsyncRawNotificationsClient:
+    def __init__(self, *, client_wrapper: AsyncClientWrapper):
+        self._client_wrapper = client_wrapper
+
+    async def get_notifications(
+        self, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> AsyncHttpResponse[GetNotificationsResponse]:
+        """
+        Parameters
+        ----------
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[GetNotificationsResponse]
+            notifications
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            "notifications.json",
+            method="GET",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    GetNotificationsResponse,
+                    parse_obj_as(
+                        type_=GetNotificationsResponse,
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def mark_notifications_as_read(
+        self, *, id: typing.Optional[int] = OMIT, request_options: typing.Optional[RequestOptions] = None
+    ) -> AsyncHttpResponse[MarkNotificationsAsReadResponse]:
+        """
+        Parameters
+        ----------
+        id : typing.Optional[int]
+            (optional) Leave off to mark all notifications as
+            read
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[MarkNotificationsAsReadResponse]
+            notifications marked read
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            "notifications/mark-read.json",
+            method="PUT",
+            json={
+                "id": id,
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    MarkNotificationsAsReadResponse,
+                    parse_obj_as(
+                        type_=MarkNotificationsAsReadResponse,
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
