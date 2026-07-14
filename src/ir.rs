@@ -87,7 +87,7 @@ fn environment_model(doc: &OpenApi, client_name: &str) -> Option<Environment> {
     // member value is the variables resolved to their defaults (bunq). A concrete-URL
     // server takes its member name from its description, even across several servers
     // (the `servers-webhooks` seed's Production/Staging pair keeps `PRODUCTION`).
-    let member_name = if !first.variables.is_empty() {
+    let member_name = if !first.variables.is_empty() || first.url.starts_with('/') {
         "DEFAULT".to_string()
     } else {
         first

@@ -5935,6 +5935,22 @@ fn globally_optional_basic_auth_generates_optional_credentials() {
 }
 
 #[test]
+fn relative_server_paths_use_the_default_environment_member() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\nservers:\n  - url: /api/v1\n    description: Widget Stable API\npaths:\n  /widgets:\n    get:\n      operationId: listWidgets\n      tags: [widgets]\n      responses:\n        '200': { description: OK }\n",
+    );
+    let environment = std::fs::read_to_string(out.join("src/acme/environment.py"))
+        .expect("environment module is generated");
+    let client =
+        std::fs::read_to_string(out.join("src/acme/client.py")).expect("root client is generated");
+    assert!(
+        environment.contains("DEFAULT = \"/api/v1\"")
+            && client.contains("AcmeApiEnvironment.DEFAULT"),
+        "relative server paths should use Fern's DEFAULT environment member: {environment}\n{client}"
+    );
+}
+
+#[test]
 fn multiline_parameter_docs_remain_indented() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    get:\n      \
