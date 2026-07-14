@@ -4110,6 +4110,9 @@ paths:
         '200':
           description: JWT
           content: { application/jwt: { schema: { type: string } } }
+        '400':
+          description: Invalid JWT
+          content: { application/jwt: { schema: { type: string } } }
   /wild:
     post:
       operationId: tokens_wild
@@ -4127,7 +4130,18 @@ paths:
     let client = &files["src/acme/tokens/client.py"];
     assert!(raw.contains("def del_("), "{raw}");
     assert!(client.contains("def del_("), "{client}");
-    assert!(raw.contains("def del_(self, *, request_options"), "{raw}");
+    let del_method = raw.split("def del_(").nth(1).expect("del_ raw method");
+    assert!(
+        del_method.contains("self, *, request_options")
+            && del_method.contains(") -> HttpResponse[None]:"),
+        "{del_method}"
+    );
+    assert!(
+        del_method.contains("if _response.status_code == 400:")
+            && del_method.contains("raise BadRequestError(")
+            && del_method.contains("type_=str,"),
+        "{del_method}"
+    );
     assert!(
         raw.contains("request: typing.Dict[str, typing.Optional[typing.Any]]"),
         "{raw}"
