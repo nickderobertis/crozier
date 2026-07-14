@@ -6171,6 +6171,24 @@ fn inline_request_enums_generate_emittable_clients() {
 }
 
 #[test]
+fn top_level_inline_response_array_items_hoist_through_the_cli() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    get:\n      operationId: listWidgets\n      tags: [widgets]\n      responses:\n        '200':\n          description: Found\n          content:\n            application/json:\n              schema:\n                type: array\n                items:\n                  type: object\n                  required: [id]\n                  properties:\n                    id: { type: integer }\n",
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/widgets/client.py"))
+        .expect("client is generated");
+    assert!(
+        client.contains("typing.List[ListWidgetsResponseItem]"),
+        "top-level response arrays should use their coined item model: {client}"
+    );
+    assert!(
+        out.join("src/acme/widgets/types/list_widgets_response_item.py")
+            .is_file(),
+        "response item module should be emitted"
+    );
+}
+
+#[test]
 fn header_parameter_enums_hoist_to_tag_types() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      parameters:\n        - name: X-Widget-Mode\n          in: header\n          required: true\n          schema: { type: string, enum: [FAST, SAFE] }\n      responses:\n        '204': { description: Created }\n",

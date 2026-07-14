@@ -1452,6 +1452,10 @@ fn build_endpoint(
         }
         Some(schema) if schema.reference.is_none() => hoister
             .hoist_array_item_enum(&format!("{pascal_ctx}Response"), schema)
+            .or_else(|| {
+                hoister
+                    .hoist_response_array_item_object(&format!("{pascal_ctx}ResponseItem"), schema)
+            })
             .or_else(|| success_response(op)),
         _ => success_response(op),
     };
@@ -2094,6 +2098,26 @@ struct InlineHoister<'a> {
 }
 
 impl InlineHoister<'_> {
+    /// Hoist an inline object used as a top-level response array item. Fern coins
+    /// `{Operation}ResponseItem` and exposes the response as a list of that model.
+    fn hoist_response_array_item_object(
+        &mut self,
+        item_name: &str,
+        schema: &Schema,
+    ) -> Option<TypeRef> {
+        if schema.ty.as_ref().and_then(|ty| ty.primary()) != Some("array") {
+            return None;
+        }
+        let item_schema = schema.items.as_deref()?;
+        if item_schema.reference.is_some() || !is_inline_struct(item_schema) {
+            return None;
+        }
+        self.hoist_object(item_name, item_schema);
+        Some(TypeRef::List(Box::new(TypeRef::Named(
+            item_name.to_string(),
+        ))))
+    }
+
     /// Build a named [`ObjectType`] from an inline object schema, recursively
     /// hoisting its nested inline-object properties, and push it to `out`.
     fn hoist_object(&mut self, name: &str, schema: &Schema) {
