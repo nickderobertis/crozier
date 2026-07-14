@@ -54,6 +54,18 @@ pub struct OpenApi {
     /// Declared API servers; the first drives the generated environment enum.
     #[serde(default)]
     pub servers: Vec<Server>,
+    /// Declared operation tags. Fern sometimes preserves the declared tag spelling
+    /// in generated docs rather than title-casing an operation-only tag.
+    #[serde(default)]
+    pub tags: Vec<ApiTag>,
+}
+
+/// One entry from the document's top-level `tags` list.
+#[derive(Debug, Default, Clone, Deserialize)]
+pub struct ApiTag {
+    /// The tag name used by operations.
+    #[serde(default)]
+    pub name: String,
 }
 
 /// One entry from the document's `servers` list: a base URL and an optional

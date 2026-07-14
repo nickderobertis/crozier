@@ -1279,7 +1279,7 @@ fn build_endpoint(
         response,
         response_doc: success_response_doc(op),
         errors,
-        docstring: clean_doc(op.description.as_deref()),
+        docstring: operation_doc(op.description.as_deref()),
         streaming: is_streaming(op),
         emittable,
     }
@@ -1942,27 +1942,26 @@ fn method_from_dotted_id(id: &str) -> String {
 fn method_from_groupless_id(id: &str, tag: Option<&str>) -> String {
     let snake = naming::to_snake_case(id);
     let tag_snake = tag.map(naming::to_snake_case).unwrap_or_default();
-    let method = if tag_snake.is_empty() {
+    let method = if tag_snake.is_empty() || stripped_suffix_has_acronym(id, tag) {
         &snake
     } else {
         snake
             .strip_prefix(&format!("{tag_snake}_"))
             .unwrap_or(&snake)
     };
-    finalize_method_name(method)
+    naming::sanitize_identifier(method)
 }
 
-/// Coerce a derived method name into a legal, Fern-consistent Python identifier:
-/// sanitize it, then append the trailing `_` Fern uses when the name collides with
-/// a reserved word (`all` → `all_`), so a "list all" endpoint does not shadow the
-/// builtin.
-fn finalize_method_name(name: &str) -> String {
-    let ident = naming::sanitize_identifier(name);
-    if naming::is_reserved(&ident) {
-        format!("{ident}_")
-    } else {
-        ident
+fn stripped_suffix_has_acronym(id: &str, tag: Option<&str>) -> bool {
+    let Some(tag) = tag else {
+        return false;
+    };
+    if id.len() <= tag.len() || !id[..tag.len()].eq_ignore_ascii_case(tag) {
+        return false;
     }
+    id.as_bytes()[tag.len()..]
+        .windows(2)
+        .any(|pair| pair[0].is_ascii_uppercase() && pair[1].is_ascii_uppercase())
 }
 
 /// The `PascalCase` context that names an operation's hoisted inline
@@ -2052,7 +2051,7 @@ fn endpoint_module_titles(doc: &OpenApi) -> std::collections::BTreeMap<String, S
         for (_, op) in item.operations() {
             titles
                 .entry(endpoint_module(op, url))
-                .or_insert_with(|| module_title(op, url));
+                .or_insert_with(|| module_title(doc, op, url));
         }
     }
     titles
@@ -2067,7 +2066,7 @@ fn endpoint_module_titles(doc: &OpenApi) -> std::collections::BTreeMap<String, S
 /// separator (bunq's `CREATE_AttachmentPublic`), Fern keeps the tag **verbatim**
 /// (`attachment-public`, `content`). An untagged group falls back to the PascalCase
 /// operationId/path prefix (`EndpointsContainer`).
-fn module_title(op: &Operation, url: &str) -> String {
+fn module_title(doc: &OpenApi, op: &Operation, url: &str) -> String {
     let id = op.operation_id.trim();
     if id.contains('.') {
         if let Some((group, _)) = id.split_once('.') {
@@ -2087,9 +2086,18 @@ fn module_title(op: &Operation, url: &str) -> String {
         return first_tag(op).expect("mismatch implies a tag").to_string();
     }
     if let Some(tag) = first_tag(op) {
-        return naming::to_pascal_case(tag);
+        return title_from_tag(doc, tag);
     }
     naming::to_pascal_case(&endpoint_module(op, url))
+}
+
+fn title_from_tag(doc: &OpenApi, tag: &str) -> String {
+    let declared = doc.tags.iter().any(|t| t.name == tag);
+    if declared && tag.chars().all(|c| !c.is_ascii_uppercase()) {
+        tag.to_string()
+    } else {
+        naming::to_pascal_case(tag)
+    }
 }
 
 /// The client module (directory) name for an operation.
@@ -2848,6 +2856,18 @@ fn clean_doc(desc: Option<&str>) -> Option<String> {
     }
 }
 
+/// Operation descriptions preserve `description: ""` as an empty summary slot in
+/// method docs, while still trimming non-empty prose like [`clean_doc`].
+fn operation_doc(desc: Option<&str>) -> Option<String> {
+    let text = desc?;
+    let trimmed = text.trim();
+    if trimmed.is_empty() {
+        Some(String::new())
+    } else {
+        Some(trimmed.to_string())
+    }
+}
+
 /// A description that preserves a distinction Fern renders but [`clean_doc`] erases:
 /// `None` when the spec omits `description` entirely, `Some("")` when it declares an
 /// empty one, `Some(text)` otherwise. The empty-vs-absent distinction is visible in
@@ -2883,7 +2903,7 @@ mod tests {
         method_from_grouped_id, module_from_grouped_id, oauth_scope_enum, scalar_body, singularize,
         synthesized_method_name, Auth, Prim, TypeDecl, TypeRef,
     };
-    use crate::openapi::{Schema, TypeField};
+    use crate::openapi::{OpenApi, Schema, TypeField};
 
     #[test]
     fn build_enum_disambiguates_colliding_member_names() {
@@ -3159,9 +3179,14 @@ mod tests {
     fn dotted_operationids_strip_the_group_and_keep_flat_method_names() {
         use super::{endpoint_method_name, endpoint_module, module_title};
 
+        let doc: OpenApi =
+            serde_json::from_value(serde_json::json!({})).expect("empty document deserializes");
         let o = op("App.GetApplicationApiUsage", "App");
         assert_eq!(endpoint_module(&o, "/App/ApiUsage/{applicationId}/"), "app");
-        assert_eq!(module_title(&o, "/App/ApiUsage/{applicationId}/"), "App");
+        assert_eq!(
+            module_title(&doc, &o, "/App/ApiUsage/{applicationId}/"),
+            "App"
+        );
         assert_eq!(
             endpoint_method_name(&o, "GET", "/App/ApiUsage/{applicationId}/"),
             "getapplicationapiusage"
@@ -3182,11 +3207,28 @@ mod tests {
         }))
         .expect("operation deserializes");
         assert_eq!(endpoint_module(&o, "/GetAvailableLocales/"), "_");
-        assert_eq!(module_title(&o, "/GetAvailableLocales/"), "");
+        assert_eq!(module_title(&doc, &o, "/GetAvailableLocales/"), "");
         assert_eq!(
             endpoint_method_name(&o, "GET", "/GetAvailableLocales/"),
             "getavailablelocales"
         );
+    }
+
+    #[test]
+    fn declared_lowercase_tag_titles_stay_verbatim() {
+        use super::module_title;
+
+        let declared: OpenApi = serde_json::from_value(serde_json::json!({
+            "tags": [{"name": "account"}],
+        }))
+        .expect("document with tags deserializes");
+        let o = op("accountGet", "account");
+        assert_eq!(module_title(&declared, &o, "/account"), "account");
+
+        let undeclared: OpenApi =
+            serde_json::from_value(serde_json::json!({})).expect("empty document deserializes");
+        let o = op("searchWidgets", "widgets");
+        assert_eq!(module_title(&undeclared, &o, "/widgets"), "Widgets");
     }
 
     #[test]
