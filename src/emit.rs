@@ -1403,6 +1403,12 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     // for an endpoint with a complex (object/container/union) body, else empty
     // parens; the error/raw-response calls are ruff-wrapped at the snippet width 88.
     let complex = (first.request_body.is_none() && first.http_method != "GET")
+        || (ir.openapi_31
+            && first.body_schema_implicit_object
+            && matches!(
+                &first.request_body,
+                Some(RequestBody::Inline(fields)) if fields.iter().all(|field| field.spec_required)
+            ))
         || complex_body(first, &ir.types, &ir.tag_types);
     let err_call = abbrev_call(4, &client_call_prefix(first), complex);
     let raw_call = abbrev_call(0, &raw_client_call_prefix(first), complex);
@@ -5592,6 +5598,7 @@ mod tests {
             body_schema_ref: false,
             body_schema_has_example: false,
             body_schema_documented: false,
+            body_schema_implicit_object: false,
             body_all_of: false,
             body_response_same_ref: false,
             response,
