@@ -3114,3 +3114,131 @@ fn committed_feature_fixture_python_matches_in_process() {
         );
     }
 }
+
+#[test]
+fn reference_and_docstring_alignment_covers_wrapping_order_and_blank_paragraphs() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Docs, version: 1.0.0 }
+servers:
+  - url: /api/v1
+    description: Stable API
+paths:
+  /widgets/{second}/{first}:
+    get:
+      operationId: widgets_list
+      tags: [Widgets]
+      description: |
+        Lists widgets.
+
+        Preserves the second paragraph.
+
+      parameters:
+        - name: first
+          in: path
+          required: true
+          description: |
+            First identifier.
+            Continued detail.
+          schema: { type: string }
+        - name: second
+          in: path
+          required: true
+          description: Second identifier.
+          schema: { type: string }
+        - name: status
+          in: query
+          description: |
+            Status filter.
+            May be repeated.
+          schema:
+            type: array
+            items: { $ref: "#/components/schemas/WidgetStatus" }
+      responses:
+        '200':
+          description: Matching widgets.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Widget" }
+components:
+  schemas:
+    WidgetStatus: { type: string, enum: [ACTIVE, DISABLED] }
+    Widget:
+      type: object
+      required: [id]
+      properties: { id: { type: string } }
+"##,
+    );
+    let raw = &files["src/acme/widgets/raw_client.py"];
+    let second = raw.find("second: str").unwrap();
+    let first = raw.find("first: str").unwrap();
+    assert!(
+        second < first,
+        "path arguments follow URL placeholder order: {raw}"
+    );
+    assert!(
+        raw.contains("            First identifier.\n            Continued detail."),
+        "{raw}"
+    );
+    assert!(
+        raw.contains("            Status filter.\n            May be repeated."),
+        "{raw}"
+    );
+    assert!(
+        raw.contains("typing.Union[WidgetStatus, typing.Sequence[WidgetStatus]]"),
+        "{raw}"
+    );
+    let reference = &files["reference.md"];
+    assert!(
+        reference.contains("Lists widgets.\n\nPreserves the second paragraph."),
+        "{reference}"
+    );
+    assert!(
+        reference.contains("typing.Sequence[WidgetStatus]"),
+        "{reference}"
+    );
+    assert!(
+        reference.contains("First identifier.\nContinued detail."),
+        "{reference}"
+    );
+    let environment = &files["src/acme/environment.py"];
+    assert!(
+        environment.contains("DEFAULT = \"/api/v1\""),
+        "{environment}"
+    );
+    assert!(files["src/acme/client.py"].contains("AcmeApiEnvironment.DEFAULT"));
+}
+
+#[test]
+fn multiple_api_keys_promote_each_declared_header() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: Keys, version: 1.0.0 }
+security:
+  - Primary: []
+    Secondary: []
+    Transport: []
+paths:
+  /widgets:
+    get:
+      operationId: widgets_list
+      tags: [Widgets]
+      responses: { '204': { description: OK } }
+components:
+  securitySchemes:
+    Primary: { type: apiKey, in: header, name: X-Primary-Key }
+    Secondary: { type: apiKey, in: header, name: X-Secondary-Key }
+    Transport: { type: apiKey, in: header, name: Content-Type }
+"#,
+    );
+    let client = &files["src/acme/client.py"];
+    assert!(client.contains("api_key: str"), "{client}");
+    assert!(client.contains("secondary_key: str"), "{client}");
+    assert!(client.contains("content_type: str"), "{client}");
+    let wrapper = &files["src/acme/core/client_wrapper.py"];
+    assert!(wrapper.contains("\"X-Primary-Key\""), "{wrapper}");
+    assert!(wrapper.contains("\"X-Secondary-Key\""), "{wrapper}");
+    assert!(wrapper.contains("\"Content-Type\""), "{wrapper}");
+}
