@@ -5959,7 +5959,7 @@ fn overlapping_all_of_fields_flatten_the_base_model() {
 #[test]
 fn nested_and_union_nullability_is_preserved() {
     let (_dir, out) = generate_ok(
-        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths: {}\ncomponents:\n  schemas:\n    Widget:\n      type: object\n      properties:\n        labels:\n          type: array\n          items: { type: string, nullable: true }\n    Schedule:\n      nullable: true\n      anyOf:\n        - { type: integer }\n        - { type: string }\n",
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths: {}\ncomponents:\n  schemas:\n    Widget:\n      type: object\n      properties:\n        labels:\n          type: array\n          items: { type: string, nullable: true }\n        roles:\n          type: array\n          items:\n            type: object\n            nullable: true\n            properties:\n              name: { type: string }\n    Schedule:\n      nullable: true\n      anyOf:\n        - { type: integer }\n        - { type: string }\n",
     );
     let model = std::fs::read_to_string(out.join("src/acme/types/widget.py"))
         .expect("widget model is generated");
@@ -5967,6 +5967,7 @@ fn nested_and_union_nullability_is_preserved() {
         .expect("schedule alias is generated");
     assert!(
         model.contains("typing.List[typing.Optional[str]]")
+            && model.contains("typing.List[typing.Optional[WidgetRolesItem]]")
             && alias.contains("Schedule = typing.Union[int, typing.Optional[str]]"),
         "nested and union nullability should be retained at the schema node that declares it: {model}\n{alias}"
     );

@@ -2882,7 +2882,11 @@ impl Builder<'_> {
                             items,
                             clean_doc(items.description.as_deref()),
                         );
-                        let item = Box::new(TypeRef::Named(name));
+                        let item = if is_optional(items) {
+                            Box::new(TypeRef::Optional(Box::new(TypeRef::Named(name))))
+                        } else {
+                            Box::new(TypeRef::Named(name))
+                        };
                         return if prop_schema.unique_items == Some(true) {
                             TypeRef::Set(item)
                         } else {
