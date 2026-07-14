@@ -3603,6 +3603,50 @@ fn in_process_cli_schema_and_init_write_failure_are_actionable() {
 }
 
 #[test]
+fn additional_api_key_headers_filter_primary_invalid_and_transport_schemes() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: Header Filters, version: 1.0.0 }
+security:
+  - Primary: []
+    Secondary: []
+components:
+  securitySchemes:
+    Primary: { type: apiKey, in: header, name: X-Primary }
+    QueryKey: { type: apiKey, in: query, name: query_key }
+    UserAgent: { type: apiKey, in: header, name: User-Agent }
+    Secondary: { type: apiKey, in: header, name: X-Secondary-Key }
+paths:
+  /items:
+    get:
+      operationId: getItems
+      security: [{ Primary: [], Secondary: [] }]
+      responses:
+        '204': { description: Empty }
+"#,
+    );
+    let client = &files["src/acme/client.py"];
+    assert!(
+        client.contains("api_key: str"),
+        "the first header api key remains the primary credential: {client}"
+    );
+    assert!(
+        client.contains("secondary_key: str"),
+        "a valid later header api key is promoted: {client}"
+    );
+    for excluded in ["query_key:", "user_agent:", "primary:"] {
+        assert!(
+            !client.contains(excluded),
+            "filtered api-key scheme {excluded} leaked into the constructor: {client}"
+        );
+    }
+    assert!(
+        client.contains("secondary_key=secondary_key"),
+        "the promoted header is forwarded to the raw client: {client}"
+    );
+}
+
+#[test]
 fn nullable_union_and_closed_object_cover_type_fallback_branches() {
     let files = render(
         r#"openapi: 3.0.3
