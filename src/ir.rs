@@ -1439,7 +1439,7 @@ fn build_endpoint(
         errors,
         docstring: operation_doc(op.description.as_deref()),
         streaming: is_streaming(op),
-        binary_response: is_binary_response(op),
+        binary_response: is_binary_response(doc, op),
         emittable,
     }
 }
@@ -1480,11 +1480,16 @@ fn body_response_same_ref(doc: &OpenApi, op: &Operation) -> bool {
     request_ref.is_some() && request_ref == response_ref
 }
 
-fn is_binary_response(op: &Operation) -> bool {
+fn is_binary_response(doc: &OpenApi, op: &Operation) -> bool {
     op.responses.iter().any(|(code, resp)| {
         code.starts_with('2')
             && resp.content.iter().any(|(_, media)| {
                 media.schema.as_ref().is_some_and(|schema| {
+                    let schema = schema
+                        .reference
+                        .as_deref()
+                        .and_then(|reference| resolve_ref(doc, reference))
+                        .unwrap_or(schema);
                     schema.ty.as_ref().and_then(|t| t.primary()) == Some("string")
                         && schema.format.as_deref() == Some("binary")
                 })

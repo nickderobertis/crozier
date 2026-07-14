@@ -5917,6 +5917,21 @@ fn binary_success_responses_stream_bytes() {
 }
 
 #[test]
+fn referenced_binary_success_responses_stream_bytes() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /export:\n    get:\n      operationId: exportWidgets\n      tags: [widgets]\n      responses:\n        '200':\n          description: Export\n          content:\n            application/zip:\n              schema: { $ref: '#/components/schemas/FileContent' }\ncomponents:\n  schemas:\n    FileContent: { type: string, format: binary }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
+    assert!(
+        raw.contains("@contextlib.contextmanager")
+            && raw.contains("typing.Iterator[HttpResponse[typing.Iterator[bytes]]]")
+            && raw.contains("httpx_client.stream("),
+        "referenced binary response schemas should use the streaming interface: {raw}"
+    );
+}
+
+#[test]
 fn tag_prefixed_multi_segment_operation_ids_drop_the_tag_segment() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /query/widgets/by_name:\n    \
