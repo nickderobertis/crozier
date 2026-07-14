@@ -7,7 +7,7 @@ use indexmap::IndexMap;
 use crate::config::GenerateConfig;
 use crate::naming;
 use crate::openapi::{
-    AdditionalProperties, OpenApi, Operation, ParameterLocation, Response, Schema,
+    AdditionalProperties, OpenApi, Operation, ParameterLocation, Response, Schema, TypeField,
 };
 
 /// A fully-resolved SDK model ready to emit.
@@ -3513,7 +3513,12 @@ fn single_all_of_ref(schema: &Schema) -> Option<&str> {
 /// or when it is an unknown (untyped) schema, which Fern always renders as
 /// `Optional[Any]`.
 fn is_optional(schema: &Schema) -> bool {
-    schema.nullable == Some(true) || is_unknown(schema)
+    schema.nullable == Some(true)
+        || matches!(
+            schema.ty.as_ref(),
+            Some(TypeField::Multiple(types)) if types.iter().any(|ty| ty == "null")
+        )
+        || is_unknown(schema)
 }
 
 /// A schema that carries nothing to determine a type — Fern treats it as an
