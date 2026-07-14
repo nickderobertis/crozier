@@ -6223,6 +6223,12 @@ fn operation_id_equal_to_tag_generates_on_root_client() {
     assert!(out
         .join("src/acme/types/search_response_result.py")
         .is_file());
+    let response = std::fs::read_to_string(out.join("src/acme/types/search_response.py"))
+        .expect("root response model is generated");
+    assert!(
+        response.contains("from ..core.pydantic_utilities import"),
+        "root response types should use root-relative imports: {response}"
+    );
 }
 
 #[test]

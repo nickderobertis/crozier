@@ -703,10 +703,15 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     for (module, decls) in &tag_type_modules {
         for decl in decls {
             let forward = forward_map.get(decl.name()).unwrap_or(&empty_forward);
+            let location = if module.is_empty() {
+                RefLoc::RootTypes
+            } else {
+                RefLoc::TagTypes((*module).to_string())
+            };
             let file = render_type_decl(
                 &env,
                 decl,
-                RefLoc::TagTypes((*module).to_string()),
+                location,
                 &tag_map,
                 ir.extra_fields,
                 forward,
