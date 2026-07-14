@@ -1464,14 +1464,18 @@ fn build_endpoint(
 
     // A request body is either absent, within the subset crozier can render, or
     // unsupported. Its inline nested objects hoist under the `{Ctx}Request` context.
-    let mut request_body = op
-        .request_body
-        .as_ref()
-        .and_then(|rb| resolve_request_body(doc, types, rb, &mut hoister, &request_ctx));
+    let mut request_body = if http_method == "GET" {
+        None
+    } else {
+        op.request_body
+            .as_ref()
+            .and_then(|rb| resolve_request_body(doc, types, rb, &mut hoister, &request_ctx))
+    };
     if matches!(request_body, Some(RequestBody::Bytes { .. })) {
         header_params.clear();
     }
-    let body_ok = op.request_body.is_none()
+    let body_ok = http_method == "GET"
+        || op.request_body.is_none()
         || request_body.is_some()
         || op.request_body.as_ref().is_some_and(request_body_ignored);
 

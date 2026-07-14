@@ -6942,6 +6942,19 @@ fn text_plain_request_bodies_are_ignored_for_python_generation() {
 }
 
 #[test]
+fn get_request_bodies_are_ignored_through_the_cli() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widget:\n    get:\n      operationId: getWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          application/json:\n            schema:\n              type: object\n              required: [filter]\n              properties:\n                filter: { type: string }\n      responses:\n        '204': { description: Found }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("raw client is generated");
+    assert!(
+        !raw.contains("filter:") && !raw.contains("json={"),
+        "GET request bodies should not enter the generated interface: {raw}"
+    );
+}
+
+#[test]
 fn vendor_json_bare_object_request_body_is_open_map() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /manifests/{id}:\n    \
