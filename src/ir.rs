@@ -110,6 +110,9 @@ fn resolve_server_url(server: &crate::openapi::Server) -> String {
     for (name, var) in &server.variables {
         url = url.replace(&format!("{{{name}}}"), &var.default);
     }
+    if url == "/" {
+        return String::new();
+    }
     url
 }
 

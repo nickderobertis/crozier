@@ -5289,6 +5289,21 @@ fn omitted_schema_type_infers_enum_and_open_map_shapes() {
 }
 
 #[test]
+fn slash_only_server_url_generates_empty_default_environment() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\nservers:\n  - url: /\npaths:\n  \
+         /widgets:\n    get:\n      operationId: listWidgets\n      tags: [widgets]\n      responses:\n        \
+         '200': { description: OK, content: { application/json: { schema: { type: array, items: { type: string } } } } }\n",
+    );
+    let environment = std::fs::read_to_string(out.join("src/acme/environment.py"))
+        .expect("environment module is generated");
+    assert!(
+        environment.contains("DEFAULT = \"\""),
+        "a slash-only server URL should match Fern's empty default environment: {environment}"
+    );
+}
+
+#[test]
 fn missing_operation_id_generates_valid_python() {
     // Issue #40 case 3: an operation without an operationId is valid OpenAPI and
     // must generate (crozier synthesizes a name), not hard-error.
