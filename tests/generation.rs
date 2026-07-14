@@ -2364,3 +2364,201 @@ fn synthesized_names_cover_verb_resource_and_reserved_munge() {
     // A groupless `list` operationId collides with the builtin and becomes `list_`.
     assert!(client.contains("def list_("), "{client}");
 }
+
+/// Binary success responses use Fern's context-managed byte-stream API in both
+/// clients, including typed error handling inside the stream lifetime.
+#[test]
+fn binary_response_emits_sync_and_async_byte_streams_with_typed_errors() {
+    let files = render(
+        r##"openapi: 3.0.1
+info:
+  title: Downloads
+paths:
+  /files/{file_id}:
+    get:
+      operationId: files_download
+      tags: [Files]
+      parameters:
+        - in: path
+          name: file_id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: File contents.
+          content:
+            application/octet-stream:
+              schema: { type: string, format: binary }
+        "404":
+          description: Missing file.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Problem" }
+components:
+  schemas:
+    Problem:
+      type: object
+      required: [message]
+      properties:
+        message: { type: string }
+"##,
+    );
+
+    let raw = &files["src/acme/files/raw_client.py"];
+    assert!(raw.contains("@contextlib.contextmanager"), "{raw}");
+    assert!(raw.contains("@contextlib.asynccontextmanager"), "{raw}");
+    assert!(
+        raw.contains("typing.Iterator[HttpResponse[typing.Iterator[bytes]]]"),
+        "{raw}"
+    );
+    assert!(
+        raw.contains("typing.AsyncIterator[AsyncHttpResponse[typing.AsyncIterator[bytes]]]"),
+        "{raw}"
+    );
+    assert!(
+        raw.contains("_response.iter_bytes(chunk_size=_chunk_size)"),
+        "{raw}"
+    );
+    assert!(
+        raw.contains("_response.aiter_bytes(chunk_size=_chunk_size)"),
+        "{raw}"
+    );
+    assert!(raw.contains("if _response.status_code == 404:"), "{raw}");
+    assert!(raw.contains("raise NotFoundError("), "{raw}");
+
+    let client = &files["src/acme/files/client.py"];
+    assert!(
+        client.contains("with self._raw_client.download("),
+        "{client}"
+    );
+    assert!(
+        client.contains("async with self._raw_client.download("),
+        "{client}"
+    );
+}
+
+/// A shared HTTP error class must have one stable body annotation. If operations
+/// disagree about that body, generation deliberately normalizes every occurrence
+/// to `Any` rather than emitting an exception class whose annotation depends on
+/// endpoint order.
+#[test]
+fn conflicting_error_bodies_normalize_to_any_across_endpoints() {
+    let files = render(
+        r##"openapi: 3.0.1
+info:
+  title: Errors
+paths:
+  /alpha:
+    get:
+      operationId: alpha_get
+      tags: [Alpha]
+      responses:
+        "204": { description: done }
+        "400":
+          description: bad alpha
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AlphaProblem" }
+  /beta:
+    get:
+      operationId: beta_get
+      tags: [Beta]
+      responses:
+        "204": { description: done }
+        "400":
+          description: bad beta
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BetaProblem" }
+components:
+  schemas:
+    AlphaProblem:
+      type: object
+      properties:
+        alpha: { type: string }
+    BetaProblem:
+      type: object
+      properties:
+        beta: { type: integer, format: int64 }
+"##,
+    );
+
+    let error = &files["src/acme/errors/bad_request_error.py"];
+    assert!(
+        error.contains("body: typing.Optional[typing.Any]"),
+        "{error}"
+    );
+    for raw_path in [
+        "src/acme/alpha/raw_client.py",
+        "src/acme/beta/raw_client.py",
+    ] {
+        let raw = &files[raw_path];
+        assert!(
+            raw.contains("typing.Optional[typing.Any],"),
+            "{raw_path}:\n{raw}"
+        );
+        assert!(
+            raw.contains("type_=typing.Optional[typing.Any]"),
+            "{raw_path}:\n{raw}"
+        );
+    }
+}
+
+/// A referenced request schema composed with `allOf` is flattened into endpoint
+/// arguments, while its nested inline enum is moved beside the tag client.
+#[test]
+fn referenced_all_of_body_flattens_fields_and_moves_inline_enum() {
+    let files = render(
+        r##"openapi: 3.0.1
+info:
+  title: Jobs
+paths:
+  /jobs:
+    post:
+      operationId: jobs_create
+      tags: [Jobs]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateJob" }
+      responses:
+        "200":
+          description: created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Job" }
+components:
+  schemas:
+    JobBase:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string }
+    CreateJob:
+      allOf:
+        - { $ref: "#/components/schemas/JobBase" }
+        - type: object
+          required: [priority]
+          properties:
+            priority:
+              type: string
+              enum: [low, high]
+    Job:
+      allOf:
+        - { $ref: "#/components/schemas/JobBase" }
+        - type: object
+          properties:
+            id: { type: integer, format: int64 }
+"##,
+    );
+
+    let raw = &files["src/acme/jobs/raw_client.py"];
+    assert!(raw.contains("name: str"), "{raw}");
+    assert!(raw.contains("priority: CreateJobPriority"), "{raw}");
+    assert!(raw.contains("\"name\": name"), "{raw}");
+    assert!(raw.contains("\"priority\": priority"), "{raw}");
+    assert!(files.contains_key("src/acme/jobs/types/create_job_priority.py"));
+    assert!(!files.contains_key("src/acme/types/create_job.py"));
+    assert!(files["src/acme/types/job.py"].contains("id: typing.Optional[int]"));
+}
