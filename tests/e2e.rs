@@ -5942,6 +5942,20 @@ fn request_media_examples_populate_optional_body_fields() {
 }
 
 #[test]
+fn readme_marks_composed_object_bodies_as_complex() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          application/json:\n            schema: { $ref: '#/components/schemas/CreateWidget' }\n      responses:\n        '204': { description: Created }\ncomponents:\n  schemas:\n    WidgetBase:\n      type: object\n      properties:\n        name: { type: string }\n    CreateWidget:\n      allOf:\n        - { $ref: '#/components/schemas/WidgetBase' }\n        - type: object\n          properties:\n            active: { type: boolean }\n",
+    );
+    let readme = std::fs::read_to_string(out.join("README.md")).expect("README is generated");
+    assert!(
+        readme.contains("client.widgets.create_widget(...)")
+            && readme.contains("client.widgets.with_raw_response.create_widget(...)")
+            && readme.contains("client.widgets.create_widget(..., request_options={"),
+        "composed object request bodies should retain README argument placeholders: {readme}"
+    );
+}
+
+#[test]
 fn globally_optional_basic_auth_generates_optional_credentials() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\nsecurity: []\npaths:\n  /widgets:\n    get:\n      operationId: listWidgets\n      tags: [widgets]\n      responses:\n        '200': { description: OK }\ncomponents:\n  securitySchemes:\n    Basic:\n      type: http\n      scheme: basic\n",

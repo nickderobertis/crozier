@@ -1203,6 +1203,9 @@ fn root_init_file(
 /// of only scalar fields with any optional one (`createaccount`) or a single field
 /// (`create`), or a union/enum/scalar/no body, renders empty parens.
 fn complex_body(ep: &Endpoint, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) -> bool {
+    if ep.body_all_of {
+        return true;
+    }
     match &ep.request_body {
         None => false,
         Some(RequestBody::Bytes) => true,
