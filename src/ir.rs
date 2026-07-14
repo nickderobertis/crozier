@@ -3057,6 +3057,11 @@ fn full_type_ref(schema: &Schema) -> TypeRef {
     if is_optional(schema) {
         match base {
             TypeRef::Optional(_) => base,
+            TypeRef::Union(mut variants) if !variants.is_empty() => {
+                let last = variants.pop().expect("non-empty union checked above");
+                variants.push(TypeRef::Optional(Box::new(last)));
+                TypeRef::Union(variants)
+            }
             other => TypeRef::Optional(Box::new(other)),
         }
     } else {
@@ -3129,7 +3134,7 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
                     if is_unknown(i) {
                         TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)))
                     } else {
-                        base_type_ref(i)
+                        full_type_ref(i)
                     }
                 });
             if schema.unique_items == Some(true) {
