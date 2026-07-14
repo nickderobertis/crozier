@@ -4816,11 +4816,14 @@ fn build_example(
     }
     // Fern shows a query parameter in the worked example when it is required OR
     // carries a spec `example` (the value it then displays).
-    for qp in ep
-        .query_params
-        .iter()
-        .filter(|q| q.required || (q.example.is_some() && q.example_is_scalar))
-    {
+    let mut optional_query_example_used = false;
+    for qp in &ep.query_params {
+        if !qp.required {
+            if qp.example.is_none() || !qp.example_is_scalar || optional_query_example_used {
+                continue;
+            }
+            optional_query_example_used = true;
+        }
         let v = if let Some(ex) = qp.example.as_ref().filter(|_| qp.example_is_scalar) {
             Example::Atom(ex.clone())
         } else if let TypeRef::List(inner) = &qp.type_ref {
