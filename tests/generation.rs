@@ -3628,3 +3628,26 @@ components:
     );
     assert!(closed.contains("extra=\"allow\""), "{closed}");
 }
+
+#[test]
+fn unknown_alias_variants_collapse_to_optional_any() {
+    let files = render(
+        r#"openapi: 3.1.0
+info: { title: Unknown Aliases, version: 1.0.0 }
+components:
+  schemas:
+    NullOnly:
+      type: ['null']
+    NullableUnknown:
+      nullable: true
+"#,
+    );
+    for name in ["null_only", "nullable_unknown"] {
+        let path = format!("src/acme/types/{name}.py");
+        let module = &files[&path];
+        assert!(
+            module.contains("typing.Optional[typing.Any]"),
+            "{name} must use the optional unknown fallback: {module}"
+        );
+    }
+}
