@@ -3076,8 +3076,8 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                 || !ep.path_params.is_empty()
                 || (body.content_type_header()
                     && !ep.body_component_ref
-                    && !(ep.body_all_of && matches!(body, RequestBody::Inline(_)))
-                    && !(ep.body_response_same_ref && matches!(body, RequestBody::Inline(_)))
+                    && !(matches!(body, RequestBody::Inline(_))
+                        && (ep.body_all_of || ep.body_response_same_ref))
                     && (!ep.body_documented || body.all_fields_required())) =>
         {
             Some("application/json".to_string())
@@ -5663,6 +5663,8 @@ mod tests {
                 is_file: false,
                 collision_prefix: None,
                 example: None,
+                media_example: false,
+                nullable: false,
             },
             // An optional list → `Optional[Sequence[..]] = OMIT` in request context.
             BodyField {
@@ -5676,6 +5678,8 @@ mod tests {
                 is_file: false,
                 collision_prefix: None,
                 example: None,
+                media_example: false,
+                nullable: false,
             },
             // A convert field → convert-wrapped json entry keyed by the wire name.
             BodyField {
@@ -5689,6 +5693,8 @@ mod tests {
                 is_file: false,
                 collision_prefix: None,
                 example: None,
+                media_example: false,
+                nullable: false,
             },
         ]));
         let out = raw_method(&ep, false, &mut i);
