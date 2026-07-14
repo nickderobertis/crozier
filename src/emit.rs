@@ -4429,11 +4429,22 @@ impl<'a> ExampleCtx<'a> {
         }
     }
 
+    fn example_is_composite(&self, t: &TypeRef) -> bool {
+        match t {
+            TypeRef::List(_) | TypeRef::Set(_) | TypeRef::Dict(_, _) => true,
+            TypeRef::Named(name) => match self.find(name) {
+                Some(TypeDecl::Alias(alias)) => self.example_is_composite(&alias.target),
+                _ => false,
+            },
+            _ => false,
+        }
+    }
+
     fn value_from_example(&mut self, t: &TypeRef, example: &str) -> Option<Example> {
         if self.example_is_scalar(t) {
             return Some(Example::Atom(example.to_string()));
         }
-        if matches!(t, TypeRef::List(_) | TypeRef::Set(_) | TypeRef::Dict(_, _))
+        if self.example_is_composite(t)
             && (example.starts_with('[') || example.starts_with('{'))
         {
             return Some(Example::Atom(example.to_string()));
