@@ -4750,7 +4750,7 @@ fn build_example(
         let v = pp
             .example
             .as_ref()
-            .filter(|_| ctx.example_is_scalar(&pp.type_ref))
+            .filter(|_| !ep.binary_response && ctx.example_is_scalar(&pp.type_ref))
             .map_or_else(
                 || ctx.value(&pp.type_ref, Slot::Named(&pp.wire_name)),
                 |example| Example::Atom(example.clone()),

@@ -5996,6 +5996,19 @@ fn referenced_binary_success_responses_stream_bytes() {
 }
 
 #[test]
+fn binary_response_examples_use_neutral_path_placeholders() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/{id}/export:\n    get:\n      operationId: exportWidget\n      tags: [widgets]\n      parameters:\n        - { name: id, in: path, required: true, schema: { $ref: '#/components/schemas/WidgetId' } }\n      responses:\n        '200': { description: Export, content: { application/zip: { schema: { $ref: '#/components/schemas/FileContent' } } } }\ncomponents:\n  schemas:\n    WidgetId: { type: string, example: '\"widget-123\"' }\n    FileContent: { type: string, format: binary }\n",
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/widgets/client.py"))
+        .expect("widgets client is generated");
+    assert!(
+        client.contains("id=\"id\"") && !client.contains("widget-123"),
+        "binary response examples should use neutral path placeholders: {client}"
+    );
+}
+
+#[test]
 fn binary_request_media_types_are_preserved() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /import:\n    post:\n      operationId: importWidgets\n      tags: [widgets]\n      requestBody:\n        content:\n          application/zip:\n            schema: { $ref: '#/components/schemas/FileContent' }\n      responses:\n        '204': { description: Imported }\n  /create:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          '*/*':\n            schema: { $ref: '#/components/schemas/FileContent' }\n          application/vnd.create+json:\n            schema: { $ref: '#/components/schemas/CreateWidget' }\n      responses:\n        '204': { description: Created }\ncomponents:\n  schemas:\n    FileContent: { type: string, format: binary }\n    CreateWidget:\n      type: object\n      properties:\n        name: { type: string }\n",
