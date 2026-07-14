@@ -1383,7 +1383,9 @@ fn build_endpoint(
             type_ref: p
                 .schema
                 .as_ref()
-                .map_or(TypeRef::Primitive(Prim::Any), base_type_ref),
+                .map_or(TypeRef::Primitive(Prim::Any), |schema| {
+                    hoister.hoist_param_enum(&request_ctx, &p.name, schema)
+                }),
             required: p.required == Some(true),
             docstring: clean_doc(p.description.as_deref()),
         })

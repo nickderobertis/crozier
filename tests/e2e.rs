@@ -5915,6 +5915,21 @@ fn path_parameter_enums_hoist_to_tag_types() {
 }
 
 #[test]
+fn header_parameter_enums_hoist_to_tag_types() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      parameters:\n        - name: X-Widget-Mode\n          in: header\n          required: true\n          schema: { type: string, enum: [FAST, SAFE] }\n      responses:\n        '204': { description: Created }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
+    assert!(
+        out.join("src/acme/widgets/types/create_widget_request_x_widget_mode.py")
+            .is_file()
+            && raw.contains("CreateWidgetRequestXWidgetMode"),
+        "inline header enums should hoist under the endpoint tag: {raw}"
+    );
+}
+
+#[test]
 fn binary_success_responses_stream_bytes() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/{id}/download:\n    \
