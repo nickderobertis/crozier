@@ -1015,7 +1015,8 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
     // wrapper, so it runs after the type layer is built. It also hoists inline
     // request/response bodies into their tags' own `types/` packages.
     let global = global_headers(doc);
-    let (endpoints, tag_types) = endpoints(doc, &builder.types, &global);
+    let (mut endpoints, tag_types) = endpoints(doc, &builder.types, &global);
+    normalize_error_body_types(&mut endpoints);
     let errors = error_classes(&endpoints);
 
     // Fern does not emit a standalone type for a schema used *only* as an inlined
@@ -1079,6 +1080,27 @@ fn error_classes(endpoints: &[Endpoint]) -> Vec<ErrorClass> {
     }
     classes.sort_by(|a, b| a.class_name.cmp(&b.class_name));
     classes
+}
+
+fn normalize_error_body_types(endpoints: &mut [Endpoint]) {
+    let mut downgrade = std::collections::HashSet::new();
+    for ep in endpoints.iter() {
+        for err in &ep.errors {
+            if matches!(
+                err.body_type,
+                TypeRef::Optional(ref inner) if matches!(&**inner, TypeRef::Primitive(Prim::Any))
+            ) {
+                downgrade.insert(err.class_name.clone());
+            }
+        }
+    }
+    for ep in endpoints {
+        for err in &mut ep.errors {
+            if downgrade.contains(&err.class_name) {
+                err.body_type = TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)));
+            }
+        }
+    }
 }
 
 /// Resolve every operation into an [`Endpoint`], in document-traversal order

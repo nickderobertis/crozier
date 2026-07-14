@@ -5304,6 +5304,32 @@ fn slash_only_server_url_generates_empty_default_environment() {
 }
 
 #[test]
+fn mixed_error_body_shapes_downgrade_status_class_to_any() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    \
+         get:\n      operationId: listWidgets\n      tags: [widgets]\n      responses:\n        \
+         '200': { description: OK, content: { application/json: { schema: { type: array, items: { type: string } } } } }\n        \
+         '400': { description: Bad request }\n  /gadgets:\n    get:\n      operationId: listGadgets\n      \
+         tags: [gadgets]\n      responses:\n        '200': { description: OK, content: { application/json: { schema: { \
+         type: array, items: { type: string } } } } }\n        '400': { description: Bad request, content: { \
+         application/json: { schema: { $ref: '#/components/schemas/ErrorBody' } } } }\ncomponents:\n  schemas:\n    \
+         ErrorBody:\n      type: object\n      properties:\n        message: { type: string }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/gadgets/raw_client.py"))
+        .expect("gadgets raw client is generated");
+    assert!(
+        raw.contains("type_=typing.Optional[typing.Any]"),
+        "a status class with any bodyless response should parse every branch as Optional[Any]: {raw}"
+    );
+    let error = std::fs::read_to_string(out.join("src/acme/errors/bad_request_error.py"))
+        .expect("BadRequestError is generated");
+    assert!(
+        error.contains("body: typing.Optional[typing.Any]"),
+        "the generated error class should also accept Optional[Any]: {error}"
+    );
+}
+
+#[test]
 fn missing_operation_id_generates_valid_python() {
     // Issue #40 case 3: an operation without an operationId is valid OpenAPI and
     // must generate (crozier synthesizes a name), not hard-error.
