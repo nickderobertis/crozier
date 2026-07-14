@@ -3723,3 +3723,272 @@ components:
         );
     }
 }
+
+#[test]
+fn response_modes_cover_head_text_bodyless_and_default_fallbacks() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Response Modes, version: 1.0.0 }
+paths:
+  /headers:
+    head:
+      summary: Inspect headers
+      tags: [Probes]
+      responses: { '200': { description: Headers } }
+  /text:
+    get:
+      operationId: probes_getText
+      tags: [Probes]
+      responses:
+        '200':
+          description: Plain text
+          content: { text/plain: { schema: { type: string } } }
+  /maybe:
+    post:
+      operationId: probes_maybe
+      tags: [Probes]
+      responses:
+        '200':
+          description: Value
+          content: { application/json: { schema: { type: string } } }
+        '204': { description: Empty }
+  /fallback:
+    post:
+      operationId: probes_fallback
+      tags: [Probes]
+      responses:
+        default:
+          description: JWT fallback
+          content: { application/jwt: { schema: { type: string } } }
+"##,
+    );
+    let raw = &files["src/acme/probes/raw_client.py"];
+    let client = &files["src/acme/probes/client.py"];
+    assert!(raw.contains("def inspect_headers("), "{raw}");
+    assert!(client.contains(") -> typing.Dict[str, str]:"), "{client}");
+    assert!(client.contains("return _response.headers"), "{client}");
+    assert!(raw.contains("data=_response.text"), "{raw}");
+    assert!(
+        raw.contains("if _response is None or not _response.text.strip():"),
+        "{raw}"
+    );
+    assert!(raw.contains("typing.Optional[str]"), "{raw}");
+    assert!(raw.contains("def fallback("), "{raw}");
+}
+
+#[test]
+fn parameter_examples_normalize_numbers_and_preserve_serialization_styles() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Parameter Examples, version: 1.0.0 }
+paths:
+  /search/{ids}:
+    get:
+      operationId: search_run
+      tags: [Search]
+      parameters:
+        - { name: ids, in: path, required: true, schema: { type: array, items: { type: string } } }
+        - name: page
+          in: query
+          required: true
+          example: 0
+          schema: { type: integer, minimum: 0 }
+        - name: ratio
+          in: query
+          required: true
+          examples: { common: { value: 2 } }
+          schema: { type: number }
+        - name: filters
+          in: query
+          style: deepObject
+          explode: true
+          schema: { type: object, additionalProperties: true }
+        - name: labels
+          in: query
+          style: spaceDelimited
+          schema: { type: array, items: { type: string } }
+        - name: X-Limit
+          in: header
+          required: true
+          example: 7
+          schema: { type: integer }
+      responses: { '204': { description: Done } }
+"##,
+    );
+    let raw = &files["src/acme/search/raw_client.py"];
+    let client = &files["src/acme/search/client.py"];
+    assert!(raw.contains("page: int"), "{raw}");
+    assert!(raw.contains("ratio: float"), "{raw}");
+    assert!(
+        raw.contains("filters: typing.Optional[typing.Dict"),
+        "{raw}"
+    );
+    assert!(raw.contains("\"filters\": filters"), "{raw}");
+    assert!(raw.contains("\"labels\": labels"), "{raw}");
+    assert!(client.contains("ids=\"ids\""), "{client}");
+    assert!(client.contains("page=1"), "{client}");
+    assert!(client.contains("ratio=2.0"), "{client}");
+    assert!(client.contains("limit=7"), "{client}");
+}
+
+#[test]
+fn anonymous_request_metadata_and_schema_examples_drive_fern_shapes() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Request Ownership, version: 1.0.0 }
+components:
+  securitySchemes:
+    Bearer: { type: http, scheme: bearer }
+  schemas:
+    Configuration:
+      example: { user: charles }
+    SchemaDocument:
+      type: object
+      description: Describes arbitrary fields.
+      example: { user: { type: string } }
+    SharedRequest:
+      type: object
+      properties:
+        configuration: { $ref: '#/components/schemas/Configuration' }
+        workspaceId: { type: string }
+      required: [configuration, workspaceId]
+    Echo:
+      type: object
+      properties: { text: { type: string } }
+paths:
+  /one:
+    post:
+      operationId: jobs_one
+      tags: [Jobs]
+      requestBody:
+        content: { application/json: { schema: { $ref: '#/components/schemas/SharedRequest' } } }
+      responses: { '204': { description: Done } }
+  /two:
+    post:
+      operationId: jobs_two
+      tags: [Jobs]
+      requestBody:
+        content: { application/json: { schema: { $ref: '#/components/schemas/SharedRequest' } } }
+      responses: { '204': { description: Done } }
+  /private-echo:
+    post:
+      operationId: jobs_privateEcho
+      tags: [Jobs]
+      security: [ { Bearer: [] } ]
+      requestBody:
+        content: { application/json: { schema: { $ref: '#/components/schemas/Echo' } } }
+      responses:
+        '200':
+          description: Echo
+          content: { application/json: { schema: { $ref: '#/components/schemas/Echo' } } }
+"##,
+    );
+    let raw = &files["src/acme/jobs/raw_client.py"];
+    let client = &files["src/acme/jobs/client.py"];
+    assert!(files["src/acme/types/schema_document.py"]
+        .contains("typing.Dict[str, typing.Optional[typing.Any]]"));
+    assert!(
+        client.contains("configuration={\"user\": \"charles\"}"),
+        "{client}"
+    );
+    assert_eq!(
+        raw.matches("\"content-type\": \"application/json\"")
+            .count(),
+        2,
+        "{raw}"
+    );
+    let private = raw
+        .split("def privateecho(")
+        .nth(1)
+        .expect("private method");
+    assert!(
+        private.contains("\"content-type\": \"application/json\""),
+        "{private}"
+    );
+}
+
+#[test]
+fn single_use_request_components_move_their_synthetic_type_graph_to_the_tag() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Request Graph, version: 1.0.0 }
+paths:
+  /imports:
+    post:
+      operationId: imports_create
+      tags: [Imports]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/ImportRequest' } } }
+      responses: { '204': { description: Imported } }
+components:
+  schemas:
+    ImportRequest:
+      type: object
+      required: [settings, choice, modes]
+      properties:
+        settings:
+          type: object
+          required: [credentials]
+          properties:
+            credentials:
+              type: object
+              required: [token]
+              properties: { token: { type: string } }
+        choice:
+          oneOf:
+            - type: object
+              required: [name]
+              properties: { name: { type: string } }
+            - type: object
+              required: [count]
+              properties: { count: { type: integer } }
+        modes:
+          type: array
+          items: { type: string, enum: [fast, safe] }
+"##,
+    );
+    let type_paths: Vec<&str> = files
+        .keys()
+        .map(String::as_str)
+        .filter(|path| path.starts_with("src/acme/imports/types/"))
+        .collect();
+    assert!(type_paths.len() >= 4, "{type_paths:#?}");
+    assert!(!files.contains_key("src/acme/types/import_request.py"));
+    let raw = &files["src/acme/imports/raw_client.py"];
+    assert!(raw.contains("settings: ImportRequestSettings"), "{raw}");
+    assert!(raw.contains("choice: ImportRequestChoice"), "{raw}");
+    assert!(
+        raw.contains("modes: typing.Sequence[ImportRequestModesItem]"),
+        "{raw}"
+    );
+}
+
+#[test]
+fn no_argument_binary_download_omits_examples_and_unused_error_parser() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Binary Probe, version: 1.0.0 }
+paths:
+  /archive:
+    get:
+      operationId: archives_download
+      tags: [Archives]
+      responses:
+        '200':
+          description: Zip archive
+          content: { application/zip: { schema: { type: string, format: binary } } }
+"##,
+    );
+    let raw = &files["src/acme/archives/raw_client.py"];
+    let client = &files["src/acme/archives/client.py"];
+    assert!(
+        raw.contains("typing.Iterator[HttpResponse[typing.Iterator[bytes]]]"),
+        "{raw}"
+    );
+    assert!(!raw.contains("parse_obj_as"), "{raw}");
+    assert!(!client.contains("Examples\n"), "{client}");
+    let reference = &files["reference.md"];
+    assert!(reference.contains("## Archives"), "{reference}");
+    assert!(!reference.contains("download</a>"), "{reference}");
+}
