@@ -2975,14 +2975,19 @@ components:
 "##,
     );
     let raw = &files["src/acme/widgets/raw_client.py"];
-    assert!(raw.contains("content=request,\n            headers={\n                \"content-type\": \"application/zip\""), "{raw}");
+    let upload = raw.split("def upload(").nth(1).expect("ZIP upload method");
+    assert!(upload.contains("content=request,\n            headers={\n                \"content-type\": \"application/zip\""), "{upload}");
     assert!(
-        raw.contains("request: typing.Optional[FileContent] = None"),
-        "{raw}"
+        upload.contains("request: typing.Optional[FileContent] = None"),
+        "{upload}"
     );
+    let create = raw
+        .split("def create(")
+        .nth(1)
+        .expect("wildcard request method");
     assert!(
-        raw.contains("json=request,"),
-        "wildcard selection uses the JSON-compatible request path: {raw}"
+        create.contains("json=request,") && !create.contains("\"content-type\": \"*/*\""),
+        "wildcard selection uses the JSON-compatible request path: {create}"
     );
     assert!(
         raw.contains("@contextlib.contextmanager"),
@@ -2994,6 +2999,36 @@ components:
     );
     assert!(
         raw.contains("Exports all widgets.\n\n        Parameters"),
+        "{raw}"
+    );
+}
+
+#[test]
+fn octet_stream_request_uses_bytes_transport() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: Octets, version: 1.0.0 }
+paths:
+  /upload:
+    post:
+      operationId: octets_upload
+      tags: [Octets]
+      requestBody:
+        content:
+          application/octet-stream: { schema: { type: string, format: binary } }
+      responses: { '204': { description: Uploaded } }
+"#,
+    );
+    let raw = &files["src/acme/octets/raw_client.py"];
+    assert!(
+        raw.contains(
+            "request: typing.Union[bytes, typing.Iterator[bytes], typing.AsyncIterator[bytes]]"
+        ),
+        "{raw}"
+    );
+    assert!(raw.contains("content=request,"), "{raw}");
+    assert!(
+        raw.contains("\"content-type\": \"application/octet-stream\""),
         "{raw}"
     );
 }
@@ -3832,6 +3867,29 @@ paths:
 }
 
 #[test]
+fn integer_formats_drive_distinct_synthesized_examples() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: Integer Formats, version: 1.0.0 }
+paths:
+  /numbers:
+    get:
+      operationId: numbers_get
+      tags: [Numbers]
+      parameters:
+        - { name: regular, in: query, required: true, schema: { type: integer } }
+        - { name: unsigned, in: query, required: true, schema: { type: integer, format: uint32 } }
+        - { name: long_value, in: query, required: true, schema: { type: integer, format: int64 } }
+      responses: { '204': { description: Done } }
+"#,
+    );
+    let client = &files["src/acme/numbers/client.py"];
+    assert!(client.contains("regular=1"), "{client}");
+    assert!(client.contains("unsigned=1"), "{client}");
+    assert!(client.contains("long_value=1000000"), "{client}");
+}
+
+#[test]
 fn anonymous_request_metadata_and_schema_examples_drive_fern_shapes() {
     let files = render(
         r##"openapi: 3.0.3
@@ -4142,11 +4200,18 @@ paths:
             && del_method.contains("type_=str,"),
         "{del_method}"
     );
+    let wild_method = raw.split("def wild(").nth(1).expect("wild raw method");
     assert!(
-        raw.contains("request: typing.Dict[str, typing.Optional[typing.Any]]"),
-        "{raw}"
+        wild_method.contains("request: typing.Dict[str, typing.Optional[typing.Any]]"),
+        "{wild_method}"
     );
-    assert!(raw.contains("json=request"), "{raw}");
-    assert!(!raw.contains("\"content-type\": \"*/*\""), "{raw}");
-    assert!(raw.contains(") -> HttpResponse[int]:"), "{raw}");
+    assert!(wild_method.contains("json=request"), "{wild_method}");
+    assert!(
+        !wild_method.contains("\"content-type\": \"*/*\""),
+        "{wild_method}"
+    );
+    assert!(
+        wild_method.contains(") -> HttpResponse[int]:") && wild_method.contains("type_=int,"),
+        "{wild_method}"
+    );
 }
