@@ -2636,7 +2636,7 @@ fn module_title(doc: &OpenApi, op: &Operation, url: &str) -> String {
 
 fn title_from_tag(doc: &OpenApi, tag: &str) -> String {
     let declared = doc.tags.iter().any(|t| t.name == tag);
-    if declared && tag.chars().all(|c| !c.is_ascii_uppercase()) {
+    if declared {
         tag.to_string()
     } else {
         naming::to_pascal_case(tag)
