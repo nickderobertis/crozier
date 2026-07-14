@@ -547,6 +547,9 @@ pub struct Endpoint {
     pub errors: Vec<ErrorResponse>,
     /// A short description shown as the docstring's summary line.
     pub docstring: Option<String>,
+    /// Whether the source description ended with a blank paragraph, which Fern
+    /// preserves in reference documentation after trimming method docstrings.
+    pub reference_description_trailing_blank: bool,
     /// Whether the success response is a Server-Sent-Events stream
     /// (`text/event-stream`). A streaming operation is emitted as a
     /// context-managed iterator of chunks rather than a buffered response.
@@ -1525,6 +1528,10 @@ fn build_endpoint(
         response_doc: success_response_doc(op),
         errors,
         docstring: operation_doc(op.description.as_deref()),
+        reference_description_trailing_blank: op
+            .description
+            .as_deref()
+            .is_some_and(|description| description.ends_with("\n\n")),
         streaming: is_streaming(op),
         binary_response: is_binary_response(doc, op),
         emittable,

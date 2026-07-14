@@ -5954,6 +5954,19 @@ fn declared_tag_labels_are_preserved_in_reference_headings() {
 }
 
 #[test]
+fn reference_preserves_terminal_description_paragraphs() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      description: |+\n        Creates a widget.\n\n      responses:\n        '204': { description: Created }\n",
+    );
+    let reference = std::fs::read_to_string(out.join("reference.md"))
+        .expect("reference documentation is generated");
+    assert!(
+        reference.contains("Creates a widget.\n\n</dd>"),
+        "terminal description paragraphs should remain in reference docs: {reference}"
+    );
+}
+
+#[test]
 fn header_parameter_enums_hoist_to_tag_types() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      parameters:\n        - name: X-Widget-Mode\n          in: header\n          required: true\n          schema: { type: string, enum: [FAST, SAFE] }\n      responses:\n        '204': { description: Created }\n",

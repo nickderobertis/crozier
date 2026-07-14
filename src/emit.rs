@@ -1588,7 +1588,13 @@ fn reference_entry(
         pkg: pkg.to_string(),
         method: ep.method_name.clone(),
         dots: if has_args { "..." } else { "" },
-        description: ep.docstring.clone(),
+        description: ep.docstring.as_ref().map(|description| {
+            if ep.reference_description_trailing_blank {
+                format!("{description}\n")
+            } else {
+                description.clone()
+            }
+        }),
         example,
         params,
     };
@@ -5548,6 +5554,7 @@ mod tests {
             response_doc: None,
             errors: Vec::new(),
             docstring: None,
+            reference_description_trailing_blank: false,
             streaming: false,
             binary_response: false,
             emittable: true,
