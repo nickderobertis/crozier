@@ -6299,6 +6299,10 @@ fn operation_id_equal_to_tag_generates_on_root_client() {
         client.contains("def search(") && !client.contains("def search(self):"),
         "an operation named exactly for its tag should remain a root method: {client}"
     );
+    assert!(
+        !client.contains("OMIT ="),
+        "a root client with no request body should not declare OMIT: {client}"
+    );
     assert!(out.join("src/acme/raw_client.py").is_file());
     assert!(out.join("src/acme/types/search_response.py").is_file());
     assert!(out

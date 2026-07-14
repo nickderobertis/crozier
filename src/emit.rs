@@ -3566,7 +3566,10 @@ fn root_client_file(
     body.push_str(&imports.render());
     body.push_str("\n\n");
     body.push_str(&type_checking);
-    if !root_endpoints.is_empty() {
+    if root_endpoints
+        .iter()
+        .any(|endpoint| endpoint.request_body.is_some())
+    {
         body.push_str("\nOMIT = typing.cast(typing.Any, ...)\n");
     }
     body.push_str("\n\n");
