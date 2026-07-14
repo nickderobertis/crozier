@@ -2930,6 +2930,8 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
             }
             if !data.is_empty() {
                 lines.push(format!("            data={{\n{data}            }},"));
+            } else if !files.is_empty() {
+                lines.push("            data={},".to_string());
             }
             if !files.is_empty() {
                 lines.push(format!("            files={{\n{files}            }},"));

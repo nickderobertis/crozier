@@ -5450,6 +5450,23 @@ fn tag_prefixed_multi_segment_operation_ids_drop_the_tag_segment() {
 }
 
 #[test]
+fn file_only_multipart_requests_include_empty_data() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/import:\n    \
+         post:\n      operationId: importWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          \
+         multipart/form-data:\n            schema:\n              type: object\n              properties:\n                \
+         archive: { type: string, format: binary }\n      responses:\n        '200': { description: OK, content: { \
+         application/json: { schema: { type: array, items: { type: string } } } } }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
+    assert!(
+        raw.contains("data={},") && raw.contains("files={"),
+        "file-only multipart requests should still pass an empty data mapping: {raw}"
+    );
+}
+
+#[test]
 fn array_ref_request_body_generates_single_named_request_argument() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/archive:\n    \
