@@ -3352,6 +3352,12 @@ fn raw_binary_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports
 
 fn raw_binary_stream_docstring(ep: &Endpoint, mp: &MethodParams, return_type: &str) -> String {
     let mut lines: Vec<String> = vec!["        \"\"\"".to_string()];
+    if let Some(summary) = &ep.docstring {
+        for line in summary.split('\n') {
+            lines.push(format!("        {line}"));
+        }
+        lines.push(String::new());
+    }
     lines.push("        Parameters".to_string());
     lines.push("        ----------".to_string());
     for (name, ty, desc) in &mp.path {
