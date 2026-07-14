@@ -6226,7 +6226,7 @@ fn multipart_request_enums_hoist_through_the_cli() {
 }
 
 #[test]
-fn multiple_request_enums_use_a_parenthesized_example_import() {
+fn short_multiple_request_enum_imports_stay_flat() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widget:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          application/json:\n            schema:\n              type: object\n              required: [mode, status]\n              properties:\n                mode: { type: string, enum: [FAST, SAFE] }\n                status: { type: string, enum: [ACTIVE, PAUSED] }\n      responses:\n        '204': { description: Created }\n",
     );
@@ -6234,9 +6234,9 @@ fn multiple_request_enums_use_a_parenthesized_example_import() {
         .expect("widgets client is generated");
     assert!(
         client.contains(
-            "from acme.widgets import (\n            CreateWidgetRequestMode,\n            CreateWidgetRequestStatus,\n        )"
+            "from acme.widgets import CreateWidgetRequestMode, CreateWidgetRequestStatus"
         ),
-        "multiple tag-scoped example types should use Fern's grouped import: {client}"
+        "tag-scoped example imports within 88 columns should stay flat: {client}"
     );
 }
 

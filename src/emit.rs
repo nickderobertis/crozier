@@ -5018,12 +5018,13 @@ fn build_example(
             by_module.entry(module).or_default().push(name);
         }
         for (module, tag_names) in by_module {
-            if tag_names.len() == 1 {
-                tag_import_lines.push(format!("from {pkg}.{module} import {}", tag_names[0]));
-            } else {
+            let flat = format!("from {pkg}.{module} import {}", tag_names.join(", "));
+            if flat.len() > 80 {
                 tag_import_lines.push(format!("from {pkg}.{module} import ("));
                 tag_import_lines.extend(tag_names.iter().map(|name| format!("    {name},")));
                 tag_import_lines.push(")".to_string());
+            } else {
+                tag_import_lines.push(flat);
             }
         }
     }
