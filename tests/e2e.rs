@@ -5388,6 +5388,8 @@ fn paths_level_extension_generates_valid_python() {
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  \
          x-codegen-contextRoot: /api/v1\n  /widgets:\n    get:\n      operationId: listWidgets\n      \
          tags: [widgets]\n      responses:\n        '200': { description: OK, content: { \
+         application/json: { schema: { type: array, items: { type: string } } } } }\n  /groups:\n    get:\n      \
+         operationId: GroupV2.GetGroups\n      tags: [GroupV2]\n      responses:\n        '200': { description: OK, content: { \
          application/json: { schema: { type: array, items: { type: string } } } } }\n",
     );
     assert!(
@@ -5813,6 +5815,31 @@ fn colliding_query_and_body_fields_serialize_from_query_name() {
     assert!(
         !raw.contains("\"active\": widget_record_active,"),
         "the prefixed signature name should not be used in the JSON dict for this collision: {raw}"
+    );
+}
+
+#[test]
+fn camel_case_tags_generate_snake_case_client_packages() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /runs:\n    \
+         get:\n      operationId: get_runs\n      tags: [DagRun]\n      responses:\n        '200': { description: OK, content: { \
+         application/json: { schema: { type: array, items: { type: string } } } } }\n  /entries:\n    get:\n      \
+         operationId: get_entries\n      tags: [XCom]\n      responses:\n        '200': { description: OK, content: { \
+         application/json: { schema: { type: array, items: { type: string } } } } }\n  /groups:\n    get:\n      \
+         operationId: GroupV2.GetGroups\n      tags: [GroupV2]\n      responses:\n        '200': { description: OK, content: { \
+         application/json: { schema: { type: array, items: { type: string } } } } }\n",
+    );
+    assert!(
+        out.join("src/acme/dag_run/raw_client.py").is_file(),
+        "PascalCase tags should generate snake_case client package paths"
+    );
+    assert!(
+        out.join("src/acme/x_com/raw_client.py").is_file(),
+        "mixed acronym tags should preserve their word boundary"
+    );
+    assert!(
+        out.join("src/acme/groupv2/raw_client.py").is_file(),
+        "dotted operation namespaces should retain Fern's compact tag package"
     );
 }
 

@@ -2335,7 +2335,7 @@ fn endpoint_module(op: &Operation, url: &str) -> String {
             }
         }
         if let Some(tag) = first_tag(op) {
-            return snake_module(tag);
+            return compact_module(tag);
         }
         return naming::sanitize_identifier(&naming::to_snake_case(
             id.split_once('.').map_or(id, |(group, _)| group),
@@ -2362,8 +2362,15 @@ fn endpoint_module(op: &Operation, url: &str) -> String {
 }
 
 /// The snake-cased, identifier-safe module name a tag maps to (`attachment-public`
-/// → `attachment_public`).
+/// → `attachment_public`, `DagRun` → `dag_run`).
 fn snake_module(tag: &str) -> String {
+    let name = naming::sanitize_identifier(&naming::to_snake_case(tag));
+    module_identifier(&name)
+}
+
+/// The compact module name Fern uses for a dotted operation namespace
+/// (`GroupV2.GetGroup` -> `groupv2`). Punctuation still becomes a word boundary.
+fn compact_module(tag: &str) -> String {
     let name = if tag.chars().all(|c| c.is_ascii_alphanumeric()) {
         naming::sanitize_identifier(&tag.to_ascii_lowercase())
     } else {
