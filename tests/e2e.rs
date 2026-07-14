@@ -5886,6 +5886,22 @@ fn all_of_request_bodies_flatten_inherited_fields() {
 }
 
 #[test]
+fn single_use_request_component_enums_move_to_tag_types() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    patch:\n      operationId: patchWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          application/json:\n            schema: { $ref: '#/components/schemas/UpdateWidget' }\n      responses:\n        '204': { description: Updated }\ncomponents:\n  schemas:\n    UpdateWidget:\n      type: object\n      properties:\n        state: { type: string, enum: [enabled, disabled] }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
+    assert!(
+        out.join("src/acme/widgets/types/update_widget_state.py")
+            .is_file()
+            && !out.join("src/acme/types/update_widget_state.py").exists()
+            && raw.contains("from .types.update_widget_state import UpdateWidgetState"),
+        "an enum owned only by an elided request component should move into the endpoint tag: {raw}"
+    );
+}
+
+#[test]
 fn multiline_parameter_docs_remain_indented() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    get:\n      \

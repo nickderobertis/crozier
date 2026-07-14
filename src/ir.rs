@@ -1026,7 +1026,7 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
     // wrapper, so it runs after the type layer is built. It also hoists inline
     // request/response bodies into their tags' own `types/` packages.
     let global = global_headers(doc);
-    let (mut endpoints, tag_types) = endpoints(doc, &builder.types, &global);
+    let (mut endpoints, mut tag_types) = endpoints(doc, &builder.types, &global);
     normalize_error_body_types(&mut endpoints);
     let errors = error_classes(&endpoints);
 
@@ -1036,9 +1036,16 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
     // field, a parameter, a non-inlined body, ...).
     let referenced = referenced_type_names(&builder.types, &endpoints);
     let inline_sources = inline_body_source_names(doc);
+    let dropped_sources: std::collections::HashSet<String> = inline_sources
+        .iter()
+        .filter(|name| !referenced.contains(*name))
+        .cloned()
+        .collect();
+    let moved_enums =
+        move_inline_body_enums_to_tags(doc, &builder.types, &dropped_sources, &mut tag_types);
     builder
         .types
-        .retain(|d| !inline_sources.contains(d.name()) || referenced.contains(d.name()));
+        .retain(|d| !dropped_sources.contains(d.name()) && !moved_enums.contains(d.name()));
 
     // Fern also emits a standalone package-root type for each error response whose
     // body is an inline object, named `{ErrorClassName}Body` (bunq's 400
@@ -1071,6 +1078,70 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         environment,
         extra_fields: config.extra_fields,
     }
+}
+
+fn move_inline_body_enums_to_tags(
+    doc: &OpenApi,
+    types: &[TypeDecl],
+    dropped_sources: &std::collections::HashSet<String>,
+    tag_types: &mut Vec<TagTypeDecl>,
+) -> std::collections::HashSet<String> {
+    let mut moved = std::collections::HashSet::new();
+    for (path, item) in &doc.paths {
+        for (_, op) in item.operations() {
+            let Some(schema) = op
+                .request_body
+                .as_ref()
+                .and_then(|body| body.content.get("application/json"))
+                .and_then(|media| media.schema.as_ref())
+            else {
+                continue;
+            };
+            let Some(source) = schema.reference.as_deref().map(ref_to_class) else {
+                continue;
+            };
+            if !dropped_sources.contains(&source) {
+                continue;
+            }
+            let Some(object) = types.iter().find_map(|decl| match decl {
+                TypeDecl::Object(object) if object.name == source => Some(object),
+                _ => None,
+            }) else {
+                continue;
+            };
+            for field in &object.fields {
+                let TypeRef::Named(name) = &field.type_ref else {
+                    continue;
+                };
+                let Some(source_enum) = types.iter().find_map(|decl| match decl {
+                    TypeDecl::Enum(enum_type) if enum_type.name == *name => Some(enum_type),
+                    _ => None,
+                }) else {
+                    continue;
+                };
+                tag_types.push(TagTypeDecl {
+                    module: endpoint_module(op, path),
+                    decl: TypeDecl::Enum(EnumType {
+                        name: source_enum.name.clone(),
+                        module: source_enum.module.clone(),
+                        members: source_enum
+                            .members
+                            .iter()
+                            .map(|member| EnumMember {
+                                name: member.name.clone(),
+                                value: member.value.clone(),
+                                visit_param: member.visit_param.clone(),
+                                docstring: member.docstring.clone(),
+                            })
+                            .collect(),
+                        docstring: source_enum.docstring.clone(),
+                    }),
+                });
+                moved.insert(name.clone());
+            }
+        }
+    }
+    moved
 }
 
 /// Collect the distinct exception classes an SDK needs, one per error class name
