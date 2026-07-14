@@ -3478,13 +3478,16 @@ fn formatter_reports_missing_permission_and_non_utf8_process_failures() {
             .contains("ruff produced non-UTF-8 output"));
     });
 
-    with_fake_ruff("#!/bin/sh\nexit 0\n", || {
-        let huge = "x".repeat(64 * 1024 * 1024);
-        let broken = crozier::pyfmt::format_source("sdk.py", &huge, 120).unwrap_err();
-        assert!(broken
-            .to_string()
-            .contains("could not write source to ruff"));
-    });
+    with_fake_ruff(
+        "#!/bin/sh\nexec 0<&-\ni=0\nwhile [ \"$i\" -lt 100000 ]; do i=$((i + 1)); done\n",
+        || {
+            let huge = "x".repeat(1024 * 1024);
+            let broken = crozier::pyfmt::format_source("sdk.py", &huge, 120).unwrap_err();
+            assert!(broken
+                .to_string()
+                .contains("could not write source to ruff"));
+        },
+    );
 }
 
 #[test]
