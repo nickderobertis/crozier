@@ -3486,3 +3486,35 @@ fn formatter_reports_missing_permission_and_non_utf8_process_failures() {
             .contains("could not write source to ruff"));
     });
 }
+
+#[test]
+fn server_variable_defaults_expand_into_environment_urls() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: Variable Servers, version: 1.0.0 }
+servers:
+  - url: https://{region}.example.com/{version}
+    description: Regional API
+    variables:
+      region: { default: us-east }
+      version: { default: v2 }
+  - url: /
+paths:
+  /health:
+    get:
+      operationId: health_get
+      responses: { '204': { description: Healthy } }
+"#,
+    );
+    let environment = &files["src/acme/environment.py"];
+    assert!(
+        environment.contains("DEFAULT = \"https://us-east.example.com/v2\""),
+        "{environment}"
+    );
+    let client = &files["src/acme/client.py"];
+    assert!(client.contains("AcmeApiEnvironment.DEFAULT"), "{client}");
+    assert!(
+        client.contains("def _get_base_url(*, base_url: typing.Optional[str] = None, environment:"),
+        "{client}"
+    );
+}
