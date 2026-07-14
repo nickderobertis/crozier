@@ -3579,3 +3579,22 @@ components:
     assert!(files["src/acme/client.py"]
         .contains("token: typing.Optional[typing.Union[str, typing.Callable[[], str]]]"));
 }
+
+#[test]
+fn in_process_cli_schema_and_init_write_failure_are_actionable() {
+    crozier::cli::run_from(["crozier", "schema"]).expect("schema command succeeds in process");
+
+    let dir = tempfile::tempdir().unwrap();
+    let output_is_directory = dir.path().join("config-dir");
+    std::fs::create_dir(&output_is_directory).unwrap();
+    let error = crozier::cli::run_from([
+        "crozier",
+        "init",
+        "--output",
+        output_is_directory.to_str().unwrap(),
+        "--force",
+    ])
+    .unwrap_err();
+    assert!(error.contains("could not write"), "{error}");
+    assert!(error.contains("config-dir"), "{error}");
+}
