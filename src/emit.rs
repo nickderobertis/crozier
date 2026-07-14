@@ -3173,6 +3173,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                                 && (!ep.body_schema_dropped
                                     && ep.body_schema_metadata_missing
                                     && ep.body_schema_is_open
+                                    && !ep.body_schema_is_success_response
                                     || ep.body_schema_is_response_heavy
                                         && ep.body_schema_is_open
                                         && ep.body_description_missing
@@ -4577,7 +4578,7 @@ impl<'a> ExampleCtx<'a> {
         if self.example_is_scalar(t) {
             return Some(Example::Atom(example.to_string()));
         }
-        if example.starts_with('{') {
+        if example.starts_with('{') && self.resolves_to_any(t) {
             return serde_json::from_str(example).ok().map(example_from_json);
         }
         if let TypeRef::List(inner) | TypeRef::Set(inner) = t {
@@ -5816,6 +5817,7 @@ mod tests {
             body_schema_implicit_object: false,
             body_all_of: false,
             body_response_same_ref: false,
+            body_schema_is_success_response: false,
             response,
             response_doc: None,
             errors: Vec::new(),

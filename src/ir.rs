@@ -585,6 +585,9 @@ pub struct Endpoint {
     pub body_all_of: bool,
     /// Whether the JSON request body and success response point at the same schema.
     pub body_response_same_ref: bool,
+    /// Whether request and success response reference the same schema regardless
+    /// of operation authentication.
+    pub body_schema_is_success_response: bool,
     /// The success response body type, or `None` when the endpoint returns no
     /// content.
     pub response: Option<TypeRef>,
@@ -1741,6 +1744,7 @@ fn build_endpoint(
             .is_some_and(|schema| schema.ty.is_none() && !schema.properties.is_empty()),
         body_all_of: request_body_has_all_of(doc, op),
         body_response_same_ref: body_response_same_ref(doc, op),
+        body_schema_is_success_response: request_and_response_refs_match(op),
         response,
         response_doc: success_response_doc(op),
         errors,
@@ -1824,6 +1828,10 @@ fn body_response_same_ref(doc: &OpenApi, op: &Operation) -> bool {
     if effective_security.is_some_and(|reqs| reqs.iter().any(|r| !r.is_empty())) {
         return false;
     }
+    request_and_response_refs_match(op)
+}
+
+fn request_and_response_refs_match(op: &Operation) -> bool {
     let request_ref = op
         .request_body
         .as_ref()
