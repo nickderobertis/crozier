@@ -2748,6 +2748,9 @@ fn title_from_tag(doc: &OpenApi, tag: &str) -> String {
 /// both rules agree, so tag-grouped corpora already matched stay byte-identical.
 fn endpoint_module(op: &Operation, url: &str) -> String {
     let id = op.operation_id.trim();
+    if first_tag(op).is_some_and(|tag| alnum_lower(tag) == alnum_lower(id)) {
+        return String::new();
+    }
     if first_tag(op).is_none() && !id.contains('.') {
         return String::new();
     }

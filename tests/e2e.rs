@@ -6208,6 +6208,24 @@ fn closed_empty_inline_objects_hoist_through_the_cli() {
 }
 
 #[test]
+fn operation_id_equal_to_tag_generates_on_root_client() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /search:\n    get:\n      operationId: search\n      tags: [Search]\n      responses:\n        '200':\n          description: Found\n          content:\n            application/json:\n              schema:\n                type: object\n                required: [result]\n                properties:\n                  result:\n                    type: object\n                    required: [count]\n                    properties:\n                      count: { type: integer }\n  /health:\n    get:\n      operationId: getHealth\n      tags: [System]\n      responses:\n        '204': { description: Healthy }\n",
+    );
+    let client =
+        std::fs::read_to_string(out.join("src/acme/client.py")).expect("root client is generated");
+    assert!(
+        client.contains("def search(") && !client.contains("def search(self):"),
+        "an operation named exactly for its tag should remain a root method: {client}"
+    );
+    assert!(out.join("src/acme/raw_client.py").is_file());
+    assert!(out.join("src/acme/types/search_response.py").is_file());
+    assert!(out
+        .join("src/acme/types/search_response_result.py")
+        .is_file());
+}
+
+#[test]
 fn header_parameter_enums_hoist_to_tag_types() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      parameters:\n        - name: X-Widget-Mode\n          in: header\n          required: true\n          schema: { type: string, enum: [FAST, SAFE] }\n      responses:\n        '204': { description: Created }\n",
