@@ -5230,6 +5230,8 @@ pub fn clean_package_tree(root: &std::path::Path, package: &str) -> Result<()> {
 /// so the byte match is preserved.
 fn format_python_files(pkg: &str, files: &mut [GeneratedFile]) -> Result<()> {
     let core_root = PathBuf::from(format!("src/{pkg}/core"));
+    let root_client = PathBuf::from(format!("src/{pkg}/client.py"));
+    let root_raw_client = PathBuf::from(format!("src/{pkg}/raw_client.py"));
     for file in files.iter_mut() {
         let is_py = file.path.extension().and_then(|e| e.to_str()) == Some("py");
         // The `core/` tree is vendored verbatim (already ruff-formatted) EXCEPT
@@ -5242,9 +5244,7 @@ fn format_python_files(pkg: &str, files: &mut [GeneratedFile]) -> Result<()> {
             let name = file.path.to_string_lossy();
             file.contents =
                 crate::pyfmt::format_source(&name, &file.contents, crate::pyfmt::LINE_LENGTH)?;
-            if file.path == PathBuf::from(format!("src/{pkg}/client.py"))
-                || file.path == PathBuf::from(format!("src/{pkg}/raw_client.py"))
-            {
+            if file.path == root_client || file.path == root_raw_client {
                 preserve_fenced_docstring_blank_indent(&mut file.contents);
             }
         }
