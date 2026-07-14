@@ -6226,6 +6226,19 @@ fn multipart_request_enums_hoist_through_the_cli() {
 }
 
 #[test]
+fn multipart_unknown_fields_keep_intrinsic_optionality_through_the_cli() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.1.0\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /uploads:\n    post:\n      operationId: createUpload\n      tags: [uploads]\n      requestBody:\n        content:\n          multipart/form-data:\n            schema:\n              type: object\n              properties:\n                file: {}\n      responses:\n        '204': { description: Created }\n",
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/uploads/client.py"))
+        .expect("multipart client is generated");
+    assert!(
+        client.contains("file: typing.Optional[typing.Optional[typing.Any]] = OMIT"),
+        "an omittable unknown form field should retain unknown nullability: {client}"
+    );
+}
+
+#[test]
 fn top_level_inline_response_array_items_hoist_through_the_cli() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    get:\n      operationId: listWidgets\n      tags: [widgets]\n      responses:\n        '200':\n          description: Found\n          content:\n            application/json:\n              schema:\n                type: array\n                items:\n                  type: object\n                  required: [id]\n                  properties:\n                    id: { type: integer }\n",

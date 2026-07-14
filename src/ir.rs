@@ -2312,7 +2312,9 @@ fn hoist_form_object(
             BodyField {
                 wire_name: prop.clone(),
                 py_name: naming::field_name(prop),
-                type_ref: if is_file {
+                type_ref: if is_unknown(prop_schema) {
+                    TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)))
+                } else if is_file {
                     base_type_ref(prop_schema)
                 } else {
                     hoister.prop_type_ref(request_ctx, prop, prop_schema)
