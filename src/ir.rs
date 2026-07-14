@@ -537,6 +537,8 @@ pub struct Endpoint {
     pub body_schema_ref: bool,
     /// Whether the referenced request schema declares an example payload.
     pub body_schema_has_example: bool,
+    /// Whether the referenced request schema has a substantive description.
+    pub body_schema_documented: bool,
     /// Whether a referenced request schema is composed with `allOf`.
     pub body_all_of: bool,
     /// Whether the JSON request body and success response point at the same schema.
@@ -1546,6 +1548,18 @@ fn build_endpoint(
             .and_then(|schema| schema.reference.as_deref())
             .and_then(|reference| resolve_ref(doc, reference))
             .is_some_and(|schema| schema.example.is_some()),
+        body_schema_documented: op
+            .request_body
+            .as_ref()
+            .and_then(|body| {
+                body.content
+                    .values()
+                    .find_map(|media| media.schema.as_ref())
+            })
+            .and_then(|schema| schema.reference.as_deref())
+            .and_then(|reference| resolve_ref(doc, reference))
+            .and_then(|schema| schema.description.as_deref())
+            .is_some_and(|description| !description.trim().is_empty()),
         body_all_of: request_body_has_all_of(doc, op),
         body_response_same_ref: body_response_same_ref(doc, op),
         response,

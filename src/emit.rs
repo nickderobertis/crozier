@@ -3106,7 +3106,8 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                         && !ep.body_component_ref
                         && !(matches!(body, RequestBody::Inline(_))
                             && (ep.body_all_of || ep.body_response_same_ref))
-                        && ((!ep.body_documented && !ep.body_schema_has_example)
+                        && ((!ep.body_documented
+                            && !(ep.body_schema_has_example && ep.body_schema_documented))
                             || body.all_fields_required()))) =>
         {
             Some("application/json".to_string())
@@ -5566,6 +5567,7 @@ mod tests {
             body_component_ref: false,
             body_schema_ref: false,
             body_schema_has_example: false,
+            body_schema_documented: false,
             body_all_of: false,
             body_response_same_ref: false,
             response,

@@ -5981,7 +5981,7 @@ fn readme_skips_binary_endpoints_for_worked_examples() {
 #[test]
 fn readme_marks_referenced_object_bodies_as_complex() {
     let (_dir, out) = generate_ok(
-        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          application/json:\n            schema: { $ref: '#/components/schemas/CreateWidget' }\n      responses:\n        '204': { description: Created }\ncomponents:\n  schemas:\n    CreateWidget:\n      type: object\n      example: { name: example }\n      properties:\n        name: { type: string }\n        note: { type: string }\n      required: [name]\n",
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          application/json:\n            schema: { $ref: '#/components/schemas/CreateWidget' }\n      responses:\n        '204': { description: Created }\ncomponents:\n  schemas:\n    CreateWidget:\n      type: object\n      description: A widget creation request.\n      example: { name: example }\n      properties:\n        name: { type: string }\n        note: { type: string }\n      required: [name]\n",
     );
     let readme = std::fs::read_to_string(out.join("README.md")).expect("README is generated");
     assert!(
