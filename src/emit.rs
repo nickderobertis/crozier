@@ -2486,10 +2486,13 @@ struct MethodParams {
 /// Compute an endpoint's resolved parameters and response type, registering the
 /// imports the annotations need. Independent of sync/async.
 fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
-    let inner = ep
-        .response
-        .as_ref()
-        .map_or_else(|| "None".to_string(), |t| raw_type_str(t, imports));
+    let inner = if ep.binary_response {
+        "None".to_string()
+    } else {
+        ep.response
+            .as_ref()
+            .map_or_else(|| "None".to_string(), |t| raw_type_str(t, imports))
+    };
 
     let path: Vec<(String, String, Option<String>)> = ep
         .path_params

@@ -5976,6 +5976,7 @@ fn referenced_binary_success_responses_stream_bytes() {
         raw.contains("@contextlib.contextmanager")
             && raw.contains("typing.Iterator[HttpResponse[typing.Iterator[bytes]]]")
             && raw.contains("httpx_client.stream(")
+            && !raw.contains("import FileContent")
             && raw.contains("        Exports all widgets.\n\n        Parameters"),
         "referenced binary response schemas should use the streaming interface: {raw}"
     );
