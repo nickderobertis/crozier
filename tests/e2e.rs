@@ -5316,6 +5316,12 @@ fn examples_use_one_line_client_constructor_when_no_args_are_needed() {
         client.contains("client = AcmeApi()"),
         "no-argument examples should use Fern's one-line constructor: {client}"
     );
+    let root = std::fs::read_to_string(out.join("src/acme/client.py"))
+        .expect("root client is generated");
+    assert!(
+        root.contains("client = AcmeApi()"),
+        "root client examples should use Fern's one-line constructor: {root}"
+    );
 }
 
 #[test]

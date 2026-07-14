@@ -23,8 +23,12 @@ class {{ class_name }}:
     --------
     from {{ pkg }} import {{ class_name }}
 
+{% if gh_example == "" and example_line == "" and example_base_url == "" %}
+    client = {{ class_name }}()
+{% else %}
     client = {{ class_name }}(
 {{ gh_example }}{{ example_line }}{{ example_base_url }}    )
+{% endif %}
     """
 
     def __init__(

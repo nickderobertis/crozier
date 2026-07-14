@@ -3225,6 +3225,9 @@ fn root_client_file(
     body.push_str(&imports.render());
     body.push_str("\n\n");
     body.push_str(&type_checking);
+    if !root_endpoints.is_empty() {
+        body.push_str("\nOMIT = typing.cast(typing.Any, ...)\n");
+    }
     body.push_str("\n\n");
     body.push_str(&root_client_class(
         env,
