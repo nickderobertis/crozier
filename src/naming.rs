@@ -258,22 +258,49 @@ pub fn enum_visit_param(value: &str) -> String {
 /// fixtures confirm more.
 #[must_use]
 pub fn is_reserved(name: &str) -> bool {
-    const RESERVED: &[&str] = &[
-        // Python hard keywords.
-        "False", "None", "True", "and", "as", "assert", "async", "await", "break", "class",
-        "continue", "def", "del", "elif", "else", "except", "finally", "for", "from", "global",
-        "if", "import", "in", "is", "lambda", "nonlocal", "not", "or", "pass", "raise", "return",
-        "try", "while", "with", "yield",
-        // Builtins/module names Fern munges (confirmed in the exhaustive fixture,
-        // plus `all` in the apideck corpus — a REST "list all" method named `all`).
-        "all", "bool", "list", "long", "map", "set", "uuid",
-    ];
-    RESERVED.contains(&name)
+    // Builtins/module names Fern munges in *field/type* contexts (confirmed in the
+    // exhaustive fixture). Method names are narrower — see `is_reserved_method`.
+    const RESERVED_BUILTINS: &[&str] = &["all", "bool", "list", "long", "map", "set", "uuid"];
+    PYTHON_KEYWORDS.contains(&name) || RESERVED_BUILTINS.contains(&name)
 }
+
+/// Reserved-word check for *derived method* names. Fern safe-names Python keywords
+/// and the builtin `all` (a REST "list all" method → `all_`), but — unlike field and
+/// type names — leaves other builtins alone: appwrite's derived `list` stays `list`,
+/// not `list_`, and `bool`/`set`/… likewise. Evidence-based against the golden corpus
+/// (the only `_`-suffixed method names Fern emits are keywords, `all`, and dunders);
+/// widen only when a fixture shows Fern suffixing another method name.
+#[must_use]
+pub fn is_reserved_method(name: &str) -> bool {
+    PYTHON_KEYWORDS.contains(&name) || name == "all"
+}
+
+/// Python hard keywords — reserved in every naming context.
+const PYTHON_KEYWORDS: &[&str] = &[
+    "False", "None", "True", "and", "as", "assert", "async", "await", "break", "class", "continue",
+    "def", "del", "elif", "else", "except", "finally", "for", "from", "global", "if", "import",
+    "in", "is", "lambda", "nonlocal", "not", "or", "pass", "raise", "return", "try", "while",
+    "with", "yield",
+];
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn method_reserved_set_is_narrower_than_general() {
+        // Fern safe-names `all` and keywords as method names (apideck's `all_`,
+        // `import_`) but leaves other builtins alone (appwrite's `list`, not `list_`).
+        assert!(is_reserved_method("all"));
+        assert!(is_reserved_method("import"));
+        assert!(!is_reserved_method("list"));
+        assert!(!is_reserved_method("bool"));
+        // The general set still guards field/type names (confirmed in the exhaustive
+        // fixture), so `list`/`bool` stay reserved there.
+        assert!(is_reserved("list"));
+        assert!(is_reserved("bool"));
+        assert!(is_reserved("all"));
+    }
 
     #[test]
     fn snake_case_variants() {

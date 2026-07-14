@@ -195,7 +195,16 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
     // Fern also treats additional header apiKey security schemes as SDK-wide
     // constructor fields. The first apiKey scheme is the auth credential
     // (`api_key`); subsequent header schemes are named from their wire header.
-    headers.extend(additional_api_key_global_headers(doc));
+    // Skip any already promoted above: apideck's `app_id`/`consumer_id` ride every
+    // operation, so they are promoted from `seen` too — re-adding them here would
+    // emit the constructor field twice (invalid Python: duplicate parameter).
+    let promoted: std::collections::HashSet<String> =
+        headers.iter().map(|h| h.py_name.clone()).collect();
+    headers.extend(
+        additional_api_key_global_headers(doc)
+            .into_iter()
+            .filter(|h| !promoted.contains(&h.py_name)),
+    );
     // Optional-first. The `sort_by` is stable, so optional headers keep the
     // first-appearance order they already carry from `seen` (an insertion-ordered
     // map); required headers sort by field name (apideck's `app_id`/`consumer_id`,
@@ -1971,7 +1980,17 @@ fn method_from_groupless_id(id: &str, tag: Option<&str>) -> String {
             .strip_prefix(&format!("{tag_snake}_"))
             .unwrap_or(&snake)
     };
-    naming::sanitize_identifier(method)
+    // This name is *derived* (a tag prefix stripped off a camelCase id), so — unlike
+    // the verbatim `method_from_grouped_id` — reserved words are safe-named the way
+    // Fern does it: a "list all" endpoint under tag `Activities` becomes `all_`, not
+    // the builtin-shadowing `all`. Uses the method-specific reserved set (keywords +
+    // `all`), so appwrite's derived `list` stays `list`, matching Fern.
+    let ident = naming::sanitize_identifier(method);
+    if naming::is_reserved_method(&ident) {
+        format!("{ident}_")
+    } else {
+        ident
+    }
 }
 
 fn stripped_suffix_has_acronym(id: &str, tag: Option<&str>) -> bool {
