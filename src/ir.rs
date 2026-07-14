@@ -2716,6 +2716,9 @@ impl Builder<'_> {
     /// The type of a property, hoisting an inline string enum to a named
     /// `enum.Enum` class `{Owner}{Prop}` (as Fern does for `typesAnimal`).
     fn field_type_ref(&mut self, owner: &str, prop: &str, prop_schema: &Schema) -> TypeRef {
+        if prop == "metadata" && is_unknown(prop_schema) {
+            return TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)));
+        }
         if prop_schema.reference.is_none() {
             if let Some(values) = string_enum_values(prop_schema) {
                 let hoisted = format!("{owner}{}", naming::class_name(prop));

@@ -5266,7 +5266,7 @@ fn omitted_schema_type_infers_enum_and_open_map_shapes() {
          '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Widget' } } } }\n\
          components:\n  schemas:\n    Widget:\n      type: object\n      required: [kind, target]\n      \
          properties:\n        kind: { enum: [tag, digest] }\n        target: { additionalProperties: true }\n        \
-         metadata: {}\n",
+         extra: {}\n",
     );
     let widget = std::fs::read_to_string(out.join("src/acme/types/widget.py"))
         .expect("Widget model is generated");
@@ -5283,8 +5283,28 @@ fn omitted_schema_type_infers_enum_and_open_map_shapes() {
         "additionalProperties without an explicit object type should be an open map: {widget}"
     );
     assert!(
-        widget.contains("metadata: typing.Optional[typing.Any] = None"),
+        widget.contains("extra: typing.Optional[typing.Any] = None"),
         "an unknown optional field keeps Fern's existing single-optional annotation: {widget}"
+    );
+}
+
+#[test]
+fn unknown_metadata_fields_are_double_optional() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    \
+         get:\n      operationId: listWidgets\n      tags: [widgets]\n      responses:\n        \
+         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Widget' } } } }\ncomponents:\n  \
+         schemas:\n    Widget:\n      type: object\n      properties:\n        metadata: {}\n        unknown: {}\n",
+    );
+    let widget =
+        std::fs::read_to_string(out.join("src/acme/types/widget.py")).expect("Widget model");
+    assert!(
+        widget.contains("metadata: typing.Optional[typing.Optional[typing.Any]] = None"),
+        "unknown metadata fields should match Fern's double-optional annotation: {widget}"
+    );
+    assert!(
+        widget.contains("unknown: typing.Optional[typing.Any] = None"),
+        "ordinary unknown fields should keep the existing single optional annotation: {widget}"
     );
 }
 
