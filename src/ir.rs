@@ -978,7 +978,7 @@ fn build_enum(name: &str, values: Vec<String>, docstring: Option<String>) -> Enu
 }
 
 /// A resolved type reference.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TypeRef {
     /// A primitive Python type.
     Primitive(Prim),
@@ -1179,6 +1179,8 @@ fn error_classes(endpoints: &[Endpoint]) -> Vec<ErrorClass> {
 
 fn normalize_error_body_types(endpoints: &mut [Endpoint]) {
     let mut downgrade = std::collections::HashSet::new();
+    let mut first_by_class: std::collections::HashMap<String, TypeRef> =
+        std::collections::HashMap::new();
     for ep in endpoints.iter() {
         for err in &ep.errors {
             if matches!(
@@ -1186,6 +1188,15 @@ fn normalize_error_body_types(endpoints: &mut [Endpoint]) {
                 TypeRef::Optional(ref inner) if matches!(&**inner, TypeRef::Primitive(Prim::Any))
             ) {
                 downgrade.insert(err.class_name.clone());
+            }
+            match first_by_class.get(&err.class_name) {
+                Some(first) if first != &err.body_type => {
+                    downgrade.insert(err.class_name.clone());
+                }
+                None => {
+                    first_by_class.insert(err.class_name.clone(), err.body_type.clone());
+                }
+                _ => {}
             }
         }
     }

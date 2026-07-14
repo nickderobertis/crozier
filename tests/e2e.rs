@@ -5822,6 +5822,22 @@ fn mixed_error_body_shapes_downgrade_status_class_to_any() {
 }
 
 #[test]
+fn conflicting_error_body_types_downgrade_status_class_to_any() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      responses:\n        '204': { description: Created }\n        '409': { description: Conflict, content: { application/json: { schema: { $ref: '#/components/schemas/WidgetConflict' } } } }\n  /gadgets:\n    post:\n      operationId: createGadget\n      tags: [gadgets]\n      responses:\n        '204': { description: Created }\n        '409': { description: Conflict, content: { application/json: { schema: { $ref: '#/components/schemas/GadgetConflict' } } } }\ncomponents:\n  schemas:\n    WidgetConflict: { type: object, properties: { message: { type: string } } }\n    GadgetConflict: { type: object, properties: { reason: { type: string } } }\n",
+    );
+    let error = std::fs::read_to_string(out.join("src/acme/errors/conflict_error.py"))
+        .expect("ConflictError is generated");
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
+    assert!(
+        error.contains("body: typing.Optional[typing.Any]")
+            && raw.contains("type_=typing.Optional[typing.Any]"),
+        "a shared status with conflicting body schemas should use Optional[Any]:\n{error}\n{raw}"
+    );
+}
+
+#[test]
 fn unknown_array_items_are_optional_any_elements() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    \
