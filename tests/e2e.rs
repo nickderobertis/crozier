@@ -6118,6 +6118,28 @@ fn readme_marks_referenced_object_bodies_as_complex() {
 }
 
 #[test]
+fn inline_response_array_objects_hoist_through_the_cli() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    get:\n      operationId: listWidgets\n      tags: [widgets]\n      responses:\n        '200':\n          description: Found\n          content:\n            application/json:\n              schema:\n                type: object\n                required: [items]\n                properties:\n                  items:\n                    type: array\n                    items:\n                      type: object\n                      required: [id, details]\n                      properties:\n                        id: { type: integer }\n                        details:\n                          type: object\n                          required: [name]\n                          properties:\n                            name: { type: string }\n",
+    );
+    let response =
+        std::fs::read_to_string(out.join("src/acme/widgets/types/list_widgets_response.py"))
+            .expect("inline response wrapper is generated");
+    assert!(
+        response.contains("typing.List[ListWidgetsResponseItemsItem]"),
+        "array items should use their coined model: {response}"
+    );
+    let item = std::fs::read_to_string(
+        out.join("src/acme/widgets/types/list_widgets_response_items_item.py"),
+    )
+    .expect("inline array item model is generated");
+    assert!(
+        item.contains("details: ListWidgetsResponseItemsItemDetails"),
+        "nested inline objects should retain the item context: {item}"
+    );
+}
+
+#[test]
 fn header_parameter_enums_hoist_to_tag_types() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      parameters:\n        - name: X-Widget-Mode\n          in: header\n          required: true\n          schema: { type: string, enum: [FAST, SAFE] }\n      responses:\n        '204': { description: Created }\n",

@@ -2162,9 +2162,26 @@ impl InlineHoister<'_> {
             self.hoist_object(&nested, prop_schema);
             return TypeRef::Named(nested);
         }
-        // A `$ref`, scalar, or container (e.g. an array of `$ref` items) passes
-        // through unchanged. An array of *inline* objects is not yet exercised by a
-        // fixture, so it is left to `base_type_ref` rather than guessing Fern's name.
+        if prop_schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("array") {
+            if let Some(item_schema) = prop_schema.items.as_deref() {
+                if item_schema.reference.is_none() && is_inline_struct(item_schema) {
+                    let item_name = format!("{parent}{}Item", naming::class_name(prop));
+                    self.hoist_object(&item_name, item_schema);
+                    let item = TypeRef::Named(item_name);
+                    let item = if is_optional(item_schema) {
+                        TypeRef::Optional(Box::new(item))
+                    } else {
+                        item
+                    };
+                    return if prop_schema.unique_items == Some(true) {
+                        TypeRef::Set(Box::new(item))
+                    } else {
+                        TypeRef::List(Box::new(item))
+                    };
+                }
+            }
+        }
+        // A `$ref`, scalar, or container of `$ref`/scalar items passes through.
         base_type_ref(prop_schema)
     }
 
