@@ -5679,6 +5679,82 @@ const APACHE_QAKKA: Corpus = Corpus {
     ],
 };
 
+const AUTHENTIQIO: Corpus = Corpus {
+    api: "6-dot-authentiqio.appspot.com",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[
+        ".fern/metadata.json",
+        "README.md",
+        "pyproject.toml",
+        "reference.md",
+        "requirements.txt",
+        "src/fern/__init__.py",
+        "src/fern/client.py",
+        "src/fern/core/__init__.py",
+        "src/fern/core/api_error.py",
+        "src/fern/core/client_wrapper.py",
+        "src/fern/core/datetime_utils.py",
+        "src/fern/core/file.py",
+        "src/fern/core/force_multipart.py",
+        "src/fern/core/http_client.py",
+        "src/fern/core/http_response.py",
+        "src/fern/core/http_sse/__init__.py",
+        "src/fern/core/http_sse/_api.py",
+        "src/fern/core/http_sse/_decoders.py",
+        "src/fern/core/http_sse/_exceptions.py",
+        "src/fern/core/http_sse/_models.py",
+        "src/fern/core/jsonable_encoder.py",
+        "src/fern/core/pydantic_utilities.py",
+        "src/fern/core/query_encoder.py",
+        "src/fern/core/remove_none_from_dict.py",
+        "src/fern/core/request_options.py",
+        "src/fern/core/serialization.py",
+        "src/fern/environment.py",
+        "src/fern/errors/__init__.py",
+        "src/fern/errors/conflict_error.py",
+        "src/fern/errors/gone_error.py",
+        "src/fern/errors/method_not_allowed_error.py",
+        "src/fern/errors/not_found_error.py",
+        "src/fern/errors/too_many_requests_error.py",
+        "src/fern/errors/unauthorized_error.py",
+        "src/fern/key/__init__.py",
+        "src/fern/key/client.py",
+        "src/fern/key/raw_client.py",
+        "src/fern/key/types/__init__.py",
+        "src/fern/key/types/key_bind_response.py",
+        "src/fern/key/types/key_register_response.py",
+        "src/fern/key/types/key_retrieve_response.py",
+        "src/fern/key/types/key_revoke_nosecret_response.py",
+        "src/fern/key/types/key_revoke_response.py",
+        "src/fern/key/types/key_update_response.py",
+        "src/fern/login/__init__.py",
+        "src/fern/login/client.py",
+        "src/fern/login/raw_client.py",
+        "src/fern/login/types/__init__.py",
+        "src/fern/login/types/push_login_request_response.py",
+        "src/fern/py.typed",
+        "src/fern/scope/__init__.py",
+        "src/fern/scope/client.py",
+        "src/fern/scope/raw_client.py",
+        "src/fern/scope/types/__init__.py",
+        "src/fern/scope/types/sign_confirm_response.py",
+        "src/fern/scope/types/sign_delete_response.py",
+        "src/fern/scope/types/sign_request_response.py",
+        "src/fern/scope/types/sign_retrieve_response.py",
+        "src/fern/types/__init__.py",
+        "src/fern/types/authentiq_id.py",
+        "src/fern/types/claims.py",
+        "src/fern/types/error.py",
+        "src/fern/types/push_token.py",
+        "src/fern/version.py",
+    ],
+};
+
 #[test]
 fn bunq_matches_fern_output() {
     // `link-ok` like apideck: the spec is fetched (not vendored), so this **skips**
@@ -5837,6 +5913,18 @@ fn apache_qakka_matches_fern_output() {
 }
 
 #[test]
+fn authentiqio_matches_fern_output() {
+    if corpus_spec(AUTHENTIQIO.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the authentiqio corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+        );
+        return;
+    }
+    assert_corpus_matches(&AUTHENTIQIO);
+}
+
+#[test]
 fn feature_target_specs_generate_without_panicking() {
     // A feature-coverage target with a populated `matched` list is byte-compared
     // file-by-file; one with an empty `matched` list asserts only that crozier
@@ -5886,6 +5974,7 @@ fn report_matched_candidates() {
         &GAMBITCOMM_MIMIC,
         &DND5EAPI,
         &APACHE_QAKKA,
+        &AUTHENTIQIO,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
@@ -6006,6 +6095,7 @@ fn report_fixture_diffs() {
         &GAMBITCOMM_MIMIC,
         &DND5EAPI,
         &APACHE_QAKKA,
+        &AUTHENTIQIO,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
