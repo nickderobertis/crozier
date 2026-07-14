@@ -5430,6 +5430,26 @@ fn binary_success_responses_stream_bytes() {
 }
 
 #[test]
+fn tag_prefixed_multi_segment_operation_ids_drop_the_tag_segment() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /query/widgets/by_name:\n    \
+         get:\n      operationId: query_widgets_by_name\n      tags: [Query]\n      parameters:\n        - name: \
+         name\n          in: query\n          required: true\n          schema: { type: string }\n      responses:\n        \
+         '200': { description: OK, content: { application/json: { schema: { type: array, items: { type: string } } } } }\n",
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/query/client.py"))
+        .expect("query client is generated");
+    assert!(
+        client.contains("def widgets_by_name("),
+        "a multi-segment operationId starting with the tag should drop only that tag segment: {client}"
+    );
+    assert!(
+        !client.contains("def query_widgets_by_name("),
+        "the tag segment should not be duplicated in the method name: {client}"
+    );
+}
+
+#[test]
 fn array_ref_request_body_generates_single_named_request_argument() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/archive:\n    \

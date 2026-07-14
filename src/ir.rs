@@ -2078,6 +2078,9 @@ fn endpoint_method_name(op: &Operation, http_method: &str, url: &str) -> String 
         if first_tag(op).is_none() {
             return naming::sanitize_identifier(&naming::to_snake_case(id));
         }
+        if first_segment_is_tag(op, id) {
+            return method_after_first_segment(id);
+        }
         // A `group_method` operationId whose prefix *is* the group (matches the tag,
         // or there is no tag) has its group stripped, Fern-style (`widgets_getWidget`
         // → `getwidget`, `endpoints_container_get…` → `endpoints_container_get…`).
@@ -2319,6 +2322,9 @@ fn endpoint_module(op: &Operation, url: &str) -> String {
         ));
     }
     if id.contains('_') {
+        if first_segment_is_tag(op, id) {
+            return snake_module(first_tag(op).expect("first segment match implies a tag"));
+        }
         // Untagged, or the prefix is the group → group by the operationId prefix.
         // Otherwise the prefix is unrelated to the tag (bunq) → the tag is the group.
         if group_prefix_is_tag(op, id) {
@@ -2360,6 +2366,21 @@ fn group_prefix_is_tag(op: &Operation, id: &str) -> bool {
         None => true,
         Some(tag) => alnum_lower(&module_from_grouped_id(id)) == alnum_lower(tag),
     }
+}
+
+fn first_segment_is_tag(op: &Operation, id: &str) -> bool {
+    let Some(tag) = first_tag(op) else {
+        return false;
+    };
+    let Some((first, rest)) = id.split_once('_') else {
+        return false;
+    };
+    rest.contains('_') && alnum_lower(first) == alnum_lower(tag)
+}
+
+fn method_after_first_segment(id: &str) -> String {
+    let rest = id.split_once('_').map_or(id, |(_, rest)| rest);
+    naming::sanitize_identifier(&naming::to_snake_case(rest))
 }
 
 /// Lowercase, keeping only ASCII alphanumerics — the separator-insensitive key used
