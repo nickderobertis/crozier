@@ -3169,6 +3169,12 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                         && !ep.body_component_ref
                         && !(matches!(body, RequestBody::Inline(_))
                             && (ep.body_all_of || ep.body_response_same_ref))
+                        && !matches!(body, RequestBody::Inline(fields)
+                            if ep.body_schema_ref
+                                && ep.body_schema_is_response_heavy
+                                && ep.body_schema_is_open
+                                && ep.body_description_missing
+                                && fields.iter().filter(|field| field.spec_required).count() == 1)
                         && (!(ep.body_description_empty
                             || ep.body_schema_has_example && ep.body_schema_documented)
                             || body.all_fields_required()))) =>
@@ -4930,19 +4936,10 @@ fn build_example(
         };
         args.push((Some(pp.py_name.clone()), v));
     }
-    // Fern shows a query parameter in the worked example when it is required OR
-    // carries a spec `example` (the value it then displays).
+    // Fern follows signature ordering: all required query/header arguments first,
+    // then optional query/header arguments that carry examples.
     let mut optional_query_example_used = false;
-    for qp in &ep.query_params {
-        if !qp.required {
-            if qp.example.is_none()
-                || !qp.example_is_scalar
-                || (ep.request_body.is_none() && optional_query_example_used)
-            {
-                continue;
-            }
-            optional_query_example_used = true;
-        }
+    for qp in ep.query_params.iter().filter(|qp| qp.required) {
         let v = if let Some(ex) = qp.example.as_ref().filter(|_| qp.example_is_scalar) {
             Example::Atom(ex.clone())
         } else if let TypeRef::List(inner) = &qp.type_ref {
@@ -4952,11 +4949,7 @@ fn build_example(
         };
         args.push((Some(qp.py_name.clone()), v));
     }
-    for hp in ep
-        .header_params
-        .iter()
-        .filter(|h| h.required || h.example.is_some())
-    {
+    for hp in ep.header_params.iter().filter(|header| header.required) {
         let v = hp
             .example
             .as_ref()
@@ -4966,6 +4959,34 @@ fn build_example(
                 |example| Example::Atom(example.clone()),
             );
         args.push((Some(hp.py_name.clone()), v));
+    }
+    for qp in ep.query_params.iter().filter(|qp| !qp.required) {
+        if qp.example.is_none()
+            || !qp.example_is_scalar
+            || (ep.request_body.is_none() && optional_query_example_used)
+        {
+            continue;
+        }
+        optional_query_example_used = true;
+        args.push((
+            Some(qp.py_name.clone()),
+            Example::Atom(qp.example.clone().unwrap_or_default()),
+        ));
+    }
+    for hp in ep
+        .header_params
+        .iter()
+        .filter(|header| !header.required && header.example.is_some())
+    {
+        let value = hp
+            .example
+            .as_ref()
+            .filter(|_| ctx.example_is_scalar(&hp.type_ref))
+            .map_or_else(
+                || ctx.value(&hp.type_ref, Slot::Named(&hp.wire_name)),
+                |example| Example::Atom(example.clone()),
+            );
+        args.push((Some(hp.py_name.clone()), value));
     }
     match &ep.request_body {
         Some(RequestBody::Single(s)) => {
@@ -5753,10 +5774,13 @@ mod tests {
             header_params: Vec::new(),
             request_body: None,
             body_description_empty: false,
+            body_description_missing: false,
             body_component_ref: false,
             body_schema_ref: false,
             body_schema_has_example: false,
             body_schema_documented: false,
+            body_schema_is_response_heavy: false,
+            body_schema_is_open: false,
             body_schema_implicit_object: false,
             body_all_of: false,
             body_response_same_ref: false,
