@@ -120,10 +120,11 @@ fixtures-generate-corpus *args:
 # filter matches nothing, so if `report_matched_candidates` is renamed/removed in
 # tests/e2e.rs this recipe would silently no-op — asserting the report's summary
 # line turns that into a hard failure instead.
-fixtures-candidates:
+fixtures-candidates corpus="":
     #!/usr/bin/env bash
     set -uo pipefail
-    out=$(cargo test --locked --test e2e -- --ignored --nocapture report_matched_candidates 2>&1)
+    out=$(CROZIER_CANDIDATES_CORPUS="{{corpus}}" \
+      cargo test --locked --test e2e -- --ignored --nocapture report_matched_candidates 2>&1)
     if grep -q 'candidate file(s) across all corpora' <<<"$out"; then
       # Quiet on success: print only the report the user asked for, not cargo's
       # build/test scaffolding — from the first corpus header through the summary.

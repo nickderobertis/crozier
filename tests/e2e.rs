@@ -4473,6 +4473,10 @@ fn feature_target_specs_generate_without_panicking() {
 #[test]
 #[ignore = "coverage-growth aid, not a gate; run via `just fixtures-candidates`"]
 fn report_matched_candidates() {
+    let corpus_filter = std::env::var("CROZIER_CANDIDATES_CORPUS")
+        .ok()
+        .filter(|s| !s.is_empty());
+
     let mut corpora: Vec<&Corpus> = vec![&QUERY_PARAMETERS, &EXHAUSTIVE, &BUNQ];
     corpora.extend(FEATURE_TARGETS.iter());
     // bungie's spec is fetched, not vendored, and its `expected/` tree is pending;
@@ -4494,6 +4498,13 @@ fn report_matched_candidates() {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
         }
+    }
+    if let Some(f) = &corpus_filter {
+        corpora.retain(|c| c.api == f.as_str());
+        assert!(
+            !corpora.is_empty(),
+            "CROZIER_CANDIDATES_CORPUS={f:?} matched no corpus (or its spec is unfetched)"
+        );
     }
 
     let mut total = 0usize;
