@@ -131,6 +131,12 @@ impl Imports {
     fn type_import_path(&self, class: &str) -> String {
         let m = naming::module_name(class);
         match self.tag_types.get(class) {
+            Some(tag) if tag.is_empty() => match &self.loc {
+                RefLoc::RootTypes => format!(".{m}"),
+                RefLoc::TagTypes(_) => format!("...types.{m}"),
+                RefLoc::Client(_) | RefLoc::Errors => format!("..types.{m}"),
+                RefLoc::PackageRoot => format!(".types.{m}"),
+            },
             // A tag-scoped type lives at `{pkg}.{tag}.types.{m}`.
             Some(tag) => match &self.loc {
                 RefLoc::TagTypes(cur) if cur == tag => format!(".{m}"),
