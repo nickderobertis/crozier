@@ -1365,11 +1365,11 @@ fn select_readme_endpoint<'a>(
 
 fn readme_endpoint(ir: &Ir) -> Option<&Endpoint> {
     if ir.openapi_31 {
-        select_readme_endpoint(ir.endpoints.iter())
-    } else {
-        select_readme_endpoint(ir.endpoints.iter().filter(|e| e.module.is_empty()))
-            .or_else(|| select_readme_endpoint(ir.endpoints.iter()))
+        return select_readme_endpoint(ir.endpoints.iter());
     }
+    select_readme_endpoint(ir.endpoints.iter().filter(|e| e.module.is_empty()))
+        .filter(|e| e.http_method != "GET" || e.request_body.is_some())
+        .or_else(|| select_readme_endpoint(ir.endpoints.iter()))
 }
 
 fn client_call_prefix(ep: &Endpoint) -> String {
@@ -5773,6 +5773,31 @@ mod tests {
         assert_eq!(
             readme_endpoint(&ir).map(|e| e.method_name.as_str()),
             Some("no_arg_post")
+        );
+
+        let mut root_get = endpoint("/status", Vec::new(), None);
+        root_get.method_name = "status".to_string();
+        let mut tagged_post = endpoint("/queues", Vec::new(), None);
+        tagged_post.http_method = "POST";
+        tagged_post.method_name = "create_queue".to_string();
+        tagged_post.module = "queues".to_string();
+        let ir = ir_with(vec![root_get, tagged_post]);
+        assert_eq!(
+            readme_endpoint(&ir).map(|e| e.method_name.as_str()),
+            Some("create_queue")
+        );
+
+        let mut root_post = endpoint("/token", Vec::new(), None);
+        root_post.http_method = "POST";
+        root_post.method_name = "get_token".to_string();
+        let mut tagged_post = endpoint("/queues", Vec::new(), None);
+        tagged_post.http_method = "POST";
+        tagged_post.method_name = "create_queue".to_string();
+        tagged_post.module = "queues".to_string();
+        let ir = ir_with(vec![root_post, tagged_post]);
+        assert_eq!(
+            readme_endpoint(&ir).map(|e| e.method_name.as_str()),
+            Some("get_token")
         );
 
         let mut no_arg_post = endpoint("/two", Vec::new(), None);
