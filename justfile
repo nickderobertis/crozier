@@ -81,6 +81,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e dnd5eapi_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apache_qakka_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e authentiqio_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e etsi_mec010_2_matches_fern_output
 
 # Format the codebase in place.
 format:

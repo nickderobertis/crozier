@@ -5755,6 +5755,136 @@ const AUTHENTIQIO: Corpus = Corpus {
     ],
 };
 
+const ETSI_MEC010_2: Corpus = Corpus {
+    api: "etsi.local-mec010-2_apppkgmgmt",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[
+        ".fern/metadata.json",
+        "README.md",
+        "pyproject.toml",
+        "reference.md",
+        "requirements.txt",
+        "src/fern/__init__.py",
+        "src/fern/app_pkgm/__init__.py",
+        "src/fern/app_pkgm/client.py",
+        "src/fern/app_pkgm/raw_client.py",
+        "src/fern/app_pkgm_notifications/__init__.py",
+        "src/fern/app_pkgm_notifications/client.py",
+        "src/fern/app_pkgm_notifications/raw_client.py",
+        "src/fern/app_pkgm_notifications/types/__init__.py",
+        "src/fern/app_pkgm_notifications/types/app_pkg_notification_operational_state.py",
+        "src/fern/client.py",
+        "src/fern/core/__init__.py",
+        "src/fern/core/api_error.py",
+        "src/fern/core/client_wrapper.py",
+        "src/fern/core/datetime_utils.py",
+        "src/fern/core/file.py",
+        "src/fern/core/force_multipart.py",
+        "src/fern/core/http_client.py",
+        "src/fern/core/http_response.py",
+        "src/fern/core/http_sse/__init__.py",
+        "src/fern/core/http_sse/_api.py",
+        "src/fern/core/http_sse/_decoders.py",
+        "src/fern/core/http_sse/_exceptions.py",
+        "src/fern/core/http_sse/_models.py",
+        "src/fern/core/jsonable_encoder.py",
+        "src/fern/core/pydantic_utilities.py",
+        "src/fern/core/query_encoder.py",
+        "src/fern/core/remove_none_from_dict.py",
+        "src/fern/core/request_options.py",
+        "src/fern/core/serialization.py",
+        "src/fern/environment.py",
+        "src/fern/errors/__init__.py",
+        "src/fern/errors/bad_request_error.py",
+        "src/fern/errors/conflict_error.py",
+        "src/fern/errors/forbidden_error.py",
+        "src/fern/errors/not_acceptable_error.py",
+        "src/fern/errors/not_found_error.py",
+        "src/fern/errors/range_not_satisfiable_error.py",
+        "src/fern/errors/too_many_requests_error.py",
+        "src/fern/errors/unauthorized_error.py",
+        "src/fern/py.typed",
+        "src/fern/types/__init__.py",
+        "src/fern/types/action.py",
+        "src/fern/types/algorithm.py",
+        "src/fern/types/app_d.py",
+        "src/fern/types/app_d_id.py",
+        "src/fern/types/app_d_version.py",
+        "src/fern/types/app_external_cpd.py",
+        "src/fern/types/app_name.py",
+        "src/fern/types/app_pkg_artifact_info.py",
+        "src/fern/types/app_pkg_filter.py",
+        "src/fern/types/app_pkg_id.py",
+        "src/fern/types/app_pkg_info.py",
+        "src/fern/types/app_pkg_info_links.py",
+        "src/fern/types/app_pkg_info_modifications.py",
+        "src/fern/types/app_pkg_info_modifications_operation_state.py",
+        "src/fern/types/app_pkg_notification_id.py",
+        "src/fern/types/app_pkg_notification_links.py",
+        "src/fern/types/app_pkg_notification_type.py",
+        "src/fern/types/app_pkg_operational_state.py",
+        "src/fern/types/app_pkg_subscription_info.py",
+        "src/fern/types/app_pkg_subscription_info_id.py",
+        "src/fern/types/app_pkg_subscription_info_links.py",
+        "src/fern/types/app_pkg_subscription_link_list.py",
+        "src/fern/types/app_pkg_subscription_link_list_links.py",
+        "src/fern/types/app_pkg_subscription_type.py",
+        "src/fern/types/app_pkg_sw_image_info.py",
+        "src/fern/types/app_provider.py",
+        "src/fern/types/app_software_version.py",
+        "src/fern/types/callback_uri.py",
+        "src/fern/types/category_ref.py",
+        "src/fern/types/change_app_instance_state_op_config.py",
+        "src/fern/types/checksum.py",
+        "src/fern/types/dns_rule_descriptor.py",
+        "src/fern/types/feature_dependency.py",
+        "src/fern/types/filter_type.py",
+        "src/fern/types/hash.py",
+        "src/fern/types/href.py",
+        "src/fern/types/interface_descriptor.py",
+        "src/fern/types/interface_type.py",
+        "src/fern/types/ip_address_type.py",
+        "src/fern/types/key_value_pairs.py",
+        "src/fern/types/latency_descriptor.py",
+        "src/fern/types/link_type.py",
+        "src/fern/types/not_specified.py",
+        "src/fern/types/onboarding_state.py",
+        "src/fern/types/problem_details.py",
+        "src/fern/types/security_info.py",
+        "src/fern/types/ser_name.py",
+        "src/fern/types/ser_version.py",
+        "src/fern/types/serializer_types.py",
+        "src/fern/types/serializers.py",
+        "src/fern/types/service_dependency.py",
+        "src/fern/types/service_descriptor.py",
+        "src/fern/types/subscription_id.py",
+        "src/fern/types/subscriptions_app_pkg_subscription.py",
+        "src/fern/types/subsctiption_type_app_pkg.py",
+        "src/fern/types/sw_image_descriptor.py",
+        "src/fern/types/terminate_app_instance_op_config.py",
+        "src/fern/types/time_stamp.py",
+        "src/fern/types/traffic_filter.py",
+        "src/fern/types/traffic_rule_descriptor.py",
+        "src/fern/types/transport_dependency.py",
+        "src/fern/types/transport_descriptor.py",
+        "src/fern/types/transport_types.py",
+        "src/fern/types/transports_supported.py",
+        "src/fern/types/tunnel_info.py",
+        "src/fern/types/tunnel_type.py",
+        "src/fern/types/uri.py",
+        "src/fern/types/usage_state.py",
+        "src/fern/types/virtual_compute_description.py",
+        "src/fern/types/virtual_network_interface_requirements.py",
+        "src/fern/types/virtual_storage_descriptor.py",
+        "src/fern/version.py",
+    ],
+};
+
 #[test]
 fn bunq_matches_fern_output() {
     // `link-ok` like apideck: the spec is fetched (not vendored), so this **skips**
@@ -5925,6 +6055,18 @@ fn authentiqio_matches_fern_output() {
 }
 
 #[test]
+fn etsi_mec010_2_matches_fern_output() {
+    if corpus_spec(ETSI_MEC010_2.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the ETSI MEC 010-2 corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+        );
+        return;
+    }
+    assert_corpus_matches(&ETSI_MEC010_2);
+}
+
+#[test]
 fn feature_target_specs_generate_without_panicking() {
     // A feature-coverage target with a populated `matched` list is byte-compared
     // file-by-file; one with an empty `matched` list asserts only that crozier
@@ -5975,6 +6117,7 @@ fn report_matched_candidates() {
         &DND5EAPI,
         &APACHE_QAKKA,
         &AUTHENTIQIO,
+        &ETSI_MEC010_2,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
@@ -6096,6 +6239,7 @@ fn report_fixture_diffs() {
         &DND5EAPI,
         &APACHE_QAKKA,
         &AUTHENTIQIO,
+        &ETSI_MEC010_2,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
