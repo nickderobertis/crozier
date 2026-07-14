@@ -4312,6 +4312,9 @@ enum Example {
     Call(String, Vec<(Option<String>, Example)>),
     /// A list `[items]` — explodes only when an item does.
     List(Vec<Example>),
+    /// A list supplied verbatim by the spec — wraps at the snippet line limit and
+    /// retains Python's trailing commas when exploded.
+    ExplicitList(Vec<Example>),
     /// A dict with fixed string keys — explodes only when a value does.
     Dict(Vec<(String, Example)>),
 }
@@ -4324,7 +4327,9 @@ impl Example {
         match self {
             Example::Atom(_) => false,
             Example::Call(_, args) => !args.is_empty(),
-            Example::List(items) => items.iter().any(Example::forces_multiline),
+            Example::List(items) | Example::ExplicitList(items) => {
+                items.iter().any(Example::forces_multiline)
+            }
             Example::Dict(pairs) => pairs.iter().any(|(_, v)| v.forces_multiline()),
         }
     }
@@ -4344,7 +4349,7 @@ impl Example {
                     .join(", ");
                 format!("{name}({inner})")
             }
-            Example::List(items) => {
+            Example::List(items) | Example::ExplicitList(items) => {
                 format!(
                     "[{}]",
                     items
@@ -4409,6 +4414,19 @@ impl Example {
                 let body = items
                     .iter()
                     .map(|it| format!("{inner_pad}{}", it.render(indent + 4)))
+                    .collect::<Vec<_>>()
+                    .join("\n");
+                format!("[\n{body}\n{pad}]")
+            }
+            Example::ExplicitList(items) => {
+                if !self.forces_multiline() && indent + self.flat().len() <= 88 {
+                    return self.flat();
+                }
+                let pad = " ".repeat(indent);
+                let inner_pad = " ".repeat(indent + 4);
+                let body = items
+                    .iter()
+                    .map(|it| format!("{inner_pad}{},", it.render(indent + 4)))
                     .collect::<Vec<_>>()
                     .join("\n");
                 format!("[\n{body}\n{pad}]")
@@ -4495,7 +4513,7 @@ impl<'a> ExampleCtx<'a> {
             return Some(Example::Atom(example.to_string()));
         }
         if self.example_is_composite(t) && (example.starts_with('[') || example.starts_with('{')) {
-            return Some(Example::Atom(example.to_string()));
+            return serde_json::from_str(example).ok().map(example_from_json);
         }
         let TypeRef::Named(name) = t else {
             return None;
@@ -4766,6 +4784,26 @@ impl<'a> ExampleCtx<'a> {
     }
 }
 
+fn example_from_json(value: serde_json::Value) -> Example {
+    match value {
+        serde_json::Value::Array(items) => {
+            Example::ExplicitList(items.into_iter().map(example_from_json).collect())
+        }
+        serde_json::Value::Object(fields) => Example::Dict(
+            fields
+                .into_iter()
+                .map(|(key, value)| (key, example_from_json(value)))
+                .collect(),
+        ),
+        serde_json::Value::String(value) => Example::Atom(format!("{value:?}")),
+        serde_json::Value::Number(value) => Example::Atom(value.to_string()),
+        serde_json::Value::Bool(value) => {
+            Example::Atom(if value { "True" } else { "False" }.to_string())
+        }
+        serde_json::Value::Null => Example::Atom("None".to_string()),
+    }
+}
+
 /// Build the worked `Examples` block for a method as logical (indent-0) lines,
 /// or `None` when the request is not exampleable (a raw bytes body).
 /// Whether a spec `example` is shown verbatim for a field of this type. Fern uses
@@ -4876,7 +4914,10 @@ fn build_example(
                     .example
                     .as_deref()
                     .and_then(|example| {
-                        if f.media_example || ctx.example_is_scalar(&f.type_ref) {
+                        if f.media_example
+                            || ctx.example_is_scalar(&f.type_ref)
+                            || ctx.example_is_composite(&f.type_ref)
+                        {
                             ctx.value_from_example(&f.type_ref, example)
                         } else {
                             None
@@ -4890,7 +4931,11 @@ fn build_example(
         // literal, so Fern omits it from the example).
         Some(RequestBody::Form(form)) => {
             for f in form.fields.iter().filter(|f| f.spec_required && !f.is_file) {
-                let v = ctx.value(&f.type_ref, Slot::Named(&f.wire_name));
+                let v = f
+                    .example
+                    .as_deref()
+                    .and_then(|example| ctx.value_from_example(&f.type_ref, example))
+                    .unwrap_or_else(|| ctx.value(&f.type_ref, Slot::Named(&f.wire_name)));
                 args.push((Some(f.py_name.clone()), v));
             }
         }

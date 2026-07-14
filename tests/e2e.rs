@@ -6239,6 +6239,19 @@ fn multipart_unknown_fields_keep_intrinsic_optionality_through_the_cli() {
 }
 
 #[test]
+fn request_array_examples_are_used_through_the_cli() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.1.0\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    post:\n      operationId: createWidgets\n      tags: [widgets]\n      requestBody:\n        content:\n          application/json:\n            schema:\n              type: object\n              required: [ids]\n              properties:\n                ids:\n                  type: array\n                  examples: [[1, 2, 3]]\n      responses:\n        '204': { description: Created }\n",
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/widgets/client.py"))
+        .expect("widgets client is generated");
+    assert!(
+        client.contains("ids=[1, 2, 3]"),
+        "a required array should use its explicit schema example: {client}"
+    );
+}
+
+#[test]
 fn top_level_inline_response_array_items_hoist_through_the_cli() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    get:\n      operationId: listWidgets\n      tags: [widgets]\n      responses:\n        '200':\n          description: Found\n          content:\n            application/json:\n              schema:\n                type: array\n                items:\n                  type: object\n                  required: [id]\n                  properties:\n                    id: { type: integer }\n",
