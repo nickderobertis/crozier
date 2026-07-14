@@ -3309,18 +3309,7 @@ components:
 #[test]
 fn in_process_openapi_boundary_reports_each_input_failure() {
     fn error_for(path: PathBuf) -> String {
-        render_files(GenerateArgs {
-            spec: path,
-            output: PathBuf::from("unused"),
-            package_name: Some("acme".to_string()),
-            project_name: Some("acme".to_string()),
-            client_class_name: None,
-            audiences: Vec::new(),
-            audience_strict: false,
-            extra_fields: crozier::settings::ExtraFields::Allow,
-        })
-        .unwrap_err()
-        .to_string()
+        crozier::openapi::load(&path).unwrap_err().to_string()
     }
 
     let dir = tempfile::tempdir().unwrap();
