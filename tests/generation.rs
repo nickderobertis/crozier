@@ -3518,3 +3518,64 @@ paths:
         "{client}"
     );
 }
+
+#[test]
+fn same_request_response_ref_omits_content_type_only_when_unauthenticated() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Echo, version: 1.0.0 }
+paths:
+  /public:
+    post:
+      operationId: public_echo
+      tags: [Public]
+      security: []
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Message" }
+      responses:
+        '200':
+          description: Echo
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Message" }
+  /private:
+    post:
+      operationId: private_echo
+      tags: [Private]
+      security: [ { Bearer: [] } ]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Message" }
+      responses:
+        '200':
+          description: Echo
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Message" }
+components:
+  securitySchemes:
+    Bearer: { type: http, scheme: bearer }
+  schemas:
+    Message:
+      type: object
+      properties: { text: { type: string } }
+"##,
+    );
+    let public = &files["src/acme/public/raw_client.py"];
+    assert!(public.contains("json={"), "{public}");
+    assert!(
+        !public.contains("\"content-type\": \"application/json\""),
+        "same-ref public echo omits the redundant header: {public}"
+    );
+    let private = &files["src/acme/private/raw_client.py"];
+    assert!(private.contains("json={"), "{private}");
+    assert!(
+        private.contains("\"content-type\": \"application/json\""),
+        "secured same-ref echo retains the header: {private}"
+    );
+    assert!(files["src/acme/client.py"]
+        .contains("token: typing.Optional[typing.Union[str, typing.Callable[[], str]]]"));
+}
