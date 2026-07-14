@@ -1208,7 +1208,7 @@ fn complex_body(ep: &Endpoint, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) ->
     }
     match &ep.request_body {
         None => false,
-        Some(RequestBody::Bytes) => true,
+        Some(RequestBody::Bytes { .. }) => true,
         Some(RequestBody::Inline(fields)) => {
             fields.iter().any(|f| f.convert)
                 || (fields.len() >= 2 && fields.iter().all(|f| f.spec_required))
@@ -1440,7 +1440,7 @@ fn reference_file(
         .endpoints
         .iter()
         .filter(|e| e.module.is_empty() && e.emittable)
-        .filter(|e| !matches!(e.request_body, Some(RequestBody::Bytes)))
+        .filter(|e| !matches!(e.request_body, Some(RequestBody::Bytes { .. })))
         .collect();
     for ep in root_eps {
         any = true;
@@ -1453,7 +1453,7 @@ fn reference_file(
             .endpoints
             .iter()
             .filter(|e| &e.module == *module && e.emittable)
-            .filter(|e| !matches!(e.request_body, Some(RequestBody::Bytes)))
+            .filter(|e| !matches!(e.request_body, Some(RequestBody::Bytes { .. })))
             .collect();
         if eps.is_empty() {
             continue;
@@ -2601,7 +2601,7 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
             params.sort_by_key(|p| p.default.is_some());
             params
         }
-        Some(RequestBody::Bytes) => vec![DocParam {
+        Some(RequestBody::Bytes { .. }) => vec![DocParam {
             name: "request".to_string(),
             annotation: "typing.Union[bytes, typing.Iterator[bytes], typing.AsyncIterator[bytes]]"
                 .to_string(),
@@ -3016,7 +3016,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
             lines.push("            },".to_string());
         }
         // A raw bytes body is streamed via `content=` rather than serialized.
-        Some(RequestBody::Bytes) => lines.push("            content=request,".to_string()),
+        Some(RequestBody::Bytes { .. }) => lines.push("            content=request,".to_string()),
         // A form body: non-file fields into `data={...}`, file fields into
         // `files={...}` (in document order within each group).
         Some(RequestBody::Form(form)) => {
@@ -3055,7 +3055,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
     // or is accompanied by path/header parameters. Header parameters follow,
     // rendered as `str(x) if x is not None else None`.
     let content_type: Option<String> = match &ep.request_body {
-        Some(RequestBody::Bytes) => Some("application/octet-stream".to_string()),
+        Some(RequestBody::Bytes { content_type }) => Some(content_type.clone()),
         // A multipart form uses `force_multipart=True` (no content-type header);
         // a urlencoded form carries its own content-type.
         Some(RequestBody::Form(form)) => {
@@ -4698,7 +4698,7 @@ fn build_example(
     client_name: &str,
     ctx: &mut ExampleCtx,
 ) -> Option<Vec<String>> {
-    if matches!(ep.request_body, Some(RequestBody::Bytes)) {
+    if matches!(ep.request_body, Some(RequestBody::Bytes { .. })) {
         return None;
     }
 
@@ -5790,7 +5790,9 @@ mod tests {
         );
         ep.method_name = "upload".to_string();
         ep.http_method = "POST";
-        ep.request_body = Some(RequestBody::Bytes);
+        ep.request_body = Some(RequestBody::Bytes {
+            content_type: "application/octet-stream".to_string(),
+        });
         ep.errors = vec![ErrorResponse {
             status_code: 400,
             class_name: "BadRequestError".to_string(),

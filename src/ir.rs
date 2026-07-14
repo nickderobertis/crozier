@@ -441,7 +441,7 @@ fn referenced_type_names(
                     .iter()
                     .for_each(|f| collect_named(&f.type_ref, &mut set));
             }
-            Some(RequestBody::Bytes) | None => {}
+            Some(RequestBody::Bytes { .. }) | None => {}
         }
     }
     set
@@ -626,7 +626,7 @@ pub enum RequestBody {
     /// A raw `application/octet-stream` body: a `request` argument typed
     /// `Union[bytes, Iterator[bytes], AsyncIterator[bytes]]`, sent as `content=`
     /// with a `content-type: application/octet-stream` header.
-    Bytes,
+    Bytes { content_type: String },
     /// A form body (`multipart/form-data` or `application/x-www-form-urlencoded`):
     /// each property is a keyword-only argument; non-file fields serialize into
     /// `data={...}` and file fields into `files={...}`. Multipart bodies set
@@ -654,7 +654,7 @@ impl RequestBody {
         match self {
             RequestBody::Single(s) => s.content_type,
             RequestBody::Inline(_) => true,
-            RequestBody::Bytes | RequestBody::Form(_) => false,
+            RequestBody::Bytes { .. } | RequestBody::Form(_) => false,
         }
     }
 
@@ -1694,7 +1694,9 @@ fn resolve_request_body(
     // A raw `application/octet-stream` body is a bytes stream, independent of its
     // schema — Fern types it as a fixed `Union[bytes, ...]` and sends `content=`.
     if rb.content.contains_key("application/octet-stream") {
-        return Some(RequestBody::Bytes);
+        return Some(RequestBody::Bytes {
+            content_type: "application/octet-stream".to_string(),
+        });
     }
     // A form body: `multipart/form-data` (file uploads via `files=`) or
     // `application/x-www-form-urlencoded` (all fields via `data=`).
@@ -1715,14 +1717,35 @@ fn resolve_request_body(
             }));
         }
     }
-    let (media_type, media) = rb.content.get_key_value("application/json").or_else(|| {
-        rb.content
-            .iter()
-            .find(|(media_type, _)| is_json_like_media_type(media_type))
-    })?;
+    if let Some((media_type, _)) = rb.content.iter().find(|(media_type, media)| {
+        *media_type != "*/*"
+            && media.schema.as_ref().is_some_and(|schema| {
+                let schema = schema
+                    .reference
+                    .as_deref()
+                    .and_then(|reference| resolve_ref(doc, reference))
+                    .unwrap_or(schema);
+                schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("string")
+                    && schema.format.as_deref() == Some("binary")
+            })
+    }) {
+        return Some(RequestBody::Bytes {
+            content_type: media_type.clone(),
+        });
+    }
+    let (media_type, media) = rb
+        .content
+        .get_key_value("application/json")
+        .or_else(|| rb.content.get_key_value("*/*"))
+        .or_else(|| {
+            rb.content
+                .iter()
+                .find(|(media_type, _)| is_json_like_media_type(media_type))
+        })?;
     let schema = media.schema.as_ref()?;
     let required = rb.required == Some(true);
-    let content_type_override = (media_type != "application/json").then(|| media_type.to_string());
+    let content_type_override = (media_type != "application/json" && media_type != "*/*")
+        .then(|| media_type.to_string());
     if let Some(reference) = &schema.reference {
         let target = resolve_ref(doc, reference)?;
         let class = ref_to_class(reference);
@@ -1731,6 +1754,11 @@ fn resolve_request_body(
         // header.
         if string_enum_values(target).is_some() || is_int_enum(target) {
             return Some(single(TypeRef::Named(class), required, false, true));
+        }
+        if target.ty.as_ref().and_then(|ty| ty.primary()) == Some("string")
+            && target.format.as_deref() == Some("binary")
+        {
+            return Some(single(TypeRef::Named(class), required, false, false));
         }
         // A `$ref` to a union goes through the convert wrapper (its object
         // variants carry field aliases that must be respected on write).

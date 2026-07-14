@@ -5932,6 +5932,21 @@ fn referenced_binary_success_responses_stream_bytes() {
 }
 
 #[test]
+fn binary_request_media_types_are_preserved() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /import:\n    post:\n      operationId: importWidgets\n      tags: [widgets]\n      requestBody:\n        content:\n          application/zip:\n            schema: { $ref: '#/components/schemas/FileContent' }\n      responses:\n        '204': { description: Imported }\n  /create:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          '*/*':\n            schema: { $ref: '#/components/schemas/FileContent' }\n          application/vnd.create+json:\n            schema: { $ref: '#/components/schemas/CreateWidget' }\n      responses:\n        '204': { description: Created }\ncomponents:\n  schemas:\n    FileContent: { type: string, format: binary }\n    CreateWidget:\n      type: object\n      properties:\n        name: { type: string }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
+    assert!(
+        raw.contains("content=request,\n            headers={\n                \"content-type\": \"application/zip\"")
+            && raw.contains("def create_widget(\n        self, *, request: typing.Optional[FileContent] = None")
+            && raw.contains("json=request,"),
+        "binary request media selection should preserve ZIP and wildcard semantics: {raw}"
+    );
+}
+
+#[test]
 fn tag_prefixed_multi_segment_operation_ids_drop_the_tag_segment() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /query/widgets/by_name:\n    \
