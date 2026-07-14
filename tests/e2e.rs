@@ -6153,6 +6153,19 @@ fn openapi_31_null_types_generate_optional_fields() {
 }
 
 #[test]
+fn openapi_31_null_only_array_items_are_optional_any() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.1.0\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widget:\n    get:\n      operationId: getWidget\n      tags: [widgets]\n      responses:\n        '200':\n          description: Found\n          content:\n            application/json:\n              schema:\n                type: object\n                required: [values]\n                properties:\n                  values:\n                    type: array\n                    items: { type: ['null'] }\n",
+    );
+    let model = std::fs::read_to_string(out.join("src/acme/widgets/types/get_widget_response.py"))
+        .expect("inline response model is generated");
+    assert!(
+        model.contains("values: typing.List[typing.Optional[typing.Any]]"),
+        "null-only items should remain optional unknown values: {model}"
+    );
+}
+
+#[test]
 fn inline_request_enums_generate_emittable_clients() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widget:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n              type: object\n              required: [mode]\n              properties:\n                mode: { type: string, enum: [FAST, SAFE] }\n      responses:\n        '204': { description: Created }\n",

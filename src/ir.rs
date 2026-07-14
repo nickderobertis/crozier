@@ -3566,7 +3566,7 @@ fn is_optional(schema: &Schema) -> bool {
 /// unknown value (`Optional[Any]`).
 fn is_unknown(schema: &Schema) -> bool {
     schema.reference.is_none()
-        && schema.ty.is_none()
+        && schema.ty.as_ref().is_none_or(|ty| ty.primary().is_none())
         && schema.one_of.is_none()
         && schema.any_of.is_none()
         && schema.all_of.is_none()
