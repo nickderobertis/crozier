@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.29](https://github.com/nickderobertis/crozier/compare/v0.0.28...v0.0.29) - 2026-07-14
+
+### Other
+
+- *(e2e)* add five more real-world corpora (issue #77), all byte-matched ([#99](https://github.com/nickderobertis/crozier/pull/99))
+
 ## [0.0.28](https://github.com/nickderobertis/crozier/compare/v0.0.27...v0.0.28) - 2026-07-13
 
 ### Added
