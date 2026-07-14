@@ -5979,6 +5979,25 @@ fn readme_skips_binary_endpoints_for_worked_examples() {
 }
 
 #[test]
+fn readme_marks_referenced_object_bodies_as_complex() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          application/json:\n            schema: { $ref: '#/components/schemas/CreateWidget' }\n      responses:\n        '204': { description: Created }\ncomponents:\n  schemas:\n    CreateWidget:\n      type: object\n      example: { name: example }\n      properties:\n        name: { type: string }\n        note: { type: string }\n      required: [name]\n",
+    );
+    let readme = std::fs::read_to_string(out.join("README.md")).expect("README is generated");
+    assert!(
+        readme.contains("client.widgets.create_widget(...)")
+            && readme.contains("with_raw_response.create_widget(...)"),
+        "referenced object bodies should be complex in abbreviated calls: {readme}"
+    );
+    let raw_client = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("raw client is generated");
+    assert!(
+        !raw_client.contains("\"content-type\": \"application/json\""),
+        "example-backed optional bodies should leave content type to the transport: {raw_client}"
+    );
+}
+
+#[test]
 fn header_parameter_enums_hoist_to_tag_types() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      parameters:\n        - name: X-Widget-Mode\n          in: header\n          required: true\n          schema: { type: string, enum: [FAST, SAFE] }\n      responses:\n        '204': { description: Created }\n",

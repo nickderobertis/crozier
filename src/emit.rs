@@ -1203,7 +1203,11 @@ fn root_init_file(
 /// of only scalar fields with any optional one (`createaccount`) or a single field
 /// (`create`), or a union/enum/scalar/no body, renders empty parens.
 fn complex_body(ep: &Endpoint, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) -> bool {
-    if ep.body_all_of {
+    if ep.body_all_of
+        || (ep.body_schema_ref
+            && ep.body_schema_has_example
+            && matches!(ep.request_body, Some(RequestBody::Inline(_))))
+    {
         return true;
     }
     match &ep.request_body {
@@ -3102,7 +3106,8 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                         && !ep.body_component_ref
                         && !(matches!(body, RequestBody::Inline(_))
                             && (ep.body_all_of || ep.body_response_same_ref))
-                        && (!ep.body_documented || body.all_fields_required()))) =>
+                        && ((!ep.body_documented && !ep.body_schema_has_example)
+                            || body.all_fields_required()))) =>
         {
             Some("application/json".to_string())
         }
@@ -5559,6 +5564,8 @@ mod tests {
             request_body: None,
             body_documented: false,
             body_component_ref: false,
+            body_schema_ref: false,
+            body_schema_has_example: false,
             body_all_of: false,
             body_response_same_ref: false,
             response,

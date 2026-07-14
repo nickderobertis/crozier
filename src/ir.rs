@@ -533,6 +533,10 @@ pub struct Endpoint {
     /// Whether the body came through `components.requestBodies`, which Fern treats
     /// like a reusable declaration for content-type emission.
     pub body_component_ref: bool,
+    /// Whether the selected request media schema was declared by component `$ref`.
+    pub body_schema_ref: bool,
+    /// Whether the referenced request schema declares an example payload.
+    pub body_schema_has_example: bool,
     /// Whether a referenced request schema is composed with `allOf`.
     pub body_all_of: bool,
     /// Whether the JSON request body and success response point at the same schema.
@@ -1522,6 +1526,26 @@ fn build_endpoint(
             .as_ref()
             .is_some_and(|rb| rb.description.is_some()),
         body_component_ref: op.request_body.as_ref().is_some_and(|rb| rb.component_ref),
+        body_schema_ref: op
+            .request_body
+            .as_ref()
+            .and_then(|body| {
+                body.content
+                    .values()
+                    .find_map(|media| media.schema.as_ref())
+            })
+            .is_some_and(|schema| schema.reference.is_some()),
+        body_schema_has_example: op
+            .request_body
+            .as_ref()
+            .and_then(|body| {
+                body.content
+                    .values()
+                    .find_map(|media| media.schema.as_ref())
+            })
+            .and_then(|schema| schema.reference.as_deref())
+            .and_then(|reference| resolve_ref(doc, reference))
+            .is_some_and(|schema| schema.example.is_some()),
         body_all_of: request_body_has_all_of(doc, op),
         body_response_same_ref: body_response_same_ref(doc, op),
         response,
