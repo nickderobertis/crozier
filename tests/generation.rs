@@ -3867,6 +3867,36 @@ paths:
 }
 
 #[test]
+fn unsupported_query_styles_are_discarded_before_standard_serialization() {
+    let spec = |style: &str| {
+        format!(
+            r#"openapi: 3.0.3
+info: {{ title: Query Style, version: 1.0.0 }}
+paths:
+  /search:
+    get:
+      operationId: search_run
+      tags: [Search]
+      parameters:
+        - name: value
+          in: query
+          {style}
+          schema: {{ type: object, additionalProperties: true }}
+      responses: {{ '204': {{ description: Done }} }}
+"#
+        )
+    };
+    let unstyled = render(&spec(""));
+    let deep_object = render(&spec("style: deepObject\n          explode: true"));
+    let space_delimited = render(&spec("style: spaceDelimited"));
+    let path = "src/acme/search/raw_client.py";
+    assert_eq!(deep_object[path], unstyled[path]);
+    assert_eq!(space_delimited[path], unstyled[path]);
+    assert!(unstyled[path].contains("value: typing.Optional[typing.Dict"));
+    assert!(unstyled[path].contains("params={\n                \"value\": value,"));
+}
+
+#[test]
 fn integer_formats_drive_distinct_synthesized_examples() {
     let files = render(
         r#"openapi: 3.0.3

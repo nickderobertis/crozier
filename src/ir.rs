@@ -4301,11 +4301,23 @@ fn example_literal(value: &serde_json::Value) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::{
-        auth_model, base_type_ref, build_endpoint, build_enum, environment_model,
+        auth_model, base_type_ref, build_endpoint, build_enum, environment_model, int_prim,
         method_from_grouped_id, module_from_grouped_id, oauth_scope_enum, scalar_body, singularize,
         synthesized_method_name, Auth, Prim, TypeDecl, TypeRef,
     };
     use crate::openapi::{OpenApi, Schema, TypeField};
+
+    #[test]
+    fn integer_formats_select_distinct_ir_primitives() {
+        let schema = |format: &str| Schema {
+            ty: Some(TypeField::Single("integer".to_string())),
+            format: Some(format.to_string()),
+            ..Schema::default()
+        };
+        assert_eq!(int_prim(&schema("int64")), Prim::Long);
+        assert_eq!(int_prim(&schema("uint32")), Prim::Int);
+        assert_eq!(int_prim(&schema("int32")), Prim::Int);
+    }
 
     #[test]
     fn build_enum_disambiguates_colliding_member_names() {
