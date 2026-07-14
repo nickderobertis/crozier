@@ -3061,7 +3061,10 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         Some(RequestBody::Form(form)) => {
             (!form.multipart).then_some("application/x-www-form-urlencoded".to_string())
         }
-        Some(RequestBody::Single(body)) if body.content_type_override.is_some() => {
+        Some(RequestBody::Single(body))
+            if body.content_type_override.is_some()
+                && body.content_type_override.as_deref() != Some("*/*") =>
+        {
             body.content_type_override.clone()
         }
         // A JSON body carries the `content-type` header when it accompanies a
