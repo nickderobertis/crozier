@@ -390,8 +390,9 @@ mod tests {
         // Fern renames a leading-digit property to `f_<name>` and aliases it.
         assert_eq!(field_name("2fa_enabled"), "f_2fa_enabled");
         assert_eq!(field_name("3d"), "f_3d");
-        // A hyphenated, digit-leading name still snakes then prefixes.
-        assert_eq!(field_name("2-factor"), "f_2_factor");
+        // Fern's default smart casing rejoins digit-adjacent fragments before
+        // applying the leading-digit prefix.
+        assert_eq!(field_name("2-factor"), "f_2factor");
         // Non-digit-leading names are untouched.
         assert_eq!(field_name("v2"), "v2");
     }
