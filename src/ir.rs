@@ -2167,10 +2167,12 @@ fn endpoint_module(op: &Operation, url: &str) -> String {
 /// The snake-cased, identifier-safe module name a tag maps to (`attachment-public`
 /// → `attachment_public`).
 fn snake_module(tag: &str) -> String {
-    if tag.chars().all(|c| c.is_ascii_alphanumeric()) {
-        return naming::sanitize_identifier(&tag.to_ascii_lowercase());
-    }
-    naming::sanitize_identifier(&naming::to_snake_case(tag))
+    let name = if tag.chars().all(|c| c.is_ascii_alphanumeric()) {
+        naming::sanitize_identifier(&tag.to_ascii_lowercase())
+    } else {
+        naming::sanitize_identifier(&naming::to_snake_case(tag))
+    };
+    module_identifier(&name)
 }
 
 /// Whether an operation should be grouped by its `group_method` operationId prefix
@@ -2207,7 +2209,15 @@ fn module_from_grouped_id(id: &str) -> String {
     } else {
         prefix.to_lowercase()
     };
-    naming::sanitize_identifier(&name)
+    module_identifier(&naming::sanitize_identifier(&name))
+}
+
+fn module_identifier(name: &str) -> String {
+    if naming::is_reserved(name) {
+        format!("{name}_")
+    } else {
+        name.to_string()
+    }
 }
 
 /// The leading static (non-`{param}`) path segment, the last-resort client group
