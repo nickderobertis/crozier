@@ -2562,3 +2562,255 @@ components:
     assert!(!files.contains_key("src/acme/types/create_job.py"));
     assert!(files["src/acme/types/job.py"].contains("id: typing.Optional[int]"));
 }
+
+#[test]
+fn response_hoisting_covers_numeric_names_nested_arrays_and_closed_objects() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: Shapes, version: 1.0.0 }
+paths:
+  /shape:
+    get:
+      operationId: shapes_get
+      tags: [Shapes]
+      responses:
+        '200':
+          description: Found
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [day_0_end_time, items, metadata]
+                properties:
+                  day_0_end_time: { type: integer }
+                  metadata:
+                    type: object
+                    properties: {}
+                    additionalProperties: false
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      required: [details]
+                      properties:
+                        details:
+                          type: object
+                          required: [name]
+                          properties:
+                            name: { type: string }
+"#,
+    );
+    let response = &files["src/acme/shapes/types/shapes_get_response.py"];
+    assert!(response.contains("day0end_time: typing_extensions.Annotated[int, FieldMetadata(alias=\"day_0_end_time\")]"), "{response}");
+    assert!(
+        response.contains("metadata: ShapesGetResponseMetadata"),
+        "{response}"
+    );
+    assert!(
+        response.contains("items: typing.List[ShapesGetResponseItemsItem]"),
+        "{response}"
+    );
+    let item = &files["src/acme/shapes/types/shapes_get_response_items_item.py"];
+    assert!(
+        item.contains("details: ShapesGetResponseItemsItemDetails"),
+        "{item}"
+    );
+    assert!(files.contains_key("src/acme/shapes/types/shapes_get_response_metadata.py"));
+}
+
+#[test]
+fn openapi_31_type_arrays_preserve_nullability_and_unknown_fallbacks() {
+    let files = render(
+        r#"openapi: 3.1.0
+info: { title: Nullable, version: 1.0.0 }
+paths:
+  /value:
+    get:
+      operationId: nullable_get
+      tags: [Nullable]
+      responses:
+        '200':
+          description: Found
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [name, values, unconstrained]
+                properties:
+                  name: { type: [string, 'null'] }
+                  values:
+                    type: array
+                    items: { type: ['null'] }
+                  unconstrained: { type: array }
+"#,
+    );
+    let model = &files["src/acme/nullable/types/nullable_get_response.py"];
+    assert!(
+        model.contains("name: typing.Optional[str] = None"),
+        "{model}"
+    );
+    assert_eq!(
+        model
+            .matches("typing.List[typing.Optional[typing.Any]]")
+            .count(),
+        2,
+        "null-only and missing item schemas both use the unknown fallback: {model}"
+    );
+}
+
+#[test]
+fn worked_examples_render_media_component_scalar_and_composite_values() {
+    let files = render(
+        r##"openapi: 3.1.0
+info: { title: Examples, version: 1.0.0 }
+paths:
+  /widgets:
+    post:
+      operationId: widgets_create
+      tags: [Widgets]
+      parameters:
+        - name: limit
+          in: query
+          required: true
+          schema: { type: integer, examples: [7] }
+      requestBody:
+        content:
+          application/json:
+            example: { active: true }
+            schema: { $ref: "#/components/schemas/CreateWidget" }
+      responses:
+        '204': { description: Created }
+components:
+  schemas:
+    WidgetState: { type: string, enum: [ACTIVE, DISABLED] }
+    CreateWidget:
+      type: object
+      example:
+        name: Example Widget
+        state: DISABLED
+        labels: [regional, global]
+        properties: { custom: value }
+      properties:
+        name: { type: string }
+        active: { type: boolean }
+        state: { $ref: "#/components/schemas/WidgetState" }
+        labels: { type: array, items: { type: string } }
+        properties: { type: object, additionalProperties: { type: string } }
+"##,
+    );
+    let client = &files["src/acme/widgets/client.py"];
+    assert!(client.contains("limit=7"), "{client}");
+    assert!(client.contains("active=True"), "{client}");
+    assert!(client.contains("name=\"Example Widget\""), "{client}");
+    assert!(client.contains("state=WidgetState.DISABLED"), "{client}");
+    assert!(
+        client.contains("labels=[\"regional\", \"global\"]"),
+        "{client}"
+    );
+    assert!(
+        client.contains("properties={\"custom\": \"value\"}"),
+        "{client}"
+    );
+}
+
+#[test]
+fn multipart_fallbacks_emit_optional_unknown_and_file_only_empty_data() {
+    let files = render(
+        r#"openapi: 3.1.0
+info: { title: Uploads, version: 1.0.0 }
+paths:
+  /unknown:
+    post:
+      operationId: uploads_unknown
+      tags: [Uploads]
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                payload: {}
+      responses:
+        '204': { description: Created }
+  /file:
+    post:
+      operationId: uploads_file
+      tags: [Uploads]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [document]
+              properties:
+                document: { type: string, format: binary }
+      responses:
+        '204': { description: Created }
+"#,
+    );
+    let raw = &files["src/acme/uploads/raw_client.py"];
+    assert!(
+        raw.contains("payload: typing.Optional[typing.Optional[typing.Any]] = OMIT"),
+        "{raw}"
+    );
+    assert!(raw.contains("document: core.File"), "{raw}");
+    assert!(
+        raw.contains("data={},"),
+        "file-only multipart must retain an empty data map: {raw}"
+    );
+    assert!(
+        raw.contains("files={\n                \"document\": document,"),
+        "{raw}"
+    );
+    assert!(raw.contains("force_multipart=True"), "{raw}");
+}
+
+#[test]
+fn untagged_tag_named_and_ignored_body_operations_choose_the_right_surface() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: Routing, version: 1.0.0 }
+paths:
+  /root:
+    get:
+      operationId: root_get
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: string } } } }
+      requestBody:
+        content:
+          application/json:
+            schema: { type: string }
+  /widgets:
+    post:
+      operationId: widgets
+      tags: [widgets]
+      requestBody:
+        content:
+          text/plain:
+            schema: { type: string }
+      responses:
+        '204': { description: Done }
+"#,
+    );
+    let root = &files["src/acme/raw_client.py"];
+    assert!(root.contains("def root_get("), "{root}");
+    assert!(
+        !root.contains("request:"),
+        "GET request bodies must be ignored: {root}"
+    );
+    assert!(
+        root.contains("def widgets("),
+        "tag-equal operation IDs remain on the root surface: {root}"
+    );
+    assert!(!files.contains_key("src/acme/widgets/raw_client.py"));
+    let client = &files["src/acme/client.py"];
+    assert!(
+        client.contains("def root_get("),
+        "untagged operation must be available on the root client: {client}"
+    );
+    assert!(
+        client.contains("def widgets("),
+        "tag-equal operation must be available on the root client: {client}"
+    );
+}
