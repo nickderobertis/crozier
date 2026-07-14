@@ -5304,6 +5304,21 @@ fn slash_only_server_url_generates_empty_default_environment() {
 }
 
 #[test]
+fn examples_use_one_line_client_constructor_when_no_args_are_needed() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\nservers:\n  - url: /\npaths:\n  \
+         /widgets:\n    get:\n      operationId: listWidgets\n      tags: [widgets]\n      responses:\n        \
+         '200': { description: OK, content: { application/json: { schema: { type: array, items: { type: string } } } } }\n",
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/widgets/client.py"))
+        .expect("widgets client is generated");
+    assert!(
+        client.contains("client = AcmeApi()"),
+        "no-argument examples should use Fern's one-line constructor: {client}"
+    );
+}
+
+#[test]
 fn mixed_error_body_shapes_downgrade_status_class_to_any() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    \
@@ -5384,6 +5399,43 @@ fn component_request_body_refs_generate_through_the_cli() {
     assert!(
         raw.contains("username: str"),
         "a component requestBody ref should resolve and inline the referenced object fields: {raw}"
+    );
+}
+
+#[test]
+fn text_plain_request_bodies_are_ignored_for_python_generation() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /uploads/{id}:\n    \
+         post:\n      operationId: uploadText\n      tags: [uploads]\n      parameters:\n        - { name: id, \
+         in: path, required: true, schema: { type: string } }\n      requestBody:\n        required: true\n        \
+         content:\n          text/plain; utf-8:\n            schema: { type: string }\n      responses:\n        \
+         '200': { description: OK, content: { application/json: { schema: { type: object, properties: { ok: { type: \
+         boolean } } } } } }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/uploads/raw_client.py"))
+        .expect("uploads raw client is generated");
+    assert!(
+        raw.contains("def upload_text(") && !raw.contains("request:"),
+        "text/plain request bodies should not surface a request argument: {raw}"
+    );
+}
+
+#[test]
+fn vendor_json_bare_object_request_body_is_open_map() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /manifests/{id}:\n    \
+         post:\n      operationId: importManifest\n      tags: [imports]\n      parameters:\n        - { name: id, \
+         in: path, required: true, schema: { type: string } }\n      requestBody:\n        required: true\n        \
+         content:\n          application/vnd.example+json:\n            schema: { type: object }\n      responses:\n        \
+         '200': { description: OK, content: { application/json: { schema: { type: object, properties: { ok: { type: \
+         boolean } } } } } }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/imports/raw_client.py"))
+        .expect("imports raw client is generated");
+    assert!(
+        raw.contains("request: typing.Dict[str, typing.Optional[typing.Any]]")
+            && raw.contains("\"content-type\": \"application/vnd.example+json\""),
+        "vendor +json bodies should be open-map requests with the exact media type: {raw}"
     );
 }
 

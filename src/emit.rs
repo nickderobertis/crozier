@@ -2947,12 +2947,15 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
     // raw bytes body, else `application/json` when the body intrinsically needs it
     // or is accompanied by path/header parameters. Header parameters follow,
     // rendered as `str(x) if x is not None else None`.
-    let content_type: Option<&str> = match &ep.request_body {
-        Some(RequestBody::Bytes) => Some("application/octet-stream"),
+    let content_type: Option<String> = match &ep.request_body {
+        Some(RequestBody::Bytes) => Some("application/octet-stream".to_string()),
         // A multipart form uses `force_multipart=True` (no content-type header);
         // a urlencoded form carries its own content-type.
         Some(RequestBody::Form(form)) => {
-            (!form.multipart).then_some("application/x-www-form-urlencoded")
+            (!form.multipart).then_some("application/x-www-form-urlencoded".to_string())
+        }
+        Some(RequestBody::Single(body)) if body.content_type_override.is_some() => {
+            body.content_type_override.clone()
         }
         // A JSON body carries the `content-type` header when it accompanies a
         // path/header param, is *undocumented*, or is *always sent whole* (every field
@@ -2968,7 +2971,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                     && !ep.body_component_ref
                     && (!ep.body_documented || body.all_fields_required())) =>
         {
-            Some("application/json")
+            Some("application/json".to_string())
         }
         _ => None,
     };
@@ -4447,23 +4450,30 @@ fn build_example(
         }
     }
 
-    let mut client_block = vec![format!("client = {example_name}(")];
+    let mut client_args = Vec::new();
     // Promoted global headers come first (`tenant="YOUR_TENANT"`), then the auth
     // credential, then the hardcoded `base_url` (dropped when environments exist).
     for h in ctx.global_headers {
-        client_block.push(format!(
+        client_args.push(format!(
             "    {}=\"YOUR_{}\",",
             h.py_name,
             h.py_name.to_uppercase()
         ));
     }
     for arg in auth_example_args(ctx.auth) {
-        client_block.push(format!("    {arg},"));
+        client_args.push(format!("    {arg},"));
     }
     if !ctx.has_environment {
-        client_block.push("    base_url=\"https://yourhost.com/path/to/api\",".to_string());
+        client_args.push("    base_url=\"https://yourhost.com/path/to/api\",".to_string());
     }
-    client_block.push(")".to_string());
+    let client_block = if client_args.is_empty() {
+        vec![format!("client = {example_name}()")]
+    } else {
+        let mut block = vec![format!("client = {example_name}(")];
+        block.extend(client_args);
+        block.push(")".to_string());
+        block
+    };
 
     let mut out: Vec<String> = Vec::new();
     if !preamble.is_empty() {

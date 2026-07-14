@@ -671,6 +671,9 @@ pub struct SingleBody {
     /// named (`$ref`) enum/union/map bodies and the `uuid`/`byte` scalar formats;
     /// absent for a plain scalar or an inline container.
     pub content_type: bool,
+    /// Exact content type to emit instead of `application/json` for vendor JSON
+    /// media types.
+    pub content_type_override: Option<String>,
 }
 
 /// A declared error (non-2xx) response, rendered as a `raise` branch keyed on the
@@ -1274,7 +1277,9 @@ fn build_endpoint(
         .request_body
         .as_ref()
         .and_then(|rb| resolve_request_body(doc, types, rb, &mut hoister, &request_ctx));
-    let body_ok = op.request_body.is_none() || request_body.is_some();
+    let body_ok = op.request_body.is_none()
+        || request_body.is_some()
+        || op.request_body.as_ref().is_some_and(request_body_ignored);
 
     // Register the hoisted inline types under this tag's `types/` package.
     for decl in hoister.out {
@@ -1574,8 +1579,14 @@ fn resolve_request_body(
             }));
         }
     }
-    let schema = rb.content.get("application/json")?.schema.as_ref()?;
+    let (media_type, media) = rb
+        .content
+        .get_key_value("application/json")
+        .or_else(|| rb.content.iter().find(|(media_type, _)| is_json_like_media_type(media_type)))?;
+    let schema = media.schema.as_ref()?;
     let required = rb.required == Some(true);
+    let content_type_override =
+        (media_type != "application/json").then(|| media_type.to_string());
     if let Some(reference) = &schema.reference {
         let target = resolve_ref(doc, reference)?;
         let class = ref_to_class(reference);
@@ -1608,7 +1619,13 @@ fn resolve_request_body(
         // alias, e.g. bunq's `AttachmentPublic`) is passed straight through as a
         // single `json=request` arg, like a map.
         if is_bare_object(target) {
-            return Some(single(TypeRef::Named(class), required, false, true));
+            return Some(single_with_override(
+                TypeRef::Named(class),
+                required,
+                false,
+                true,
+                content_type_override,
+            ));
         }
         return None;
     }
@@ -1624,7 +1641,13 @@ fn resolve_request_body(
     if is_map(schema) {
         let type_ref = base_type_ref(schema);
         let convert = type_needs_convert(&type_ref, types);
-        return Some(single(type_ref, required, convert, false));
+        return Some(single_with_override(
+            type_ref,
+            required,
+            convert,
+            content_type_override.is_some(),
+            content_type_override,
+        ));
     }
     // An inline array body: a single `request` argument. A container of objects
     // serializes through the convert wrapper; either way, no content-type header.
@@ -1649,13 +1672,33 @@ fn resolve_request_body(
             false,
         ));
     }
+    if is_bare_object(schema) {
+        return Some(single_with_override(
+            base_type_ref(schema),
+            required,
+            false,
+            true,
+            content_type_override,
+        ));
+    }
     // An unknown (empty `{}`) body — Fern renders it as an optional `typing.Any`
     // argument with a plain `json=request` and no content-type header.
     if is_unknown(schema) {
         return Some(single(TypeRef::Primitive(Prim::Any), false, false, false));
     }
     scalar_body(schema)
-        .map(|(type_ref, content_type)| single(type_ref, required, false, content_type))
+        .map(|(type_ref, content_type)| single_with_override(type_ref, required, false, content_type, content_type_override))
+}
+
+fn is_json_like_media_type(media_type: &str) -> bool {
+    media_type.ends_with("+json")
+}
+
+fn request_body_ignored(rb: &crate::openapi::RequestBody) -> bool {
+    !rb.content.contains_key("application/json")
+        && !rb.content.contains_key("application/octet-stream")
+        && !rb.content.contains_key("multipart/form-data")
+        && !rb.content.contains_key("application/x-www-form-urlencoded")
 }
 
 /// Hoist an inline object body's properties into request [`BodyField`]s. Mirrors
@@ -1808,11 +1851,22 @@ fn hoist_form_object(schema: &Schema) -> Vec<BodyField> {
 
 /// A one-argument request body.
 fn single(type_ref: TypeRef, required: bool, convert: bool, content_type: bool) -> RequestBody {
+    single_with_override(type_ref, required, convert, content_type, None)
+}
+
+fn single_with_override(
+    type_ref: TypeRef,
+    required: bool,
+    convert: bool,
+    content_type: bool,
+    content_type_override: Option<String>,
+) -> RequestBody {
     RequestBody::Single(SingleBody {
         type_ref,
         required,
         convert,
         content_type,
+        content_type_override,
     })
 }
 
