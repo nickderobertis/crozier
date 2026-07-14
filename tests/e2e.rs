@@ -6009,6 +6009,21 @@ fn multiline_parameter_docs_remain_indented() {
 }
 
 #[test]
+fn multiline_parameter_docs_use_reference_paragraphs() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    get:\n      operationId: listWidgets\n      tags: [widgets]\n      parameters:\n        - name: order_by\n          in: query\n          description: |\n            Field used to order results.\n            Prefix with `-` to reverse ordering.\n          schema: { type: string }\n      responses:\n        '200': { description: OK }\n",
+    );
+    let reference =
+        std::fs::read_to_string(out.join("reference.md")).expect("reference is generated");
+    assert!(
+        reference.contains(
+            "**order_by:** `typing.Optional[str]` \n\nField used to order results.\nPrefix with `-` to reverse ordering."
+        ),
+        "multiline parameter descriptions should render as reference paragraphs: {reference}"
+    );
+}
+
+#[test]
 fn multiline_path_parameter_docs_remain_indented() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/{id}:\n    get:\n      operationId: getWidget\n      tags: [widgets]\n      parameters:\n        - name: id\n          in: path\n          required: true\n          description: |\n            Widget identifier.\n            It may use an external namespace.\n          schema: { type: string }\n      responses:\n        '200': { description: OK, content: { application/json: { schema: { type: string } } } }\n",

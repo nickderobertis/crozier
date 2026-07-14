@@ -1489,6 +1489,14 @@ struct ParamRow {
     suffix: String,
 }
 
+fn reference_param_suffix(description: Option<&str>) -> String {
+    match description {
+        Some(d) if d.contains('\n') => format!(" \n\n{d}"),
+        Some(d) => format!(" — {d}"),
+        None => " ".to_string(),
+    }
+}
+
 /// The view model for one `reference.md` endpoint entry (`reference_entry.md.j2`).
 #[derive(Serialize)]
 struct ReferenceEntryView {
@@ -1537,10 +1545,7 @@ fn reference_entry(
         // A *declared* description — even the empty string — gets the ` — {desc}`
         // separator (Fern emits the em-dash whenever the parameter carries a
         // `description` key); only an omitted (`None`) one gets the bare space.
-        let suffix = match desc {
-            Some(d) => format!(" — {d}"),
-            None => " ".to_string(),
-        };
+        let suffix = reference_param_suffix(desc.as_deref());
         params.push(ParamRow {
             name: name.clone(),
             annot: ty.clone(),
@@ -1548,10 +1553,7 @@ fn reference_entry(
         });
     }
     for dp in ordered_keyword_params(&mp.query, &mp.header, &mp.body) {
-        let suffix = match &dp.description {
-            Some(d) => format!(" — {d}"),
-            None => " ".to_string(),
-        };
+        let suffix = reference_param_suffix(dp.description.as_deref());
         let annot = reference_param_annotation(&dp.annotation);
         params.push(ParamRow {
             name: dp.name.clone(),
