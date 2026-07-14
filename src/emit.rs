@@ -563,6 +563,7 @@ fn forward_ref_map(
     let mut map: HashMap<String, HashSet<String>> = HashMap::new();
     for decl in types.iter().chain(tag_types.iter().map(|t| &t.decl)) {
         let name = decl.name();
+        let defer_recursive_target = !matches!(decl, TypeDecl::Alias(_));
         let mut forward = HashSet::new();
         for r in decl_refs(decl) {
             // Render `r` as a string forward reference (deferred import) when it
@@ -570,7 +571,7 @@ fn forward_ref_map(
             // cycle of its own). Importing a recursive type eagerly can trip its
             // module's own import cycle even from an acyclic referrer, so Fern defers
             // every reference *into* a cycle, not only the back-edges of one.
-            if reaches(&r, name) || reaches(&r, &r) {
+            if reaches(&r, name) || (defer_recursive_target && reaches(&r, &r)) {
                 forward.insert(r);
             }
         }
@@ -1406,7 +1407,8 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     // The abbreviated calls in the error-handling and advanced sections show `...`
     // for an endpoint with a complex (object/container/union) body, else empty
     // parens; the error/raw-response calls are ruff-wrapped at the snippet width 88.
-    let complex = (first.request_body.is_none() && first.http_method != "GET")
+    let complex = (first.request_body.is_none()
+        && (first.http_method != "GET" || matches!(first.response, Some(TypeRef::Dict(..)))))
         || (ir.openapi_31
             && first.body_schema_implicit_object
             && matches!(
@@ -2251,8 +2253,24 @@ fn render_type_decl(
         }
         TypeDecl::Alias(alias) => {
             let mut imports = Imports::at(loc, tag_types);
+            imports.forward = forward.clone();
+            imports.cur_module = alias.module.clone();
             let target = render_type(&alias.target, &mut imports);
             let assignment = format!("{} = {}", alias.name, target.flat());
+            if !forward.is_empty() {
+                let mut contents = format!(
+                    "{HEADER}\n\nfrom __future__ import annotations\n\n{}\n",
+                    imports.render()
+                );
+                if !imports.deferred.is_empty() {
+                    contents.push_str("\nif typing.TYPE_CHECKING:\n");
+                    for line in &imports.deferred {
+                        contents.push_str(&format!("    {line}\n"));
+                    }
+                }
+                contents.push_str(&format!("{assignment}\n"));
+                return Ok(contents);
+            }
             render(
                 env,
                 "alias.py",
@@ -2369,7 +2387,7 @@ fn render_discriminated_union(
                 docstring: rf.docstring,
             })
             .collect();
-        let body = render_class_body(env, None, fields, extra)?;
+        let body = render_class_body(env, member.docstring.clone(), fields, extra)?;
         classes.push(format!(
             "class {}(UniversalBaseModel):\n{}",
             member.class_name,

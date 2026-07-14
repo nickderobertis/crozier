@@ -304,6 +304,10 @@ pub struct Operation {
     /// A human description; becomes the method docstring's summary line.
     #[serde(default)]
     pub description: Option<String>,
+    /// Short operation summary. Fern uses it as the method name when no
+    /// `operationId` is declared.
+    #[serde(default)]
+    pub summary: Option<String>,
     /// Path/query/header parameters, in document order.
     #[serde(default)]
     pub parameters: Vec<Parameter>,
@@ -376,6 +380,17 @@ pub struct Parameter {
     /// A parameter-level `example` value (Fern shows it in the worked snippet).
     #[serde(default)]
     pub example: Option<serde_json::Value>,
+    /// Named OpenAPI examples, in declaration order.
+    #[serde(default)]
+    pub examples: IndexMap<String, ParameterExample>,
+}
+
+/// The value-bearing portion of an OpenAPI parameter example.
+#[derive(Debug, Default, Clone, Deserialize)]
+pub struct ParameterExample {
+    /// The example value. External examples have no inline value.
+    #[serde(default)]
+    pub value: Option<serde_json::Value>,
 }
 
 /// A parameter's location, per OpenAPI's closed `in` vocabulary. Modeling it as
@@ -539,6 +554,9 @@ pub struct Schema {
     /// worked calls, after the singular `example` when both are present.
     #[serde(default)]
     pub examples: Vec<serde_json::Value>,
+    /// Inclusive lower bound used when Fern synthesizes integer examples.
+    #[serde(default)]
+    pub minimum: Option<serde_json::Value>,
     /// OpenAPI 3.0 nullability.
     #[serde(default)]
     pub nullable: Option<bool>,

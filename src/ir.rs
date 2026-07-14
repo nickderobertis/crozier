@@ -868,6 +868,8 @@ pub struct UnionMember {
     pub discriminant: String,
     /// The variant's fields, with the discriminant property removed.
     pub fields: Vec<Field>,
+    /// Optional wrapper class docstring.
+    pub docstring: Option<String>,
 }
 
 /// A pydantic model type.
@@ -1052,6 +1054,7 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         types: Vec::new(),
         schemas: &doc.components.schemas,
         strip_discriminant: discriminant_strips(&doc.components.schemas),
+        building_types: Default::default(),
     };
     for (key, schema) in &doc.components.schemas {
         builder.add_named(&naming::class_name(key), schema);
@@ -1606,9 +1609,15 @@ fn build_endpoint(
 }
 
 fn parameter_example(doc: &OpenApi, parameter: &crate::openapi::Parameter) -> Option<String> {
-    parameter
+    let value = parameter
         .example
         .as_ref()
+        .or_else(|| {
+            parameter
+                .examples
+                .values()
+                .find_map(|example| example.value.as_ref())
+        })
         .or_else(|| parameter.schema.as_ref().and_then(schema_example))
         .or_else(|| {
             parameter
@@ -1617,8 +1626,24 @@ fn parameter_example(doc: &OpenApi, parameter: &crate::openapi::Parameter) -> Op
                 .and_then(|schema| schema.reference.as_deref())
                 .and_then(|reference| resolve_ref(doc, reference))
                 .and_then(schema_example)
-        })
-        .and_then(example_literal)
+        })?;
+    let schema = parameter.schema.as_ref();
+    if schema.and_then(|schema| schema.ty.as_ref()?.primary()) == Some("integer") {
+        if let Some(minimum) = schema.and_then(|schema| schema.minimum.as_ref()) {
+            return example_literal(minimum)
+                .map(|value| if value == "0" { "1".into() } else { value });
+        }
+    }
+    if schema.and_then(|schema| schema.ty.as_ref()?.primary()) == Some("number") {
+        return example_literal(value).map(|literal| {
+            if literal.parse::<i64>().is_ok() {
+                format!("{literal}.0")
+            } else {
+                literal
+            }
+        });
+    }
+    example_literal(value)
 }
 
 fn schema_example(schema: &Schema) -> Option<&serde_json::Value> {
@@ -2547,7 +2572,13 @@ fn first_tag(op: &Operation) -> Option<&str> {
 fn endpoint_method_name(op: &Operation, http_method: &str, url: &str) -> String {
     let id = op.operation_id.trim();
     let method = if id.is_empty() {
-        synthesized_method_name(http_method, url)
+        op.summary
+            .as_deref()
+            .filter(|summary| !summary.trim().is_empty())
+            .map_or_else(
+                || synthesized_method_name(http_method, url),
+                naming::to_snake_case,
+            )
     } else if id.contains('.') {
         method_from_dotted_id(id)
     } else if id.contains('_') {
@@ -2644,7 +2675,17 @@ fn stripped_suffix_has_acronym(id: &str, tag: Option<&str>) -> bool {
 fn endpoint_pascal_context(op: &Operation, http_method: &str, url: &str) -> String {
     let id = op.operation_id.trim();
     if id.is_empty() {
-        naming::to_pascal_case(&synthesized_method_name(http_method, url))
+        let path = url
+            .split('/')
+            .filter(|segment| !segment.is_empty())
+            .map(|segment| segment.trim_matches(['{', '}']))
+            .collect::<Vec<_>>()
+            .join("_");
+        format!(
+            "{}{}",
+            naming::to_pascal_case(http_method),
+            naming::to_pascal_case(&path)
+        )
     } else {
         naming::sanitize_identifier(&naming::to_pascal_case(id))
     }
@@ -2740,6 +2781,11 @@ fn endpoint_module_titles(doc: &OpenApi) -> std::collections::BTreeMap<String, S
 /// operationId/path prefix (`EndpointsContainer`).
 fn module_title(doc: &OpenApi, op: &Operation, url: &str) -> String {
     let id = op.operation_id.trim();
+    if id.is_empty() {
+        if let Some(tag) = first_tag(op) {
+            return naming::to_pascal_case(tag);
+        }
+    }
     if id.contains('.') {
         if let Some((group, _)) = id.split_once('.') {
             if group.is_empty() {
@@ -2924,6 +2970,9 @@ struct Builder<'a> {
     /// because it is a member of a discriminated union (Fern re-declares the
     /// discriminant on the union wrapper instead).
     strip_discriminant: std::collections::HashMap<String, String>,
+    /// Names currently being expanded, preventing recursive inline schemas from
+    /// recursively rebuilding the same declaration before it is pushed.
+    building_types: std::collections::HashSet<String>,
 }
 
 /// Scan every schema for a discriminated `oneOf`/`anyOf` and record, per member
@@ -3016,7 +3065,7 @@ impl Builder<'_> {
                         variants
                             .iter()
                             .enumerate()
-                            .map(|(i, v)| self.variant_ref(name, i, v))
+                            .map(|(i, v)| self.variant_ref(name, i, v, variants))
                             .collect(),
                     );
                     self.push_alias(name, module, target, docstring);
@@ -3098,6 +3147,9 @@ impl Builder<'_> {
         schema: &Schema,
         docstring: Option<String>,
     ) {
+        if !self.building_types.insert(name.to_string()) {
+            return;
+        }
         // `allOf` merges members: `$ref`s become base classes, inline members
         // contribute properties, and `required` applies across the whole set.
         let required: Vec<&str> = schema
@@ -3177,6 +3229,7 @@ impl Builder<'_> {
             fields,
             docstring,
         }));
+        self.building_types.remove(name);
     }
 
     /// Append `schema`'s properties to `fields`, hoisting inline property types.
@@ -3218,22 +3271,69 @@ impl Builder<'_> {
     /// entry `value → $ref` becomes a `{Name}_{Variant}` wrapper carrying the
     /// discriminant literal plus the referenced model's (stripped) fields.
     fn discriminated_union(
-        &self,
+        &mut self,
         name: &str,
         module: &str,
         schema: &Schema,
         docstring: Option<String>,
     ) -> Option<DiscriminatedUnion> {
-        let disc = schema.discriminator.as_ref()?;
-        // Only oneOf/anyOf schemas carry a discriminator, and we key generation
-        // off the explicit mapping (value → variant `$ref`).
-        schema.one_of.as_ref().or(schema.any_of.as_ref())?;
-        if disc.property_name.is_empty() || disc.mapping.is_empty() {
-            return None;
+        let variants = schema.one_of.as_ref().or(schema.any_of.as_ref())?;
+        let inferred = variants.first()?.properties.keys().find(|property| {
+            variants.iter().all(|variant| {
+                variant
+                    .properties
+                    .get(*property)
+                    .and_then(string_enum_values)
+                    .is_some_and(|values| values.len() == 1)
+            })
+        });
+        let property_name = schema
+            .discriminator
+            .as_ref()
+            .map(|disc| disc.property_name.as_str())
+            .filter(|property| !property.is_empty())
+            .or_else(|| inferred.map(String::as_str))?;
+        let mapping = schema
+            .discriminator
+            .as_ref()
+            .map(|disc| &disc.mapping)
+            .filter(|mapping| !mapping.is_empty());
+        if mapping.is_none() {
+            let mut members = Vec::new();
+            for variant in variants {
+                let value = variant
+                    .properties
+                    .get(property_name)
+                    .and_then(string_enum_values)
+                    .and_then(|values| (values.len() == 1).then(|| values[0].clone()))?;
+                let variant_name = format!("{name}{}", naming::class_name(&value));
+                let mut standalone = variant.clone();
+                standalone.properties.shift_remove(property_name);
+                self.add_object(
+                    &variant_name,
+                    naming::module_name(&variant_name),
+                    &standalone,
+                    None,
+                );
+                members.push(UnionMember {
+                    class_name: format!("{name}_{}", naming::class_name(&value)),
+                    discriminant: value,
+                    fields: member_fields(variant, property_name),
+                    docstring: docstring.clone(),
+                });
+            }
+            return Some(DiscriminatedUnion {
+                name: name.to_string(),
+                module: module.to_string(),
+                discriminant_property: property_name.to_string(),
+                members,
+                variant_targets: Vec::new(),
+                docstring,
+            });
         }
         let mut members = Vec::new();
         let mut variant_targets = Vec::new();
-        for (value, reference) in &disc.mapping {
+        for (value, reference) in mapping? {
             let target_key = reference.rsplit('/').next().unwrap_or(reference);
             let target = self.schemas.get(target_key)?;
             members.push(UnionMember {
@@ -3242,14 +3342,15 @@ impl Builder<'_> {
                 // coincide only when the mapping key equals the schema name.
                 class_name: format!("{name}_{}", naming::class_name(value)),
                 discriminant: value.clone(),
-                fields: member_fields(target, &disc.property_name),
+                fields: member_fields(target, property_name),
+                docstring: None,
             });
             variant_targets.push(naming::class_name(target_key));
         }
         Some(DiscriminatedUnion {
             name: name.to_string(),
             module: module.to_string(),
-            discriminant_property: disc.property_name.clone(),
+            discriminant_property: property_name.to_string(),
             members,
             variant_targets,
             docstring,
@@ -3276,14 +3377,18 @@ impl Builder<'_> {
             // model `{Owner}{Prop}` (Fern: `Meta.cursors` → `MetaCursors`), rather
             // than degrading to `typing.Any`. A bare `type: object` map (no
             // properties) is left to `base_type_ref`.
-            if !prop_schema.properties.is_empty() {
+            if is_inline_struct(prop_schema) && single_all_of_ref(prop_schema).is_none() {
                 let name = format!("{owner}{}", naming::class_name(prop));
                 let module = naming::module_name(&name);
                 self.add_object(
                     &name,
                     module,
                     prop_schema,
-                    clean_doc(prop_schema.description.as_deref()),
+                    prop_schema
+                        .all_of
+                        .is_none()
+                        .then(|| clean_doc(prop_schema.description.as_deref()))
+                        .flatten(),
                 );
                 return TypeRef::Named(name);
             }
@@ -3292,6 +3397,49 @@ impl Builder<'_> {
             // `List[PipelineStagesItem]`).
             if prop_schema.ty.as_ref().and_then(|t| t.primary()) == Some("array") {
                 if let Some(items) = &prop_schema.items {
+                    let resolved_items = items.reference.as_deref().and_then(|reference| {
+                        reference
+                            .starts_with("#/components/schemas/")
+                            .then(|| resolve_schema_pointer(self.schemas, reference))
+                            .flatten()
+                    });
+                    let items = resolved_items.unwrap_or(items);
+                    if let Some(values) = string_enum_values(items) {
+                        let name = format!("{owner}{}Item", naming::class_name(prop));
+                        self.types.push(TypeDecl::Enum(build_enum(
+                            &name,
+                            values,
+                            clean_doc(items.description.as_deref()),
+                        )));
+                        return TypeRef::List(Box::new(TypeRef::Named(name)));
+                    }
+                    if let Some(members) = items.one_of.as_ref().or(items.any_of.as_ref()) {
+                        let name = format!("{owner}{}Item", naming::class_name(prop));
+                        let module = naming::module_name(&name);
+                        if let Some(decl) = self.discriminated_union(
+                            &name,
+                            &module,
+                            items,
+                            clean_doc(items.description.as_deref()),
+                        ) {
+                            self.types.push(TypeDecl::DiscriminatedUnion(decl));
+                            return TypeRef::List(Box::new(TypeRef::Named(name)));
+                        }
+                        let variants = members
+                            .iter()
+                            .enumerate()
+                            .map(|(index, variant)| {
+                                self.variant_ref(&name, index, variant, members)
+                            })
+                            .collect();
+                        self.push_alias(
+                            &name,
+                            module,
+                            TypeRef::Union(variants),
+                            clean_doc(items.description.as_deref()),
+                        );
+                        return TypeRef::List(Box::new(TypeRef::Named(name)));
+                    }
                     if items.reference.is_none() && !items.properties.is_empty() {
                         let name = format!("{owner}{}Item", naming::class_name(prop));
                         let module = naming::module_name(&name);
@@ -3321,9 +3469,14 @@ impl Builder<'_> {
             // are unchanged.
             if let Some(members) = prop_schema.any_of.as_ref().or(prop_schema.one_of.as_ref()) {
                 if prop_schema.discriminator.is_none() {
-                    let variants: Vec<TypeRef> = members
+                    let name = format!("{owner}{}", naming::class_name(prop));
+                    let mut variants: Vec<TypeRef> = members
                         .iter()
-                        .map(|m| {
+                        .enumerate()
+                        .map(|(index, m)| {
+                            if is_inline_object(m) {
+                                return self.variant_ref(&name, index, m, members);
+                            }
                             // A bare `type: object` union member is an open map to
                             // Fern (`Dict[str, Optional[Any]]`), not `Any`.
                             let ty = if is_bare_object(m) {
@@ -3343,7 +3496,7 @@ impl Builder<'_> {
                             }
                         })
                         .collect();
-                    let name = format!("{owner}{}", naming::class_name(prop));
+                    variants.dedup();
                     let module = naming::module_name(&name);
                     self.push_alias(
                         &name,
@@ -3360,12 +3513,18 @@ impl Builder<'_> {
 
     /// Resolve one `oneOf`/`anyOf` variant, hoisting an inline object to a
     /// `{parent}{Ordinal(index)}` model and returning a reference to it.
-    fn variant_ref(&mut self, parent: &str, index: usize, variant: &Schema) -> TypeRef {
+    fn variant_ref(
+        &mut self,
+        parent: &str,
+        index: usize,
+        variant: &Schema,
+        siblings: &[Schema],
+    ) -> TypeRef {
         if let Some(reference) = &variant.reference {
             return TypeRef::Named(ref_to_class(reference));
         }
         if is_inline_object(variant) {
-            let name = format!("{parent}{}", ordinal_word(index));
+            let name = variant_class_name(parent, index, variant, siblings);
             let module = naming::module_name(&name);
             self.add_object(
                 &name,
@@ -3392,6 +3551,73 @@ impl Builder<'_> {
             docstring,
         }));
     }
+}
+
+fn variant_class_name(parent: &str, index: usize, variant: &Schema, siblings: &[Schema]) -> String {
+    let shared_first = variant.properties.keys().next().filter(|candidate| {
+        siblings
+            .iter()
+            .all(|sibling| sibling.properties.contains_key(*candidate))
+    });
+    let suffix = variant
+        .properties
+        .values()
+        .find_map(|property| {
+            string_enum_values(property)
+                .filter(|values| values.len() == 1)
+                .and_then(|values| values.into_iter().next())
+        })
+        .or_else(|| {
+            variant
+                .properties
+                .keys()
+                .find(|candidate| {
+                    candidate.as_str() != "resource_list"
+                        && siblings
+                            .iter()
+                            .filter(|sibling| sibling.properties.contains_key(*candidate))
+                            .count()
+                            == 1
+                })
+                .cloned()
+        })
+        .or_else(|| shared_first.cloned())
+        .or_else(|| variant.properties.keys().next().cloned())
+        .map_or_else(
+            || ordinal_word(index).to_string(),
+            |name| naming::class_name(&name),
+        );
+    format!("{parent}{suffix}")
+}
+
+fn resolve_schema_pointer<'a>(
+    schemas: &'a IndexMap<String, Schema>,
+    reference: &str,
+) -> Option<&'a Schema> {
+    let mut parts = reference.strip_prefix("#/components/schemas/")?.split('/');
+    let mut schema = schemas.get(parts.next()?)?;
+    let mut next = Some(parts.next()?);
+    while let Some(part) = next {
+        schema = match part {
+            "allOf" => schema
+                .all_of
+                .as_ref()?
+                .get(parts.next()?.parse::<usize>().ok()?)?,
+            "oneOf" => schema
+                .one_of
+                .as_ref()?
+                .get(parts.next()?.parse::<usize>().ok()?)?,
+            "anyOf" => schema
+                .any_of
+                .as_ref()?
+                .get(parts.next()?.parse::<usize>().ok()?)?,
+            "properties" => schema.properties.get(parts.next()?)?,
+            "items" => schema.items.as_deref()?,
+            _ => return None,
+        };
+        next = parts.next();
+    }
+    Some(schema)
 }
 
 fn resolve_ref_from_schemas<'a>(
@@ -3422,8 +3648,7 @@ fn is_map(schema: &Schema) -> bool {
 /// An inline (not `$ref`) object-shaped schema that Fern hoists into its own
 /// named type when it appears as a union variant.
 fn is_inline_object(schema: &Schema) -> bool {
-    schema.reference.is_none()
-        && (!schema.properties.is_empty() || schema.all_of.is_some() || is_object_type(schema))
+    schema.reference.is_none() && (!schema.properties.is_empty() || schema.all_of.is_some())
 }
 
 /// A bare `type: object` with no declared structure (no properties, `allOf`, or
@@ -3508,7 +3733,11 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
         return TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)));
     }
     if let Some(reference) = &schema.reference {
-        return TypeRef::Named(ref_to_class(reference));
+        return if reference.starts_with("#/components/schemas/") {
+            TypeRef::Named(ref_to_class(reference))
+        } else {
+            TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)))
+        };
     }
     if let Some(reference) = single_all_of_ref(schema) {
         return TypeRef::Named(ref_to_class(reference));
@@ -3531,7 +3760,7 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
             Some(AdditionalProperties::Schema(value)) => {
                 let mut val = base_type_ref(value);
                 // Fern makes a nullable map's value type optional too.
-                if schema.nullable == Some(true) {
+                if schema.nullable == Some(true) || is_unknown(value) {
                     val = TypeRef::Optional(Box::new(val));
                 }
                 TypeRef::Dict(Box::new(TypeRef::Primitive(Prim::Str)), Box::new(val))
@@ -3642,13 +3871,39 @@ fn string_enum_values(schema: &Schema) -> Option<Vec<String>> {
 /// Extract union variants from a `oneOf`/`anyOf` schema, if present.
 fn union_variants(schema: &Schema) -> Option<Vec<TypeRef>> {
     let variants = schema.one_of.as_ref().or(schema.any_of.as_ref())?;
-    Some(variants.iter().map(base_type_ref).collect())
+    let mut types = Vec::new();
+    for variant in variants {
+        let ty = base_type_ref(variant);
+        if !types.contains(&ty) {
+            types.push(ty);
+        }
+    }
+    Some(types)
 }
 
 /// Resolve a `$ref` to the class name it points at.
 fn ref_to_class(reference: &str) -> String {
-    let last = reference.rsplit('/').next().unwrap_or(reference);
-    naming::class_name(last)
+    let Some(pointer) = reference.strip_prefix("#/components/schemas/") else {
+        return naming::class_name(reference.rsplit('/').next().unwrap_or(reference));
+    };
+    let parts: Vec<&str> = pointer.split('/').collect();
+    let mut name = naming::class_name(parts[0]);
+    let mut index = 1;
+    while index < parts.len() {
+        match parts[index] {
+            "properties" if index + 1 < parts.len() => {
+                name.push_str(&naming::class_name(parts[index + 1]));
+                index += 2;
+            }
+            "items" => {
+                name.push_str("Item");
+                index += 1;
+            }
+            "allOf" | "oneOf" | "anyOf" => index += 2,
+            _ => index += 1,
+        }
+    }
+    name
 }
 
 /// Is this schema declared as `type: string`?
@@ -3762,7 +4017,7 @@ mod tests {
         let e = build_enum(
             "Color",
             vec!["a-b".to_string(), "a b".to_string(), "a.b".to_string()],
-            None,
+            clean_doc(prop_schema.description.as_deref()),
         );
         let members: Vec<&str> = e.members.iter().map(|m| m.name.as_str()).collect();
         assert_eq!(members, ["A_B", "A_B_1", "A_B_2"]);
@@ -4142,6 +4397,7 @@ mod tests {
             types: Vec::new(),
             schemas: &indexmap::IndexMap::new(),
             strip_discriminant: std::collections::HashMap::new(),
+            building_types: Default::default(),
         };
         let schema: Schema = serde_json::from_value(serde_json::json!({
             "type": "object",

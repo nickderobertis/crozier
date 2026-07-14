@@ -288,7 +288,8 @@ pub fn enum_visit_param(value: &str) -> String {
 pub fn is_reserved(name: &str) -> bool {
     // Builtins/module names Fern munges in *field/type* contexts (confirmed in the
     // exhaustive fixture). Method names are narrower — see `is_reserved_method`.
-    const RESERVED_BUILTINS: &[&str] = &["all", "bool", "list", "long", "map", "set", "uuid"];
+    const RESERVED_BUILTINS: &[&str] =
+        &["all", "bool", "int", "list", "long", "map", "set", "uuid"];
     PYTHON_KEYWORDS.contains(&name) || RESERVED_BUILTINS.contains(&name)
 }
 
