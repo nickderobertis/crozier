@@ -3493,12 +3493,15 @@ fn formatter_reports_missing_permission_and_non_utf8_process_failures() {
         None => unsafe { std::env::remove_var("PATH") },
     }
 
-    with_fake_ruff("#!/bin/sh\nprintf '\\377'\n", || {
-        let invalid = crozier::pyfmt::format_source("sdk.py", "x = 1\n", 120).unwrap_err();
-        assert!(invalid
-            .to_string()
-            .contains("ruff produced non-UTF-8 output"));
-    });
+    with_fake_ruff(
+        "#!/bin/sh\nwhile IFS= read -r line; do :; done\nprintf '\\377'\n",
+        || {
+            let invalid = crozier::pyfmt::format_source("sdk.py", "x = 1\n", 120).unwrap_err();
+            assert!(invalid
+                .to_string()
+                .contains("ruff produced non-UTF-8 output"));
+        },
+    );
 
     with_fake_ruff(
         "#!/bin/sh\nexec 0<&-\ni=0\nwhile [ \"$i\" -lt 100000 ]; do i=$((i + 1)); done\n",
