@@ -3348,3 +3348,86 @@ fn in_process_openapi_boundary_reports_each_input_failure() {
         "{version_error}"
     );
 }
+
+#[test]
+fn untagged_binary_and_sse_streams_emit_on_root_sync_and_async_clients() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Root Streams, version: 1.0.0 }
+paths:
+  /download/{id}:
+    get:
+      operationId: download
+      parameters:
+        - { name: id, in: path, required: true, description: File identifier., schema: { type: string } }
+      responses:
+        '200':
+          description: Archive bytes.
+          content:
+            application/octet-stream:
+              schema: { type: string, format: binary }
+        '404':
+          description: Missing.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Problem" }
+  /events:
+    get:
+      operationId: events
+      responses:
+        '200':
+          description: Event stream.
+          content:
+            text/event-stream: {}
+components:
+  schemas:
+    Problem:
+      type: object
+      properties: { message: { type: string } }
+"##,
+    );
+    let raw = &files["src/acme/raw_client.py"];
+    assert!(raw.contains("class RawFernApi:"), "{raw}");
+    assert!(
+        raw.contains("@contextlib.contextmanager\n    def download("),
+        "{raw}"
+    );
+    assert!(
+        raw.contains("@contextlib.asynccontextmanager\n    async def download("),
+        "{raw}"
+    );
+    assert!(raw.contains("raise NotFoundError("), "{raw}");
+    assert!(
+        raw.contains("def events(") && raw.contains("typing.Iterator[typing.Optional[typing.Any]]"),
+        "{raw}"
+    );
+    assert!(
+        raw.contains("async def events(")
+            && raw.contains("typing.AsyncIterator[typing.Optional[typing.Any]]"),
+        "{raw}"
+    );
+    let client = &files["src/acme/client.py"];
+    assert!(
+        client.contains("def download(") && client.contains("with self._raw_client.download("),
+        "{client}"
+    );
+    assert!(
+        client.contains("async def download(")
+            && client.contains("async with self._raw_client.download("),
+        "{client}"
+    );
+    assert!(
+        client.contains("def events(")
+            && client
+                .contains("with self._raw_client.events(request_options=request_options) as r:"),
+        "{client}"
+    );
+    assert!(
+        client.contains("async def events(")
+            && client.contains(
+                "async with self._raw_client.events(request_options=request_options) as r:"
+            ),
+        "{client}"
+    );
+    assert!(files["src/acme/__init__.py"].contains("AcmeApi"));
+}
