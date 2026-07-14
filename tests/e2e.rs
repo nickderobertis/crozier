@@ -6144,6 +6144,21 @@ fn single_use_request_component_enums_move_to_tag_types() {
 }
 
 #[test]
+fn shared_request_component_enums_remain_root_types() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          application/json:\n            schema: { $ref: '#/components/schemas/CreateWidget' }\n      responses:\n        '204': { description: Created }\n  /widgets/state:\n    put:\n      operationId: updateWidgetState\n      tags: [widgets]\n      requestBody:\n        content:\n          application/json:\n            schema: { $ref: '#/components/schemas/UpdateWidget' }\n      responses:\n        '204': { description: Updated }\ncomponents:\n  schemas:\n    WidgetState: { type: string, enum: [ACTIVE, DISABLED] }\n    CreateWidget:\n      type: object\n      properties:\n        state: { $ref: '#/components/schemas/WidgetState' }\n    UpdateWidget:\n      type: object\n      properties:\n        state: { $ref: '#/components/schemas/WidgetState' }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
+    assert!(
+        out.join("src/acme/types/widget_state.py").is_file()
+            && !out.join("src/acme/widgets/types/widget_state.py").exists()
+            && raw.contains("from ..types.widget_state import WidgetState"),
+        "an enum shared by elided request components should remain package-root: {raw}"
+    );
+}
+
+#[test]
 fn optional_converted_body_fields_use_optional_annotations() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    patch:\n      operationId: patchWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          application/json:\n            schema: { $ref: '#/components/schemas/UpdateWidget' }\n      responses:\n        '204': { description: Updated }\ncomponents:\n  schemas:\n    WidgetMeta:\n      type: object\n      properties:\n        type: { type: string }\n    UpdateWidget:\n      type: object\n      properties:\n        metadata: { $ref: '#/components/schemas/WidgetMeta', nullable: true, readOnly: true }\n",

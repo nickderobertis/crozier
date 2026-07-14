@@ -1100,6 +1100,27 @@ fn move_inline_body_enums_to_tags(
     tag_types: &mut Vec<TagTypeDecl>,
 ) -> std::collections::HashSet<String> {
     let mut moved = std::collections::HashSet::new();
+    let mut enum_owner_counts: std::collections::HashMap<&str, usize> =
+        std::collections::HashMap::new();
+    for source in dropped_sources {
+        let Some(object) = types.iter().find_map(|decl| match decl {
+            TypeDecl::Object(object) if object.name == *source => Some(object),
+            _ => None,
+        }) else {
+            continue;
+        };
+        for field in &object.fields {
+            let TypeRef::Named(name) = &field.type_ref else {
+                continue;
+            };
+            if types
+                .iter()
+                .any(|decl| matches!(decl, TypeDecl::Enum(e) if e.name == *name))
+            {
+                *enum_owner_counts.entry(name).or_default() += 1;
+            }
+        }
+    }
     for (path, item) in &doc.paths {
         for (_, op) in item.operations() {
             let Some(schema) = op
@@ -1126,6 +1147,9 @@ fn move_inline_body_enums_to_tags(
                 let TypeRef::Named(name) = &field.type_ref else {
                     continue;
                 };
+                if enum_owner_counts.get(name.as_str()) != Some(&1) {
+                    continue;
+                }
                 let Some(source_enum) = types.iter().find_map(|decl| match decl {
                     TypeDecl::Enum(enum_type) if enum_type.name == *name => Some(enum_type),
                     _ => None,
