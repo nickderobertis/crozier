@@ -1336,7 +1336,6 @@ fn select_readme_endpoint<'a>(
         .find(|e| {
             e.emittable
                 && e.http_method == "POST"
-                && e.request_body.is_some()
                 && !matches!(e.request_body, Some(RequestBody::Bytes { .. }))
         })
         .or_else(|| {
@@ -2435,8 +2434,7 @@ fn raw_type_str(t: &TypeRef, imports: &mut Imports) -> String {
 
 /// Like [`raw_type_str`], but in *request context* (`seq = true`) Fern renders
 /// list/set collections as `typing.Sequence` rather than `typing.List`/`Set` —
-/// request inputs accept any sequence. Response and parameter types use `seq =
-/// false`.
+/// request inputs accept any sequence. Response types use `seq = false`.
 fn raw_type_str_ctx(t: &TypeRef, imports: &mut Imports, seq: bool) -> String {
     match t {
         TypeRef::Primitive(Prim::Str) => "str".to_string(),
@@ -2553,7 +2551,7 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
         .map(|pp| {
             (
                 pp.py_name.clone(),
-                raw_type_str(&pp.type_ref, imports),
+                raw_type_str_ctx(&pp.type_ref, imports, true),
                 pp.docstring.clone(),
             )
         })
@@ -4863,14 +4861,19 @@ fn build_example(
     // each required inlined field).
     let mut args: Vec<(Option<String>, Example)> = Vec::new();
     for pp in &ep.path_params {
-        let v = pp
-            .example
-            .as_ref()
-            .filter(|_| !ep.binary_response && ctx.example_is_scalar(&pp.type_ref))
-            .map_or_else(
-                || ctx.value(&pp.type_ref, Slot::Named(&pp.wire_name)),
-                |example| Example::Atom(example.clone()),
-            );
+        let v = if matches!(pp.type_ref, TypeRef::List(_) | TypeRef::Set(_)) {
+            // Fern's path placeholder stays a string even for the unusual array
+            // path parameters accepted by its OpenAPI importer.
+            Example::Atom(format!("{:?}", pp.wire_name))
+        } else {
+            pp.example
+                .as_ref()
+                .filter(|_| !ep.binary_response && ctx.example_is_scalar(&pp.type_ref))
+                .map_or_else(
+                    || ctx.value(&pp.type_ref, Slot::Named(&pp.wire_name)),
+                    |example| Example::Atom(example.clone()),
+                )
+        };
         args.push((Some(pp.py_name.clone()), v));
     }
     // Fern shows a query parameter in the worked example when it is required OR
@@ -5731,7 +5734,7 @@ mod tests {
     }
 
     #[test]
-    fn readme_endpoint_prefers_body_then_no_arg_non_get() {
+    fn readme_endpoint_prefers_the_first_non_binary_post() {
         let mut first_get = endpoint(
             "/one/{id}",
             vec![PathParam {
@@ -5767,10 +5770,10 @@ mod tests {
             content_type_override: None,
         }));
 
-        let ir = ir_with(vec![body, no_arg_post]);
+        let ir = ir_with(vec![no_arg_post, body]);
         assert_eq!(
             readme_endpoint(&ir).map(|e| e.method_name.as_str()),
-            Some("body")
+            Some("no_arg_post")
         );
     }
 

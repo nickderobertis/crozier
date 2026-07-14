@@ -582,11 +582,10 @@ fn emits_raw_client_only_for_supported_modules() {
         body.contains("OMIT = typing.cast(typing.Any, ...)"),
         "{body}"
     );
-    // The body is not marked required, so it is an optional keyword argument.
-    assert!(
-        body.contains("request: typing.Optional[str] = None"),
-        "{body}"
-    );
+    // Fern treats a schema-bearing JSON body as required unless the document
+    // explicitly marks it optional.
+    assert!(body.contains("request: str"), "{body}");
+    assert!(!body.contains("request: typing.Optional[str]"), "{body}");
     assert!(body.contains("json=request,"), "{body}");
     assert!(body.contains("omit=OMIT,"), "{body}");
     assert!(!body.contains("content-type"), "{body}");

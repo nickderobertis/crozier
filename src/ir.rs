@@ -1922,7 +1922,10 @@ fn resolve_request_body(
                 .find(|(media_type, _)| is_json_like_media_type(media_type))
         })?;
     let schema = media.schema.as_ref()?;
-    let required = rb.required == Some(true);
+    // Fern treats a schema-bearing request body as required unless the document
+    // explicitly opts out. This differs from OpenAPI's false default but is part
+    // of the generated SDK contract.
+    let required = rb.required != Some(false);
     let content_type_override =
         (media_type != "application/json" && media_type != "*/*").then(|| media_type.to_string());
     if let Some(reference) = &schema.reference {
@@ -1939,7 +1942,7 @@ fn resolve_request_body(
         {
             return Some(single_with_override(
                 TypeRef::Named(class),
-                required,
+                rb.required == Some(true),
                 false,
                 false,
                 (media_type == "*/*").then(|| media_type.to_string()),
@@ -2752,7 +2755,7 @@ fn module_title(doc: &OpenApi, op: &Operation, url: &str) -> String {
         if group_prefix_is_tag(op, id) {
             return naming::to_pascal_case(&module_from_grouped_id(id));
         }
-        return first_tag(op).expect("mismatch implies a tag").to_string();
+        return title_from_tag(doc, first_tag(op).expect("mismatch implies a tag"));
     }
     if let Some(tag) = first_tag(op) {
         return title_from_tag(doc, tag);
@@ -2765,7 +2768,7 @@ fn title_from_tag(doc: &OpenApi, tag: &str) -> String {
     if declared {
         tag.to_string()
     } else {
-        naming::to_pascal_case(tag)
+        naming::to_pascal_case(&naming::module_name(tag))
     }
 }
 
