@@ -3598,3 +3598,33 @@ fn in_process_cli_schema_and_init_write_failure_are_actionable() {
     assert!(error.contains("could not write"), "{error}");
     assert!(error.contains("config-dir"), "{error}");
 }
+
+#[test]
+fn nullable_union_and_closed_object_cover_type_fallback_branches() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: Alias Fallbacks, version: 1.0.0 }
+components:
+  schemas:
+    MaybeScalar:
+      nullable: true
+      anyOf:
+        - { type: string }
+        - { type: integer }
+    ClosedMap:
+      type: object
+      additionalProperties: false
+"#,
+    );
+    let maybe = &files["src/acme/types/maybe_scalar.py"];
+    assert!(
+        maybe.contains("MaybeScalar = typing.Union[str, typing.Optional[int]]"),
+        "nullable unions apply Optional to Fern's final variant: {maybe}"
+    );
+    let closed = &files["src/acme/types/closed_map.py"];
+    assert!(
+        closed.contains("class ClosedMap(UniversalBaseModel):"),
+        "{closed}"
+    );
+    assert!(closed.contains("extra=\"allow\""), "{closed}");
+}
