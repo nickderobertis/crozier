@@ -2814,3 +2814,216 @@ paths:
         "tag-equal operation must be available on the root client: {client}"
     );
 }
+
+#[test]
+fn component_request_body_refs_and_vendor_json_maps_reach_normalized_media_paths() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Media, version: 1.0.0 }
+paths:
+  /credentials:
+    post:
+      operationId: identity_add
+      tags: [Identity]
+      requestBody: { $ref: "#/components/requestBodies/CredentialBody" }
+      responses:
+        '204': { description: Added }
+  /manifests/{id}:
+    post:
+      operationId: imports_manifest
+      tags: [Imports]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/vnd.example+json:
+            schema: { type: object }
+      responses:
+        '204': { description: Imported }
+components:
+  requestBodies:
+    CredentialBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Credential" }
+  schemas:
+    Credential:
+      type: object
+      required: [username]
+      properties:
+        username: { type: string }
+"##,
+    );
+    let identity = &files["src/acme/identity/raw_client.py"];
+    assert!(identity.contains("username: str"), "{identity}");
+    assert!(
+        identity.contains("json={\n                \"username\": username,"),
+        "{identity}"
+    );
+    let imports = &files["src/acme/imports/raw_client.py"];
+    assert!(
+        imports.contains("request: typing.Dict[str, typing.Optional[typing.Any]]"),
+        "{imports}"
+    );
+    assert!(
+        imports.contains("\"content-type\": \"application/vnd.example+json\""),
+        "{imports}"
+    );
+}
+
+#[test]
+fn binary_request_media_selection_covers_exact_wildcard_and_vendor_json() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Binary, version: 1.0.0 }
+paths:
+  /import:
+    post:
+      operationId: widgets_upload
+      tags: [Widgets]
+      requestBody:
+        content:
+          application/zip:
+            schema: { $ref: "#/components/schemas/FileContent" }
+      responses:
+        '204': { description: Imported }
+  /create:
+    post:
+      operationId: widgets_create
+      tags: [Widgets]
+      requestBody:
+        content:
+          '*/*':
+            schema: { $ref: "#/components/schemas/FileContent" }
+          application/vnd.create+json:
+            schema: { $ref: "#/components/schemas/CreateWidget" }
+      responses:
+        '204': { description: Created }
+  /export:
+    get:
+      operationId: widgets_export
+      tags: [Widgets]
+      description: Exports all widgets.
+      responses:
+        '200':
+          description: Export
+          content:
+            application/zip:
+              schema: { $ref: "#/components/schemas/FileContent" }
+components:
+  schemas:
+    FileContent: { type: string, format: binary }
+    CreateWidget:
+      type: object
+      properties:
+        name: { type: string }
+"##,
+    );
+    let raw = &files["src/acme/widgets/raw_client.py"];
+    assert!(raw.contains("content=request,\n            headers={\n                \"content-type\": \"application/zip\""), "{raw}");
+    assert!(
+        raw.contains("request: typing.Optional[FileContent] = None"),
+        "{raw}"
+    );
+    assert!(
+        raw.contains("json=request,"),
+        "wildcard selection uses the JSON-compatible request path: {raw}"
+    );
+    assert!(
+        raw.contains("@contextlib.contextmanager"),
+        "referenced binary responses stream: {raw}"
+    );
+    assert!(
+        !raw.contains("HttpResponse[FileContent]"),
+        "binary aliases are not used as response models: {raw}"
+    );
+    assert!(
+        raw.contains("Exports all widgets.\n\n        Parameters"),
+        "{raw}"
+    );
+}
+
+#[test]
+fn optional_basic_auth_and_parameter_enums_emit_all_specialized_fragments() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: Auth, version: 1.0.0 }
+security: []
+paths:
+  /widgets/{state}:
+    post:
+      operationId: widgets_update
+      tags: [Widgets]
+      parameters:
+        - name: state
+          in: path
+          required: true
+          schema: { type: string, enum: [ACTIVE, DISABLED] }
+        - name: X-Widget-Mode
+          in: header
+          required: true
+          schema: { type: string, enum: [FAST, SAFE] }
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [action]
+              properties:
+                action: { type: string, enum: [START, STOP] }
+                file: { type: string, format: binary }
+      responses:
+        '204': { description: Updated }
+components:
+  securitySchemes:
+    Basic:
+      type: http
+      scheme: basic
+"#,
+    );
+    let root = &files["src/acme/client.py"];
+    assert!(
+        root.contains(
+            "username: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None"
+        ),
+        "{root}"
+    );
+    assert!(
+        root.contains(
+            "password: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None"
+        ),
+        "{root}"
+    );
+    let wrapper = &files["src/acme/core/client_wrapper.py"];
+    assert!(
+        wrapper.contains("if username is not None and password is not None:"),
+        "{wrapper}"
+    );
+    assert!(
+        wrapper.contains("httpx.BasicAuth(username, password)._auth_header"),
+        "{wrapper}"
+    );
+    let raw = &files["src/acme/widgets/raw_client.py"];
+    assert!(raw.contains("state: WidgetsUpdateRequestState"), "{raw}");
+    assert!(
+        raw.contains("widget_mode: WidgetsUpdateRequestXWidgetMode"),
+        "{raw}"
+    );
+    assert!(raw.contains("action: WidgetsUpdateRequestAction"), "{raw}");
+    assert!(
+        raw.contains("files={\n                \"file\": file,"),
+        "{raw}"
+    );
+    for module in [
+        "widgets_update_request_state.py",
+        "widgets_update_request_x_widget_mode.py",
+        "widgets_update_request_action.py",
+    ] {
+        assert!(
+            files.contains_key(&format!("src/acme/widgets/types/{module}")),
+            "missing {module}"
+        );
+    }
+}
