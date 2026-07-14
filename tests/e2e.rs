@@ -5885,6 +5885,106 @@ const ETSI_MEC010_2: Corpus = Corpus {
     ],
 };
 
+const APIDECK_WEBHOOK: Corpus = Corpus {
+    api: "apideck.com-webhook",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[
+        ".fern/metadata.json",
+        "README.md",
+        "pyproject.toml",
+        "reference.md",
+        "requirements.txt",
+        "src/fern/__init__.py",
+        "src/fern/client.py",
+        "src/fern/core/__init__.py",
+        "src/fern/core/api_error.py",
+        "src/fern/core/client_wrapper.py",
+        "src/fern/core/datetime_utils.py",
+        "src/fern/core/file.py",
+        "src/fern/core/force_multipart.py",
+        "src/fern/core/http_client.py",
+        "src/fern/core/http_response.py",
+        "src/fern/core/http_sse/__init__.py",
+        "src/fern/core/http_sse/_api.py",
+        "src/fern/core/http_sse/_decoders.py",
+        "src/fern/core/http_sse/_exceptions.py",
+        "src/fern/core/http_sse/_models.py",
+        "src/fern/core/jsonable_encoder.py",
+        "src/fern/core/pydantic_utilities.py",
+        "src/fern/core/query_encoder.py",
+        "src/fern/core/remove_none_from_dict.py",
+        "src/fern/core/request_options.py",
+        "src/fern/core/serialization.py",
+        "src/fern/environment.py",
+        "src/fern/errors/__init__.py",
+        "src/fern/errors/bad_request_error.py",
+        "src/fern/errors/not_found_error.py",
+        "src/fern/errors/payment_required_error.py",
+        "src/fern/errors/unauthorized_error.py",
+        "src/fern/errors/unprocessable_entity_error.py",
+        "src/fern/py.typed",
+        "src/fern/types/__init__.py",
+        "src/fern/types/application_id.py",
+        "src/fern/types/bad_request_response.py",
+        "src/fern/types/bad_request_response_detail.py",
+        "src/fern/types/consumer_id.py",
+        "src/fern/types/create_webhook_response.py",
+        "src/fern/types/created_at.py",
+        "src/fern/types/delete_webhook_response.py",
+        "src/fern/types/delivery_url.py",
+        "src/fern/types/description.py",
+        "src/fern/types/execute_base_url.py",
+        "src/fern/types/execute_webhook_event_request.py",
+        "src/fern/types/execute_webhook_events_request.py",
+        "src/fern/types/execute_webhook_response.py",
+        "src/fern/types/get_webhook_event_logs_response.py",
+        "src/fern/types/get_webhook_response.py",
+        "src/fern/types/get_webhooks_response.py",
+        "src/fern/types/links.py",
+        "src/fern/types/meta.py",
+        "src/fern/types/meta_cursors.py",
+        "src/fern/types/not_found_response.py",
+        "src/fern/types/not_found_response_detail.py",
+        "src/fern/types/not_implemented_response.py",
+        "src/fern/types/not_implemented_response_detail.py",
+        "src/fern/types/payment_required_response.py",
+        "src/fern/types/resolve_webhook_event_request.py",
+        "src/fern/types/resolve_webhook_events_request.py",
+        "src/fern/types/resolve_webhook_response.py",
+        "src/fern/types/service_id.py",
+        "src/fern/types/status.py",
+        "src/fern/types/unauthorized_response.py",
+        "src/fern/types/unexpected_error_response.py",
+        "src/fern/types/unexpected_error_response_detail.py",
+        "src/fern/types/unified_api_id.py",
+        "src/fern/types/unprocessable_response.py",
+        "src/fern/types/update_webhook_response.py",
+        "src/fern/types/updated_at.py",
+        "src/fern/types/webhook.py",
+        "src/fern/types/webhook_disabled_reason.py",
+        "src/fern/types/webhook_event.py",
+        "src/fern/types/webhook_event_log.py",
+        "src/fern/types/webhook_event_log_attempts_item.py",
+        "src/fern/types/webhook_event_log_service.py",
+        "src/fern/types/webhook_event_logs_filter.py",
+        "src/fern/types/webhook_event_logs_filter_service.py",
+        "src/fern/types/webhook_event_type.py",
+        "src/fern/version.py",
+        "src/fern/webhooks/__init__.py",
+        "src/fern/webhooks/client.py",
+        "src/fern/webhooks/raw_client.py",
+        "src/fern/webhooks/types/__init__.py",
+        "src/fern/webhooks/types/webhooks_execute_request_body.py",
+        "src/fern/webhooks/types/webhooks_resolve_request_body.py",
+        "src/fern/webhooks/types/webhooks_short_execute_request_body.py",
+    ],
+};
+
 #[test]
 fn bunq_matches_fern_output() {
     // `link-ok` like apideck: the spec is fetched (not vendored), so this **skips**
@@ -6067,6 +6167,18 @@ fn etsi_mec010_2_matches_fern_output() {
 }
 
 #[test]
+fn apideck_webhook_matches_fern_output() {
+    if corpus_spec(APIDECK_WEBHOOK.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the Apideck Webhook corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+        );
+        return;
+    }
+    assert_corpus_matches(&APIDECK_WEBHOOK);
+}
+
+#[test]
 fn feature_target_specs_generate_without_panicking() {
     // A feature-coverage target with a populated `matched` list is byte-compared
     // file-by-file; one with an empty `matched` list asserts only that crozier
@@ -6118,6 +6230,7 @@ fn report_matched_candidates() {
         &APACHE_QAKKA,
         &AUTHENTIQIO,
         &ETSI_MEC010_2,
+        &APIDECK_WEBHOOK,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
@@ -6240,6 +6353,7 @@ fn report_fixture_diffs() {
         &APACHE_QAKKA,
         &AUTHENTIQIO,
         &ETSI_MEC010_2,
+        &APIDECK_WEBHOOK,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
