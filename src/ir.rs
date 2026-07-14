@@ -1342,7 +1342,7 @@ fn build_endpoint(
         })
         .collect();
 
-    let header_params: Vec<HeaderParam> = op
+    let mut header_params: Vec<HeaderParam> = op
         .parameters
         .iter()
         // A header promoted to a client-wrapper-level global field is dropped from
@@ -1406,6 +1406,9 @@ fn build_endpoint(
         .request_body
         .as_ref()
         .and_then(|rb| resolve_request_body(doc, types, rb, &mut hoister, &request_ctx));
+    if matches!(request_body, Some(RequestBody::Bytes { .. })) {
+        header_params.clear();
+    }
     let body_ok = op.request_body.is_none()
         || request_body.is_some()
         || op.request_body.as_ref().is_some_and(request_body_ignored);
