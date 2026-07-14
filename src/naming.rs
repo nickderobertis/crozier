@@ -228,10 +228,20 @@ fn enum_words(value: &str) -> Vec<String> {
             spaced.push(' ');
         }
     }
-    split_words(&spaced)
-        .into_iter()
-        .map(|w| digit_word(&w).map_or(w, str::to_string))
-        .collect()
+    let mut words = Vec::new();
+    for word in split_words(&spaced) {
+        if words.is_empty() {
+            words.push(digit_word(&word).map_or(word, str::to_string));
+        } else if word.len() == 1 && word.as_bytes()[0].is_ascii_digit() {
+            // Fern keeps a leading numeric enum token readable (`0: Active` ->
+            // `ZERO_ACTIVE`), but concatenates a numeric suffix split by
+            // punctuation (`oauth2.0` -> `OAUTH20`).
+            words.last_mut().expect("checked non-empty").push_str(&word);
+        } else {
+            words.push(word);
+        }
+    }
+    words
 }
 
 /// Coerce a cased enum identifier into a legal, non-empty Python name: a value
@@ -435,6 +445,7 @@ mod tests {
         assert_eq!(enum_member_name("0: Active"), "ZERO_ACTIVE");
         assert_eq!(enum_visit_param("0: Active"), "zero_active");
         assert_eq!(enum_member_name("1: InActive"), "ONE_IN_ACTIVE");
+        assert_eq!(enum_member_name("oauth2.0"), "OAUTH20");
         assert_eq!(enum_visit_param("1: InActive"), "one_in_active");
     }
 

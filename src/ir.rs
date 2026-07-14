@@ -496,6 +496,25 @@ fn inline_body_source_names(doc: &OpenApi) -> std::collections::HashSet<String> 
         .collect()
 }
 
+fn request_schema_use_count(doc: &OpenApi, reference: &str) -> usize {
+    doc.paths
+        .values()
+        .flat_map(crate::openapi::PathItem::operations)
+        .filter(|(_, operation)| {
+            operation
+                .request_body
+                .as_ref()
+                .and_then(|body| {
+                    body.content
+                        .values()
+                        .find_map(|media| media.schema.as_ref())
+                })
+                .and_then(|schema| schema.reference.as_deref())
+                == Some(reference)
+        })
+        .count()
+}
+
 /// Whether every operation carries a non-empty security requirement (its own, or
 /// the document default). An SDK with any unauthenticated operation makes the
 /// credential optional. Returns `false` for a spec with no operations.
@@ -543,6 +562,15 @@ pub struct Endpoint {
     pub body_component_ref: bool,
     /// Whether the selected request media schema was declared by component `$ref`.
     pub body_schema_ref: bool,
+    /// Whether that referenced schema is omitted from the public type layer
+    /// because it is used only as this flattened request body.
+    pub body_schema_dropped: bool,
+    /// Whether two or more operations flatten the same referenced request schema.
+    pub body_schema_shared: bool,
+    /// Whether the referenced request schema has neither a title nor a
+    /// description. Fern's importer treats these anonymous reusable shapes as
+    /// transport-level request declarations rather than documented models.
+    pub body_schema_metadata_missing: bool,
     /// Whether the referenced request schema declares an example payload.
     pub body_schema_has_example: bool,
     /// Whether the referenced request schema has a substantive description.
@@ -1099,6 +1127,26 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         .filter(|name| !referenced.contains(*name))
         .cloned()
         .collect();
+    for endpoint in &mut endpoints {
+        endpoint.body_schema_dropped = doc
+            .paths
+            .get(&endpoint.path)
+            .and_then(|item| {
+                item.operations()
+                    .into_iter()
+                    .find(|(method, _)| *method == endpoint.http_method)
+                    .map(|(_, operation)| operation)
+            })
+            .and_then(|operation| operation.request_body.as_ref())
+            .and_then(|body| {
+                body.content
+                    .values()
+                    .find_map(|media| media.schema.as_ref())
+            })
+            .and_then(|schema| schema.reference.as_deref())
+            .map(ref_to_class)
+            .is_some_and(|name| dropped_sources.contains(&name));
+    }
     let moved_enums =
         move_inline_body_enums_to_tags(doc, &builder.types, &dropped_sources, &mut tag_types);
     builder
@@ -1601,6 +1649,35 @@ fn build_endpoint(
                     .find_map(|media| media.schema.as_ref())
             })
             .is_some_and(|schema| schema.reference.is_some()),
+        body_schema_dropped: false,
+        body_schema_shared: op
+            .request_body
+            .as_ref()
+            .and_then(|body| {
+                body.content
+                    .values()
+                    .find_map(|media| media.schema.as_ref())
+            })
+            .and_then(|schema| schema.reference.as_deref())
+            .is_some_and(|reference| request_schema_use_count(doc, reference) > 1),
+        body_schema_metadata_missing: op
+            .request_body
+            .as_ref()
+            .and_then(|body| {
+                body.content
+                    .values()
+                    .find_map(|media| media.schema.as_ref())
+            })
+            .and_then(|schema| schema.reference.as_deref())
+            .and_then(|reference| resolve_ref(doc, reference))
+            .is_some_and(|schema| {
+                schema.title.is_none()
+                    && schema.description.is_none()
+                    && schema
+                        .properties
+                        .values()
+                        .all(|property| property.title.is_none() && property.description.is_none())
+            }),
         body_schema_has_example: op
             .request_body
             .as_ref()
@@ -3238,7 +3315,9 @@ impl Builder<'_> {
         // is a free-form object: Fern aliases it to `Dict[str, Optional[Any]]` (bunq's
         // `AttachmentPublic`, `Whitelist`, …), not an empty model class.
         if is_bare_object(schema)
-            && !schema_example(schema).is_some_and(serde_json::Value::is_object)
+            && !schema_example(schema).is_some_and(|example| {
+                example.is_object() && !example_is_schema_definition(example)
+            })
         {
             self.push_alias(
                 name,
@@ -3852,6 +3931,24 @@ fn is_bare_object(schema: &Schema) -> bool {
         && schema.all_of.is_none()
         && schema.additional_properties.is_none()
         && is_object_type(schema)
+}
+
+/// Whether an object example describes the shape of arbitrary values rather than
+/// providing a concrete object instance. OpenAPI documents sometimes use
+/// `{ "field": { "type": ... } }` as an example for a free-form schema; Fern
+/// keeps those declarations as map aliases instead of coining empty models.
+fn example_is_schema_definition(example: &serde_json::Value) -> bool {
+    let Some(values) = example.as_object() else {
+        return false;
+    };
+    !values.is_empty()
+        && values.values().all(|value| {
+            value.as_object().is_some_and(|definition| {
+                ["type", "$ref", "properties", "allOf", "oneOf", "anyOf"]
+                    .iter()
+                    .any(|key| definition.contains_key(*key))
+            })
+        })
 }
 
 /// An inline (not `$ref`) object with *declared structure* — properties or an

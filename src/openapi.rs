@@ -513,6 +513,9 @@ pub struct Schema {
     /// A `$ref` pointer, e.g. `#/components/schemas/User`.
     #[serde(rename = "$ref", default)]
     pub reference: Option<String>,
+    /// Optional schema title used by importers as declaration metadata.
+    #[serde(default)]
+    pub title: Option<String>,
     /// The schema `type` (`object`, `string`, `array`, ...). A single string in
     /// 3.0; the first entry is used if a 3.1 list is given.
     #[serde(rename = "type", default)]

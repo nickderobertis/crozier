@@ -1497,6 +1497,7 @@ fn reference_file(
         .iter()
         .filter(|e| e.module.is_empty() && e.emittable)
         .filter(|e| !matches!(e.request_body, Some(RequestBody::Bytes { .. })))
+        .filter(|e| endpoint_has_worked_example(e))
         .collect();
     for ep in root_eps {
         any = true;
@@ -1510,10 +1511,8 @@ fn reference_file(
             .iter()
             .filter(|e| &e.module == *module && e.emittable)
             .filter(|e| !matches!(e.request_body, Some(RequestBody::Bytes { .. })))
+            .filter(|e| endpoint_has_worked_example(e))
             .collect();
-        if eps.is_empty() {
-            continue;
-        }
         any = true;
         let title = ir
             .endpoint_module_titles
@@ -3171,10 +3170,13 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                             && (ep.body_all_of || ep.body_response_same_ref))
                         && !matches!(body, RequestBody::Inline(fields)
                             if ep.body_schema_ref
-                                && ep.body_schema_is_response_heavy
-                                && ep.body_schema_is_open
-                                && ep.body_description_missing
-                                && fields.iter().filter(|field| field.spec_required).count() == 1)
+                                && (!ep.body_schema_dropped
+                                    && ep.body_schema_metadata_missing
+                                    && ep.body_schema_is_open
+                                    || ep.body_schema_is_response_heavy
+                                        && ep.body_schema_is_open
+                                        && ep.body_description_missing
+                                        && fields.iter().filter(|field| field.spec_required).count() == 1))
                         && (!(ep.body_description_empty
                             || ep.body_schema_has_example && ep.body_schema_documented)
                             || body.all_fields_required()))) =>
@@ -3367,7 +3369,9 @@ fn raw_binary_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports
     imports.add_plain("typing");
     imports.add_from("json.decoder", "JSONDecodeError");
     imports.add_core("api_error", "ApiError");
-    imports.add_core("pydantic_utilities", "parse_obj_as");
+    if !ep.errors.is_empty() {
+        imports.add_core("pydantic_utilities", "parse_obj_as");
+    }
     if !ep.path_params.is_empty() {
         imports.add_core("jsonable_encoder", "jsonable_encoder");
     }
@@ -3425,6 +3429,11 @@ fn raw_binary_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports
         format!("return {wrapper}(\n                            response=_response, data={data_expr}\n                        )")
     };
     let error_branches = raw_error_branches(ep, imports);
+    let error_branches = if error_branches.is_empty() {
+        String::new()
+    } else {
+        format!("\n{error_branches}")
+    };
     let body = format!(
         "\
 {call}
@@ -3434,8 +3443,7 @@ fn raw_binary_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports
                     if 200 <= _response.status_code < 300:
                         _chunk_size = request_options.get(\"chunk_size\", None) if request_options is not None else None
                         {success_return}
-                    {read}
-{error_branches}
+                    {read}{error_branches}
                     _response_json = _response.json()
                 except JSONDecodeError:
                     raise ApiError(
@@ -4569,6 +4577,9 @@ impl<'a> ExampleCtx<'a> {
         if self.example_is_scalar(t) {
             return Some(Example::Atom(example.to_string()));
         }
+        if example.starts_with('{') {
+            return serde_json::from_str(example).ok().map(example_from_json);
+        }
         if let TypeRef::List(inner) | TypeRef::Set(inner) = t {
             let values: Vec<serde_json::Value> = serde_json::from_str(example).ok()?;
             let items = values
@@ -4772,9 +4783,16 @@ impl<'a> ExampleCtx<'a> {
                     .into_iter()
                     .filter(|(_, _, _, required, _)| *required)
                     .map(|(py, wire, ty, _, example)| {
-                        let v = match example.filter(|_| example_scalar(&ty)) {
-                            Some(example) => Example::Atom(example),
+                        let v = match example {
+                            Some(example) if example_scalar(&ty) => Example::Atom(example),
+                            Some(example) if example.starts_with(['{', '[']) => {
+                                serde_json::from_str(&example).map_or_else(
+                                    |_| self.value(&ty, Slot::Named(&wire)),
+                                    example_from_json,
+                                )
+                            }
                             None => self.value(&ty, Slot::Named(&wire)),
+                            Some(_) => self.value(&ty, Slot::Named(&wire)),
                         };
                         (Some(py), v)
                     })
@@ -4912,7 +4930,9 @@ fn build_example(
     client_name: &str,
     ctx: &mut ExampleCtx,
 ) -> Option<Vec<String>> {
-    if matches!(ep.request_body, Some(RequestBody::Bytes { .. })) {
+    if matches!(ep.request_body, Some(RequestBody::Bytes { .. }))
+        || !endpoint_has_worked_example(ep)
+    {
         return None;
     }
 
@@ -5007,6 +5027,7 @@ fn build_example(
                     .as_deref()
                     .and_then(|example| {
                         if f.media_example
+                            || example.starts_with('{')
                             || ctx.example_is_scalar(&f.type_ref)
                             || ctx.example_is_composite(&f.type_ref)
                         {
@@ -5167,6 +5188,14 @@ fn build_example(
         out.extend(call.split('\n').map(String::from));
     }
     Some(out)
+}
+
+fn endpoint_has_worked_example(ep: &Endpoint) -> bool {
+    !(ep.binary_response
+        && ep.path_params.is_empty()
+        && ep.query_params.is_empty()
+        && ep.header_params.is_empty()
+        && ep.request_body.is_none())
 }
 
 /// Assemble the `raw_client.py` file for one client module: the sync and async
@@ -5777,6 +5806,9 @@ mod tests {
             body_description_missing: false,
             body_component_ref: false,
             body_schema_ref: false,
+            body_schema_dropped: false,
+            body_schema_shared: false,
+            body_schema_metadata_missing: false,
             body_schema_has_example: false,
             body_schema_documented: false,
             body_schema_is_response_heavy: false,
