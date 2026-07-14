@@ -799,16 +799,18 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     if !emittable_modules.is_empty() {
         files.push(root_client_file(
             &env,
-            pkg,
-            &ir.client_name,
-            &emittable_modules,
-            if root_emittable { &root_eps } else { &[] },
-            &ir.types,
-            &ir.tag_types,
-            &tag_map,
-            &ir.auth,
-            ir.environment.as_ref(),
-            &ir.global_headers,
+            RootClientFileCtx {
+                pkg,
+                client_name: &ir.client_name,
+                modules: &emittable_modules,
+                root_endpoints: if root_emittable { &root_eps } else { &[] },
+                types: &ir.types,
+                tag_decls: &ir.tag_types,
+                tag_map: &tag_map,
+                auth: &ir.auth,
+                environment: ir.environment.as_ref(),
+                global_headers: &ir.global_headers,
+            },
         )?);
     }
 
@@ -3371,19 +3373,35 @@ fn raw_error_branches(ep: &Endpoint, imports: &mut Imports) -> String {
 /// Assemble the root `client.py`: the `FernApi`/`AsyncFernApi` classes that
 /// aggregate every tag client. Bearer-auth-coupled today (a `token` argument);
 /// generalize when more auth schemes are modeled.
+struct RootClientFileCtx<'a> {
+    pkg: &'a str,
+    client_name: &'a str,
+    modules: &'a [&'a String],
+    root_endpoints: &'a [&'a Endpoint],
+    types: &'a [TypeDecl],
+    tag_decls: &'a [TagTypeDecl],
+    tag_map: &'a BTreeMap<String, String>,
+    auth: &'a Auth,
+    environment: Option<&'a crate::ir::Environment>,
+    global_headers: &'a [GlobalHeader],
+}
+
 fn root_client_file(
     env: &Environment<'static>,
-    pkg: &str,
-    client_name: &str,
-    modules: &[&String],
-    root_endpoints: &[&Endpoint],
-    types: &[TypeDecl],
-    tag_decls: &[TagTypeDecl],
-    tag_map: &BTreeMap<String, String>,
-    auth: &Auth,
-    environment: Option<&crate::ir::Environment>,
-    global_headers: &[GlobalHeader],
+    cx: RootClientFileCtx<'_>,
 ) -> Result<GeneratedFile> {
+    let RootClientFileCtx {
+        pkg,
+        client_name,
+        modules,
+        root_endpoints,
+        types,
+        tag_decls,
+        tag_map,
+        auth,
+        environment,
+        global_headers,
+    } = cx;
     let mut imports = Imports::at(RefLoc::PackageRoot, tag_map);
     imports.add_plain("typing");
     imports.add_plain("httpx");
@@ -5210,6 +5228,8 @@ mod tests {
             gh_ctor: String::new(),
             gh_example: String::new(),
             gh_wrapper: String::new(),
+            raw_client_cls: String::new(),
+            root_methods: Vec::new(),
             modules: vec![RootModuleView {
                 attr: "endpoints_put".to_string(),
                 cls: "EndpointsPutClient".to_string(),
@@ -5467,6 +5487,7 @@ mod tests {
             required: true,
             convert: false,
             content_type: true,
+            content_type_override: None,
         }));
 
         let ir = ir_with(vec![body, no_arg_post]);
