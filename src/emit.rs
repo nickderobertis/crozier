@@ -3106,8 +3106,8 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                         && !ep.body_component_ref
                         && !(matches!(body, RequestBody::Inline(_))
                             && (ep.body_all_of || ep.body_response_same_ref))
-                        && ((!ep.body_documented
-                            && !(ep.body_schema_has_example && ep.body_schema_documented))
+                        && (!(ep.body_documented
+                            || ep.body_schema_has_example && ep.body_schema_documented)
                             || body.all_fields_required()))) =>
         {
             Some("application/json".to_string())
@@ -5608,6 +5608,7 @@ mod tests {
                 py_name: "id".to_string(),
                 type_ref: TypeRef::Primitive(Prim::Int),
                 docstring: None,
+                example: None,
             }],
             None,
         );
@@ -5743,6 +5744,7 @@ mod tests {
                 py_name: "id".to_string(),
                 type_ref: TypeRef::Primitive(Prim::Str),
                 docstring: None,
+                example: None,
             }],
             Some(TypeRef::Primitive(Prim::Str)),
         );
@@ -5894,6 +5896,7 @@ mod tests {
                 py_name: "id".to_string(),
                 type_ref: TypeRef::Primitive(Prim::Str),
                 docstring: None,
+                example: None,
             }],
             Some(TypeRef::Named("Resp".to_string())),
         );
