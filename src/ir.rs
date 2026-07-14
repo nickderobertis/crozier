@@ -3548,6 +3548,9 @@ fn declared_doc(desc: Option<&str>) -> Option<String> {
 /// inline as a leaf — null, or a composite object/array.
 fn example_literal(value: &serde_json::Value) -> Option<String> {
     match value {
+        serde_json::Value::String(s) if s.contains('"') && !s.contains('\'') => {
+            Some(format!("'{}'", s.replace('\\', "\\\\")))
+        }
         serde_json::Value::String(s) => Some(format!(
             "\"{}\"",
             s.replace('\\', "\\\\").replace('"', "\\\"")
