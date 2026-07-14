@@ -5920,6 +5920,20 @@ fn pydantic_model_api_fields_are_aliased() {
 }
 
 #[test]
+fn model_field_docs_trim_terminal_line_breaks() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths: {}\ncomponents:\n  schemas:\n    Widget:\n      type: object\n      properties:\n        name:\n          type: string\n          description: |\n            Widget name.\n",
+    );
+    let model = std::fs::read_to_string(out.join("src/acme/types/widget.py"))
+        .expect("widget model is generated");
+    assert!(
+        model.contains("    Widget name.\n    \"\"\"")
+            && !model.contains("    Widget name.\n    \n    \"\"\""),
+        "terminal description line breaks should not add a blank field-doc line: {model}"
+    );
+}
+
+#[test]
 fn array_ref_request_body_generates_single_named_request_argument() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/archive:\n    \

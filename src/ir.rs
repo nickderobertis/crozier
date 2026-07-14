@@ -3197,9 +3197,9 @@ fn operation_doc(desc: Option<&str>) -> Option<String> {
 /// bunq declares `description: ""` on many nodes; the synthetic seeds omit it.
 fn declared_doc(desc: Option<&str>) -> Option<String> {
     // Preserve the description verbatim (Fern does not trim it — a trailing space in
-    // `"The URL to visit to "` survives into the docstring); only presence vs absence
-    // matters for the empty-slot rendering.
-    desc.map(str::to_string)
+    // `"The URL to visit to "` survives into the docstring), but terminal line breaks
+    // are importer formatting rather than docstring content.
+    desc.map(|text| text.trim_end_matches(['\r', '\n']).to_string())
 }
 
 /// Render an OpenAPI `example` scalar as the Python literal Fern shows in a worked
