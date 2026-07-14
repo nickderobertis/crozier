@@ -110,7 +110,7 @@ pub fn module_name(class_name: &str) -> String {
 /// name still rides along as the serialization key, since `needs_alias` fires.
 #[must_use]
 pub fn field_name(wire_name: &str) -> String {
-    let snake = to_snake_case(&fold_non_identifier(wire_name));
+    let snake = collapse_digit_boundaries(&to_snake_case(&fold_non_identifier(wire_name)));
     if snake.starts_with(|c: char| c.is_ascii_digit()) {
         format!("f_{snake}")
     } else if is_reserved(&snake) {
@@ -118,6 +118,29 @@ pub fn field_name(wire_name: &str) -> String {
     } else {
         snake
     }
+}
+
+/// Fern joins numeric field-name segments to their neighbors (`day_0_end_time` →
+/// `day0end_time`, `user_fields[1]` → `user_fields1`). Serialization still uses
+/// the original wire name through field aliases.
+fn collapse_digit_boundaries(name: &str) -> String {
+    let chars: Vec<char> = name.chars().collect();
+    chars
+        .iter()
+        .enumerate()
+        .filter_map(|(index, &ch)| {
+            if ch == '_'
+                && (index
+                    .checked_sub(1)
+                    .is_some_and(|i| chars[i].is_ascii_digit())
+                    || chars.get(index + 1).is_some_and(char::is_ascii_digit))
+            {
+                None
+            } else {
+                Some(ch)
+            }
+        })
+        .collect()
 }
 
 /// Replace every character that can't appear in a Python identifier with a space

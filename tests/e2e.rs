@@ -5747,6 +5747,19 @@ fn digit_leading_property_gets_f_prefix_and_alias() {
 }
 
 #[test]
+fn numeric_field_segments_collapse_and_keep_wire_aliases() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widget:\n    get:\n      operationId: getWidget\n      tags: [widgets]\n      responses:\n        '200':\n          description: Found\n          content:\n            application/json:\n              schema:\n                type: object\n                required: [day_0_end_time]\n                properties:\n                  day_0_end_time: { type: integer }\n",
+    );
+    let model = std::fs::read_to_string(out.join("src/acme/widgets/types/get_widget_response.py"))
+        .expect("response model is generated");
+    assert!(
+        model.contains("day0end_time: typing_extensions.Annotated[int, FieldMetadata(alias=\"day_0_end_time\")]"),
+        "numeric segments should collapse while preserving the wire alias: {model}"
+    );
+}
+
+#[test]
 fn bracketed_property_names_generate_valid_python() {
     // Issue #74: bracketed JSON:API / Rails / Stripe params (`filter[name]`,
     // `page[size]`) aren't legal identifiers. crozier once emitted them verbatim
