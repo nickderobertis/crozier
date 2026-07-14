@@ -1837,7 +1837,7 @@ impl InlineHoister<'_> {
             let optional = is_optional(prop_schema) || !spec_required;
             fields.push(Field {
                 wire_name: prop.clone(),
-                py_name: naming::field_name(prop),
+                py_name: naming::model_field_name(prop),
                 type_ref: self.prop_type_ref(owner, prop, prop_schema),
                 optional,
                 spec_required,
@@ -1997,7 +1997,7 @@ fn append_request_fields(
     }
     out.extend(obj.fields.iter().map(|f| BodyField {
         wire_name: f.wire_name.clone(),
-        py_name: f.py_name.clone(),
+        py_name: naming::field_name(&f.wire_name),
         type_ref: f.type_ref.clone(),
         optional: f.optional,
         spec_required: f.spec_required,
@@ -2566,7 +2566,7 @@ fn append_member_fields(
         let spec_required = required.contains(&prop.as_str());
         fields.push(Field {
             wire_name: prop.clone(),
-            py_name: naming::field_name(prop),
+            py_name: naming::model_field_name(prop),
             type_ref: base_type_ref(prop_schema),
             optional: is_optional(prop_schema) || !spec_required,
             spec_required,
@@ -2730,7 +2730,7 @@ impl Builder<'_> {
             let optional = is_optional(prop_schema) || !spec_required;
             fields.push(Field {
                 wire_name: prop.clone(),
-                py_name: naming::field_name(prop),
+                py_name: naming::model_field_name(prop),
                 type_ref: self.field_type_ref(owner, prop, prop_schema),
                 optional,
                 spec_required,

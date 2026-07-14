@@ -5904,6 +5904,22 @@ fn multiline_parameter_docs_remain_indented() {
 }
 
 #[test]
+fn pydantic_model_api_fields_are_aliased() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths: {}\ncomponents:\n  schemas:\n    Widget:\n      type: object\n      properties:\n        schema: { type: string }\n        kwargs: { type: string }\n",
+    );
+    let model = std::fs::read_to_string(out.join("src/acme/types/widget.py"))
+        .expect("widget model is generated");
+    assert!(
+        model.contains("schema_: typing_extensions.Annotated[")
+            && model.contains("FieldMetadata(alias=\"schema\")")
+            && model.contains("kwargs_: typing_extensions.Annotated[")
+            && model.contains("FieldMetadata(alias=\"kwargs\")"),
+        "fields that collide with pydantic's model API should retain their wire aliases: {model}"
+    );
+}
+
+#[test]
 fn array_ref_request_body_generates_single_named_request_argument() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/archive:\n    \

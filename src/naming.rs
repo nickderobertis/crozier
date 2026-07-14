@@ -264,6 +264,18 @@ pub fn is_reserved(name: &str) -> bool {
     PYTHON_KEYWORDS.contains(&name) || RESERVED_BUILTINS.contains(&name)
 }
 
+/// A Python field identifier for a pydantic model. In addition to ordinary
+/// Python collisions, Fern protects names exposed by pydantic's model API.
+#[must_use]
+pub fn model_field_name(wire_name: &str) -> String {
+    let name = field_name(wire_name);
+    if matches!(name.as_str(), "kwargs" | "schema") {
+        format!("{name}_")
+    } else {
+        name
+    }
+}
+
 /// Reserved-word check for *derived method* names. Fern safe-names Python keywords
 /// and the builtin `all` (a REST "list all" method → `all_`), but — unlike field and
 /// type names — leaves other builtins alone: appwrite's derived `list` stays `list`,
