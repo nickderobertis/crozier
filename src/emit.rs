@@ -2116,7 +2116,7 @@ fn render_type_decl(
                 "UniversalBaseModel".to_string()
             } else {
                 for base in &obj.bases {
-                    imports.add_from(&format!(".{}", naming::module_name(base)), base);
+                    imports.add_type(base);
                 }
                 obj.bases.join(", ")
             };

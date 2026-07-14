@@ -5844,6 +5844,26 @@ fn camel_case_tags_generate_snake_case_client_packages() {
 }
 
 #[test]
+fn inline_all_of_responses_preserve_component_bases() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    get:\n      \
+         operationId: listWidgets\n      tags: [widgets]\n      responses:\n        '200':\n          description: OK\n          content:\n            \
+         application/json:\n              schema:\n                allOf:\n                  - { $ref: '#/components/schemas/WidgetCollection' }\n                  \
+         - { $ref: '#/components/schemas/PageInfo' }\ncomponents:\n  schemas:\n    WidgetCollection:\n      type: object\n      properties:\n        \
+         widgets: { type: array, items: { type: string } }\n    PageInfo:\n      type: object\n      properties:\n        total: { type: integer }\n",
+    );
+    let response =
+        std::fs::read_to_string(out.join("src/acme/widgets/types/list_widgets_response.py"))
+            .expect("inline allOf response model is generated");
+    assert!(
+        response.contains("from ...types.page_info import PageInfo")
+            && response.contains("from ...types.widget_collection import WidgetCollection")
+            && response.contains("class ListWidgetsResponse(WidgetCollection, PageInfo):"),
+        "inline allOf response models should inherit every referenced component: {response}"
+    );
+}
+
+#[test]
 fn array_ref_request_body_generates_single_named_request_argument() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/archive:\n    \

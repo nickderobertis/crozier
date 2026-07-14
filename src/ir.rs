@@ -1796,8 +1796,41 @@ impl InlineHoister<'_> {
     /// Build a named [`ObjectType`] from an inline object schema, recursively
     /// hoisting its nested inline-object properties, and push it to `out`.
     fn hoist_object(&mut self, name: &str, schema: &Schema) {
-        let required: Vec<&str> = schema.required.iter().map(String::as_str).collect();
+        let required: Vec<&str> = schema
+            .required
+            .iter()
+            .chain(schema.all_of.iter().flatten().flat_map(|m| &m.required))
+            .map(String::as_str)
+            .collect();
+        let bases = schema
+            .all_of
+            .iter()
+            .flatten()
+            .filter_map(|member| member.reference.as_deref().map(ref_to_class))
+            .collect();
         let mut fields = Vec::new();
+        for member in schema.all_of.iter().flatten() {
+            if member.reference.is_none() {
+                self.hoist_object_fields(name, member, &required, &mut fields);
+            }
+        }
+        self.hoist_object_fields(name, schema, &required, &mut fields);
+        self.out.push(TypeDecl::Object(ObjectType {
+            name: name.to_string(),
+            module: naming::module_name(name),
+            bases,
+            fields,
+            docstring: clean_doc(schema.description.as_deref()),
+        }));
+    }
+
+    fn hoist_object_fields(
+        &mut self,
+        owner: &str,
+        schema: &Schema,
+        required: &[&str],
+        fields: &mut Vec<Field>,
+    ) {
         for (prop, prop_schema) in &schema.properties {
             let spec_required =
                 required.contains(&prop.as_str()) && prop_schema.read_only != Some(true);
@@ -1805,20 +1838,13 @@ impl InlineHoister<'_> {
             fields.push(Field {
                 wire_name: prop.clone(),
                 py_name: naming::field_name(prop),
-                type_ref: self.prop_type_ref(name, prop, prop_schema),
+                type_ref: self.prop_type_ref(owner, prop, prop_schema),
                 optional,
                 spec_required,
                 docstring: declared_doc(prop_schema.description.as_deref()),
                 example: prop_schema.example.as_ref().and_then(example_literal),
             });
         }
-        self.out.push(TypeDecl::Object(ObjectType {
-            name: name.to_string(),
-            module: naming::module_name(name),
-            bases: Vec::new(),
-            fields,
-            docstring: clean_doc(schema.description.as_deref()),
-        }));
     }
 
     /// The type of a property, hoisting an inline object (directly or as an array
