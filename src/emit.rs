@@ -3071,6 +3071,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                 || !ep.path_params.is_empty()
                 || (body.content_type_header()
                     && !ep.body_component_ref
+                    && !(ep.body_all_of && matches!(body, RequestBody::Inline(_)))
                     && !(ep.body_response_same_ref && matches!(body, RequestBody::Inline(_)))
                     && (!ep.body_documented || body.all_fields_required())) =>
         {
@@ -5454,6 +5455,7 @@ mod tests {
             request_body: None,
             body_documented: false,
             body_component_ref: false,
+            body_all_of: false,
             body_response_same_ref: false,
             response,
             response_doc: None,
