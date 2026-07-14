@@ -570,6 +570,8 @@ pub struct PathParam {
     pub type_ref: TypeRef,
     /// Optional description, shown under the parameter in the docstring.
     pub docstring: Option<String>,
+    /// Example literal resolved from the parameter or its component schema.
+    pub example: Option<String>,
 }
 
 /// A resolved query parameter, rendered as a keyword-only method argument and a
@@ -609,6 +611,8 @@ pub struct HeaderParam {
     pub required: bool,
     /// Optional description, shown under the parameter in the docstring.
     pub docstring: Option<String>,
+    /// Example literal resolved from the parameter or its component schema.
+    pub example: Option<String>,
 }
 
 /// A resolved JSON request body. Fern renders a body one of two ways: as a single
@@ -1329,6 +1333,7 @@ fn build_endpoint(
                     hoister.hoist_param_enum(&request_ctx, &p.name, schema)
                 }),
             docstring: declared_doc(p.description.as_deref()),
+            example: parameter_example(doc, p),
         })
         .collect();
     path_params.sort_by(|a, b| {
@@ -1393,6 +1398,7 @@ fn build_endpoint(
                 }),
             required: p.required == Some(true),
             docstring: clean_doc(p.description.as_deref()),
+            example: parameter_example(doc, p),
         })
         .collect();
 
@@ -1512,6 +1518,22 @@ fn build_endpoint(
         binary_response: is_binary_response(doc, op),
         emittable,
     }
+}
+
+fn parameter_example(doc: &OpenApi, parameter: &crate::openapi::Parameter) -> Option<String> {
+    parameter
+        .example
+        .as_ref()
+        .or_else(|| parameter.schema.as_ref().and_then(|schema| schema.example.as_ref()))
+        .or_else(|| {
+            parameter
+                .schema
+                .as_ref()
+                .and_then(|schema| schema.reference.as_deref())
+                .and_then(|reference| resolve_ref(doc, reference))
+                .and_then(|schema| schema.example.as_ref())
+        })
+        .and_then(example_literal)
 }
 
 fn request_body_has_all_of(doc: &OpenApi, op: &Operation) -> bool {

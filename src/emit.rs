@@ -4419,8 +4419,18 @@ enum Slot<'a> {
 }
 
 impl<'a> ExampleCtx<'a> {
+    fn example_is_scalar(&self, t: &TypeRef) -> bool {
+        match t {
+            TypeRef::Named(name) => match self.find(name) {
+                Some(TypeDecl::Alias(alias)) => self.example_is_scalar(&alias.target),
+                _ => false,
+            },
+            _ => example_scalar(t),
+        }
+    }
+
     fn value_from_example(&mut self, t: &TypeRef, example: &str) -> Option<Example> {
-        if example_scalar(t) {
+        if self.example_is_scalar(t) {
             return Some(Example::Atom(example.to_string()));
         }
         let TypeRef::Named(name) = t else {
@@ -4737,7 +4747,14 @@ fn build_example(
     // each required inlined field).
     let mut args: Vec<(Option<String>, Example)> = Vec::new();
     for pp in &ep.path_params {
-        let v = ctx.value(&pp.type_ref, Slot::Named(&pp.wire_name));
+        let v = pp
+            .example
+            .as_ref()
+            .filter(|_| ctx.example_is_scalar(&pp.type_ref))
+            .map_or_else(
+                || ctx.value(&pp.type_ref, Slot::Named(&pp.wire_name)),
+                |example| Example::Atom(example.clone()),
+            );
         args.push((Some(pp.py_name.clone()), v));
     }
     // Fern shows a query parameter in the worked example when it is required OR
@@ -4756,8 +4773,15 @@ fn build_example(
         };
         args.push((Some(qp.py_name.clone()), v));
     }
-    for hp in ep.header_params.iter().filter(|h| h.required) {
-        let v = ctx.value(&hp.type_ref, Slot::Named(&hp.wire_name));
+    for hp in ep.header_params.iter().filter(|h| h.required || h.example.is_some()) {
+        let v = hp
+            .example
+            .as_ref()
+            .filter(|_| ctx.example_is_scalar(&hp.type_ref))
+            .map_or_else(
+                || ctx.value(&hp.type_ref, Slot::Named(&hp.wire_name)),
+                |example| Example::Atom(example.clone()),
+            );
         args.push((Some(hp.py_name.clone()), v));
     }
     match &ep.request_body {
@@ -4778,7 +4802,7 @@ fn build_example(
                     .example
                     .as_deref()
                     .and_then(|example| {
-                        if f.media_example || example_scalar(&f.type_ref) {
+                        if f.media_example || ctx.example_is_scalar(&f.type_ref) {
                             ctx.value_from_example(&f.type_ref, example)
                         } else {
                             None
