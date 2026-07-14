@@ -5259,6 +5259,36 @@ fn enum_sanitization_generates_valid_python() {
 }
 
 #[test]
+fn omitted_schema_type_infers_enum_and_open_map_shapes() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    \
+         get:\n      operationId: listWidgets\n      tags: [widgets]\n      responses:\n        \
+         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Widget' } } } }\n\
+         components:\n  schemas:\n    Widget:\n      type: object\n      required: [kind, target]\n      \
+         properties:\n        kind: { enum: [tag, digest] }\n        target: { additionalProperties: true }\n        \
+         metadata: {}\n",
+    );
+    let widget = std::fs::read_to_string(out.join("src/acme/types/widget.py"))
+        .expect("Widget model is generated");
+    assert!(
+        widget.contains("from .widget_kind import WidgetKind"),
+        "an enum without an explicit type should be hoisted as a string enum: {widget}"
+    );
+    assert!(
+        widget.contains("kind: WidgetKind"),
+        "the required no-type enum field should reference the hoisted enum: {widget}"
+    );
+    assert!(
+        widget.contains("target: typing.Dict[str, typing.Optional[typing.Any]]"),
+        "additionalProperties without an explicit object type should be an open map: {widget}"
+    );
+    assert!(
+        widget.contains("metadata: typing.Optional[typing.Any] = None"),
+        "an unknown optional field keeps Fern's existing single-optional annotation: {widget}"
+    );
+}
+
+#[test]
 fn missing_operation_id_generates_valid_python() {
     // Issue #40 case 3: an operation without an operationId is valid OpenAPI and
     // must generate (crozier synthesizes a name), not hard-error.

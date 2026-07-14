@@ -2746,7 +2746,10 @@ fn ordinal_word(n: usize) -> &'static str {
 fn full_type_ref(schema: &Schema) -> TypeRef {
     let base = base_type_ref(schema);
     if is_optional(schema) {
-        TypeRef::Optional(Box::new(base))
+        match base {
+            TypeRef::Optional(_) => base,
+            other => TypeRef::Optional(Box::new(other)),
+        }
     } else {
         base
     }
@@ -2773,6 +2776,31 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
     if let Some(variants) = union_variants(schema) {
         return TypeRef::Union(variants);
     }
+    if is_bare_object(schema) {
+        return TypeRef::Dict(
+            Box::new(TypeRef::Primitive(Prim::Str)),
+            Box::new(TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)))),
+        );
+    }
+    if is_map(schema) {
+        return match &schema.additional_properties {
+            Some(AdditionalProperties::Schema(value)) => {
+                let mut val = base_type_ref(value);
+                // Fern makes a nullable map's value type optional too.
+                if schema.nullable == Some(true) {
+                    val = TypeRef::Optional(Box::new(val));
+                }
+                TypeRef::Dict(Box::new(TypeRef::Primitive(Prim::Str)), Box::new(val))
+            }
+            // `additionalProperties: true` is an open map to unknown values, which
+            // Fern types as `Dict[str, Optional[Any]]`.
+            Some(AdditionalProperties::Bool(true)) => TypeRef::Dict(
+                Box::new(TypeRef::Primitive(Prim::Str)),
+                Box::new(TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)))),
+            ),
+            _ => TypeRef::Primitive(Prim::Any),
+        };
+    }
     match schema.ty.as_ref().and_then(|t| t.primary()) {
         Some("string") => match schema.format.as_deref() {
             Some("date-time") => TypeRef::Primitive(Prim::Datetime),
@@ -2795,27 +2823,7 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
                 TypeRef::List(Box::new(item))
             }
         }
-        Some("object") if is_bare_object(schema) => TypeRef::Dict(
-            Box::new(TypeRef::Primitive(Prim::Str)),
-            Box::new(TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)))),
-        ),
-        Some("object") => match &schema.additional_properties {
-            Some(AdditionalProperties::Schema(value)) => {
-                let mut val = base_type_ref(value);
-                // Fern makes a nullable map's value type optional too.
-                if schema.nullable == Some(true) {
-                    val = TypeRef::Optional(Box::new(val));
-                }
-                TypeRef::Dict(Box::new(TypeRef::Primitive(Prim::Str)), Box::new(val))
-            }
-            // `additionalProperties: true` is an open map to unknown values, which
-            // Fern types as `Dict[str, Optional[Any]]`.
-            Some(AdditionalProperties::Bool(true)) => TypeRef::Dict(
-                Box::new(TypeRef::Primitive(Prim::Str)),
-                Box::new(TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)))),
-            ),
-            _ => TypeRef::Primitive(Prim::Any),
-        },
+        Some("object") => TypeRef::Primitive(Prim::Any),
         _ => TypeRef::Primitive(Prim::Any),
     }
 }
@@ -2849,12 +2857,18 @@ fn is_unknown(schema: &Schema) -> bool {
         && schema.items.is_none()
 }
 
-/// The string values of a `type: string` enum schema, if it is one.
+/// The string values of a string enum schema, if it is one. Public specs sometimes
+/// omit `type: string` on an enum whose values are all strings; Fern still treats
+/// that as a string enum.
 fn string_enum_values(schema: &Schema) -> Option<Vec<String>> {
-    if !is_string_type(schema) {
-        return None;
-    }
     let values = schema.enum_values.as_ref()?;
+    if !is_string_type(schema) {
+        let omitted_type = schema.ty.is_none();
+        let all_strings = values.iter().all(serde_json::Value::is_string);
+        if !omitted_type || !all_strings {
+            return None;
+        }
+    }
     let strings: Vec<String> = values
         .iter()
         .filter_map(|v| v.as_str().map(str::to_string))
@@ -2895,6 +2909,8 @@ fn is_int_enum(schema: &Schema) -> bool {
 /// Is this schema declared as `type: object`?
 fn is_object_type(schema: &Schema) -> bool {
     schema.ty.as_ref().and_then(|t| t.primary()) == Some("object")
+        || (schema.ty.is_none()
+            && (!schema.properties.is_empty() || schema.additional_properties.is_some()))
 }
 
 /// Normalize a description into a docstring, dropping empty ones.
