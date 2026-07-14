@@ -3305,3 +3305,57 @@ components:
         "{client}"
     );
 }
+
+#[test]
+fn in_process_openapi_boundary_reports_each_input_failure() {
+    fn error_for(path: PathBuf) -> String {
+        render_files(GenerateArgs {
+            spec: path,
+            output: PathBuf::from("unused"),
+            package_name: Some("acme".to_string()),
+            project_name: Some("acme".to_string()),
+            client_class_name: None,
+            audiences: Vec::new(),
+            audience_strict: false,
+            extra_fields: crozier::settings::ExtraFields::Allow,
+        })
+        .unwrap_err()
+        .to_string()
+    }
+
+    let dir = tempfile::tempdir().unwrap();
+    let missing = error_for(dir.path().join("missing.yml"));
+    assert!(missing.contains("could not read spec"), "{missing}");
+
+    let unsupported = dir.path().join("api.txt");
+    std::fs::write(&unsupported, "openapi: 3.0.3").unwrap();
+    let unsupported_error = error_for(unsupported);
+    assert!(
+        unsupported_error.contains("unsupported spec extension"),
+        "{unsupported_error}"
+    );
+
+    let malformed_yaml = dir.path().join("malformed.yml");
+    std::fs::write(&malformed_yaml, "openapi: [\n").unwrap();
+    let yaml_error = error_for(malformed_yaml);
+    assert!(
+        yaml_error.contains("could not parse OpenAPI document"),
+        "{yaml_error}"
+    );
+
+    let malformed_json = dir.path().join("malformed.json");
+    std::fs::write(&malformed_json, "{\"openapi\":").unwrap();
+    let json_error = error_for(malformed_json);
+    assert!(
+        json_error.contains("could not parse OpenAPI document"),
+        "{json_error}"
+    );
+
+    let old = dir.path().join("old.yaml");
+    std::fs::write(&old, "openapi: 2.0\ninfo: { title: Old }\npaths: {}\n").unwrap();
+    let version_error = error_for(old);
+    assert!(
+        version_error.contains("unsupported OpenAPI version `2.0`"),
+        "{version_error}"
+    );
+}
