@@ -6153,6 +6153,24 @@ fn openapi_31_null_types_generate_optional_fields() {
 }
 
 #[test]
+fn inline_request_enums_generate_emittable_clients() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widget:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n              type: object\n              required: [mode]\n              properties:\n                mode: { type: string, enum: [FAST, SAFE] }\n      responses:\n        '204': { description: Created }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("client with an inline request enum is generated");
+    assert!(
+        raw.contains("mode: CreateWidgetRequestMode"),
+        "request field should use its coined enum: {raw}"
+    );
+    assert!(
+        out.join("src/acme/widgets/types/create_widget_request_mode.py")
+            .is_file(),
+        "request-scoped enum module should be emitted"
+    );
+}
+
+#[test]
 fn header_parameter_enums_hoist_to_tag_types() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      parameters:\n        - name: X-Widget-Mode\n          in: header\n          required: true\n          schema: { type: string, enum: [FAST, SAFE] }\n      responses:\n        '204': { description: Created }\n",

@@ -2049,9 +2049,8 @@ fn request_body_ignored(rb: &crate::openapi::RequestBody) -> bool {
 
 /// Hoist an inline object body's properties into request [`BodyField`]s. Mirrors
 /// [`hoist_fields`] but resolves an unnamed schema directly. A nested inline
-/// object property hoists into a `{ctx}{Prop}` model via `hoister`. Returns `None`
-/// if a property is an inline string enum (which Fern would hoist into its own
-/// named type — not yet supported for request bodies).
+/// object property hoists into a `{ctx}{Prop}` model via `hoister`; an inline
+/// string enum similarly becomes a request-scoped enum.
 fn hoist_inline_object(
     schema: &Schema,
     hoister: &mut InlineHoister,
@@ -2060,9 +2059,6 @@ fn hoist_inline_object(
     let required: Vec<&str> = schema.required.iter().map(String::as_str).collect();
     let mut fields = Vec::new();
     for (prop, prop_schema) in &schema.properties {
-        if prop_schema.reference.is_none() && string_enum_values(prop_schema).is_some() {
-            return None;
-        }
         let spec_required = required.contains(&prop.as_str());
         let optional = is_optional(prop_schema) || !spec_required;
         let type_ref = hoister.prop_type_ref(ctx, prop, prop_schema);
@@ -2157,6 +2153,17 @@ impl InlineHoister<'_> {
     /// item) into `{parent}{PascalCase(prop)}`. A `$ref` or scalar passes through
     /// [`base_type_ref`].
     fn prop_type_ref(&mut self, parent: &str, prop: &str, prop_schema: &Schema) -> TypeRef {
+        if prop_schema.reference.is_none() {
+            if let Some(values) = string_enum_values(prop_schema) {
+                let name = format!("{parent}{}", naming::class_name(prop));
+                self.out.push(TypeDecl::Enum(build_enum(
+                    &name,
+                    values,
+                    clean_doc(prop_schema.description.as_deref()),
+                )));
+                return TypeRef::Named(name);
+            }
+        }
         if prop_schema.reference.is_none() && is_inline_struct(prop_schema) {
             let nested = format!("{parent}{}", naming::class_name(prop));
             self.hoist_object(&nested, prop_schema);
