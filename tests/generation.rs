@@ -3992,3 +3992,147 @@ paths:
     assert!(reference.contains("## Archives"), "{reference}");
     assert!(!reference.contains("download</a>"), "{reference}");
 }
+
+#[test]
+fn indexed_allof_and_recursive_composition_emit_models_with_forward_refs() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Indexed Composition, version: 1.0.0 }
+components:
+  schemas:
+    Base:
+      type: object
+      required: [id]
+      properties: { id: { type: string } }
+    Combined:
+      allOf:
+        '3':
+          type: object
+          required: [count]
+          properties: { count: { type: integer, format: uint32 } }
+        '1': { $ref: '#/components/schemas/Base' }
+    Recursive:
+      allOf:
+        - type: object
+          properties:
+            next: { $ref: '#/components/schemas/Recursive' }
+paths:
+  /combined:
+    get:
+      operationId: models_combined
+      tags: [Models]
+      responses:
+        '200':
+          description: Combined
+          content: { application/json: { schema: { $ref: '#/components/schemas/Combined' } } }
+  /recursive:
+    get:
+      operationId: models_recursive
+      tags: [Models]
+      responses:
+        '200':
+          description: Recursive
+          content: { application/json: { schema: { $ref: '#/components/schemas/Recursive' } } }
+"##,
+    );
+    let combined = &files["src/acme/types/combined.py"];
+    let recursive = &files["src/acme/types/recursive.py"];
+    assert!(combined.contains("class Combined(Base):"), "{combined}");
+    assert!(combined.contains("count: int"), "{combined}");
+    assert!(
+        recursive.contains("from __future__ import annotations"),
+        "{recursive}"
+    );
+    assert!(
+        recursive.contains("next: typing.Optional[\"Recursive\"]"),
+        "{recursive}"
+    );
+}
+
+#[test]
+fn inline_oneof_and_anyof_request_bodies_emit_tag_union_inputs() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Inline Request Unions, version: 1.0.0 }
+paths:
+  /one:
+    post:
+      operationId: unions_one
+      tags: [Unions]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - { type: string }
+                - { type: integer, format: int64 }
+      responses: { '204': { description: Done } }
+  /any:
+    post:
+      operationId: unions_any
+      tags: [Unions]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              anyOf:
+                - { type: boolean }
+                - { type: object, additionalProperties: true }
+      responses: { '204': { description: Done } }
+"##,
+    );
+    let raw = &files["src/acme/unions/raw_client.py"];
+    let one = &files["src/acme/unions/types/unions_one_request_body.py"];
+    let any = &files["src/acme/unions/types/unions_any_request_body.py"];
+    assert!(one.contains("typing.Union[str, int]"), "{one}");
+    assert!(any.contains("typing.Union[bool, typing.Dict"), "{any}");
+    assert!(raw.contains("request: UnionsOneRequestBody"), "{raw}");
+    assert!(raw.contains("request: UnionsAnyRequestBody"), "{raw}");
+    assert!(
+        raw.contains("object_=request, annotation=UnionsOneRequestBody"),
+        "{raw}"
+    );
+}
+
+#[test]
+fn keyword_methods_jwt_and_wildcard_media_generate_valid_python() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Media Keywords, version: 1.0.0 }
+paths:
+  /tokens:
+    post:
+      operationId: del
+      tags: [Tokens]
+      requestBody:
+        content: { application/jwt: { schema: { type: string } } }
+      responses:
+        '200':
+          description: JWT
+          content: { application/jwt: { schema: { type: string } } }
+  /wild:
+    post:
+      operationId: tokens_wild
+      tags: [Tokens]
+      requestBody:
+        content:
+          '*/*': { schema: { type: object, additionalProperties: true } }
+      responses:
+        '200':
+          description: Wildcard
+          content: { '*/*': { schema: { type: integer, format: uint32 } } }
+"##,
+    );
+    let raw = &files["src/acme/tokens/raw_client.py"];
+    let client = &files["src/acme/tokens/client.py"];
+    assert!(raw.contains("def del_("), "{raw}");
+    assert!(client.contains("def del_("), "{client}");
+    assert!(raw.contains("def del_(self, *, request_options"), "{raw}");
+    assert!(
+        raw.contains("request: typing.Dict[str, typing.Optional[typing.Any]]"),
+        "{raw}"
+    );
+    assert!(raw.contains("json=request"), "{raw}");
+    assert!(!raw.contains("\"content-type\": \"*/*\""), "{raw}");
+    assert!(raw.contains(") -> HttpResponse[int]:"), "{raw}");
+}
