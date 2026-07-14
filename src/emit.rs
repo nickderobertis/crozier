@@ -1359,8 +1359,12 @@ fn select_readme_endpoint<'a>(
 }
 
 fn readme_endpoint(ir: &Ir) -> Option<&Endpoint> {
-    select_readme_endpoint(ir.endpoints.iter().filter(|e| e.module.is_empty()))
-        .or_else(|| select_readme_endpoint(ir.endpoints.iter()))
+    if ir.openapi_31 {
+        select_readme_endpoint(ir.endpoints.iter())
+    } else {
+        select_readme_endpoint(ir.endpoints.iter().filter(|e| e.module.is_empty()))
+            .or_else(|| select_readme_endpoint(ir.endpoints.iter()))
+    }
 }
 
 fn client_call_prefix(ep: &Endpoint) -> String {
@@ -5603,6 +5607,7 @@ mod tests {
 
     fn ir_with(endpoints: Vec<Endpoint>) -> Ir {
         Ir {
+            openapi_31: false,
             package_name: "fern".to_string(),
             project_name: "default_package_name".to_string(),
             client_name: "FernApi".to_string(),

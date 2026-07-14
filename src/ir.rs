@@ -13,6 +13,8 @@ use crate::openapi::{
 /// A fully-resolved SDK model ready to emit.
 #[derive(Debug)]
 pub struct Ir {
+    /// Whether the source uses the OpenAPI 3.1 importer behavior.
+    pub openapi_31: bool,
     /// Python import package name (directory under `src/`).
     pub package_name: String,
     /// Distribution name recorded in `version.py`.
@@ -1098,6 +1100,7 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
     let environment = environment_model(doc, &client_name);
 
     Ir {
+        openapi_31: doc.openapi.starts_with("3.1"),
         package_name: config.package_name.as_str().to_string(),
         project_name: config.project_name.clone(),
         client_name,
