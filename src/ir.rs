@@ -3521,16 +3521,16 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
         Some("number") => TypeRef::Primitive(Prim::Float),
         Some("boolean") => TypeRef::Primitive(Prim::Bool),
         Some("array") => {
-            let item = schema
-                .items
-                .as_ref()
-                .map_or(TypeRef::Primitive(Prim::Any), |i| {
+            let item = schema.items.as_ref().map_or(
+                TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any))),
+                |i| {
                     if is_unknown(i) {
                         TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)))
                     } else {
                         full_type_ref(i)
                     }
-                });
+                },
+            );
             if schema.unique_items == Some(true) {
                 TypeRef::Set(Box::new(item))
             } else {
