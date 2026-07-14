@@ -5928,6 +5928,19 @@ fn referenced_parameter_examples_populate_worked_calls() {
 }
 
 #[test]
+fn referenced_query_examples_populate_worked_calls() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    get:\n      operationId: listWidgets\n      tags: [widgets]\n      parameters:\n        - { name: mode, in: query, schema: { $ref: '#/components/schemas/WidgetMode' } }\n      responses:\n        '204': { description: Found }\ncomponents:\n  schemas:\n    WidgetMode: { type: string, example: FAST }\n",
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/widgets/client.py"))
+        .expect("widgets client is generated");
+    assert!(
+        client.contains("mode=\"FAST\""),
+        "examples on referenced query schemas should populate worked calls: {client}"
+    );
+}
+
+#[test]
 fn header_parameter_enums_hoist_to_tag_types() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      parameters:\n        - name: X-Widget-Mode\n          in: header\n          required: true\n          schema: { type: string, enum: [FAST, SAFE] }\n      responses:\n        '204': { description: Created }\n",

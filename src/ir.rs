@@ -593,6 +593,9 @@ pub struct QueryParam {
     /// The parameter's `example` as a Python literal; when set, the parameter is
     /// shown in a worked snippet even if optional (`example_literal`).
     pub example: Option<String>,
+    /// Whether the OpenAPI schema resolves to a scalar whose example can be used
+    /// directly, including named scalar aliases.
+    pub example_is_scalar: bool,
     /// Optional description, shown under the parameter in the docstring.
     pub docstring: Option<String>,
 }
@@ -1358,11 +1361,18 @@ fn build_endpoint(
                 });
             let convert = type_needs_convert(&type_ref, types);
             // A parameter-level `example` wins; otherwise the schema's own.
-            let example = p
-                .example
-                .as_ref()
-                .or_else(|| p.schema.as_ref().and_then(|s| s.example.as_ref()))
-                .and_then(example_literal);
+            let example = parameter_example(doc, p);
+            let example_is_scalar = p.schema.as_ref().is_some_and(|schema| {
+                let schema = schema
+                    .reference
+                    .as_deref()
+                    .and_then(|reference| resolve_ref(doc, reference))
+                    .unwrap_or(schema);
+                matches!(
+                    schema.ty.as_ref().and_then(|ty| ty.primary()),
+                    Some("string" | "integer" | "number" | "boolean")
+                )
+            });
             QueryParam {
                 wire_name: p.name.clone(),
                 py_name: naming::field_name(&p.name),
@@ -1370,6 +1380,7 @@ fn build_endpoint(
                 required: p.required == Some(true),
                 convert,
                 example,
+                example_is_scalar,
                 docstring: clean_doc(p.description.as_deref()),
             }
         })
@@ -1520,12 +1531,16 @@ fn build_endpoint(
     }
 }
 
-
 fn parameter_example(doc: &OpenApi, parameter: &crate::openapi::Parameter) -> Option<String> {
     parameter
         .example
         .as_ref()
-        .or_else(|| parameter.schema.as_ref().and_then(|schema| schema.example.as_ref()))
+        .or_else(|| {
+            parameter
+                .schema
+                .as_ref()
+                .and_then(|schema| schema.example.as_ref())
+        })
         .or_else(|| {
             parameter
                 .schema
@@ -1837,8 +1852,8 @@ fn resolve_request_body(
         })?;
     let schema = media.schema.as_ref()?;
     let required = rb.required == Some(true);
-    let content_type_override = (media_type != "application/json" && media_type != "*/*")
-        .then(|| media_type.to_string());
+    let content_type_override =
+        (media_type != "application/json" && media_type != "*/*").then(|| media_type.to_string());
     if let Some(reference) = &schema.reference {
         let target = resolve_ref(doc, reference)?;
         let class = ref_to_class(reference);

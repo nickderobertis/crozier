@@ -4444,9 +4444,7 @@ impl<'a> ExampleCtx<'a> {
         if self.example_is_scalar(t) {
             return Some(Example::Atom(example.to_string()));
         }
-        if self.example_is_composite(t)
-            && (example.starts_with('[') || example.starts_with('{'))
-        {
+        if self.example_is_composite(t) && (example.starts_with('[') || example.starts_with('{')) {
             return Some(Example::Atom(example.to_string()));
         }
         let TypeRef::Named(name) = t else {
@@ -4456,7 +4454,10 @@ impl<'a> ExampleCtx<'a> {
             return None;
         };
         let value = example.strip_prefix('"')?.strip_suffix('"')?;
-        let member = enum_type.members.iter().find(|member| member.value == value)?;
+        let member = enum_type
+            .members
+            .iter()
+            .find(|member| member.value == value)?;
         let member_name = member.name.clone();
         self.record_ref(name);
         Some(Example::Atom(format!("{name}.{member_name}")))
@@ -4778,9 +4779,9 @@ fn build_example(
     for qp in ep
         .query_params
         .iter()
-        .filter(|q| q.required || (q.example.is_some() && example_scalar(&q.type_ref)))
+        .filter(|q| q.required || (q.example.is_some() && q.example_is_scalar))
     {
-        let v = if let Some(ex) = qp.example.as_ref().filter(|_| example_scalar(&qp.type_ref)) {
+        let v = if let Some(ex) = qp.example.as_ref().filter(|_| qp.example_is_scalar) {
             Example::Atom(ex.clone())
         } else if let TypeRef::List(inner) = &qp.type_ref {
             Example::List(vec![ctx.value(inner, Slot::Named(&qp.wire_name))])
@@ -4789,7 +4790,11 @@ fn build_example(
         };
         args.push((Some(qp.py_name.clone()), v));
     }
-    for hp in ep.header_params.iter().filter(|h| h.required || h.example.is_some()) {
+    for hp in ep
+        .header_params
+        .iter()
+        .filter(|h| h.required || h.example.is_some())
+    {
         let v = hp
             .example
             .as_ref()
@@ -5908,6 +5913,7 @@ mod tests {
             required: true,
             convert: false,
             example: None,
+            example_is_scalar: false,
             docstring: None,
         }];
         let out = raw_method(&ep, false, &mut i);
@@ -5931,6 +5937,7 @@ mod tests {
             required: false,
             convert: false,
             example: None,
+            example_is_scalar: false,
             docstring: None,
         }];
 
