@@ -2786,7 +2786,7 @@ fn raw_docstring(
 fn push_path_param(lines: &mut Vec<String>, name: &str, ty: &str, desc: &Option<String>) {
     lines.push(format!("        {name} : {ty}"));
     match desc {
-        Some(d) if !d.is_empty() => lines.push(format!("            {d}")),
+        Some(d) if !d.is_empty() => push_param_doc(lines, d),
         Some(_) => lines.push(String::new()),
         None => {}
     }
