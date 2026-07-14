@@ -705,6 +705,9 @@ pub struct BodyField {
     /// Whether this is a file upload field (`format: binary` in a form body),
     /// which renders as `core.File` and serializes into `files={...}`.
     pub is_file: bool,
+    /// Prefix Fern applies when this field's argument name collides with another
+    /// method parameter (e.g. query `tags` plus DAG body `tags` -> `dag_tags`).
+    pub collision_prefix: Option<String>,
     /// The field's `example` as a Python literal, shown in a worked snippet instead
     /// of a synthesized placeholder (`example_literal`).
     pub example: Option<String>,
@@ -1230,7 +1233,7 @@ fn build_endpoint(
 
     // A request body is either absent, within the subset crozier can render, or
     // unsupported. Its inline nested objects hoist under the `{Ctx}Request` context.
-    let request_body = op
+    let mut request_body = op
         .request_body
         .as_ref()
         .and_then(|rb| resolve_request_body(doc, types, rb, &mut hoister, &request_ctx));
@@ -1244,14 +1247,30 @@ fn build_endpoint(
         });
     }
 
-    // A path parameter whose Python name collides with a hoisted body field is
-    // suffixed with `_` (the body field keeps the plain name), matching Fern.
+    // Resolve Python argument-name collisions across parameter locations and an
+    // inlined body. Path params get the historical trailing `_`; body fields that
+    // collide with query/header/path params get Fern's body-context prefix.
     if let Some(RequestBody::Inline(fields)) = &request_body {
         let field_names: std::collections::HashSet<&str> =
             fields.iter().map(|f| f.py_name.as_str()).collect();
         for pp in &mut path_params {
             if field_names.contains(pp.py_name.as_str()) {
                 pp.py_name.push('_');
+            }
+        }
+    }
+    if let Some(RequestBody::Inline(fields)) = &mut request_body {
+        let parameter_names: std::collections::HashSet<&str> = path_params
+            .iter()
+            .map(|p| p.py_name.as_str())
+            .chain(query_params.iter().map(|p| p.py_name.as_str()))
+            .chain(header_params.iter().map(|p| p.py_name.as_str()))
+            .collect();
+        for field in fields {
+            if parameter_names.contains(field.py_name.as_str()) {
+                if let Some(prefix) = &field.collision_prefix {
+                    field.py_name = format!("{prefix}_{}", field.py_name);
+                }
             }
         }
     }
@@ -1622,6 +1641,7 @@ fn hoist_inline_object(
             example: prop_schema.example.as_ref().and_then(example_literal),
             docstring: clean_doc(prop_schema.description.as_deref()),
             is_file: false,
+            collision_prefix: Some(naming::field_name(ctx)),
         });
     }
     Some(fields)
@@ -1733,6 +1753,7 @@ fn hoist_form_object(schema: &Schema) -> Vec<BodyField> {
                 docstring: clean_doc(prop_schema.description.as_deref()),
                 convert: false,
                 is_file,
+                collision_prefix: None,
                 example: prop_schema.example.as_ref().and_then(example_literal),
             }
         })
@@ -1769,6 +1790,7 @@ fn hoist_fields(class: &str, types: &[TypeDecl]) -> Option<Vec<BodyField>> {
                 docstring: f.docstring.clone(),
                 convert: type_needs_convert(&f.type_ref, types),
                 is_file: false,
+                collision_prefix: Some(naming::field_name(class)),
                 example: f.example.clone(),
             })
             .collect(),

@@ -5101,6 +5101,7 @@ mod tests {
                 docstring: None,
                 convert: false,
                 is_file: false,
+                collision_prefix: None,
                 example: None,
             },
             // An optional list → `Optional[Sequence[..]] = OMIT` in request context.
@@ -5113,6 +5114,7 @@ mod tests {
                 docstring: None,
                 convert: false,
                 is_file: false,
+                collision_prefix: None,
                 example: None,
             },
             // A convert field → convert-wrapped json entry keyed by the wire name.
@@ -5125,6 +5127,7 @@ mod tests {
                 docstring: None,
                 convert: true,
                 is_file: false,
+                collision_prefix: None,
                 example: None,
             },
         ]));
