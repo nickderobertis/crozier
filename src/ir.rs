@@ -1551,7 +1551,7 @@ fn build_endpoint(
             })
             .and_then(|schema| schema.reference.as_deref())
             .and_then(|reference| resolve_ref(doc, reference))
-            .is_some_and(|schema| schema.example.is_some()),
+            .is_some_and(|schema| schema_example(schema).is_some()),
         body_schema_documented: op
             .request_body
             .as_ref()
@@ -1584,21 +1584,20 @@ fn parameter_example(doc: &OpenApi, parameter: &crate::openapi::Parameter) -> Op
     parameter
         .example
         .as_ref()
-        .or_else(|| {
-            parameter
-                .schema
-                .as_ref()
-                .and_then(|schema| schema.example.as_ref())
-        })
+        .or_else(|| parameter.schema.as_ref().and_then(schema_example))
         .or_else(|| {
             parameter
                 .schema
                 .as_ref()
                 .and_then(|schema| schema.reference.as_deref())
                 .and_then(|reference| resolve_ref(doc, reference))
-                .and_then(|schema| schema.example.as_ref())
+                .and_then(schema_example)
         })
         .and_then(example_literal)
+}
+
+fn schema_example(schema: &Schema) -> Option<&serde_json::Value> {
+    schema.example.as_ref().or_else(|| schema.examples.first())
 }
 
 fn request_body_has_all_of(doc: &OpenApi, op: &Operation) -> bool {
@@ -2074,7 +2073,7 @@ fn hoist_inline_object(
             optional,
             nullable: false,
             spec_required,
-            example: prop_schema.example.as_ref().and_then(example_literal),
+            example: schema_example(prop_schema).and_then(example_literal),
             media_example: false,
             docstring: clean_doc(prop_schema.description.as_deref()),
             is_file: false,
@@ -2168,7 +2167,7 @@ impl InlineHoister<'_> {
                 nullable: is_optional(prop_schema) && prop_schema.read_only == Some(true),
                 spec_required,
                 docstring: declared_doc(prop_schema.description.as_deref()),
-                example: prop_schema.example.as_ref().and_then(example_literal),
+                example: schema_example(prop_schema).and_then(example_literal),
             });
         }
     }
@@ -2307,7 +2306,7 @@ fn hoist_form_object(
                 convert: false,
                 is_file,
                 collision_prefix: None,
-                example: prop_schema.example.as_ref().and_then(example_literal),
+                example: schema_example(prop_schema).and_then(example_literal),
                 media_example: false,
             }
         })
@@ -2961,7 +2960,7 @@ fn append_member_fields(
             nullable: is_optional(prop_schema) && prop_schema.read_only == Some(true),
             spec_required,
             docstring: declared_doc(prop_schema.description.as_deref()),
-            example: prop_schema.example.as_ref().and_then(example_literal),
+            example: schema_example(prop_schema).and_then(example_literal),
         });
     }
 }
@@ -3180,7 +3179,7 @@ impl Builder<'_> {
                 nullable: is_optional(prop_schema) && prop_schema.read_only == Some(true),
                 spec_required,
                 docstring: declared_doc(prop_schema.description.as_deref()),
-                example: prop_schema.example.as_ref().and_then(example_literal),
+                example: schema_example(prop_schema).and_then(example_literal),
             });
         }
     }

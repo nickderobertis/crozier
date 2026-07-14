@@ -535,6 +535,10 @@ pub struct Schema {
     /// A schema-level `example` value (Fern shows it in the worked snippet).
     #[serde(default)]
     pub example: Option<serde_json::Value>,
+    /// OpenAPI 3.1 schema examples. Fern uses the first value when synthesizing
+    /// worked calls, after the singular `example` when both are present.
+    #[serde(default)]
+    pub examples: Vec<serde_json::Value>,
     /// OpenAPI 3.0 nullability.
     #[serde(default)]
     pub nullable: Option<bool>,
