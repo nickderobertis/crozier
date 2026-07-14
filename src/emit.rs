@@ -4419,6 +4419,23 @@ enum Slot<'a> {
 }
 
 impl<'a> ExampleCtx<'a> {
+    fn value_from_example(&mut self, t: &TypeRef, example: &str) -> Option<Example> {
+        if example_scalar(t) {
+            return Some(Example::Atom(example.to_string()));
+        }
+        let TypeRef::Named(name) = t else {
+            return None;
+        };
+        let TypeDecl::Enum(enum_type) = self.find(name)? else {
+            return None;
+        };
+        let value = example.strip_prefix('"')?.strip_suffix('"')?;
+        let member = enum_type.members.iter().find(|member| member.value == value)?;
+        let member_name = member.name.clone();
+        self.record_ref(name);
+        Some(Example::Atom(format!("{name}.{member_name}")))
+    }
+
     /// Look up a generated type by name — a package-root type, else a hoisted
     /// tag-scoped one (so an example can construct an inline-hoisted model).
     fn find(&self, name: &str) -> Option<&'a TypeDecl> {
@@ -4592,7 +4609,7 @@ impl<'a> ExampleCtx<'a> {
                     .filter(|(_, _, _, required, _)| *required)
                     .map(|(py, wire, ty, _, example)| {
                         let v = match example.filter(|_| example_scalar(&ty)) {
-                            Some(ex) => Example::Atom(ex),
+                            Some(example) => Example::Atom(example),
                             None => self.value(&ty, Slot::Named(&wire)),
                         };
                         (Some(py), v)
@@ -4757,10 +4774,17 @@ fn build_example(
             for f in fields.iter().filter(|f| {
                 f.media_example || (f.spec_required && (!f.optional || is_any_type(&f.type_ref)))
             }) {
-                let v = match f.example.as_ref().filter(|_| example_scalar(&f.type_ref)) {
-                    Some(ex) => Example::Atom(ex.clone()),
-                    None => ctx.value(&f.type_ref, Slot::Named(&f.wire_name)),
-                };
+                let v = f
+                    .example
+                    .as_deref()
+                    .and_then(|example| {
+                        if f.media_example || example_scalar(&f.type_ref) {
+                            ctx.value_from_example(&f.type_ref, example)
+                        } else {
+                            None
+                        }
+                    })
+                    .unwrap_or_else(|| ctx.value(&f.type_ref, Slot::Named(&f.wire_name)));
                 args.push((Some(f.py_name.clone()), v));
             }
         }

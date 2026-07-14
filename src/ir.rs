@@ -1854,6 +1854,7 @@ fn resolve_request_body(
         // A `$ref` to a plain object is inlined field-by-field.
         if !target.properties.is_empty() || target.all_of.is_some() {
             return hoist_fields(&class, types).map(|mut fields| {
+                apply_body_example(&mut fields, target.example.as_ref());
                 apply_body_example(&mut fields, media.example.as_ref());
                 RequestBody::Inline(fields)
             });
