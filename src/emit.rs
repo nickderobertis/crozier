@@ -2929,11 +2929,14 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
     }
     lines.push(format!("            method=\"{}\",", ep.http_method));
     append_request_call_args(&mut lines, ep, imports);
-    lines.extend([
-        "        )".to_string(),
-        "        try:".to_string(),
-        "            if 200 <= _response.status_code < 300:".to_string(),
-    ]);
+    lines.extend(["        )".to_string(), "        try:".to_string()]);
+    if matches!(ep.response, Some(TypeRef::Optional(_))) {
+        lines.extend([
+            "            if _response is None or not _response.text.strip():".to_string(),
+            format!("                return {wrapper}(response=_response, data=None)"),
+        ]);
+    }
+    lines.push("            if 200 <= _response.status_code < 300:".to_string());
     if ep.response.is_some() {
         imports.add_core("pydantic_utilities", "parse_obj_as");
         lines.extend([
@@ -4025,7 +4028,11 @@ fn client_method(cx: &ClientCtx, ep: &Endpoint, is_async: bool, imports: &mut Im
         return client_binary_stream_method(cx, ep, is_async, imports);
     }
     let mp = method_params(ep, imports);
-    let return_type = mp.inner.clone();
+    let return_type = if ep.http_method == "HEAD" {
+        "typing.Dict[str, str]".to_string()
+    } else {
+        mp.inner.clone()
+    };
     let sig = signature(ep, &mp, &return_type, is_async);
     let docstring = client_docstring(cx, ep, &mp, is_async);
 
@@ -4045,7 +4052,12 @@ fn client_method(cx: &ClientCtx, ep: &Endpoint, is_async: bool, imports: &mut Im
         "        _response = {}",
         Doc::group(open, call_args, ")").flat()
     );
-    format!("{sig}\n{docstring}\n{call}\n        return _response.data")
+    let result = if ep.http_method == "HEAD" {
+        "_response.headers"
+    } else {
+        "_response.data"
+    };
+    format!("{sig}\n{docstring}\n{call}\n        return {result}")
 }
 
 /// The high-level streaming method (sync or async): a plain generator that opens

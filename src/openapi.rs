@@ -235,6 +235,9 @@ pub struct PathItem {
     /// `PATCH` operation.
     #[serde(default)]
     pub patch: Option<Operation>,
+    /// `HEAD` operation.
+    #[serde(default)]
+    pub head: Option<Operation>,
     /// Parameters declared once on the path item and shared by every operation
     /// under it (a common real-world pattern for path params). Merged into each
     /// operation at load time by `normalize_parameters`; empty after that pass.
@@ -253,6 +256,7 @@ impl PathItem {
             ("PUT", &self.put),
             ("DELETE", &self.delete),
             ("PATCH", &self.patch),
+            ("HEAD", &self.head),
         ]
         .into_iter()
         .filter_map(|(method, op)| op.as_ref().map(|o| (method, o)))
@@ -261,13 +265,14 @@ impl PathItem {
 
     /// Mutable references to each method slot, in the same stable order as
     /// [`PathItem::operations`], for filters that clear operations in place.
-    fn operation_slots(&mut self) -> [&mut Option<Operation>; 5] {
+    fn operation_slots(&mut self) -> [&mut Option<Operation>; 6] {
         [
             &mut self.get,
             &mut self.post,
             &mut self.put,
             &mut self.delete,
             &mut self.patch,
+            &mut self.head,
         ]
     }
 }

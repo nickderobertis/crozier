@@ -1474,10 +1474,17 @@ fn build_endpoint(
             .or_else(|| success_response(op)),
         _ => success_response(op),
     };
+    let response = response.map(|response| {
+        if has_bodyless_success(op) {
+            TypeRef::Optional(Box::new(response))
+        } else {
+            response
+        }
+    });
 
     // A request body is either absent, within the subset crozier can render, or
     // unsupported. Its inline nested objects hoist under the `{Ctx}Request` context.
-    let mut request_body = if http_method == "GET" {
+    let mut request_body = if matches!(http_method, "GET" | "HEAD") {
         None
     } else {
         op.request_body
@@ -1487,7 +1494,7 @@ fn build_endpoint(
     if matches!(request_body, Some(RequestBody::Bytes { .. })) {
         header_params.clear();
     }
-    let body_ok = http_method == "GET"
+    let body_ok = matches!(http_method, "GET" | "HEAD")
         || op.request_body.is_none()
         || request_body.is_some()
         || op.request_body.as_ref().is_some_and(request_body_ignored);
@@ -1783,11 +1790,7 @@ fn error_class_name(status: u16) -> Option<&'static str> {
 /// `Sequence`); an error with no `application/json` body takes Fern's
 /// `typing.Optional[typing.Any]`.
 fn error_body_type(resp: &Response) -> TypeRef {
-    match resp
-        .content
-        .get("application/json")
-        .and_then(|c| c.schema.as_ref())
-    {
+    match response_schema(resp) {
         // A named `$ref`, scalar, or container keeps its resolved type. An inline
         // object (bunq's `GenericError`, `{Error: ...}`) or an otherwise-untyped body
         // resolves to bare `Any`, which Fern renders as `Optional[Any]` — the same as
@@ -2526,6 +2529,16 @@ fn success_response(op: &Operation) -> Option<TypeRef> {
     success_response_schema(op).map(base_type_ref)
 }
 
+fn has_bodyless_success(op: &Operation) -> bool {
+    op.responses.iter().any(|(code, response)| {
+        code.starts_with('2')
+            && !response
+                .content
+                .values()
+                .any(|media| media.schema.is_some())
+    })
+}
+
 /// The success (2xx) response's JSON body schema, if any. Fern treats a wildcard
 /// `*/*` response body as JSON when no explicit `application/json` media type is
 /// present; public specs such as bungie.net use that shape for standard response
@@ -2540,6 +2553,17 @@ fn success_response_schema(op: &Operation) -> Option<&Schema> {
         .content
         .get("application/json")
         .or_else(|| response.content.get("*/*"))?
+        .schema
+        .as_ref()
+}
+
+fn response_schema(response: &Response) -> Option<&Schema> {
+    response
+        .content
+        .get("application/json")
+        .or_else(|| response.content.get("application/jwt"))
+        .or_else(|| response.content.get("*/*"))
+        .or_else(|| response.content.values().next())?
         .schema
         .as_ref()
 }
@@ -2699,6 +2723,14 @@ fn endpoint_pascal_context(op: &Operation, http_method: &str, url: &str) -> Stri
 fn synthesized_method_name(http_method: &str, url: &str) -> String {
     let is_param = |s: &str| s.starts_with('{') && s.ends_with('}');
     let segments: Vec<&str> = url.split('/').filter(|s| !s.is_empty()).collect();
+    if http_method.eq_ignore_ascii_case("HEAD") {
+        let path = segments
+            .iter()
+            .map(|segment| segment.trim_matches(['{', '}']))
+            .collect::<Vec<_>>()
+            .join("_");
+        return naming::sanitize_identifier(&format!("head_{}", naming::to_snake_case(&path)));
+    }
     let ends_with_param = segments.last().is_some_and(|s| is_param(s));
     let verb = match http_method.to_ascii_uppercase().as_str() {
         "GET" => {
@@ -2711,6 +2743,7 @@ fn synthesized_method_name(http_method: &str, url: &str) -> String {
         "POST" => "create",
         "PUT" | "PATCH" => "update",
         "DELETE" => "delete",
+        "HEAD" => "head",
         _ => "call",
     };
     match segments.iter().rev().find(|s| !is_param(s)) {
