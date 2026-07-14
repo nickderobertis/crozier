@@ -2754,7 +2754,7 @@ fn raw_docstring(
     let mut push_param = |dp: &DocParam| {
         lines.push(format!("        {} : {}", dp.name, dp.annotation));
         if let Some(desc) = &dp.description {
-            lines.push(format!("            {desc}"));
+            push_param_doc(&mut lines, desc);
         }
         lines.push(String::new());
     };
@@ -2791,6 +2791,14 @@ fn push_path_param(lines: &mut Vec<String>, name: &str, ty: &str, desc: &Option<
         None => {}
     }
     lines.push(String::new());
+}
+
+fn push_param_doc(lines: &mut Vec<String>, description: &str) {
+    lines.extend(
+        description
+            .split('\n')
+            .map(|line| format!("            {line}")),
+    );
 }
 
 /// Push the `Returns` description under the return type: each line of the
@@ -3207,7 +3215,7 @@ fn raw_stream_docstring(ep: &Endpoint, mp: &MethodParams, return_type: &str) -> 
     let mut push_param = |dp: &DocParam| {
         lines.push(format!("        {} : {}", dp.name, dp.annotation));
         if let Some(desc) = &dp.description {
-            lines.push(format!("            {desc}"));
+            push_param_doc(&mut lines, desc);
         }
         lines.push(String::new());
     };
@@ -3324,7 +3332,7 @@ fn raw_binary_stream_docstring(ep: &Endpoint, mp: &MethodParams, return_type: &s
     let mut push_param = |dp: &DocParam| {
         lines.push(format!("        {} : {}", dp.name, dp.annotation));
         if let Some(desc) = &dp.description {
-            lines.push(format!("            {desc}"));
+            push_param_doc(&mut lines, desc);
         }
         lines.push(String::new());
     };
@@ -3986,7 +3994,7 @@ fn client_stream_docstring(
     let mut push_param = |dp: &DocParam| {
         lines.push(format!("        {} : {}", dp.name, dp.annotation));
         if let Some(desc) = &dp.description {
-            lines.push(format!("            {desc}"));
+            push_param_doc(&mut lines, desc);
         }
         lines.push(String::new());
     };
@@ -4090,7 +4098,7 @@ fn client_binary_stream_docstring(
     let mut push_param = |dp: &DocParam| {
         lines.push(format!("        {} : {}", dp.name, dp.annotation));
         if let Some(desc) = &dp.description {
-            lines.push(format!("            {desc}"));
+            push_param_doc(&mut lines, desc);
         }
         lines.push(String::new());
     };
@@ -4154,7 +4162,7 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
     let mut push_param = |dp: &DocParam| {
         lines.push(format!("        {} : {}", dp.name, dp.annotation));
         if let Some(desc) = &dp.description {
-            lines.push(format!("            {desc}"));
+            push_param_doc(&mut lines, desc);
         }
         lines.push(String::new());
     };

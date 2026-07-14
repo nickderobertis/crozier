@@ -5886,6 +5886,24 @@ fn all_of_request_bodies_flatten_inherited_fields() {
 }
 
 #[test]
+fn multiline_parameter_docs_remain_indented() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    get:\n      \
+         operationId: listWidgets\n      tags: [widgets]\n      parameters:\n        - name: order_by\n          in: query\n          description: |\n            \
+         Field used to order results.\n            Prefix with `-` to reverse ordering.\n\n            *New in version 1.0*\n          schema: { type: string }\n      responses:\n        \
+         '200': { description: OK, content: { application/json: { schema: { type: array, items: { type: string } } } } }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
+    assert!(
+        raw.contains(
+            "        order_by : typing.Optional[str]\n            Field used to order results.\n            Prefix with `-` to reverse ordering.\n\n            *New in version 1.0*"
+        ),
+        "every line of a parameter description should remain inside the method docstring: {raw}"
+    );
+}
+
+#[test]
 fn array_ref_request_body_generates_single_named_request_argument() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/archive:\n    \
