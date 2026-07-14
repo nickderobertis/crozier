@@ -1817,11 +1817,18 @@ fn auth_wrapper_parts(auth: &Auth) -> AuthWrapper {
                 super_arg: "token=token, ".to_string(),
             }
         }
-        Auth::Basic => AuthWrapper {
+        Auth::Basic { required: true } => AuthWrapper {
             param: "        username: typing.Union[str, typing.Callable[[], str]],\n        password: typing.Union[str, typing.Callable[[], str]],\n".to_string(),
             assign: "        self._username = username\n        self._password = password\n".to_string(),
             header_block: "        headers[\"Authorization\"] = httpx.BasicAuth(self._get_username(), self._get_password())._auth_header\n".to_string(),
             token_method: "    def _get_username(self) -> str:\n        if isinstance(self._username, str):\n            return self._username\n        else:\n            return self._username()\n\n    def _get_password(self) -> str:\n        if isinstance(self._password, str):\n            return self._password\n        else:\n            return self._password()\n\n".to_string(),
+            super_arg: "username=username, password=password, ".to_string(),
+        },
+        Auth::Basic { required: false } => AuthWrapper {
+            param: "        username: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,\n        password: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,\n".to_string(),
+            assign: "        self._username = username\n        self._password = password\n".to_string(),
+            header_block: "        username = self._get_username()\n        password = self._get_password()\n        if username is not None and password is not None:\n            headers[\"Authorization\"] = httpx.BasicAuth(username, password)._auth_header\n".to_string(),
+            token_method: "    def _get_username(self) -> typing.Optional[str]:\n        if isinstance(self._username, str) or self._username is None:\n            return self._username\n        else:\n            return self._username()\n\n    def _get_password(self) -> typing.Optional[str]:\n        if isinstance(self._password, str) or self._password is None:\n            return self._password\n        else:\n            return self._password()\n\n".to_string(),
             super_arg: "username=username, password=password, ".to_string(),
         },
         // No auth: no credential parameter, assignment, header, or token helper.
@@ -1861,7 +1868,7 @@ fn auth_client_parts(auth: &Auth) -> AuthClient {
             "token",
             "typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None".to_string(),
         )],
-        Auth::Basic => vec![
+        Auth::Basic { required: true } => vec![
             (
                 "username",
                 "typing.Union[str, typing.Callable[[], str]]".to_string(),
@@ -1869,6 +1876,16 @@ fn auth_client_parts(auth: &Auth) -> AuthClient {
             (
                 "password",
                 "typing.Union[str, typing.Callable[[], str]]".to_string(),
+            ),
+        ],
+        Auth::Basic { required: false } => vec![
+            (
+                "username",
+                "typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None".to_string(),
+            ),
+            (
+                "password",
+                "typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None".to_string(),
             ),
         ],
         Auth::None => Vec::new(),
@@ -1912,7 +1929,7 @@ fn auth_example_args(auth: &Auth) -> Vec<&'static str> {
     match auth {
         Auth::ApiKey { .. } => vec!["api_key=\"YOUR_API_KEY\""],
         Auth::Bearer { .. } => vec!["token=\"YOUR_TOKEN\""],
-        Auth::Basic => vec!["username=\"YOUR_USERNAME\"", "password=\"YOUR_PASSWORD\""],
+        Auth::Basic { .. } => vec!["username=\"YOUR_USERNAME\"", "password=\"YOUR_PASSWORD\""],
         Auth::None => Vec::new(),
     }
 }
@@ -5382,7 +5399,7 @@ mod tests {
 
         // basic: a required `username`/`password` pair everywhere a single
         // credential would otherwise appear.
-        let w = auth_wrapper_parts(&Auth::Basic);
+        let w = auth_wrapper_parts(&Auth::Basic { required: true });
         assert!(w.param.contains("username: typing.Union[str"));
         assert!(w.param.contains("password: typing.Union[str"));
         assert!(w.assign.contains("self._username = username"));
@@ -5391,7 +5408,7 @@ mod tests {
         assert!(w.token_method.contains("def _get_username(self) -> str:"));
         assert!(w.token_method.contains("def _get_password(self) -> str:"));
         assert_eq!(w.super_arg, "username=username, password=password, ");
-        let c = auth_client_parts(&Auth::Basic);
+        let c = auth_client_parts(&Auth::Basic { required: true });
         assert_eq!(
             c.ctor_param,
             "        username: typing.Union[str, typing.Callable[[], str]],\n        password: typing.Union[str, typing.Callable[[], str]],\n"
@@ -5421,7 +5438,7 @@ mod tests {
             vec!["api_key=\"YOUR_API_KEY\""]
         );
         assert_eq!(
-            auth_example_args(&Auth::Basic),
+            auth_example_args(&Auth::Basic { required: true }),
             vec!["username=\"YOUR_USERNAME\"", "password=\"YOUR_PASSWORD\""]
         );
     }

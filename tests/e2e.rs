@@ -5916,6 +5916,25 @@ fn optional_converted_body_fields_use_optional_annotations() {
 }
 
 #[test]
+fn globally_optional_basic_auth_generates_optional_credentials() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\nsecurity: []\npaths:\n  /widgets:\n    get:\n      operationId: listWidgets\n      tags: [widgets]\n      responses:\n        '200': { description: OK }\ncomponents:\n  securitySchemes:\n    Basic:\n      type: http\n      scheme: basic\n",
+    );
+    let client =
+        std::fs::read_to_string(out.join("src/acme/client.py")).expect("root client is generated");
+    let wrapper = std::fs::read_to_string(out.join("src/acme/core/client_wrapper.py"))
+        .expect("client wrapper is generated");
+    assert!(
+        client.contains(
+            "username: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None"
+        ) && client.contains(
+            "password: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None"
+        ) && wrapper.contains("if username is not None and password is not None:"),
+        "a globally optional Basic scheme should not require credentials: {client}\n{wrapper}"
+    );
+}
+
+#[test]
 fn multiline_parameter_docs_remain_indented() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    get:\n      \

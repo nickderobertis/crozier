@@ -282,7 +282,10 @@ pub enum Auth {
     },
     /// HTTP `basic` credentials: a required `username`/`password` pair (each a
     /// `str` or callable), sent via `httpx.BasicAuth` as `Authorization: Basic`.
-    Basic,
+    Basic {
+        /// Whether every operation requires Basic auth.
+        required: bool,
+    },
     /// No authentication: the document declares no security schemes, so the client
     /// wrapper carries no credential and adds no `Authorization` header — matching
     /// Fern's wrapper for an unauthenticated API.
@@ -314,7 +317,9 @@ fn auth_model(doc: &OpenApi) -> Auth {
             Auth::Bearer { required }
         }
         Some(s) if s.ty == SecuritySchemeType::Http && s.scheme == Some(HttpAuthScheme::Basic) => {
-            Auth::Basic
+            Auth::Basic {
+                required: all_operations_authenticated(doc),
+            }
         }
         // oauth2/unknown/no scheme → Fern's default optional bearer token.
         _ => Auth::Bearer { required: false },
