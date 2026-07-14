@@ -298,7 +298,7 @@ pub fn is_reserved(name: &str) -> bool {
 #[must_use]
 pub fn model_field_name(wire_name: &str) -> String {
     let name = field_name(wire_name);
-    if matches!(name.as_str(), "kwargs" | "schema") {
+    if matches!(name.as_str(), "kwargs" | "schema" | "self") {
         format!("{name}_")
     } else {
         name
@@ -392,6 +392,7 @@ mod tests {
         assert_eq!(field_name("uuid"), "uuid_");
         assert_eq!(field_name("name"), "name");
         assert_eq!(field_name("tags"), "tags");
+        assert_eq!(model_field_name("self"), "self_");
     }
 
     #[test]

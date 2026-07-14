@@ -527,11 +527,9 @@ pub struct Endpoint {
     pub header_params: Vec<HeaderParam>,
     /// The JSON request body, when the operation has one crozier can emit.
     pub request_body: Option<RequestBody>,
-    /// Whether the spec's `requestBody` declared a `description` (even an empty one).
-    /// Fern omits the explicit `content-type` header for a documented JSON body with
-    /// no path/header params, and keeps it for an undocumented one — bunq documents
-    /// every body (`description: ""`), the synthetic seeds document none.
-    pub body_documented: bool,
+    /// Whether `requestBody.description` is explicitly present but empty. Fern
+    /// treats that importer sentinel as suppressing an explicit JSON content type.
+    pub body_description_empty: bool,
     /// Whether the body came through `components.requestBodies`, which Fern treats
     /// like a reusable declaration for content-type emission.
     pub body_component_ref: bool,
@@ -564,6 +562,8 @@ pub struct Endpoint {
     /// (`text/event-stream`). A streaming operation is emitted as a
     /// context-managed iterator of chunks rather than a buffered response.
     pub streaming: bool,
+    /// Whether the selected success response uses `text/plain` media.
+    pub text_response: bool,
     /// Whether the success response is a binary download (`format: binary`).
     /// Fern emits these as context-managed byte streams instead of buffering.
     pub binary_response: bool,
@@ -1213,6 +1213,15 @@ fn move_inline_body_enums_to_tags(
                 }) else {
                     continue;
                 };
+                // A component enum has an explicit package-root identity. Only
+                // synthetic enums coined from inline object properties move beside
+                // the tag client when their owning request model is flattened.
+                if doc.components.schemas.iter().any(|(key, schema)| {
+                    naming::class_name(key) == source_enum.name
+                        && string_enum_values(schema).is_some()
+                }) {
+                    continue;
+                }
                 tag_types.push(TagTypeDecl {
                     module: endpoint_module(op, path),
                     decl: TypeDecl::Enum(EnumType {
@@ -1553,10 +1562,11 @@ fn build_endpoint(
         query_params,
         header_params,
         request_body,
-        body_documented: op
-            .request_body
-            .as_ref()
-            .is_some_and(|rb| rb.description.is_some()),
+        body_description_empty: op.request_body.as_ref().is_some_and(|body| {
+            body.description
+                .as_deref()
+                .is_some_and(|description| description.trim().is_empty())
+        }),
         body_component_ref: op.request_body.as_ref().is_some_and(|rb| rb.component_ref),
         body_schema_ref: op
             .request_body
@@ -1610,6 +1620,7 @@ fn build_endpoint(
             .as_deref()
             .is_some_and(|description| description.ends_with("\n\n")),
         streaming: is_streaming(op),
+        text_response: has_text_response(op),
         binary_response: is_binary_response(doc, op),
         emittable,
     }
@@ -2526,7 +2537,27 @@ fn resolve_ref<'a>(doc: &'a OpenApi, reference: &str) -> Option<&'a Schema> {
 
 /// The success (2xx) response's JSON body type, if any.
 fn success_response(op: &Operation) -> Option<TypeRef> {
-    success_response_schema(op).map(base_type_ref)
+    success_response_schema(op).map(base_type_ref).or_else(|| {
+        let response = op
+            .responses
+            .iter()
+            .find(|(code, _)| code.starts_with('2'))
+            .map(|(_, response)| response)?;
+        response
+            .content
+            .get("text/plain")
+            .and_then(|media| media.schema.as_ref())
+            .map(|_| TypeRef::Primitive(Prim::Str))
+    })
+}
+
+fn has_text_response(op: &Operation) -> bool {
+    op.responses.iter().any(|(code, response)| {
+        code.starts_with('2')
+            && !response.content.contains_key("application/json")
+            && !response.content.contains_key("*/*")
+            && response.content.contains_key("text/plain")
+    })
 }
 
 fn has_bodyless_success(op: &Operation) -> bool {

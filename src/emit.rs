@@ -2937,7 +2937,11 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
         ]);
     }
     lines.push("            if 200 <= _response.status_code < 300:".to_string());
-    if ep.response.is_some() {
+    if ep.text_response {
+        lines.push(format!(
+            "                return {wrapper}(response=_response, data=_response.text)"
+        ));
+    } else if ep.response.is_some() {
         imports.add_core("pydantic_utilities", "parse_obj_as");
         lines.extend([
             "                _data = typing.cast(".to_string(),
@@ -3157,7 +3161,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                         && !ep.body_component_ref
                         && !(matches!(body, RequestBody::Inline(_))
                             && (ep.body_all_of || ep.body_response_same_ref))
-                        && (!(ep.body_documented
+                        && (!(ep.body_description_empty
                             || ep.body_schema_has_example && ep.body_schema_documented)
                             || body.all_fields_required()))) =>
         {
@@ -5725,7 +5729,7 @@ mod tests {
             query_params: Vec::new(),
             header_params: Vec::new(),
             request_body: None,
-            body_documented: false,
+            body_description_empty: false,
             body_component_ref: false,
             body_schema_ref: false,
             body_schema_has_example: false,
@@ -5739,6 +5743,7 @@ mod tests {
             docstring: None,
             reference_description_trailing_blank: false,
             streaming: false,
+            text_response: false,
             binary_response: false,
             emittable: true,
         }
