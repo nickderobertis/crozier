@@ -1209,7 +1209,9 @@ fn complex_body(ep: &Endpoint, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) ->
                 || (fields.len() >= 2 && fields.iter().all(|f| f.spec_required))
         }
         Some(RequestBody::Form(form)) => {
-            form.fields.iter().any(|f| f.is_file) || form.fields.iter().all(|f| f.spec_required)
+            ep.module.is_empty()
+                || form.fields.iter().any(|f| f.is_file)
+                || form.fields.iter().all(|f| f.spec_required)
         }
         Some(RequestBody::Single(s)) => is_complex_type(&s.type_ref, types, tag_decls),
     }
@@ -1485,7 +1487,8 @@ struct ParamRow {
 /// The view model for one `reference.md` endpoint entry (`reference_entry.md.j2`).
 #[derive(Serialize)]
 struct ReferenceEntryView {
-    module: String,
+    client_prefix: String,
+    href: String,
     pkg: String,
     method: String,
     dots: &'static str,
@@ -1544,30 +1547,37 @@ fn reference_entry(
             Some(d) => format!(" — {d}"),
             None => " ".to_string(),
         };
-        // Fern renders a `core.File` type in the reference parameter table with a
-        // leading `from __future__ import annotations` (an artifact of how it prints
-        // the forward-referenced file type); reproduce it so the table matches.
-        let annot = if dp.annotation == "core.File" {
-            "from __future__ import annotations\n\ncore.File".to_string()
-        } else {
-            dp.annotation.clone()
-        };
+        let annot = reference_param_annotation(&dp.annotation);
         params.push(ParamRow {
             name: dp.name.clone(),
             annot,
             suffix,
         });
     }
+    let request_options_suffix = if ep.binary_response {
+        " — Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response."
+    } else {
+        " — Request-specific configuration."
+    };
     params.push(ParamRow {
         name: "request_options".to_string(),
         annot: "typing.Optional[RequestOptions]".to_string(),
-        suffix: " — Request-specific configuration.".to_string(),
+        suffix: request_options_suffix.to_string(),
     });
 
     let has_args =
         !mp.path.is_empty() || !mp.query.is_empty() || !mp.header.is_empty() || !mp.body.is_empty();
     let view = ReferenceEntryView {
-        module: module.to_string(),
+        client_prefix: if module.is_empty() {
+            "client.".to_string()
+        } else {
+            format!("client.{module}.")
+        },
+        href: if module.is_empty() {
+            format!("src/{pkg}/client.py")
+        } else {
+            format!("src/{pkg}/{module}/client.py")
+        },
         pkg: pkg.to_string(),
         method: ep.method_name.clone(),
         dots: if has_args { "..." } else { "" },
@@ -1582,6 +1592,34 @@ fn reference_entry(
         minijinja::Value::from_serialize(&view),
     )?;
     Ok(rendered.trim_end_matches('\n').to_string())
+}
+
+fn reference_param_annotation(annotation: &str) -> String {
+    // Fern wraps the generated scalar-or-sequence type for array query params in
+    // reference tables, while leaving the method signature on one line.
+    if let Some(inner) = annotation
+        .strip_prefix("typing.Optional[typing.Union[")
+        .and_then(|s| s.strip_suffix("]]"))
+    {
+        if let Some((item, sequence_item)) = inner.split_once(", typing.Sequence[") {
+            if sequence_item.strip_suffix(']') == Some(item)
+                && item.chars().next().is_some_and(char::is_uppercase)
+            {
+                return format!(
+                    "typing.Optional[\n    typing.Union[\n        {item},\n        typing.Sequence[{item}],\n    ]\n]"
+                );
+            }
+        }
+    }
+
+    // Fern renders a `core.File` type in the reference parameter table with a
+    // leading `from __future__ import annotations` (an artifact of how it prints
+    // the forward-referenced file type); reproduce it so the table matches.
+    if annotation == "core.File" {
+        "from __future__ import annotations\n\ncore.File".to_string()
+    } else {
+        annotation.to_string()
+    }
 }
 
 /// Render `from <module> import <names>` at `indent` spaces, sorted, on one line.
@@ -5126,7 +5164,8 @@ mod tests {
     #[test]
     fn reference_entry_renders_details_line_and_param_row() {
         let view = ReferenceEntryView {
-            module: "endpoints_urls".to_string(),
+            client_prefix: "client.endpoints_urls.".to_string(),
+            href: "src/fern/endpoints_urls/client.py".to_string(),
             pkg: "fern".to_string(),
             method: "get".to_string(),
             dots: "...",

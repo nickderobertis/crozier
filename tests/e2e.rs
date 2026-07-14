@@ -5419,6 +5419,14 @@ fn array_item_enums_hoist_to_tag_types() {
         client.contains("typing.List[ListWidgetsResponseItem]"),
         "response array item enums should use the named enum in return types: {client}"
     );
+    let reference =
+        std::fs::read_to_string(out.join("reference.md")).expect("reference.md is generated");
+    assert!(
+        reference.contains(
+            "**status:** `typing.Optional[\n    typing.Union[\n        ListWidgetsRequestStatusItem,\n        typing.Sequence[ListWidgetsRequestStatusItem],\n    ]\n]`"
+        ),
+        "reference tables should wrap scalar-or-sequence array query annotations: {reference}"
+    );
 }
 
 #[test]
@@ -5446,6 +5454,14 @@ fn binary_success_responses_stream_bytes() {
             && client.contains("with self._raw_client.download_widget(")
             && client.contains("yield from r.data"),
         "high-level binary response methods should yield bytes from the raw stream: {client}"
+    );
+    let reference =
+        std::fs::read_to_string(out.join("reference.md")).expect("reference.md is generated");
+    assert!(
+        reference.contains(
+            "**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response."
+        ),
+        "binary response reference docs should mention stream request_options: {reference}"
     );
 }
 
