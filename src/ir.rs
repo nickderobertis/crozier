@@ -717,6 +717,8 @@ pub struct BodyField {
     pub type_ref: TypeRef,
     /// Whether the field is optional; optional fields get `Optional[..] = OMIT`.
     pub optional: bool,
+    /// Whether the schema itself accepts null, distinct from being omittable.
+    pub nullable: bool,
     /// Whether the property is in the schema's `required` set (see
     /// [`Field::spec_required`]); drives whether a synthesized example includes it.
     pub spec_required: bool,
@@ -861,6 +863,8 @@ pub struct Field {
     pub type_ref: TypeRef,
     /// Whether the field is optional (wrapped in `typing.Optional`, default None).
     pub optional: bool,
+    /// Whether the schema itself accepts null, distinct from being non-required.
+    pub nullable: bool,
     /// Whether the property is in the schema's `required` set. Distinct from
     /// `optional` (an unknown/nullable required field is still `Optional[..]` in
     /// Python); drives whether a synthesized example includes the field.
@@ -1840,6 +1844,7 @@ fn hoist_inline_object(
             convert: hoister.needs_convert(&type_ref),
             type_ref,
             optional,
+            nullable: false,
             spec_required,
             example: prop_schema.example.as_ref().and_then(example_literal),
             docstring: clean_doc(prop_schema.description.as_deref()),
@@ -1911,6 +1916,7 @@ impl InlineHoister<'_> {
                 py_name: naming::model_field_name(prop),
                 type_ref: self.prop_type_ref(owner, prop, prop_schema),
                 optional,
+                nullable: is_optional(prop_schema) && prop_schema.read_only == Some(true),
                 spec_required,
                 docstring: declared_doc(prop_schema.description.as_deref()),
                 example: prop_schema.example.as_ref().and_then(example_literal),
@@ -2010,6 +2016,7 @@ fn hoist_form_object(schema: &Schema) -> Vec<BodyField> {
                 py_name: naming::field_name(prop),
                 type_ref: base_type_ref(prop_schema),
                 optional: is_optional(prop_schema) || !spec_required,
+                nullable: is_optional(prop_schema),
                 spec_required,
                 docstring: clean_doc(prop_schema.description.as_deref()),
                 convert: false,
@@ -2071,6 +2078,7 @@ fn append_request_fields(
         py_name: naming::field_name(&f.wire_name),
         type_ref: f.type_ref.clone(),
         optional: f.optional,
+        nullable: f.nullable || type_ref_allows_none(&f.type_ref, types),
         spec_required: f.spec_required,
         docstring: f.docstring.clone(),
         convert: type_needs_convert(&f.type_ref, types),
@@ -2113,6 +2121,26 @@ fn type_needs_convert(t: &TypeRef, types: &[TypeDecl]) -> bool {
         }
         TypeRef::Dict(_, value) => type_needs_convert(value, types),
         _ => false,
+    }
+}
+
+fn type_ref_allows_none(t: &TypeRef, types: &[TypeDecl]) -> bool {
+    match t {
+        TypeRef::Optional(_) => true,
+        TypeRef::Union(variants) => variants
+            .iter()
+            .any(|variant| type_ref_allows_none(variant, types)),
+        TypeRef::Named(name) => types.iter().any(|decl| match decl {
+            TypeDecl::Alias(alias) if alias.name == *name => {
+                type_ref_allows_none(&alias.target, types)
+            }
+            _ => false,
+        }),
+        TypeRef::Primitive(_)
+        | TypeRef::List(_)
+        | TypeRef::Set(_)
+        | TypeRef::Dict(_, _)
+        | TypeRef::Literal(_) => false,
     }
 }
 
@@ -2640,6 +2668,7 @@ fn append_member_fields(
             py_name: naming::model_field_name(prop),
             type_ref: base_type_ref(prop_schema),
             optional: is_optional(prop_schema) || !spec_required,
+            nullable: is_optional(prop_schema) && prop_schema.read_only == Some(true),
             spec_required,
             docstring: declared_doc(prop_schema.description.as_deref()),
             example: prop_schema.example.as_ref().and_then(example_literal),
@@ -2858,6 +2887,7 @@ impl Builder<'_> {
                 py_name: naming::model_field_name(prop),
                 type_ref: self.field_type_ref(owner, prop, prop_schema),
                 optional,
+                nullable: is_optional(prop_schema) && prop_schema.read_only == Some(true),
                 spec_required,
                 docstring: declared_doc(prop_schema.description.as_deref()),
                 example: prop_schema.example.as_ref().and_then(example_literal),

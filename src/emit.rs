@@ -2965,7 +2965,12 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                 let value_name = body_field_value_name(f);
                 if f.convert {
                     imports.add_core("serialization", "convert_and_respect_annotation_metadata");
-                    let annotation = raw_type_str_ctx(&f.type_ref, imports, true);
+                    let annotation_type = if f.nullable && !f.spec_required {
+                        TypeRef::Optional(Box::new(f.type_ref.clone()))
+                    } else {
+                        f.type_ref.clone()
+                    };
+                    let annotation = raw_type_str_ctx(&annotation_type, imports, true);
                     let call = Doc::group(
                         format!(
                             "                \"{}\": convert_and_respect_annotation_metadata(",

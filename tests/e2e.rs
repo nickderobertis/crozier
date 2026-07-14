@@ -5902,6 +5902,20 @@ fn single_use_request_component_enums_move_to_tag_types() {
 }
 
 #[test]
+fn optional_converted_body_fields_use_optional_annotations() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    patch:\n      operationId: patchWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          application/json:\n            schema: { $ref: '#/components/schemas/UpdateWidget' }\n      responses:\n        '204': { description: Updated }\ncomponents:\n  schemas:\n    WidgetMeta:\n      type: object\n      properties:\n        type: { type: string }\n    UpdateWidget:\n      type: object\n      properties:\n        metadata: { $ref: '#/components/schemas/WidgetMeta', nullable: true, readOnly: true }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
+    assert!(
+        raw.contains("annotation=typing.Optional[WidgetMeta], direction=\"write\"")
+            && raw.contains("metadata: typing.Optional[WidgetMeta] = OMIT"),
+        "conversion metadata should carry the same optionality as the body argument: {raw}"
+    );
+}
+
+#[test]
 fn multiline_parameter_docs_remain_indented() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    get:\n      \
