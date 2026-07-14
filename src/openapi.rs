@@ -28,6 +28,7 @@
 use std::path::Path;
 
 use indexmap::IndexMap;
+use serde::de::{IgnoredAny, MapAccess, Visitor};
 use serde::Deserialize;
 
 use crate::error::{Error, Result};
@@ -45,7 +46,7 @@ pub struct OpenApi {
     #[serde(default)]
     pub components: Components,
     /// API operations, keyed by URL path, in document order.
-    #[serde(default)]
+    #[serde(default, deserialize_with = "deserialize_paths")]
     pub paths: IndexMap<String, PathItem>,
     /// Document-wide default security requirement; an operation without its own
     /// `security` inherits this.
@@ -90,6 +91,40 @@ pub struct Server {
 pub struct ServerVariable {
     #[serde(default)]
     pub default: String,
+}
+
+fn deserialize_paths<'de, D>(
+    deserializer: D,
+) -> std::result::Result<IndexMap<String, PathItem>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    struct PathsVisitor;
+
+    impl<'de> Visitor<'de> for PathsVisitor {
+        type Value = IndexMap<String, PathItem>;
+
+        fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            formatter.write_str("an OpenAPI paths object")
+        }
+
+        fn visit_map<A>(self, mut map: A) -> std::result::Result<Self::Value, A::Error>
+        where
+            A: MapAccess<'de>,
+        {
+            let mut paths = IndexMap::new();
+            while let Some(key) = map.next_key::<String>()? {
+                if key.starts_with("x-") {
+                    map.next_value::<IgnoredAny>()?;
+                } else {
+                    paths.insert(key, map.next_value()?);
+                }
+            }
+            Ok(paths)
+        }
+    }
+
+    deserializer.deserialize_map(PathsVisitor)
 }
 
 /// One security requirement: a map of scheme name → scopes. An empty map (`{}`)

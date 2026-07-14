@@ -5117,6 +5117,20 @@ fn hyphenated_operation_id_generates_valid_python() {
 }
 
 #[test]
+fn paths_level_extension_generates_valid_python() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  \
+         x-codegen-contextRoot: /api/v1\n  /widgets:\n    get:\n      operationId: listWidgets\n      \
+         tags: [widgets]\n      responses:\n        '200': { description: OK, content: { \
+         application/json: { schema: { type: array, items: { type: string } } } } }\n",
+    );
+    assert!(
+        out.join("src/acme/widgets").is_dir(),
+        "paths-level x-* extensions are metadata, not API paths"
+    );
+}
+
+#[test]
 fn spaced_operation_id_generates_valid_python() {
     // Issue #40 case 1b: a space in the operationId.
     let (_dir, out) = generate_ok(
