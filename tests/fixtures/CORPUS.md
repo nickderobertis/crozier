@@ -57,22 +57,27 @@ This manifest tracks 50 real-world OpenAPI specs with redistribution-compatible 
 
 ## Batch 2 — selected next targets (byte-match in progress)
 
-Ten corpora selected as the next Fern byte-match targets, chosen for OpenAPI shapes
-the current eight under-exercise. All are `link-ok` rows in the table above (specs
-fetched, not vendored). Goldens are generated with
-`just fixtures-generate-corpus --only <name>` (needs Docker); the e2e `Corpus`
-wiring, `matched` growth, and generator fixes land as goldens arrive. All ten pass
-`fern check`; three already expose confirmed crozier generator bugs.
+Ten corpora were selected as the next Fern byte-match targets, chosen for OpenAPI
+shapes the current eight under-exercise. All are `link-ok` rows in the table above
+(specs fetched, not vendored). Goldens are generated with
+`just fixtures-generate-corpus --only <name>` (needs Docker).
+
+**Eight generated Fern goldens and are being byte-matched on this branch. Two —
+`bbci.co.uk` and `canada-holidays.ca` — FAILED Fern golden generation: Fern itself
+cannot emit an SDK for them, so there is no golden to byte-match against. They are
+dropped; do not re-select them in a future batch.** The remaining eight all pass
+`fern check`; two (`gambitcomm.local-mimic`, `dnd5eapi.co`) additionally expose
+confirmed crozier generator bugs that this branch fixes.
 
 | name | selected for | crozier probe |
 |---|---|---|
-| `bbci.co.uk` | oneOf/anyOf + ~79 free-form maps | **bug**: emits invalid Python identifier |
+| `bbci.co.uk` | oneOf/anyOf + ~79 free-form maps | **DROPPED** — Fern golden generation failed (no viable golden; do not retry) |
 | `gambitcomm.local-mimic` | 356 operations; maps + links | **bug**: method named reserved word `del` |
 | `dnd5eapi.co` | oneOf/anyOf/allOf + recursion | **bug**: OpenAPI parse error (map vs sequence) |
 | `airbyte.local-config` | 102 ops / 210 schemas; format diversity | clean |
 | `etsi.local-mec010-2_apppkgmgmt` | `application/zip`, binary, custom formats | clean |
 | `apideck.com-webhook` | oneOf/anyOf + deepObject/header params | clean |
 | `apache.org-qakka` | `application/octet-stream` (binary) | clean |
-| `canada-holidays.ca` | recursive schemas + numeric enums | clean |
+| `canada-holidays.ca` | recursive schemas + numeric enums | **DROPPED** — Fern golden generation failed (no viable golden; do not retry) |
 | `apideck.com-vault` | spaceDelimited/deepObject params, dense anyOf | clean |
 | `6-dot-authentiqio.appspot.com` | `application/jwt` + wildcard media type | clean |
