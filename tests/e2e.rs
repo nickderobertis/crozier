@@ -5897,6 +5897,24 @@ fn array_item_enums_hoist_to_tag_types() {
 }
 
 #[test]
+fn path_parameter_enums_hoist_to_tag_types() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/{state}:\n    delete:\n      operationId: deleteWidget\n      tags: [widgets]\n      parameters:\n        - name: state\n          in: path\n          required: true\n          schema: { type: string, enum: [ACTIVE, DISABLED] }\n      responses:\n        '204': { description: Deleted }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
+    assert!(
+        out.join("src/acme/widgets/types/delete_widget_request_state.py")
+            .is_file()
+            && raw.contains(
+                "from .types.delete_widget_request_state import DeleteWidgetRequestState"
+            )
+            && raw.contains("state: DeleteWidgetRequestState"),
+        "inline path enums should hoist under the endpoint tag: {raw}"
+    );
+}
+
+#[test]
 fn binary_success_responses_stream_bytes() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/{id}/download:\n    \
