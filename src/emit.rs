@@ -200,6 +200,11 @@ impl Imports {
         self.add_from(&module, name);
     }
 
+    fn add_core_package(&mut self) {
+        let parent = self.core_prefix().trim_end_matches("core");
+        self.add_from(parent, "core");
+    }
+
     fn add_plain(&mut self, module: &str) {
         self.plain.entry(module.to_string()).or_insert(None);
     }
@@ -807,7 +812,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
 
     // Root client: `FernApi`/`AsyncFernApi` aggregating the tag clients. Emitted
     // only when there is at least one tag client to aggregate.
-    if !emittable_modules.is_empty() {
+    if root_emittable || !emittable_modules.is_empty() {
         files.push(root_client_file(
             &env,
             RootClientFileCtx {
@@ -836,7 +841,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     if !ir.types.is_empty() {
         files.push(types_init_file(&env, pkg, &ir.types)?);
     }
-    if !emittable_modules.is_empty() {
+    if root_emittable || !emittable_modules.is_empty() {
         files.push(root_init_file(&env, pkg, ir, &emittable_modules)?);
     }
 
@@ -2666,7 +2671,7 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
                 // A file field is typed `core.File` (importing the `core` package)
                 // and documented with Fern's fixed pointer to `core.File`.
                 let base = if f.is_file {
-                    imports.add_from("..", "core");
+                    imports.add_core_package();
                     "core.File".to_string()
                 } else {
                     raw_type_str(&f.type_ref, imports)
@@ -3514,8 +3519,11 @@ fn root_client_file(
     if let Some(e) = environment {
         imports.add_from(".environment", &e.enum_name);
     }
-    let mut type_checking = String::new();
-    type_checking.push_str("if typing.TYPE_CHECKING:\n");
+    let mut type_checking = if modules.is_empty() {
+        String::new()
+    } else {
+        "if typing.TYPE_CHECKING:\n".to_string()
+    };
     // Fern emits the sub-client imports alphabetically by module (`gadgets` before
     // `widgets`), even though the properties below stay in declaration order. This
     // block is never executed, but — unlike the `__init__.py` aggregators — client.py

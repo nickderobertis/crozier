@@ -1065,6 +1065,11 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
     // request/response bodies into their tags' own `types/` packages.
     let global = global_headers(doc);
     let (mut endpoints, mut tag_types) = endpoints(doc, &builder.types, &global);
+    let root_tag_types: Vec<TypeDecl> = tag_types
+        .extract_if(.., |tag_type| tag_type.module.is_empty())
+        .map(|tag_type| tag_type.decl)
+        .collect();
+    builder.types.extend(root_tag_types);
     normalize_error_body_types(&mut endpoints);
     let errors = error_classes(&endpoints);
 
@@ -2608,7 +2613,11 @@ fn method_from_groupless_id(id: &str, tag: Option<&str>) -> String {
     // the builtin-shadowing `all`. Uses the method-specific reserved set (keywords +
     // `all`), so appwrite's derived `list` stays `list`, matching Fern.
     let ident = naming::sanitize_identifier(method);
-    if naming::is_reserved_method(&ident) {
+    let reserved = tag.map_or_else(
+        || naming::is_reserved(&ident),
+        |_| naming::is_reserved_method(&ident),
+    );
+    if reserved {
         format!("{ident}_")
     } else {
         ident

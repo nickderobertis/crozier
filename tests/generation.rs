@@ -377,8 +377,8 @@ fn emits_endpoint_package_markers_with_fern_module_names() {
     // that prefix *is* the tag (`my_group_doThing` under `MyGroup`); when the prefix
     // differs from the tag, Fern groups by the **tag** instead (`soloThing_doOther`
     // under `Solo` → `solo`, not `solothing` — bunq's `SCREAMING_Mixed` operationIds).
-    // A groupless operationId is grouped by its first tag, and — with no tag either —
-    // falls back to snake-casing the whole id.
+    // A groupless operationId is grouped by its first tag. With no tag, Fern keeps
+    // the operation on the package-root client.
     let spec = "\
 openapi: 3.0.0
 info:
@@ -401,13 +401,14 @@ paths:
       operationId: bareid
 ";
     let files = render(spec);
-    // grouped-prefix==tag→prefix, grouped-prefix≠tag→tag, groupless→tag, groupless→id.
-    for module in ["my_group", "solo", "bare_things", "bareid"] {
+    // grouped-prefix==tag→prefix, grouped-prefix≠tag→tag, groupless→tag.
+    for module in ["my_group", "solo", "bare_things"] {
         let init = files
             .get(&format!("src/acme/{module}/__init__.py"))
             .unwrap_or_else(|| panic!("expected {module}/__init__.py; got {:?}", files.keys()));
         assert_eq!(init, "\n\n\n\n", "{module} marker");
     }
+    assert!(!files.contains_key("src/acme/bareid/__init__.py"));
 }
 
 /// A spec whose paths exercise the raw-client emitter: one emittable module
@@ -918,9 +919,8 @@ fn unmapped_error_status_is_skipped_but_the_module_still_emits() {
     let files = render(
         "openapi: 3.0.0\ninfo:\n  title: E\npaths:\n  /x:\n    get:\n      operationId: things_get\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema:\n                type: string\n        \"404\":\n          content:\n            application/json:\n              schema:\n                $ref: \"#/components/schemas/Err\"\n        \"460\":\n          description: nonstandard\ncomponents:\n  schemas:\n    Err:\n      type: object\n      properties:\n        message:\n          type: string\n",
     );
-    // The module is emitted, and the operation is callable.
-    assert!(files.contains_key("src/acme/things/__init__.py"));
-    let raw = &files["src/acme/things/raw_client.py"];
+    // The untagged operation is emitted on the package-root client.
+    let raw = &files["src/acme/raw_client.py"];
     // The mapped 404 raises its typed exception with the declared body type.
     assert!(raw.contains("if _response.status_code == 404:"), "{raw}");
     assert!(raw.contains("raise NotFoundError("), "{raw}");
@@ -1029,7 +1029,7 @@ fn every_standard_error_status_maps_to_its_fern_exception() {
         ));
     }
     let files = render(&spec);
-    let raw = &files["src/acme/things/raw_client.py"];
+    let raw = &files["src/acme/raw_client.py"];
     for (code, class, module) in cases {
         assert!(
             raw.contains(&format!("if _response.status_code == {code}:")),
@@ -1057,7 +1057,7 @@ fn sse_response_generates_a_streaming_client() {
     let files = render(
         "openapi: 3.0.0\ninfo:\n  title: E\npaths:\n  /stream:\n    post:\n      operationId: messages_stream\n      responses:\n        \"200\":\n          description: SSE stream\n          content:\n            text/event-stream: {}\n",
     );
-    let raw = &files["src/acme/messages/raw_client.py"];
+    let raw = &files["src/acme/raw_client.py"];
     // Sync + async context managers over the streaming request, decoding via the
     // `core/http_sse` runtime into an (Async)Iterator of Optional[Any] chunks.
     assert!(raw.contains("@contextlib.contextmanager"), "{raw}");
@@ -1086,7 +1086,7 @@ fn sse_response_generates_a_streaming_client() {
     );
     assert!(raw.contains("Yields"), "{raw}");
     // The high-level client yields each decoded chunk from the raw stream.
-    let client = &files["src/acme/messages/client.py"];
+    let client = &files["src/acme/client.py"];
     assert!(
         client.contains("-> typing.Iterator[typing.Optional[typing.Any]]:"),
         "{client}"
@@ -1095,19 +1095,19 @@ fn sse_response_generates_a_streaming_client() {
     assert!(client.contains("async for _chunk in r.data:"), "{client}");
 }
 
-/// An inline-object success response is hoisted into a named `{Tag}{Method}Response`
-/// model in the tag's own `types/` package, and the module becomes emittable.
+/// An inline-object success response on an untagged operation is hoisted into the
+/// package-root `types/` package, and the root client becomes emittable.
 #[test]
 fn inline_object_response_is_hoisted_into_a_tag_type() {
     let files = render(
         "openapi: 3.0.0\ninfo:\n  title: E\npaths:\n  /y:\n    get:\n      operationId: widgets_get\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema:\n                type: object\n                properties:\n                  name:\n                    type: string\n",
     );
-    // The response object is hoisted under the tag's `types/` package and the raw
-    // client (now emittable) returns it.
-    let hoisted = "src/acme/widgets/types/widgets_get_response.py";
+    // The response object is hoisted under the root `types/` package and the raw
+    // client returns it.
+    let hoisted = "src/acme/types/widgets_get_response.py";
     assert!(files.contains_key(hoisted), "expected {hoisted}");
     assert!(files[hoisted].contains("class WidgetsGetResponse"));
-    let raw = &files["src/acme/widgets/raw_client.py"];
+    let raw = &files["src/acme/raw_client.py"];
     assert!(raw.contains("HttpResponse[WidgetsGetResponse]"));
     assert!(raw.contains("from .types.widgets_get_response import WidgetsGetResponse"));
 }
@@ -1251,7 +1251,7 @@ fn integer_enum_alias_and_ref_body_are_emittable() {
         "openapi: 3.0.1\ninfo:\n  title: Levels\npaths:\n  /p:\n    post:\n      operationId: levels_set\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema:\n                type: string\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n              $ref: \"#/components/schemas/Level\"\ncomponents:\n  schemas:\n    Level:\n      type: integer\n      enum:\n        - 1\n        - 2\n",
     );
     assert!(files["src/acme/types/level.py"].contains("Level = int"));
-    let raw = &files["src/acme/levels/raw_client.py"];
+    let raw = &files["src/acme/raw_client.py"];
     assert!(raw.contains("request: Level"));
     assert!(raw.contains("\"content-type\": \"application/json\""));
 }
@@ -1263,10 +1263,10 @@ fn form_bodies_split_data_and_files() {
     let files = render(
         "openapi: 3.0.1\ninfo:\n  title: F\npaths:\n  /up:\n    post:\n      operationId: uploads_send\n      responses:\n        \"204\":\n          description: \"\"\n      requestBody:\n        required: true\n        content:\n          multipart/form-data:\n            schema:\n              type: object\n              required:\n                - doc\n              properties:\n                doc:\n                  type: string\n                  format: binary\n                note:\n                  type: string\n  /form:\n    post:\n      operationId: uploads_form\n      responses:\n        \"204\":\n          description: \"\"\n      requestBody:\n        required: true\n        content:\n          application/x-www-form-urlencoded:\n            schema:\n              type: object\n              properties:\n                q:\n                  type: string\n",
     );
-    let raw = &files["src/acme/uploads/raw_client.py"];
+    let raw = &files["src/acme/raw_client.py"];
     // Multipart: the binary field is a `core.File` in `files=`, the rest in `data=`.
     assert!(raw.contains("doc: core.File"));
-    assert!(raw.contains("from .. import core"));
+    assert!(raw.contains("from . import core"), "{raw}");
     assert!(raw.contains("files={"));
     assert!(raw.contains("force_multipart=True,"));
     // Urlencoded: all fields in `data=` with the form content-type, no multipart.
@@ -1282,9 +1282,9 @@ fn readme_shows_dots_for_a_container_body_endpoint() {
     );
     let readme = &files["README.md"];
     // Skips the no-body `health_ping` for the body-carrying `items_bulk`.
-    assert!(readme.contains("client.items.bulk(...)"));
-    assert!(readme.contains("client.items.bulk(..., request_options={"));
-    assert!(!readme.contains("health.ping"));
+    assert!(readme.contains("client.items_bulk(...)"));
+    assert!(readme.contains("client.items_bulk(..., request_options={"));
+    assert!(!readme.contains("health_ping"));
 }
 
 /// A `readOnly` property is optional even when listed in `required` (it is
@@ -1313,7 +1313,7 @@ fn request_body_only_type_is_dropped_but_reused_type_is_kept() {
     assert!(files.contains_key("src/acme/types/thing.py"));
     assert!(!files.contains_key("src/acme/types/make_request.py"));
     // Its fields were still hoisted onto the request method.
-    assert!(files["src/acme/things/raw_client.py"].contains("name:"));
+    assert!(files["src/acme/raw_client.py"].contains("name:"));
     // The aggregator omits the dropped type.
     assert!(!files["src/acme/types/__init__.py"].contains("MakeRequest"));
 }
@@ -2097,7 +2097,7 @@ paths:
                   required: [widgets]
 "##;
     let files = render(spec);
-    let resp = &files["src/acme/search/types/search_response.py"];
+    let resp = &files["src/acme/types/search_response.py"];
     assert!(
         resp.contains("required: typing.Optional[typing.Optional[typing.Any]]"),
         "the array-valued node degrades to the unknown type:\n{resp}"
@@ -2108,9 +2108,8 @@ paths:
     );
 }
 
-/// A per-operation nested type reaches the package-root `core` package at the
-/// correct relative depth — `...core` from `{pkg}/{tag}/types/…`, not the
-/// depth-wrong `..core` a fixed prefix would emit (issue #85).
+/// A root-operation nested type reaches the package-root `core` package at the
+/// correct relative depth from `{pkg}/types/…` (issue #85).
 #[test]
 fn nested_operation_type_imports_core_at_correct_depth() {
     let spec = r##"
@@ -2133,18 +2132,18 @@ paths:
       responses: { "200": { description: ok } }
 "##;
     let files = render(spec);
-    let nested = &files["src/acme/update/types/update_widget_request_details.py"];
+    let nested = &files["src/acme/types/update_widget_request_details.py"];
     assert!(
-        nested.contains("from ...core.serialization import FieldMetadata"),
-        "an aliased field reaches core.serialization three levels up:\n{nested}"
+        nested.contains("from ..core.serialization import FieldMetadata"),
+        "an aliased field reaches core.serialization from root types:\n{nested}"
     );
     assert!(
-        nested.contains("from ...core.pydantic_utilities import"),
+        nested.contains("from ..core.pydantic_utilities import"),
         "core.pydantic_utilities uses the same depth:\n{nested}"
     );
     assert!(
-        !nested.contains("from ..core."),
-        "no import uses the depth-wrong two-dot prefix:\n{nested}"
+        !nested.contains("from ...core."),
+        "no import uses the depth-wrong three-dot prefix:\n{nested}"
     );
 }
 
@@ -2357,16 +2356,11 @@ paths:
 #[test]
 fn synthesized_names_cover_verb_resource_and_reserved_munge() {
     let files = render(SYNTH_NAMING_SPEC);
-    // `PUT /inventory` with no id → `update_inventory` under the `inventory` client
-    // (module derived from the leading path segment, no tag).
-    let inv = &files["src/acme/inventory/client.py"];
-    assert!(inv.contains("def update_inventory("), "{inv}");
+    // Untagged operations stay on Fern's package-root client.
+    let client = &files["src/acme/client.py"];
+    assert!(client.contains("def update_inventory("), "{client}");
     // `DELETE /{id}` has no static resource segment → a verb-only `delete` method,
-    // and no static path segment for the module → the `service` fallback group.
-    let svc = &files["src/acme/service/client.py"];
-    assert!(svc.contains("def delete("), "{svc}");
-    // A groupless `list` operationId names its own `list` client and collides with
-    // the builtin → `list_`.
-    let list_client = &files["src/acme/list/client.py"];
-    assert!(list_client.contains("def list_("), "{list_client}");
+    assert!(client.contains("def delete("), "{client}");
+    // A groupless `list` operationId collides with the builtin and becomes `list_`.
+    assert!(client.contains("def list_("), "{client}");
 }
