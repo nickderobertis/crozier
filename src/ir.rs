@@ -4017,7 +4017,7 @@ mod tests {
         let e = build_enum(
             "Color",
             vec!["a-b".to_string(), "a b".to_string(), "a.b".to_string()],
-            clean_doc(prop_schema.description.as_deref()),
+            None,
         );
         let members: Vec<&str> = e.members.iter().map(|m| m.name.as_str()).collect();
         assert_eq!(members, ["A_B", "A_B_1", "A_B_2"]);
