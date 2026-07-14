@@ -16,7 +16,7 @@ use serde::Serialize;
 
 use crate::error::{Error, Result};
 use crate::ir::{
-    Auth, Endpoint, ErrorClass, Field, GlobalHeader, Ir, ObjectType, Prim, RequestBody,
+    Auth, BodyField, Endpoint, ErrorClass, Field, GlobalHeader, Ir, ObjectType, Prim, RequestBody,
     TagTypeDecl, TypeDecl, TypeRef,
 };
 use crate::naming;
@@ -2888,6 +2888,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         Some(RequestBody::Inline(fields)) => {
             lines.push("            json={".to_string());
             for f in fields {
+                let value_name = body_field_value_name(f);
                 if f.convert {
                     imports.add_core("serialization", "convert_and_respect_annotation_metadata");
                     let annotation = raw_type_str_ctx(&f.type_ref, imports, true);
@@ -2897,7 +2898,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                             f.wire_name
                         ),
                         vec![
-                            Doc::atom(format!("object_={}", f.py_name)),
+                            Doc::atom(format!("object_={value_name}")),
                             Doc::atom(format!("annotation={annotation}")),
                             Doc::atom("direction=\"write\""),
                         ],
@@ -2906,8 +2907,8 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                     lines.push(format!("{},", call.flat()));
                 } else {
                     lines.push(format!(
-                        "                \"{}\": {},",
-                        f.wire_name, f.py_name
+                        "                \"{}\": {value_name},",
+                        f.wire_name
                     ));
                 }
             }
@@ -3002,6 +3003,14 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
     if matches!(&ep.request_body, Some(RequestBody::Form(f)) if f.multipart) {
         lines.push("            force_multipart=True,".to_string());
     }
+}
+
+fn body_field_value_name(field: &BodyField) -> &str {
+    field
+        .collision_prefix
+        .as_ref()
+        .and_then(|prefix| field.py_name.strip_prefix(&format!("{prefix}_")))
+        .unwrap_or(&field.py_name)
 }
 
 /// The chunk type Fern yields from an OpenAPI-sourced SSE stream. Fern's OpenAPI

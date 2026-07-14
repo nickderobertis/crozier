@@ -5467,6 +5467,34 @@ fn file_only_multipart_requests_include_empty_data() {
 }
 
 #[test]
+fn colliding_query_and_body_fields_serialize_from_query_name() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/{id}:\n    \
+         put:\n      operationId: updateWidget\n      tags: [widgets]\n      parameters:\n        - name: id\n          \
+         in: path\n          required: true\n          schema: { type: string }\n        - name: active\n          in: \
+         query\n          required: false\n          schema: { type: boolean }\n      requestBody:\n        content:\n          \
+         application/json:\n            schema: { $ref: '#/components/schemas/WidgetRecord' }\n      responses:\n        \
+         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/WidgetRecord' } } } }\ncomponents:\n  \
+         schemas:\n    WidgetRecord:\n      type: object\n      properties:\n        active: { type: boolean }\n        \
+         name: { type: string }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
+    assert!(
+        raw.contains("widget_record_active: typing.Optional[bool] = OMIT"),
+        "colliding body fields should be prefixed in the method signature: {raw}"
+    );
+    assert!(
+        raw.contains("\"active\": active,"),
+        "Fern serializes a colliding body field from the original query parameter name: {raw}"
+    );
+    assert!(
+        !raw.contains("\"active\": widget_record_active,"),
+        "the prefixed signature name should not be used in the JSON dict for this collision: {raw}"
+    );
+}
+
+#[test]
 fn array_ref_request_body_generates_single_named_request_argument() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/archive:\n    \

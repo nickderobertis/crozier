@@ -1319,6 +1319,8 @@ fn build_endpoint(
                 if let Some(prefix) = &field.collision_prefix {
                     field.py_name = format!("{prefix}_{}", field.py_name);
                 }
+            } else {
+                field.collision_prefix = None;
             }
         }
     }
