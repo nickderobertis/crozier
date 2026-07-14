@@ -49,9 +49,29 @@ class {{ class_name }}:
             else {{ httpx_type }}(timeout=_defaulted_timeout),
             timeout=_defaulted_timeout,
         )
+{% if root_methods %}
+        self._raw_client = {{ raw_client_cls }}(client_wrapper=self._client_wrapper)
+{% endif %}
 {% for m in modules %}
         self._{{ m.attr }}: typing.Optional[{{ m.cls }}] = None
 {% endfor %}
+{% if root_methods %}
+
+    @property
+    def with_raw_response(self) -> {{ raw_client_cls }}:
+        """
+        Retrieves a raw implementation of this client that returns raw responses.
+
+        Returns
+        -------
+        {{ raw_client_cls }}
+        """
+        return self._raw_client
+{% for method in root_methods %}
+
+{{ method }}
+{% endfor %}
+{% endif %}
 {% for m in modules %}
 
     @property

@@ -355,6 +355,9 @@ pub struct Parameter {
     /// by `normalize_parameters`; `None` for an inline parameter.
     #[serde(rename = "$ref", default)]
     pub reference: Option<String>,
+    /// True when this body was resolved from `components.requestBodies`.
+    #[serde(skip)]
+    pub component_ref: bool,
     /// Parameter name (the wire name; also the path placeholder for `in: path`).
     #[serde(default)]
     pub name: String,
@@ -396,8 +399,15 @@ pub enum ParameterLocation {
 }
 
 /// A request body: a content-type → media-type map plus a required flag.
-#[derive(Debug, Default, Deserialize)]
+#[derive(Debug, Default, Clone, Deserialize)]
 pub struct RequestBody {
+    /// A `$ref` pointer to a `components.requestBodies` entry. Resolved by
+    /// `normalize_request_bodies`; `None` for an inline body.
+    #[serde(rename = "$ref", default)]
+    pub reference: Option<String>,
+    /// True when this body was resolved from `components.requestBodies`.
+    #[serde(skip)]
+    pub component_ref: bool,
     /// Whether the body is required.
     #[serde(default)]
     pub required: Option<bool>,
@@ -464,6 +474,10 @@ pub struct Components {
     /// `normalize_responses`).
     #[serde(default)]
     pub responses: IndexMap<String, Response>,
+    /// Reusable request bodies (`components.requestBodies`), in document order.
+    /// A `$ref` request body on an operation resolves against this map at load time.
+    #[serde(rename = "requestBodies", default)]
+    pub request_bodies: IndexMap<String, RequestBody>,
     /// Declared authentication schemes, in document order.
     #[serde(rename = "securitySchemes", default)]
     pub security_schemes: IndexMap<String, SecurityScheme>,
@@ -755,8 +769,39 @@ pub fn load(path: &Path) -> Result<OpenApi> {
 
     normalize_parameters(&mut doc);
     normalize_responses(&mut doc);
+    normalize_request_bodies(&mut doc);
 
     Ok(doc)
+}
+
+fn resolve_request_body(
+    request_body: &RequestBody,
+    defs: &IndexMap<String, RequestBody>,
+) -> RequestBody {
+    if let Some(name) = request_body
+        .reference
+        .as_deref()
+        .and_then(|r| r.strip_prefix("#/components/requestBodies/"))
+    {
+        if let Some(target) = defs.get(name) {
+            let mut resolved = target.clone();
+            resolved.component_ref = true;
+            return resolved;
+        }
+    }
+    request_body.clone()
+}
+
+fn normalize_request_bodies(doc: &mut OpenApi) {
+    let defs = doc.components.request_bodies.clone();
+    for item in doc.paths.values_mut() {
+        for slot in item.operation_slots() {
+            let Some(op) = slot else { continue };
+            if let Some(request_body) = &mut op.request_body {
+                *request_body = resolve_request_body(request_body, &defs);
+            }
+        }
+    }
 }
 
 /// Resolve a response that is a `$ref` into `components.responses` to the

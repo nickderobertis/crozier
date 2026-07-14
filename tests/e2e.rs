@@ -5347,6 +5347,47 @@ fn unknown_array_items_are_optional_any_elements() {
 }
 
 #[test]
+fn array_ref_request_body_generates_single_named_request_argument() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/archive:\n    \
+         post:\n      operationId: archiveWidgets\n      tags: [widgets]\n      requestBody:\n        \
+         required: true\n        content:\n          application/json:\n            schema: { $ref: '#/components/schemas/WidgetIds' }\n      \
+         responses:\n        '200': { description: OK, content: { application/json: { schema: { type: object, properties: \
+         { ok: { type: boolean } } } } } }\ncomponents:\n  schemas:\n    WidgetIds:\n      type: array\n      \
+         items: { type: string }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
+    assert!(
+        raw.contains("request: WidgetIds"),
+        "a $ref array body should be passed as a single named request argument: {raw}"
+    );
+    assert!(
+        raw.contains("json=request,"),
+        "the named array request should serialize as json=request: {raw}"
+    );
+}
+
+#[test]
+fn component_request_body_refs_generate_through_the_cli() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /credentials:\n    \
+         post:\n      operationId: addCredential\n      tags: [identity]\n      requestBody: { $ref: \
+         '#/components/requestBodies/CredentialBody' }\n      responses:\n        '200': { description: OK, \
+         content: { application/json: { schema: { type: object, properties: { ok: { type: boolean } } } } } }\ncomponents:\n  \
+         requestBodies:\n    CredentialBody:\n      required: true\n      content:\n        application/json:\n          \
+         schema: { $ref: '#/components/schemas/Credential' }\n  schemas:\n    Credential:\n      type: object\n      \
+         required: [username]\n      properties:\n        username: { type: string }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/identity/raw_client.py"))
+        .expect("identity raw client is generated");
+    assert!(
+        raw.contains("username: str"),
+        "a component requestBody ref should resolve and inline the referenced object fields: {raw}"
+    );
+}
+
+#[test]
 fn missing_operation_id_generates_valid_python() {
     // Issue #40 case 3: an operation without an operationId is valid OpenAPI and
     // must generate (crozier synthesizes a name), not hard-error.

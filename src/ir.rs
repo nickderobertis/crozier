@@ -525,6 +525,9 @@ pub struct Endpoint {
     /// no path/header params, and keeps it for an undocumented one — bunq documents
     /// every body (`description: ""`), the synthetic seeds document none.
     pub body_documented: bool,
+    /// Whether the body came through `components.requestBodies`, which Fern treats
+    /// like a reusable declaration for content-type emission.
+    pub body_component_ref: bool,
     /// The success response body type, or `None` when the endpoint returns no
     /// content.
     pub response: Option<TypeRef>,
@@ -1329,6 +1332,10 @@ fn build_endpoint(
             .request_body
             .as_ref()
             .is_some_and(|rb| rb.description.is_some()),
+        body_component_ref: op
+            .request_body
+            .as_ref()
+            .is_some_and(|rb| rb.component_ref),
         response,
         response_doc: success_response_doc(op),
         errors,
@@ -1587,6 +1594,11 @@ fn resolve_request_body(
         // properties) is passed straight through as `json=request`.
         if is_map(target) {
             return Some(single(TypeRef::Named(class), required, false, true));
+        }
+        if target.ty.as_ref().and_then(|t| t.primary()) == Some("array") {
+            let type_ref = TypeRef::Named(class);
+            let convert = type_needs_convert(&type_ref, types);
+            return Some(single(type_ref, required, convert, false));
         }
         // A `$ref` to a plain object is inlined field-by-field.
         if !target.properties.is_empty() || target.all_of.is_some() {
@@ -1954,6 +1966,9 @@ fn endpoint_method_name(op: &Operation, http_method: &str, url: &str) -> String 
         return method_from_dotted_id(id);
     }
     if id.contains('_') {
+        if first_tag(op).is_none() {
+            return naming::sanitize_identifier(&naming::to_snake_case(id));
+        }
         // A `group_method` operationId whose prefix *is* the group (matches the tag,
         // or there is no tag) has its group stripped, Fern-style (`widgets_getWidget`
         // → `getwidget`, `endpoints_container_get…` → `endpoints_container_get…`).
@@ -2101,7 +2116,7 @@ fn endpoint_modules(doc: &OpenApi) -> Vec<String> {
     for (url, item) in &doc.paths {
         for (_, op) in item.operations() {
             let module = endpoint_module(op, url);
-            if seen.insert(module.clone()) {
+            if !module.is_empty() && seen.insert(module.clone()) {
                 modules.push(module);
             }
         }
@@ -2178,6 +2193,9 @@ fn title_from_tag(doc: &OpenApi, tag: &str) -> String {
 /// both rules agree, so tag-grouped corpora already matched stay byte-identical.
 fn endpoint_module(op: &Operation, url: &str) -> String {
     let id = op.operation_id.trim();
+    if first_tag(op).is_none() && !id.contains('.') {
+        return String::new();
+    }
     if id.contains('.') {
         if let Some((group, _)) = id.split_once('.') {
             if group.is_empty() {

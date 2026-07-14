@@ -72,6 +72,9 @@ const STDLIB_MODULES: &[&str] = &[
 /// (how many leading dots, and whether via a tag's `types/` subpackage).
 #[derive(Clone, Default)]
 enum RefLoc {
+    /// A generated file at the package root (`src/{pkg}/client.py` or
+    /// `src/{pkg}/raw_client.py`).
+    PackageRoot,
     /// A module in the package-root `types/` package (`src/{pkg}/types/`).
     #[default]
     RootTypes,
@@ -135,13 +138,14 @@ impl Imports {
                 RefLoc::TagTypes(_) | RefLoc::Client(_) | RefLoc::Errors => {
                     format!("..{tag}.types.{m}")
                 }
-                RefLoc::RootTypes => format!(".{tag}.types.{m}"),
+                RefLoc::PackageRoot | RefLoc::RootTypes => format!(".{tag}.types.{m}"),
             },
             // A package-root type lives at `{pkg}.types.{m}`.
             None => match &self.loc {
                 RefLoc::RootTypes => format!(".{m}"),
                 RefLoc::TagTypes(_) => format!("...types.{m}"),
                 RefLoc::Client(_) | RefLoc::Errors => format!("..types.{m}"),
+                RefLoc::PackageRoot => format!(".types.{m}"),
             },
         }
     }
@@ -170,6 +174,14 @@ impl Imports {
         match self.loc {
             RefLoc::TagTypes(_) => "...core",
             RefLoc::RootTypes | RefLoc::Client(_) | RefLoc::Errors => "..core",
+            RefLoc::PackageRoot => ".core",
+        }
+    }
+
+    fn error_import_path(&self, module: &str) -> String {
+        match self.loc {
+            RefLoc::PackageRoot => format!(".errors.{module}"),
+            _ => format!("..errors.{module}"),
         }
     }
 
@@ -738,6 +750,16 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         }
     }
 
+    let root_eps: Vec<&Endpoint> = ir
+        .endpoints
+        .iter()
+        .filter(|e| e.module.is_empty())
+        .collect();
+    let root_emittable = !root_eps.is_empty() && root_eps.iter().all(|e| e.emittable);
+    if root_emittable {
+        files.push(raw_client_file(&env, pkg, "", &root_eps, &tag_map)?);
+    }
+
     // Per-tag `raw_client.py` and `client.py`, but only for modules whose every
     // operation is within the subset crozier emits today (see
     // `Endpoint::emittable`); the rest await wider endpoint support. The modules
@@ -780,6 +802,10 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             pkg,
             &ir.client_name,
             &emittable_modules,
+            if root_emittable { &root_eps } else { &[] },
+            &ir.types,
+            &ir.tag_types,
+            &tag_map,
             &ir.auth,
             ir.environment.as_ref(),
             &ir.global_headers,
@@ -2582,7 +2608,7 @@ fn signature(ep: &Endpoint, mp: &MethodParams, return_type: &str, is_async: bool
 /// Build one raw-client method (sync or async), registering its imports.
 fn raw_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> String {
     imports.add_plain("typing");
-    imports.add_from("..core.request_options", "RequestOptions");
+    imports.add_core("request_options", "RequestOptions");
 
     if ep.streaming {
         return raw_stream_method(ep, is_async, imports);
@@ -2713,9 +2739,9 @@ fn push_return_doc(lines: &mut Vec<String>, response_doc: Option<&str>) {
 fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -> String {
     imports.add_plain("typing");
     imports.add_from("json.decoder", "JSONDecodeError");
-    imports.add_from("..core.api_error", "ApiError");
+    imports.add_core("api_error", "ApiError");
     if !ep.path_params.is_empty() {
-        imports.add_from("..core.jsonable_encoder", "jsonable_encoder");
+        imports.add_core("jsonable_encoder", "jsonable_encoder");
     }
 
     let await_ = if is_async { "await " } else { "" };
@@ -2724,11 +2750,13 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
     } else {
         "HttpResponse"
     };
-    let mut lines: Vec<String> = vec![
-        format!("        _response = {await_}self._client_wrapper.httpx_client.request("),
-        format!("            {},", url_arg(ep)),
-        format!("            method=\"{}\",", ep.http_method),
-    ];
+    let mut lines: Vec<String> = vec![format!(
+        "        _response = {await_}self._client_wrapper.httpx_client.request("
+    )];
+    if ep.path != "/" {
+        lines.push(format!("            {},", url_arg(ep)));
+    }
+    lines.push(format!("            method=\"{}\",", ep.http_method));
     append_request_call_args(&mut lines, ep, imports);
     lines.extend([
         "        )".to_string(),
@@ -2736,7 +2764,7 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
         "            if 200 <= _response.status_code < 300:".to_string(),
     ]);
     if ep.response.is_some() {
-        imports.add_from("..core.pydantic_utilities", "parse_obj_as");
+        imports.add_core("pydantic_utilities", "parse_obj_as");
         lines.extend([
             "                _data = typing.cast(".to_string(),
             format!("                    {inner},"),
@@ -2755,9 +2783,9 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
     // One `raise <Error>` branch per declared error response, keyed on its status
     // code, parsing the error body into the generated exception.
     for err in &ep.errors {
-        imports.add_from("..core.pydantic_utilities", "parse_obj_as");
+        imports.add_core("pydantic_utilities", "parse_obj_as");
         let module = naming::module_name(&err.class_name);
-        imports.add_from(&format!("..errors.{module}"), &err.class_name);
+        imports.add_from(&imports.error_import_path(&module), &err.class_name);
         let body = raw_type_str(&err.body_type, imports);
         lines.extend([
             format!(
@@ -2798,10 +2826,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         lines.push("            params={".to_string());
         for qp in &ep.query_params {
             if qp.convert {
-                imports.add_from(
-                    "..core.serialization",
-                    "convert_and_respect_annotation_metadata",
-                );
+                imports.add_core("serialization", "convert_and_respect_annotation_metadata");
                 let annotation = raw_type_str_ctx(&qp.type_ref, imports, true);
                 let call = Doc::group(
                     format!(
@@ -2817,7 +2842,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                 );
                 lines.push(format!("{},", call.flat()));
             } else if type_serializes_as_datetime(&qp.type_ref) {
-                imports.add_from("..core.datetime_utils", "serialize_datetime");
+                imports.add_core("datetime_utils", "serialize_datetime");
                 let value = if qp.required {
                     format!("serialize_datetime({})", qp.py_name)
                 } else {
@@ -2843,10 +2868,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
     match &ep.request_body {
         None => {}
         Some(RequestBody::Single(s)) if s.convert => {
-            imports.add_from(
-                "..core.serialization",
-                "convert_and_respect_annotation_metadata",
-            );
+            imports.add_core("serialization", "convert_and_respect_annotation_metadata");
             let annotation = raw_type_str_ctx(&s.type_ref, imports, true);
             let call = Doc::group(
                 "            json=convert_and_respect_annotation_metadata(",
@@ -2864,10 +2886,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
             lines.push("            json={".to_string());
             for f in fields {
                 if f.convert {
-                    imports.add_from(
-                        "..core.serialization",
-                        "convert_and_respect_annotation_metadata",
-                    );
+                    imports.add_core("serialization", "convert_and_respect_annotation_metadata");
                     let annotation = raw_type_str_ctx(&f.type_ref, imports, true);
                     let call = Doc::group(
                         format!(
@@ -2946,6 +2965,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
             if !ep.header_params.is_empty()
                 || !ep.path_params.is_empty()
                 || (body.content_type_header()
+                    && !ep.body_component_ref
                     && (!ep.body_documented || body.all_fields_required())) =>
         {
             Some("application/json")
@@ -2990,9 +3010,9 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
     imports.add_from("json.decoder", "JSONDecodeError");
     imports.add_from("logging", "error");
     imports.add_from("logging", "warning");
-    imports.add_from("..core.api_error", "ApiError");
-    imports.add_from("..core.http_sse._api", "EventSource");
-    imports.add_from("..core.pydantic_utilities", "parse_obj_as");
+    imports.add_core("api_error", "ApiError");
+    imports.add_core("http_sse._api", "EventSource");
+    imports.add_core("pydantic_utilities", "parse_obj_as");
 
     let (wrapper, iter_t, aiter, decorator, async_kw, async_with, for_kw, iter_sse, read) =
         if is_async {
@@ -3029,7 +3049,9 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
     let mut call: Vec<String> = vec![format!(
         "        {async_with} self._client_wrapper.httpx_client.stream("
     )];
-    call.push(format!("            {},", url_arg(ep)));
+    if ep.path != "/" {
+        call.push(format!("            {},", url_arg(ep)));
+    }
     call.push(format!("            method=\"{}\",", ep.http_method));
     append_request_call_args(&mut call, ep, imports);
     call.push("        ) as _response:".to_string());
@@ -3127,17 +3149,29 @@ fn root_client_file(
     pkg: &str,
     client_name: &str,
     modules: &[&String],
+    root_endpoints: &[&Endpoint],
+    types: &[TypeDecl],
+    tag_decls: &[TagTypeDecl],
+    tag_map: &BTreeMap<String, String>,
     auth: &Auth,
     environment: Option<&crate::ir::Environment>,
     global_headers: &[GlobalHeader],
 ) -> Result<GeneratedFile> {
-    let mut body = String::new();
-    body.push_str("from __future__ import annotations\n\nimport typing\n\nimport httpx\nfrom .core.client_wrapper import AsyncClientWrapper, SyncClientWrapper\n");
-    if let Some(e) = environment {
-        body.push_str(&format!("from .environment import {}\n", e.enum_name));
+    let mut imports = Imports::at(RefLoc::PackageRoot, tag_map);
+    imports.add_plain("typing");
+    imports.add_plain("httpx");
+    imports.add_core("client_wrapper", "AsyncClientWrapper");
+    imports.add_core("client_wrapper", "SyncClientWrapper");
+    if !root_endpoints.is_empty() {
+        imports.add_core("request_options", "RequestOptions");
+        imports.add_from(".raw_client", &format!("Raw{client_name}"));
+        imports.add_from(".raw_client", &format!("AsyncRaw{client_name}"));
     }
-    body.push('\n');
-    body.push_str("if typing.TYPE_CHECKING:\n");
+    if let Some(e) = environment {
+        imports.add_from(".environment", &e.enum_name);
+    }
+    let mut type_checking = String::new();
+    type_checking.push_str("if typing.TYPE_CHECKING:\n");
     // Fern emits the sub-client imports alphabetically by module (`gadgets` before
     // `widgets`), even though the properties below stay in declaration order. This
     // block is never executed, but — unlike the `__init__.py` aggregators — client.py
@@ -3151,7 +3185,7 @@ fn root_client_file(
         // that sorts `{X}Client` ahead (e.g. `ApikeyauthClient` < `Async...`).
         let mut names = [format!("Async{pascal}Client"), format!("{pascal}Client")];
         names.sort();
-        body.push_str(&format!(
+        type_checking.push_str(&format!(
             "    from .{m}.client import {}, {}\n",
             names[0], names[1]
         ));
@@ -3161,6 +3195,33 @@ fn root_client_file(
         environment,
         global_headers,
     };
+    let root_methods = root_client_methods(
+        env,
+        pkg,
+        client_name,
+        root_endpoints,
+        types,
+        tag_decls,
+        tag_map,
+        false,
+        &mut imports,
+    )?;
+    let async_root_methods = root_client_methods(
+        env,
+        pkg,
+        client_name,
+        root_endpoints,
+        types,
+        tag_decls,
+        tag_map,
+        true,
+        &mut imports,
+    )?;
+    let mut body = String::new();
+    body.push_str("from __future__ import annotations\n\n");
+    body.push_str(&imports.render());
+    body.push_str("\n\n");
+    body.push_str(&type_checking);
     body.push_str("\n\n");
     body.push_str(&root_client_class(
         env,
@@ -3168,6 +3229,7 @@ fn root_client_file(
         pkg,
         false,
         modules,
+        &root_methods,
         &cfg,
     )?);
     body.push_str("\n\n\n");
@@ -3177,6 +3239,7 @@ fn root_client_file(
         pkg,
         true,
         modules,
+        &async_root_methods,
         &cfg,
     )?);
     // When environments are in play, a module-level `_get_base_url` resolves the
@@ -3208,6 +3271,51 @@ struct RootClientCfg<'a> {
     global_headers: &'a [GlobalHeader],
 }
 
+#[allow(clippy::too_many_arguments, reason = "root method emission mirrors ClientCtx plus root imports")]
+fn root_client_methods(
+    _env: &Environment<'static>,
+    pkg: &str,
+    client_name: &str,
+    endpoints: &[&Endpoint],
+    types: &[TypeDecl],
+    tag_decls: &[TagTypeDecl],
+    tag_map: &BTreeMap<String, String>,
+    is_async: bool,
+    imports: &mut Imports,
+) -> Result<Vec<String>> {
+    if endpoints.is_empty() {
+        return Ok(Vec::new());
+    }
+    let cx = ClientCtx {
+        pkg,
+        client_name,
+        module: "",
+        types,
+        tag_decls,
+        auth: &Auth::None,
+        has_environment: true,
+        tag_types: tag_map,
+        global_headers: &[],
+    };
+    let mut method_imports = Imports::at(RefLoc::PackageRoot, tag_map);
+    let methods = endpoints
+        .iter()
+        .map(|ep| client_method(&cx, ep, is_async, &mut method_imports))
+        .collect();
+    for (module, names) in method_imports.from {
+        for name in names {
+            imports.add_from(&module, &name);
+        }
+    }
+    for (module, alias) in method_imports.plain {
+        match alias {
+            Some(alias) => imports.add_plain_as(&module, &alias),
+            None => imports.add_plain(&module),
+        }
+    }
+    Ok(methods)
+}
+
 /// One root client class: the class docstring, the `__init__` wiring up the
 /// client wrapper and the per-tag lazy slots, then one cached `@property` per tag.
 fn root_client_class(
@@ -3216,6 +3324,7 @@ fn root_client_class(
     pkg: &str,
     is_async: bool,
     modules: &[&String],
+    root_methods: &[String],
     cfg: &RootClientCfg,
 ) -> Result<String> {
     let auth = cfg.auth;
@@ -3328,6 +3437,14 @@ fn root_client_class(
         gh_ctor,
         gh_example,
         gh_wrapper,
+        raw_client_cls: if root_methods.is_empty() {
+            String::new()
+        } else if is_async {
+            format!("AsyncRaw{client_name}")
+        } else {
+            format!("Raw{client_name}")
+        },
+        root_methods: root_methods.to_vec(),
         modules: module_views,
     };
     // The caller controls the separation between the sync/async classes and the
@@ -3384,6 +3501,8 @@ struct RootClientView {
     gh_ctor: String,
     gh_example: String,
     gh_wrapper: String,
+    raw_client_cls: String,
+    root_methods: Vec<String>,
     modules: Vec<RootModuleView>,
 }
 
@@ -4255,11 +4374,19 @@ fn build_example(
     };
     // The call, rendered at logical indent 0 (sync) or 4 (inside `main`, async).
     let call_indent = if is_async { 4 } else { 0 };
-    let receiver = format!(
-        "{}client.{module}.{}",
-        if is_async { "await " } else { "" },
-        ep.method_name
-    );
+    let receiver = if module.is_empty() {
+        format!(
+            "{}client.{}",
+            if is_async { "await " } else { "" },
+            ep.method_name
+        )
+    } else {
+        format!(
+            "{}client.{module}.{}",
+            if is_async { "await " } else { "" },
+            ep.method_name
+        )
+    };
     // `render` positions continuation lines but leaves the first line for the
     // caller to place, so prepend the base indent to it. A streaming endpoint binds
     // the returned stream to `response` and iterates it (`for chunk in response:` /
@@ -4373,27 +4500,46 @@ fn raw_client_file(
     endpoints: &[&Endpoint],
     tag_types: &BTreeMap<String, String>,
 ) -> Result<GeneratedFile> {
-    let mut imports = Imports::at(RefLoc::Client(module.to_string()), tag_types);
+    let loc = if module.is_empty() {
+        RefLoc::PackageRoot
+    } else {
+        RefLoc::Client(module.to_string())
+    };
+    let mut imports = Imports::at(loc, tag_types);
     // Imports every raw client needs regardless of operation shape.
     imports.add_plain("typing");
     imports.add_from("json.decoder", "JSONDecodeError");
-    imports.add_from("..core.api_error", "ApiError");
-    imports.add_from("..core.client_wrapper", "AsyncClientWrapper");
-    imports.add_from("..core.client_wrapper", "SyncClientWrapper");
-    imports.add_from("..core.http_response", "AsyncHttpResponse");
-    imports.add_from("..core.http_response", "HttpResponse");
-    imports.add_from("..core.request_options", "RequestOptions");
+    imports.add_core("api_error", "ApiError");
+    imports.add_core("client_wrapper", "AsyncClientWrapper");
+    imports.add_core("client_wrapper", "SyncClientWrapper");
+    imports.add_core("http_response", "AsyncHttpResponse");
+    imports.add_core("http_response", "HttpResponse");
+    imports.add_core("request_options", "RequestOptions");
 
-    let class_stem = naming::to_pascal_case(module);
+    let class_stem = if module.is_empty() {
+        "FernApi".to_string()
+    } else {
+        naming::to_pascal_case(module)
+    };
+    let sync_class = if module.is_empty() {
+        format!("Raw{class_stem}")
+    } else {
+        format!("Raw{class_stem}Client")
+    };
+    let async_class_name = if module.is_empty() {
+        format!("AsyncRaw{class_stem}")
+    } else {
+        format!("AsyncRaw{class_stem}Client")
+    };
     let sync = raw_client_class(
-        &format!("Raw{class_stem}Client"),
+        &sync_class,
         "SyncClientWrapper",
         endpoints,
         false,
         &mut imports,
     );
     let async_class = raw_client_class(
-        &format!("AsyncRaw{class_stem}Client"),
+        &async_class_name,
         "AsyncClientWrapper",
         endpoints,
         true,
@@ -4419,7 +4565,11 @@ fn raw_client_file(
         },
     )?;
     Ok(GeneratedFile {
-        path: PathBuf::from(format!("src/{pkg}/{module}/raw_client.py")),
+        path: if module.is_empty() {
+            PathBuf::from(format!("src/{pkg}/raw_client.py"))
+        } else {
+            PathBuf::from(format!("src/{pkg}/{module}/raw_client.py"))
+        },
         contents,
     })
 }
@@ -4904,6 +5054,7 @@ mod tests {
             header_params: Vec::new(),
             request_body: None,
             body_documented: false,
+            body_component_ref: false,
             response,
             response_doc: None,
             errors: Vec::new(),
