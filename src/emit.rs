@@ -1307,11 +1307,18 @@ fn select_readme_endpoint<'a>(
 ) -> Option<&'a Endpoint> {
     endpoints
         .clone()
-        .find(|e| e.emittable && e.http_method == "POST" && e.request_body.is_some())
+        .find(|e| {
+            e.emittable
+                && e.http_method == "POST"
+                && e.request_body.is_some()
+                && !matches!(e.request_body, Some(RequestBody::Bytes { .. }))
+        })
         .or_else(|| {
-            endpoints
-                .clone()
-                .find(|e| e.emittable && e.request_body.is_some())
+            endpoints.clone().find(|e| {
+                e.emittable
+                    && e.request_body.is_some()
+                    && !matches!(e.request_body, Some(RequestBody::Bytes { .. }))
+            })
         })
         .or_else(|| {
             endpoints.clone().find(|e| {
@@ -1323,7 +1330,11 @@ fn select_readme_endpoint<'a>(
                     && e.request_body.is_none()
             })
         })
-        .or_else(|| endpoints.clone().find(|e| e.emittable))
+        .or_else(|| {
+            endpoints
+                .clone()
+                .find(|e| e.emittable && !matches!(e.request_body, Some(RequestBody::Bytes { .. })))
+        })
 }
 
 fn readme_endpoint(ir: &Ir) -> Option<&Endpoint> {
