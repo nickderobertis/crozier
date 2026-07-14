@@ -54,3 +54,25 @@ This manifest tracks 50 real-world OpenAPI specs with redistribution-compatible 
 | 48 | `github.com` | api-guru | https://api.apis.guru/v2/specs/github.com/1.1.4/openapi.json | `1.1.4` | MIT | link-ok | GitHub v3 REST API |
 | 49 | `gov.bc.ca-news` | api-guru | https://api.apis.guru/v2/specs/gov.bc.ca/news/1.0/openapi.json | `1.0` | Apache 2.0 | link-ok | BC Gov News API Service 1.0 |
 | 50 | `groundhog-day.com` | api-guru | https://api.apis.guru/v2/specs/groundhog-day.com/1.2.1/openapi.json | `1.2.1` | MIT | link-ok | Groundhog Day API |
+
+## Batch 2 — selected next targets (byte-match in progress)
+
+Ten corpora selected as the next Fern byte-match targets, chosen for OpenAPI shapes
+the current eight under-exercise. All are `link-ok` rows in the table above (specs
+fetched, not vendored). Goldens are generated with
+`just fixtures-generate-corpus --only <name>` (needs Docker); the e2e `Corpus`
+wiring, `matched` growth, and generator fixes land as goldens arrive. All ten pass
+`fern check`; three already expose confirmed crozier generator bugs.
+
+| name | selected for | crozier probe |
+|---|---|---|
+| `bbci.co.uk` | oneOf/anyOf + ~79 free-form maps | **bug**: emits invalid Python identifier |
+| `gambitcomm.local-mimic` | 356 operations; maps + links | **bug**: method named reserved word `del` |
+| `dnd5eapi.co` | oneOf/anyOf/allOf + recursion | **bug**: OpenAPI parse error (map vs sequence) |
+| `airbyte.local-config` | 102 ops / 210 schemas; format diversity | clean |
+| `etsi.local-mec010-2_apppkgmgmt` | `application/zip`, binary, custom formats | clean |
+| `apideck.com-webhook` | oneOf/anyOf + deepObject/header params | clean |
+| `apache.org-qakka` | `application/octet-stream` (binary) | clean |
+| `canada-holidays.ca` | recursive schemas + numeric enums | clean |
+| `apideck.com-vault` | spaceDelimited/deepObject params, dense anyOf | clean |
+| `6-dot-authentiqio.appspot.com` | `application/jwt` + wildcard media type | clean |
