@@ -3431,3 +3431,58 @@ components:
     );
     assert!(files["src/acme/__init__.py"].contains("AcmeApi"));
 }
+
+#[cfg(unix)]
+fn with_fake_ruff(script: &str, run: impl FnOnce()) {
+    use std::os::unix::fs::PermissionsExt;
+    let dir = tempfile::tempdir().unwrap();
+    let ruff = dir.path().join("ruff");
+    std::fs::write(&ruff, script).unwrap();
+    std::fs::set_permissions(&ruff, std::fs::Permissions::from_mode(0o755)).unwrap();
+    let old = std::env::var_os("PATH");
+    unsafe { std::env::set_var("PATH", dir.path()) };
+    run();
+    match old {
+        Some(value) => unsafe { std::env::set_var("PATH", value) },
+        None => unsafe { std::env::remove_var("PATH") },
+    }
+}
+
+#[cfg(unix)]
+#[test]
+fn formatter_reports_missing_permission_and_non_utf8_process_failures() {
+    let old = std::env::var_os("PATH");
+    unsafe { std::env::set_var("PATH", "") };
+    let missing = crozier::pyfmt::format_source("sdk.py", "x = 1\n", 120).unwrap_err();
+    assert!(missing.to_string().contains("`ruff` was not found on PATH"));
+    match old {
+        Some(value) => unsafe { std::env::set_var("PATH", value) },
+        None => unsafe { std::env::remove_var("PATH") },
+    }
+
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::create_dir(dir.path().join("ruff")).unwrap();
+    let old = std::env::var_os("PATH");
+    unsafe { std::env::set_var("PATH", dir.path()) };
+    let denied = crozier::pyfmt::format_source("sdk.py", "x = 1\n", 120).unwrap_err();
+    assert!(denied.to_string().contains("could not run `ruff`"));
+    match old {
+        Some(value) => unsafe { std::env::set_var("PATH", value) },
+        None => unsafe { std::env::remove_var("PATH") },
+    }
+
+    with_fake_ruff("#!/bin/sh\nprintf '\\377'\n", || {
+        let invalid = crozier::pyfmt::format_source("sdk.py", "x = 1\n", 120).unwrap_err();
+        assert!(invalid
+            .to_string()
+            .contains("ruff produced non-UTF-8 output"));
+    });
+
+    with_fake_ruff("#!/bin/sh\nexit 0\n", || {
+        let huge = "x".repeat(64 * 1024 * 1024);
+        let broken = crozier::pyfmt::format_source("sdk.py", &huge, 120).unwrap_err();
+        assert!(broken
+            .to_string()
+            .contains("could not write source to ruff"));
+    });
+}
