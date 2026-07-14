@@ -5934,6 +5934,29 @@ fn model_field_docs_trim_terminal_line_breaks() {
 }
 
 #[test]
+fn overlapping_all_of_fields_flatten_the_base_model() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths: {}\ncomponents:\n  schemas:\n    WidgetBase:\n      type: object\n      properties:\n        name: { type: string, description: Base name. }\n        size: { type: integer }\n    Widget:\n      allOf:\n        - { $ref: '#/components/schemas/WidgetBase' }\n        - type: object\n          properties:\n            name: { type: string }\n            active: { type: boolean }\n",
+    );
+    let model = std::fs::read_to_string(out.join("src/acme/types/widget.py"))
+        .expect("widget model is generated");
+    let name_pos = model.find("name:").expect("child name field is generated");
+    let active_pos = model
+        .find("active:")
+        .expect("child active field is generated");
+    let size_pos = model
+        .find("size:")
+        .expect("inherited size field is generated");
+    assert!(
+        model.contains("class Widget(UniversalBaseModel):")
+            && name_pos < active_pos
+            && active_pos < size_pos
+            && model.contains("Base name."),
+        "overlapping allOf fields should flatten with child fields taking precedence: {model}"
+    );
+}
+
+#[test]
 fn array_ref_request_body_generates_single_named_request_argument() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/archive:\n    \

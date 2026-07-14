@@ -2688,16 +2688,70 @@ impl Builder<'_> {
             .chain(schema.all_of.iter().flatten().flat_map(|m| &m.required))
             .map(String::as_str)
             .collect();
+        let declared_fields: std::collections::HashSet<&str> = schema
+            .properties
+            .keys()
+            .chain(
+                schema
+                    .all_of
+                    .iter()
+                    .flatten()
+                    .filter(|member| member.reference.is_none())
+                    .flat_map(|member| member.properties.keys()),
+            )
+            .map(String::as_str)
+            .collect();
+        let flatten_bases = schema.all_of.iter().flatten().any(|member| {
+            member
+                .reference
+                .as_deref()
+                .and_then(|reference| resolve_ref_from_schemas(self.schemas, reference))
+                .is_some_and(|base| {
+                    base.properties
+                        .keys()
+                        .any(|field| declared_fields.contains(field.as_str()))
+                })
+        });
         let mut bases = Vec::new();
         let mut fields = Vec::new();
         for member in schema.all_of.iter().flatten() {
             if let Some(reference) = &member.reference {
-                bases.push(ref_to_class(reference));
+                if !flatten_bases {
+                    bases.push(ref_to_class(reference));
+                }
             } else {
                 self.collect_fields(name, member, &required, &mut fields);
             }
         }
         self.collect_fields(name, schema, &required, &mut fields);
+        if flatten_bases {
+            for member in schema.all_of.iter().flatten() {
+                let Some(base) = member
+                    .reference
+                    .as_deref()
+                    .and_then(|reference| resolve_ref_from_schemas(self.schemas, reference))
+                else {
+                    continue;
+                };
+                let mut inherited = Vec::new();
+                let base_required: Vec<&str> = base.required.iter().map(String::as_str).collect();
+                self.collect_fields(name, base, &base_required, &mut inherited);
+                inherited.retain(|field| {
+                    if let Some(existing) = fields
+                        .iter_mut()
+                        .find(|existing| existing.wire_name == field.wire_name)
+                    {
+                        if existing.docstring.is_none() {
+                            existing.docstring.clone_from(&field.docstring);
+                        }
+                        false
+                    } else {
+                        true
+                    }
+                });
+                fields.extend(inherited);
+            }
+        }
         self.types.push(TypeDecl::Object(ObjectType {
             name: name.to_string(),
             module,
@@ -2915,6 +2969,13 @@ impl Builder<'_> {
             docstring,
         }));
     }
+}
+
+fn resolve_ref_from_schemas<'a>(
+    schemas: &'a IndexMap<String, Schema>,
+    reference: &str,
+) -> Option<&'a Schema> {
+    schemas.get(reference.rsplit('/').next()?)
 }
 
 /// Fern's extensible-enum rendering of a string enum: `Union[Literal[..], Any]`.
