@@ -1348,11 +1348,13 @@ fn build_endpoint(
             example: parameter_example(doc, p),
         })
         .collect();
-    path_params.sort_by(|a, b| {
-        path_param_position(path, &a.wire_name)
-            .cmp(&path_param_position(path, &b.wire_name))
-            .then_with(|| a.wire_name.cmp(&b.wire_name))
-    });
+    if !doc.openapi.starts_with("3.1") {
+        path_params.sort_by(|a, b| {
+            path_param_position(path, &a.wire_name)
+                .cmp(&path_param_position(path, &b.wire_name))
+                .then_with(|| a.wire_name.cmp(&b.wire_name))
+        });
+    }
 
     let query_params: Vec<QueryParam> = op
         .parameters
@@ -1653,9 +1655,7 @@ fn is_binary_response(doc: &OpenApi, op: &Operation) -> bool {
     })
 }
 
-/// Position of a path parameter's `{name}` placeholder in the route. Fern orders
-/// path arguments by URL appearance, even when the OpenAPI `parameters` array is
-/// alphabetical or otherwise shuffled.
+/// Position of a path parameter's placeholder for OpenAPI 3.0 importer ordering.
 fn path_param_position(path: &str, name: &str) -> Option<usize> {
     path.split('/')
         .filter(|segment| segment.starts_with('{') && segment.ends_with('}'))

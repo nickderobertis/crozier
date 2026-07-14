@@ -6784,6 +6784,19 @@ fn multiline_path_parameter_docs_remain_indented() {
 }
 
 #[test]
+fn path_parameters_preserve_declaration_order() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.1.0\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/{id}/{slug}:\n    get:\n      operationId: getWidget\n      tags: [widgets]\n      parameters:\n        - { name: slug, in: path, required: true, schema: { type: string } }\n        - { name: id, in: path, required: true, schema: { type: integer } }\n      responses:\n        '204': { description: Found }\n",
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/widgets/client.py"))
+        .expect("client is generated");
+    assert!(
+        client.contains("self, slug: str, id: int,"),
+        "path arguments should preserve parameter declaration order: {client}"
+    );
+}
+
+#[test]
 fn pydantic_model_api_fields_are_aliased() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths: {}\ncomponents:\n  schemas:\n    Widget:\n      type: object\n      properties:\n        schema: { type: string }\n        kwargs: { type: string }\n",
