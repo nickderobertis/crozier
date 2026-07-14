@@ -1272,7 +1272,12 @@ fn abbrev_call(indent: usize, prefix: &str, complex: bool) -> String {
 fn readme_endpoint(ir: &Ir) -> Option<&Endpoint> {
     ir.endpoints
         .iter()
-        .find(|e| e.emittable && e.request_body.is_some())
+        .find(|e| e.emittable && e.http_method == "POST" && e.request_body.is_some())
+        .or_else(|| {
+            ir.endpoints
+                .iter()
+                .find(|e| e.emittable && e.request_body.is_some())
+        })
         .or_else(|| {
             ir.endpoints.iter().find(|e| {
                 e.emittable
@@ -2499,7 +2504,7 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
                     imports.add_from("..", "core");
                     "core.File".to_string()
                 } else {
-                    raw_type_str_ctx(&f.type_ref, imports, true)
+                    raw_type_str(&f.type_ref, imports)
                 };
                 let description = if f.is_file {
                     Some("See core.File for more documentation".to_string())
@@ -2906,6 +2911,8 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
             }
             if !files.is_empty() {
                 lines.push(format!("            files={{\n{files}            }},"));
+            } else if form.multipart {
+                lines.push("            files={},".to_string());
             }
         }
     }

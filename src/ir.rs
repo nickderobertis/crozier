@@ -2632,7 +2632,7 @@ fn is_map(schema: &Schema) -> bool {
         && schema.properties.is_empty()
         && matches!(
             schema.additional_properties,
-            Some(AdditionalProperties::Schema(_))
+            Some(AdditionalProperties::Schema(_) | AdditionalProperties::Bool(true))
         )
 }
 
