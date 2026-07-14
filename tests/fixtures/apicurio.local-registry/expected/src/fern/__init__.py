@@ -1,0 +1,243 @@
+
+
+
+
+import typing
+from importlib import import_module
+
+if typing.TYPE_CHECKING:
+    from .types import (
+        ArtifactDescription,
+        ArtifactId,
+        ArtifactMetaData,
+        ArtifactName,
+        ArtifactOwner,
+        ArtifactReference,
+        ArtifactSearchResults,
+        ArtifactState,
+        ArtifactType,
+        ArtifactTypeInfo,
+        ConfigurationProperty,
+        ContentCreateRequest,
+        DownloadRef,
+        EditableMetaData,
+        EncodedArtifactDescription,
+        EncodedArtifactName,
+        Error,
+        FileContent,
+        GroupId,
+        GroupMetaData,
+        GroupSearchResults,
+        IfExists,
+        Limits,
+        LogConfiguration,
+        LogLevel,
+        NamedLogConfiguration,
+        Properties,
+        RoleMapping,
+        RoleType,
+        Rule,
+        RuleType,
+        RuleViolationCause,
+        RuleViolationError,
+        SearchedArtifact,
+        SearchedGroup,
+        SearchedVersion,
+        SortBy,
+        SortOrder,
+        SystemInfo,
+        UpdateState,
+        UserInfo,
+        Version,
+        VersionMetaData,
+        VersionSearchResults,
+    )
+    from .errors import BadRequestError, ConflictError, InternalServerError, NotFoundError
+    from . import (
+        admin,
+        artifact_rules,
+        artifact_type,
+        artifacts,
+        global_rules,
+        groups,
+        metadata,
+        search,
+        system,
+        users,
+        versions,
+    )
+    from .artifact_rules import (
+        DeleteArtifactRuleRequestRule,
+        GetArtifactRuleConfigRequestRule,
+        UpdateArtifactRuleConfigRequestRule,
+    )
+    from .artifacts import CreateArtifactRequestXRegistryHashAlgorithm
+    from .client import AsyncFernApi, FernApi
+    from .environment import FernApiEnvironment
+    from .search import SearchArtifactsByContentRequestOrder, SearchArtifactsByContentRequestOrderby
+    from .version import __version__
+_dynamic_imports: typing.Dict[str, str] = {
+    "ArtifactDescription": ".types",
+    "ArtifactId": ".types",
+    "ArtifactMetaData": ".types",
+    "ArtifactName": ".types",
+    "ArtifactOwner": ".types",
+    "ArtifactReference": ".types",
+    "ArtifactSearchResults": ".types",
+    "ArtifactState": ".types",
+    "ArtifactType": ".types",
+    "ArtifactTypeInfo": ".types",
+    "AsyncFernApi": ".client",
+    "BadRequestError": ".errors",
+    "ConfigurationProperty": ".types",
+    "ConflictError": ".errors",
+    "ContentCreateRequest": ".types",
+    "CreateArtifactRequestXRegistryHashAlgorithm": ".artifacts",
+    "DeleteArtifactRuleRequestRule": ".artifact_rules",
+    "DownloadRef": ".types",
+    "EditableMetaData": ".types",
+    "EncodedArtifactDescription": ".types",
+    "EncodedArtifactName": ".types",
+    "Error": ".types",
+    "FernApi": ".client",
+    "FernApiEnvironment": ".environment",
+    "FileContent": ".types",
+    "GetArtifactRuleConfigRequestRule": ".artifact_rules",
+    "GroupId": ".types",
+    "GroupMetaData": ".types",
+    "GroupSearchResults": ".types",
+    "IfExists": ".types",
+    "InternalServerError": ".errors",
+    "Limits": ".types",
+    "LogConfiguration": ".types",
+    "LogLevel": ".types",
+    "NamedLogConfiguration": ".types",
+    "NotFoundError": ".errors",
+    "Properties": ".types",
+    "RoleMapping": ".types",
+    "RoleType": ".types",
+    "Rule": ".types",
+    "RuleType": ".types",
+    "RuleViolationCause": ".types",
+    "RuleViolationError": ".types",
+    "SearchArtifactsByContentRequestOrder": ".search",
+    "SearchArtifactsByContentRequestOrderby": ".search",
+    "SearchedArtifact": ".types",
+    "SearchedGroup": ".types",
+    "SearchedVersion": ".types",
+    "SortBy": ".types",
+    "SortOrder": ".types",
+    "SystemInfo": ".types",
+    "UpdateArtifactRuleConfigRequestRule": ".artifact_rules",
+    "UpdateState": ".types",
+    "UserInfo": ".types",
+    "Version": ".types",
+    "VersionMetaData": ".types",
+    "VersionSearchResults": ".types",
+    "__version__": ".version",
+    "admin": ".admin",
+    "artifact_rules": ".artifact_rules",
+    "artifact_type": ".artifact_type",
+    "artifacts": ".artifacts",
+    "global_rules": ".global_rules",
+    "groups": ".groups",
+    "metadata": ".metadata",
+    "search": ".search",
+    "system": ".system",
+    "users": ".users",
+    "versions": ".versions",
+}
+
+
+def __getattr__(attr_name: str) -> typing.Any:
+    module_name = _dynamic_imports.get(attr_name)
+    if module_name is None:
+        raise AttributeError(f"No {attr_name} found in _dynamic_imports for module name -> {__name__}")
+    try:
+        module = import_module(module_name, __package__)
+        if module_name == f".{attr_name}":
+            return module
+        else:
+            return getattr(module, attr_name)
+    except ImportError as e:
+        raise ImportError(f"Failed to import {attr_name} from {module_name}: {e}") from e
+    except AttributeError as e:
+        raise AttributeError(f"Failed to get {attr_name} from {module_name}: {e}") from e
+
+
+def __dir__():
+    lazy_attrs = list(_dynamic_imports.keys())
+    return sorted(lazy_attrs)
+
+
+__all__ = [
+    "ArtifactDescription",
+    "ArtifactId",
+    "ArtifactMetaData",
+    "ArtifactName",
+    "ArtifactOwner",
+    "ArtifactReference",
+    "ArtifactSearchResults",
+    "ArtifactState",
+    "ArtifactType",
+    "ArtifactTypeInfo",
+    "AsyncFernApi",
+    "BadRequestError",
+    "ConfigurationProperty",
+    "ConflictError",
+    "ContentCreateRequest",
+    "CreateArtifactRequestXRegistryHashAlgorithm",
+    "DeleteArtifactRuleRequestRule",
+    "DownloadRef",
+    "EditableMetaData",
+    "EncodedArtifactDescription",
+    "EncodedArtifactName",
+    "Error",
+    "FernApi",
+    "FernApiEnvironment",
+    "FileContent",
+    "GetArtifactRuleConfigRequestRule",
+    "GroupId",
+    "GroupMetaData",
+    "GroupSearchResults",
+    "IfExists",
+    "InternalServerError",
+    "Limits",
+    "LogConfiguration",
+    "LogLevel",
+    "NamedLogConfiguration",
+    "NotFoundError",
+    "Properties",
+    "RoleMapping",
+    "RoleType",
+    "Rule",
+    "RuleType",
+    "RuleViolationCause",
+    "RuleViolationError",
+    "SearchArtifactsByContentRequestOrder",
+    "SearchArtifactsByContentRequestOrderby",
+    "SearchedArtifact",
+    "SearchedGroup",
+    "SearchedVersion",
+    "SortBy",
+    "SortOrder",
+    "SystemInfo",
+    "UpdateArtifactRuleConfigRequestRule",
+    "UpdateState",
+    "UserInfo",
+    "Version",
+    "VersionMetaData",
+    "VersionSearchResults",
+    "__version__",
+    "admin",
+    "artifact_rules",
+    "artifact_type",
+    "artifacts",
+    "global_rules",
+    "groups",
+    "metadata",
+    "search",
+    "system",
+    "users",
+    "versions",
+]

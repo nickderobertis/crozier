@@ -1,0 +1,14 @@
+
+
+import enum
+import typing
+
+T_Result = typing.TypeVar("T_Result")
+
+
+class ListUsersPublicRequestAsc(str, enum.Enum):
+    TRUE = "true"
+
+    def visit(self, true: typing.Callable[[], T_Result]) -> T_Result:
+        if self is ListUsersPublicRequestAsc.TRUE:
+            return true()

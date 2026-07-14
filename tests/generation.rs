@@ -31,6 +31,37 @@ fn render(spec: &str) -> HashMap<String, String> {
         .collect()
 }
 
+fn render_package(spec: &str, package: &str) -> HashMap<String, String> {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let path = dir.path().join("api.yml");
+    std::fs::write(&path, spec).unwrap();
+    render_files(GenerateArgs {
+        spec: path,
+        output: PathBuf::from("unused"),
+        package_name: Some(package.to_string()),
+        project_name: Some(package.to_string()),
+        client_class_name: None,
+        audiences: Vec::new(),
+        audience_strict: false,
+        extra_fields: crozier::settings::ExtraFields::Allow,
+    })
+    .expect("render succeeds")
+    .into_iter()
+    .map(|f| (f.path.to_string_lossy().into_owned(), f.contents))
+    .collect()
+}
+
+fn python_files_below(dir: &std::path::Path, out: &mut Vec<PathBuf>) {
+    for entry in std::fs::read_dir(dir).unwrap() {
+        let path = entry.unwrap().path();
+        if path.is_dir() {
+            python_files_below(&path, out);
+        } else if path.extension().and_then(std::ffi::OsStr::to_str) == Some("py") {
+            out.push(path);
+        }
+    }
+}
+
 /// A spec touching every type-mapping branch the emitter supports.
 const RICH_SPEC: &str = r##"
 openapi: 3.0.1
@@ -377,8 +408,8 @@ fn emits_endpoint_package_markers_with_fern_module_names() {
     // that prefix *is* the tag (`my_group_doThing` under `MyGroup`); when the prefix
     // differs from the tag, Fern groups by the **tag** instead (`soloThing_doOther`
     // under `Solo` → `solo`, not `solothing` — bunq's `SCREAMING_Mixed` operationIds).
-    // A groupless operationId is grouped by its first tag, and — with no tag either —
-    // falls back to snake-casing the whole id.
+    // A groupless operationId is grouped by its first tag. With no tag, Fern keeps
+    // the operation on the package-root client.
     let spec = "\
 openapi: 3.0.0
 info:
@@ -401,13 +432,14 @@ paths:
       operationId: bareid
 ";
     let files = render(spec);
-    // grouped-prefix==tag→prefix, grouped-prefix≠tag→tag, groupless→tag, groupless→id.
-    for module in ["my_group", "solo", "bare_things", "bareid"] {
+    // grouped-prefix==tag→prefix, grouped-prefix≠tag→tag, groupless→tag.
+    for module in ["my_group", "solo", "bare_things"] {
         let init = files
             .get(&format!("src/acme/{module}/__init__.py"))
             .unwrap_or_else(|| panic!("expected {module}/__init__.py; got {:?}", files.keys()));
         assert_eq!(init, "\n\n\n\n", "{module} marker");
     }
+    assert!(!files.contains_key("src/acme/bareid/__init__.py"));
 }
 
 /// A spec whose paths exercise the raw-client emitter: one emittable module
@@ -918,9 +950,8 @@ fn unmapped_error_status_is_skipped_but_the_module_still_emits() {
     let files = render(
         "openapi: 3.0.0\ninfo:\n  title: E\npaths:\n  /x:\n    get:\n      operationId: things_get\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema:\n                type: string\n        \"404\":\n          content:\n            application/json:\n              schema:\n                $ref: \"#/components/schemas/Err\"\n        \"460\":\n          description: nonstandard\ncomponents:\n  schemas:\n    Err:\n      type: object\n      properties:\n        message:\n          type: string\n",
     );
-    // The module is emitted, and the operation is callable.
-    assert!(files.contains_key("src/acme/things/__init__.py"));
-    let raw = &files["src/acme/things/raw_client.py"];
+    // The untagged operation is emitted on the package-root client.
+    let raw = &files["src/acme/raw_client.py"];
     // The mapped 404 raises its typed exception with the declared body type.
     assert!(raw.contains("if _response.status_code == 404:"), "{raw}");
     assert!(raw.contains("raise NotFoundError("), "{raw}");
@@ -1029,7 +1060,7 @@ fn every_standard_error_status_maps_to_its_fern_exception() {
         ));
     }
     let files = render(&spec);
-    let raw = &files["src/acme/things/raw_client.py"];
+    let raw = &files["src/acme/raw_client.py"];
     for (code, class, module) in cases {
         assert!(
             raw.contains(&format!("if _response.status_code == {code}:")),
@@ -1057,7 +1088,7 @@ fn sse_response_generates_a_streaming_client() {
     let files = render(
         "openapi: 3.0.0\ninfo:\n  title: E\npaths:\n  /stream:\n    post:\n      operationId: messages_stream\n      responses:\n        \"200\":\n          description: SSE stream\n          content:\n            text/event-stream: {}\n",
     );
-    let raw = &files["src/acme/messages/raw_client.py"];
+    let raw = &files["src/acme/raw_client.py"];
     // Sync + async context managers over the streaming request, decoding via the
     // `core/http_sse` runtime into an (Async)Iterator of Optional[Any] chunks.
     assert!(raw.contains("@contextlib.contextmanager"), "{raw}");
@@ -1086,7 +1117,7 @@ fn sse_response_generates_a_streaming_client() {
     );
     assert!(raw.contains("Yields"), "{raw}");
     // The high-level client yields each decoded chunk from the raw stream.
-    let client = &files["src/acme/messages/client.py"];
+    let client = &files["src/acme/client.py"];
     assert!(
         client.contains("-> typing.Iterator[typing.Optional[typing.Any]]:"),
         "{client}"
@@ -1095,19 +1126,19 @@ fn sse_response_generates_a_streaming_client() {
     assert!(client.contains("async for _chunk in r.data:"), "{client}");
 }
 
-/// An inline-object success response is hoisted into a named `{Tag}{Method}Response`
-/// model in the tag's own `types/` package, and the module becomes emittable.
+/// An inline-object success response on an untagged operation is hoisted into the
+/// package-root `types/` package, and the root client becomes emittable.
 #[test]
 fn inline_object_response_is_hoisted_into_a_tag_type() {
     let files = render(
         "openapi: 3.0.0\ninfo:\n  title: E\npaths:\n  /y:\n    get:\n      operationId: widgets_get\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema:\n                type: object\n                properties:\n                  name:\n                    type: string\n",
     );
-    // The response object is hoisted under the tag's `types/` package and the raw
-    // client (now emittable) returns it.
-    let hoisted = "src/acme/widgets/types/widgets_get_response.py";
+    // The response object is hoisted under the root `types/` package and the raw
+    // client returns it.
+    let hoisted = "src/acme/types/widgets_get_response.py";
     assert!(files.contains_key(hoisted), "expected {hoisted}");
     assert!(files[hoisted].contains("class WidgetsGetResponse"));
-    let raw = &files["src/acme/widgets/raw_client.py"];
+    let raw = &files["src/acme/raw_client.py"];
     assert!(raw.contains("HttpResponse[WidgetsGetResponse]"));
     assert!(raw.contains("from .types.widgets_get_response import WidgetsGetResponse"));
 }
@@ -1251,7 +1282,7 @@ fn integer_enum_alias_and_ref_body_are_emittable() {
         "openapi: 3.0.1\ninfo:\n  title: Levels\npaths:\n  /p:\n    post:\n      operationId: levels_set\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema:\n                type: string\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n              $ref: \"#/components/schemas/Level\"\ncomponents:\n  schemas:\n    Level:\n      type: integer\n      enum:\n        - 1\n        - 2\n",
     );
     assert!(files["src/acme/types/level.py"].contains("Level = int"));
-    let raw = &files["src/acme/levels/raw_client.py"];
+    let raw = &files["src/acme/raw_client.py"];
     assert!(raw.contains("request: Level"));
     assert!(raw.contains("\"content-type\": \"application/json\""));
 }
@@ -1263,10 +1294,10 @@ fn form_bodies_split_data_and_files() {
     let files = render(
         "openapi: 3.0.1\ninfo:\n  title: F\npaths:\n  /up:\n    post:\n      operationId: uploads_send\n      responses:\n        \"204\":\n          description: \"\"\n      requestBody:\n        required: true\n        content:\n          multipart/form-data:\n            schema:\n              type: object\n              required:\n                - doc\n              properties:\n                doc:\n                  type: string\n                  format: binary\n                note:\n                  type: string\n  /form:\n    post:\n      operationId: uploads_form\n      responses:\n        \"204\":\n          description: \"\"\n      requestBody:\n        required: true\n        content:\n          application/x-www-form-urlencoded:\n            schema:\n              type: object\n              properties:\n                q:\n                  type: string\n",
     );
-    let raw = &files["src/acme/uploads/raw_client.py"];
+    let raw = &files["src/acme/raw_client.py"];
     // Multipart: the binary field is a `core.File` in `files=`, the rest in `data=`.
     assert!(raw.contains("doc: core.File"));
-    assert!(raw.contains("from .. import core"));
+    assert!(raw.contains("from . import core"), "{raw}");
     assert!(raw.contains("files={"));
     assert!(raw.contains("force_multipart=True,"));
     // Urlencoded: all fields in `data=` with the form content-type, no multipart.
@@ -1282,9 +1313,9 @@ fn readme_shows_dots_for_a_container_body_endpoint() {
     );
     let readme = &files["README.md"];
     // Skips the no-body `health_ping` for the body-carrying `items_bulk`.
-    assert!(readme.contains("client.items.bulk(...)"));
-    assert!(readme.contains("client.items.bulk(..., request_options={"));
-    assert!(!readme.contains("health.ping"));
+    assert!(readme.contains("client.items_bulk(...)"));
+    assert!(readme.contains("client.items_bulk(..., request_options={"));
+    assert!(!readme.contains("health_ping"));
 }
 
 /// A `readOnly` property is optional even when listed in `required` (it is
@@ -1313,7 +1344,7 @@ fn request_body_only_type_is_dropped_but_reused_type_is_kept() {
     assert!(files.contains_key("src/acme/types/thing.py"));
     assert!(!files.contains_key("src/acme/types/make_request.py"));
     // Its fields were still hoisted onto the request method.
-    assert!(files["src/acme/things/raw_client.py"].contains("name:"));
+    assert!(files["src/acme/raw_client.py"].contains("name:"));
     // The aggregator omits the dropped type.
     assert!(!files["src/acme/types/__init__.py"].contains("MakeRequest"));
 }
@@ -2095,9 +2126,15 @@ paths:
                     type: array
                     items: { type: string }
                   required: [widgets]
+                  stringNode: not-a-schema
+                  boolNode: true
+                  negativeNode: -1
+                  positiveNode: 1
+                  floatNode: 1.5
+                  nullNode: null
 "##;
     let files = render(spec);
-    let resp = &files["src/acme/search/types/search_response.py"];
+    let resp = &files["src/acme/types/search_response.py"];
     assert!(
         resp.contains("required: typing.Optional[typing.Optional[typing.Any]]"),
         "the array-valued node degrades to the unknown type:\n{resp}"
@@ -2106,11 +2143,26 @@ paths:
         !resp.contains("import Required") && !files.contains_key("src/acme/types/widgets.py"),
         "no bogus type is synthesized or imported:\n{resp}"
     );
+    for (field, wire_name) in [
+        ("string_node", "stringNode"),
+        ("bool_node", "boolNode"),
+        ("negative_node", "negativeNode"),
+        ("positive_node", "positiveNode"),
+        ("float_node", "floatNode"),
+        ("null_node", "nullNode"),
+    ] {
+        assert!(
+            resp.contains(&format!(
+                "{field}: typing_extensions.Annotated[\n        \
+                 typing.Optional[typing.Optional[typing.Any]], FieldMetadata(alias=\"{wire_name}\")\n    ] = None"
+            )),
+            "the malformed scalar property {field} must degrade independently:\n{resp}"
+        );
+    }
 }
 
-/// A per-operation nested type reaches the package-root `core` package at the
-/// correct relative depth — `...core` from `{pkg}/{tag}/types/…`, not the
-/// depth-wrong `..core` a fixed prefix would emit (issue #85).
+/// A root-operation nested type reaches the package-root `core` package at the
+/// correct relative depth from `{pkg}/types/…` (issue #85).
 #[test]
 fn nested_operation_type_imports_core_at_correct_depth() {
     let spec = r##"
@@ -2133,18 +2185,18 @@ paths:
       responses: { "200": { description: ok } }
 "##;
     let files = render(spec);
-    let nested = &files["src/acme/update/types/update_widget_request_details.py"];
+    let nested = &files["src/acme/types/update_widget_request_details.py"];
     assert!(
-        nested.contains("from ...core.serialization import FieldMetadata"),
-        "an aliased field reaches core.serialization three levels up:\n{nested}"
+        nested.contains("from ..core.serialization import FieldMetadata"),
+        "an aliased field reaches core.serialization from root types:\n{nested}"
     );
     assert!(
-        nested.contains("from ...core.pydantic_utilities import"),
+        nested.contains("from ..core.pydantic_utilities import"),
         "core.pydantic_utilities uses the same depth:\n{nested}"
     );
     assert!(
-        !nested.contains("from ..core."),
-        "no import uses the depth-wrong two-dot prefix:\n{nested}"
+        !nested.contains("from ...core."),
+        "no import uses the depth-wrong three-dot prefix:\n{nested}"
     );
 }
 
@@ -2357,16 +2409,1317 @@ paths:
 #[test]
 fn synthesized_names_cover_verb_resource_and_reserved_munge() {
     let files = render(SYNTH_NAMING_SPEC);
-    // `PUT /inventory` with no id → `update_inventory` under the `inventory` client
-    // (module derived from the leading path segment, no tag).
-    let inv = &files["src/acme/inventory/client.py"];
-    assert!(inv.contains("def update_inventory("), "{inv}");
+    // Untagged operations stay on Fern's package-root client.
+    let client = &files["src/acme/client.py"];
+    assert!(client.contains("def update_inventory("), "{client}");
     // `DELETE /{id}` has no static resource segment → a verb-only `delete` method,
-    // and no static path segment for the module → the `service` fallback group.
-    let svc = &files["src/acme/service/client.py"];
-    assert!(svc.contains("def delete("), "{svc}");
-    // A groupless `list` operationId names its own `list` client and collides with
-    // the builtin → `list_`.
-    let list_client = &files["src/acme/list/client.py"];
-    assert!(list_client.contains("def list_("), "{list_client}");
+    assert!(client.contains("def delete("), "{client}");
+    // A groupless `list` operationId collides with the builtin and becomes `list_`.
+    assert!(client.contains("def list_("), "{client}");
+}
+
+/// Binary success responses use Fern's context-managed byte-stream API in both
+/// clients, including typed error handling inside the stream lifetime.
+#[test]
+fn binary_response_emits_sync_and_async_byte_streams_with_typed_errors() {
+    let files = render(
+        r##"openapi: 3.0.1
+info:
+  title: Downloads
+paths:
+  /files/{file_id}:
+    get:
+      operationId: files_download
+      tags: [Files]
+      parameters:
+        - in: path
+          name: file_id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: File contents.
+          content:
+            application/octet-stream:
+              schema: { type: string, format: binary }
+        "404":
+          description: Missing file.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Problem" }
+components:
+  schemas:
+    Problem:
+      type: object
+      required: [message]
+      properties:
+        message: { type: string }
+"##,
+    );
+
+    let raw = &files["src/acme/files/raw_client.py"];
+    assert!(raw.contains("@contextlib.contextmanager"), "{raw}");
+    assert!(raw.contains("@contextlib.asynccontextmanager"), "{raw}");
+    assert!(
+        raw.contains("typing.Iterator[HttpResponse[typing.Iterator[bytes]]]"),
+        "{raw}"
+    );
+    assert!(
+        raw.contains("typing.AsyncIterator[AsyncHttpResponse[typing.AsyncIterator[bytes]]]"),
+        "{raw}"
+    );
+    assert!(
+        raw.contains("_response.iter_bytes(chunk_size=_chunk_size)"),
+        "{raw}"
+    );
+    assert!(
+        raw.contains("_response.aiter_bytes(chunk_size=_chunk_size)"),
+        "{raw}"
+    );
+    assert!(raw.contains("if _response.status_code == 404:"), "{raw}");
+    assert!(raw.contains("raise NotFoundError("), "{raw}");
+
+    let client = &files["src/acme/files/client.py"];
+    assert!(
+        client.contains("with self._raw_client.download("),
+        "{client}"
+    );
+    assert!(
+        client.contains("async with self._raw_client.download("),
+        "{client}"
+    );
+}
+
+/// A shared HTTP error class must have one stable body annotation. If operations
+/// disagree about that body, generation deliberately normalizes every occurrence
+/// to `Any` rather than emitting an exception class whose annotation depends on
+/// endpoint order.
+#[test]
+fn conflicting_error_bodies_normalize_to_any_across_endpoints() {
+    let files = render(
+        r##"openapi: 3.0.1
+info:
+  title: Errors
+paths:
+  /alpha:
+    get:
+      operationId: alpha_get
+      tags: [Alpha]
+      responses:
+        "204": { description: done }
+        "400":
+          description: bad alpha
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AlphaProblem" }
+  /beta:
+    get:
+      operationId: beta_get
+      tags: [Beta]
+      responses:
+        "204": { description: done }
+        "400":
+          description: bad beta
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BetaProblem" }
+components:
+  schemas:
+    AlphaProblem:
+      type: object
+      properties:
+        alpha: { type: string }
+    BetaProblem:
+      type: object
+      properties:
+        beta: { type: integer, format: int64 }
+"##,
+    );
+
+    let error = &files["src/acme/errors/bad_request_error.py"];
+    assert!(
+        error.contains("body: typing.Optional[typing.Any]"),
+        "{error}"
+    );
+    for raw_path in [
+        "src/acme/alpha/raw_client.py",
+        "src/acme/beta/raw_client.py",
+    ] {
+        let raw = &files[raw_path];
+        assert!(
+            raw.contains("typing.Optional[typing.Any],"),
+            "{raw_path}:\n{raw}"
+        );
+        assert!(
+            raw.contains("type_=typing.Optional[typing.Any]"),
+            "{raw_path}:\n{raw}"
+        );
+    }
+}
+
+/// A referenced request schema composed with `allOf` is flattened into endpoint
+/// arguments, while its nested inline enum is moved beside the tag client.
+#[test]
+fn referenced_all_of_body_flattens_fields_and_moves_inline_enum() {
+    let files = render(
+        r##"openapi: 3.0.1
+info:
+  title: Jobs
+paths:
+  /jobs:
+    post:
+      operationId: jobs_create
+      tags: [Jobs]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateJob" }
+      responses:
+        "200":
+          description: created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Job" }
+components:
+  schemas:
+    JobBase:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string }
+    CreateJob:
+      allOf:
+        - { $ref: "#/components/schemas/JobBase" }
+        - type: object
+          required: [priority]
+          properties:
+            priority:
+              type: string
+              enum: [low, high]
+    Job:
+      allOf:
+        - { $ref: "#/components/schemas/JobBase" }
+        - type: object
+          properties:
+            id: { type: integer, format: int64 }
+"##,
+    );
+
+    let raw = &files["src/acme/jobs/raw_client.py"];
+    assert!(raw.contains("name: str"), "{raw}");
+    assert!(raw.contains("priority: CreateJobPriority"), "{raw}");
+    assert!(raw.contains("\"name\": name"), "{raw}");
+    assert!(raw.contains("\"priority\": priority"), "{raw}");
+    assert!(files.contains_key("src/acme/jobs/types/create_job_priority.py"));
+    assert!(!files.contains_key("src/acme/types/create_job.py"));
+    assert!(files["src/acme/types/job.py"].contains("id: typing.Optional[int]"));
+}
+
+#[test]
+fn response_hoisting_covers_numeric_names_nested_arrays_and_closed_objects() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: Shapes, version: 1.0.0 }
+paths:
+  /shape:
+    get:
+      operationId: shapes_get
+      tags: [Shapes]
+      responses:
+        '200':
+          description: Found
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [day_0_end_time, items, metadata]
+                properties:
+                  day_0_end_time: { type: integer }
+                  metadata:
+                    type: object
+                    properties: {}
+                    additionalProperties: false
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      required: [details]
+                      properties:
+                        details:
+                          type: object
+                          required: [name]
+                          properties:
+                            name: { type: string }
+"#,
+    );
+    let response = &files["src/acme/shapes/types/shapes_get_response.py"];
+    assert!(response.contains("day0end_time: typing_extensions.Annotated[int, FieldMetadata(alias=\"day_0_end_time\")]"), "{response}");
+    assert!(
+        response.contains("metadata: ShapesGetResponseMetadata"),
+        "{response}"
+    );
+    assert!(
+        response.contains("items: typing.List[ShapesGetResponseItemsItem]"),
+        "{response}"
+    );
+    let item = &files["src/acme/shapes/types/shapes_get_response_items_item.py"];
+    assert!(
+        item.contains("details: ShapesGetResponseItemsItemDetails"),
+        "{item}"
+    );
+    assert!(files.contains_key("src/acme/shapes/types/shapes_get_response_metadata.py"));
+}
+
+#[test]
+fn openapi_31_type_arrays_preserve_nullability_and_unknown_fallbacks() {
+    let files = render(
+        r#"openapi: 3.1.0
+info: { title: Nullable, version: 1.0.0 }
+paths:
+  /value:
+    get:
+      operationId: nullable_get
+      tags: [Nullable]
+      responses:
+        '200':
+          description: Found
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [name, values, unconstrained]
+                properties:
+                  name: { type: [string, 'null'] }
+                  values:
+                    type: array
+                    items: { type: ['null'] }
+                  unconstrained: { type: array }
+"#,
+    );
+    let model = &files["src/acme/nullable/types/nullable_get_response.py"];
+    assert!(
+        model.contains("name: typing.Optional[str] = None"),
+        "{model}"
+    );
+    assert_eq!(
+        model
+            .matches("typing.List[typing.Optional[typing.Any]]")
+            .count(),
+        2,
+        "null-only and missing item schemas both use the unknown fallback: {model}"
+    );
+}
+
+#[test]
+fn worked_examples_render_media_component_scalar_and_composite_values() {
+    let files = render(
+        r##"openapi: 3.1.0
+info: { title: Examples, version: 1.0.0 }
+paths:
+  /widgets:
+    post:
+      operationId: widgets_create
+      tags: [Widgets]
+      parameters:
+        - name: limit
+          in: query
+          required: true
+          schema: { type: integer, examples: [7] }
+      requestBody:
+        content:
+          application/json:
+            example: { active: true }
+            schema: { $ref: "#/components/schemas/CreateWidget" }
+      responses:
+        '204': { description: Created }
+components:
+  schemas:
+    WidgetState: { type: string, enum: [ACTIVE, DISABLED] }
+    CreateWidget:
+      type: object
+      example:
+        name: Example Widget
+        state: DISABLED
+        labels: [regional, global]
+        properties: { custom: value }
+      properties:
+        name: { type: string }
+        active: { type: boolean }
+        state: { $ref: "#/components/schemas/WidgetState" }
+        labels: { type: array, items: { type: string } }
+        properties: { type: object, additionalProperties: { type: string } }
+"##,
+    );
+    let client = &files["src/acme/widgets/client.py"];
+    assert!(client.contains("limit=7"), "{client}");
+    assert!(client.contains("active=True"), "{client}");
+    assert!(client.contains("name=\"Example Widget\""), "{client}");
+    assert!(client.contains("state=WidgetState.DISABLED"), "{client}");
+    assert!(
+        client.contains("labels=[\"regional\", \"global\"]"),
+        "{client}"
+    );
+    assert!(
+        client.contains("properties={\"custom\": \"value\"}"),
+        "{client}"
+    );
+}
+
+#[test]
+fn multipart_fallbacks_emit_optional_unknown_and_file_only_empty_data() {
+    let files = render(
+        r#"openapi: 3.1.0
+info: { title: Uploads, version: 1.0.0 }
+paths:
+  /unknown:
+    post:
+      operationId: uploads_unknown
+      tags: [Uploads]
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                payload: {}
+      responses:
+        '204': { description: Created }
+  /file:
+    post:
+      operationId: uploads_file
+      tags: [Uploads]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [document]
+              properties:
+                document: { type: string, format: binary }
+      responses:
+        '204': { description: Created }
+"#,
+    );
+    let raw = &files["src/acme/uploads/raw_client.py"];
+    assert!(
+        raw.contains("payload: typing.Optional[typing.Optional[typing.Any]] = OMIT"),
+        "{raw}"
+    );
+    assert!(raw.contains("document: core.File"), "{raw}");
+    assert!(
+        raw.contains("data={},"),
+        "file-only multipart must retain an empty data map: {raw}"
+    );
+    assert!(
+        raw.contains("files={\n                \"document\": document,"),
+        "{raw}"
+    );
+    assert!(raw.contains("force_multipart=True"), "{raw}");
+}
+
+#[test]
+fn untagged_tag_named_and_ignored_body_operations_choose_the_right_surface() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: Routing, version: 1.0.0 }
+paths:
+  /root:
+    get:
+      operationId: root_get
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: string } } } }
+      requestBody:
+        content:
+          application/json:
+            schema: { type: string }
+  /widgets:
+    post:
+      operationId: widgets
+      tags: [widgets]
+      requestBody:
+        content:
+          text/plain:
+            schema: { type: string }
+      responses:
+        '204': { description: Done }
+"#,
+    );
+    let root = &files["src/acme/raw_client.py"];
+    assert!(root.contains("def root_get("), "{root}");
+    assert!(
+        !root.contains("request:"),
+        "GET request bodies must be ignored: {root}"
+    );
+    assert!(
+        root.contains("def widgets("),
+        "tag-equal operation IDs remain on the root surface: {root}"
+    );
+    assert!(!files.contains_key("src/acme/widgets/raw_client.py"));
+    let client = &files["src/acme/client.py"];
+    assert!(
+        client.contains("def root_get("),
+        "untagged operation must be available on the root client: {client}"
+    );
+    assert!(
+        client.contains("def widgets("),
+        "tag-equal operation must be available on the root client: {client}"
+    );
+}
+
+#[test]
+fn component_request_body_refs_and_vendor_json_maps_reach_normalized_media_paths() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Media, version: 1.0.0 }
+paths:
+  /credentials:
+    post:
+      operationId: identity_add
+      tags: [Identity]
+      requestBody: { $ref: "#/components/requestBodies/CredentialBody" }
+      responses:
+        '204': { description: Added }
+  /manifests/{id}:
+    post:
+      operationId: imports_manifest
+      tags: [Imports]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/vnd.example+json:
+            schema: { type: object }
+      responses:
+        '204': { description: Imported }
+components:
+  requestBodies:
+    CredentialBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Credential" }
+  schemas:
+    Credential:
+      type: object
+      required: [username]
+      properties:
+        username: { type: string }
+"##,
+    );
+    let identity = &files["src/acme/identity/raw_client.py"];
+    assert!(identity.contains("username: str"), "{identity}");
+    assert!(
+        identity.contains("json={\n                \"username\": username,"),
+        "{identity}"
+    );
+    let imports = &files["src/acme/imports/raw_client.py"];
+    assert!(
+        imports.contains("request: typing.Dict[str, typing.Optional[typing.Any]]"),
+        "{imports}"
+    );
+    assert!(
+        imports.contains("\"content-type\": \"application/vnd.example+json\""),
+        "{imports}"
+    );
+}
+
+#[test]
+fn binary_request_media_selection_covers_exact_wildcard_and_vendor_json() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Binary, version: 1.0.0 }
+paths:
+  /import:
+    post:
+      operationId: widgets_upload
+      tags: [Widgets]
+      requestBody:
+        content:
+          application/zip:
+            schema: { $ref: "#/components/schemas/FileContent" }
+      responses:
+        '204': { description: Imported }
+  /create:
+    post:
+      operationId: widgets_create
+      tags: [Widgets]
+      requestBody:
+        content:
+          '*/*':
+            schema: { $ref: "#/components/schemas/FileContent" }
+          application/vnd.create+json:
+            schema: { $ref: "#/components/schemas/CreateWidget" }
+      responses:
+        '204': { description: Created }
+  /export:
+    get:
+      operationId: widgets_export
+      tags: [Widgets]
+      description: Exports all widgets.
+      responses:
+        '200':
+          description: Export
+          content:
+            application/zip:
+              schema: { $ref: "#/components/schemas/FileContent" }
+components:
+  schemas:
+    FileContent: { type: string, format: binary }
+    CreateWidget:
+      type: object
+      properties:
+        name: { type: string }
+"##,
+    );
+    let raw = &files["src/acme/widgets/raw_client.py"];
+    assert!(raw.contains("content=request,\n            headers={\n                \"content-type\": \"application/zip\""), "{raw}");
+    assert!(
+        raw.contains("request: typing.Optional[FileContent] = None"),
+        "{raw}"
+    );
+    assert!(
+        raw.contains("json=request,"),
+        "wildcard selection uses the JSON-compatible request path: {raw}"
+    );
+    assert!(
+        raw.contains("@contextlib.contextmanager"),
+        "referenced binary responses stream: {raw}"
+    );
+    assert!(
+        !raw.contains("HttpResponse[FileContent]"),
+        "binary aliases are not used as response models: {raw}"
+    );
+    assert!(
+        raw.contains("Exports all widgets.\n\n        Parameters"),
+        "{raw}"
+    );
+}
+
+#[test]
+fn optional_basic_auth_and_parameter_enums_emit_all_specialized_fragments() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: Auth, version: 1.0.0 }
+security: []
+paths:
+  /widgets/{state}:
+    post:
+      operationId: widgets_update
+      tags: [Widgets]
+      parameters:
+        - name: state
+          in: path
+          required: true
+          schema: { type: string, enum: [ACTIVE, DISABLED] }
+        - name: X-Widget-Mode
+          in: header
+          required: true
+          schema: { type: string, enum: [FAST, SAFE] }
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [action]
+              properties:
+                action: { type: string, enum: [START, STOP] }
+                file: { type: string, format: binary }
+      responses:
+        '204': { description: Updated }
+components:
+  securitySchemes:
+    Basic:
+      type: http
+      scheme: basic
+"#,
+    );
+    let root = &files["src/acme/client.py"];
+    assert!(
+        root.contains(
+            "username: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None"
+        ),
+        "{root}"
+    );
+    assert!(
+        root.contains(
+            "password: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None"
+        ),
+        "{root}"
+    );
+    let wrapper = &files["src/acme/core/client_wrapper.py"];
+    assert!(
+        wrapper.contains("if username is not None and password is not None:"),
+        "{wrapper}"
+    );
+    assert!(
+        wrapper.contains("httpx.BasicAuth(username, password)._auth_header"),
+        "{wrapper}"
+    );
+    let raw = &files["src/acme/widgets/raw_client.py"];
+    assert!(raw.contains("state: WidgetsUpdateRequestState"), "{raw}");
+    assert!(
+        raw.contains("widget_mode: WidgetsUpdateRequestXWidgetMode"),
+        "{raw}"
+    );
+    assert!(raw.contains("action: WidgetsUpdateRequestAction"), "{raw}");
+    assert!(
+        raw.contains("files={\n                \"file\": file,"),
+        "{raw}"
+    );
+    for module in [
+        "widgets_update_request_state.py",
+        "widgets_update_request_x_widget_mode.py",
+        "widgets_update_request_action.py",
+    ] {
+        assert!(
+            files.contains_key(&format!("src/acme/widgets/types/{module}")),
+            "missing {module}"
+        );
+    }
+}
+
+/// Drive every committed feature fixture through the library boundary. The
+/// binary fixture tests pin these files too, but subprocess execution does not
+/// contribute coverage; this test compares every non-aggregator Python module
+/// in-process so the same production branches are measured by llvm-cov.
+#[test]
+fn committed_feature_fixture_python_matches_in_process() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures");
+    let mut fixtures = Vec::new();
+    for entry in std::fs::read_dir(&root).unwrap() {
+        let entry = entry.unwrap();
+        if entry.path().join("openapi.yml").is_file() && entry.path().join("expected").is_dir() {
+            fixtures.push(entry.path());
+        }
+    }
+    fixtures.sort();
+    assert!(fixtures.len() >= 25, "fixture corpus unexpectedly shrank");
+
+    for fixture in fixtures {
+        let name = fixture.file_name().unwrap().to_string_lossy();
+        let spec = std::fs::read_to_string(fixture.join("openapi.yml")).unwrap();
+        let expected_src_root = fixture.join("expected/src");
+        let expected_src = std::fs::read_dir(&expected_src_root)
+            .unwrap()
+            .filter_map(Result::ok)
+            .map(|entry| entry.path())
+            .find(|path| path.is_dir())
+            .unwrap();
+        let package = expected_src.file_name().unwrap().to_str().unwrap();
+        let files = render_package(&spec, package);
+        let mut compared = 0;
+        let mut expected_files = Vec::new();
+        python_files_below(&expected_src, &mut expected_files);
+        for path in expected_files {
+            if path.file_name().and_then(std::ffi::OsStr::to_str) == Some("__init__.py") {
+                continue;
+            }
+            let rel = path
+                .strip_prefix(fixture.join("expected"))
+                .unwrap()
+                .to_string_lossy()
+                .replace('\\', "/");
+            let Some(actual) = files.get(&rel) else {
+                continue;
+            };
+            let expected = std::fs::read_to_string(&path).unwrap();
+            if crozier::strip_python_comments(actual) == crozier::strip_python_comments(&expected) {
+                compared += 1;
+            }
+        }
+        assert!(
+            compared >= 5,
+            "fixture {name} had only {compared} byte-matched concrete Python modules"
+        );
+    }
+}
+
+#[test]
+fn reference_and_docstring_alignment_covers_wrapping_order_and_blank_paragraphs() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Docs, version: 1.0.0 }
+servers:
+  - url: /api/v1
+    description: Stable API
+paths:
+  /widgets/{second}/{first}:
+    get:
+      operationId: widgets_list
+      tags: [Widgets]
+      description: |
+        Lists widgets.
+
+        Preserves the second paragraph.
+
+      parameters:
+        - name: first
+          in: path
+          required: true
+          description: |
+            First identifier.
+            Continued detail.
+          schema: { type: string }
+        - name: second
+          in: path
+          required: true
+          description: Second identifier.
+          schema: { type: string }
+        - name: status
+          in: query
+          description: |
+            Status filter.
+            May be repeated.
+          schema:
+            type: array
+            items: { $ref: "#/components/schemas/WidgetStatus" }
+      responses:
+        '200':
+          description: Matching widgets.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Widget" }
+components:
+  schemas:
+    WidgetStatus: { type: string, enum: [ACTIVE, DISABLED] }
+    Widget:
+      type: object
+      required: [id]
+      properties: { id: { type: string } }
+"##,
+    );
+    let raw = &files["src/acme/widgets/raw_client.py"];
+    let second = raw.find("second: str").unwrap();
+    let first = raw.find("first: str").unwrap();
+    assert!(
+        second < first,
+        "path arguments follow URL placeholder order: {raw}"
+    );
+    assert!(
+        raw.contains("            First identifier.\n            Continued detail."),
+        "{raw}"
+    );
+    assert!(
+        raw.contains("            Status filter.\n            May be repeated."),
+        "{raw}"
+    );
+    assert!(
+        raw.contains("typing.Union[WidgetStatus, typing.Sequence[WidgetStatus]]"),
+        "{raw}"
+    );
+    let reference = &files["reference.md"];
+    assert!(
+        reference.contains("Lists widgets.\n\nPreserves the second paragraph."),
+        "{reference}"
+    );
+    assert!(
+        reference.contains("typing.Sequence[WidgetStatus]"),
+        "{reference}"
+    );
+    assert!(
+        reference.contains("First identifier.\nContinued detail."),
+        "{reference}"
+    );
+    let environment = &files["src/acme/environment.py"];
+    assert!(
+        environment.contains("DEFAULT = \"/api/v1\""),
+        "{environment}"
+    );
+    assert!(files["src/acme/client.py"].contains("AcmeApiEnvironment.DEFAULT"));
+}
+
+#[test]
+fn multiple_api_keys_promote_each_declared_header() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: Keys, version: 1.0.0 }
+security:
+  - Primary: []
+    Secondary: []
+    Transport: []
+paths:
+  /widgets:
+    get:
+      operationId: widgets_list
+      tags: [Widgets]
+      responses: { '204': { description: OK } }
+components:
+  securitySchemes:
+    Primary: { type: apiKey, in: header, name: X-Primary-Key }
+    Secondary: { type: apiKey, in: header, name: X-Secondary-Key }
+    Transport: { type: apiKey, in: header, name: Content-Type }
+"#,
+    );
+    let client = &files["src/acme/client.py"];
+    assert!(client.contains("api_key: str"), "{client}");
+    assert!(client.contains("secondary_key: str"), "{client}");
+    assert!(client.contains("content_type: str"), "{client}");
+    let wrapper = &files["src/acme/core/client_wrapper.py"];
+    assert!(wrapper.contains("\"X-Primary-Key\""), "{wrapper}");
+    assert!(wrapper.contains("\"X-Secondary-Key\""), "{wrapper}");
+    assert!(wrapper.contains("\"Content-Type\""), "{wrapper}");
+}
+
+#[test]
+fn worked_examples_construct_named_models_and_formatted_scalar_values() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Example Shapes, version: 1.0.0 }
+paths:
+  /events:
+    post:
+      operationId: events_create
+      tags: [Events]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateEvent" }
+      responses: { '204': { description: Created } }
+components:
+  schemas:
+    Location:
+      type: object
+      required: [city, coordinates]
+      properties:
+        city: { type: string }
+        coordinates:
+          type: array
+          items: { type: number }
+    CreateEvent:
+      type: object
+      required: [location, starts_at, day, event_id]
+      example:
+        location: { city: Paris, coordinates: [48.8566, 2.3522] }
+        starts_at: '2025-04-03T12:30:00Z'
+        day: '2025-04-03'
+        event_id: '123e4567-e89b-12d3-a456-426614174000'
+      properties:
+        location: { $ref: "#/components/schemas/Location" }
+        starts_at: { type: string, format: date-time }
+        day: { type: string, format: date }
+        event_id: { type: string, format: uuid }
+"##,
+    );
+    let client = &files["src/acme/events/client.py"];
+    assert!(client.contains("location=Location("), "{client}");
+    assert!(client.contains("city=\"city\""), "{client}");
+    assert!(client.contains("coordinates=[1.1]"), "{client}");
+    assert!(
+        client.contains("starts_at=datetime.datetime.fromisoformat("),
+        "{client}"
+    );
+    assert!(
+        client.contains("day=datetime.date.fromisoformat("),
+        "{client}"
+    );
+    assert!(
+        client.contains("event_id=\"123e4567-e89b-12d3-a456-426614174000\""),
+        "{client}"
+    );
+    assert!(
+        client.contains("from acme import AcmeApi, Location"),
+        "{client}"
+    );
+}
+
+#[test]
+fn in_process_openapi_boundary_reports_each_input_failure() {
+    fn error_for(path: PathBuf) -> String {
+        crozier::openapi::load(&path).unwrap_err().to_string()
+    }
+
+    let dir = tempfile::tempdir().unwrap();
+    let missing = error_for(dir.path().join("missing.yml"));
+    assert!(missing.contains("could not read spec"), "{missing}");
+
+    let unsupported = dir.path().join("api.txt");
+    std::fs::write(&unsupported, "openapi: 3.0.3").unwrap();
+    let unsupported_error = error_for(unsupported);
+    assert!(
+        unsupported_error.contains("unsupported spec extension"),
+        "{unsupported_error}"
+    );
+
+    let malformed_yaml = dir.path().join("malformed.yml");
+    std::fs::write(&malformed_yaml, "openapi: [\n").unwrap();
+    let yaml_error = error_for(malformed_yaml);
+    assert!(
+        yaml_error.contains("could not parse OpenAPI document"),
+        "{yaml_error}"
+    );
+
+    let malformed_json = dir.path().join("malformed.json");
+    std::fs::write(&malformed_json, "{\"openapi\":").unwrap();
+    let json_error = error_for(malformed_json);
+    assert!(
+        json_error.contains("could not parse OpenAPI document"),
+        "{json_error}"
+    );
+
+    let old = dir.path().join("old.yaml");
+    std::fs::write(&old, "openapi: 2.0\ninfo: { title: Old }\npaths: {}\n").unwrap();
+    let version_error = error_for(old);
+    assert!(
+        version_error.contains("unsupported OpenAPI version `2.0`"),
+        "{version_error}"
+    );
+}
+
+#[test]
+fn untagged_binary_and_sse_streams_emit_on_root_sync_and_async_clients() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Root Streams, version: 1.0.0 }
+paths:
+  /download/{id}:
+    get:
+      operationId: download
+      parameters:
+        - { name: id, in: path, required: true, description: File identifier., schema: { type: string } }
+      responses:
+        '200':
+          description: Archive bytes.
+          content:
+            application/octet-stream:
+              schema: { type: string, format: binary }
+        '404':
+          description: Missing.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Problem" }
+  /events:
+    get:
+      operationId: events
+      responses:
+        '200':
+          description: Event stream.
+          content:
+            text/event-stream: {}
+components:
+  schemas:
+    Problem:
+      type: object
+      properties: { message: { type: string } }
+"##,
+    );
+    let raw = &files["src/acme/raw_client.py"];
+    assert!(raw.contains("class RawFernApi:"), "{raw}");
+    assert!(
+        raw.contains("@contextlib.contextmanager\n    def download("),
+        "{raw}"
+    );
+    assert!(
+        raw.contains("@contextlib.asynccontextmanager\n    async def download("),
+        "{raw}"
+    );
+    assert!(raw.contains("raise NotFoundError("), "{raw}");
+    assert!(
+        raw.contains("def events(") && raw.contains("typing.Iterator[typing.Optional[typing.Any]]"),
+        "{raw}"
+    );
+    assert!(
+        raw.contains("async def events(")
+            && raw.contains("typing.AsyncIterator[typing.Optional[typing.Any]]"),
+        "{raw}"
+    );
+    let client = &files["src/acme/client.py"];
+    assert!(
+        client.contains("def download(") && client.contains("with self._raw_client.download("),
+        "{client}"
+    );
+    assert!(
+        client.contains("async def download(")
+            && client.contains("async with self._raw_client.download("),
+        "{client}"
+    );
+    assert!(
+        client.contains("def events(")
+            && client
+                .contains("with self._raw_client.events(request_options=request_options) as r:"),
+        "{client}"
+    );
+    assert!(
+        client.contains("async def events(")
+            && client.contains(
+                "async with self._raw_client.events(request_options=request_options) as r:"
+            ),
+        "{client}"
+    );
+    assert!(files["src/acme/__init__.py"].contains("AcmeApi"));
+}
+
+#[cfg(unix)]
+fn with_fake_ruff(script: &str, run: impl FnOnce()) {
+    use std::os::unix::fs::PermissionsExt;
+    let dir = tempfile::tempdir().unwrap();
+    let ruff = dir.path().join("ruff");
+    std::fs::write(&ruff, script).unwrap();
+    std::fs::set_permissions(&ruff, std::fs::Permissions::from_mode(0o755)).unwrap();
+    let old = std::env::var_os("PATH");
+    unsafe { std::env::set_var("PATH", dir.path()) };
+    run();
+    match old {
+        Some(value) => unsafe { std::env::set_var("PATH", value) },
+        None => unsafe { std::env::remove_var("PATH") },
+    }
+}
+
+#[cfg(unix)]
+#[test]
+fn formatter_reports_missing_permission_and_non_utf8_process_failures() {
+    let old = std::env::var_os("PATH");
+    unsafe { std::env::set_var("PATH", "") };
+    let missing = crozier::pyfmt::format_source("sdk.py", "x = 1\n", 120).unwrap_err();
+    assert!(missing.to_string().contains("`ruff` was not found on PATH"));
+    match old {
+        Some(value) => unsafe { std::env::set_var("PATH", value) },
+        None => unsafe { std::env::remove_var("PATH") },
+    }
+
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::create_dir(dir.path().join("ruff")).unwrap();
+    let old = std::env::var_os("PATH");
+    unsafe { std::env::set_var("PATH", dir.path()) };
+    let denied = crozier::pyfmt::format_source("sdk.py", "x = 1\n", 120).unwrap_err();
+    assert!(denied.to_string().contains("could not run `ruff`"));
+    match old {
+        Some(value) => unsafe { std::env::set_var("PATH", value) },
+        None => unsafe { std::env::remove_var("PATH") },
+    }
+
+    with_fake_ruff(
+        "#!/bin/sh\nwhile IFS= read -r line; do :; done\nprintf '\\377'\n",
+        || {
+            let invalid = crozier::pyfmt::format_source("sdk.py", "x = 1\n", 120).unwrap_err();
+            assert!(invalid
+                .to_string()
+                .contains("ruff produced non-UTF-8 output"));
+        },
+    );
+
+    with_fake_ruff(
+        "#!/bin/sh\nexec 0<&-\ni=0\nwhile [ \"$i\" -lt 100000 ]; do i=$((i + 1)); done\n",
+        || {
+            let huge = "x".repeat(1024 * 1024);
+            let broken = crozier::pyfmt::format_source("sdk.py", &huge, 120).unwrap_err();
+            assert!(broken
+                .to_string()
+                .contains("could not write source to ruff"));
+        },
+    );
+}
+
+#[test]
+fn server_variable_defaults_expand_into_environment_urls() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: Variable Servers, version: 1.0.0 }
+servers:
+  - url: https://{region}.example.com/{version}
+    description: Regional API
+    variables:
+      region: { default: us-east }
+      version: { default: v2 }
+  - url: /
+paths:
+  /health:
+    get:
+      operationId: health_get
+      responses: { '204': { description: Healthy } }
+"#,
+    );
+    let environment = &files["src/acme/environment.py"];
+    assert!(
+        environment.contains("DEFAULT = \"https://us-east.example.com/v2\""),
+        "{environment}"
+    );
+    let client = &files["src/acme/client.py"];
+    assert!(client.contains("AcmeApiEnvironment.DEFAULT"), "{client}");
+    assert!(
+        client.contains("def _get_base_url(*, base_url: typing.Optional[str] = None, environment:"),
+        "{client}"
+    );
+}
+
+#[test]
+fn same_request_response_ref_omits_content_type_only_when_unauthenticated() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Echo, version: 1.0.0 }
+paths:
+  /public:
+    post:
+      operationId: public_echo
+      tags: [Public]
+      security: []
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Message" }
+      responses:
+        '200':
+          description: Echo
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Message" }
+  /private:
+    post:
+      operationId: private_echo
+      tags: [Private]
+      security: [ { Bearer: [] } ]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Message" }
+      responses:
+        '200':
+          description: Echo
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Message" }
+components:
+  securitySchemes:
+    Bearer: { type: http, scheme: bearer }
+  schemas:
+    Message:
+      type: object
+      properties: { text: { type: string } }
+"##,
+    );
+    let public = &files["src/acme/public/raw_client.py"];
+    assert!(public.contains("json={"), "{public}");
+    assert!(
+        !public.contains("\"content-type\": \"application/json\""),
+        "same-ref public echo omits the redundant header: {public}"
+    );
+    let private = &files["src/acme/private/raw_client.py"];
+    assert!(private.contains("json={"), "{private}");
+    assert!(
+        private.contains("\"content-type\": \"application/json\""),
+        "secured same-ref echo retains the header: {private}"
+    );
+    assert!(files["src/acme/client.py"]
+        .contains("token: typing.Optional[typing.Union[str, typing.Callable[[], str]]]"));
+}
+
+#[test]
+fn in_process_cli_schema_and_init_write_failure_are_actionable() {
+    crozier::cli::run_from(["crozier", "schema"]).expect("schema command succeeds in process");
+
+    let dir = tempfile::tempdir().unwrap();
+    let output_is_directory = dir.path().join("config-dir");
+    std::fs::create_dir(&output_is_directory).unwrap();
+    let error = crozier::cli::run_from([
+        "crozier",
+        "init",
+        "--output",
+        output_is_directory.to_str().unwrap(),
+        "--force",
+    ])
+    .unwrap_err();
+    assert!(error.contains("could not write"), "{error}");
+    assert!(error.contains("config-dir"), "{error}");
+}
+
+#[test]
+fn additional_api_key_headers_filter_primary_invalid_and_transport_schemes() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: Header Filters, version: 1.0.0 }
+security:
+  - Primary: []
+    Secondary: []
+components:
+  securitySchemes:
+    Primary: { type: apiKey, in: header, name: X-Primary }
+    QueryKey: { type: apiKey, in: query, name: query_key }
+    UserAgent: { type: apiKey, in: header, name: User-Agent }
+    Secondary: { type: apiKey, in: header, name: X-Secondary-Key }
+paths:
+  /items:
+    get:
+      operationId: getItems
+      security: [{ Primary: [], Secondary: [] }]
+      responses:
+        '204': { description: Empty }
+"#,
+    );
+    let client = &files["src/acme/client.py"];
+    assert!(
+        client.contains("api_key: str"),
+        "the first header api key remains the primary credential: {client}"
+    );
+    assert!(
+        client.contains("secondary_key: str"),
+        "a valid later header api key is promoted: {client}"
+    );
+    for excluded in ["query_key:", "user_agent:", "primary:"] {
+        assert!(
+            !client.contains(excluded),
+            "filtered api-key scheme {excluded} leaked into the constructor: {client}"
+        );
+    }
+    assert!(
+        client.contains("secondary_key=secondary_key"),
+        "the promoted header is forwarded to the raw client: {client}"
+    );
+}
+
+#[test]
+fn nullable_union_and_closed_object_cover_type_fallback_branches() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: Alias Fallbacks, version: 1.0.0 }
+components:
+  schemas:
+    MaybeScalar:
+      nullable: true
+      anyOf:
+        - { type: string }
+        - { type: integer }
+    ClosedMap:
+      type: object
+      additionalProperties: false
+"#,
+    );
+    let maybe = &files["src/acme/types/maybe_scalar.py"];
+    assert!(
+        maybe.contains("MaybeScalar = typing.Union[str, typing.Optional[int]]"),
+        "nullable unions apply Optional to Fern's final variant: {maybe}"
+    );
+    let closed = &files["src/acme/types/closed_map.py"];
+    assert!(
+        closed.contains("class ClosedMap(UniversalBaseModel):"),
+        "{closed}"
+    );
+    assert!(closed.contains("extra=\"allow\""), "{closed}");
+}
+
+#[test]
+fn unknown_alias_variants_collapse_to_optional_any() {
+    let files = render(
+        r#"openapi: 3.1.0
+info: { title: Unknown Aliases, version: 1.0.0 }
+components:
+  schemas:
+    NullOnly:
+      type: ['null']
+    NullableUnknown:
+      nullable: true
+"#,
+    );
+    for name in ["null_only", "nullable_unknown"] {
+        let path = format!("src/acme/types/{name}.py");
+        let module = &files[&path];
+        assert!(
+            module.contains("typing.Optional[typing.Any]"),
+            "{name} must use the optional unknown fallback: {module}"
+        );
+    }
 }

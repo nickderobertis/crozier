@@ -59,8 +59,17 @@ these is built from a spec with Fern overrides applied, not the raw document.
 | `deepgram` | `deepgram/deepgram-api-specs@main/openapi.yml` | 342 errors: duplicate inline `ListRequest` across sub-clients, and integer enums (`16000`, `48000`, …) with no `x-fern-enum` names |
 | `asana` (api-guru `asana.com/1.0`) | already attempted by a prior agent too | 17 errors: inline request-body collisions (`AddFollowersRequest`, `RemoveFollowersRequest`, `ProjectSaveAsTemplateRequest`) and `date` fields with datetime examples |
 
-Accepted so far: `apideck.com-crm` (fully matched) and `bunq.com` (all request
-bodies `$ref`ed; fully matched, all 956 files — see [`../../docs/matching.md`](../../docs/matching.md)).
+Accepted (fully matched): `apideck.com-crm` (167 files), `bunq.com` (956 files),
+and `bungie.net` (1082 files) — see [`../../docs/matching.md`](../../docs/matching.md).
+
+Accepted, byte-match **in progress** (a batch of five harder, feature-diverse
+targets added together; each passes `fern check`, Fern golden pending Docker
+generation): `anchore.io`, `apache.org` (Airflow), `discourse.local`,
+`appwrite.io-server`, `apicurio.local-registry`. Three surfaced generator gaps the
+byte-match pass closes — a **duplicate coined method parameter** (anchore's
+`policies`, apache's `dag`) and a **paths-level `x-*` extension** crozier's parser
+rejects (`apicurio`'s `x-codegen-contextRoot`); discourse and appwrite already
+consume cleanly. See [`../../docs/matching.md`](../../docs/matching.md).
 
 ## Growing `matched` — don't diff by hand
 

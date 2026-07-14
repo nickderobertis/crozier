@@ -16,7 +16,7 @@ use serde::Serialize;
 
 use crate::error::{Error, Result};
 use crate::ir::{
-    Auth, Endpoint, ErrorClass, Field, GlobalHeader, Ir, ObjectType, Prim, RequestBody,
+    Auth, BodyField, Endpoint, ErrorClass, Field, GlobalHeader, Ir, ObjectType, Prim, RequestBody,
     TagTypeDecl, TypeDecl, TypeRef,
 };
 use crate::naming;
@@ -72,6 +72,9 @@ const STDLIB_MODULES: &[&str] = &[
 /// (how many leading dots, and whether via a tag's `types/` subpackage).
 #[derive(Clone, Default)]
 enum RefLoc {
+    /// A generated file at the package root (`src/{pkg}/client.py` or
+    /// `src/{pkg}/raw_client.py`).
+    PackageRoot,
     /// A module in the package-root `types/` package (`src/{pkg}/types/`).
     #[default]
     RootTypes,
@@ -128,6 +131,12 @@ impl Imports {
     fn type_import_path(&self, class: &str) -> String {
         let m = naming::module_name(class);
         match self.tag_types.get(class) {
+            Some(tag) if tag.is_empty() => match &self.loc {
+                RefLoc::RootTypes => format!(".{m}"),
+                RefLoc::TagTypes(_) => format!("...types.{m}"),
+                RefLoc::Client(_) | RefLoc::Errors => format!("..types.{m}"),
+                RefLoc::PackageRoot => format!(".types.{m}"),
+            },
             // A tag-scoped type lives at `{pkg}.{tag}.types.{m}`.
             Some(tag) => match &self.loc {
                 RefLoc::TagTypes(cur) if cur == tag => format!(".{m}"),
@@ -135,13 +144,14 @@ impl Imports {
                 RefLoc::TagTypes(_) | RefLoc::Client(_) | RefLoc::Errors => {
                     format!("..{tag}.types.{m}")
                 }
-                RefLoc::RootTypes => format!(".{tag}.types.{m}"),
+                RefLoc::PackageRoot | RefLoc::RootTypes => format!(".{tag}.types.{m}"),
             },
             // A package-root type lives at `{pkg}.types.{m}`.
             None => match &self.loc {
                 RefLoc::RootTypes => format!(".{m}"),
                 RefLoc::TagTypes(_) => format!("...types.{m}"),
                 RefLoc::Client(_) | RefLoc::Errors => format!("..types.{m}"),
+                RefLoc::PackageRoot => format!(".types.{m}"),
             },
         }
     }
@@ -170,6 +180,14 @@ impl Imports {
         match self.loc {
             RefLoc::TagTypes(_) => "...core",
             RefLoc::RootTypes | RefLoc::Client(_) | RefLoc::Errors => "..core",
+            RefLoc::PackageRoot => ".core",
+        }
+    }
+
+    fn error_import_path(&self, module: &str) -> String {
+        match self.loc {
+            RefLoc::PackageRoot => format!(".errors.{module}"),
+            _ => format!("..errors.{module}"),
         }
     }
 
@@ -180,6 +198,11 @@ impl Imports {
     fn add_core(&mut self, submodule: &str, name: &str) {
         let module = format!("{}.{submodule}", self.core_prefix());
         self.add_from(&module, name);
+    }
+
+    fn add_core_package(&mut self) {
+        let parent = self.core_prefix().trim_end_matches("core");
+        self.add_from(parent, "core");
     }
 
     fn add_plain(&mut self, module: &str) {
@@ -691,10 +714,15 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     for (module, decls) in &tag_type_modules {
         for decl in decls {
             let forward = forward_map.get(decl.name()).unwrap_or(&empty_forward);
+            let location = if module.is_empty() {
+                RefLoc::RootTypes
+            } else {
+                RefLoc::TagTypes((*module).to_string())
+            };
             let file = render_type_decl(
                 &env,
                 decl,
-                RefLoc::TagTypes((*module).to_string()),
+                location,
                 &tag_map,
                 ir.extra_fields,
                 forward,
@@ -738,6 +766,16 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         }
     }
 
+    let root_eps: Vec<&Endpoint> = ir
+        .endpoints
+        .iter()
+        .filter(|e| e.module.is_empty())
+        .collect();
+    let root_emittable = !root_eps.is_empty() && root_eps.iter().all(|e| e.emittable);
+    if root_emittable {
+        files.push(raw_client_file(&env, pkg, "", &root_eps, &tag_map)?);
+    }
+
     // Per-tag `raw_client.py` and `client.py`, but only for modules whose every
     // operation is within the subset crozier emits today (see
     // `Endpoint::emittable`); the rest await wider endpoint support. The modules
@@ -774,15 +812,21 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
 
     // Root client: `FernApi`/`AsyncFernApi` aggregating the tag clients. Emitted
     // only when there is at least one tag client to aggregate.
-    if !emittable_modules.is_empty() {
+    if root_emittable || !emittable_modules.is_empty() {
         files.push(root_client_file(
             &env,
-            pkg,
-            &ir.client_name,
-            &emittable_modules,
-            &ir.auth,
-            ir.environment.as_ref(),
-            &ir.global_headers,
+            RootClientFileCtx {
+                pkg,
+                client_name: &ir.client_name,
+                modules: &emittable_modules,
+                root_endpoints: if root_emittable { &root_eps } else { &[] },
+                types: &ir.types,
+                tag_decls: &ir.tag_types,
+                tag_map: &tag_map,
+                auth: &ir.auth,
+                environment: ir.environment.as_ref(),
+                global_headers: &ir.global_headers,
+            },
         )?);
     }
 
@@ -797,7 +841,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     if !ir.types.is_empty() {
         files.push(types_init_file(&env, pkg, &ir.types)?);
     }
-    if !emittable_modules.is_empty() {
+    if root_emittable || !emittable_modules.is_empty() {
         files.push(root_init_file(&env, pkg, ir, &emittable_modules)?);
     }
 
@@ -1100,11 +1144,17 @@ fn root_init_file(
     // submodule (`from .inlined import InlinedSearchResponse`), grouped per tag.
     let mut hoisted_by_tag: BTreeMap<String, Vec<String>> = BTreeMap::new();
     for tt in &ir.tag_types {
-        hoisted_by_tag
-            .entry(tt.module.clone())
-            .or_default()
-            .extend(tt.decl.exported_names().into_iter().map(str::to_string));
+        let names = tt.decl.exported_names().into_iter().map(str::to_string);
+        if tt.module.is_empty() {
+            type_names.extend(names);
+        } else {
+            hoisted_by_tag
+                .entry(tt.module.clone())
+                .or_default()
+                .extend(names);
+        }
     }
+    type_names.sort();
     let environment = ir.environment.as_ref();
     let mut error_names: Vec<String> = ir.errors.iter().map(|e| e.class_name.clone()).collect();
     error_names.sort();
@@ -1175,15 +1225,24 @@ fn root_init_file(
 /// of only scalar fields with any optional one (`createaccount`) or a single field
 /// (`create`), or a union/enum/scalar/no body, renders empty parens.
 fn complex_body(ep: &Endpoint, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) -> bool {
+    if ep.body_all_of
+        || (ep.body_schema_ref
+            && ep.body_schema_has_example
+            && matches!(ep.request_body, Some(RequestBody::Inline(_))))
+    {
+        return true;
+    }
     match &ep.request_body {
         None => false,
-        Some(RequestBody::Bytes) => true,
+        Some(RequestBody::Bytes { .. }) => true,
         Some(RequestBody::Inline(fields)) => {
             fields.iter().any(|f| f.convert)
                 || (fields.len() >= 2 && fields.iter().all(|f| f.spec_required))
         }
         Some(RequestBody::Form(form)) => {
-            form.fields.iter().any(|f| f.is_file) || form.fields.iter().all(|f| f.spec_required)
+            ep.module.is_empty()
+                || form.fields.iter().any(|f| f.is_file)
+                || form.fields.iter().all(|f| f.spec_required)
         }
         Some(RequestBody::Single(s)) => is_complex_type(&s.type_ref, types, tag_decls),
     }
@@ -1269,12 +1328,26 @@ fn abbrev_call(indent: usize, prefix: &str, complex: bool) -> String {
     }
 }
 
-fn readme_endpoint(ir: &Ir) -> Option<&Endpoint> {
-    ir.endpoints
-        .iter()
-        .find(|e| e.emittable && e.request_body.is_some())
+fn select_readme_endpoint<'a>(
+    endpoints: impl Clone + Iterator<Item = &'a Endpoint>,
+) -> Option<&'a Endpoint> {
+    endpoints
+        .clone()
+        .find(|e| {
+            e.emittable
+                && e.http_method == "POST"
+                && e.request_body.is_some()
+                && !matches!(e.request_body, Some(RequestBody::Bytes { .. }))
+        })
         .or_else(|| {
-            ir.endpoints.iter().find(|e| {
+            endpoints.clone().find(|e| {
+                e.emittable
+                    && e.request_body.is_some()
+                    && !matches!(e.request_body, Some(RequestBody::Bytes { .. }))
+            })
+        })
+        .or_else(|| {
+            endpoints.clone().find(|e| {
                 e.emittable
                     && e.http_method != "GET"
                     && e.path_params.is_empty()
@@ -1283,7 +1356,39 @@ fn readme_endpoint(ir: &Ir) -> Option<&Endpoint> {
                     && e.request_body.is_none()
             })
         })
-        .or_else(|| ir.endpoints.iter().find(|e| e.emittable))
+        .or_else(|| {
+            endpoints
+                .clone()
+                .find(|e| e.emittable && !matches!(e.request_body, Some(RequestBody::Bytes { .. })))
+        })
+}
+
+fn readme_endpoint(ir: &Ir) -> Option<&Endpoint> {
+    if ir.openapi_31 {
+        select_readme_endpoint(ir.endpoints.iter())
+    } else {
+        select_readme_endpoint(ir.endpoints.iter().filter(|e| e.module.is_empty()))
+            .or_else(|| select_readme_endpoint(ir.endpoints.iter()))
+    }
+}
+
+fn client_call_prefix(ep: &Endpoint) -> String {
+    if ep.module.is_empty() {
+        format!("client.{}", ep.method_name)
+    } else {
+        format!("client.{}.{}", ep.module, ep.method_name)
+    }
+}
+
+fn raw_client_call_prefix(ep: &Endpoint) -> String {
+    if ep.module.is_empty() {
+        format!("response = client.with_raw_response.{}", ep.method_name)
+    } else {
+        format!(
+            "response = client.{}.with_raw_response.{}",
+            ep.module, ep.method_name
+        )
+    }
 }
 
 /// The generated `README.md`: mostly static prose with the SDK name/package
@@ -1303,24 +1408,18 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     // for an endpoint with a complex (object/container/union) body, else empty
     // parens; the error/raw-response calls are ruff-wrapped at the snippet width 88.
     let complex = (first.request_body.is_none() && first.http_method != "GET")
+        || (ir.openapi_31
+            && first.body_schema_implicit_object
+            && matches!(
+                &first.request_body,
+                Some(RequestBody::Inline(fields)) if fields.iter().all(|field| field.spec_required)
+            ))
         || complex_body(first, &ir.types, &ir.tag_types);
-    let err_call = abbrev_call(
-        4,
-        &format!("client.{}.{}", first.module, first.method_name),
-        complex,
-    );
-    let raw_call = abbrev_call(
-        0,
-        &format!(
-            "response = client.{}.with_raw_response.{}",
-            first.module, first.method_name
-        ),
-        complex,
-    );
+    let err_call = abbrev_call(4, &client_call_prefix(first), complex);
+    let raw_call = abbrev_call(0, &raw_client_call_prefix(first), complex);
+    let retry_prefix = client_call_prefix(first);
     let retry_call = format!(
-        "client.{}.{}({}request_options={{",
-        first.module,
-        first.method_name,
+        "{retry_prefix}({}request_options={{",
         if complex { "..., " } else { "" }
     );
 
@@ -1384,12 +1483,24 @@ fn reference_file(
     let mut blocks: Vec<String> = vec!["# Reference".to_string()];
     let mut any = false;
 
+    let root_eps: Vec<&Endpoint> = ir
+        .endpoints
+        .iter()
+        .filter(|e| e.module.is_empty() && e.emittable)
+        .filter(|e| !matches!(e.request_body, Some(RequestBody::Bytes { .. })))
+        .collect();
+    for ep in root_eps {
+        any = true;
+        blocks.push(reference_entry(env, ir, ep, &ep.module, pkg, tag_types)?);
+        blocks.push(String::new());
+    }
+
     for module in modules {
         let eps: Vec<&Endpoint> = ir
             .endpoints
             .iter()
             .filter(|e| &e.module == *module && e.emittable)
-            .filter(|e| !matches!(e.request_body, Some(RequestBody::Bytes)))
+            .filter(|e| !matches!(e.request_body, Some(RequestBody::Bytes { .. })))
             .collect();
         if eps.is_empty() {
             continue;
@@ -1425,10 +1536,19 @@ struct ParamRow {
     suffix: String,
 }
 
+fn reference_param_suffix(description: Option<&str>) -> String {
+    match description {
+        Some(d) if d.contains('\n') => format!(" \n\n{d}"),
+        Some(d) => format!(" — {d}"),
+        None => " ".to_string(),
+    }
+}
+
 /// The view model for one `reference.md` endpoint entry (`reference_entry.md.j2`).
 #[derive(Serialize)]
 struct ReferenceEntryView {
-    module: String,
+    client_prefix: String,
+    href: String,
     pkg: String,
     method: String,
     dots: &'static str,
@@ -1472,10 +1592,7 @@ fn reference_entry(
         // A *declared* description — even the empty string — gets the ` — {desc}`
         // separator (Fern emits the em-dash whenever the parameter carries a
         // `description` key); only an omitted (`None`) one gets the bare space.
-        let suffix = match desc {
-            Some(d) => format!(" — {d}"),
-            None => " ".to_string(),
-        };
+        let suffix = reference_param_suffix(desc.as_deref());
         params.push(ParamRow {
             name: name.clone(),
             annot: ty.clone(),
@@ -1483,38 +1600,48 @@ fn reference_entry(
         });
     }
     for dp in ordered_keyword_params(&mp.query, &mp.header, &mp.body) {
-        let suffix = match &dp.description {
-            Some(d) => format!(" — {d}"),
-            None => " ".to_string(),
-        };
-        // Fern renders a `core.File` type in the reference parameter table with a
-        // leading `from __future__ import annotations` (an artifact of how it prints
-        // the forward-referenced file type); reproduce it so the table matches.
-        let annot = if dp.annotation == "core.File" {
-            "from __future__ import annotations\n\ncore.File".to_string()
-        } else {
-            dp.annotation.clone()
-        };
+        let suffix = reference_param_suffix(dp.description.as_deref());
+        let annot = reference_param_annotation(&dp.annotation);
         params.push(ParamRow {
             name: dp.name.clone(),
             annot,
             suffix,
         });
     }
+    let request_options_suffix = if ep.binary_response {
+        " — Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response."
+    } else {
+        " — Request-specific configuration."
+    };
     params.push(ParamRow {
         name: "request_options".to_string(),
         annot: "typing.Optional[RequestOptions]".to_string(),
-        suffix: " — Request-specific configuration.".to_string(),
+        suffix: request_options_suffix.to_string(),
     });
 
     let has_args =
         !mp.path.is_empty() || !mp.query.is_empty() || !mp.header.is_empty() || !mp.body.is_empty();
     let view = ReferenceEntryView {
-        module: module.to_string(),
+        client_prefix: if module.is_empty() {
+            "client.".to_string()
+        } else {
+            format!("client.{module}.")
+        },
+        href: if module.is_empty() {
+            format!("src/{pkg}/client.py")
+        } else {
+            format!("src/{pkg}/{module}/client.py")
+        },
         pkg: pkg.to_string(),
         method: ep.method_name.clone(),
         dots: if has_args { "..." } else { "" },
-        description: ep.docstring.clone(),
+        description: ep.docstring.as_ref().map(|description| {
+            if ep.reference_description_trailing_blank {
+                format!("{description}\n")
+            } else {
+                description.clone()
+            }
+        }),
         example,
         params,
     };
@@ -1525,6 +1652,34 @@ fn reference_entry(
         minijinja::Value::from_serialize(&view),
     )?;
     Ok(rendered.trim_end_matches('\n').to_string())
+}
+
+fn reference_param_annotation(annotation: &str) -> String {
+    // Fern wraps the generated scalar-or-sequence type for array query params in
+    // reference tables, while leaving the method signature on one line.
+    if let Some(inner) = annotation
+        .strip_prefix("typing.Optional[typing.Union[")
+        .and_then(|s| s.strip_suffix("]]"))
+    {
+        if let Some((item, sequence_item)) = inner.split_once(", typing.Sequence[") {
+            if sequence_item.strip_suffix(']') == Some(item)
+                && item.chars().next().is_some_and(char::is_uppercase)
+            {
+                return format!(
+                    "typing.Optional[\n    typing.Union[\n        {item},\n        typing.Sequence[{item}],\n    ]\n]"
+                );
+            }
+        }
+    }
+
+    // Fern renders a `core.File` type in the reference parameter table with a
+    // leading `from __future__ import annotations` (an artifact of how it prints
+    // the forward-referenced file type); reproduce it so the table matches.
+    if annotation == "core.File" {
+        "from __future__ import annotations\n\ncore.File".to_string()
+    } else {
+        annotation.to_string()
+    }
 }
 
 /// Render `from <module> import <names>` at `indent` spaces, sorted, on one line.
@@ -1720,11 +1875,18 @@ fn auth_wrapper_parts(auth: &Auth) -> AuthWrapper {
                 super_arg: "token=token, ".to_string(),
             }
         }
-        Auth::Basic => AuthWrapper {
+        Auth::Basic { required: true } => AuthWrapper {
             param: "        username: typing.Union[str, typing.Callable[[], str]],\n        password: typing.Union[str, typing.Callable[[], str]],\n".to_string(),
             assign: "        self._username = username\n        self._password = password\n".to_string(),
             header_block: "        headers[\"Authorization\"] = httpx.BasicAuth(self._get_username(), self._get_password())._auth_header\n".to_string(),
             token_method: "    def _get_username(self) -> str:\n        if isinstance(self._username, str):\n            return self._username\n        else:\n            return self._username()\n\n    def _get_password(self) -> str:\n        if isinstance(self._password, str):\n            return self._password\n        else:\n            return self._password()\n\n".to_string(),
+            super_arg: "username=username, password=password, ".to_string(),
+        },
+        Auth::Basic { required: false } => AuthWrapper {
+            param: "        username: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,\n        password: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,\n".to_string(),
+            assign: "        self._username = username\n        self._password = password\n".to_string(),
+            header_block: "        username = self._get_username()\n        password = self._get_password()\n        if username is not None and password is not None:\n            headers[\"Authorization\"] = httpx.BasicAuth(username, password)._auth_header\n".to_string(),
+            token_method: "    def _get_username(self) -> typing.Optional[str]:\n        if isinstance(self._username, str) or self._username is None:\n            return self._username\n        else:\n            return self._username()\n\n    def _get_password(self) -> typing.Optional[str]:\n        if isinstance(self._password, str) or self._password is None:\n            return self._password\n        else:\n            return self._password()\n\n".to_string(),
             super_arg: "username=username, password=password, ".to_string(),
         },
         // No auth: no credential parameter, assignment, header, or token helper.
@@ -1764,7 +1926,7 @@ fn auth_client_parts(auth: &Auth) -> AuthClient {
             "token",
             "typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None".to_string(),
         )],
-        Auth::Basic => vec![
+        Auth::Basic { required: true } => vec![
             (
                 "username",
                 "typing.Union[str, typing.Callable[[], str]]".to_string(),
@@ -1772,6 +1934,16 @@ fn auth_client_parts(auth: &Auth) -> AuthClient {
             (
                 "password",
                 "typing.Union[str, typing.Callable[[], str]]".to_string(),
+            ),
+        ],
+        Auth::Basic { required: false } => vec![
+            (
+                "username",
+                "typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None".to_string(),
+            ),
+            (
+                "password",
+                "typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None".to_string(),
             ),
         ],
         Auth::None => Vec::new(),
@@ -1815,7 +1987,7 @@ fn auth_example_args(auth: &Auth) -> Vec<&'static str> {
     match auth {
         Auth::ApiKey { .. } => vec!["api_key=\"YOUR_API_KEY\""],
         Auth::Bearer { .. } => vec!["token=\"YOUR_TOKEN\""],
-        Auth::Basic => vec!["username=\"YOUR_USERNAME\"", "password=\"YOUR_PASSWORD\""],
+        Auth::Basic { .. } => vec!["username=\"YOUR_USERNAME\"", "password=\"YOUR_PASSWORD\""],
         Auth::None => Vec::new(),
     }
 }
@@ -2019,7 +2191,7 @@ fn render_type_decl(
                 "UniversalBaseModel".to_string()
             } else {
                 for base in &obj.bases {
-                    imports.add_from(&format!(".{}", naming::module_name(base)), base);
+                    imports.add_type(base);
                 }
                 obj.bases.join(", ")
             };
@@ -2367,10 +2539,13 @@ struct MethodParams {
 /// Compute an endpoint's resolved parameters and response type, registering the
 /// imports the annotations need. Independent of sync/async.
 fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
-    let inner = ep
-        .response
-        .as_ref()
-        .map_or_else(|| "None".to_string(), |t| raw_type_str(t, imports));
+    let inner = if ep.binary_response {
+        "None".to_string()
+    } else {
+        ep.response
+            .as_ref()
+            .map_or_else(|| "None".to_string(), |t| raw_type_str(t, imports))
+    };
 
     let path: Vec<(String, String, Option<String>)> = ep
         .path_params
@@ -2482,7 +2657,7 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
             params.sort_by_key(|p| p.default.is_some());
             params
         }
-        Some(RequestBody::Bytes) => vec![DocParam {
+        Some(RequestBody::Bytes { .. }) => vec![DocParam {
             name: "request".to_string(),
             annotation: "typing.Union[bytes, typing.Iterator[bytes], typing.AsyncIterator[bytes]]"
                 .to_string(),
@@ -2496,10 +2671,10 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
                 // A file field is typed `core.File` (importing the `core` package)
                 // and documented with Fern's fixed pointer to `core.File`.
                 let base = if f.is_file {
-                    imports.add_from("..", "core");
+                    imports.add_core_package();
                     "core.File".to_string()
                 } else {
-                    raw_type_str_ctx(&f.type_ref, imports, true)
+                    raw_type_str(&f.type_ref, imports)
                 };
                 let description = if f.is_file {
                     Some("See core.File for more documentation".to_string())
@@ -2577,10 +2752,13 @@ fn signature(ep: &Endpoint, mp: &MethodParams, return_type: &str, is_async: bool
 /// Build one raw-client method (sync or async), registering its imports.
 fn raw_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> String {
     imports.add_plain("typing");
-    imports.add_from("..core.request_options", "RequestOptions");
+    imports.add_core("request_options", "RequestOptions");
 
     if ep.streaming {
         return raw_stream_method(ep, is_async, imports);
+    }
+    if ep.binary_response {
+        return raw_binary_stream_method(ep, is_async, imports);
     }
 
     let wrapper = if is_async {
@@ -2654,7 +2832,7 @@ fn raw_docstring(
     let mut push_param = |dp: &DocParam| {
         lines.push(format!("        {} : {}", dp.name, dp.annotation));
         if let Some(desc) = &dp.description {
-            lines.push(format!("            {desc}"));
+            push_param_doc(&mut lines, desc);
         }
         lines.push(String::new());
     };
@@ -2686,11 +2864,19 @@ fn raw_docstring(
 fn push_path_param(lines: &mut Vec<String>, name: &str, ty: &str, desc: &Option<String>) {
     lines.push(format!("        {name} : {ty}"));
     match desc {
-        Some(d) if !d.is_empty() => lines.push(format!("            {d}")),
+        Some(d) if !d.is_empty() => push_param_doc(lines, d),
         Some(_) => lines.push(String::new()),
         None => {}
     }
     lines.push(String::new());
+}
+
+fn push_param_doc(lines: &mut Vec<String>, description: &str) {
+    lines.extend(
+        description
+            .split('\n')
+            .map(|line| format!("            {line}")),
+    );
 }
 
 /// Push the `Returns` description under the return type: each line of the
@@ -2708,9 +2894,9 @@ fn push_return_doc(lines: &mut Vec<String>, response_doc: Option<&str>) {
 fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -> String {
     imports.add_plain("typing");
     imports.add_from("json.decoder", "JSONDecodeError");
-    imports.add_from("..core.api_error", "ApiError");
+    imports.add_core("api_error", "ApiError");
     if !ep.path_params.is_empty() {
-        imports.add_from("..core.jsonable_encoder", "jsonable_encoder");
+        imports.add_core("jsonable_encoder", "jsonable_encoder");
     }
 
     let await_ = if is_async { "await " } else { "" };
@@ -2719,11 +2905,13 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
     } else {
         "HttpResponse"
     };
-    let mut lines: Vec<String> = vec![
-        format!("        _response = {await_}self._client_wrapper.httpx_client.request("),
-        format!("            {},", url_arg(ep)),
-        format!("            method=\"{}\",", ep.http_method),
-    ];
+    let mut lines: Vec<String> = vec![format!(
+        "        _response = {await_}self._client_wrapper.httpx_client.request("
+    )];
+    if ep.path != "/" {
+        lines.push(format!("            {},", url_arg(ep)));
+    }
+    lines.push(format!("            method=\"{}\",", ep.http_method));
     append_request_call_args(&mut lines, ep, imports);
     lines.extend([
         "        )".to_string(),
@@ -2731,7 +2919,7 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
         "            if 200 <= _response.status_code < 300:".to_string(),
     ]);
     if ep.response.is_some() {
-        imports.add_from("..core.pydantic_utilities", "parse_obj_as");
+        imports.add_core("pydantic_utilities", "parse_obj_as");
         lines.extend([
             "                _data = typing.cast(".to_string(),
             format!("                    {inner},"),
@@ -2750,9 +2938,9 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
     // One `raise <Error>` branch per declared error response, keyed on its status
     // code, parsing the error body into the generated exception.
     for err in &ep.errors {
-        imports.add_from("..core.pydantic_utilities", "parse_obj_as");
+        imports.add_core("pydantic_utilities", "parse_obj_as");
         let module = naming::module_name(&err.class_name);
-        imports.add_from(&format!("..errors.{module}"), &err.class_name);
+        imports.add_from(&imports.error_import_path(&module), &err.class_name);
         let body = raw_type_str(&err.body_type, imports);
         lines.extend([
             format!(
@@ -2793,10 +2981,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         lines.push("            params={".to_string());
         for qp in &ep.query_params {
             if qp.convert {
-                imports.add_from(
-                    "..core.serialization",
-                    "convert_and_respect_annotation_metadata",
-                );
+                imports.add_core("serialization", "convert_and_respect_annotation_metadata");
                 let annotation = raw_type_str_ctx(&qp.type_ref, imports, true);
                 let call = Doc::group(
                     format!(
@@ -2812,7 +2997,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                 );
                 lines.push(format!("{},", call.flat()));
             } else if type_serializes_as_datetime(&qp.type_ref) {
-                imports.add_from("..core.datetime_utils", "serialize_datetime");
+                imports.add_core("datetime_utils", "serialize_datetime");
                 let value = if qp.required {
                     format!("serialize_datetime({})", qp.py_name)
                 } else {
@@ -2838,10 +3023,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
     match &ep.request_body {
         None => {}
         Some(RequestBody::Single(s)) if s.convert => {
-            imports.add_from(
-                "..core.serialization",
-                "convert_and_respect_annotation_metadata",
-            );
+            imports.add_core("serialization", "convert_and_respect_annotation_metadata");
             let annotation = raw_type_str_ctx(&s.type_ref, imports, true);
             let call = Doc::group(
                 "            json=convert_and_respect_annotation_metadata(",
@@ -2858,19 +3040,22 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         Some(RequestBody::Inline(fields)) => {
             lines.push("            json={".to_string());
             for f in fields {
+                let value_name = body_field_value_name(f);
                 if f.convert {
-                    imports.add_from(
-                        "..core.serialization",
-                        "convert_and_respect_annotation_metadata",
-                    );
-                    let annotation = raw_type_str_ctx(&f.type_ref, imports, true);
+                    imports.add_core("serialization", "convert_and_respect_annotation_metadata");
+                    let annotation_type = if f.nullable && !f.spec_required {
+                        TypeRef::Optional(Box::new(f.type_ref.clone()))
+                    } else {
+                        f.type_ref.clone()
+                    };
+                    let annotation = raw_type_str_ctx(&annotation_type, imports, true);
                     let call = Doc::group(
                         format!(
                             "                \"{}\": convert_and_respect_annotation_metadata(",
                             f.wire_name
                         ),
                         vec![
-                            Doc::atom(format!("object_={}", f.py_name)),
+                            Doc::atom(format!("object_={value_name}")),
                             Doc::atom(format!("annotation={annotation}")),
                             Doc::atom("direction=\"write\""),
                         ],
@@ -2879,15 +3064,15 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                     lines.push(format!("{},", call.flat()));
                 } else {
                     lines.push(format!(
-                        "                \"{}\": {},",
-                        f.wire_name, f.py_name
+                        "                \"{}\": {value_name},",
+                        f.wire_name
                     ));
                 }
             }
             lines.push("            },".to_string());
         }
         // A raw bytes body is streamed via `content=` rather than serialized.
-        Some(RequestBody::Bytes) => lines.push("            content=request,".to_string()),
+        Some(RequestBody::Bytes { .. }) => lines.push("            content=request,".to_string()),
         // A form body: non-file fields into `data={...}`, file fields into
         // `files={...}` (in document order within each group).
         Some(RequestBody::Form(form)) => {
@@ -2903,9 +3088,13 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
             }
             if !data.is_empty() {
                 lines.push(format!("            data={{\n{data}            }},"));
+            } else if !files.is_empty() {
+                lines.push("            data={},".to_string());
             }
             if !files.is_empty() {
                 lines.push(format!("            files={{\n{files}            }},"));
+            } else if form.multipart {
+                lines.push("            files={},".to_string());
             }
         }
     }
@@ -2921,12 +3110,18 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
     // raw bytes body, else `application/json` when the body intrinsically needs it
     // or is accompanied by path/header parameters. Header parameters follow,
     // rendered as `str(x) if x is not None else None`.
-    let content_type: Option<&str> = match &ep.request_body {
-        Some(RequestBody::Bytes) => Some("application/octet-stream"),
+    let content_type: Option<String> = match &ep.request_body {
+        Some(RequestBody::Bytes { content_type }) => Some(content_type.clone()),
         // A multipart form uses `force_multipart=True` (no content-type header);
         // a urlencoded form carries its own content-type.
         Some(RequestBody::Form(form)) => {
-            (!form.multipart).then_some("application/x-www-form-urlencoded")
+            (!form.multipart).then_some("application/x-www-form-urlencoded".to_string())
+        }
+        Some(RequestBody::Single(body))
+            if body.content_type_override.is_some()
+                && body.content_type_override.as_deref() != Some("*/*") =>
+        {
+            body.content_type_override.clone()
         }
         // A JSON body carries the `content-type` header when it accompanies a
         // path/header param, is *undocumented*, or is *always sent whole* (every field
@@ -2936,12 +3131,18 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         // `CREATE_DeviceServer`), leaving the content-type to httpx; an all-required
         // body (`CREATE_SessionServer`) keeps it.
         Some(body)
-            if !ep.header_params.is_empty()
-                || !ep.path_params.is_empty()
-                || (body.content_type_header()
-                    && (!ep.body_documented || body.all_fields_required())) =>
+            if !body.is_wildcard_media()
+                && (!ep.header_params.is_empty()
+                    || !ep.path_params.is_empty()
+                    || (body.content_type_header()
+                        && !ep.body_component_ref
+                        && !(matches!(body, RequestBody::Inline(_))
+                            && (ep.body_all_of || ep.body_response_same_ref))
+                        && (!(ep.body_documented
+                            || ep.body_schema_has_example && ep.body_schema_documented)
+                            || body.all_fields_required()))) =>
         {
-            Some("application/json")
+            Some("application/json".to_string())
         }
         _ => None,
     };
@@ -2969,6 +3170,14 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
     }
 }
 
+fn body_field_value_name(field: &BodyField) -> &str {
+    field
+        .collision_prefix
+        .as_ref()
+        .and_then(|prefix| field.py_name.strip_prefix(&format!("{prefix}_")))
+        .unwrap_or(&field.py_name)
+}
+
 /// The chunk type Fern yields from an OpenAPI-sourced SSE stream. Fern's OpenAPI
 /// importer does not resolve the `x-fern-streaming` `chunk-schema-ref`, so every
 /// streamed event is typed `typing.Optional[typing.Any]`.
@@ -2983,9 +3192,9 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
     imports.add_from("json.decoder", "JSONDecodeError");
     imports.add_from("logging", "error");
     imports.add_from("logging", "warning");
-    imports.add_from("..core.api_error", "ApiError");
-    imports.add_from("..core.http_sse._api", "EventSource");
-    imports.add_from("..core.pydantic_utilities", "parse_obj_as");
+    imports.add_core("api_error", "ApiError");
+    imports.add_core("http_sse._api", "EventSource");
+    imports.add_core("pydantic_utilities", "parse_obj_as");
 
     let (wrapper, iter_t, aiter, decorator, async_kw, async_with, for_kw, iter_sse, read) =
         if is_async {
@@ -3022,7 +3231,9 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
     let mut call: Vec<String> = vec![format!(
         "        {async_with} self._client_wrapper.httpx_client.stream("
     )];
-    call.push(format!("            {},", url_arg(ep)));
+    if ep.path != "/" {
+        call.push(format!("            {},", url_arg(ep)));
+    }
     call.push(format!("            method=\"{}\",", ep.http_method));
     append_request_call_args(&mut call, ep, imports);
     call.push("        ) as _response:".to_string());
@@ -3094,7 +3305,7 @@ fn raw_stream_docstring(ep: &Endpoint, mp: &MethodParams, return_type: &str) -> 
     let mut push_param = |dp: &DocParam| {
         lines.push(format!("        {} : {}", dp.name, dp.annotation));
         if let Some(desc) = &dp.description {
-            lines.push(format!("            {desc}"));
+            push_param_doc(&mut lines, desc);
         }
         lines.push(String::new());
     };
@@ -3112,25 +3323,207 @@ fn raw_stream_docstring(ep: &Endpoint, mp: &MethodParams, return_type: &str) -> 
     lines.join("\n")
 }
 
+/// Build one binary-download raw-client method (sync or async): a
+/// context-managed `httpx_client.stream(...)` that yields response bytes.
+fn raw_binary_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> String {
+    imports.add_plain("contextlib");
+    imports.add_plain("typing");
+    imports.add_from("json.decoder", "JSONDecodeError");
+    imports.add_core("api_error", "ApiError");
+    imports.add_core("pydantic_utilities", "parse_obj_as");
+    if !ep.path_params.is_empty() {
+        imports.add_core("jsonable_encoder", "jsonable_encoder");
+    }
+
+    let (wrapper, iter_t, data_iter, decorator, async_kw, async_with, read, iter_bytes, yield_expr) =
+        if is_async {
+            (
+                "AsyncHttpResponse",
+                "typing.AsyncIterator",
+                "typing.AsyncIterator",
+                "@contextlib.asynccontextmanager",
+                "async ",
+                "async with",
+                "await _response.aread()",
+                "aiter_bytes",
+                "await _stream()",
+            )
+        } else {
+            (
+                "HttpResponse",
+                "typing.Iterator",
+                "typing.Iterator",
+                "@contextlib.contextmanager",
+                "",
+                "with",
+                "_response.read()",
+                "iter_bytes",
+                "_stream()",
+            )
+        };
+    let mp = method_params(ep, imports);
+    let data_type = format!("{data_iter}[bytes]");
+    let return_type = format!("{iter_t}[{wrapper}[{data_type}]]");
+    let sig = signature(ep, &mp, &return_type, is_async);
+    let docstring = raw_binary_stream_docstring(ep, &mp, &return_type);
+
+    let mut call: Vec<String> = vec![format!(
+        "        {async_with} self._client_wrapper.httpx_client.stream("
+    )];
+    if ep.path != "/" {
+        call.push(format!("            {},", url_arg(ep)));
+    }
+    call.push(format!("            method=\"{}\",", ep.http_method));
+    append_request_call_args(&mut call, ep, imports);
+    call.push("        ) as _response:".to_string());
+
+    let data_expr = if is_async {
+        format!("(_chunk async for _chunk in _response.{iter_bytes}(chunk_size=_chunk_size))")
+    } else {
+        format!("(_chunk for _chunk in _response.{iter_bytes}(chunk_size=_chunk_size))")
+    };
+    let success_return = if is_async {
+        format!("return {wrapper}(\n                            response=_response,\n                            data={data_expr},\n                        )")
+    } else {
+        format!("return {wrapper}(\n                            response=_response, data={data_expr}\n                        )")
+    };
+    let error_branches = raw_error_branches(ep, imports);
+    let body = format!(
+        "\
+{call}
+
+            {async_kw}def _stream() -> {wrapper}[{data_type}]:
+                try:
+                    if 200 <= _response.status_code < 300:
+                        _chunk_size = request_options.get(\"chunk_size\", None) if request_options is not None else None
+                        {success_return}
+                    {read}
+{error_branches}
+                    _response_json = _response.json()
+                except JSONDecodeError:
+                    raise ApiError(
+                        status_code=_response.status_code, headers=dict(_response.headers), body=_response.text
+                    )
+                raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+            yield {yield_expr}",
+        call = call.join("\n"),
+    );
+    format!("    {decorator}\n{sig}\n{docstring}\n{body}")
+}
+
+fn raw_binary_stream_docstring(ep: &Endpoint, mp: &MethodParams, return_type: &str) -> String {
+    let mut lines: Vec<String> = vec!["        \"\"\"".to_string()];
+    if let Some(summary) = &ep.docstring {
+        for line in summary.split('\n') {
+            lines.push(format!("        {line}"));
+        }
+        lines.push(String::new());
+    }
+    lines.push("        Parameters".to_string());
+    lines.push("        ----------".to_string());
+    for (name, ty, desc) in &mp.path {
+        push_path_param(&mut lines, name, ty, desc);
+    }
+    let mut push_param = |dp: &DocParam| {
+        lines.push(format!("        {} : {}", dp.name, dp.annotation));
+        if let Some(desc) = &dp.description {
+            push_param_doc(&mut lines, desc);
+        }
+        lines.push(String::new());
+    };
+    ordered_keyword_params(&mp.query, &mp.header, &mp.body)
+        .into_iter()
+        .for_each(&mut push_param);
+    lines.push("        request_options : typing.Optional[RequestOptions]".to_string());
+    lines.push(
+        "            Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response.".to_string(),
+    );
+    lines.push(String::new());
+    lines.push("        Returns".to_string());
+    lines.push("        -------".to_string());
+    lines.push(format!("        {return_type}"));
+    push_return_doc(&mut lines, ep.response_doc.as_deref());
+    lines.push("        \"\"\"".to_string());
+    lines.join("\n")
+}
+
+fn raw_error_branches(ep: &Endpoint, imports: &mut Imports) -> String {
+    let mut lines = Vec::new();
+    for err in &ep.errors {
+        let module = naming::module_name(&err.class_name);
+        imports.add_from(&imports.error_import_path(&module), &err.class_name);
+        let body = raw_type_str(&err.body_type, imports);
+        lines.extend([
+            format!(
+                "                    if _response.status_code == {}:",
+                err.status_code
+            ),
+            format!("                        raise {}(", err.class_name),
+            "                            headers=dict(_response.headers),".to_string(),
+            "                            body=typing.cast(".to_string(),
+            format!("                                {body},"),
+            "                                parse_obj_as(".to_string(),
+            format!("                                    type_={body},"),
+            "                                    object_=_response.json(),".to_string(),
+            "                                ),".to_string(),
+            "                            ),".to_string(),
+            "                        )".to_string(),
+        ]);
+    }
+    lines.join("\n")
+}
+
 /// Assemble the root `client.py`: the `FernApi`/`AsyncFernApi` classes that
 /// aggregate every tag client. Bearer-auth-coupled today (a `token` argument);
 /// generalize when more auth schemes are modeled.
+struct RootClientFileCtx<'a> {
+    pkg: &'a str,
+    client_name: &'a str,
+    modules: &'a [&'a String],
+    root_endpoints: &'a [&'a Endpoint],
+    types: &'a [TypeDecl],
+    tag_decls: &'a [TagTypeDecl],
+    tag_map: &'a BTreeMap<String, String>,
+    auth: &'a Auth,
+    environment: Option<&'a crate::ir::Environment>,
+    global_headers: &'a [GlobalHeader],
+}
+
 fn root_client_file(
     env: &Environment<'static>,
-    pkg: &str,
-    client_name: &str,
-    modules: &[&String],
-    auth: &Auth,
-    environment: Option<&crate::ir::Environment>,
-    global_headers: &[GlobalHeader],
+    cx: RootClientFileCtx<'_>,
 ) -> Result<GeneratedFile> {
-    let mut body = String::new();
-    body.push_str("from __future__ import annotations\n\nimport typing\n\nimport httpx\nfrom .core.client_wrapper import AsyncClientWrapper, SyncClientWrapper\n");
-    if let Some(e) = environment {
-        body.push_str(&format!("from .environment import {}\n", e.enum_name));
+    let RootClientFileCtx {
+        pkg,
+        client_name,
+        modules,
+        root_endpoints,
+        types,
+        tag_decls,
+        tag_map,
+        auth,
+        environment,
+        global_headers,
+    } = cx;
+    let mut imports = Imports::at(RefLoc::PackageRoot, tag_map);
+    imports.add_plain("typing");
+    imports.add_plain("httpx");
+    imports.add_core("client_wrapper", "AsyncClientWrapper");
+    imports.add_core("client_wrapper", "SyncClientWrapper");
+    if !root_endpoints.is_empty() {
+        imports.add_core("request_options", "RequestOptions");
+        imports.add_from(".raw_client", &format!("Raw{client_name}"));
+        imports.add_from(".raw_client", &format!("AsyncRaw{client_name}"));
     }
-    body.push('\n');
-    body.push_str("if typing.TYPE_CHECKING:\n");
+    if let Some(e) = environment {
+        imports.add_from(".environment", &e.enum_name);
+    }
+    let mut type_checking = if modules.is_empty() {
+        String::new()
+    } else {
+        "if typing.TYPE_CHECKING:\n".to_string()
+    };
     // Fern emits the sub-client imports alphabetically by module (`gadgets` before
     // `widgets`), even though the properties below stay in declaration order. This
     // block is never executed, but — unlike the `__init__.py` aggregators — client.py
@@ -3144,7 +3537,7 @@ fn root_client_file(
         // that sorts `{X}Client` ahead (e.g. `ApikeyauthClient` < `Async...`).
         let mut names = [format!("Async{pascal}Client"), format!("{pascal}Client")];
         names.sort();
-        body.push_str(&format!(
+        type_checking.push_str(&format!(
             "    from .{m}.client import {}, {}\n",
             names[0], names[1]
         ));
@@ -3154,6 +3547,39 @@ fn root_client_file(
         environment,
         global_headers,
     };
+    let root_methods = root_client_methods(
+        env,
+        pkg,
+        client_name,
+        root_endpoints,
+        types,
+        tag_decls,
+        tag_map,
+        false,
+        &mut imports,
+    )?;
+    let async_root_methods = root_client_methods(
+        env,
+        pkg,
+        client_name,
+        root_endpoints,
+        types,
+        tag_decls,
+        tag_map,
+        true,
+        &mut imports,
+    )?;
+    let mut body = String::new();
+    body.push_str("from __future__ import annotations\n\n");
+    body.push_str(&imports.render());
+    body.push_str("\n\n");
+    body.push_str(&type_checking);
+    if root_endpoints
+        .iter()
+        .any(|endpoint| endpoint.request_body.is_some())
+    {
+        body.push_str("\nOMIT = typing.cast(typing.Any, ...)\n");
+    }
     body.push_str("\n\n");
     body.push_str(&root_client_class(
         env,
@@ -3161,6 +3587,7 @@ fn root_client_file(
         pkg,
         false,
         modules,
+        &root_methods,
         &cfg,
     )?);
     body.push_str("\n\n\n");
@@ -3170,6 +3597,7 @@ fn root_client_file(
         pkg,
         true,
         modules,
+        &async_root_methods,
         &cfg,
     )?);
     // When environments are in play, a module-level `_get_base_url` resolves the
@@ -3201,6 +3629,54 @@ struct RootClientCfg<'a> {
     global_headers: &'a [GlobalHeader],
 }
 
+#[allow(
+    clippy::too_many_arguments,
+    reason = "root method emission mirrors ClientCtx plus root imports"
+)]
+fn root_client_methods(
+    _env: &Environment<'static>,
+    pkg: &str,
+    client_name: &str,
+    endpoints: &[&Endpoint],
+    types: &[TypeDecl],
+    tag_decls: &[TagTypeDecl],
+    tag_map: &BTreeMap<String, String>,
+    is_async: bool,
+    imports: &mut Imports,
+) -> Result<Vec<String>> {
+    if endpoints.is_empty() {
+        return Ok(Vec::new());
+    }
+    let cx = ClientCtx {
+        pkg,
+        client_name,
+        module: "",
+        types,
+        tag_decls,
+        auth: &Auth::None,
+        has_environment: true,
+        tag_types: tag_map,
+        global_headers: &[],
+    };
+    let mut method_imports = Imports::at(RefLoc::PackageRoot, tag_map);
+    let methods = endpoints
+        .iter()
+        .map(|ep| client_method(&cx, ep, is_async, &mut method_imports))
+        .collect();
+    for (module, names) in method_imports.from {
+        for name in names {
+            imports.add_from(&module, &name);
+        }
+    }
+    for (module, alias) in method_imports.plain {
+        match alias {
+            Some(alias) => imports.add_plain_as(&module, &alias),
+            None => imports.add_plain(&module),
+        }
+    }
+    Ok(methods)
+}
+
 /// One root client class: the class docstring, the `__init__` wiring up the
 /// client wrapper and the per-tag lazy slots, then one cached `@property` per tag.
 fn root_client_class(
@@ -3209,6 +3685,7 @@ fn root_client_class(
     pkg: &str,
     is_async: bool,
     modules: &[&String],
+    root_methods: &[String],
     cfg: &RootClientCfg,
 ) -> Result<String> {
     let auth = cfg.auth;
@@ -3321,6 +3798,14 @@ fn root_client_class(
         gh_ctor,
         gh_example,
         gh_wrapper,
+        raw_client_cls: if root_methods.is_empty() {
+            String::new()
+        } else if is_async {
+            format!("AsyncRaw{client_name}")
+        } else {
+            format!("Raw{client_name}")
+        },
+        root_methods: root_methods.to_vec(),
         modules: module_views,
     };
     // The caller controls the separation between the sync/async classes and the
@@ -3377,6 +3862,8 @@ struct RootClientView {
     gh_ctor: String,
     gh_example: String,
     gh_wrapper: String,
+    raw_client_cls: String,
+    root_methods: Vec<String>,
     modules: Vec<RootModuleView>,
 }
 
@@ -3518,6 +4005,9 @@ fn client_method(cx: &ClientCtx, ep: &Endpoint, is_async: bool, imports: &mut Im
     if ep.streaming {
         return client_stream_method(cx, ep, is_async, imports);
     }
+    if ep.binary_response {
+        return client_binary_stream_method(cx, ep, is_async, imports);
+    }
     let mp = method_params(ep, imports);
     let return_type = mp.inner.clone();
     let sig = signature(ep, &mp, &return_type, is_async);
@@ -3606,7 +4096,7 @@ fn client_stream_docstring(
     let mut push_param = |dp: &DocParam| {
         lines.push(format!("        {} : {}", dp.name, dp.annotation));
         if let Some(desc) = &dp.description {
-            lines.push(format!("            {desc}"));
+            push_param_doc(&mut lines, desc);
         }
         lines.push(String::new());
     };
@@ -3619,6 +4109,112 @@ fn client_stream_docstring(
     lines.push("        Yields".to_string());
     lines.push("        ------".to_string());
     lines.push(format!("        {iter_t}[{SSE_CHUNK}]"));
+    push_return_doc(&mut lines, ep.response_doc.as_deref());
+
+    let mut ctx = ExampleCtx {
+        types: cx.types,
+        tag_decls: cx.tag_decls,
+        referenced: BTreeSet::new(),
+        referenced_tag: BTreeSet::new(),
+        uses_datetime: false,
+        auth: cx.auth,
+        has_environment: cx.has_environment,
+        global_headers: cx.global_headers,
+        building: Default::default(),
+    };
+    if let Some(ex_lines) = build_example(ep, is_async, cx.module, cx.pkg, cx.client_name, &mut ctx)
+    {
+        lines.push(String::new());
+        lines.push("        Examples".to_string());
+        lines.push("        --------".to_string());
+        for l in ex_lines {
+            if l.is_empty() {
+                lines.push(String::new());
+            } else {
+                lines.push(format!("        {l}"));
+            }
+        }
+    }
+    lines.push("        \"\"\"".to_string());
+    lines.join("\n")
+}
+
+fn client_binary_stream_method(
+    cx: &ClientCtx,
+    ep: &Endpoint,
+    is_async: bool,
+    imports: &mut Imports,
+) -> String {
+    imports.add_plain("typing");
+    let mp = method_params(ep, imports);
+    let iter_t = if is_async {
+        "typing.AsyncIterator"
+    } else {
+        "typing.Iterator"
+    };
+    let return_type = format!("{iter_t}[bytes]");
+    let sig = signature(ep, &mp, &return_type, is_async);
+    let docstring = client_binary_stream_docstring(cx, ep, &mp, is_async);
+
+    let mut call_args: Vec<Doc> = Vec::new();
+    for (name, _, _) in &mp.path {
+        call_args.push(Doc::atom(name.clone()));
+    }
+    for dp in ordered_keyword_params(&mp.query, &mp.header, &mp.body) {
+        call_args.push(Doc::atom(format!("{}={}", dp.name, dp.name)));
+    }
+    call_args.push(Doc::atom("request_options=request_options"));
+    let open = format!("self._raw_client.{}(", ep.method_name);
+    let raw_call = Doc::group(open, call_args, ")").flat();
+    let body = if is_async {
+        format!("        async with {raw_call} as r:\n            async for _chunk in r.data:\n                yield _chunk")
+    } else {
+        format!("        with {raw_call} as r:\n            yield from r.data")
+    };
+    format!("{sig}\n{docstring}\n{body}")
+}
+
+fn client_binary_stream_docstring(
+    cx: &ClientCtx,
+    ep: &Endpoint,
+    mp: &MethodParams,
+    is_async: bool,
+) -> String {
+    let iter_t = if is_async {
+        "typing.AsyncIterator"
+    } else {
+        "typing.Iterator"
+    };
+    let mut lines: Vec<String> = vec!["        \"\"\"".to_string()];
+    if let Some(summary) = &ep.docstring {
+        for line in summary.split('\n') {
+            lines.push(format!("        {line}"));
+        }
+        lines.push(String::new());
+    }
+    lines.push("        Parameters".to_string());
+    lines.push("        ----------".to_string());
+    for (name, ty, desc) in &mp.path {
+        push_path_param(&mut lines, name, ty, desc);
+    }
+    let mut push_param = |dp: &DocParam| {
+        lines.push(format!("        {} : {}", dp.name, dp.annotation));
+        if let Some(desc) = &dp.description {
+            push_param_doc(&mut lines, desc);
+        }
+        lines.push(String::new());
+    };
+    ordered_keyword_params(&mp.query, &mp.header, &mp.body)
+        .into_iter()
+        .for_each(&mut push_param);
+    lines.push("        request_options : typing.Optional[RequestOptions]".to_string());
+    lines.push(
+        "            Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response.".to_string(),
+    );
+    lines.push(String::new());
+    lines.push("        Returns".to_string());
+    lines.push("        -------".to_string());
+    lines.push(format!("        {iter_t}[bytes]"));
     push_return_doc(&mut lines, ep.response_doc.as_deref());
 
     let mut ctx = ExampleCtx {
@@ -3668,7 +4264,7 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
     let mut push_param = |dp: &DocParam| {
         lines.push(format!("        {} : {}", dp.name, dp.annotation));
         if let Some(desc) = &dp.description {
-            lines.push(format!("            {desc}"));
+            push_param_doc(&mut lines, desc);
         }
         lines.push(String::new());
     };
@@ -3727,6 +4323,9 @@ enum Example {
     Call(String, Vec<(Option<String>, Example)>),
     /// A list `[items]` — explodes only when an item does.
     List(Vec<Example>),
+    /// A list supplied verbatim by the spec — wraps at the snippet line limit and
+    /// retains Python's trailing commas when exploded.
+    ExplicitList(Vec<Example>),
     /// A dict with fixed string keys — explodes only when a value does.
     Dict(Vec<(String, Example)>),
 }
@@ -3739,7 +4338,9 @@ impl Example {
         match self {
             Example::Atom(_) => false,
             Example::Call(_, args) => !args.is_empty(),
-            Example::List(items) => items.iter().any(Example::forces_multiline),
+            Example::List(items) | Example::ExplicitList(items) => {
+                items.iter().any(Example::forces_multiline)
+            }
             Example::Dict(pairs) => pairs.iter().any(|(_, v)| v.forces_multiline()),
         }
     }
@@ -3759,7 +4360,7 @@ impl Example {
                     .join(", ");
                 format!("{name}({inner})")
             }
-            Example::List(items) => {
+            Example::List(items) | Example::ExplicitList(items) => {
                 format!(
                     "[{}]",
                     items
@@ -3828,6 +4429,19 @@ impl Example {
                     .join("\n");
                 format!("[\n{body}\n{pad}]")
             }
+            Example::ExplicitList(items) => {
+                if !self.forces_multiline() && indent + self.flat().len() <= 88 {
+                    return self.flat();
+                }
+                let pad = " ".repeat(indent);
+                let inner_pad = " ".repeat(indent + 4);
+                let body = items
+                    .iter()
+                    .map(|it| format!("{inner_pad}{},", it.render(indent + 4)))
+                    .collect::<Vec<_>>()
+                    .join("\n");
+                format!("[\n{body}\n{pad}]")
+            }
             Example::Dict(pairs) => {
                 if !self.forces_multiline() {
                     return self.flat();
@@ -3884,6 +4498,50 @@ enum Slot<'a> {
 }
 
 impl<'a> ExampleCtx<'a> {
+    fn example_is_scalar(&self, t: &TypeRef) -> bool {
+        match t {
+            TypeRef::Named(name) => match self.find(name) {
+                Some(TypeDecl::Alias(alias)) => self.example_is_scalar(&alias.target),
+                _ => false,
+            },
+            _ => example_scalar(t),
+        }
+    }
+
+    fn example_is_composite(&self, t: &TypeRef) -> bool {
+        match t {
+            TypeRef::List(_) | TypeRef::Set(_) | TypeRef::Dict(_, _) => true,
+            TypeRef::Named(name) => match self.find(name) {
+                Some(TypeDecl::Alias(alias)) => self.example_is_composite(&alias.target),
+                _ => false,
+            },
+            _ => false,
+        }
+    }
+
+    fn value_from_example(&mut self, t: &TypeRef, example: &str) -> Option<Example> {
+        if self.example_is_scalar(t) {
+            return Some(Example::Atom(example.to_string()));
+        }
+        if self.example_is_composite(t) && (example.starts_with('[') || example.starts_with('{')) {
+            return serde_json::from_str(example).ok().map(example_from_json);
+        }
+        let TypeRef::Named(name) = t else {
+            return None;
+        };
+        let TypeDecl::Enum(enum_type) = self.find(name)? else {
+            return None;
+        };
+        let value = example.strip_prefix('"')?.strip_suffix('"')?;
+        let member = enum_type
+            .members
+            .iter()
+            .find(|member| member.value == value)?;
+        let member_name = member.name.clone();
+        self.record_ref(name);
+        Some(Example::Atom(format!("{name}.{member_name}")))
+    }
+
     /// Look up a generated type by name — a package-root type, else a hoisted
     /// tag-scoped one (so an example can construct an inline-hoisted model).
     fn find(&self, name: &str) -> Option<&'a TypeDecl> {
@@ -4057,7 +4715,7 @@ impl<'a> ExampleCtx<'a> {
                     .filter(|(_, _, _, required, _)| *required)
                     .map(|(py, wire, ty, _, example)| {
                         let v = match example.filter(|_| example_scalar(&ty)) {
-                            Some(ex) => Example::Atom(ex),
+                            Some(example) => Example::Atom(example),
                             None => self.value(&ty, Slot::Named(&wire)),
                         };
                         (Some(py), v)
@@ -4137,6 +4795,26 @@ impl<'a> ExampleCtx<'a> {
     }
 }
 
+fn example_from_json(value: serde_json::Value) -> Example {
+    match value {
+        serde_json::Value::Array(items) => {
+            Example::ExplicitList(items.into_iter().map(example_from_json).collect())
+        }
+        serde_json::Value::Object(fields) => Example::Dict(
+            fields
+                .into_iter()
+                .map(|(key, value)| (key, example_from_json(value)))
+                .collect(),
+        ),
+        serde_json::Value::String(value) => Example::Atom(format!("{value:?}")),
+        serde_json::Value::Number(value) => Example::Atom(value.to_string()),
+        serde_json::Value::Bool(value) => {
+            Example::Atom(if value { "True" } else { "False" }.to_string())
+        }
+        serde_json::Value::Null => Example::Atom("None".to_string()),
+    }
+}
+
 /// Build the worked `Examples` block for a method as logical (indent-0) lines,
 /// or `None` when the request is not exampleable (a raw bytes body).
 /// Whether a spec `example` is shown verbatim for a field of this type. Fern uses
@@ -4176,7 +4854,7 @@ fn build_example(
     client_name: &str,
     ctx: &mut ExampleCtx,
 ) -> Option<Vec<String>> {
-    if matches!(ep.request_body, Some(RequestBody::Bytes)) {
+    if matches!(ep.request_body, Some(RequestBody::Bytes { .. })) {
         return None;
     }
 
@@ -4185,17 +4863,27 @@ fn build_example(
     // each required inlined field).
     let mut args: Vec<(Option<String>, Example)> = Vec::new();
     for pp in &ep.path_params {
-        let v = ctx.value(&pp.type_ref, Slot::Named(&pp.wire_name));
+        let v = pp
+            .example
+            .as_ref()
+            .filter(|_| !ep.binary_response && ctx.example_is_scalar(&pp.type_ref))
+            .map_or_else(
+                || ctx.value(&pp.type_ref, Slot::Named(&pp.wire_name)),
+                |example| Example::Atom(example.clone()),
+            );
         args.push((Some(pp.py_name.clone()), v));
     }
     // Fern shows a query parameter in the worked example when it is required OR
     // carries a spec `example` (the value it then displays).
-    for qp in ep
-        .query_params
-        .iter()
-        .filter(|q| q.required || (q.example.is_some() && example_scalar(&q.type_ref)))
-    {
-        let v = if let Some(ex) = qp.example.as_ref().filter(|_| example_scalar(&qp.type_ref)) {
+    let mut optional_query_example_used = false;
+    for qp in &ep.query_params {
+        if !qp.required {
+            if qp.example.is_none() || !qp.example_is_scalar || optional_query_example_used {
+                continue;
+            }
+            optional_query_example_used = true;
+        }
+        let v = if let Some(ex) = qp.example.as_ref().filter(|_| qp.example_is_scalar) {
             Example::Atom(ex.clone())
         } else if let TypeRef::List(inner) = &qp.type_ref {
             Example::List(vec![ctx.value(inner, Slot::Named(&qp.wire_name))])
@@ -4204,8 +4892,19 @@ fn build_example(
         };
         args.push((Some(qp.py_name.clone()), v));
     }
-    for hp in ep.header_params.iter().filter(|h| h.required) {
-        let v = ctx.value(&hp.type_ref, Slot::Named(&hp.wire_name));
+    for hp in ep
+        .header_params
+        .iter()
+        .filter(|h| h.required || h.example.is_some())
+    {
+        let v = hp
+            .example
+            .as_ref()
+            .filter(|_| ctx.example_is_scalar(&hp.type_ref))
+            .map_or_else(
+                || ctx.value(&hp.type_ref, Slot::Named(&hp.wire_name)),
+                |example| Example::Atom(example.clone()),
+            );
         args.push((Some(hp.py_name.clone()), v));
     }
     match &ep.request_body {
@@ -4219,14 +4918,23 @@ fn build_example(
             // omitted). A required field with an unknown (`Any`) type is still shown
             // (exhaustive's `unknown`), so the exclusion keys on nullability — an
             // `optional` field with a concrete (non-`Any`) type — not `optional` alone.
-            for f in fields
-                .iter()
-                .filter(|f| f.spec_required && (!f.optional || is_any_type(&f.type_ref)))
-            {
-                let v = match f.example.as_ref().filter(|_| example_scalar(&f.type_ref)) {
-                    Some(ex) => Example::Atom(ex.clone()),
-                    None => ctx.value(&f.type_ref, Slot::Named(&f.wire_name)),
-                };
+            for f in fields.iter().filter(|f| {
+                f.media_example || (f.spec_required && (!f.optional || is_any_type(&f.type_ref)))
+            }) {
+                let v = f
+                    .example
+                    .as_deref()
+                    .and_then(|example| {
+                        if f.media_example
+                            || ctx.example_is_scalar(&f.type_ref)
+                            || ctx.example_is_composite(&f.type_ref)
+                        {
+                            ctx.value_from_example(&f.type_ref, example)
+                        } else {
+                            None
+                        }
+                    })
+                    .unwrap_or_else(|| ctx.value(&f.type_ref, Slot::Named(&f.wire_name)));
                 args.push((Some(f.py_name.clone()), v));
             }
         }
@@ -4234,7 +4942,11 @@ fn build_example(
         // literal, so Fern omits it from the example).
         Some(RequestBody::Form(form)) => {
             for f in form.fields.iter().filter(|f| f.spec_required && !f.is_file) {
-                let v = ctx.value(&f.type_ref, Slot::Named(&f.wire_name));
+                let v = f
+                    .example
+                    .as_deref()
+                    .and_then(|example| ctx.value_from_example(&f.type_ref, example))
+                    .unwrap_or_else(|| ctx.value(&f.type_ref, Slot::Named(&f.wire_name)));
                 args.push((Some(f.py_name.clone()), v));
             }
         }
@@ -4248,11 +4960,19 @@ fn build_example(
     };
     // The call, rendered at logical indent 0 (sync) or 4 (inside `main`, async).
     let call_indent = if is_async { 4 } else { 0 };
-    let receiver = format!(
-        "{}client.{module}.{}",
-        if is_async { "await " } else { "" },
-        ep.method_name
-    );
+    let receiver = if module.is_empty() {
+        format!(
+            "{}client.{}",
+            if is_async { "await " } else { "" },
+            ep.method_name
+        )
+    } else {
+        format!(
+            "{}client.{module}.{}",
+            if is_async { "await " } else { "" },
+            ep.method_name
+        )
+    };
     // `render` positions continuation lines but leaves the first line for the
     // caller to place, so prepend the base indent to it. A streaming endpoint binds
     // the returned stream to `response` and iterates it (`for chunk in response:` /
@@ -4306,30 +5026,41 @@ fn build_example(
             by_module.entry(module).or_default().push(name);
         }
         for (module, tag_names) in by_module {
-            tag_import_lines.push(format!(
-                "from {pkg}.{module} import {}",
-                tag_names.join(", ")
-            ));
+            let flat = format!("from {pkg}.{module} import {}", tag_names.join(", "));
+            if flat.len() > 80 {
+                tag_import_lines.push(format!("from {pkg}.{module} import ("));
+                tag_import_lines.extend(tag_names.iter().map(|name| format!("    {name},")));
+                tag_import_lines.push(")".to_string());
+            } else {
+                tag_import_lines.push(flat);
+            }
         }
     }
 
-    let mut client_block = vec![format!("client = {example_name}(")];
+    let mut client_args = Vec::new();
     // Promoted global headers come first (`tenant="YOUR_TENANT"`), then the auth
     // credential, then the hardcoded `base_url` (dropped when environments exist).
     for h in ctx.global_headers {
-        client_block.push(format!(
+        client_args.push(format!(
             "    {}=\"YOUR_{}\",",
             h.py_name,
             h.py_name.to_uppercase()
         ));
     }
     for arg in auth_example_args(ctx.auth) {
-        client_block.push(format!("    {arg},"));
+        client_args.push(format!("    {arg},"));
     }
     if !ctx.has_environment {
-        client_block.push("    base_url=\"https://yourhost.com/path/to/api\",".to_string());
+        client_args.push("    base_url=\"https://yourhost.com/path/to/api\",".to_string());
     }
-    client_block.push(")".to_string());
+    let client_block = if client_args.is_empty() {
+        vec![format!("client = {example_name}()")]
+    } else {
+        let mut block = vec![format!("client = {example_name}(")];
+        block.extend(client_args);
+        block.push(")".to_string());
+        block
+    };
 
     let mut out: Vec<String> = Vec::new();
     if !preamble.is_empty() {
@@ -4366,27 +5097,46 @@ fn raw_client_file(
     endpoints: &[&Endpoint],
     tag_types: &BTreeMap<String, String>,
 ) -> Result<GeneratedFile> {
-    let mut imports = Imports::at(RefLoc::Client(module.to_string()), tag_types);
+    let loc = if module.is_empty() {
+        RefLoc::PackageRoot
+    } else {
+        RefLoc::Client(module.to_string())
+    };
+    let mut imports = Imports::at(loc, tag_types);
     // Imports every raw client needs regardless of operation shape.
     imports.add_plain("typing");
     imports.add_from("json.decoder", "JSONDecodeError");
-    imports.add_from("..core.api_error", "ApiError");
-    imports.add_from("..core.client_wrapper", "AsyncClientWrapper");
-    imports.add_from("..core.client_wrapper", "SyncClientWrapper");
-    imports.add_from("..core.http_response", "AsyncHttpResponse");
-    imports.add_from("..core.http_response", "HttpResponse");
-    imports.add_from("..core.request_options", "RequestOptions");
+    imports.add_core("api_error", "ApiError");
+    imports.add_core("client_wrapper", "AsyncClientWrapper");
+    imports.add_core("client_wrapper", "SyncClientWrapper");
+    imports.add_core("http_response", "AsyncHttpResponse");
+    imports.add_core("http_response", "HttpResponse");
+    imports.add_core("request_options", "RequestOptions");
 
-    let class_stem = naming::to_pascal_case(module);
+    let class_stem = if module.is_empty() {
+        "FernApi".to_string()
+    } else {
+        naming::to_pascal_case(module)
+    };
+    let sync_class = if module.is_empty() {
+        format!("Raw{class_stem}")
+    } else {
+        format!("Raw{class_stem}Client")
+    };
+    let async_class_name = if module.is_empty() {
+        format!("AsyncRaw{class_stem}")
+    } else {
+        format!("AsyncRaw{class_stem}Client")
+    };
     let sync = raw_client_class(
-        &format!("Raw{class_stem}Client"),
+        &sync_class,
         "SyncClientWrapper",
         endpoints,
         false,
         &mut imports,
     );
     let async_class = raw_client_class(
-        &format!("AsyncRaw{class_stem}Client"),
+        &async_class_name,
         "AsyncClientWrapper",
         endpoints,
         true,
@@ -4412,7 +5162,11 @@ fn raw_client_file(
         },
     )?;
     Ok(GeneratedFile {
-        path: PathBuf::from(format!("src/{pkg}/{module}/raw_client.py")),
+        path: if module.is_empty() {
+            PathBuf::from(format!("src/{pkg}/raw_client.py"))
+        } else {
+            PathBuf::from(format!("src/{pkg}/{module}/raw_client.py"))
+        },
         contents,
     })
 }
@@ -4484,6 +5238,8 @@ pub fn clean_package_tree(root: &std::path::Path, package: &str) -> Result<()> {
 /// so the byte match is preserved.
 fn format_python_files(pkg: &str, files: &mut [GeneratedFile]) -> Result<()> {
     let core_root = PathBuf::from(format!("src/{pkg}/core"));
+    let root_client = PathBuf::from(format!("src/{pkg}/client.py"));
+    let root_raw_client = PathBuf::from(format!("src/{pkg}/raw_client.py"));
     for file in files.iter_mut() {
         let is_py = file.path.extension().and_then(|e| e.to_str()) == Some("py");
         // The `core/` tree is vendored verbatim (already ruff-formatted) EXCEPT
@@ -4496,9 +5252,46 @@ fn format_python_files(pkg: &str, files: &mut [GeneratedFile]) -> Result<()> {
             let name = file.path.to_string_lossy();
             file.contents =
                 crate::pyfmt::format_source(&name, &file.contents, crate::pyfmt::LINE_LENGTH)?;
+            if file.path == root_client || file.path == root_raw_client {
+                preserve_fenced_docstring_blank_indent(&mut file.contents);
+            }
         }
     }
     Ok(())
+}
+
+fn preserve_fenced_docstring_blank_indent(source: &mut String) {
+    let had_final_newline = source.ends_with('\n');
+    let mut lines: Vec<String> = source.lines().map(String::from).collect();
+    let mut start = 0;
+    while start < lines.len() {
+        if lines[start] != "        \"\"\"" {
+            start += 1;
+            continue;
+        }
+        let Some(relative_end) = lines[start + 1..]
+            .iter()
+            .position(|line| line == "        \"\"\"")
+        else {
+            break;
+        };
+        let end = start + 1 + relative_end;
+        if lines[start + 1..end]
+            .iter()
+            .any(|line| line.trim_start().starts_with("```"))
+        {
+            for line in &mut lines[start + 1..end] {
+                if line.is_empty() {
+                    *line = "        ".to_string();
+                }
+            }
+        }
+        start = end + 1;
+    }
+    *source = lines.join("\n");
+    if had_final_newline {
+        source.push('\n');
+    }
 }
 
 /// Write each generated file under `root`, creating parent directories as needed.
@@ -4658,7 +5451,8 @@ mod tests {
     #[test]
     fn reference_entry_renders_details_line_and_param_row() {
         let view = ReferenceEntryView {
-            module: "endpoints_urls".to_string(),
+            client_prefix: "client.endpoints_urls.".to_string(),
+            href: "src/fern/endpoints_urls/client.py".to_string(),
             pkg: "fern".to_string(),
             method: "get".to_string(),
             dots: "...",
@@ -4703,6 +5497,8 @@ mod tests {
             gh_ctor: String::new(),
             gh_example: String::new(),
             gh_wrapper: String::new(),
+            raw_client_cls: String::new(),
+            root_methods: Vec::new(),
             modules: vec![RootModuleView {
                 attr: "endpoints_put".to_string(),
                 cls: "EndpointsPutClient".to_string(),
@@ -4842,7 +5638,7 @@ mod tests {
 
         // basic: a required `username`/`password` pair everywhere a single
         // credential would otherwise appear.
-        let w = auth_wrapper_parts(&Auth::Basic);
+        let w = auth_wrapper_parts(&Auth::Basic { required: true });
         assert!(w.param.contains("username: typing.Union[str"));
         assert!(w.param.contains("password: typing.Union[str"));
         assert!(w.assign.contains("self._username = username"));
@@ -4851,7 +5647,7 @@ mod tests {
         assert!(w.token_method.contains("def _get_username(self) -> str:"));
         assert!(w.token_method.contains("def _get_password(self) -> str:"));
         assert_eq!(w.super_arg, "username=username, password=password, ");
-        let c = auth_client_parts(&Auth::Basic);
+        let c = auth_client_parts(&Auth::Basic { required: true });
         assert_eq!(
             c.ctor_param,
             "        username: typing.Union[str, typing.Callable[[], str]],\n        password: typing.Union[str, typing.Callable[[], str]],\n"
@@ -4881,7 +5677,7 @@ mod tests {
             vec!["api_key=\"YOUR_API_KEY\""]
         );
         assert_eq!(
-            auth_example_args(&Auth::Basic),
+            auth_example_args(&Auth::Basic { required: true }),
             vec!["username=\"YOUR_USERNAME\"", "password=\"YOUR_PASSWORD\""]
         );
     }
@@ -4897,17 +5693,27 @@ mod tests {
             header_params: Vec::new(),
             request_body: None,
             body_documented: false,
+            body_component_ref: false,
+            body_schema_ref: false,
+            body_schema_has_example: false,
+            body_schema_documented: false,
+            body_schema_implicit_object: false,
+            body_all_of: false,
+            body_response_same_ref: false,
             response,
             response_doc: None,
             errors: Vec::new(),
             docstring: None,
+            reference_description_trailing_blank: false,
             streaming: false,
+            binary_response: false,
             emittable: true,
         }
     }
 
     fn ir_with(endpoints: Vec<Endpoint>) -> Ir {
         Ir {
+            openapi_31: false,
             package_name: "fern".to_string(),
             project_name: "default_package_name".to_string(),
             client_name: "FernApi".to_string(),
@@ -4933,6 +5739,7 @@ mod tests {
                 py_name: "id".to_string(),
                 type_ref: TypeRef::Primitive(Prim::Int),
                 docstring: None,
+                example: None,
             }],
             None,
         );
@@ -4957,6 +5764,7 @@ mod tests {
             required: true,
             convert: false,
             content_type: true,
+            content_type_override: None,
         }));
 
         let ir = ir_with(vec![body, no_arg_post]);
@@ -5067,6 +5875,7 @@ mod tests {
                 py_name: "id".to_string(),
                 type_ref: TypeRef::Primitive(Prim::Str),
                 docstring: None,
+                example: None,
             }],
             Some(TypeRef::Primitive(Prim::Str)),
         );
@@ -5094,7 +5903,10 @@ mod tests {
                 docstring: None,
                 convert: false,
                 is_file: false,
+                collision_prefix: None,
                 example: None,
+                media_example: false,
+                nullable: false,
             },
             // An optional list → `Optional[Sequence[..]] = OMIT` in request context.
             BodyField {
@@ -5106,7 +5918,10 @@ mod tests {
                 docstring: None,
                 convert: false,
                 is_file: false,
+                collision_prefix: None,
                 example: None,
+                media_example: false,
+                nullable: false,
             },
             // A convert field → convert-wrapped json entry keyed by the wire name.
             BodyField {
@@ -5118,7 +5933,10 @@ mod tests {
                 docstring: None,
                 convert: true,
                 is_file: false,
+                collision_prefix: None,
                 example: None,
+                media_example: false,
+                nullable: false,
             },
         ]));
         let out = raw_method(&ep, false, &mut i);
@@ -5209,12 +6027,15 @@ mod tests {
                 py_name: "id".to_string(),
                 type_ref: TypeRef::Primitive(Prim::Str),
                 docstring: None,
+                example: None,
             }],
             Some(TypeRef::Named("Resp".to_string())),
         );
         ep.method_name = "upload".to_string();
         ep.http_method = "POST";
-        ep.request_body = Some(RequestBody::Bytes);
+        ep.request_body = Some(RequestBody::Bytes {
+            content_type: "application/octet-stream".to_string(),
+        });
         ep.errors = vec![ErrorResponse {
             status_code: 400,
             class_name: "BadRequestError".to_string(),
@@ -5253,6 +6074,7 @@ mod tests {
             required: true,
             convert: false,
             example: None,
+            example_is_scalar: false,
             docstring: None,
         }];
         let out = raw_method(&ep, false, &mut i);
@@ -5276,6 +6098,7 @@ mod tests {
             required: false,
             convert: false,
             example: None,
+            example_is_scalar: false,
             docstring: None,
         }];
 

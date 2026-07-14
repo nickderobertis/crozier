@@ -1,0 +1,3 @@
+
+
+ArtifactName = str

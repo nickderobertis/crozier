@@ -110,7 +110,7 @@ pub fn module_name(class_name: &str) -> String {
 /// name still rides along as the serialization key, since `needs_alias` fires.
 #[must_use]
 pub fn field_name(wire_name: &str) -> String {
-    let snake = to_snake_case(&fold_non_identifier(wire_name));
+    let snake = collapse_digit_boundaries(&to_snake_case(&fold_non_identifier(wire_name)));
     if snake.starts_with(|c: char| c.is_ascii_digit()) {
         format!("f_{snake}")
     } else if is_reserved(&snake) {
@@ -118,6 +118,29 @@ pub fn field_name(wire_name: &str) -> String {
     } else {
         snake
     }
+}
+
+/// Fern joins numeric field-name segments to their neighbors (`day_0_end_time` →
+/// `day0end_time`, `user_fields[1]` → `user_fields1`). Serialization still uses
+/// the original wire name through field aliases.
+fn collapse_digit_boundaries(name: &str) -> String {
+    let chars: Vec<char> = name.chars().collect();
+    chars
+        .iter()
+        .enumerate()
+        .filter_map(|(index, &ch)| {
+            if ch == '_'
+                && (index
+                    .checked_sub(1)
+                    .is_some_and(|i| chars[i].is_ascii_digit())
+                    || chars.get(index + 1).is_some_and(char::is_ascii_digit))
+            {
+                None
+            } else {
+                Some(ch)
+            }
+        })
+        .collect()
 }
 
 /// Replace every character that can't appear in a Python identifier with a space
@@ -258,22 +281,61 @@ pub fn enum_visit_param(value: &str) -> String {
 /// fixtures confirm more.
 #[must_use]
 pub fn is_reserved(name: &str) -> bool {
-    const RESERVED: &[&str] = &[
-        // Python hard keywords.
-        "False", "None", "True", "and", "as", "assert", "async", "await", "break", "class",
-        "continue", "def", "del", "elif", "else", "except", "finally", "for", "from", "global",
-        "if", "import", "in", "is", "lambda", "nonlocal", "not", "or", "pass", "raise", "return",
-        "try", "while", "with", "yield",
-        // Builtins/module names Fern munges (confirmed in the exhaustive fixture,
-        // plus `all` in the apideck corpus — a REST "list all" method named `all`).
-        "all", "bool", "list", "long", "map", "set", "uuid",
-    ];
-    RESERVED.contains(&name)
+    // Builtins/module names Fern munges in *field/type* contexts (confirmed in the
+    // exhaustive fixture). Method names are narrower — see `is_reserved_method`.
+    const RESERVED_BUILTINS: &[&str] = &["all", "bool", "list", "long", "map", "set", "uuid"];
+    PYTHON_KEYWORDS.contains(&name) || RESERVED_BUILTINS.contains(&name)
 }
+
+/// A Python field identifier for a pydantic model. In addition to ordinary
+/// Python collisions, Fern protects names exposed by pydantic's model API.
+#[must_use]
+pub fn model_field_name(wire_name: &str) -> String {
+    let name = field_name(wire_name);
+    if matches!(name.as_str(), "kwargs" | "schema") {
+        format!("{name}_")
+    } else {
+        name
+    }
+}
+
+/// Reserved-word check for *derived method* names. Fern safe-names Python keywords
+/// and the builtin `all` (a REST "list all" method → `all_`), but — unlike field and
+/// type names — leaves other builtins alone: appwrite's derived `list` stays `list`,
+/// not `list_`, and `bool`/`set`/… likewise. Evidence-based against the golden corpus
+/// (the only `_`-suffixed method names Fern emits are keywords, `all`, and dunders);
+/// widen only when a fixture shows Fern suffixing another method name.
+#[must_use]
+pub fn is_reserved_method(name: &str) -> bool {
+    PYTHON_KEYWORDS.contains(&name) || name == "all"
+}
+
+/// Python hard keywords — reserved in every naming context.
+const PYTHON_KEYWORDS: &[&str] = &[
+    "False", "None", "True", "and", "as", "assert", "async", "await", "break", "class", "continue",
+    "def", "del", "elif", "else", "except", "finally", "for", "from", "global", "if", "import",
+    "in", "is", "lambda", "nonlocal", "not", "or", "pass", "raise", "return", "try", "while",
+    "with", "yield",
+];
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn method_reserved_set_is_narrower_than_general() {
+        // Fern safe-names `all` and keywords as method names (apideck's `all_`,
+        // `import_`) but leaves other builtins alone (appwrite's `list`, not `list_`).
+        assert!(is_reserved_method("all"));
+        assert!(is_reserved_method("import"));
+        assert!(!is_reserved_method("list"));
+        assert!(!is_reserved_method("bool"));
+        // The general set still guards field/type names (confirmed in the exhaustive
+        // fixture), so `list`/`bool` stay reserved there.
+        assert!(is_reserved("list"));
+        assert!(is_reserved("bool"));
+        assert!(is_reserved("all"));
+    }
 
     #[test]
     fn snake_case_variants() {
@@ -328,8 +390,9 @@ mod tests {
         // Fern renames a leading-digit property to `f_<name>` and aliases it.
         assert_eq!(field_name("2fa_enabled"), "f_2fa_enabled");
         assert_eq!(field_name("3d"), "f_3d");
-        // A hyphenated, digit-leading name still snakes then prefixes.
-        assert_eq!(field_name("2-factor"), "f_2_factor");
+        // Fern's default smart casing rejoins digit-adjacent fragments before
+        // applying the leading-digit prefix.
+        assert_eq!(field_name("2-factor"), "f_2factor");
         // Non-digit-leading names are untouched.
         assert_eq!(field_name("v2"), "v2");
     }

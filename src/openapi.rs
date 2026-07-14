@@ -28,6 +28,7 @@
 use std::path::Path;
 
 use indexmap::IndexMap;
+use serde::de::{IgnoredAny, MapAccess, Visitor};
 use serde::Deserialize;
 
 use crate::error::{Error, Result};
@@ -45,7 +46,7 @@ pub struct OpenApi {
     #[serde(default)]
     pub components: Components,
     /// API operations, keyed by URL path, in document order.
-    #[serde(default)]
+    #[serde(default, deserialize_with = "deserialize_paths")]
     pub paths: IndexMap<String, PathItem>,
     /// Document-wide default security requirement; an operation without its own
     /// `security` inherits this.
@@ -54,6 +55,18 @@ pub struct OpenApi {
     /// Declared API servers; the first drives the generated environment enum.
     #[serde(default)]
     pub servers: Vec<Server>,
+    /// Declared operation tags. Fern sometimes preserves the declared tag spelling
+    /// in generated docs rather than title-casing an operation-only tag.
+    #[serde(default)]
+    pub tags: Vec<ApiTag>,
+}
+
+/// One entry from the document's top-level `tags` list.
+#[derive(Debug, Default, Clone, Deserialize)]
+pub struct ApiTag {
+    /// The tag name used by operations.
+    #[serde(default)]
+    pub name: String,
 }
 
 /// One entry from the document's `servers` list: a base URL and an optional
@@ -78,6 +91,40 @@ pub struct Server {
 pub struct ServerVariable {
     #[serde(default)]
     pub default: String,
+}
+
+fn deserialize_paths<'de, D>(
+    deserializer: D,
+) -> std::result::Result<IndexMap<String, PathItem>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    struct PathsVisitor;
+
+    impl<'de> Visitor<'de> for PathsVisitor {
+        type Value = IndexMap<String, PathItem>;
+
+        fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            formatter.write_str("an OpenAPI paths object")
+        }
+
+        fn visit_map<A>(self, mut map: A) -> std::result::Result<Self::Value, A::Error>
+        where
+            A: MapAccess<'de>,
+        {
+            let mut paths = IndexMap::new();
+            while let Some(key) = map.next_key::<String>()? {
+                if key.starts_with("x-") {
+                    map.next_value::<IgnoredAny>()?;
+                } else {
+                    paths.insert(key, map.next_value()?);
+                }
+            }
+            Ok(paths)
+        }
+    }
+
+    deserializer.deserialize_map(PathsVisitor)
 }
 
 /// One security requirement: a map of scheme name → scopes. An empty map (`{}`)
@@ -308,6 +355,9 @@ pub struct Parameter {
     /// by `normalize_parameters`; `None` for an inline parameter.
     #[serde(rename = "$ref", default)]
     pub reference: Option<String>,
+    /// True when this body was resolved from `components.requestBodies`.
+    #[serde(skip)]
+    pub component_ref: bool,
     /// Parameter name (the wire name; also the path placeholder for `in: path`).
     #[serde(default)]
     pub name: String,
@@ -349,8 +399,15 @@ pub enum ParameterLocation {
 }
 
 /// A request body: a content-type → media-type map plus a required flag.
-#[derive(Debug, Default, Deserialize)]
+#[derive(Debug, Default, Clone, Deserialize)]
 pub struct RequestBody {
+    /// A `$ref` pointer to a `components.requestBodies` entry. Resolved by
+    /// `normalize_request_bodies`; `None` for an inline body.
+    #[serde(rename = "$ref", default)]
+    pub reference: Option<String>,
+    /// True when this body was resolved from `components.requestBodies`.
+    #[serde(skip)]
+    pub component_ref: bool,
     /// Whether the body is required.
     #[serde(default)]
     pub required: Option<bool>,
@@ -388,6 +445,9 @@ pub struct MediaType {
     /// The schema for this media type.
     #[serde(default)]
     pub schema: Option<Schema>,
+    /// Optional example value for the media payload.
+    #[serde(default)]
+    pub example: Option<serde_json::Value>,
 }
 
 /// The `info` block.
@@ -417,6 +477,10 @@ pub struct Components {
     /// `normalize_responses`).
     #[serde(default)]
     pub responses: IndexMap<String, Response>,
+    /// Reusable request bodies (`components.requestBodies`), in document order.
+    /// A `$ref` request body on an operation resolves against this map at load time.
+    #[serde(rename = "requestBodies", default)]
+    pub request_bodies: IndexMap<String, RequestBody>,
     /// Declared authentication schemes, in document order.
     #[serde(rename = "securitySchemes", default)]
     pub security_schemes: IndexMap<String, SecurityScheme>,
@@ -471,6 +535,10 @@ pub struct Schema {
     /// A schema-level `example` value (Fern shows it in the worked snippet).
     #[serde(default)]
     pub example: Option<serde_json::Value>,
+    /// OpenAPI 3.1 schema examples. Fern uses the first value when synthesizing
+    /// worked calls, after the singular `example` when both are present.
+    #[serde(default)]
+    pub examples: Vec<serde_json::Value>,
     /// OpenAPI 3.0 nullability.
     #[serde(default)]
     pub nullable: Option<bool>,
@@ -708,8 +776,39 @@ pub fn load(path: &Path) -> Result<OpenApi> {
 
     normalize_parameters(&mut doc);
     normalize_responses(&mut doc);
+    normalize_request_bodies(&mut doc);
 
     Ok(doc)
+}
+
+fn resolve_request_body(
+    request_body: &RequestBody,
+    defs: &IndexMap<String, RequestBody>,
+) -> RequestBody {
+    if let Some(name) = request_body
+        .reference
+        .as_deref()
+        .and_then(|r| r.strip_prefix("#/components/requestBodies/"))
+    {
+        if let Some(target) = defs.get(name) {
+            let mut resolved = target.clone();
+            resolved.component_ref = true;
+            return resolved;
+        }
+    }
+    request_body.clone()
+}
+
+fn normalize_request_bodies(doc: &mut OpenApi) {
+    let defs = doc.components.request_bodies.clone();
+    for item in doc.paths.values_mut() {
+        for slot in item.operation_slots() {
+            let Some(op) = slot else { continue };
+            if let Some(request_body) = &mut op.request_body {
+                *request_body = resolve_request_body(request_body, &defs);
+            }
+        }
+    }
 }
 
 /// Resolve a response that is a `$ref` into `components.responses` to the

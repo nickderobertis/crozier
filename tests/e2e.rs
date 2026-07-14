@@ -4144,6 +4144,1088 @@ const BUNGIE: Corpus = Corpus {
     matched: BUNGIE_MATCHED,
 };
 
+// ---------------------------------------------------------------------------
+// Five additional real-world `link-ok` corpora (issue #77), added together as a
+// batch of harder, feature-diverse targets. Each passes `fern check` cleanly (the
+// prerequisite — Fern must accept the raw spec first); their Fern golden `expected/`
+// trees are generated with Docker (`just fixtures-generate-corpus --only <name>`)
+// and land in the same PR before byte-matching begins. Every `matched` list starts
+// empty: the corpus test then only asserts crozier consumes the fetched spec, and
+// the list grows (via `just fixtures-candidates`) as the generator is brought to a
+// byte-match. Where crozier does not yet consume the spec cleanly, the gap is named
+// on the const so the byte-match pass knows the work; the offline `check` gate skips
+// every one of these (their specs are fetched, not vendored).
+// ---------------------------------------------------------------------------
+
+/// `anchore.io`: the Anchore Engine API server — the largest clean component-schema
+/// surface of this batch (149 schemas, heavy `allOf` + enums).
+const ANCHORE: Corpus = Corpus {
+    api: "anchore.io",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[
+        ".fern/metadata.json",
+        "README.md",
+        "pyproject.toml",
+        "reference.md",
+        "requirements.txt",
+        "src/fern/__init__.py",
+        "src/fern/archives/__init__.py",
+        "src/fern/archives/client.py",
+        "src/fern/archives/raw_client.py",
+        "src/fern/client.py",
+        "src/fern/core/__init__.py",
+        "src/fern/core/api_error.py",
+        "src/fern/core/client_wrapper.py",
+        "src/fern/core/datetime_utils.py",
+        "src/fern/core/file.py",
+        "src/fern/core/force_multipart.py",
+        "src/fern/core/http_client.py",
+        "src/fern/core/http_response.py",
+        "src/fern/core/http_sse/__init__.py",
+        "src/fern/core/http_sse/_api.py",
+        "src/fern/core/http_sse/_decoders.py",
+        "src/fern/core/http_sse/_exceptions.py",
+        "src/fern/core/http_sse/_models.py",
+        "src/fern/core/jsonable_encoder.py",
+        "src/fern/core/pydantic_utilities.py",
+        "src/fern/core/query_encoder.py",
+        "src/fern/core/remove_none_from_dict.py",
+        "src/fern/core/request_options.py",
+        "src/fern/core/serialization.py",
+        "src/fern/environment.py",
+        "src/fern/errors/__init__.py",
+        "src/fern/errors/bad_request_error.py",
+        "src/fern/errors/conflict_error.py",
+        "src/fern/errors/internal_server_error.py",
+        "src/fern/errors/not_found_error.py",
+        "src/fern/events/__init__.py",
+        "src/fern/events/client.py",
+        "src/fern/events/raw_client.py",
+        "src/fern/identity/__init__.py",
+        "src/fern/identity/client.py",
+        "src/fern/identity/raw_client.py",
+        "src/fern/images/__init__.py",
+        "src/fern/images/client.py",
+        "src/fern/images/raw_client.py",
+        "src/fern/images/types/__init__.py",
+        "src/fern/images/types/get_image_vulnerability_types_by_image_id_response_item.py",
+        "src/fern/images/types/get_image_vulnerability_types_response_item.py",
+        "src/fern/images/types/list_images_request_analysis_status.py",
+        "src/fern/images/types/list_images_request_image_status.py",
+        "src/fern/import_/__init__.py",
+        "src/fern/import_/client.py",
+        "src/fern/import_/raw_client.py",
+        "src/fern/imports/__init__.py",
+        "src/fern/imports/client.py",
+        "src/fern/imports/raw_client.py",
+        "src/fern/policies/__init__.py",
+        "src/fern/policies/client.py",
+        "src/fern/policies/raw_client.py",
+        "src/fern/py.typed",
+        "src/fern/query/__init__.py",
+        "src/fern/query/client.py",
+        "src/fern/query/raw_client.py",
+        "src/fern/query/types/__init__.py",
+        "src/fern/query/types/query_images_by_vulnerability_request_severity.py",
+        "src/fern/raw_client.py",
+        "src/fern/registries/__init__.py",
+        "src/fern/registries/client.py",
+        "src/fern/registries/raw_client.py",
+        "src/fern/repository_credentials/__init__.py",
+        "src/fern/repository_credentials/client.py",
+        "src/fern/repository_credentials/raw_client.py",
+        "src/fern/subscriptions/__init__.py",
+        "src/fern/subscriptions/client.py",
+        "src/fern/subscriptions/raw_client.py",
+        "src/fern/summaries/__init__.py",
+        "src/fern/summaries/client.py",
+        "src/fern/summaries/raw_client.py",
+        "src/fern/summaries/types/__init__.py",
+        "src/fern/summaries/types/list_imagetags_request_image_status_item.py",
+        "src/fern/system/__init__.py",
+        "src/fern/system/client.py",
+        "src/fern/system/raw_client.py",
+        "src/fern/system/types/__init__.py",
+        "src/fern/system/types/test_webhook_request_notification_type.py",
+        "src/fern/types/__init__.py",
+        "src/fern/types/access_credential.py",
+        "src/fern/types/access_credential_type.py",
+        "src/fern/types/account.py",
+        "src/fern/types/account_list.py",
+        "src/fern/types/account_state.py",
+        "src/fern/types/account_status.py",
+        "src/fern/types/account_status_state.py",
+        "src/fern/types/account_type.py",
+        "src/fern/types/add_analysis_archive_result.py",
+        "src/fern/types/analysis_archive_add_result.py",
+        "src/fern/types/analysis_archive_add_result_status.py",
+        "src/fern/types/analysis_archive_rules.py",
+        "src/fern/types/analysis_archive_rules_summary.py",
+        "src/fern/types/analysis_archive_source.py",
+        "src/fern/types/analysis_archive_summary.py",
+        "src/fern/types/analysis_archive_transition_history.py",
+        "src/fern/types/analysis_archive_transition_history_transition.py",
+        "src/fern/types/analysis_archive_transition_rule.py",
+        "src/fern/types/analysis_archive_transition_rule_exclude.py",
+        "src/fern/types/analysis_archive_transition_rule_transition.py",
+        "src/fern/types/analysis_update_eval.py",
+        "src/fern/types/analysis_update_notification.py",
+        "src/fern/types/analysis_update_notification_data.py",
+        "src/fern/types/analysis_update_notification_payload.py",
+        "src/fern/types/anchore_error_code.py",
+        "src/fern/types/anchore_image.py",
+        "src/fern/types/anchore_image_analysis_status.py",
+        "src/fern/types/anchore_image_image_status.py",
+        "src/fern/types/anchore_image_list.py",
+        "src/fern/types/anchore_image_tag_summary.py",
+        "src/fern/types/anchore_image_tag_summary_list.py",
+        "src/fern/types/annotations.py",
+        "src/fern/types/api_error_response.py",
+        "src/fern/types/archive_summary.py",
+        "src/fern/types/archived_analyses.py",
+        "src/fern/types/archived_analysis.py",
+        "src/fern/types/archived_analysis_status.py",
+        "src/fern/types/base_notification_data.py",
+        "src/fern/types/content_files_response.py",
+        "src/fern/types/content_files_response_content_item.py",
+        "src/fern/types/content_java_package_response.py",
+        "src/fern/types/content_java_package_response_content_item.py",
+        "src/fern/types/content_malware_response.py",
+        "src/fern/types/content_package_response.py",
+        "src/fern/types/content_package_response_content_item.py",
+        "src/fern/types/content_response.py",
+        "src/fern/types/credential_list.py",
+        "src/fern/types/cvssv2scores.py",
+        "src/fern/types/cvssv3scores.py",
+        "src/fern/types/delete_image_response.py",
+        "src/fern/types/delete_image_response_list.py",
+        "src/fern/types/delete_image_response_status.py",
+        "src/fern/types/event_category.py",
+        "src/fern/types/event_description.py",
+        "src/fern/types/event_response.py",
+        "src/fern/types/event_response_event.py",
+        "src/fern/types/event_response_event_resource.py",
+        "src/fern/types/event_response_event_source.py",
+        "src/fern/types/event_subcategory.py",
+        "src/fern/types/event_types_list.py",
+        "src/fern/types/events_list.py",
+        "src/fern/types/feed_group_metadata.py",
+        "src/fern/types/feed_metadata.py",
+        "src/fern/types/feed_sync_result.py",
+        "src/fern/types/feed_sync_result_status.py",
+        "src/fern/types/feed_sync_results.py",
+        "src/fern/types/file_content_search_list.py",
+        "src/fern/types/file_content_search_result.py",
+        "src/fern/types/gate_spec.py",
+        "src/fern/types/gate_spec_state.py",
+        "src/fern/types/generic_notification_payload.py",
+        "src/fern/types/group_sync_result.py",
+        "src/fern/types/group_sync_result_status.py",
+        "src/fern/types/image_analysis_references.py",
+        "src/fern/types/image_analysis_report.py",
+        "src/fern/types/image_content.py",
+        "src/fern/types/image_content_delete_response.py",
+        "src/fern/types/image_detail.py",
+        "src/fern/types/image_filter.py",
+        "src/fern/types/image_import_content_response.py",
+        "src/fern/types/image_import_manifest.py",
+        "src/fern/types/image_import_operation.py",
+        "src/fern/types/image_import_operation_status.py",
+        "src/fern/types/image_imports.py",
+        "src/fern/types/image_ref.py",
+        "src/fern/types/image_ref_type.py",
+        "src/fern/types/image_reference.py",
+        "src/fern/types/image_selection_rule.py",
+        "src/fern/types/image_selector.py",
+        "src/fern/types/image_source.py",
+        "src/fern/types/image_with_packages.py",
+        "src/fern/types/import_content_digest_list.py",
+        "src/fern/types/import_content_digests.py",
+        "src/fern/types/import_descriptor.py",
+        "src/fern/types/import_distribution.py",
+        "src/fern/types/import_package.py",
+        "src/fern/types/import_package_location.py",
+        "src/fern/types/import_package_relationship.py",
+        "src/fern/types/import_schema.py",
+        "src/fern/types/import_source.py",
+        "src/fern/types/local_analysis_source.py",
+        "src/fern/types/malware_scan.py",
+        "src/fern/types/malware_scan_findings_item.py",
+        "src/fern/types/mapping_rule.py",
+        "src/fern/types/metadata_response.py",
+        "src/fern/types/native_sbom.py",
+        "src/fern/types/notification_base.py",
+        "src/fern/types/nvd_data_list.py",
+        "src/fern/types/nvd_data_object.py",
+        "src/fern/types/package_reference.py",
+        "src/fern/types/paginated_image_list.py",
+        "src/fern/types/paginated_vulnerability_list.py",
+        "src/fern/types/paginated_vulnerable_image_list.py",
+        "src/fern/types/pagination_properties.py",
+        "src/fern/types/policy.py",
+        "src/fern/types/policy_bundle.py",
+        "src/fern/types/policy_bundle_list.py",
+        "src/fern/types/policy_bundle_record.py",
+        "src/fern/types/policy_eval_notification.py",
+        "src/fern/types/policy_eval_notification_data.py",
+        "src/fern/types/policy_eval_notification_payload.py",
+        "src/fern/types/policy_evaluation.py",
+        "src/fern/types/policy_evaluation_list.py",
+        "src/fern/types/policy_rule.py",
+        "src/fern/types/policy_rule_action.py",
+        "src/fern/types/policy_rule_params_item.py",
+        "src/fern/types/regex_content_match.py",
+        "src/fern/types/registry_configuration.py",
+        "src/fern/types/registry_configuration_list.py",
+        "src/fern/types/registry_configuration_request.py",
+        "src/fern/types/registry_digest_source.py",
+        "src/fern/types/registry_tag_source.py",
+        "src/fern/types/repository_tag_list.py",
+        "src/fern/types/retrieved_file.py",
+        "src/fern/types/retrieved_file_list.py",
+        "src/fern/types/secret_search_list.py",
+        "src/fern/types/secret_search_result.py",
+        "src/fern/types/service.py",
+        "src/fern/types/service_list.py",
+        "src/fern/types/service_version.py",
+        "src/fern/types/service_version_api.py",
+        "src/fern/types/service_version_db.py",
+        "src/fern/types/service_version_service.py",
+        "src/fern/types/standalone_vulnerability.py",
+        "src/fern/types/standalone_vulnerability_severity.py",
+        "src/fern/types/status_response.py",
+        "src/fern/types/subscription.py",
+        "src/fern/types/subscription_list.py",
+        "src/fern/types/system_status_response.py",
+        "src/fern/types/tag_entry.py",
+        "src/fern/types/tag_update_notification.py",
+        "src/fern/types/tag_update_notification_data.py",
+        "src/fern/types/tag_update_notification_payload.py",
+        "src/fern/types/token_response.py",
+        "src/fern/types/trigger_param_spec.py",
+        "src/fern/types/trigger_param_spec_state.py",
+        "src/fern/types/trigger_spec.py",
+        "src/fern/types/trigger_spec_state.py",
+        "src/fern/types/user.py",
+        "src/fern/types/user_list.py",
+        "src/fern/types/user_type.py",
+        "src/fern/types/vendor_data_list.py",
+        "src/fern/types/vendor_data_object.py",
+        "src/fern/types/vuln_diff_result.py",
+        "src/fern/types/vuln_update_notification.py",
+        "src/fern/types/vuln_update_notification_data.py",
+        "src/fern/types/vuln_update_notification_payload.py",
+        "src/fern/types/vulnerability.py",
+        "src/fern/types/vulnerability_list.py",
+        "src/fern/types/vulnerability_reference.py",
+        "src/fern/types/vulnerability_response.py",
+        "src/fern/types/vulnerable_image.py",
+        "src/fern/types/vulnerable_package_reference.py",
+        "src/fern/types/whitelist.py",
+        "src/fern/types/whitelist_item.py",
+        "src/fern/user_management/__init__.py",
+        "src/fern/user_management/client.py",
+        "src/fern/user_management/raw_client.py",
+        "src/fern/user_management/types/__init__.py",
+        "src/fern/user_management/types/delete_user_credential_request_credential_type.py",
+        "src/fern/user_management/types/list_accounts_request_state.py",
+        "src/fern/version.py",
+    ],
+};
+
+/// `apache.org`: the Airflow (Stable) REST API — the heaviest composition of this
+/// batch (`allOf`×22 plus the only discriminated union) across 18 tags, so the
+/// deepest sub-client fan-out. Fully matched: all 182 files reproduce Fern
+/// byte-for-byte.
+const APACHE_AIRFLOW: Corpus = Corpus {
+    api: "apache.org",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[
+        ".fern/metadata.json",
+        "README.md",
+        "pyproject.toml",
+        "reference.md",
+        "requirements.txt",
+        "src/fern/__init__.py",
+        "src/fern/client.py",
+        "src/fern/config/__init__.py",
+        "src/fern/config/client.py",
+        "src/fern/config/raw_client.py",
+        "src/fern/connection/__init__.py",
+        "src/fern/connection/client.py",
+        "src/fern/connection/raw_client.py",
+        "src/fern/core/__init__.py",
+        "src/fern/core/api_error.py",
+        "src/fern/core/client_wrapper.py",
+        "src/fern/core/datetime_utils.py",
+        "src/fern/core/file.py",
+        "src/fern/core/force_multipart.py",
+        "src/fern/core/http_client.py",
+        "src/fern/core/http_response.py",
+        "src/fern/core/http_sse/__init__.py",
+        "src/fern/core/http_sse/_api.py",
+        "src/fern/core/http_sse/_decoders.py",
+        "src/fern/core/http_sse/_exceptions.py",
+        "src/fern/core/http_sse/_models.py",
+        "src/fern/core/jsonable_encoder.py",
+        "src/fern/core/pydantic_utilities.py",
+        "src/fern/core/query_encoder.py",
+        "src/fern/core/remove_none_from_dict.py",
+        "src/fern/core/request_options.py",
+        "src/fern/core/serialization.py",
+        "src/fern/dag/__init__.py",
+        "src/fern/dag/client.py",
+        "src/fern/dag/raw_client.py",
+        "src/fern/dag/types/__init__.py",
+        "src/fern/dag/types/get_dag_source_response.py",
+        "src/fern/dag/types/update_task_instances_state_new_state.py",
+        "src/fern/dag_run/__init__.py",
+        "src/fern/dag_run/client.py",
+        "src/fern/dag_run/raw_client.py",
+        "src/fern/dag_run/types/__init__.py",
+        "src/fern/dag_run/types/update_dag_run_state_state.py",
+        "src/fern/dag_warning/__init__.py",
+        "src/fern/dag_warning/client.py",
+        "src/fern/dag_warning/raw_client.py",
+        "src/fern/dataset/__init__.py",
+        "src/fern/dataset/client.py",
+        "src/fern/dataset/raw_client.py",
+        "src/fern/environment.py",
+        "src/fern/errors/__init__.py",
+        "src/fern/errors/bad_request_error.py",
+        "src/fern/errors/conflict_error.py",
+        "src/fern/errors/forbidden_error.py",
+        "src/fern/errors/not_acceptable_error.py",
+        "src/fern/errors/not_found_error.py",
+        "src/fern/errors/unauthorized_error.py",
+        "src/fern/event_log/__init__.py",
+        "src/fern/event_log/client.py",
+        "src/fern/event_log/raw_client.py",
+        "src/fern/import_error/__init__.py",
+        "src/fern/import_error/client.py",
+        "src/fern/import_error/raw_client.py",
+        "src/fern/monitoring/__init__.py",
+        "src/fern/monitoring/client.py",
+        "src/fern/monitoring/raw_client.py",
+        "src/fern/permission/__init__.py",
+        "src/fern/permission/client.py",
+        "src/fern/permission/raw_client.py",
+        "src/fern/plugin/__init__.py",
+        "src/fern/plugin/client.py",
+        "src/fern/plugin/raw_client.py",
+        "src/fern/pool/__init__.py",
+        "src/fern/pool/client.py",
+        "src/fern/pool/raw_client.py",
+        "src/fern/provider/__init__.py",
+        "src/fern/provider/client.py",
+        "src/fern/provider/raw_client.py",
+        "src/fern/provider/types/__init__.py",
+        "src/fern/provider/types/get_providers_response.py",
+        "src/fern/py.typed",
+        "src/fern/role/__init__.py",
+        "src/fern/role/client.py",
+        "src/fern/role/raw_client.py",
+        "src/fern/task_instance/__init__.py",
+        "src/fern/task_instance/client.py",
+        "src/fern/task_instance/raw_client.py",
+        "src/fern/task_instance/types/__init__.py",
+        "src/fern/task_instance/types/get_log_response.py",
+        "src/fern/types/__init__.py",
+        "src/fern/types/action.py",
+        "src/fern/types/action_collection.py",
+        "src/fern/types/action_resource.py",
+        "src/fern/types/basic_dag_run.py",
+        "src/fern/types/class_reference.py",
+        "src/fern/types/collection_info.py",
+        "src/fern/types/color.py",
+        "src/fern/types/config.py",
+        "src/fern/types/config_option.py",
+        "src/fern/types/config_section.py",
+        "src/fern/types/connection.py",
+        "src/fern/types/connection_collection.py",
+        "src/fern/types/connection_collection_item.py",
+        "src/fern/types/connection_test.py",
+        "src/fern/types/cron_expression.py",
+        "src/fern/types/dag.py",
+        "src/fern/types/dag_collection.py",
+        "src/fern/types/dag_detail.py",
+        "src/fern/types/dag_run.py",
+        "src/fern/types/dag_run_collection.py",
+        "src/fern/types/dag_run_run_type.py",
+        "src/fern/types/dag_schedule_dataset_reference.py",
+        "src/fern/types/dag_state.py",
+        "src/fern/types/dag_warning.py",
+        "src/fern/types/dag_warning_collection.py",
+        "src/fern/types/dataset.py",
+        "src/fern/types/dataset_collection.py",
+        "src/fern/types/dataset_event.py",
+        "src/fern/types/dataset_event_collection.py",
+        "src/fern/types/error.py",
+        "src/fern/types/event_log.py",
+        "src/fern/types/event_log_collection.py",
+        "src/fern/types/extra_link.py",
+        "src/fern/types/extra_link_collection.py",
+        "src/fern/types/health_info.py",
+        "src/fern/types/health_status.py",
+        "src/fern/types/import_error.py",
+        "src/fern/types/import_error_collection.py",
+        "src/fern/types/job.py",
+        "src/fern/types/metadatabase_status.py",
+        "src/fern/types/plugin_collection.py",
+        "src/fern/types/plugin_collection_item.py",
+        "src/fern/types/pool.py",
+        "src/fern/types/pool_collection.py",
+        "src/fern/types/provider.py",
+        "src/fern/types/provider_collection.py",
+        "src/fern/types/relative_delta.py",
+        "src/fern/types/resource.py",
+        "src/fern/types/role.py",
+        "src/fern/types/role_collection.py",
+        "src/fern/types/schedule_interval.py",
+        "src/fern/types/scheduler_status.py",
+        "src/fern/types/set_task_instance_note.py",
+        "src/fern/types/sla_miss.py",
+        "src/fern/types/tag.py",
+        "src/fern/types/task.py",
+        "src/fern/types/task_collection.py",
+        "src/fern/types/task_extra_links_item.py",
+        "src/fern/types/task_instance.py",
+        "src/fern/types/task_instance_collection.py",
+        "src/fern/types/task_instance_reference.py",
+        "src/fern/types/task_instance_reference_collection.py",
+        "src/fern/types/task_outlet_dataset_reference.py",
+        "src/fern/types/task_state.py",
+        "src/fern/types/time_delta.py",
+        "src/fern/types/timezone.py",
+        "src/fern/types/trigger.py",
+        "src/fern/types/trigger_rule.py",
+        "src/fern/types/update_task_instance.py",
+        "src/fern/types/update_task_instance_new_state.py",
+        "src/fern/types/user.py",
+        "src/fern/types/user_collection.py",
+        "src/fern/types/user_collection_item.py",
+        "src/fern/types/user_collection_item_roles_item.py",
+        "src/fern/types/variable.py",
+        "src/fern/types/variable_collection.py",
+        "src/fern/types/variable_collection_item.py",
+        "src/fern/types/version_info.py",
+        "src/fern/types/weight_rule.py",
+        "src/fern/types/x_com.py",
+        "src/fern/types/x_com_collection.py",
+        "src/fern/types/x_com_collection_item.py",
+        "src/fern/user/__init__.py",
+        "src/fern/user/client.py",
+        "src/fern/user/raw_client.py",
+        "src/fern/variable/__init__.py",
+        "src/fern/variable/client.py",
+        "src/fern/variable/raw_client.py",
+        "src/fern/version.py",
+        "src/fern/x_com/__init__.py",
+        "src/fern/x_com/client.py",
+        "src/fern/x_com/raw_client.py",
+    ],
+};
+
+/// `discourse.local`: the Discourse API — an all-inline shape (0 named component
+/// schemas; ~113 inline request/response objects Fern must coin names for), unlike
+/// any matched corpus. Fully matched: all 328 files reproduce Fern byte-for-byte.
+const DISCOURSE: Corpus = Corpus {
+    api: "discourse.local",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[
+        ".fern/metadata.json",
+        "README.md",
+        "pyproject.toml",
+        "reference.md",
+        "requirements.txt",
+        "src/fern/__init__.py",
+        "src/fern/backups/__init__.py",
+        "src/fern/backups/client.py",
+        "src/fern/backups/raw_client.py",
+        "src/fern/backups/types/__init__.py",
+        "src/fern/backups/types/create_backup_response.py",
+        "src/fern/backups/types/get_backups_response_item.py",
+        "src/fern/badges/__init__.py",
+        "src/fern/badges/client.py",
+        "src/fern/badges/raw_client.py",
+        "src/fern/badges/types/__init__.py",
+        "src/fern/badges/types/admin_list_badges_response.py",
+        "src/fern/badges/types/admin_list_badges_response_admin_badges.py",
+        "src/fern/badges/types/admin_list_badges_response_admin_badges_triggers.py",
+        "src/fern/badges/types/admin_list_badges_response_badge_groupings_item.py",
+        "src/fern/badges/types/admin_list_badges_response_badge_types_item.py",
+        "src/fern/badges/types/admin_list_badges_response_badges_item.py",
+        "src/fern/badges/types/create_badge_response.py",
+        "src/fern/badges/types/create_badge_response_badge.py",
+        "src/fern/badges/types/create_badge_response_badge_types_item.py",
+        "src/fern/badges/types/list_user_badges_response.py",
+        "src/fern/badges/types/list_user_badges_response_badge_types_item.py",
+        "src/fern/badges/types/list_user_badges_response_badges_item.py",
+        "src/fern/badges/types/list_user_badges_response_granted_bies_item.py",
+        "src/fern/badges/types/list_user_badges_response_user_badges_item.py",
+        "src/fern/badges/types/update_badge_response.py",
+        "src/fern/badges/types/update_badge_response_badge.py",
+        "src/fern/badges/types/update_badge_response_badge_types_item.py",
+        "src/fern/categories/__init__.py",
+        "src/fern/categories/client.py",
+        "src/fern/categories/raw_client.py",
+        "src/fern/categories/types/__init__.py",
+        "src/fern/categories/types/create_category_request_permissions.py",
+        "src/fern/categories/types/create_category_response.py",
+        "src/fern/categories/types/create_category_response_category.py",
+        "src/fern/categories/types/create_category_response_category_custom_fields.py",
+        "src/fern/categories/types/create_category_response_category_group_permissions_item.py",
+        "src/fern/categories/types/create_category_response_category_required_tag_groups_item.py",
+        "src/fern/categories/types/get_category_response.py",
+        "src/fern/categories/types/get_category_response_category.py",
+        "src/fern/categories/types/get_category_response_category_custom_fields.py",
+        "src/fern/categories/types/get_category_response_category_group_permissions_item.py",
+        "src/fern/categories/types/get_category_response_category_required_tag_groups_item.py",
+        "src/fern/categories/types/list_categories_response.py",
+        "src/fern/categories/types/list_categories_response_category_list.py",
+        "src/fern/categories/types/list_categories_response_category_list_categories_item.py",
+        "src/fern/categories/types/list_category_topics_response.py",
+        "src/fern/categories/types/list_category_topics_response_topic_list.py",
+        "src/fern/categories/types/list_category_topics_response_topic_list_topics_item.py",
+        "src/fern/categories/types/list_category_topics_response_topic_list_topics_item_posters_item.py",
+        "src/fern/categories/types/list_category_topics_response_users_item.py",
+        "src/fern/categories/types/update_category_request_permissions.py",
+        "src/fern/categories/types/update_category_response.py",
+        "src/fern/categories/types/update_category_response_category.py",
+        "src/fern/categories/types/update_category_response_category_custom_fields.py",
+        "src/fern/categories/types/update_category_response_category_group_permissions_item.py",
+        "src/fern/categories/types/update_category_response_category_required_tag_groups_item.py",
+        "src/fern/client.py",
+        "src/fern/core/__init__.py",
+        "src/fern/core/api_error.py",
+        "src/fern/core/client_wrapper.py",
+        "src/fern/core/datetime_utils.py",
+        "src/fern/core/file.py",
+        "src/fern/core/force_multipart.py",
+        "src/fern/core/http_client.py",
+        "src/fern/core/http_response.py",
+        "src/fern/core/http_sse/__init__.py",
+        "src/fern/core/http_sse/_api.py",
+        "src/fern/core/http_sse/_decoders.py",
+        "src/fern/core/http_sse/_exceptions.py",
+        "src/fern/core/http_sse/_models.py",
+        "src/fern/core/jsonable_encoder.py",
+        "src/fern/core/pydantic_utilities.py",
+        "src/fern/core/query_encoder.py",
+        "src/fern/core/remove_none_from_dict.py",
+        "src/fern/core/request_options.py",
+        "src/fern/core/serialization.py",
+        "src/fern/environment.py",
+        "src/fern/groups/__init__.py",
+        "src/fern/groups/client.py",
+        "src/fern/groups/raw_client.py",
+        "src/fern/groups/types/__init__.py",
+        "src/fern/groups/types/add_group_members_response.py",
+        "src/fern/groups/types/create_group_request_group.py",
+        "src/fern/groups/types/create_group_response.py",
+        "src/fern/groups/types/create_group_response_basic_group.py",
+        "src/fern/groups/types/delete_group_response.py",
+        "src/fern/groups/types/get_group_response.py",
+        "src/fern/groups/types/get_group_response_extras.py",
+        "src/fern/groups/types/get_group_response_group.py",
+        "src/fern/groups/types/list_group_members_response.py",
+        "src/fern/groups/types/list_group_members_response_members_item.py",
+        "src/fern/groups/types/list_group_members_response_meta.py",
+        "src/fern/groups/types/list_group_members_response_owners_item.py",
+        "src/fern/groups/types/list_groups_response.py",
+        "src/fern/groups/types/list_groups_response_extras.py",
+        "src/fern/groups/types/list_groups_response_groups_item.py",
+        "src/fern/groups/types/remove_group_members_response.py",
+        "src/fern/groups/types/update_group_request_group.py",
+        "src/fern/groups/types/update_group_response.py",
+        "src/fern/invites/__init__.py",
+        "src/fern/invites/client.py",
+        "src/fern/invites/raw_client.py",
+        "src/fern/invites/types/__init__.py",
+        "src/fern/invites/types/create_invite_response.py",
+        "src/fern/notifications/__init__.py",
+        "src/fern/notifications/client.py",
+        "src/fern/notifications/raw_client.py",
+        "src/fern/notifications/types/__init__.py",
+        "src/fern/notifications/types/get_notifications_response.py",
+        "src/fern/notifications/types/get_notifications_response_notifications_item.py",
+        "src/fern/notifications/types/get_notifications_response_notifications_item_data.py",
+        "src/fern/notifications/types/mark_notifications_as_read_response.py",
+        "src/fern/posts/__init__.py",
+        "src/fern/posts/client.py",
+        "src/fern/posts/raw_client.py",
+        "src/fern/posts/types/__init__.py",
+        "src/fern/posts/types/create_topic_post_pm_response.py",
+        "src/fern/posts/types/create_topic_post_pm_response_actions_summary_item.py",
+        "src/fern/posts/types/get_post_response.py",
+        "src/fern/posts/types/get_post_response_actions_summary_item.py",
+        "src/fern/posts/types/list_posts_response.py",
+        "src/fern/posts/types/list_posts_response_latest_posts_item.py",
+        "src/fern/posts/types/list_posts_response_latest_posts_item_actions_summary_item.py",
+        "src/fern/posts/types/lock_post_response.py",
+        "src/fern/posts/types/perform_post_action_response.py",
+        "src/fern/posts/types/perform_post_action_response_actions_summary_item.py",
+        "src/fern/posts/types/post_replies_response_item.py",
+        "src/fern/posts/types/post_replies_response_item_actions_summary_item.py",
+        "src/fern/posts/types/post_replies_response_item_reply_to_user.py",
+        "src/fern/posts/types/update_post_request_post.py",
+        "src/fern/posts/types/update_post_response.py",
+        "src/fern/posts/types/update_post_response_post.py",
+        "src/fern/posts/types/update_post_response_post_actions_summary_item.py",
+        "src/fern/private_messages/__init__.py",
+        "src/fern/private_messages/client.py",
+        "src/fern/private_messages/raw_client.py",
+        "src/fern/private_messages/types/__init__.py",
+        "src/fern/private_messages/types/get_user_sent_private_messages_response.py",
+        "src/fern/private_messages/types/get_user_sent_private_messages_response_topic_list.py",
+        "src/fern/private_messages/types/get_user_sent_private_messages_response_topic_list_topics_item.py",
+        "src/fern/private_messages/types/get_user_sent_private_messages_response_topic_list_topics_item_posters_item.py",
+        "src/fern/private_messages/types/get_user_sent_private_messages_response_users_item.py",
+        "src/fern/private_messages/types/list_user_private_messages_response.py",
+        "src/fern/private_messages/types/list_user_private_messages_response_topic_list.py",
+        "src/fern/private_messages/types/list_user_private_messages_response_topic_list_topics_item.py",
+        "src/fern/private_messages/types/list_user_private_messages_response_topic_list_topics_item_participants_item.py",
+        "src/fern/private_messages/types/list_user_private_messages_response_topic_list_topics_item_posters_item.py",
+        "src/fern/private_messages/types/list_user_private_messages_response_users_item.py",
+        "src/fern/py.typed",
+        "src/fern/raw_client.py",
+        "src/fern/site/__init__.py",
+        "src/fern/site/client.py",
+        "src/fern/site/raw_client.py",
+        "src/fern/site/types/__init__.py",
+        "src/fern/site/types/get_site_response.py",
+        "src/fern/site/types/get_site_response_archetypes_item.py",
+        "src/fern/site/types/get_site_response_categories_item.py",
+        "src/fern/site/types/get_site_response_categories_item_required_tag_groups_item.py",
+        "src/fern/site/types/get_site_response_custom_emoji_translation.py",
+        "src/fern/site/types/get_site_response_groups_item.py",
+        "src/fern/site/types/get_site_response_notification_types.py",
+        "src/fern/site/types/get_site_response_post_action_types_item.py",
+        "src/fern/site/types/get_site_response_post_types.py",
+        "src/fern/site/types/get_site_response_topic_flag_types_item.py",
+        "src/fern/site/types/get_site_response_trust_levels.py",
+        "src/fern/site/types/get_site_response_user_color_schemes_item.py",
+        "src/fern/site/types/get_site_response_user_themes_item.py",
+        "src/fern/tags/__init__.py",
+        "src/fern/tags/client.py",
+        "src/fern/tags/raw_client.py",
+        "src/fern/tags/types/__init__.py",
+        "src/fern/tags/types/create_tag_group_response.py",
+        "src/fern/tags/types/create_tag_group_response_tag_group.py",
+        "src/fern/tags/types/get_tag_group_response.py",
+        "src/fern/tags/types/get_tag_group_response_tag_group.py",
+        "src/fern/tags/types/get_tag_group_response_tag_group_permissions.py",
+        "src/fern/tags/types/get_tag_response.py",
+        "src/fern/tags/types/get_tag_response_topic_list.py",
+        "src/fern/tags/types/get_tag_response_topic_list_tags_item.py",
+        "src/fern/tags/types/get_tag_response_topic_list_topics_item.py",
+        "src/fern/tags/types/get_tag_response_topic_list_topics_item_posters_item.py",
+        "src/fern/tags/types/get_tag_response_users_item.py",
+        "src/fern/tags/types/list_tag_groups_response.py",
+        "src/fern/tags/types/list_tag_groups_response_tag_groups_item.py",
+        "src/fern/tags/types/list_tag_groups_response_tag_groups_item_permissions.py",
+        "src/fern/tags/types/list_tags_response.py",
+        "src/fern/tags/types/list_tags_response_extras.py",
+        "src/fern/tags/types/list_tags_response_tags_item.py",
+        "src/fern/tags/types/update_tag_group_response.py",
+        "src/fern/tags/types/update_tag_group_response_tag_group.py",
+        "src/fern/tags/types/update_tag_group_response_tag_group_permissions.py",
+        "src/fern/topics/__init__.py",
+        "src/fern/topics/client.py",
+        "src/fern/topics/raw_client.py",
+        "src/fern/topics/types/__init__.py",
+        "src/fern/topics/types/create_topic_timer_response.py",
+        "src/fern/topics/types/get_specific_posts_from_topic_response.py",
+        "src/fern/topics/types/get_specific_posts_from_topic_response_post_stream.py",
+        "src/fern/topics/types/get_specific_posts_from_topic_response_post_stream_posts_item.py",
+        "src/fern/topics/types/get_specific_posts_from_topic_response_post_stream_posts_item_actions_summary_item.py",
+        "src/fern/topics/types/get_topic_response.py",
+        "src/fern/topics/types/get_topic_response_actions_summary_item.py",
+        "src/fern/topics/types/get_topic_response_details.py",
+        "src/fern/topics/types/get_topic_response_details_created_by.py",
+        "src/fern/topics/types/get_topic_response_details_last_poster.py",
+        "src/fern/topics/types/get_topic_response_details_participants_item.py",
+        "src/fern/topics/types/get_topic_response_post_stream.py",
+        "src/fern/topics/types/get_topic_response_post_stream_posts_item.py",
+        "src/fern/topics/types/get_topic_response_post_stream_posts_item_actions_summary_item.py",
+        "src/fern/topics/types/get_topic_response_post_stream_posts_item_link_counts_item.py",
+        "src/fern/topics/types/get_topic_response_suggested_topics_item.py",
+        "src/fern/topics/types/get_topic_response_suggested_topics_item_posters_item.py",
+        "src/fern/topics/types/get_topic_response_suggested_topics_item_posters_item_user.py",
+        "src/fern/topics/types/get_topic_response_suggested_topics_item_tags_descriptions.py",
+        "src/fern/topics/types/get_topic_response_tags_descriptions.py",
+        "src/fern/topics/types/invite_to_topic_response.py",
+        "src/fern/topics/types/invite_to_topic_response_user.py",
+        "src/fern/topics/types/list_latest_topics_response.py",
+        "src/fern/topics/types/list_latest_topics_response_topic_list.py",
+        "src/fern/topics/types/list_latest_topics_response_topic_list_topics_item.py",
+        "src/fern/topics/types/list_latest_topics_response_topic_list_topics_item_posters_item.py",
+        "src/fern/topics/types/list_latest_topics_response_users_item.py",
+        "src/fern/topics/types/list_top_topics_response.py",
+        "src/fern/topics/types/list_top_topics_response_topic_list.py",
+        "src/fern/topics/types/list_top_topics_response_topic_list_topics_item.py",
+        "src/fern/topics/types/list_top_topics_response_topic_list_topics_item_posters_item.py",
+        "src/fern/topics/types/list_top_topics_response_users_item.py",
+        "src/fern/topics/types/set_notification_level_request_notification_level.py",
+        "src/fern/topics/types/set_notification_level_response.py",
+        "src/fern/topics/types/update_topic_request_topic.py",
+        "src/fern/topics/types/update_topic_response.py",
+        "src/fern/topics/types/update_topic_response_basic_topic.py",
+        "src/fern/topics/types/update_topic_status_request_enabled.py",
+        "src/fern/topics/types/update_topic_status_request_status.py",
+        "src/fern/topics/types/update_topic_status_response.py",
+        "src/fern/topics/types/update_topic_timestamp_response.py",
+        "src/fern/types/__init__.py",
+        "src/fern/types/search_response.py",
+        "src/fern/types/search_response_grouped_search_result.py",
+        "src/fern/uploads/__init__.py",
+        "src/fern/uploads/client.py",
+        "src/fern/uploads/raw_client.py",
+        "src/fern/uploads/types/__init__.py",
+        "src/fern/uploads/types/abort_multipart_response.py",
+        "src/fern/uploads/types/batch_presign_multipart_parts_response.py",
+        "src/fern/uploads/types/complete_external_upload_response.py",
+        "src/fern/uploads/types/complete_multipart_response.py",
+        "src/fern/uploads/types/create_multipart_upload_request_metadata.py",
+        "src/fern/uploads/types/create_multipart_upload_request_upload_type.py",
+        "src/fern/uploads/types/create_multipart_upload_response.py",
+        "src/fern/uploads/types/create_upload_request_type.py",
+        "src/fern/uploads/types/create_upload_response.py",
+        "src/fern/uploads/types/generate_presigned_put_request_metadata.py",
+        "src/fern/uploads/types/generate_presigned_put_request_type.py",
+        "src/fern/uploads/types/generate_presigned_put_response.py",
+        "src/fern/users/__init__.py",
+        "src/fern/users/client.py",
+        "src/fern/users/raw_client.py",
+        "src/fern/users/types/__init__.py",
+        "src/fern/users/types/admin_get_user_response.py",
+        "src/fern/users/types/admin_get_user_response_approved_by.py",
+        "src/fern/users/types/admin_get_user_response_groups_item.py",
+        "src/fern/users/types/admin_get_user_response_penalty_counts.py",
+        "src/fern/users/types/admin_get_user_response_tl3requirements.py",
+        "src/fern/users/types/admin_get_user_response_tl3requirements_penalty_counts.py",
+        "src/fern/users/types/admin_list_users_request_asc.py",
+        "src/fern/users/types/admin_list_users_request_flag.py",
+        "src/fern/users/types/admin_list_users_request_order.py",
+        "src/fern/users/types/admin_list_users_response_item.py",
+        "src/fern/users/types/anonymize_user_response.py",
+        "src/fern/users/types/create_user_response.py",
+        "src/fern/users/types/delete_user_response.py",
+        "src/fern/users/types/get_user_emails_response.py",
+        "src/fern/users/types/get_user_external_id_response.py",
+        "src/fern/users/types/get_user_external_id_response_user.py",
+        "src/fern/users/types/get_user_external_id_response_user_custom_fields.py",
+        "src/fern/users/types/get_user_external_id_response_user_group_users_item.py",
+        "src/fern/users/types/get_user_external_id_response_user_groups_item.py",
+        "src/fern/users/types/get_user_external_id_response_user_user_auth_tokens_item.py",
+        "src/fern/users/types/get_user_external_id_response_user_user_fields.py",
+        "src/fern/users/types/get_user_external_id_response_user_user_notification_schedule.py",
+        "src/fern/users/types/get_user_external_id_response_user_user_option.py",
+        "src/fern/users/types/get_user_identiy_provider_external_id_response.py",
+        "src/fern/users/types/get_user_identiy_provider_external_id_response_user.py",
+        "src/fern/users/types/get_user_identiy_provider_external_id_response_user_custom_fields.py",
+        "src/fern/users/types/get_user_identiy_provider_external_id_response_user_group_users_item.py",
+        "src/fern/users/types/get_user_identiy_provider_external_id_response_user_groups_item.py",
+        "src/fern/users/types/get_user_identiy_provider_external_id_response_user_user_auth_tokens_item.py",
+        "src/fern/users/types/get_user_identiy_provider_external_id_response_user_user_fields.py",
+        "src/fern/users/types/get_user_identiy_provider_external_id_response_user_user_notification_schedule.py",
+        "src/fern/users/types/get_user_identiy_provider_external_id_response_user_user_option.py",
+        "src/fern/users/types/get_user_response.py",
+        "src/fern/users/types/get_user_response_user.py",
+        "src/fern/users/types/get_user_response_user_custom_fields.py",
+        "src/fern/users/types/get_user_response_user_group_users_item.py",
+        "src/fern/users/types/get_user_response_user_groups_item.py",
+        "src/fern/users/types/get_user_response_user_user_auth_tokens_item.py",
+        "src/fern/users/types/get_user_response_user_user_fields.py",
+        "src/fern/users/types/get_user_response_user_user_notification_schedule.py",
+        "src/fern/users/types/get_user_response_user_user_option.py",
+        "src/fern/users/types/list_user_actions_response.py",
+        "src/fern/users/types/list_user_actions_response_user_actions_item.py",
+        "src/fern/users/types/list_users_public_request_asc.py",
+        "src/fern/users/types/list_users_public_request_order.py",
+        "src/fern/users/types/list_users_public_request_period.py",
+        "src/fern/users/types/list_users_public_response.py",
+        "src/fern/users/types/list_users_public_response_directory_items_item.py",
+        "src/fern/users/types/list_users_public_response_directory_items_item_user.py",
+        "src/fern/users/types/list_users_public_response_meta.py",
+        "src/fern/users/types/log_out_user_response.py",
+        "src/fern/users/types/refresh_gravatar_response.py",
+        "src/fern/users/types/send_password_reset_email_response.py",
+        "src/fern/users/types/silence_user_response.py",
+        "src/fern/users/types/silence_user_response_silence.py",
+        "src/fern/users/types/silence_user_response_silence_silenced_by.py",
+        "src/fern/users/types/suspend_user_response.py",
+        "src/fern/users/types/suspend_user_response_suspension.py",
+        "src/fern/users/types/suspend_user_response_suspension_suspended_by.py",
+        "src/fern/users/types/update_avatar_request_type.py",
+        "src/fern/users/types/update_avatar_response.py",
+        "src/fern/users/types/update_user_response.py",
+        "src/fern/version.py",
+    ],
+};
+
+/// `appwrite.io-server`: the Appwrite server API — the widest operation surface of
+/// this batch (95 operations) with `url`-format fields. Fully matched: all 97
+/// files reproduce Fern byte-for-byte.
+const APPWRITE_SERVER: Corpus = Corpus {
+    api: "appwrite.io-server",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[
+        ".fern/metadata.json",
+        "README.md",
+        "pyproject.toml",
+        "reference.md",
+        "requirements.txt",
+        "src/fern/__init__.py",
+        "src/fern/account/__init__.py",
+        "src/fern/account/client.py",
+        "src/fern/account/raw_client.py",
+        "src/fern/avatars/__init__.py",
+        "src/fern/avatars/client.py",
+        "src/fern/avatars/raw_client.py",
+        "src/fern/client.py",
+        "src/fern/core/__init__.py",
+        "src/fern/core/api_error.py",
+        "src/fern/core/client_wrapper.py",
+        "src/fern/core/datetime_utils.py",
+        "src/fern/core/file.py",
+        "src/fern/core/force_multipart.py",
+        "src/fern/core/http_client.py",
+        "src/fern/core/http_response.py",
+        "src/fern/core/http_sse/__init__.py",
+        "src/fern/core/http_sse/_api.py",
+        "src/fern/core/http_sse/_decoders.py",
+        "src/fern/core/http_sse/_exceptions.py",
+        "src/fern/core/http_sse/_models.py",
+        "src/fern/core/jsonable_encoder.py",
+        "src/fern/core/pydantic_utilities.py",
+        "src/fern/core/query_encoder.py",
+        "src/fern/core/remove_none_from_dict.py",
+        "src/fern/core/request_options.py",
+        "src/fern/core/serialization.py",
+        "src/fern/database/__init__.py",
+        "src/fern/database/client.py",
+        "src/fern/database/raw_client.py",
+        "src/fern/environment.py",
+        "src/fern/errors/__init__.py",
+        "src/fern/errors/internal_server_error.py",
+        "src/fern/functions/__init__.py",
+        "src/fern/functions/client.py",
+        "src/fern/functions/raw_client.py",
+        "src/fern/health/__init__.py",
+        "src/fern/health/client.py",
+        "src/fern/health/raw_client.py",
+        "src/fern/locale/__init__.py",
+        "src/fern/locale/client.py",
+        "src/fern/locale/raw_client.py",
+        "src/fern/py.typed",
+        "src/fern/storage/__init__.py",
+        "src/fern/storage/client.py",
+        "src/fern/storage/raw_client.py",
+        "src/fern/teams/__init__.py",
+        "src/fern/teams/client.py",
+        "src/fern/teams/raw_client.py",
+        "src/fern/types/__init__.py",
+        "src/fern/types/collection.py",
+        "src/fern/types/collection_list.py",
+        "src/fern/types/continent.py",
+        "src/fern/types/continent_list.py",
+        "src/fern/types/country.py",
+        "src/fern/types/country_list.py",
+        "src/fern/types/currency.py",
+        "src/fern/types/currency_list.py",
+        "src/fern/types/document.py",
+        "src/fern/types/document_list.py",
+        "src/fern/types/error.py",
+        "src/fern/types/execution.py",
+        "src/fern/types/execution_list.py",
+        "src/fern/types/file.py",
+        "src/fern/types/file_list.py",
+        "src/fern/types/function.py",
+        "src/fern/types/function_list.py",
+        "src/fern/types/language.py",
+        "src/fern/types/language_list.py",
+        "src/fern/types/locale.py",
+        "src/fern/types/log.py",
+        "src/fern/types/log_list.py",
+        "src/fern/types/membership.py",
+        "src/fern/types/membership_list.py",
+        "src/fern/types/permissions.py",
+        "src/fern/types/phone.py",
+        "src/fern/types/phone_list.py",
+        "src/fern/types/preferences.py",
+        "src/fern/types/rule.py",
+        "src/fern/types/session.py",
+        "src/fern/types/session_list.py",
+        "src/fern/types/tag.py",
+        "src/fern/types/tag_list.py",
+        "src/fern/types/team.py",
+        "src/fern/types/team_list.py",
+        "src/fern/types/token.py",
+        "src/fern/types/user.py",
+        "src/fern/types/user_list.py",
+        "src/fern/users/__init__.py",
+        "src/fern/users/client.py",
+        "src/fern/users/raw_client.py",
+        "src/fern/version.py",
+    ],
+};
+
+/// `apicurio.local-registry`: the Apicurio Registry API — the only `int64`-format
+/// corpus of this batch. All committed Fern output is byte-matched.
+const APICURIO: Corpus = Corpus {
+    api: "apicurio.local-registry",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[
+        ".fern/metadata.json",
+        "README.md",
+        "pyproject.toml",
+        "reference.md",
+        "requirements.txt",
+        "src/fern/__init__.py",
+        "src/fern/admin/__init__.py",
+        "src/fern/admin/client.py",
+        "src/fern/admin/raw_client.py",
+        "src/fern/artifact_rules/__init__.py",
+        "src/fern/artifact_rules/client.py",
+        "src/fern/artifact_rules/raw_client.py",
+        "src/fern/artifact_rules/types/__init__.py",
+        "src/fern/artifact_rules/types/delete_artifact_rule_request_rule.py",
+        "src/fern/artifact_rules/types/get_artifact_rule_config_request_rule.py",
+        "src/fern/artifact_rules/types/update_artifact_rule_config_request_rule.py",
+        "src/fern/artifact_type/__init__.py",
+        "src/fern/artifact_type/client.py",
+        "src/fern/artifact_type/raw_client.py",
+        "src/fern/artifacts/__init__.py",
+        "src/fern/artifacts/client.py",
+        "src/fern/artifacts/raw_client.py",
+        "src/fern/artifacts/types/__init__.py",
+        "src/fern/artifacts/types/create_artifact_request_x_registry_hash_algorithm.py",
+        "src/fern/client.py",
+        "src/fern/core/__init__.py",
+        "src/fern/core/api_error.py",
+        "src/fern/core/client_wrapper.py",
+        "src/fern/core/datetime_utils.py",
+        "src/fern/core/file.py",
+        "src/fern/core/force_multipart.py",
+        "src/fern/core/http_client.py",
+        "src/fern/core/http_response.py",
+        "src/fern/core/http_sse/__init__.py",
+        "src/fern/core/http_sse/_api.py",
+        "src/fern/core/http_sse/_decoders.py",
+        "src/fern/core/http_sse/_exceptions.py",
+        "src/fern/core/http_sse/_models.py",
+        "src/fern/core/jsonable_encoder.py",
+        "src/fern/core/pydantic_utilities.py",
+        "src/fern/core/query_encoder.py",
+        "src/fern/core/remove_none_from_dict.py",
+        "src/fern/core/request_options.py",
+        "src/fern/core/serialization.py",
+        "src/fern/environment.py",
+        "src/fern/errors/__init__.py",
+        "src/fern/errors/bad_request_error.py",
+        "src/fern/errors/conflict_error.py",
+        "src/fern/errors/internal_server_error.py",
+        "src/fern/errors/not_found_error.py",
+        "src/fern/global_rules/__init__.py",
+        "src/fern/global_rules/client.py",
+        "src/fern/global_rules/raw_client.py",
+        "src/fern/groups/__init__.py",
+        "src/fern/groups/client.py",
+        "src/fern/groups/raw_client.py",
+        "src/fern/metadata/__init__.py",
+        "src/fern/metadata/client.py",
+        "src/fern/metadata/raw_client.py",
+        "src/fern/py.typed",
+        "src/fern/search/__init__.py",
+        "src/fern/search/client.py",
+        "src/fern/search/raw_client.py",
+        "src/fern/search/types/__init__.py",
+        "src/fern/search/types/search_artifacts_by_content_request_order.py",
+        "src/fern/search/types/search_artifacts_by_content_request_orderby.py",
+        "src/fern/system/__init__.py",
+        "src/fern/system/client.py",
+        "src/fern/system/raw_client.py",
+        "src/fern/types/__init__.py",
+        "src/fern/types/artifact_description.py",
+        "src/fern/types/artifact_id.py",
+        "src/fern/types/artifact_meta_data.py",
+        "src/fern/types/artifact_name.py",
+        "src/fern/types/artifact_owner.py",
+        "src/fern/types/artifact_reference.py",
+        "src/fern/types/artifact_search_results.py",
+        "src/fern/types/artifact_state.py",
+        "src/fern/types/artifact_type.py",
+        "src/fern/types/artifact_type_info.py",
+        "src/fern/types/configuration_property.py",
+        "src/fern/types/content_create_request.py",
+        "src/fern/types/download_ref.py",
+        "src/fern/types/editable_meta_data.py",
+        "src/fern/types/encoded_artifact_description.py",
+        "src/fern/types/encoded_artifact_name.py",
+        "src/fern/types/error.py",
+        "src/fern/types/file_content.py",
+        "src/fern/types/group_id.py",
+        "src/fern/types/group_meta_data.py",
+        "src/fern/types/group_search_results.py",
+        "src/fern/types/if_exists.py",
+        "src/fern/types/limits.py",
+        "src/fern/types/log_configuration.py",
+        "src/fern/types/log_level.py",
+        "src/fern/types/named_log_configuration.py",
+        "src/fern/types/properties.py",
+        "src/fern/types/role_mapping.py",
+        "src/fern/types/role_type.py",
+        "src/fern/types/rule.py",
+        "src/fern/types/rule_type.py",
+        "src/fern/types/rule_violation_cause.py",
+        "src/fern/types/rule_violation_error.py",
+        "src/fern/types/searched_artifact.py",
+        "src/fern/types/searched_group.py",
+        "src/fern/types/searched_version.py",
+        "src/fern/types/sort_by.py",
+        "src/fern/types/sort_order.py",
+        "src/fern/types/system_info.py",
+        "src/fern/types/update_state.py",
+        "src/fern/types/user_info.py",
+        "src/fern/types/version.py",
+        "src/fern/types/version_meta_data.py",
+        "src/fern/types/version_search_results.py",
+        "src/fern/users/__init__.py",
+        "src/fern/users/client.py",
+        "src/fern/users/raw_client.py",
+        "src/fern/version.py",
+        "src/fern/versions/__init__.py",
+        "src/fern/versions/client.py",
+        "src/fern/versions/raw_client.py",
+    ],
+};
+
 #[test]
 fn bunq_matches_fern_output() {
     // `link-ok` like apideck: the spec is fetched (not vendored), so this **skips**
@@ -4184,6 +5266,85 @@ fn bungie_matches_fern_output() {
     assert_corpus_matches(&BUNGIE);
 }
 
+// The five batch corpora below share the bunq/bungie test shape: `link-ok` (spec
+// fetched, not vendored) so each **skips** offline — including the `check` gate — and
+// **fails** when `CROZIER_REQUIRE_CORPUS` is set without a fetched spec, so an
+// enforced leg can never silently no-op. Each `matched` list is empty until its Fern
+// golden is generated and the byte-match pass grows it, so today they assert only
+// that crozier consumes the fetched spec and writes a tree without panicking. The
+// three with a named generator gap on their const (anchore, apache, apicurio) reach
+// that bar once the byte-match pass closes the gap; discourse and appwrite already do.
+
+#[test]
+fn anchore_matches_fern_output() {
+    if corpus_spec(ANCHORE.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the anchore corpus spec is not fetched; \
+             run scripts/fetch-corpus.sh first"
+        );
+        eprintln!("skipping anchore byte-match: spec not fetched (run scripts/fetch-corpus.sh)");
+        return;
+    }
+    assert_corpus_matches(&ANCHORE);
+}
+
+#[test]
+fn apache_airflow_matches_fern_output() {
+    if corpus_spec(APACHE_AIRFLOW.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the apache corpus spec is not fetched; \
+             run scripts/fetch-corpus.sh first"
+        );
+        eprintln!("skipping apache byte-match: spec not fetched (run scripts/fetch-corpus.sh)");
+        return;
+    }
+    assert_corpus_matches(&APACHE_AIRFLOW);
+}
+
+#[test]
+fn discourse_matches_fern_output() {
+    if corpus_spec(DISCOURSE.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the discourse corpus spec is not fetched; \
+             run scripts/fetch-corpus.sh first"
+        );
+        eprintln!("skipping discourse byte-match: spec not fetched (run scripts/fetch-corpus.sh)");
+        return;
+    }
+    assert_corpus_matches(&DISCOURSE);
+}
+
+#[test]
+fn appwrite_server_matches_fern_output() {
+    if corpus_spec(APPWRITE_SERVER.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the appwrite corpus spec is not fetched; \
+             run scripts/fetch-corpus.sh first"
+        );
+        eprintln!("skipping appwrite byte-match: spec not fetched (run scripts/fetch-corpus.sh)");
+        return;
+    }
+    assert_corpus_matches(&APPWRITE_SERVER);
+}
+
+#[test]
+fn apicurio_matches_fern_output() {
+    if corpus_spec(APICURIO.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the apicurio corpus spec is not fetched; \
+             run scripts/fetch-corpus.sh first"
+        );
+        eprintln!("skipping apicurio byte-match: spec not fetched (run scripts/fetch-corpus.sh)");
+        return;
+    }
+    assert_corpus_matches(&APICURIO);
+}
+
 #[test]
 fn feature_target_specs_generate_without_panicking() {
     // A feature-coverage target with a populated `matched` list is byte-compared
@@ -4210,6 +5371,10 @@ fn feature_target_specs_generate_without_panicking() {
 #[test]
 #[ignore = "coverage-growth aid, not a gate; run via `just fixtures-candidates`"]
 fn report_matched_candidates() {
+    let corpus_filter = std::env::var("CROZIER_CANDIDATES_CORPUS")
+        .ok()
+        .filter(|s| !s.is_empty());
+
     let mut corpora: Vec<&Corpus> = vec![&QUERY_PARAMETERS, &EXHAUSTIVE, &BUNQ];
     corpora.extend(FEATURE_TARGETS.iter());
     // bungie's spec is fetched, not vendored, and its `expected/` tree is pending;
@@ -4217,6 +5382,27 @@ fn report_matched_candidates() {
     // not walk a missing fixture.
     if corpus_spec(BUNGIE.api).is_some() {
         corpora.push(&BUNGIE);
+    }
+    // The five batch corpora are the same: fetched, not vendored, golden pending —
+    // include each only when its source spec is present so an offline run does not
+    // walk a missing fixture.
+    for c in [
+        &ANCHORE,
+        &APACHE_AIRFLOW,
+        &DISCOURSE,
+        &APPWRITE_SERVER,
+        &APICURIO,
+    ] {
+        if corpus_spec(c.api).is_some() {
+            corpora.push(c);
+        }
+    }
+    if let Some(f) = &corpus_filter {
+        corpora.retain(|c| c.api == f.as_str());
+        assert!(
+            !corpora.is_empty(),
+            "CROZIER_CANDIDATES_CORPUS={f:?} matched no corpus (or its spec is unfetched)"
+        );
     }
 
     let mut total = 0usize;
@@ -4314,6 +5500,19 @@ fn report_fixture_diffs() {
     }
     if corpus_spec(BUNGIE.api).is_some() {
         corpora.push(&BUNGIE);
+    }
+    // The five batch corpora (issue #77): fetched, not vendored — include each only
+    // when its source spec is present, exactly as the byte-diff gate skips it offline.
+    for c in [
+        &ANCHORE,
+        &APACHE_AIRFLOW,
+        &DISCOURSE,
+        &APPWRITE_SERVER,
+        &APICURIO,
+    ] {
+        if corpus_spec(c.api).is_some() {
+            corpora.push(c);
+        }
     }
     if let Some(f) = &corpus_filter {
         corpora.retain(|c| c.api == f.as_str());
@@ -4816,6 +6015,22 @@ fn hyphenated_operation_id_generates_valid_python() {
 }
 
 #[test]
+fn paths_level_extension_generates_valid_python() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  \
+         x-codegen-contextRoot: /api/v1\n  /widgets:\n    get:\n      operationId: listWidgets\n      \
+         tags: [widgets]\n      responses:\n        '200': { description: OK, content: { \
+         application/json: { schema: { type: array, items: { type: string } } } } }\n  /groups:\n    get:\n      \
+         operationId: GroupV2.GetGroups\n      tags: [GroupV2]\n      responses:\n        '200': { description: OK, content: { \
+         application/json: { schema: { type: array, items: { type: string } } } } }\n",
+    );
+    assert!(
+        out.join("src/acme/widgets").is_dir(),
+        "paths-level x-* extensions are metadata, not API paths"
+    );
+}
+
+#[test]
 fn spaced_operation_id_generates_valid_python() {
     // Issue #40 case 1b: a space in the operationId.
     let (_dir, out) = generate_ok(
@@ -4857,6 +6072,19 @@ fn digit_leading_property_gets_f_prefix_and_alias() {
     assert!(
         thing.contains("FieldMetadata(alias=\"2fa_enabled\")"),
         "the wire name should be preserved as a FieldMetadata alias: {thing}"
+    );
+}
+
+#[test]
+fn numeric_field_segments_collapse_and_keep_wire_aliases() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widget:\n    get:\n      operationId: getWidget\n      tags: [widgets]\n      responses:\n        '200':\n          description: Found\n          content:\n            application/json:\n              schema:\n                type: object\n                required: [day_0_end_time]\n                properties:\n                  day_0_end_time: { type: integer }\n",
+    );
+    let model = std::fs::read_to_string(out.join("src/acme/widgets/types/get_widget_response.py"))
+        .expect("response model is generated");
+    assert!(
+        model.contains("day0end_time: typing_extensions.Annotated[int, FieldMetadata(alias=\"day_0_end_time\")]"),
+        "numeric segments should collapse while preserving the wire alias: {model}"
     );
 }
 
@@ -4940,6 +6168,1193 @@ fn enum_sanitization_generates_valid_python() {
     assert!(
         raw.contains("size: typing.Optional[str] = None"),
         "a type-mismatched string enum falls back to str: {raw}"
+    );
+}
+
+#[test]
+fn omitted_schema_type_infers_enum_and_open_map_shapes() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    \
+         get:\n      operationId: listWidgets\n      tags: [widgets]\n      responses:\n        \
+         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Widget' } } } }\n\
+         components:\n  schemas:\n    Widget:\n      type: object\n      required: [kind, target]\n      \
+         properties:\n        kind: { enum: [tag, digest] }\n        target: { additionalProperties: true }\n        \
+         extra: {}\n",
+    );
+    let widget = std::fs::read_to_string(out.join("src/acme/types/widget.py"))
+        .expect("Widget model is generated");
+    assert!(
+        widget.contains("from .widget_kind import WidgetKind"),
+        "an enum without an explicit type should be hoisted as a string enum: {widget}"
+    );
+    assert!(
+        widget.contains("kind: WidgetKind"),
+        "the required no-type enum field should reference the hoisted enum: {widget}"
+    );
+    assert!(
+        widget.contains("target: typing.Dict[str, typing.Optional[typing.Any]]"),
+        "additionalProperties without an explicit object type should be an open map: {widget}"
+    );
+    assert!(
+        widget.contains("extra: typing.Optional[typing.Any] = None"),
+        "an unknown optional field keeps Fern's existing single-optional annotation: {widget}"
+    );
+}
+
+#[test]
+fn unknown_metadata_fields_are_double_optional() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    \
+         get:\n      operationId: listWidgets\n      tags: [widgets]\n      responses:\n        \
+         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Widget' } } } }\ncomponents:\n  \
+         schemas:\n    Widget:\n      type: object\n      properties:\n        metadata: {}\n        unknown: {}\n",
+    );
+    let widget =
+        std::fs::read_to_string(out.join("src/acme/types/widget.py")).expect("Widget model");
+    assert!(
+        widget.contains("metadata: typing.Optional[typing.Optional[typing.Any]] = None"),
+        "unknown metadata fields should match Fern's double-optional annotation: {widget}"
+    );
+    assert!(
+        widget.contains("unknown: typing.Optional[typing.Any] = None"),
+        "ordinary unknown fields should keep the existing single optional annotation: {widget}"
+    );
+}
+
+#[test]
+fn slash_only_server_url_generates_empty_default_environment() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\nservers:\n  - url: /\npaths:\n  \
+         /widgets:\n    get:\n      operationId: listWidgets\n      tags: [widgets]\n      responses:\n        \
+         '200': { description: OK, content: { application/json: { schema: { type: array, items: { type: string } } } } }\n",
+    );
+    let environment = std::fs::read_to_string(out.join("src/acme/environment.py"))
+        .expect("environment module is generated");
+    assert!(
+        environment.contains("DEFAULT = \"\""),
+        "a slash-only server URL should match Fern's empty default environment: {environment}"
+    );
+}
+
+#[test]
+fn examples_use_one_line_client_constructor_when_no_args_are_needed() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\nservers:\n  - url: /\npaths:\n  \
+         /widgets:\n    get:\n      operationId: listWidgets\n      tags: [widgets]\n      responses:\n        \
+         '200': { description: OK, content: { application/json: { schema: { type: array, items: { type: string } } } } }\n",
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/widgets/client.py"))
+        .expect("widgets client is generated");
+    assert!(
+        client.contains("client = AcmeApi()"),
+        "no-argument examples should use Fern's one-line constructor: {client}"
+    );
+    let root =
+        std::fs::read_to_string(out.join("src/acme/client.py")).expect("root client is generated");
+    assert!(
+        root.contains("client = AcmeApi()"),
+        "root client examples should use Fern's one-line constructor: {root}"
+    );
+}
+
+#[test]
+fn mixed_error_body_shapes_downgrade_status_class_to_any() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    \
+         get:\n      operationId: listWidgets\n      tags: [widgets]\n      responses:\n        \
+         '200': { description: OK, content: { application/json: { schema: { type: array, items: { type: string } } } } }\n        \
+         '400': { description: Bad request }\n  /gadgets:\n    get:\n      operationId: listGadgets\n      \
+         tags: [gadgets]\n      responses:\n        '200': { description: OK, content: { application/json: { schema: { \
+         type: array, items: { type: string } } } } }\n        '400': { description: Bad request, content: { \
+         application/json: { schema: { $ref: '#/components/schemas/ErrorBody' } } } }\ncomponents:\n  schemas:\n    \
+         ErrorBody:\n      type: object\n      properties:\n        message: { type: string }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/gadgets/raw_client.py"))
+        .expect("gadgets raw client is generated");
+    assert!(
+        raw.contains("type_=typing.Optional[typing.Any]"),
+        "a status class with any bodyless response should parse every branch as Optional[Any]: {raw}"
+    );
+    let error = std::fs::read_to_string(out.join("src/acme/errors/bad_request_error.py"))
+        .expect("BadRequestError is generated");
+    assert!(
+        error.contains("body: typing.Optional[typing.Any]"),
+        "the generated error class should also accept Optional[Any]: {error}"
+    );
+}
+
+#[test]
+fn conflicting_error_body_types_downgrade_status_class_to_any() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      responses:\n        '204': { description: Created }\n        '409': { description: Conflict, content: { application/json: { schema: { $ref: '#/components/schemas/WidgetConflict' } } } }\n  /gadgets:\n    post:\n      operationId: createGadget\n      tags: [gadgets]\n      responses:\n        '204': { description: Created }\n        '409': { description: Conflict, content: { application/json: { schema: { $ref: '#/components/schemas/GadgetConflict' } } } }\ncomponents:\n  schemas:\n    WidgetConflict: { type: object, properties: { message: { type: string } } }\n    GadgetConflict: { type: object, properties: { reason: { type: string } } }\n",
+    );
+    let error = std::fs::read_to_string(out.join("src/acme/errors/conflict_error.py"))
+        .expect("ConflictError is generated");
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
+    assert!(
+        error.contains("body: typing.Optional[typing.Any]")
+            && raw.contains("type_=typing.Optional[typing.Any]"),
+        "a shared status with conflicting body schemas should use Optional[Any]:\n{error}\n{raw}"
+    );
+}
+
+#[test]
+fn unknown_array_items_are_optional_any_elements() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    \
+         get:\n      operationId: listWidgets\n      tags: [widgets]\n      responses:\n        \
+         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Widget' } } } }\n\
+         components:\n  schemas:\n    Widget:\n      type: object\n      properties:\n        values: { \
+         type: array, items: {} }\n",
+    );
+    let widget = std::fs::read_to_string(out.join("src/acme/types/widget.py"))
+        .expect("Widget model is generated");
+    assert!(
+        widget.contains("values: typing.Optional[typing.List[typing.Optional[typing.Any]]] = None"),
+        "arrays of unknown items should preserve Optional[Any] element types: {widget}"
+    );
+}
+
+#[test]
+fn array_item_enums_hoist_to_tag_types() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    \
+         get:\n      operationId: listWidgets\n      tags: [widgets]\n      parameters:\n        - name: \
+         status\n          in: query\n          required: false\n          schema:\n            type: array\n            \
+         items: { type: string, enum: [active, archived] }\n      responses:\n        '200':\n          \
+         description: OK\n          content:\n            application/json:\n              schema:\n                \
+         type: array\n                items: { type: string, enum: [public, private] }\n",
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/widgets/client.py"))
+        .expect("widgets client is generated");
+    assert!(
+        client.contains(
+            "from .types.list_widgets_request_status_item import ListWidgetsRequestStatusItem"
+        ),
+        "query array item enums should be imported as tag-scoped types: {client}"
+    );
+    assert!(
+        client.contains("from .types.list_widgets_response_item import ListWidgetsResponseItem"),
+        "response array item enums should be imported as tag-scoped types: {client}"
+    );
+    assert!(
+        client.contains(
+            "typing.Union[ListWidgetsRequestStatusItem, typing.Sequence[ListWidgetsRequestStatusItem]]"
+        ),
+        "query array item enums should use the named enum in scalar-or-sequence params: {client}"
+    );
+    assert!(
+        client.contains("typing.List[ListWidgetsResponseItem]"),
+        "response array item enums should use the named enum in return types: {client}"
+    );
+    let reference =
+        std::fs::read_to_string(out.join("reference.md")).expect("reference.md is generated");
+    assert!(
+        reference.contains(
+            "**status:** `typing.Optional[\n    typing.Union[\n        ListWidgetsRequestStatusItem,\n        typing.Sequence[ListWidgetsRequestStatusItem],\n    ]\n]`"
+        ),
+        "reference tables should wrap scalar-or-sequence array query annotations: {reference}"
+    );
+}
+
+#[test]
+fn path_parameter_enums_hoist_to_tag_types() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/{state}:\n    delete:\n      operationId: deleteWidget\n      tags: [widgets]\n      parameters:\n        - name: state\n          in: path\n          required: true\n          schema: { type: string, enum: [ACTIVE, DISABLED] }\n      responses:\n        '204': { description: Deleted }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
+    assert!(
+        out.join("src/acme/widgets/types/delete_widget_request_state.py")
+            .is_file()
+            && raw.contains(
+                "from .types.delete_widget_request_state import DeleteWidgetRequestState"
+            )
+            && raw.contains("state: DeleteWidgetRequestState"),
+        "inline path enums should hoist under the endpoint tag: {raw}"
+    );
+}
+
+#[test]
+fn referenced_parameter_examples_populate_worked_calls() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/{id}:\n    get:\n      operationId: getWidget\n      tags: [widgets]\n      parameters:\n        - { name: id, in: path, required: true, schema: { $ref: '#/components/schemas/WidgetId' } }\n        - { name: X-Mode, in: header, required: true, schema: { $ref: '#/components/schemas/Mode' } }\n      responses:\n        '204': { description: Found }\ncomponents:\n  schemas:\n    WidgetId: { type: string, example: '\"widget-123\"' }\n    Mode: { type: string, example: 'safe' }\n",
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/widgets/client.py"))
+        .expect("widgets client is generated");
+    assert!(
+        client.contains("id='\"widget-123\"'") && client.contains("mode=\"safe\""),
+        "examples on referenced parameter schemas should populate worked calls: {client}"
+    );
+}
+
+#[test]
+fn referenced_query_examples_populate_worked_calls() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    get:\n      operationId: listWidgets\n      tags: [widgets]\n      parameters:\n        - { name: mode, in: query, schema: { $ref: '#/components/schemas/WidgetMode' } }\n      responses:\n        '204': { description: Found }\ncomponents:\n  schemas:\n    WidgetMode: { type: string, example: FAST }\n",
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/widgets/client.py"))
+        .expect("widgets client is generated");
+    assert!(
+        client.contains("mode=\"FAST\""),
+        "examples on referenced query schemas should populate worked calls: {client}"
+    );
+}
+
+#[test]
+fn declared_tag_labels_are_preserved_in_reference_headings() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\ntags:\n  - { name: 'Widget rules' }\npaths:\n  /rules:\n    get:\n      operationId: listWidgetRules\n      tags: ['Widget rules']\n      responses:\n        '204': { description: Found }\n",
+    );
+    let reference = std::fs::read_to_string(out.join("reference.md"))
+        .expect("reference documentation is generated");
+    assert!(
+        reference.contains("## Widget rules"),
+        "declared tag labels should remain verbatim in headings: {reference}"
+    );
+}
+
+#[test]
+fn reference_preserves_terminal_description_paragraphs() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      description: |+\n        Creates a widget.\n\n      responses:\n        '204': { description: Created }\n",
+    );
+    let reference = std::fs::read_to_string(out.join("reference.md"))
+        .expect("reference documentation is generated");
+    assert!(
+        reference.contains("Creates a widget.\n\n</dd>"),
+        "terminal description paragraphs should remain in reference docs: {reference}"
+    );
+}
+
+#[test]
+fn readme_skips_binary_endpoints_for_worked_examples() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /upload:\n    post:\n      operationId: uploadWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          application/octet-stream:\n            schema: { type: string, format: binary }\n      responses:\n        '204': { description: Uploaded }\n  /widgets:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          application/json:\n            schema:\n              type: object\n              properties:\n                name: { type: string }\n              required: [name]\n      responses:\n        '204': { description: Created }\n",
+    );
+    let readme = std::fs::read_to_string(out.join("README.md")).expect("README is generated");
+    assert!(
+        readme.contains("client.widgets.create_widget("),
+        "README should use the first example-capable endpoint: {readme}"
+    );
+}
+
+#[test]
+fn readme_marks_referenced_object_bodies_as_complex() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          application/json:\n            schema: { $ref: '#/components/schemas/CreateWidget' }\n      responses:\n        '204': { description: Created }\ncomponents:\n  schemas:\n    CreateWidget:\n      type: object\n      description: A widget creation request.\n      example: { name: example }\n      properties:\n        name: { type: string }\n        note: { type: string }\n      required: [name]\n",
+    );
+    let readme = std::fs::read_to_string(out.join("README.md")).expect("README is generated");
+    assert!(
+        readme.contains("client.widgets.create_widget(...)")
+            && readme.contains("with_raw_response.create_widget(...)"),
+        "referenced object bodies should be complex in abbreviated calls: {readme}"
+    );
+    let raw_client = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("raw client is generated");
+    assert!(
+        !raw_client.contains("\"content-type\": \"application/json\""),
+        "example-backed optional bodies should leave content type to the transport: {raw_client}"
+    );
+}
+
+#[test]
+fn inline_response_array_objects_hoist_through_the_cli() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    get:\n      operationId: listWidgets\n      tags: [widgets]\n      responses:\n        '200':\n          description: Found\n          content:\n            application/json:\n              schema:\n                type: object\n                required: [items]\n                properties:\n                  items:\n                    type: array\n                    items:\n                      type: object\n                      required: [id, details]\n                      properties:\n                        id: { type: integer }\n                        details:\n                          type: object\n                          required: [name]\n                          properties:\n                            name: { type: string }\n",
+    );
+    let response =
+        std::fs::read_to_string(out.join("src/acme/widgets/types/list_widgets_response.py"))
+            .expect("inline response wrapper is generated");
+    assert!(
+        response.contains("typing.List[ListWidgetsResponseItemsItem]"),
+        "array items should use their coined model: {response}"
+    );
+    let item = std::fs::read_to_string(
+        out.join("src/acme/widgets/types/list_widgets_response_items_item.py"),
+    )
+    .expect("inline array item model is generated");
+    assert!(
+        item.contains("details: ListWidgetsResponseItemsItemDetails"),
+        "nested inline objects should retain the item context: {item}"
+    );
+}
+
+#[test]
+fn openapi_31_null_types_generate_optional_fields() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.1.0\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widget:\n    get:\n      operationId: getWidget\n      tags: [widgets]\n      responses:\n        '200':\n          description: Found\n          content:\n            application/json:\n              schema:\n                type: object\n                required: [name]\n                properties:\n                  name: { type: [string, 'null'] }\n",
+    );
+    let model = std::fs::read_to_string(out.join("src/acme/widgets/types/get_widget_response.py"))
+        .expect("inline response model is generated");
+    assert!(
+        model.contains("name: typing.Optional[str] = None"),
+        "3.1 null unions should produce optional fields: {model}"
+    );
+}
+
+#[test]
+fn openapi_31_null_only_array_items_are_optional_any() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.1.0\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widget:\n    get:\n      operationId: getWidget\n      tags: [widgets]\n      responses:\n        '200':\n          description: Found\n          content:\n            application/json:\n              schema:\n                type: object\n                required: [values]\n                properties:\n                  values:\n                    type: array\n                    items: { type: ['null'] }\n",
+    );
+    let model = std::fs::read_to_string(out.join("src/acme/widgets/types/get_widget_response.py"))
+        .expect("inline response model is generated");
+    assert!(
+        model.contains("values: typing.List[typing.Optional[typing.Any]]"),
+        "null-only items should remain optional unknown values: {model}"
+    );
+}
+
+#[test]
+fn arrays_without_items_use_optional_any_elements() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widget:\n    get:\n      operationId: getWidget\n      tags: [widgets]\n      responses:\n        '200':\n          description: Found\n          content:\n            application/json:\n              schema:\n                type: object\n                required: [values]\n                properties:\n                  values: { type: array }\n",
+    );
+    let model = std::fs::read_to_string(out.join("src/acme/widgets/types/get_widget_response.py"))
+        .expect("inline response model is generated");
+    assert!(
+        model.contains("values: typing.List[typing.Optional[typing.Any]]"),
+        "arrays without item constraints should contain optional unknowns: {model}"
+    );
+}
+
+#[test]
+fn inline_request_enums_generate_emittable_clients() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widget:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n              type: object\n              required: [mode]\n              properties:\n                mode: { type: string, enum: [FAST, SAFE] }\n      responses:\n        '204': { description: Created }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("client with an inline request enum is generated");
+    assert!(
+        raw.contains("mode: CreateWidgetRequestMode"),
+        "request field should use its coined enum: {raw}"
+    );
+    assert!(
+        out.join("src/acme/widgets/types/create_widget_request_mode.py")
+            .is_file(),
+        "request-scoped enum module should be emitted"
+    );
+}
+
+#[test]
+fn multipart_request_enums_hoist_through_the_cli() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widget:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          multipart/form-data:\n            schema:\n              type: object\n              required: [mode]\n              properties:\n                mode: { type: string, enum: [FAST, SAFE] }\n                file: { type: string, format: binary }\n      responses:\n        '204': { description: Created }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("multipart client is generated");
+    assert!(
+        raw.contains("mode: CreateWidgetRequestMode"),
+        "multipart enum should use its coined type: {raw}"
+    );
+    assert!(out
+        .join("src/acme/widgets/types/create_widget_request_mode.py")
+        .is_file());
+}
+
+#[test]
+fn short_multiple_request_enum_imports_stay_flat() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widget:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          application/json:\n            schema:\n              type: object\n              required: [mode, status]\n              properties:\n                mode: { type: string, enum: [FAST, SAFE] }\n                status: { type: string, enum: [ACTIVE, PAUSED] }\n      responses:\n        '204': { description: Created }\n",
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/widgets/client.py"))
+        .expect("widgets client is generated");
+    assert!(
+        client.contains(
+            "from acme.widgets import CreateWidgetRequestMode, CreateWidgetRequestStatus"
+        ),
+        "tag-scoped example imports within 88 columns should stay flat: {client}"
+    );
+}
+
+#[test]
+fn multipart_unknown_fields_keep_intrinsic_optionality_through_the_cli() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.1.0\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /uploads:\n    post:\n      operationId: createUpload\n      tags: [uploads]\n      requestBody:\n        content:\n          multipart/form-data:\n            schema:\n              type: object\n              properties:\n                file: {}\n      responses:\n        '204': { description: Created }\n",
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/uploads/client.py"))
+        .expect("multipart client is generated");
+    assert!(
+        client.contains("file: typing.Optional[typing.Optional[typing.Any]] = OMIT"),
+        "an omittable unknown form field should retain unknown nullability: {client}"
+    );
+}
+
+#[test]
+fn request_array_examples_are_used_through_the_cli() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.1.0\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    post:\n      operationId: createWidgets\n      tags: [widgets]\n      requestBody:\n        content:\n          application/json:\n            schema:\n              type: object\n              required: [ids]\n              properties:\n                ids:\n                  type: array\n                  examples: [[1, 2, 3]]\n      responses:\n        '204': { description: Created }\n",
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/widgets/client.py"))
+        .expect("widgets client is generated");
+    assert!(
+        client.contains("ids=[1, 2, 3]"),
+        "a required array should use its explicit schema example: {client}"
+    );
+}
+
+#[test]
+fn top_level_inline_response_array_items_hoist_through_the_cli() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    get:\n      operationId: listWidgets\n      tags: [widgets]\n      responses:\n        '200':\n          description: Found\n          content:\n            application/json:\n              schema:\n                type: array\n                items:\n                  type: object\n                  required: [id]\n                  properties:\n                    id: { type: integer }\n",
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/widgets/client.py"))
+        .expect("client is generated");
+    assert!(
+        client.contains("typing.List[ListWidgetsResponseItem]"),
+        "top-level response arrays should use their coined item model: {client}"
+    );
+    assert!(
+        out.join("src/acme/widgets/types/list_widgets_response_item.py")
+            .is_file(),
+        "response item module should be emitted"
+    );
+}
+
+#[test]
+fn closed_empty_inline_objects_hoist_through_the_cli() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widget:\n    get:\n      operationId: getWidget\n      tags: [widgets]\n      responses:\n        '200':\n          description: Found\n          content:\n            application/json:\n              schema:\n                type: object\n                required: [metadata]\n                properties:\n                  metadata:\n                    type: object\n                    properties: {}\n                    additionalProperties: false\n",
+    );
+    let response =
+        std::fs::read_to_string(out.join("src/acme/widgets/types/get_widget_response.py"))
+            .expect("response model is generated");
+    assert!(
+        response.contains("metadata: GetWidgetResponseMetadata"),
+        "closed empty objects should use a coined model: {response}"
+    );
+    assert!(
+        out.join("src/acme/widgets/types/get_widget_response_metadata.py")
+            .is_file(),
+        "closed empty object model should be emitted"
+    );
+}
+
+#[test]
+fn operation_id_equal_to_tag_generates_on_root_client() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /search:\n    get:\n      operationId: search\n      tags: [Search]\n      description: |\n        Search help.\n\n        ```sh\n        echo search\n        ```\n      responses:\n        '200':\n          description: Found\n          content:\n            application/json:\n              schema:\n                type: object\n                required: [result]\n                properties:\n                  result:\n                    type: object\n                    required: [count]\n                    properties:\n                      count: { type: integer }\n  /health:\n    get:\n      operationId: getHealth\n      tags: [System]\n      responses:\n        '204': { description: Healthy }\n",
+    );
+    let client =
+        std::fs::read_to_string(out.join("src/acme/client.py")).expect("root client is generated");
+    assert!(
+        client.contains("def search(") && !client.contains("def search(self):"),
+        "an operation named exactly for its tag should remain a root method: {client}"
+    );
+    assert!(
+        !client.contains("OMIT ="),
+        "a root client with no request body should not declare OMIT: {client}"
+    );
+    assert!(
+        client.contains("```sh\n        echo search\n        ```\n        \n"),
+        "fenced root method docstrings should preserve Fern's blank indentation: {client}"
+    );
+    assert!(out.join("src/acme/raw_client.py").is_file());
+    assert!(out.join("src/acme/types/search_response.py").is_file());
+    assert!(out
+        .join("src/acme/types/search_response_result.py")
+        .is_file());
+    let response = std::fs::read_to_string(out.join("src/acme/types/search_response.py"))
+        .expect("root response model is generated");
+    assert!(
+        response.contains("from ..core.pydantic_utilities import"),
+        "root response types should use root-relative imports: {response}"
+    );
+    let package = std::fs::read_to_string(out.join("src/acme/__init__.py"))
+        .expect("package initializer is generated");
+    assert!(
+        package.contains("\"SearchResponse\": \".types\"")
+            && package.contains("from .types import SearchResponse"),
+        "root-hoisted types should export through the root types package: {package}"
+    );
+}
+
+#[test]
+fn header_parameter_enums_hoist_to_tag_types() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      parameters:\n        - name: X-Widget-Mode\n          in: header\n          required: true\n          schema: { type: string, enum: [FAST, SAFE] }\n      responses:\n        '204': { description: Created }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
+    assert!(
+        out.join("src/acme/widgets/types/create_widget_request_x_widget_mode.py")
+            .is_file()
+            && raw.contains("CreateWidgetRequestXWidgetMode"),
+        "inline header enums should hoist under the endpoint tag: {raw}"
+    );
+}
+
+#[test]
+fn binary_success_responses_stream_bytes() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/{id}/download:\n    \
+         get:\n      operationId: downloadWidget\n      tags: [widgets]\n      parameters:\n        - name: id\n          \
+         in: path\n          required: true\n          schema: { type: string }\n      responses:\n        '200':\n          \
+         description: Widget archive\n          content:\n            application/octet-stream:\n              \
+         schema: { type: string, format: binary }\n        '500': { description: Broken }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
+    assert!(
+        raw.contains("@contextlib.contextmanager")
+            && raw.contains("self._client_wrapper.httpx_client.stream(")
+            && raw.contains("typing.Iterator[HttpResponse[typing.Iterator[bytes]]]")
+            && raw.contains("_response.iter_bytes(chunk_size=_chunk_size)"),
+        "binary responses should stream bytes from the raw client: {raw}"
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/widgets/client.py"))
+        .expect("widgets client is generated");
+    assert!(
+        client.contains(") -> typing.Iterator[bytes]:")
+            && client.contains("with self._raw_client.download_widget(")
+            && client.contains("yield from r.data"),
+        "high-level binary response methods should yield bytes from the raw stream: {client}"
+    );
+    let reference =
+        std::fs::read_to_string(out.join("reference.md")).expect("reference.md is generated");
+    assert!(
+        reference.contains(
+            "**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response."
+        ),
+        "binary response reference docs should mention stream request_options: {reference}"
+    );
+}
+
+#[test]
+fn referenced_binary_success_responses_stream_bytes() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /export:\n    get:\n      operationId: exportWidgets\n      tags: [widgets]\n      description: Exports all widgets.\n      responses:\n        '200':\n          description: Export\n          content:\n            application/zip:\n              schema: { $ref: '#/components/schemas/FileContent' }\ncomponents:\n  schemas:\n    FileContent: { type: string, format: binary }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
+    assert!(
+        raw.contains("@contextlib.contextmanager")
+            && raw.contains("typing.Iterator[HttpResponse[typing.Iterator[bytes]]]")
+            && raw.contains("httpx_client.stream(")
+            && !raw.contains("import FileContent")
+            && raw.contains("        Exports all widgets.\n\n        Parameters"),
+        "referenced binary response schemas should use the streaming interface: {raw}"
+    );
+}
+
+#[test]
+fn binary_response_examples_use_neutral_path_placeholders() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/{id}/export:\n    get:\n      operationId: exportWidget\n      tags: [widgets]\n      parameters:\n        - { name: id, in: path, required: true, schema: { $ref: '#/components/schemas/WidgetId' } }\n      responses:\n        '200': { description: Export, content: { application/zip: { schema: { $ref: '#/components/schemas/FileContent' } } } }\ncomponents:\n  schemas:\n    WidgetId: { type: string, example: '\"widget-123\"' }\n    FileContent: { type: string, format: binary }\n",
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/widgets/client.py"))
+        .expect("widgets client is generated");
+    assert!(
+        client.contains("id=\"id\"") && !client.contains("widget-123"),
+        "binary response examples should use neutral path placeholders: {client}"
+    );
+}
+
+#[test]
+fn binary_request_media_types_are_preserved() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /import:\n    post:\n      operationId: importWidgets\n      tags: [widgets]\n      requestBody:\n        content:\n          application/zip:\n            schema: { $ref: '#/components/schemas/FileContent' }\n      responses:\n        '204': { description: Imported }\n  /create:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          '*/*':\n            schema: { $ref: '#/components/schemas/FileContent' }\n          application/vnd.create+json:\n            schema: { $ref: '#/components/schemas/CreateWidget' }\n      responses:\n        '204': { description: Created }\ncomponents:\n  schemas:\n    FileContent: { type: string, format: binary }\n    CreateWidget:\n      type: object\n      properties:\n        name: { type: string }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
+    assert!(
+        raw.contains("content=request,\n            headers={\n                \"content-type\": \"application/zip\"")
+            && raw.contains("def create_widget(\n        self, *, request: typing.Optional[FileContent] = None")
+            && raw.contains("json=request,"),
+        "binary request media selection should preserve ZIP and wildcard semantics: {raw}"
+    );
+}
+
+#[test]
+fn wildcard_binary_requests_with_path_params_omit_json_content_type() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/{id}/test:\n    put:\n      operationId: testWidget\n      tags: [widgets]\n      parameters:\n        - { name: id, in: path, required: true, schema: { type: string } }\n      requestBody:\n        required: true\n        content:\n          '*/*':\n            schema: { $ref: '#/components/schemas/FileContent' }\n      responses:\n        '204': { description: Tested }\ncomponents:\n  schemas:\n    FileContent: { type: string, format: binary }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
+    assert!(
+        raw.contains("json=request,") && !raw.contains("\"content-type\": \"application/json\""),
+        "wildcard binary-schema requests should not gain JSON headers from path params: {raw}"
+    );
+}
+
+#[test]
+fn binary_requests_ignore_declared_operation_headers() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /import:\n    post:\n      operationId: importWidgets\n      tags: [widgets]\n      parameters:\n        - { name: X-Preserve-Ids, in: header, schema: { type: boolean } }\n      requestBody:\n        content:\n          application/zip:\n            schema: { $ref: '#/components/schemas/FileContent' }\n      responses:\n        '204': { description: Imported }\ncomponents:\n  schemas:\n    FileContent: { type: string, format: binary }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
+    assert!(
+        raw.contains("content=request,") && !raw.contains("preserve_ids"),
+        "raw binary operations should not expose transport metadata headers: {raw}"
+    );
+}
+
+#[test]
+fn tag_prefixed_multi_segment_operation_ids_drop_the_tag_segment() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /query/widgets/by_name:\n    \
+         get:\n      operationId: query_widgets_by_name\n      tags: [Query]\n      parameters:\n        - name: \
+         name\n          in: query\n          required: true\n          schema: { type: string }\n      responses:\n        \
+         '200': { description: OK, content: { application/json: { schema: { type: array, items: { type: string } } } } }\n",
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/query/client.py"))
+        .expect("query client is generated");
+    assert!(
+        client.contains("def widgets_by_name("),
+        "a multi-segment operationId starting with the tag should drop only that tag segment: {client}"
+    );
+    assert!(
+        !client.contains("def query_widgets_by_name("),
+        "the tag segment should not be duplicated in the method name: {client}"
+    );
+}
+
+#[test]
+fn file_only_multipart_requests_include_empty_data() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/import:\n    \
+         post:\n      operationId: importWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          \
+         multipart/form-data:\n            schema:\n              type: object\n              properties:\n                \
+         archive: { type: string, format: binary }\n      responses:\n        '200': { description: OK, content: { \
+         application/json: { schema: { type: array, items: { type: string } } } } }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
+    assert!(
+        raw.contains("data={},") && raw.contains("files={"),
+        "file-only multipart requests should still pass an empty data mapping: {raw}"
+    );
+}
+
+#[test]
+fn inline_json_bodies_matching_response_schema_omit_content_type() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/rules:\n    \
+         post:\n      operationId: createWidgetRule\n      tags: [widgets]\n      requestBody:\n        content:\n          \
+         application/json:\n            schema: { $ref: '#/components/schemas/WidgetRule' }\n        required: true\n      \
+         responses:\n        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/WidgetRule' } } } }\ncomponents:\n  \
+         schemas:\n    WidgetRule:\n      type: object\n      required: [transition]\n      properties:\n        transition: { \
+         type: string, enum: [archive, delete] }\n        count: { type: integer }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
+    assert!(
+        raw.contains("transition: WidgetRuleTransition")
+            && raw.contains("json={")
+            && !raw.contains("\"content-type\": \"application/json\""),
+        "inlined JSON bodies whose request and response share a schema should omit explicit content-type when no route/header params force headers: {raw}"
+    );
+}
+
+#[test]
+fn colliding_query_and_body_fields_serialize_from_query_name() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/{id}:\n    \
+         put:\n      operationId: updateWidget\n      tags: [widgets]\n      parameters:\n        - name: id\n          \
+         in: path\n          required: true\n          schema: { type: string }\n        - name: active\n          in: \
+         query\n          required: false\n          schema: { type: boolean }\n      requestBody:\n        content:\n          \
+         application/json:\n            schema: { $ref: '#/components/schemas/WidgetRecord' }\n      responses:\n        \
+         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/WidgetRecord' } } } }\ncomponents:\n  \
+         schemas:\n    WidgetRecord:\n      type: object\n      properties:\n        active: { type: boolean }\n        \
+         name: { type: string }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
+    assert!(
+        raw.contains("widget_record_active: typing.Optional[bool] = OMIT"),
+        "colliding body fields should be prefixed in the method signature: {raw}"
+    );
+    assert!(
+        raw.contains("\"active\": active,"),
+        "Fern serializes a colliding body field from the original query parameter name: {raw}"
+    );
+    assert!(
+        !raw.contains("\"active\": widget_record_active,"),
+        "the prefixed signature name should not be used in the JSON dict for this collision: {raw}"
+    );
+}
+
+#[test]
+fn camel_case_tags_generate_snake_case_client_packages() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /runs:\n    \
+         get:\n      operationId: get_runs\n      tags: [DagRun]\n      responses:\n        '200': { description: OK, content: { \
+         application/json: { schema: { type: array, items: { type: string } } } } }\n  /entries:\n    get:\n      \
+         operationId: get_entries\n      tags: [XCom]\n      responses:\n        '200': { description: OK, content: { \
+         application/json: { schema: { type: array, items: { type: string } } } } }\n  /groups:\n    get:\n      \
+         operationId: GroupV2.GetGroups\n      tags: [GroupV2]\n      responses:\n        '200': { description: OK, content: { \
+         application/json: { schema: { type: array, items: { type: string } } } } }\n",
+    );
+    assert!(
+        out.join("src/acme/dag_run/raw_client.py").is_file(),
+        "PascalCase tags should generate snake_case client package paths"
+    );
+    assert!(
+        out.join("src/acme/x_com/raw_client.py").is_file(),
+        "mixed acronym tags should preserve their word boundary"
+    );
+    assert!(
+        out.join("src/acme/groupv2/raw_client.py").is_file(),
+        "dotted operation namespaces should retain Fern's compact tag package"
+    );
+}
+
+#[test]
+fn inline_all_of_responses_preserve_component_bases() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    get:\n      \
+         operationId: listWidgets\n      tags: [widgets]\n      responses:\n        '200':\n          description: OK\n          content:\n            \
+         application/json:\n              schema:\n                allOf:\n                  - { $ref: '#/components/schemas/WidgetCollection' }\n                  \
+         - { $ref: '#/components/schemas/PageInfo' }\ncomponents:\n  schemas:\n    WidgetCollection:\n      type: object\n      properties:\n        \
+         widgets: { type: array, items: { type: string } }\n    PageInfo:\n      type: object\n      properties:\n        total: { type: integer }\n",
+    );
+    let response =
+        std::fs::read_to_string(out.join("src/acme/widgets/types/list_widgets_response.py"))
+            .expect("inline allOf response model is generated");
+    assert!(
+        response.contains("from ...types.page_info import PageInfo")
+            && response.contains("from ...types.widget_collection import WidgetCollection")
+            && response.contains("class ListWidgetsResponse(WidgetCollection, PageInfo):"),
+        "inline allOf response models should inherit every referenced component: {response}"
+    );
+}
+
+#[test]
+fn all_of_request_bodies_flatten_inherited_fields() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/{id}:\n    patch:\n      \
+         operationId: patchWidget\n      tags: [widgets]\n      parameters:\n        - { name: id, in: path, required: true, schema: { type: string } }\n      \
+         requestBody:\n        content:\n          application/json:\n            schema: { $ref: '#/components/schemas/Widget' }\n      responses:\n        \
+         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Widget' } } } }\ncomponents:\n  schemas:\n    WidgetBase:\n      \
+         type: object\n      properties:\n        id: { type: string }\n        label: { type: string }\n    Widget:\n      allOf:\n        - { $ref: '#/components/schemas/WidgetBase' }\n        \
+         - type: object\n          properties:\n            active: { type: boolean }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
+    assert!(
+        raw.contains("id_: str,")
+            && raw.contains("active: typing.Optional[bool] = OMIT")
+            && raw.contains("id: typing.Optional[str] = OMIT")
+            && raw.contains("label: typing.Optional[str] = OMIT")
+            && raw.contains("\"id\": id,"),
+        "allOf request bodies should flatten child and inherited fields before resolving collisions: {raw}"
+    );
+}
+
+#[test]
+fn pathless_all_of_bodies_omit_explicit_content_type() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/test:\n    post:\n      operationId: testWidget\n      tags: [widgets]\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema: { $ref: '#/components/schemas/Widget' }\n      responses:\n        '200': { description: OK }\ncomponents:\n  schemas:\n    WidgetBase:\n      type: object\n      properties:\n        name: { type: string }\n    Widget:\n      allOf:\n        - { $ref: '#/components/schemas/WidgetBase' }\n        - type: object\n          properties:\n            active: { type: boolean }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
+    assert!(
+        !raw.contains("\"content-type\": \"application/json\""),
+        "pathless allOf request bodies should leave content type to the transport: {raw}"
+    );
+}
+
+#[test]
+fn single_use_request_component_enums_move_to_tag_types() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    patch:\n      operationId: patchWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          application/json:\n            schema: { $ref: '#/components/schemas/UpdateWidget' }\n      responses:\n        '204': { description: Updated }\ncomponents:\n  schemas:\n    UpdateWidget:\n      type: object\n      properties:\n        state: { type: string, enum: [enabled, disabled] }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
+    assert!(
+        out.join("src/acme/widgets/types/update_widget_state.py")
+            .is_file()
+            && !out.join("src/acme/types/update_widget_state.py").exists()
+            && raw.contains("from .types.update_widget_state import UpdateWidgetState"),
+        "an enum owned only by an elided request component should move into the endpoint tag: {raw}"
+    );
+}
+
+#[test]
+fn shared_request_component_enums_remain_root_types() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          application/json:\n            schema: { $ref: '#/components/schemas/CreateWidget' }\n      responses:\n        '204': { description: Created }\n  /widgets/state:\n    put:\n      operationId: updateWidgetState\n      tags: [widgets]\n      requestBody:\n        content:\n          application/json:\n            schema: { $ref: '#/components/schemas/UpdateWidget' }\n      responses:\n        '204': { description: Updated }\ncomponents:\n  schemas:\n    WidgetState: { type: string, enum: [ACTIVE, DISABLED] }\n    CreateWidget:\n      type: object\n      properties:\n        state: { $ref: '#/components/schemas/WidgetState' }\n    UpdateWidget:\n      type: object\n      properties:\n        state: { $ref: '#/components/schemas/WidgetState' }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
+    assert!(
+        out.join("src/acme/types/widget_state.py").is_file()
+            && !out.join("src/acme/widgets/types/widget_state.py").exists()
+            && raw.contains("from ..types.widget_state import WidgetState"),
+        "an enum shared by elided request components should remain package-root: {raw}"
+    );
+}
+
+#[test]
+fn enums_referenced_by_retained_models_remain_root_types() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          application/json:\n            schema: { $ref: '#/components/schemas/CreateWidget' }\n      responses:\n        '200': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/Widget' } } } }\ncomponents:\n  schemas:\n    WidgetState: { type: string, enum: [ACTIVE, DISABLED] }\n    CreateWidget:\n      type: object\n      properties:\n        state: { $ref: '#/components/schemas/WidgetState' }\n    Widget:\n      type: object\n      properties:\n        state: { $ref: '#/components/schemas/WidgetState' }\n",
+    );
+    let model = std::fs::read_to_string(out.join("src/acme/types/widget.py"))
+        .expect("widget model is generated");
+    assert!(
+        out.join("src/acme/types/widget_state.py").is_file()
+            && !out.join("src/acme/widgets/types/widget_state.py").exists()
+            && model.contains("from .widget_state import WidgetState"),
+        "an enum referenced by a retained model should remain package-root: {model}"
+    );
+}
+
+#[test]
+fn optional_converted_body_fields_use_optional_annotations() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    patch:\n      operationId: patchWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          application/json:\n            schema: { $ref: '#/components/schemas/UpdateWidget' }\n      responses:\n        '204': { description: Updated }\ncomponents:\n  schemas:\n    WidgetMeta:\n      type: object\n      properties:\n        type: { type: string }\n    UpdateWidget:\n      type: object\n      properties:\n        metadata: { $ref: '#/components/schemas/WidgetMeta', nullable: true, readOnly: true }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
+    assert!(
+        raw.contains("annotation=typing.Optional[WidgetMeta], direction=\"write\"")
+            && raw.contains("metadata: typing.Optional[WidgetMeta] = OMIT"),
+        "conversion metadata should carry the same optionality as the body argument: {raw}"
+    );
+}
+
+#[test]
+fn request_media_examples_populate_optional_body_fields() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    patch:\n      operationId: patchWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          application/json:\n            example: { active: true }\n            schema: { $ref: '#/components/schemas/UpdateWidget' }\n      responses:\n        '204': { description: Updated }\ncomponents:\n  schemas:\n    UpdateWidget:\n      type: object\n      properties:\n        active: { type: boolean }\n",
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/widgets/client.py"))
+        .expect("widgets client is generated");
+    assert!(
+        client.contains("client.widgets.patch_widget(\n            active=True,\n        )"),
+        "request media examples should populate optional body arguments in worked examples: {client}"
+    );
+}
+
+#[test]
+fn schema_examples_arrays_populate_worked_calls() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.1.0\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widget:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          application/json:\n            schema:\n              type: object\n              required: [name]\n              properties:\n                name: { type: string, examples: [example-name] }\n      responses:\n        '204': { description: Created }\n",
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/widgets/client.py"))
+        .expect("client is generated");
+    assert!(
+        client.contains("name=\"example-name\""),
+        "the first schema example should populate the worked call: {client}"
+    );
+}
+
+#[test]
+fn component_examples_populate_inlined_body_fields() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          application/json:\n            schema: { $ref: '#/components/schemas/CreateWidget' }\n      responses:\n        '204': { description: Created }\ncomponents:\n  schemas:\n    WidgetState: { type: string, enum: [ACTIVE, DISABLED] }\n    CreateWidget:\n      type: object\n      required: [name, state]\n      example: { name: Example Widget, state: DISABLED }\n      properties:\n        name: { type: string }\n        state: { $ref: '#/components/schemas/WidgetState' }\n",
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/widgets/client.py"))
+        .expect("widgets client is generated");
+    assert!(
+        client.contains("name=\"Example Widget\"") && client.contains("state=WidgetState.DISABLED"),
+        "component examples should populate inlined request examples: {client}"
+    );
+}
+
+#[test]
+fn component_examples_populate_composite_body_fields() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          application/json:\n            schema: { $ref: '#/components/schemas/CreateWidget' }\n      responses:\n        '204': { description: Created }\ncomponents:\n  schemas:\n    CreateWidget:\n      type: object\n      example: { labels: [regional, global], properties: { custom: value } }\n      properties:\n        labels: { type: array, items: { type: string } }\n        properties: { type: object, additionalProperties: { type: string } }\n",
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/widgets/client.py"))
+        .expect("widgets client is generated");
+    assert!(
+        client.contains("labels=[\"regional\", \"global\"]")
+            && client.contains("properties={\"custom\": \"value\"}"),
+        "component examples should populate composite request fields: {client}"
+    );
+}
+
+#[test]
+fn readme_marks_composed_object_bodies_as_complex() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          application/json:\n            schema: { $ref: '#/components/schemas/CreateWidget' }\n      responses:\n        '204': { description: Created }\ncomponents:\n  schemas:\n    WidgetBase:\n      type: object\n      properties:\n        name: { type: string }\n    CreateWidget:\n      allOf:\n        - { $ref: '#/components/schemas/WidgetBase' }\n        - type: object\n          properties:\n            active: { type: boolean }\n",
+    );
+    let readme = std::fs::read_to_string(out.join("README.md")).expect("README is generated");
+    assert!(
+        readme.contains("client.widgets.create_widget(...)")
+            && readme.contains("client.widgets.with_raw_response.create_widget(...)")
+            && readme.contains("client.widgets.create_widget(..., request_options={"),
+        "composed object request bodies should retain README argument placeholders: {readme}"
+    );
+}
+
+#[test]
+fn globally_optional_basic_auth_generates_optional_credentials() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\nsecurity: []\npaths:\n  /widgets:\n    get:\n      operationId: listWidgets\n      tags: [widgets]\n      responses:\n        '200': { description: OK }\ncomponents:\n  securitySchemes:\n    Basic:\n      type: http\n      scheme: basic\n",
+    );
+    let client =
+        std::fs::read_to_string(out.join("src/acme/client.py")).expect("root client is generated");
+    let wrapper = std::fs::read_to_string(out.join("src/acme/core/client_wrapper.py"))
+        .expect("client wrapper is generated");
+    assert!(
+        client.contains(
+            "username: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None"
+        ) && client.contains(
+            "password: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None"
+        ) && wrapper.contains("if username is not None and password is not None:"),
+        "a globally optional Basic scheme should not require credentials: {client}\n{wrapper}"
+    );
+}
+
+#[test]
+fn relative_server_paths_use_the_default_environment_member() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\nservers:\n  - url: /api/v1\n    description: Widget Stable API\npaths:\n  /widgets:\n    get:\n      operationId: listWidgets\n      tags: [widgets]\n      responses:\n        '200': { description: OK }\n",
+    );
+    let environment = std::fs::read_to_string(out.join("src/acme/environment.py"))
+        .expect("environment module is generated");
+    let client =
+        std::fs::read_to_string(out.join("src/acme/client.py")).expect("root client is generated");
+    assert!(
+        environment.contains("DEFAULT = \"/api/v1\"")
+            && client.contains("AcmeApiEnvironment.DEFAULT"),
+        "relative server paths should use Fern's DEFAULT environment member: {environment}\n{client}"
+    );
+}
+
+#[test]
+fn multiline_parameter_docs_remain_indented() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    get:\n      \
+         operationId: listWidgets\n      tags: [widgets]\n      parameters:\n        - name: order_by\n          in: query\n          description: |\n            \
+         Field used to order results.\n            Prefix with `-` to reverse ordering.\n\n            *New in version 1.0*\n          schema: { type: string }\n      responses:\n        \
+         '200': { description: OK, content: { application/json: { schema: { type: array, items: { type: string } } } } }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
+    assert!(
+        raw.contains(
+            "        order_by : typing.Optional[str]\n            Field used to order results.\n            Prefix with `-` to reverse ordering.\n\n            *New in version 1.0*"
+        ),
+        "every line of a parameter description should remain inside the method docstring: {raw}"
+    );
+}
+
+#[test]
+fn multiline_parameter_docs_use_reference_paragraphs() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    get:\n      operationId: listWidgets\n      tags: [widgets]\n      parameters:\n        - name: order_by\n          in: query\n          description: |\n            Field used to order results.\n            Prefix with `-` to reverse ordering.\n          schema: { type: string }\n      responses:\n        '200': { description: OK }\n",
+    );
+    let reference =
+        std::fs::read_to_string(out.join("reference.md")).expect("reference is generated");
+    assert!(
+        reference.contains(
+            "**order_by:** `typing.Optional[str]` \n\nField used to order results.\nPrefix with `-` to reverse ordering."
+        ),
+        "multiline parameter descriptions should render as reference paragraphs: {reference}"
+    );
+}
+
+#[test]
+fn multiline_path_parameter_docs_remain_indented() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/{id}:\n    get:\n      operationId: getWidget\n      tags: [widgets]\n      parameters:\n        - name: id\n          in: path\n          required: true\n          description: |\n            Widget identifier.\n            It may use an external namespace.\n          schema: { type: string }\n      responses:\n        '200': { description: OK, content: { application/json: { schema: { type: string } } } }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
+    assert!(
+        raw.contains(
+            "        id : str\n            Widget identifier.\n            It may use an external namespace."
+        ),
+        "every line of a path parameter description should remain inside the method docstring: {raw}"
+    );
+}
+
+#[test]
+fn path_parameters_preserve_declaration_order() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.1.0\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/{id}/{slug}:\n    get:\n      operationId: getWidget\n      tags: [widgets]\n      parameters:\n        - { name: slug, in: path, required: true, schema: { type: string } }\n        - { name: id, in: path, required: true, schema: { type: integer } }\n      responses:\n        '204': { description: Found }\n",
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/widgets/client.py"))
+        .expect("client is generated");
+    assert!(
+        client.contains("self, slug: str, id: int,"),
+        "path arguments should preserve parameter declaration order: {client}"
+    );
+}
+
+#[test]
+fn pydantic_model_api_fields_are_aliased() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths: {}\ncomponents:\n  schemas:\n    Widget:\n      type: object\n      properties:\n        schema: { type: string }\n        kwargs: { type: string }\n",
+    );
+    let model = std::fs::read_to_string(out.join("src/acme/types/widget.py"))
+        .expect("widget model is generated");
+    assert!(
+        model.contains("schema_: typing_extensions.Annotated[")
+            && model.contains("FieldMetadata(alias=\"schema\")")
+            && model.contains("kwargs_: typing_extensions.Annotated[")
+            && model.contains("FieldMetadata(alias=\"kwargs\")"),
+        "fields that collide with pydantic's model API should retain their wire aliases: {model}"
+    );
+}
+
+#[test]
+fn model_field_docs_trim_terminal_line_breaks() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths: {}\ncomponents:\n  schemas:\n    Widget:\n      type: object\n      properties:\n        name:\n          type: string\n          description: |\n            Widget name.\n",
+    );
+    let model = std::fs::read_to_string(out.join("src/acme/types/widget.py"))
+        .expect("widget model is generated");
+    assert!(
+        model.contains("    Widget name.\n    \"\"\"")
+            && !model.contains("    Widget name.\n    \n    \"\"\""),
+        "terminal description line breaks should not add a blank field-doc line: {model}"
+    );
+}
+
+#[test]
+fn declared_empty_schema_descriptions_emit_class_docstrings() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths: {}\ncomponents:\n  schemas:\n    Widget:\n      type: object\n      description: ''\n      properties:\n        id: { type: integer, format: int64 }\n    WidgetState:\n      type: string\n      description: ''\n      enum: [ACTIVE]\n",
+    );
+    let model = std::fs::read_to_string(out.join("src/acme/types/widget.py"))
+        .expect("widget model is generated");
+    let state = std::fs::read_to_string(out.join("src/acme/types/widget_state.py"))
+        .expect("widget state enum is generated");
+    assert!(
+        model.contains("class Widget(UniversalBaseModel):\n    \"\"\" \"\"\"\n\n    id: typing.Optional[int]")
+            && state.contains("class WidgetState(str, enum.Enum):\n    \"\"\" \"\"\"\n\n    ACTIVE = \"ACTIVE\""),
+        "declared empty schema descriptions should remain visible in generated classes:\n{model}\n{state}"
+    );
+}
+
+#[test]
+fn overlapping_all_of_fields_flatten_the_base_model() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths: {}\ncomponents:\n  schemas:\n    WidgetBase:\n      type: object\n      properties:\n        name: { type: string, description: Base name. }\n        size: { type: integer }\n    Widget:\n      allOf:\n        - { $ref: '#/components/schemas/WidgetBase' }\n        - type: object\n          properties:\n            name: { type: string }\n            active: { type: boolean }\n",
+    );
+    let model = std::fs::read_to_string(out.join("src/acme/types/widget.py"))
+        .expect("widget model is generated");
+    let name_pos = model.find("name:").expect("child name field is generated");
+    let active_pos = model
+        .find("active:")
+        .expect("child active field is generated");
+    let size_pos = model
+        .find("size:")
+        .expect("inherited size field is generated");
+    assert!(
+        model.contains("class Widget(UniversalBaseModel):")
+            && name_pos < active_pos
+            && active_pos < size_pos
+            && model.contains("Base name."),
+        "overlapping allOf fields should flatten with child fields taking precedence: {model}"
+    );
+}
+
+#[test]
+fn nested_and_union_nullability_is_preserved() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths: {}\ncomponents:\n  schemas:\n    Widget:\n      type: object\n      properties:\n        labels:\n          type: array\n          items: { type: string, nullable: true }\n        roles:\n          type: array\n          items:\n            type: object\n            nullable: true\n            properties:\n              name: { type: string }\n    Schedule:\n      nullable: true\n      anyOf:\n        - { type: integer }\n        - { type: string }\n",
+    );
+    let model = std::fs::read_to_string(out.join("src/acme/types/widget.py"))
+        .expect("widget model is generated");
+    let alias = std::fs::read_to_string(out.join("src/acme/types/schedule.py"))
+        .expect("schedule alias is generated");
+    assert!(
+        model.contains("typing.List[typing.Optional[str]]")
+            && model.contains("typing.List[typing.Optional[WidgetRolesItem]]")
+            && alias.contains("Schedule = typing.Union[int, typing.Optional[str]]"),
+        "nested and union nullability should be retained at the schema node that declares it: {model}\n{alias}"
+    );
+}
+
+#[test]
+fn array_ref_request_body_generates_single_named_request_argument() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/archive:\n    \
+         post:\n      operationId: archiveWidgets\n      tags: [widgets]\n      requestBody:\n        \
+         required: true\n        content:\n          application/json:\n            schema: { $ref: '#/components/schemas/WidgetIds' }\n      \
+         responses:\n        '200': { description: OK, content: { application/json: { schema: { type: object, properties: \
+         { ok: { type: boolean } } } } } }\ncomponents:\n  schemas:\n    WidgetIds:\n      type: array\n      \
+         items: { type: string }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
+    assert!(
+        raw.contains("request: WidgetIds"),
+        "a $ref array body should be passed as a single named request argument: {raw}"
+    );
+    assert!(
+        raw.contains("json=request,"),
+        "the named array request should serialize as json=request: {raw}"
+    );
+}
+
+#[test]
+fn component_request_body_refs_generate_through_the_cli() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /credentials:\n    \
+         post:\n      operationId: addCredential\n      tags: [identity]\n      requestBody: { $ref: \
+         '#/components/requestBodies/CredentialBody' }\n      responses:\n        '200': { description: OK, \
+         content: { application/json: { schema: { type: object, properties: { ok: { type: boolean } } } } } }\ncomponents:\n  \
+         requestBodies:\n    CredentialBody:\n      required: true\n      content:\n        application/json:\n          \
+         schema: { $ref: '#/components/schemas/Credential' }\n  schemas:\n    Credential:\n      type: object\n      \
+         required: [username]\n      properties:\n        username: { type: string }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/identity/raw_client.py"))
+        .expect("identity raw client is generated");
+    assert!(
+        raw.contains("username: str"),
+        "a component requestBody ref should resolve and inline the referenced object fields: {raw}"
+    );
+}
+
+#[test]
+fn text_plain_request_bodies_are_ignored_for_python_generation() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /uploads/{id}:\n    \
+         post:\n      operationId: uploadText\n      tags: [uploads]\n      parameters:\n        - { name: id, \
+         in: path, required: true, schema: { type: string } }\n      requestBody:\n        required: true\n        \
+         content:\n          text/plain; utf-8:\n            schema: { type: string }\n      responses:\n        \
+         '200': { description: OK, content: { application/json: { schema: { type: object, properties: { ok: { type: \
+         boolean } } } } } }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/uploads/raw_client.py"))
+        .expect("uploads raw client is generated");
+    assert!(
+        raw.contains("def upload_text(") && !raw.contains("request:"),
+        "text/plain request bodies should not surface a request argument: {raw}"
+    );
+}
+
+#[test]
+fn get_request_bodies_are_ignored_through_the_cli() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widget:\n    get:\n      operationId: getWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          application/json:\n            schema:\n              type: object\n              required: [filter]\n              properties:\n                filter: { type: string }\n      responses:\n        '204': { description: Found }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("raw client is generated");
+    assert!(
+        !raw.contains("filter:") && !raw.contains("json={"),
+        "GET request bodies should not enter the generated interface: {raw}"
+    );
+}
+
+#[test]
+fn vendor_json_bare_object_request_body_is_open_map() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /manifests/{id}:\n    \
+         post:\n      operationId: importManifest\n      tags: [imports]\n      parameters:\n        - { name: id, \
+         in: path, required: true, schema: { type: string } }\n      requestBody:\n        required: true\n        \
+         content:\n          application/vnd.example+json:\n            schema: { type: object }\n      responses:\n        \
+         '200': { description: OK, content: { application/json: { schema: { type: object, properties: { ok: { type: \
+         boolean } } } } } }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/imports/raw_client.py"))
+        .expect("imports raw client is generated");
+    assert!(
+        raw.contains("request: typing.Dict[str, typing.Optional[typing.Any]]")
+            && raw.contains("\"content-type\": \"application/vnd.example+json\""),
+        "vendor +json bodies should be open-map requests with the exact media type: {raw}"
     );
 }
 

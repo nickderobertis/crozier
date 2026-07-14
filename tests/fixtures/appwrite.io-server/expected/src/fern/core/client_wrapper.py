@@ -1,0 +1,109 @@
+
+
+import typing
+
+import httpx
+from .http_client import AsyncHttpClient, HttpClient
+
+
+class BaseClientWrapper:
+    def __init__(
+        self,
+        *,
+        appwrite_key: str,
+        appwrite_locale: str,
+        appwrite_project: str,
+        api_key: str,
+        headers: typing.Optional[typing.Dict[str, str]] = None,
+        base_url: str,
+        timeout: typing.Optional[float] = None,
+    ):
+        self._appwrite_key = appwrite_key
+        self._appwrite_locale = appwrite_locale
+        self._appwrite_project = appwrite_project
+        self.api_key = api_key
+        self._headers = headers
+        self._base_url = base_url
+        self._timeout = timeout
+
+    def get_headers(self) -> typing.Dict[str, str]:
+        headers: typing.Dict[str, str] = {
+            "X-Fern-Language": "Python",
+            "X-Fern-SDK-Name": "default_package_name",
+            "X-Fern-SDK-Version": "0.0.0",
+            **(self.get_custom_headers() or {}),
+        }
+        headers["X-Appwrite-Key"] = self._appwrite_key
+        headers["X-Appwrite-Locale"] = self._appwrite_locale
+        headers["X-Appwrite-Project"] = self._appwrite_project
+        headers["X-Appwrite-JWT"] = self.api_key
+        return headers
+
+    def get_custom_headers(self) -> typing.Optional[typing.Dict[str, str]]:
+        return self._headers
+
+    def get_base_url(self) -> str:
+        return self._base_url
+
+    def get_timeout(self) -> typing.Optional[float]:
+        return self._timeout
+
+
+class SyncClientWrapper(BaseClientWrapper):
+    def __init__(
+        self,
+        *,
+        appwrite_key: str,
+        appwrite_locale: str,
+        appwrite_project: str,
+        api_key: str,
+        headers: typing.Optional[typing.Dict[str, str]] = None,
+        base_url: str,
+        timeout: typing.Optional[float] = None,
+        httpx_client: httpx.Client,
+    ):
+        super().__init__(
+            appwrite_key=appwrite_key,
+            appwrite_locale=appwrite_locale,
+            appwrite_project=appwrite_project,
+            api_key=api_key,
+            headers=headers,
+            base_url=base_url,
+            timeout=timeout,
+        )
+        self.httpx_client = HttpClient(
+            httpx_client=httpx_client,
+            base_headers=self.get_headers,
+            base_timeout=self.get_timeout,
+            base_url=self.get_base_url,
+        )
+
+
+class AsyncClientWrapper(BaseClientWrapper):
+    def __init__(
+        self,
+        *,
+        appwrite_key: str,
+        appwrite_locale: str,
+        appwrite_project: str,
+        api_key: str,
+        headers: typing.Optional[typing.Dict[str, str]] = None,
+        base_url: str,
+        timeout: typing.Optional[float] = None,
+        httpx_client: httpx.AsyncClient,
+    ):
+        super().__init__(
+            appwrite_key=appwrite_key,
+            appwrite_locale=appwrite_locale,
+            appwrite_project=appwrite_project,
+            api_key=api_key,
+            headers=headers,
+            base_url=base_url,
+            timeout=timeout,
+        )
+        self.httpx_client = AsyncHttpClient(
+            httpx_client=httpx_client,
+            base_headers=self.get_headers,
+            base_timeout=self.get_timeout,
+            base_url=self.get_base_url,
+        )
