@@ -5402,6 +5402,34 @@ fn array_item_enums_hoist_to_tag_types() {
 }
 
 #[test]
+fn binary_success_responses_stream_bytes() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/{id}/download:\n    \
+         get:\n      operationId: downloadWidget\n      tags: [widgets]\n      parameters:\n        - name: id\n          \
+         in: path\n          required: true\n          schema: { type: string }\n      responses:\n        '200':\n          \
+         description: Widget archive\n          content:\n            application/octet-stream:\n              \
+         schema: { type: string, format: binary }\n        '500': { description: Broken }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
+    assert!(
+        raw.contains("@contextlib.contextmanager")
+            && raw.contains("self._client_wrapper.httpx_client.stream(")
+            && raw.contains("typing.Iterator[HttpResponse[typing.Iterator[bytes]]]")
+            && raw.contains("_response.iter_bytes(chunk_size=_chunk_size)"),
+        "binary responses should stream bytes from the raw client: {raw}"
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/widgets/client.py"))
+        .expect("widgets client is generated");
+    assert!(
+        client.contains(") -> typing.Iterator[bytes]:")
+            && client.contains("with self._raw_client.download_widget(")
+            && client.contains("yield from r.data"),
+        "high-level binary response methods should yield bytes from the raw stream: {client}"
+    );
+}
+
+#[test]
 fn array_ref_request_body_generates_single_named_request_argument() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/archive:\n    \

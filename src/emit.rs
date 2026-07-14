@@ -2613,6 +2613,9 @@ fn raw_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> String {
     if ep.streaming {
         return raw_stream_method(ep, is_async, imports);
     }
+    if ep.binary_response {
+        return raw_binary_stream_method(ep, is_async, imports);
+    }
 
     let wrapper = if is_async {
         "AsyncHttpResponse"
@@ -3144,6 +3147,151 @@ fn raw_stream_docstring(ep: &Endpoint, mp: &MethodParams, return_type: &str) -> 
     lines.join("\n")
 }
 
+/// Build one binary-download raw-client method (sync or async): a
+/// context-managed `httpx_client.stream(...)` that yields response bytes.
+fn raw_binary_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> String {
+    imports.add_plain("contextlib");
+    imports.add_plain("typing");
+    imports.add_from("json.decoder", "JSONDecodeError");
+    imports.add_core("api_error", "ApiError");
+    imports.add_core("pydantic_utilities", "parse_obj_as");
+    if !ep.path_params.is_empty() {
+        imports.add_core("jsonable_encoder", "jsonable_encoder");
+    }
+
+    let (wrapper, iter_t, data_iter, decorator, async_kw, async_with, read, iter_bytes, yield_expr) =
+        if is_async {
+            (
+                "AsyncHttpResponse",
+                "typing.AsyncIterator",
+                "typing.AsyncIterator",
+                "@contextlib.asynccontextmanager",
+                "async ",
+                "async with",
+                "await _response.aread()",
+                "aiter_bytes",
+                "await _stream()",
+            )
+        } else {
+            (
+                "HttpResponse",
+                "typing.Iterator",
+                "typing.Iterator",
+                "@contextlib.contextmanager",
+                "",
+                "with",
+                "_response.read()",
+                "iter_bytes",
+                "_stream()",
+            )
+        };
+    let mp = method_params(ep, imports);
+    let data_type = format!("{data_iter}[bytes]");
+    let return_type = format!("{iter_t}[{wrapper}[{data_type}]]");
+    let sig = signature(ep, &mp, &return_type, is_async);
+    let docstring = raw_binary_stream_docstring(ep, &mp, &return_type);
+
+    let mut call: Vec<String> = vec![format!(
+        "        {async_with} self._client_wrapper.httpx_client.stream("
+    )];
+    if ep.path != "/" {
+        call.push(format!("            {},", url_arg(ep)));
+    }
+    call.push(format!("            method=\"{}\",", ep.http_method));
+    append_request_call_args(&mut call, ep, imports);
+    call.push("        ) as _response:".to_string());
+
+    let data_expr = if is_async {
+        format!("(_chunk async for _chunk in _response.{iter_bytes}(chunk_size=_chunk_size))")
+    } else {
+        format!("(_chunk for _chunk in _response.{iter_bytes}(chunk_size=_chunk_size))")
+    };
+    let success_return = if is_async {
+        format!("return {wrapper}(\n                            response=_response,\n                            data={data_expr},\n                        )")
+    } else {
+        format!("return {wrapper}(\n                            response=_response, data={data_expr}\n                        )")
+    };
+    let error_branches = raw_error_branches(ep, imports);
+    let body = format!(
+        "\
+{call}
+
+            {async_kw}def _stream() -> {wrapper}[{data_type}]:
+                try:
+                    if 200 <= _response.status_code < 300:
+                        _chunk_size = request_options.get(\"chunk_size\", None) if request_options is not None else None
+                        {success_return}
+                    {read}
+{error_branches}
+                    _response_json = _response.json()
+                except JSONDecodeError:
+                    raise ApiError(
+                        status_code=_response.status_code, headers=dict(_response.headers), body=_response.text
+                    )
+                raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+            yield {yield_expr}",
+        call = call.join("\n"),
+    );
+    format!("    {decorator}\n{sig}\n{docstring}\n{body}")
+}
+
+fn raw_binary_stream_docstring(ep: &Endpoint, mp: &MethodParams, return_type: &str) -> String {
+    let mut lines: Vec<String> = vec!["        \"\"\"".to_string()];
+    lines.push("        Parameters".to_string());
+    lines.push("        ----------".to_string());
+    for (name, ty, desc) in &mp.path {
+        push_path_param(&mut lines, name, ty, desc);
+    }
+    let mut push_param = |dp: &DocParam| {
+        lines.push(format!("        {} : {}", dp.name, dp.annotation));
+        if let Some(desc) = &dp.description {
+            lines.push(format!("            {desc}"));
+        }
+        lines.push(String::new());
+    };
+    ordered_keyword_params(&mp.query, &mp.header, &mp.body)
+        .into_iter()
+        .for_each(&mut push_param);
+    lines.push("        request_options : typing.Optional[RequestOptions]".to_string());
+    lines.push(
+        "            Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response.".to_string(),
+    );
+    lines.push(String::new());
+    lines.push("        Returns".to_string());
+    lines.push("        -------".to_string());
+    lines.push(format!("        {return_type}"));
+    push_return_doc(&mut lines, ep.response_doc.as_deref());
+    lines.push("        \"\"\"".to_string());
+    lines.join("\n")
+}
+
+fn raw_error_branches(ep: &Endpoint, imports: &mut Imports) -> String {
+    let mut lines = Vec::new();
+    for err in &ep.errors {
+        let module = naming::module_name(&err.class_name);
+        imports.add_from(&imports.error_import_path(&module), &err.class_name);
+        let body = raw_type_str(&err.body_type, imports);
+        lines.extend([
+            format!(
+                "                    if _response.status_code == {}:",
+                err.status_code
+            ),
+            format!("                        raise {}(", err.class_name),
+            "                            headers=dict(_response.headers),".to_string(),
+            "                            body=typing.cast(".to_string(),
+            format!("                                {body},"),
+            "                                parse_obj_as(".to_string(),
+            format!("                                    type_={body},"),
+            "                                    object_=_response.json(),".to_string(),
+            "                                ),".to_string(),
+            "                            ),".to_string(),
+            "                        )".to_string(),
+        ]);
+    }
+    lines.join("\n")
+}
+
 /// Assemble the root `client.py`: the `FernApi`/`AsyncFernApi` classes that
 /// aggregate every tag client. Bearer-auth-coupled today (a `token` argument);
 /// generalize when more auth schemes are modeled.
@@ -3653,6 +3801,9 @@ fn client_method(cx: &ClientCtx, ep: &Endpoint, is_async: bool, imports: &mut Im
     if ep.streaming {
         return client_stream_method(cx, ep, is_async, imports);
     }
+    if ep.binary_response {
+        return client_binary_stream_method(cx, ep, is_async, imports);
+    }
     let mp = method_params(ep, imports);
     let return_type = mp.inner.clone();
     let sig = signature(ep, &mp, &return_type, is_async);
@@ -3754,6 +3905,112 @@ fn client_stream_docstring(
     lines.push("        Yields".to_string());
     lines.push("        ------".to_string());
     lines.push(format!("        {iter_t}[{SSE_CHUNK}]"));
+    push_return_doc(&mut lines, ep.response_doc.as_deref());
+
+    let mut ctx = ExampleCtx {
+        types: cx.types,
+        tag_decls: cx.tag_decls,
+        referenced: BTreeSet::new(),
+        referenced_tag: BTreeSet::new(),
+        uses_datetime: false,
+        auth: cx.auth,
+        has_environment: cx.has_environment,
+        global_headers: cx.global_headers,
+        building: Default::default(),
+    };
+    if let Some(ex_lines) = build_example(ep, is_async, cx.module, cx.pkg, cx.client_name, &mut ctx)
+    {
+        lines.push(String::new());
+        lines.push("        Examples".to_string());
+        lines.push("        --------".to_string());
+        for l in ex_lines {
+            if l.is_empty() {
+                lines.push(String::new());
+            } else {
+                lines.push(format!("        {l}"));
+            }
+        }
+    }
+    lines.push("        \"\"\"".to_string());
+    lines.join("\n")
+}
+
+fn client_binary_stream_method(
+    cx: &ClientCtx,
+    ep: &Endpoint,
+    is_async: bool,
+    imports: &mut Imports,
+) -> String {
+    imports.add_plain("typing");
+    let mp = method_params(ep, imports);
+    let iter_t = if is_async {
+        "typing.AsyncIterator"
+    } else {
+        "typing.Iterator"
+    };
+    let return_type = format!("{iter_t}[bytes]");
+    let sig = signature(ep, &mp, &return_type, is_async);
+    let docstring = client_binary_stream_docstring(cx, ep, &mp, is_async);
+
+    let mut call_args: Vec<Doc> = Vec::new();
+    for (name, _, _) in &mp.path {
+        call_args.push(Doc::atom(name.clone()));
+    }
+    for dp in ordered_keyword_params(&mp.query, &mp.header, &mp.body) {
+        call_args.push(Doc::atom(format!("{}={}", dp.name, dp.name)));
+    }
+    call_args.push(Doc::atom("request_options=request_options"));
+    let open = format!("self._raw_client.{}(", ep.method_name);
+    let raw_call = Doc::group(open, call_args, ")").flat();
+    let body = if is_async {
+        format!("        async with {raw_call} as r:\n            async for _chunk in r.data:\n                yield _chunk")
+    } else {
+        format!("        with {raw_call} as r:\n            yield from r.data")
+    };
+    format!("{sig}\n{docstring}\n{body}")
+}
+
+fn client_binary_stream_docstring(
+    cx: &ClientCtx,
+    ep: &Endpoint,
+    mp: &MethodParams,
+    is_async: bool,
+) -> String {
+    let iter_t = if is_async {
+        "typing.AsyncIterator"
+    } else {
+        "typing.Iterator"
+    };
+    let mut lines: Vec<String> = vec!["        \"\"\"".to_string()];
+    if let Some(summary) = &ep.docstring {
+        for line in summary.split('\n') {
+            lines.push(format!("        {line}"));
+        }
+        lines.push(String::new());
+    }
+    lines.push("        Parameters".to_string());
+    lines.push("        ----------".to_string());
+    for (name, ty, desc) in &mp.path {
+        push_path_param(&mut lines, name, ty, desc);
+    }
+    let mut push_param = |dp: &DocParam| {
+        lines.push(format!("        {} : {}", dp.name, dp.annotation));
+        if let Some(desc) = &dp.description {
+            lines.push(format!("            {desc}"));
+        }
+        lines.push(String::new());
+    };
+    ordered_keyword_params(&mp.query, &mp.header, &mp.body)
+        .into_iter()
+        .for_each(&mut push_param);
+    lines.push("        request_options : typing.Optional[RequestOptions]".to_string());
+    lines.push(
+        "            Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response.".to_string(),
+    );
+    lines.push(String::new());
+    lines.push("        Returns".to_string());
+    lines.push("        -------".to_string());
+    lines.push(format!("        {iter_t}[bytes]"));
     push_return_doc(&mut lines, ep.response_doc.as_deref());
 
     let mut ctx = ExampleCtx {
@@ -5076,6 +5333,7 @@ mod tests {
             errors: Vec::new(),
             docstring: None,
             streaming: false,
+            binary_response: false,
             emittable: true,
         }
     }

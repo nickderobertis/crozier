@@ -542,6 +542,9 @@ pub struct Endpoint {
     /// (`text/event-stream`). A streaming operation is emitted as a
     /// context-managed iterator of chunks rather than a buffered response.
     pub streaming: bool,
+    /// Whether the success response is a binary download (`format: binary`).
+    /// Fern emits these as context-managed byte streams instead of buffering.
+    pub binary_response: bool,
     /// Whether crozier can emit this operation's raw client today. A module is
     /// only emitted when every one of its operations is emittable.
     pub emittable: bool,
@@ -1346,6 +1349,7 @@ fn build_endpoint(
         errors,
         docstring: operation_doc(op.description.as_deref()),
         streaming: is_streaming(op),
+        binary_response: is_binary_response(op),
         emittable,
     }
 }
@@ -1359,6 +1363,18 @@ fn is_streaming(op: &Operation) -> bool {
     op.responses
         .iter()
         .any(|(code, resp)| code.starts_with('2') && resp.content.contains_key("text/event-stream"))
+}
+
+fn is_binary_response(op: &Operation) -> bool {
+    op.responses.iter().any(|(code, resp)| {
+        code.starts_with('2')
+            && resp.content.iter().any(|(_, media)| {
+                media.schema.as_ref().is_some_and(|schema| {
+                    schema.ty.as_ref().and_then(|t| t.primary()) == Some("string")
+                        && schema.format.as_deref() == Some("binary")
+                })
+            })
+    })
 }
 
 /// Position of a path parameter's `{name}` placeholder in the route. Fern orders
