@@ -741,6 +741,8 @@ pub struct BodyField {
     /// The field's `example` as a Python literal, shown in a worked snippet instead
     /// of a synthesized placeholder (`example_literal`).
     pub example: Option<String>,
+    /// Whether a request media example explicitly selected this field.
+    pub media_example: bool,
 }
 
 /// A type hoisted out of an operation's inline request/response body. Unlike a
@@ -1729,7 +1731,10 @@ fn resolve_request_body(
         }
         // A `$ref` to a plain object is inlined field-by-field.
         if !target.properties.is_empty() || target.all_of.is_some() {
-            return hoist_fields(&class, types).map(RequestBody::Inline);
+            return hoist_fields(&class, types).map(|mut fields| {
+                apply_body_example(&mut fields, media.example.as_ref());
+                RequestBody::Inline(fields)
+            });
         }
         // A `$ref` to a bare object (no properties/`allOf` — a free-form `Dict`
         // alias, e.g. bunq's `AttachmentPublic`) is passed straight through as a
@@ -1813,6 +1818,18 @@ fn resolve_request_body(
     })
 }
 
+fn apply_body_example(fields: &mut [BodyField], example: Option<&serde_json::Value>) {
+    let Some(values) = example.and_then(serde_json::Value::as_object) else {
+        return;
+    };
+    for field in fields {
+        if let Some(value) = values.get(&field.wire_name).and_then(example_literal) {
+            field.example = Some(value);
+            field.media_example = true;
+        }
+    }
+}
+
 fn is_json_like_media_type(media_type: &str) -> bool {
     media_type.ends_with("+json")
 }
@@ -1852,6 +1869,7 @@ fn hoist_inline_object(
             nullable: false,
             spec_required,
             example: prop_schema.example.as_ref().and_then(example_literal),
+            media_example: false,
             docstring: clean_doc(prop_schema.description.as_deref()),
             is_file: false,
             collision_prefix: Some(naming::field_name(ctx)),
@@ -2028,6 +2046,7 @@ fn hoist_form_object(schema: &Schema) -> Vec<BodyField> {
                 is_file,
                 collision_prefix: None,
                 example: prop_schema.example.as_ref().and_then(example_literal),
+                media_example: false,
             }
         })
         .collect()
@@ -2090,6 +2109,7 @@ fn append_request_fields(
         is_file: false,
         collision_prefix: Some(naming::field_name(request_class)),
         example: f.example.clone(),
+        media_example: false,
     }));
     for base in &obj.bases {
         if let Some(base_obj) = types.iter().find_map(|decl| match decl {

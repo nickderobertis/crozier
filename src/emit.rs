@@ -4735,10 +4735,9 @@ fn build_example(
             // omitted). A required field with an unknown (`Any`) type is still shown
             // (exhaustive's `unknown`), so the exclusion keys on nullability — an
             // `optional` field with a concrete (non-`Any`) type — not `optional` alone.
-            for f in fields
-                .iter()
-                .filter(|f| f.spec_required && (!f.optional || is_any_type(&f.type_ref)))
-            {
+            for f in fields.iter().filter(|f| {
+                f.media_example || (f.spec_required && (!f.optional || is_any_type(&f.type_ref)))
+            }) {
                 let v = match f.example.as_ref().filter(|_| example_scalar(&f.type_ref)) {
                     Some(ex) => Example::Atom(ex.clone()),
                     None => ctx.value(&f.type_ref, Slot::Named(&f.wire_name)),

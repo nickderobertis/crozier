@@ -445,6 +445,9 @@ pub struct MediaType {
     /// The schema for this media type.
     #[serde(default)]
     pub schema: Option<Schema>,
+    /// Optional example value for the media payload.
+    #[serde(default)]
+    pub example: Option<serde_json::Value>,
 }
 
 /// The `info` block.
