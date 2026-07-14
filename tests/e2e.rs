@@ -6306,7 +6306,7 @@ fn closed_empty_inline_objects_hoist_through_the_cli() {
 #[test]
 fn operation_id_equal_to_tag_generates_on_root_client() {
     let (_dir, out) = generate_ok(
-        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /search:\n    get:\n      operationId: search\n      tags: [Search]\n      responses:\n        '200':\n          description: Found\n          content:\n            application/json:\n              schema:\n                type: object\n                required: [result]\n                properties:\n                  result:\n                    type: object\n                    required: [count]\n                    properties:\n                      count: { type: integer }\n  /health:\n    get:\n      operationId: getHealth\n      tags: [System]\n      responses:\n        '204': { description: Healthy }\n",
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /search:\n    get:\n      operationId: search\n      tags: [Search]\n      description: |\n        Search help.\n\n        ```sh\n        echo search\n        ```\n      responses:\n        '200':\n          description: Found\n          content:\n            application/json:\n              schema:\n                type: object\n                required: [result]\n                properties:\n                  result:\n                    type: object\n                    required: [count]\n                    properties:\n                      count: { type: integer }\n  /health:\n    get:\n      operationId: getHealth\n      tags: [System]\n      responses:\n        '204': { description: Healthy }\n",
     );
     let client =
         std::fs::read_to_string(out.join("src/acme/client.py")).expect("root client is generated");
@@ -6317,6 +6317,10 @@ fn operation_id_equal_to_tag_generates_on_root_client() {
     assert!(
         !client.contains("OMIT ="),
         "a root client with no request body should not declare OMIT: {client}"
+    );
+    assert!(
+        client.contains("```sh\n        echo search\n        ```\n        \n"),
+        "fenced root method docstrings should preserve Fern's blank indentation: {client}"
     );
     assert!(out.join("src/acme/raw_client.py").is_file());
     assert!(out.join("src/acme/types/search_response.py").is_file());

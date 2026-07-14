@@ -5241,9 +5241,48 @@ fn format_python_files(pkg: &str, files: &mut [GeneratedFile]) -> Result<()> {
             let name = file.path.to_string_lossy();
             file.contents =
                 crate::pyfmt::format_source(&name, &file.contents, crate::pyfmt::LINE_LENGTH)?;
+            if file.path == PathBuf::from(format!("src/{pkg}/client.py"))
+                || file.path == PathBuf::from(format!("src/{pkg}/raw_client.py"))
+            {
+                preserve_fenced_docstring_blank_indent(&mut file.contents);
+            }
         }
     }
     Ok(())
+}
+
+fn preserve_fenced_docstring_blank_indent(source: &mut String) {
+    let had_final_newline = source.ends_with('\n');
+    let mut lines: Vec<String> = source.lines().map(String::from).collect();
+    let mut start = 0;
+    while start < lines.len() {
+        if lines[start] != "        \"\"\"" {
+            start += 1;
+            continue;
+        }
+        let Some(relative_end) = lines[start + 1..]
+            .iter()
+            .position(|line| line == "        \"\"\"")
+        else {
+            break;
+        };
+        let end = start + 1 + relative_end;
+        if lines[start + 1..end]
+            .iter()
+            .any(|line| line.trim_start().starts_with("```"))
+        {
+            for line in &mut lines[start + 1..end] {
+                if line.is_empty() {
+                    *line = "        ".to_string();
+                }
+            }
+        }
+        start = end + 1;
+    }
+    *source = lines.join("\n");
+    if had_final_newline {
+        source.push('\n');
+    }
 }
 
 /// Write each generated file under `root`, creating parent directories as needed.
