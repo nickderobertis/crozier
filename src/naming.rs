@@ -310,6 +310,17 @@ pub fn is_reserved_method(name: &str) -> bool {
     PYTHON_KEYWORDS.contains(&name) || name == "all"
 }
 
+/// Apply Python's mandatory keyword escaping without treating ordinary builtins
+/// as reserved. Method derivation uses this as a final validity boundary after
+/// its context-specific Fern naming rules have run.
+#[must_use]
+pub fn escape_python_keyword(mut name: String) -> String {
+    if PYTHON_KEYWORDS.contains(&name.as_str()) {
+        name.push('_');
+    }
+    name
+}
+
 /// Python hard keywords — reserved in every naming context.
 const PYTHON_KEYWORDS: &[&str] = &[
     "False", "None", "True", "and", "as", "assert", "async", "await", "break", "class", "continue",
@@ -335,6 +346,13 @@ mod tests {
         assert!(is_reserved("list"));
         assert!(is_reserved("bool"));
         assert!(is_reserved("all"));
+    }
+
+    #[test]
+    fn method_keyword_escape_leaves_builtins_unchanged() {
+        assert_eq!(escape_python_keyword("del".to_string()), "del_");
+        assert_eq!(escape_python_keyword("list".to_string()), "list");
+        assert_eq!(escape_python_keyword("all".to_string()), "all");
     }
 
     #[test]

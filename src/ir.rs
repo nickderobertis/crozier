@@ -2543,31 +2543,28 @@ fn first_tag(op: &Operation) -> Option<&str> {
 ///   route (`GET /widgets` → `list_widgets`).
 fn endpoint_method_name(op: &Operation, http_method: &str, url: &str) -> String {
     let id = op.operation_id.trim();
-    if id.is_empty() {
-        return synthesized_method_name(http_method, url);
-    }
-    if id.contains('.') {
-        return method_from_dotted_id(id);
-    }
-    if id.contains('_') {
+    let method = if id.is_empty() {
+        synthesized_method_name(http_method, url)
+    } else if id.contains('.') {
+        method_from_dotted_id(id)
+    } else if id.contains('_') {
         if first_tag(op).is_none() {
-            return naming::sanitize_identifier(&naming::to_snake_case(id));
+            naming::sanitize_identifier(&naming::to_snake_case(id))
+        } else if first_segment_is_tag(op, id) {
+            method_after_first_segment(id)
+        } else if group_prefix_is_tag(op, id) {
+            // A `group_method` operationId whose prefix *is* the group has its group
+            // stripped, Fern-style (`widgets_getWidget` → `getwidget`).
+            method_from_grouped_id(id)
+        } else {
+            // When the prefix is unrelated to the tag, the tag is the group and the
+            // whole id is the method (bunq's `CREATE_AttachmentPublic`).
+            naming::sanitize_identifier(&naming::to_snake_case(id))
         }
-        if first_segment_is_tag(op, id) {
-            return method_after_first_segment(id);
-        }
-        // A `group_method` operationId whose prefix *is* the group (matches the tag,
-        // or there is no tag) has its group stripped, Fern-style (`widgets_getWidget`
-        // → `getwidget`, `endpoints_container_get…` → `endpoints_container_get…`).
-        // When the prefix is unrelated to the tag (bunq's `CREATE_AttachmentPublic`
-        // under `attachment-public` — a verb, not the group), the tag is the group
-        // and the whole id, snake-cased, is the method (`create_attachment_public`).
-        if group_prefix_is_tag(op, id) {
-            return method_from_grouped_id(id);
-        }
-        return naming::sanitize_identifier(&naming::to_snake_case(id));
-    }
-    method_from_groupless_id(id, first_tag(op))
+    } else {
+        method_from_groupless_id(id, first_tag(op))
+    };
+    naming::escape_python_keyword(method)
 }
 
 /// The method name for a `group_method` operationId (one that contains `_`). Fern

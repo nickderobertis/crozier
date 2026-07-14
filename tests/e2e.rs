@@ -5226,6 +5226,19 @@ const APICURIO: Corpus = Corpus {
     ],
 };
 
+/// `gambitcomm.local-mimic`: the Gambit Communications MIMIC REST API. Its large
+/// operation surface exercises keyword-safe method naming and free-form maps.
+const GAMBITCOMM_MIMIC: Corpus = Corpus {
+    api: "gambitcomm.local-mimic",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[],
+};
+
 #[test]
 fn bunq_matches_fern_output() {
     // `link-ok` like apideck: the spec is fetched (not vendored), so this **skips**
@@ -5346,6 +5359,20 @@ fn apicurio_matches_fern_output() {
 }
 
 #[test]
+fn gambitcomm_mimic_matches_fern_output() {
+    if corpus_spec(GAMBITCOMM_MIMIC.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the gambitcomm corpus spec is not fetched; \
+             run scripts/fetch-corpus.sh first"
+        );
+        eprintln!("skipping gambitcomm byte-match: spec not fetched (run scripts/fetch-corpus.sh)");
+        return;
+    }
+    assert_corpus_matches(&GAMBITCOMM_MIMIC);
+}
+
+#[test]
 fn feature_target_specs_generate_without_panicking() {
     // A feature-coverage target with a populated `matched` list is byte-compared
     // file-by-file; one with an empty `matched` list asserts only that crozier
@@ -5392,6 +5419,7 @@ fn report_matched_candidates() {
         &DISCOURSE,
         &APPWRITE_SERVER,
         &APICURIO,
+        &GAMBITCOMM_MIMIC,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
@@ -5509,6 +5537,7 @@ fn report_fixture_diffs() {
         &DISCOURSE,
         &APPWRITE_SERVER,
         &APICURIO,
+        &GAMBITCOMM_MIMIC,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
