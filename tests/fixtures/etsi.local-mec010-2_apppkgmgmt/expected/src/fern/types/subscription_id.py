@@ -1,0 +1,3 @@
+
+
+SubscriptionId = str

@@ -1,0 +1,31 @@
+
+
+import typing
+
+from .class_level_class_specific_action_surges import ClassLevelClassSpecificActionSurges
+from .class_level_class_specific_arcane_recover_levels import ClassLevelClassSpecificArcaneRecoverLevels
+from .class_level_class_specific_aura_range import ClassLevelClassSpecificAuraRange
+from .class_level_class_specific_bardic_inspiration_dice import ClassLevelClassSpecificBardicInspirationDice
+from .class_level_class_specific_brutal_critical_dice import ClassLevelClassSpecificBrutalCriticalDice
+from .class_level_class_specific_channel_divinity_charges import ClassLevelClassSpecificChannelDivinityCharges
+from .class_level_class_specific_creating_spell_slots import ClassLevelClassSpecificCreatingSpellSlots
+from .class_level_class_specific_favored_enemies import ClassLevelClassSpecificFavoredEnemies
+from .class_level_class_specific_invocations_known import ClassLevelClassSpecificInvocationsKnown
+from .class_level_class_specific_ki_points import ClassLevelClassSpecificKiPoints
+from .class_level_class_specific_sneak_attack import ClassLevelClassSpecificSneakAttack
+from .class_level_class_specific_wild_shape_fly import ClassLevelClassSpecificWildShapeFly
+
+ClassLevelClassSpecific = typing.Union[
+    ClassLevelClassSpecificBrutalCriticalDice,
+    ClassLevelClassSpecificBardicInspirationDice,
+    ClassLevelClassSpecificChannelDivinityCharges,
+    ClassLevelClassSpecificWildShapeFly,
+    ClassLevelClassSpecificActionSurges,
+    ClassLevelClassSpecificKiPoints,
+    ClassLevelClassSpecificAuraRange,
+    ClassLevelClassSpecificFavoredEnemies,
+    ClassLevelClassSpecificSneakAttack,
+    ClassLevelClassSpecificCreatingSpellSlots,
+    ClassLevelClassSpecificInvocationsKnown,
+    ClassLevelClassSpecificArcaneRecoverLevels,
+]

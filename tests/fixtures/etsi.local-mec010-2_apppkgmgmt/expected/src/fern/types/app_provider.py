@@ -1,0 +1,3 @@
+
+
+AppProvider = str

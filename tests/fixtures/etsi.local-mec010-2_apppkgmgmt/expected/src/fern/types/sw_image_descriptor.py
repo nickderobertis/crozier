@@ -1,0 +1,3 @@
+
+
+SwImageDescriptor = str

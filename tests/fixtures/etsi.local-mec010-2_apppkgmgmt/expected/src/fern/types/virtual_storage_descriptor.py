@@ -1,0 +1,3 @@
+
+
+VirtualStorageDescriptor = str

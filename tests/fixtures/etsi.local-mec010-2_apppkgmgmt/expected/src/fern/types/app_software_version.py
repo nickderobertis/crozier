@@ -1,0 +1,3 @@
+
+
+AppSoftwareVersion = str
