@@ -93,7 +93,12 @@ pub fn class_name(schema_key: &str) -> String {
 /// The module (file stem) name for a generated type.
 #[must_use]
 pub fn module_name(class_name: &str) -> String {
-    to_snake_case(class_name)
+    let name = to_snake_case(class_name);
+    if is_reserved(&name) {
+        format!("{name}_")
+    } else {
+        name
+    }
 }
 
 /// The Python field identifier for a wire property name: `snake_case`, with a
@@ -376,6 +381,7 @@ mod tests {
     #[test]
     fn module_name_snakes_class() {
         assert_eq!(module_name("NestedUser"), "nested_user");
+        assert_eq!(module_name("Class"), "class_");
     }
 
     #[test]

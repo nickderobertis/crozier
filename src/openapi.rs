@@ -521,13 +521,13 @@ pub struct Schema {
     #[serde(rename = "enum", default)]
     pub enum_values: Option<Vec<serde_json::Value>>,
     /// `oneOf` variants.
-    #[serde(rename = "oneOf", default)]
+    #[serde(rename = "oneOf", default, deserialize_with = "de_composition")]
     pub one_of: Option<Vec<Schema>>,
     /// `anyOf` variants.
-    #[serde(rename = "anyOf", default)]
+    #[serde(rename = "anyOf", default, deserialize_with = "de_composition")]
     pub any_of: Option<Vec<Schema>>,
     /// `allOf` members.
-    #[serde(rename = "allOf", default)]
+    #[serde(rename = "allOf", default, deserialize_with = "de_composition")]
     pub all_of: Option<Vec<Schema>>,
     /// Human description; becomes a docstring.
     #[serde(default)]
@@ -578,6 +578,39 @@ impl Schema {
     #[must_use]
     pub fn ignored(&self) -> bool {
         self.ignore_crozier.or(self.ignore_fern).unwrap_or(false)
+    }
+}
+
+fn de_composition<'de, D>(deserializer: D) -> std::result::Result<Option<Vec<Schema>>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    use serde::de::Error as _;
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum Composition {
+        Sequence(Vec<Schema>),
+        Indexed(IndexMap<String, Schema>),
+    }
+    match Option::<Composition>::deserialize(deserializer)? {
+        None => Ok(None),
+        Some(Composition::Sequence(members)) => Ok(Some(members)),
+        Some(Composition::Indexed(members)) => {
+            let mut indexed = members
+                .into_iter()
+                .map(|(index, schema)| {
+                    index.parse::<usize>().map(|i| (i, schema)).map_err(|_| {
+                        D::Error::custom(format!(
+                            "composition map key {index:?} is not a non-negative integer"
+                        ))
+                    })
+                })
+                .collect::<std::result::Result<Vec<_>, D::Error>>()?;
+            indexed.sort_by_key(|(index, _)| *index);
+            Ok(Some(
+                indexed.into_iter().map(|(_, schema)| schema).collect(),
+            ))
+        }
     }
 }
 
@@ -1135,6 +1168,35 @@ mod tests {
 
     fn schema_keys(doc: &OpenApi) -> Vec<String> {
         doc.components.schemas.keys().cloned().collect()
+    }
+
+    #[test]
+    fn indexed_compositions_are_sorted_and_preserved() {
+        let schema: Schema = serde_json::from_value(serde_json::json!({
+            "allOf": { "3": { "type": "string" }, "1": { "$ref": "#/components/schemas/Base" } }
+        }))
+        .expect("indexed allOf parses");
+        let members = schema.all_of.expect("allOf is retained");
+        assert_eq!(
+            members[0].reference.as_deref(),
+            Some("#/components/schemas/Base")
+        );
+        assert_eq!(
+            members[1].ty.as_ref().and_then(TypeField::primary),
+            Some("string")
+        );
+    }
+
+    #[test]
+    fn non_indexed_composition_maps_are_rejected() {
+        let error = serde_json::from_value::<Schema>(serde_json::json!({
+            "oneOf": { "variant": { "type": "string" } }
+        }))
+        .expect_err("non-indexed composition must fail");
+        assert!(
+            error.to_string().contains("not a non-negative integer"),
+            "{error}"
+        );
     }
 
     const IGNORE_SPEC: &str = r##"
