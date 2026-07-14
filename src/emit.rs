@@ -1295,17 +1295,19 @@ fn abbrev_call(indent: usize, prefix: &str, complex: bool) -> String {
     }
 }
 
-fn readme_endpoint(ir: &Ir) -> Option<&Endpoint> {
-    ir.endpoints
-        .iter()
+fn select_readme_endpoint<'a>(
+    endpoints: impl Clone + Iterator<Item = &'a Endpoint>,
+) -> Option<&'a Endpoint> {
+    endpoints
+        .clone()
         .find(|e| e.emittable && e.http_method == "POST" && e.request_body.is_some())
         .or_else(|| {
-            ir.endpoints
-                .iter()
+            endpoints
+                .clone()
                 .find(|e| e.emittable && e.request_body.is_some())
         })
         .or_else(|| {
-            ir.endpoints.iter().find(|e| {
+            endpoints.clone().find(|e| {
                 e.emittable
                     && e.http_method != "GET"
                     && e.path_params.is_empty()
@@ -1314,7 +1316,31 @@ fn readme_endpoint(ir: &Ir) -> Option<&Endpoint> {
                     && e.request_body.is_none()
             })
         })
-        .or_else(|| ir.endpoints.iter().find(|e| e.emittable))
+        .or_else(|| endpoints.clone().find(|e| e.emittable))
+}
+
+fn readme_endpoint(ir: &Ir) -> Option<&Endpoint> {
+    select_readme_endpoint(ir.endpoints.iter().filter(|e| e.module.is_empty()))
+        .or_else(|| select_readme_endpoint(ir.endpoints.iter()))
+}
+
+fn client_call_prefix(ep: &Endpoint) -> String {
+    if ep.module.is_empty() {
+        format!("client.{}", ep.method_name)
+    } else {
+        format!("client.{}.{}", ep.module, ep.method_name)
+    }
+}
+
+fn raw_client_call_prefix(ep: &Endpoint) -> String {
+    if ep.module.is_empty() {
+        format!("response = client.with_raw_response.{}", ep.method_name)
+    } else {
+        format!(
+            "response = client.{}.with_raw_response.{}",
+            ep.module, ep.method_name
+        )
+    }
 }
 
 /// The generated `README.md`: mostly static prose with the SDK name/package
@@ -1335,23 +1361,11 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     // parens; the error/raw-response calls are ruff-wrapped at the snippet width 88.
     let complex = (first.request_body.is_none() && first.http_method != "GET")
         || complex_body(first, &ir.types, &ir.tag_types);
-    let err_call = abbrev_call(
-        4,
-        &format!("client.{}.{}", first.module, first.method_name),
-        complex,
-    );
-    let raw_call = abbrev_call(
-        0,
-        &format!(
-            "response = client.{}.with_raw_response.{}",
-            first.module, first.method_name
-        ),
-        complex,
-    );
+    let err_call = abbrev_call(4, &client_call_prefix(first), complex);
+    let raw_call = abbrev_call(0, &raw_client_call_prefix(first), complex);
+    let retry_prefix = client_call_prefix(first);
     let retry_call = format!(
-        "client.{}.{}({}request_options={{",
-        first.module,
-        first.method_name,
+        "{retry_prefix}({}request_options={{",
         if complex { "..., " } else { "" }
     );
 
@@ -1414,6 +1428,18 @@ fn reference_file(
     let pkg = &ir.package_name;
     let mut blocks: Vec<String> = vec!["# Reference".to_string()];
     let mut any = false;
+
+    let root_eps: Vec<&Endpoint> = ir
+        .endpoints
+        .iter()
+        .filter(|e| e.module.is_empty() && e.emittable)
+        .filter(|e| !matches!(e.request_body, Some(RequestBody::Bytes)))
+        .collect();
+    for ep in root_eps {
+        any = true;
+        blocks.push(reference_entry(env, ir, ep, &ep.module, pkg, tag_types)?);
+        blocks.push(String::new());
+    }
 
     for module in modules {
         let eps: Vec<&Endpoint> = ir
