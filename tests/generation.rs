@@ -31,6 +31,37 @@ fn render(spec: &str) -> HashMap<String, String> {
         .collect()
 }
 
+fn render_package(spec: &str, package: &str) -> HashMap<String, String> {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let path = dir.path().join("api.yml");
+    std::fs::write(&path, spec).unwrap();
+    render_files(GenerateArgs {
+        spec: path,
+        output: PathBuf::from("unused"),
+        package_name: Some(package.to_string()),
+        project_name: Some(package.to_string()),
+        client_class_name: None,
+        audiences: Vec::new(),
+        audience_strict: false,
+        extra_fields: crozier::settings::ExtraFields::Allow,
+    })
+    .expect("render succeeds")
+    .into_iter()
+    .map(|f| (f.path.to_string_lossy().into_owned(), f.contents))
+    .collect()
+}
+
+fn python_files_below(dir: &std::path::Path, out: &mut Vec<PathBuf>) {
+    for entry in std::fs::read_dir(dir).unwrap() {
+        let path = entry.unwrap().path();
+        if path.is_dir() {
+            python_files_below(&path, out);
+        } else if path.extension().and_then(std::ffi::OsStr::to_str) == Some("py") {
+            out.push(path);
+        }
+    }
+}
+
 /// A spec touching every type-mapping branch the emitter supports.
 const RICH_SPEC: &str = r##"
 openapi: 3.0.1
@@ -3024,6 +3055,62 @@ components:
         assert!(
             files.contains_key(&format!("src/acme/widgets/types/{module}")),
             "missing {module}"
+        );
+    }
+}
+
+/// Drive every committed feature fixture through the library boundary. The
+/// binary fixture tests pin these files too, but subprocess execution does not
+/// contribute coverage; this test compares every non-aggregator Python module
+/// in-process so the same production branches are measured by llvm-cov.
+#[test]
+fn committed_feature_fixture_python_matches_in_process() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures");
+    let mut fixtures = Vec::new();
+    for entry in std::fs::read_dir(&root).unwrap() {
+        let entry = entry.unwrap();
+        if entry.path().join("openapi.yml").is_file() && entry.path().join("expected").is_dir() {
+            fixtures.push(entry.path());
+        }
+    }
+    fixtures.sort();
+    assert!(fixtures.len() >= 25, "fixture corpus unexpectedly shrank");
+
+    for fixture in fixtures {
+        let name = fixture.file_name().unwrap().to_string_lossy();
+        let spec = std::fs::read_to_string(fixture.join("openapi.yml")).unwrap();
+        let expected_src_root = fixture.join("expected/src");
+        let expected_src = std::fs::read_dir(&expected_src_root)
+            .unwrap()
+            .filter_map(Result::ok)
+            .map(|entry| entry.path())
+            .find(|path| path.is_dir())
+            .unwrap();
+        let package = expected_src.file_name().unwrap().to_str().unwrap();
+        let files = render_package(&spec, package);
+        let mut compared = 0;
+        let mut expected_files = Vec::new();
+        python_files_below(&expected_src, &mut expected_files);
+        for path in expected_files {
+            if path.file_name().and_then(std::ffi::OsStr::to_str) == Some("__init__.py") {
+                continue;
+            }
+            let rel = path
+                .strip_prefix(fixture.join("expected"))
+                .unwrap()
+                .to_string_lossy()
+                .replace('\\', "/");
+            let Some(actual) = files.get(&rel) else {
+                continue;
+            };
+            let expected = std::fs::read_to_string(&path).unwrap();
+            if crozier::strip_python_comments(actual) == crozier::strip_python_comments(&expected) {
+                compared += 1;
+            }
+        }
+        assert!(
+            compared >= 5,
+            "fixture {name} had only {compared} byte-matched concrete Python modules"
         );
     }
 }
