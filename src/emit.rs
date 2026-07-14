@@ -1297,14 +1297,22 @@ fn is_complex_type(t: &TypeRef, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) -
         TypeRef::Named(n) => types
             .iter()
             .find(|d| d.name() == n)
-            .is_some_and(|d| match d {
+            .map(|d| (d, false))
+            .or_else(|| {
+                tag_decls
+                    .iter()
+                    .find(|decl| decl.decl.name() == n)
+                    .map(|decl| (&decl.decl, true))
+            })
+            .is_some_and(|(d, tag_scoped)| match d {
                 TypeDecl::Object(_) => true,
                 // A union (named or discriminated) renders empty parens; an enum
                 // is a single member-access value, likewise not "complex".
                 TypeDecl::DiscriminatedUnion(_) | TypeDecl::Enum(_) => false,
                 TypeDecl::Alias(a) => {
-                    !matches!(a.target, TypeRef::Union(_))
-                        && is_complex_type(&a.target, types, tag_decls)
+                    (tag_scoped && matches!(a.target, TypeRef::Union(_)))
+                        || (!matches!(a.target, TypeRef::Union(_))
+                            && is_complex_type(&a.target, types, tag_decls))
                 }
             }),
         TypeRef::Union(_) | TypeRef::Primitive(_) | TypeRef::Literal(_) => false,
@@ -4555,6 +4563,18 @@ impl<'a> ExampleCtx<'a> {
         if self.example_is_scalar(t) {
             return Some(Example::Atom(example.to_string()));
         }
+        if let TypeRef::List(inner) | TypeRef::Set(inner) = t {
+            let values: Vec<serde_json::Value> = serde_json::from_str(example).ok()?;
+            let items = values
+                .into_iter()
+                .map(|value| {
+                    let literal = value.to_string();
+                    self.value_from_example(inner, &literal)
+                        .unwrap_or_else(|| example_from_json(value))
+                })
+                .collect();
+            return Some(Example::ExplicitList(items));
+        }
         if self.example_is_composite(t) && (example.starts_with('[') || example.starts_with('{')) {
             return serde_json::from_str(example).ok().map(example_from_json);
         }
@@ -4915,7 +4935,10 @@ fn build_example(
     let mut optional_query_example_used = false;
     for qp in &ep.query_params {
         if !qp.required {
-            if qp.example.is_none() || !qp.example_is_scalar || optional_query_example_used {
+            if qp.example.is_none()
+                || !qp.example_is_scalar
+                || (ep.request_body.is_none() && optional_query_example_used)
+            {
                 continue;
             }
             optional_query_example_used = true;

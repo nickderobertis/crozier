@@ -2024,6 +2024,25 @@ fn resolve_request_body(
         }
         return None;
     }
+    // An inline top-level union is named from the operation and emitted in the
+    // tag's `types/` package. The request accepts that alias as one argument and
+    // serializes its selected model variant through the annotation converter.
+    if schema.one_of.is_some() || schema.any_of.is_some() {
+        let request_body_name = format!("{request_ctx}Body");
+        let target = base_type_ref(schema);
+        hoister.out.push(TypeDecl::Alias(AliasType {
+            name: request_body_name.clone(),
+            module: naming::module_name(&request_body_name),
+            target,
+            docstring: clean_doc(schema.description.as_deref()),
+        }));
+        return Some(single(
+            TypeRef::Named(request_body_name),
+            required,
+            true,
+            true,
+        ));
+    }
     // An inline object body (properties written directly, not behind a `$ref`) is
     // inlined field-by-field, exactly like a `$ref` object. Its own nested inline
     // objects hoist into `{request_ctx}{Prop}` models.
@@ -3314,8 +3333,15 @@ impl Builder<'_> {
             }
             // A `readOnly` property is server-populated, so Fern treats it as
             // optional (and never a required input) even if listed in `required`.
-            let spec_required =
-                required.contains(&prop.as_str()) && prop_schema.read_only != Some(true);
+            let referenced_read_only = prop_schema
+                .reference
+                .as_deref()
+                .and_then(|reference| reference.rsplit('/').next())
+                .and_then(|key| self.schemas.get(key))
+                .is_some_and(|schema| schema.read_only == Some(true));
+            let spec_required = required.contains(&prop.as_str())
+                && prop_schema.read_only != Some(true)
+                && !referenced_read_only;
             let optional = is_optional(prop_schema) || !spec_required;
             fields.push(Field {
                 wire_name: prop.clone(),
@@ -3325,7 +3351,16 @@ impl Builder<'_> {
                 nullable: is_optional(prop_schema) && prop_schema.read_only == Some(true),
                 spec_required,
                 docstring: declared_doc(prop_schema.description.as_deref()),
-                example: schema_example(prop_schema).and_then(example_literal),
+                example: schema_example(prop_schema)
+                    .or_else(|| {
+                        prop_schema
+                            .reference
+                            .as_deref()
+                            .and_then(|reference| reference.rsplit('/').next())
+                            .and_then(|key| self.schemas.get(key))
+                            .and_then(schema_example)
+                    })
+                    .and_then(example_literal),
             });
         }
     }
