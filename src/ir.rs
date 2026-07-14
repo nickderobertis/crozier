@@ -1268,6 +1268,9 @@ fn build_endpoint(
             hoister.hoist_object(&name, schema);
             Some(TypeRef::Named(name))
         }
+        Some(schema) if schema.reference.is_none() => hoister
+            .hoist_array_item_enum(&format!("{pascal_ctx}Response"), schema)
+            .or_else(|| success_response(op)),
         _ => success_response(op),
     };
 
@@ -1337,10 +1340,7 @@ fn build_endpoint(
             .request_body
             .as_ref()
             .is_some_and(|rb| rb.description.is_some()),
-        body_component_ref: op
-            .request_body
-            .as_ref()
-            .is_some_and(|rb| rb.component_ref),
+        body_component_ref: op.request_body.as_ref().is_some_and(|rb| rb.component_ref),
         response,
         response_doc: success_response_doc(op),
         errors,
@@ -1579,14 +1579,14 @@ fn resolve_request_body(
             }));
         }
     }
-    let (media_type, media) = rb
-        .content
-        .get_key_value("application/json")
-        .or_else(|| rb.content.iter().find(|(media_type, _)| is_json_like_media_type(media_type)))?;
+    let (media_type, media) = rb.content.get_key_value("application/json").or_else(|| {
+        rb.content
+            .iter()
+            .find(|(media_type, _)| is_json_like_media_type(media_type))
+    })?;
     let schema = media.schema.as_ref()?;
     let required = rb.required == Some(true);
-    let content_type_override =
-        (media_type != "application/json").then(|| media_type.to_string());
+    let content_type_override = (media_type != "application/json").then(|| media_type.to_string());
     if let Some(reference) = &schema.reference {
         let target = resolve_ref(doc, reference)?;
         let class = ref_to_class(reference);
@@ -1686,8 +1686,15 @@ fn resolve_request_body(
     if is_unknown(schema) {
         return Some(single(TypeRef::Primitive(Prim::Any), false, false, false));
     }
-    scalar_body(schema)
-        .map(|(type_ref, content_type)| single_with_override(type_ref, required, false, content_type, content_type_override))
+    scalar_body(schema).map(|(type_ref, content_type)| {
+        single_with_override(
+            type_ref,
+            required,
+            false,
+            content_type,
+            content_type_override,
+        )
+    })
 }
 
 fn is_json_like_media_type(media_type: &str) -> bool {
@@ -1796,7 +1803,8 @@ impl InlineHoister<'_> {
     /// Hoist an inline string enum on a request parameter's schema into a named
     /// extensible-enum alias `{request_ctx}{Prop}` in the tag's `types/` package,
     /// matching Fern (a `level` query param on `listWidgets` →
-    /// `ListWidgetsRequestLevel`). A `$ref` or non-enum schema passes through
+    /// `ListWidgetsRequestLevel`). Array item enums hoist to
+    /// `{request_ctx}{Param}Item`. A `$ref` or non-enum schema passes through
     /// [`base_type_ref`] unchanged.
     fn hoist_param_enum(&mut self, request_ctx: &str, param: &str, schema: &Schema) -> TypeRef {
         if schema.reference.is_none() {
@@ -1809,8 +1817,39 @@ impl InlineHoister<'_> {
                 )));
                 return TypeRef::Named(name);
             }
+            if let Some(array) = self.hoist_array_item_enum(
+                &format!("{request_ctx}{}", naming::class_name(param)),
+                schema,
+            ) {
+                return array;
+            }
         }
         base_type_ref(schema)
+    }
+
+    /// Hoist an inline string enum array item to `{ctx}Item`, preserving the
+    /// container shape around the named enum.
+    fn hoist_array_item_enum(&mut self, ctx: &str, schema: &Schema) -> Option<TypeRef> {
+        if schema.ty.as_ref().and_then(|t| t.primary()) != Some("array") {
+            return None;
+        }
+        let item = schema.items.as_deref()?;
+        if item.reference.is_some() {
+            return None;
+        }
+        let values = string_enum_values(item)?;
+        let name = format!("{ctx}Item");
+        self.out.push(TypeDecl::Enum(build_enum(
+            &name,
+            values,
+            clean_doc(item.description.as_deref()),
+        )));
+        let item = Box::new(TypeRef::Named(name));
+        if schema.unique_items == Some(true) {
+            Some(TypeRef::Set(item))
+        } else {
+            Some(TypeRef::List(item))
+        }
     }
 
     /// Whether a type serializes through the convert wrapper — true when it
@@ -2910,16 +2949,16 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
         Some("number") => TypeRef::Primitive(Prim::Float),
         Some("boolean") => TypeRef::Primitive(Prim::Bool),
         Some("array") => {
-            let item = schema.items.as_ref().map_or(
-                TypeRef::Primitive(Prim::Any),
-                |i| {
+            let item = schema
+                .items
+                .as_ref()
+                .map_or(TypeRef::Primitive(Prim::Any), |i| {
                     if is_unknown(i) {
                         TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)))
                     } else {
                         base_type_ref(i)
                     }
-                },
-            );
+                });
             if schema.unique_items == Some(true) {
                 TypeRef::Set(Box::new(item))
             } else {

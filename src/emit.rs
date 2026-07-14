@@ -3277,7 +3277,10 @@ struct RootClientCfg<'a> {
     global_headers: &'a [GlobalHeader],
 }
 
-#[allow(clippy::too_many_arguments, reason = "root method emission mirrors ClientCtx plus root imports")]
+#[allow(
+    clippy::too_many_arguments,
+    reason = "root method emission mirrors ClientCtx plus root imports"
+)]
 fn root_client_methods(
     _env: &Environment<'static>,
     pkg: &str,

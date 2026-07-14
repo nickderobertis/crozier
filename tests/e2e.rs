@@ -5316,8 +5316,8 @@ fn examples_use_one_line_client_constructor_when_no_args_are_needed() {
         client.contains("client = AcmeApi()"),
         "no-argument examples should use Fern's one-line constructor: {client}"
     );
-    let root = std::fs::read_to_string(out.join("src/acme/client.py"))
-        .expect("root client is generated");
+    let root =
+        std::fs::read_to_string(out.join("src/acme/client.py")).expect("root client is generated");
     assert!(
         root.contains("client = AcmeApi()"),
         "root client examples should use Fern's one-line constructor: {root}"
@@ -5364,6 +5364,40 @@ fn unknown_array_items_are_optional_any_elements() {
     assert!(
         widget.contains("values: typing.Optional[typing.List[typing.Optional[typing.Any]]] = None"),
         "arrays of unknown items should preserve Optional[Any] element types: {widget}"
+    );
+}
+
+#[test]
+fn array_item_enums_hoist_to_tag_types() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    \
+         get:\n      operationId: listWidgets\n      tags: [widgets]\n      parameters:\n        - name: \
+         status\n          in: query\n          required: false\n          schema:\n            type: array\n            \
+         items: { type: string, enum: [active, archived] }\n      responses:\n        '200':\n          \
+         description: OK\n          content:\n            application/json:\n              schema:\n                \
+         type: array\n                items: { type: string, enum: [public, private] }\n",
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/widgets/client.py"))
+        .expect("widgets client is generated");
+    assert!(
+        client.contains(
+            "from .types.list_widgets_request_status_item import ListWidgetsRequestStatusItem"
+        ),
+        "query array item enums should be imported as tag-scoped types: {client}"
+    );
+    assert!(
+        client.contains("from .types.list_widgets_response_item import ListWidgetsResponseItem"),
+        "response array item enums should be imported as tag-scoped types: {client}"
+    );
+    assert!(
+        client.contains(
+            "typing.Union[ListWidgetsRequestStatusItem, typing.Sequence[ListWidgetsRequestStatusItem]]"
+        ),
+        "query array item enums should use the named enum in scalar-or-sequence params: {client}"
+    );
+    assert!(
+        client.contains("typing.List[ListWidgetsResponseItem]"),
+        "response array item enums should use the named enum in return types: {client}"
     );
 }
 
