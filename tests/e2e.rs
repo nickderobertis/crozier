@@ -4144,6 +4144,92 @@ const BUNGIE: Corpus = Corpus {
     matched: BUNGIE_MATCHED,
 };
 
+// ---------------------------------------------------------------------------
+// Five additional real-world `link-ok` corpora (issue #77), added together as a
+// batch of harder, feature-diverse targets. Each passes `fern check` cleanly (the
+// prerequisite — Fern must accept the raw spec first); their Fern golden `expected/`
+// trees are generated with Docker (`just fixtures-generate-corpus --only <name>`)
+// and land in the same PR before byte-matching begins. Every `matched` list starts
+// empty: the corpus test then only asserts crozier consumes the fetched spec, and
+// the list grows (via `just fixtures-candidates`) as the generator is brought to a
+// byte-match. Where crozier does not yet consume the spec cleanly, the gap is named
+// on the const so the byte-match pass knows the work; the offline `check` gate skips
+// every one of these (their specs are fetched, not vendored).
+// ---------------------------------------------------------------------------
+
+/// `anchore.io`: the Anchore Engine API server — the largest clean component-schema
+/// surface of this batch (149 schemas, heavy `allOf` + enums). crozier currently
+/// coins a duplicate method parameter for its `policies` client (a generator gap for
+/// the byte-match pass); the Fern golden is pending Docker generation.
+const ANCHORE: Corpus = Corpus {
+    api: "anchore.io",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[],
+};
+
+/// `apache.org`: the Airflow (Stable) REST API — the heaviest composition of this
+/// batch (`allOf`×22 plus the only discriminated union) across 18 tags, so the
+/// deepest sub-client fan-out. crozier currently coins a duplicate method parameter
+/// for its `dag` client (the same generator gap as anchore); golden pending.
+const APACHE_AIRFLOW: Corpus = Corpus {
+    api: "apache.org",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[],
+};
+
+/// `discourse.local`: the Discourse API — an all-inline shape (0 named component
+/// schemas; ~113 inline request/response objects Fern must coin names for), unlike
+/// any matched corpus. crozier consumes it today (224 files); golden pending.
+const DISCOURSE: Corpus = Corpus {
+    api: "discourse.local",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[],
+};
+
+/// `appwrite.io-server`: the Appwrite server API — the widest operation surface of
+/// this batch (95 operations) with `url`-format fields. crozier consumes it today
+/// (97 files); golden pending.
+const APPWRITE_SERVER: Corpus = Corpus {
+    api: "appwrite.io-server",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[],
+};
+
+/// `apicurio.local-registry`: the Apicurio Registry API — the only `int64`-format
+/// corpus of this batch. crozier currently rejects the spec's paths-level
+/// `x-codegen-contextRoot` extension (a parser gap: `x-*` keys under `paths` must be
+/// skipped, not parsed as path items) — work for the byte-match pass; golden pending.
+const APICURIO: Corpus = Corpus {
+    api: "apicurio.local-registry",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[],
+};
+
 #[test]
 fn bunq_matches_fern_output() {
     // `link-ok` like apideck: the spec is fetched (not vendored), so this **skips**
@@ -4184,6 +4270,85 @@ fn bungie_matches_fern_output() {
     assert_corpus_matches(&BUNGIE);
 }
 
+// The five batch corpora below share the bunq/bungie test shape: `link-ok` (spec
+// fetched, not vendored) so each **skips** offline — including the `check` gate — and
+// **fails** when `CROZIER_REQUIRE_CORPUS` is set without a fetched spec, so an
+// enforced leg can never silently no-op. Each `matched` list is empty until its Fern
+// golden is generated and the byte-match pass grows it, so today they assert only
+// that crozier consumes the fetched spec and writes a tree without panicking. The
+// three with a named generator gap on their const (anchore, apache, apicurio) reach
+// that bar once the byte-match pass closes the gap; discourse and appwrite already do.
+
+#[test]
+fn anchore_matches_fern_output() {
+    if corpus_spec(ANCHORE.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the anchore corpus spec is not fetched; \
+             run scripts/fetch-corpus.sh first"
+        );
+        eprintln!("skipping anchore byte-match: spec not fetched (run scripts/fetch-corpus.sh)");
+        return;
+    }
+    assert_corpus_matches(&ANCHORE);
+}
+
+#[test]
+fn apache_airflow_matches_fern_output() {
+    if corpus_spec(APACHE_AIRFLOW.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the apache corpus spec is not fetched; \
+             run scripts/fetch-corpus.sh first"
+        );
+        eprintln!("skipping apache byte-match: spec not fetched (run scripts/fetch-corpus.sh)");
+        return;
+    }
+    assert_corpus_matches(&APACHE_AIRFLOW);
+}
+
+#[test]
+fn discourse_matches_fern_output() {
+    if corpus_spec(DISCOURSE.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the discourse corpus spec is not fetched; \
+             run scripts/fetch-corpus.sh first"
+        );
+        eprintln!("skipping discourse byte-match: spec not fetched (run scripts/fetch-corpus.sh)");
+        return;
+    }
+    assert_corpus_matches(&DISCOURSE);
+}
+
+#[test]
+fn appwrite_server_matches_fern_output() {
+    if corpus_spec(APPWRITE_SERVER.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the appwrite corpus spec is not fetched; \
+             run scripts/fetch-corpus.sh first"
+        );
+        eprintln!("skipping appwrite byte-match: spec not fetched (run scripts/fetch-corpus.sh)");
+        return;
+    }
+    assert_corpus_matches(&APPWRITE_SERVER);
+}
+
+#[test]
+fn apicurio_matches_fern_output() {
+    if corpus_spec(APICURIO.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the apicurio corpus spec is not fetched; \
+             run scripts/fetch-corpus.sh first"
+        );
+        eprintln!("skipping apicurio byte-match: spec not fetched (run scripts/fetch-corpus.sh)");
+        return;
+    }
+    assert_corpus_matches(&APICURIO);
+}
+
 #[test]
 fn feature_target_specs_generate_without_panicking() {
     // A feature-coverage target with a populated `matched` list is byte-compared
@@ -4217,6 +4382,20 @@ fn report_matched_candidates() {
     // not walk a missing fixture.
     if corpus_spec(BUNGIE.api).is_some() {
         corpora.push(&BUNGIE);
+    }
+    // The five batch corpora are the same: fetched, not vendored, golden pending —
+    // include each only when its source spec is present so an offline run does not
+    // walk a missing fixture.
+    for c in [
+        &ANCHORE,
+        &APACHE_AIRFLOW,
+        &DISCOURSE,
+        &APPWRITE_SERVER,
+        &APICURIO,
+    ] {
+        if corpus_spec(c.api).is_some() {
+            corpora.push(c);
+        }
     }
 
     let mut total = 0usize;
@@ -4314,6 +4493,19 @@ fn report_fixture_diffs() {
     }
     if corpus_spec(BUNGIE.api).is_some() {
         corpora.push(&BUNGIE);
+    }
+    // The five batch corpora (issue #77): fetched, not vendored — include each only
+    // when its source spec is present, exactly as the byte-diff gate skips it offline.
+    for c in [
+        &ANCHORE,
+        &APACHE_AIRFLOW,
+        &DISCOURSE,
+        &APPWRITE_SERVER,
+        &APICURIO,
+    ] {
+        if corpus_spec(c.api).is_some() {
+            corpora.push(c);
+        }
     }
     if let Some(f) = &corpus_filter {
         corpora.retain(|c| c.api == f.as_str());

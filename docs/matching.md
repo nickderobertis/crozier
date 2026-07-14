@@ -355,6 +355,36 @@ To regenerate the golden (needs Docker + the `fern` CLI + a Rust toolchain):
 just fixtures-generate-corpus --only bungie.net  # runs Fern (Docker) -> tests/fixtures/bungie.net/expected/
 ```
 
+### Five more real-world corpora (issue #77): a harder batch, byte-match in progress
+
+Beyond the three fully-matched corpora above, five more `link-ok` corpora are added
+together as a batch of deliberately harder, feature-diverse targets. All five pass
+`fern check` (the prerequisite — Fern must accept the raw spec, and the largest raw
+public specs do not: `github.com`, `box.com`, and `atlassian.com-jira` each fail its
+gate, and `conjur.local` hits a ref-resolution error, so all four are out). Each
+`Corpus` is registered in `tests/e2e.rs` with an **empty `matched`** list and the
+usual `link-ok` guard, so the offline `check` gate skips them; the byte-match pass
+grows each list (`just fixtures-candidates`) as the generator is brought to a match.
+Their Fern goldens are generated with Docker and land in the same PR
+(`just fixtures-generate-corpus --only <name>`).
+
+| corpus | shape it stresses | current crozier status |
+|---|---|---|
+| `anchore.io` | largest clean schema surface (149 schemas), heavy `allOf` + enums | coins a **duplicate method parameter** in its `policies` client — generator gap |
+| `apache.org` (Airflow) | heaviest composition (`allOf`×22) + the only discriminated union; 18 tags | same duplicate-parameter gap, in its `dag` client |
+| `discourse.local` | all-inline (0 named schemas → ~113 coined types) | consumes cleanly (224 files) |
+| `appwrite.io-server` | widest operation surface (95 ops); `url` format | consumes cleanly (97 files) |
+| `apicurio.local-registry` | only `int64`-format corpus; `allOf` | parser **rejects a paths-level `x-codegen-contextRoot`** extension — `x-*` keys under `paths` must be skipped, not parsed as path items |
+
+The three gaps are the batch's first byte-match work; because anchore and apache
+share the duplicate-parameter gap, the corpora are worked **serially** (one fix
+unblocks both). Regenerate any golden with, e.g.:
+
+```
+./scripts/fetch-corpus.sh                          # fetches the batch specs into .local/corpus/
+just fixtures-generate-corpus --only anchore.io    # runs Fern (Docker) -> tests/fixtures/anchore.io/expected/
+```
+
 ### Issue #43: error responses, discriminated-union aliases, and SSE streaming
 
 Three gaps found while checking whether crozier could stand in for a fern-python
