@@ -3402,7 +3402,14 @@ fn is_bare_object(schema: &Schema) -> bool {
 /// (which Fern renders as a `Dict`, not a hoisted model), so it is the test for
 /// hoisting an inline request/response body into a named type.
 fn is_inline_struct(schema: &Schema) -> bool {
-    schema.reference.is_none() && (!schema.properties.is_empty() || schema.all_of.is_some())
+    schema.reference.is_none()
+        && (!schema.properties.is_empty()
+            || schema.all_of.is_some()
+            || (is_object_type(schema)
+                && matches!(
+                    schema.additional_properties,
+                    Some(AdditionalProperties::Bool(false))
+                )))
 }
 
 /// The English word for a small ordinal, used to name hoisted union variants

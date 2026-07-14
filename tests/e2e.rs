@@ -6189,6 +6189,25 @@ fn top_level_inline_response_array_items_hoist_through_the_cli() {
 }
 
 #[test]
+fn closed_empty_inline_objects_hoist_through_the_cli() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widget:\n    get:\n      operationId: getWidget\n      tags: [widgets]\n      responses:\n        '200':\n          description: Found\n          content:\n            application/json:\n              schema:\n                type: object\n                required: [metadata]\n                properties:\n                  metadata:\n                    type: object\n                    properties: {}\n                    additionalProperties: false\n",
+    );
+    let response =
+        std::fs::read_to_string(out.join("src/acme/widgets/types/get_widget_response.py"))
+            .expect("response model is generated");
+    assert!(
+        response.contains("metadata: GetWidgetResponseMetadata"),
+        "closed empty objects should use a coined model: {response}"
+    );
+    assert!(
+        out.join("src/acme/widgets/types/get_widget_response_metadata.py")
+            .is_file(),
+        "closed empty object model should be emitted"
+    );
+}
+
+#[test]
 fn header_parameter_enums_hoist_to_tag_types() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      parameters:\n        - name: X-Widget-Mode\n          in: header\n          required: true\n          schema: { type: string, enum: [FAST, SAFE] }\n      responses:\n        '204': { description: Created }\n",
