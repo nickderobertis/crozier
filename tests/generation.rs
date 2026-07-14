@@ -803,7 +803,8 @@ fn emits_core_runtime_with_substituted_sdk_name() {
 
 #[test]
 fn oneof_hoists_inline_object_variants() {
-    // A oneOf with inline-object variants: each is hoisted to `{Name}{Ordinal}`.
+    // A oneOf with inline-object variants: each is hoisted using its distinguishing
+    // property when one exists, otherwise `{Name}{Ordinal}`.
     // Variant 0 uses allOf (a $ref base + an inline enum property); variant 1 is
     // a plain inline object.
     let spec = "\
@@ -841,7 +842,7 @@ components:
     // Inline-object variants are hoisted; a $ref variant and a scalar variant
     // stay inline in the union.
     assert!(
-        files["src/acme/types/pet.py"].contains("Pet = typing.Union[PetZero, PetOne, Dog, str]"),
+        files["src/acme/types/pet.py"].contains("Pet = typing.Union[PetZero, PetMeow, Dog, str]"),
         "{}",
         files["src/acme/types/pet.py"]
     );
@@ -856,8 +857,8 @@ components:
     );
     assert!(kind.contains("    DOG = \"dog\"\n"), "{kind}");
     // Variant 1: no base, so it extends UniversalBaseModel; its field is optional.
-    let one = &files["src/acme/types/pet_one.py"];
-    assert!(one.contains("class PetOne(UniversalBaseModel):"), "{one}");
+    let one = &files["src/acme/types/pet_meow.py"];
+    assert!(one.contains("class PetMeow(UniversalBaseModel):"), "{one}");
     assert!(one.contains("meow: typing.Optional[bool] = None"), "{one}");
 }
 
