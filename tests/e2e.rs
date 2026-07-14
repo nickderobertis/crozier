@@ -5627,6 +5627,58 @@ const DND5EAPI: Corpus = Corpus {
     ],
 };
 
+const APACHE_QAKKA: Corpus = Corpus {
+    api: "apache.org-qakka",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[
+        ".fern/metadata.json",
+        "README.md",
+        "pyproject.toml",
+        "reference.md",
+        "requirements.txt",
+        "src/fern/__init__.py",
+        "src/fern/client.py",
+        "src/fern/core/__init__.py",
+        "src/fern/core/api_error.py",
+        "src/fern/core/client_wrapper.py",
+        "src/fern/core/datetime_utils.py",
+        "src/fern/core/file.py",
+        "src/fern/core/force_multipart.py",
+        "src/fern/core/http_client.py",
+        "src/fern/core/http_response.py",
+        "src/fern/core/http_sse/__init__.py",
+        "src/fern/core/http_sse/_api.py",
+        "src/fern/core/http_sse/_decoders.py",
+        "src/fern/core/http_sse/_exceptions.py",
+        "src/fern/core/http_sse/_models.py",
+        "src/fern/core/jsonable_encoder.py",
+        "src/fern/core/pydantic_utilities.py",
+        "src/fern/core/query_encoder.py",
+        "src/fern/core/remove_none_from_dict.py",
+        "src/fern/core/request_options.py",
+        "src/fern/core/serialization.py",
+        "src/fern/environment.py",
+        "src/fern/errors/__init__.py",
+        "src/fern/errors/bad_request_error.py",
+        "src/fern/errors/not_found_error.py",
+        "src/fern/py.typed",
+        "src/fern/queues/__init__.py",
+        "src/fern/queues/client.py",
+        "src/fern/queues/raw_client.py",
+        "src/fern/raw_client.py",
+        "src/fern/types/__init__.py",
+        "src/fern/types/api_response.py",
+        "src/fern/types/queue.py",
+        "src/fern/types/queue_message.py",
+        "src/fern/version.py",
+    ],
+};
+
 #[test]
 fn bunq_matches_fern_output() {
     // `link-ok` like apideck: the spec is fetched (not vendored), so this **skips**
@@ -5773,6 +5825,18 @@ fn dnd5eapi_matches_fern_output() {
 }
 
 #[test]
+fn apache_qakka_matches_fern_output() {
+    if corpus_spec(APACHE_QAKKA.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the apache-qakka corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+        );
+        return;
+    }
+    assert_corpus_matches(&APACHE_QAKKA);
+}
+
+#[test]
 fn feature_target_specs_generate_without_panicking() {
     // A feature-coverage target with a populated `matched` list is byte-compared
     // file-by-file; one with an empty `matched` list asserts only that crozier
@@ -5821,6 +5885,7 @@ fn report_matched_candidates() {
         &APICURIO,
         &GAMBITCOMM_MIMIC,
         &DND5EAPI,
+        &APACHE_QAKKA,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
@@ -5940,6 +6005,7 @@ fn report_fixture_diffs() {
         &APICURIO,
         &GAMBITCOMM_MIMIC,
         &DND5EAPI,
+        &APACHE_QAKKA,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
