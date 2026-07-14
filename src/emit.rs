@@ -5316,9 +5316,9 @@ pub fn write_files(root: &std::path::Path, files: &[GeneratedFile]) -> Result<()
 mod tests {
     use super::{
         abbrev_call, auth_client_parts, auth_example_args, auth_wrapper_parts, environment,
-        escape_py_str, field_decl, raw_method, raw_type_str, readme_endpoint, render,
-        render_class_body, url_arg, FieldView, Imports, ParamRow, RefLoc, ReferenceEntryView,
-        RenderedField, RootClientView, RootModuleView,
+        escape_py_str, field_decl, preserve_fenced_docstring_blank_indent, raw_method,
+        raw_type_str, readme_endpoint, render, render_class_body, url_arg, FieldView, Imports,
+        ParamRow, RefLoc, ReferenceEntryView, RenderedField, RootClientView, RootModuleView,
     };
     use crate::ir::{
         Auth, BodyField, Endpoint, ErrorResponse, Ir, PathParam, Prim, RequestBody, SingleBody,
@@ -6126,5 +6126,35 @@ mod tests {
             "{out}"
         );
         assert!(!out.contains("parse_obj_as"), "{out}");
+    }
+
+    #[test]
+    fn fenced_root_docstrings_restore_indented_blank_lines_only() {
+        let mut source = concat!(
+            "class Root:\n",
+            "        \"\"\"\n",
+            "        Example\n",
+            "\n",
+            "        ```python\n",
+            "        call()\n",
+            "\n",
+            "        ```\n",
+            "        \"\"\"\n",
+            "\n",
+            "        \"\"\"\n",
+            "        Plain docs\n",
+            "\n",
+            "        \"\"\"\n",
+        )
+        .to_string();
+        preserve_fenced_docstring_blank_indent(&mut source);
+        assert!(source.contains("        Example\n        \n        ```python"));
+        assert!(source.contains("        call()\n        \n        ```"));
+        assert!(source.contains("        Plain docs\n\n        \"\"\""));
+        assert!(source.ends_with('\n'));
+
+        let mut unterminated = "        \"\"\"\n```python\n\n".to_string();
+        preserve_fenced_docstring_blank_indent(&mut unterminated);
+        assert_eq!(unterminated, "        \"\"\"\n```python\n\n");
     }
 }

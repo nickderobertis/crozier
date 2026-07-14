@@ -1431,4 +1431,96 @@ paths:
         assert_eq!(op.parameters.len(), 1);
         assert_eq!(op.parameters[0].description.as_deref(), Some("overridden"));
     }
+
+    #[test]
+    fn request_body_normalization_resolves_components_and_preserves_fallbacks() {
+        let mut doc = parse(
+            r##"
+openapi: 3.0.3
+info: { title: T }
+paths:
+  /resolved:
+    post:
+      requestBody: { $ref: "#/components/requestBodies/Payload" }
+      responses: { "204": { description: OK } }
+  /missing:
+    put:
+      requestBody: { $ref: "#/components/requestBodies/Missing" }
+      responses: { "204": { description: OK } }
+  /inline:
+    patch:
+      requestBody:
+        required: false
+        content: { application/json: { schema: { type: string } } }
+      responses: { "204": { description: OK } }
+components:
+  requestBodies:
+    Payload:
+      required: true
+      description: reusable body
+      content: { application/json: { schema: { type: integer } } }
+"##,
+        );
+        normalize_request_bodies(&mut doc);
+        let resolved = doc.paths["/resolved"]
+            .post
+            .as_ref()
+            .unwrap()
+            .request_body
+            .as_ref()
+            .unwrap();
+        assert!(resolved.component_ref);
+        assert_eq!(resolved.required, Some(true));
+        assert_eq!(resolved.description.as_deref(), Some("reusable body"));
+        assert_eq!(
+            resolved.content["application/json"]
+                .schema
+                .as_ref()
+                .unwrap()
+                .ty
+                .as_ref()
+                .unwrap()
+                .primary(),
+            Some("integer")
+        );
+        let missing = doc.paths["/missing"]
+            .put
+            .as_ref()
+            .unwrap()
+            .request_body
+            .as_ref()
+            .unwrap();
+        assert_eq!(
+            missing.reference.as_deref(),
+            Some("#/components/requestBodies/Missing")
+        );
+        assert!(!missing.component_ref);
+        let inline = doc.paths["/inline"]
+            .patch
+            .as_ref()
+            .unwrap()
+            .request_body
+            .as_ref()
+            .unwrap();
+        assert_eq!(inline.required, Some(false));
+        assert!(inline.content.contains_key("application/json"));
+    }
+
+    #[test]
+    fn paths_deserializer_ignores_extensions_but_keeps_real_paths() {
+        let doc = parse(
+            r#"
+openapi: 3.0.3
+info: { title: T }
+paths:
+  x-vendor-note: ignored
+  /real:
+    get:
+      operationId: real
+      responses: { "204": { description: OK } }
+"#,
+        );
+        assert_eq!(doc.paths.len(), 1);
+        assert!(doc.paths.contains_key("/real"));
+    }
 }
