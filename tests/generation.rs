@@ -2126,6 +2126,12 @@ paths:
                     type: array
                     items: { type: string }
                   required: [widgets]
+                  stringNode: not-a-schema
+                  boolNode: true
+                  negativeNode: -1
+                  positiveNode: 1
+                  floatNode: 1.5
+                  nullNode: null
 "##;
     let files = render(spec);
     let resp = &files["src/acme/types/search_response.py"];
@@ -2137,6 +2143,22 @@ paths:
         !resp.contains("import Required") && !files.contains_key("src/acme/types/widgets.py"),
         "no bogus type is synthesized or imported:\n{resp}"
     );
+    for (field, wire_name) in [
+        ("string_node", "stringNode"),
+        ("bool_node", "boolNode"),
+        ("negative_node", "negativeNode"),
+        ("positive_node", "positiveNode"),
+        ("float_node", "floatNode"),
+        ("null_node", "nullNode"),
+    ] {
+        assert!(
+            resp.contains(&format!(
+                "{field}: typing_extensions.Annotated[\n        \
+                 typing.Optional[typing.Optional[typing.Any]], FieldMetadata(alias=\"{wire_name}\")\n    ] = None"
+            )),
+            "the malformed scalar property {field} must degrade independently:\n{resp}"
+        );
+    }
 }
 
 /// A root-operation nested type reaches the package-root `core` package at the
