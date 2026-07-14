@@ -74,6 +74,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e bungie_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e appwrite_server_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e anchore_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apache_airflow_matches_fern_output
 
 # Format the codebase in place.
 format:
