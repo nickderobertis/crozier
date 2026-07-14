@@ -2718,7 +2718,7 @@ impl Builder<'_> {
     /// Classify one named schema and push it (plus any hoisted types).
     fn add_named(&mut self, name: &str, schema: &Schema) {
         let module = naming::module_name(name);
-        let docstring = clean_doc(schema.description.as_deref());
+        let docstring = operation_doc(schema.description.as_deref());
 
         // A discriminated `oneOf`/`anyOf` (with an explicit `mapping`) becomes a
         // set of per-variant wrapper models plus a union alias.

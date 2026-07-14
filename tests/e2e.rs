@@ -6252,6 +6252,22 @@ fn model_field_docs_trim_terminal_line_breaks() {
 }
 
 #[test]
+fn declared_empty_schema_descriptions_emit_class_docstrings() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths: {}\ncomponents:\n  schemas:\n    Widget:\n      type: object\n      description: ''\n      properties:\n        id: { type: integer, format: int64 }\n    WidgetState:\n      type: string\n      description: ''\n      enum: [ACTIVE]\n",
+    );
+    let model = std::fs::read_to_string(out.join("src/acme/types/widget.py"))
+        .expect("widget model is generated");
+    let state = std::fs::read_to_string(out.join("src/acme/types/widget_state.py"))
+        .expect("widget state enum is generated");
+    assert!(
+        model.contains("class Widget(UniversalBaseModel):\n    \"\"\" \"\"\"\n\n    id: typing.Optional[int]")
+            && state.contains("class WidgetState(str, enum.Enum):\n    \"\"\" \"\"\"\n\n    ACTIVE = \"ACTIVE\""),
+        "declared empty schema descriptions should remain visible in generated classes:\n{model}\n{state}"
+    );
+}
+
+#[test]
 fn overlapping_all_of_fields_flatten_the_base_model() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths: {}\ncomponents:\n  schemas:\n    WidgetBase:\n      type: object\n      properties:\n        name: { type: string, description: Base name. }\n        size: { type: integer }\n    Widget:\n      allOf:\n        - { $ref: '#/components/schemas/WidgetBase' }\n        - type: object\n          properties:\n            name: { type: string }\n            active: { type: boolean }\n",
