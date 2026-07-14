@@ -1139,11 +1139,17 @@ fn root_init_file(
     // submodule (`from .inlined import InlinedSearchResponse`), grouped per tag.
     let mut hoisted_by_tag: BTreeMap<String, Vec<String>> = BTreeMap::new();
     for tt in &ir.tag_types {
-        hoisted_by_tag
-            .entry(tt.module.clone())
-            .or_default()
-            .extend(tt.decl.exported_names().into_iter().map(str::to_string));
+        let names = tt.decl.exported_names().into_iter().map(str::to_string);
+        if tt.module.is_empty() {
+            type_names.extend(names);
+        } else {
+            hoisted_by_tag
+                .entry(tt.module.clone())
+                .or_default()
+                .extend(names);
+        }
     }
+    type_names.sort();
     let environment = ir.environment.as_ref();
     let mut error_names: Vec<String> = ir.errors.iter().map(|e| e.class_name.clone()).collect();
     error_names.sort();

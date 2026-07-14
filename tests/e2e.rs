@@ -6284,6 +6284,13 @@ fn operation_id_equal_to_tag_generates_on_root_client() {
         response.contains("from ..core.pydantic_utilities import"),
         "root response types should use root-relative imports: {response}"
     );
+    let package = std::fs::read_to_string(out.join("src/acme/__init__.py"))
+        .expect("package initializer is generated");
+    assert!(
+        package.contains("\"SearchResponse\": \".types\"")
+            && package.contains("from .types import SearchResponse"),
+        "root-hoisted types should export through the root types package: {package}"
+    );
 }
 
 #[test]
