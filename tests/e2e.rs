@@ -6210,6 +6210,22 @@ fn inline_request_enums_generate_emittable_clients() {
 }
 
 #[test]
+fn multipart_request_enums_hoist_through_the_cli() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widget:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          multipart/form-data:\n            schema:\n              type: object\n              required: [mode]\n              properties:\n                mode: { type: string, enum: [FAST, SAFE] }\n                file: { type: string, format: binary }\n      responses:\n        '204': { description: Created }\n",
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("multipart client is generated");
+    assert!(
+        raw.contains("mode: CreateWidgetRequestMode"),
+        "multipart enum should use its coined type: {raw}"
+    );
+    assert!(out
+        .join("src/acme/widgets/types/create_widget_request_mode.py")
+        .is_file());
+}
+
+#[test]
 fn top_level_inline_response_array_items_hoist_through_the_cli() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    get:\n      operationId: listWidgets\n      tags: [widgets]\n      responses:\n        '200':\n          description: Found\n          content:\n            application/json:\n              schema:\n                type: array\n                items:\n                  type: object\n                  required: [id]\n                  properties:\n                    id: { type: integer }\n",

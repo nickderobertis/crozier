@@ -1869,7 +1869,7 @@ fn resolve_request_body(
                 .and_then(|r| resolve_ref(doc, r))
                 .unwrap_or(schema);
             return Some(RequestBody::Form(FormBody {
-                fields: hoist_form_object(obj),
+                fields: hoist_form_object(obj, hoister, request_ctx),
                 multipart,
             }));
         }
@@ -2279,7 +2279,11 @@ impl InlineHoister<'_> {
 /// Hoist a form body's properties into [`BodyField`]s, marking `format: binary`
 /// fields as file uploads. Unlike a JSON object body these carry no convert
 /// wrapper (they serialize into `data=`/`files=`, not `json=`).
-fn hoist_form_object(schema: &Schema) -> Vec<BodyField> {
+fn hoist_form_object(
+    schema: &Schema,
+    hoister: &mut InlineHoister,
+    request_ctx: &str,
+) -> Vec<BodyField> {
     let required: Vec<&str> = schema.required.iter().map(String::as_str).collect();
     schema
         .properties
@@ -2291,7 +2295,11 @@ fn hoist_form_object(schema: &Schema) -> Vec<BodyField> {
             BodyField {
                 wire_name: prop.clone(),
                 py_name: naming::field_name(prop),
-                type_ref: base_type_ref(prop_schema),
+                type_ref: if is_file {
+                    base_type_ref(prop_schema)
+                } else {
+                    hoister.prop_type_ref(request_ctx, prop, prop_schema)
+                },
                 optional: is_optional(prop_schema) || !spec_required,
                 nullable: is_optional(prop_schema),
                 spec_required,
