@@ -3667,7 +3667,8 @@ impl Builder<'_> {
                 py_name: naming::model_field_name(prop),
                 type_ref: self.field_type_ref(owner, prop, prop_schema),
                 optional,
-                nullable: is_optional(prop_schema),
+                nullable: is_optional(prop_schema)
+                    && (prop_schema.reference.is_none() || prop_schema.read_only == Some(true)),
                 spec_required,
                 docstring: declared_doc(prop_schema.description.as_deref()),
                 example: schema_example(prop_schema)
