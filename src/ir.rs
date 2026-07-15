@@ -4652,12 +4652,13 @@ fn example_literal(value: &serde_json::Value) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::{
-        auth_model, base_type_ref, build_endpoint, build_enum, environment_model, int_prim,
-        method_from_grouped_id, module_from_grouped_id, module_identifier, oauth_scope_enum,
+        auth_model, base_type_ref, build_endpoint, build_enum, endpoint_module, environment_model,
+        extensible_enum, full_type_ref_resolved, int_prim, method_from_grouped_id,
+        module_from_grouped_id, module_identifier, oauth_scope_enum, optional_type_ref, path_group,
         ref_to_class, request_and_response_refs_match, request_schema_use_count,
-        resolve_schema_pointer, response_schema, scalar_body, singularize, success_response_entry,
-        synthesized_method_name, title_from_tag, variant_class_name, Auth, Builder, InlineHoister,
-        Prim, TypeDecl, TypeRef,
+        resolve_request_body, resolve_schema_pointer, response_schema, scalar_body, singularize,
+        success_response_entry, synthesized_method_name, title_from_tag, variant_class_name, Auth,
+        Builder, InlineHoister, Prim, RequestBody, TypeDecl, TypeRef,
     };
     use crate::openapi::{OpenApi, Operation, Response, Schema, TypeField};
 
@@ -5682,5 +5683,522 @@ mod tests {
         // Words ending in `ss` and already-singular nouns pass through.
         assert_eq!(singularize("address"), "address");
         assert_eq!(singularize("widget"), "widget");
+    }
+
+    #[test]
+    fn request_body_resolution_handles_referenced_arrays_bare_objects_and_wildcards() {
+        let doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "components": { "schemas": {
+                "Names": { "type": "array", "items": { "type": "string" } },
+                "OpenBag": { "type": "object" }
+            } }
+        }))
+        .expect("components deserialize");
+        let types = Vec::new();
+
+        let referenced_array: crate::openapi::RequestBody =
+            serde_json::from_value(serde_json::json!({
+                "required": false,
+                "content": { "application/json": {
+                    "schema": { "$ref": "#/components/schemas/Names" }
+                } }
+            }))
+            .expect("request body deserializes");
+        let mut hoister = InlineHoister {
+            root_types: &types,
+            out: Vec::new(),
+        };
+        let RequestBody::Single(array) = resolve_request_body(
+            &doc,
+            &types,
+            &referenced_array,
+            &mut hoister,
+            "ListNamesRequest",
+        )
+        .expect("referenced array is supported") else {
+            panic!("referenced array should be a single request argument")
+        };
+        assert_eq!(array.type_ref, TypeRef::Named("Names".to_string()));
+        assert!(!array.required);
+        assert!(!array.convert);
+        assert!(!array.content_type);
+
+        let vendor_bag: crate::openapi::RequestBody = serde_json::from_value(serde_json::json!({
+            "required": false,
+            "content": { "application/vnd.acme+json": {
+                "schema": { "$ref": "#/components/schemas/OpenBag" }
+            } }
+        }))
+        .expect("request body deserializes");
+        let RequestBody::Single(bag) =
+            resolve_request_body(&doc, &types, &vendor_bag, &mut hoister, "PutBagRequest")
+                .expect("bare object is supported")
+        else {
+            panic!("bare object should be a single request argument")
+        };
+        assert_eq!(bag.type_ref, TypeRef::Named("OpenBag".to_string()));
+        assert_eq!(
+            bag.content_type_override.as_deref(),
+            Some("application/vnd.acme+json")
+        );
+        assert!(bag.content_type);
+
+        let wildcard_binary: crate::openapi::RequestBody =
+            serde_json::from_value(serde_json::json!({
+                "required": false,
+                "content": { "*/*": {
+                    "schema": { "type": "string", "format": "binary", "example": "blob.bin" }
+                } }
+            }))
+            .expect("request body deserializes");
+        let RequestBody::Single(binary) = resolve_request_body(
+            &doc,
+            &types,
+            &wildcard_binary,
+            &mut hoister,
+            "UploadRequest",
+        )
+        .expect("wildcard binary is supported") else {
+            panic!("wildcard binary should be a single request argument")
+        };
+        assert_eq!(binary.type_ref, TypeRef::Primitive(Prim::Str));
+        assert!(binary.required);
+        assert_eq!(binary.content_type_override.as_deref(), Some("*/*"));
+        assert_eq!(binary.example.as_deref(), Some("\"blob.bin\""));
+    }
+
+    #[test]
+    fn inline_hoister_builds_response_items_allof_objects_and_union_variants() {
+        let mut hoister = InlineHoister {
+            root_types: &[],
+            out: Vec::new(),
+        };
+        assert!(hoister
+            .hoist_response_array_item_object(
+                "ResultItem",
+                &schema(serde_json::json!({ "type": "string" })),
+            )
+            .is_none());
+        assert!(hoister
+            .hoist_response_array_item_object(
+                "ResultItem",
+                &schema(serde_json::json!({ "type": "array" })),
+            )
+            .is_none());
+
+        let response = schema(serde_json::json!({
+            "type": "array",
+            "items": {
+                "type": "object",
+                "description": "A result.",
+                "required": ["id", "label"],
+                "allOf": [
+                    { "$ref": "#/components/schemas/Base" },
+                    { "type": "object", "properties": { "id": { "type": "integer" } } }
+                ],
+                "properties": { "label": { "type": "string" } }
+            }
+        }));
+        assert_eq!(
+            hoister.hoist_response_array_item_object("ResultItem", &response),
+            Some(TypeRef::List(Box::new(TypeRef::Named(
+                "ResultItem".to_string()
+            ))))
+        );
+        let result = hoister
+            .out
+            .iter()
+            .find_map(|decl| match decl {
+                TypeDecl::Object(object) if object.name == "ResultItem" => Some(object),
+                _ => None,
+            })
+            .expect("response item object was hoisted");
+        assert_eq!(result.bases, ["Base"]);
+        assert_eq!(
+            result
+                .fields
+                .iter()
+                .map(|field| field.wire_name.as_str())
+                .collect::<Vec<_>>(),
+            ["id", "label"]
+        );
+        assert!(result.fields.iter().all(|field| field.spec_required));
+
+        let referenced = schema(serde_json::json!({ "$ref": "#/components/schemas/Base" }));
+        assert_eq!(
+            hoister.hoist_union_variant("Choice", 0, &referenced, &[]),
+            TypeRef::Named("Base".to_string())
+        );
+        let bare_with_instance = schema(serde_json::json!({
+            "type": "object",
+            "example": { "value": "sample" }
+        }));
+        assert_eq!(
+            hoister.hoist_union_variant(
+                "Choice",
+                1,
+                &bare_with_instance,
+                std::slice::from_ref(&bare_with_instance),
+            ),
+            TypeRef::Named("ChoiceOne".to_string())
+        );
+        assert_eq!(
+            hoister.hoist_union_variant(
+                "Choice",
+                2,
+                &schema(serde_json::json!({ "type": "boolean" })),
+                &[],
+            ),
+            TypeRef::Primitive(Prim::Bool)
+        );
+    }
+
+    #[test]
+    fn builder_handles_discriminated_set_items_and_flattens_overlapping_bases() {
+        let schemas = indexmap::IndexMap::new();
+        let mut builder = Builder {
+            types: Vec::new(),
+            schemas: &schemas,
+            strip_discriminant: std::collections::HashMap::new(),
+            building_types: std::collections::HashSet::new(),
+        };
+        let events = schema(serde_json::json!({
+            "type": ["array", "null"],
+            "uniqueItems": true,
+            "items": {
+                "oneOf": [
+                    { "type": "object", "required": ["kind", "value"], "properties": {
+                        "kind": { "type": "string", "enum": ["created"] },
+                        "value": { "type": "integer" }
+                    } },
+                    { "type": "object", "required": ["kind", "reason"], "properties": {
+                        "kind": { "type": "string", "enum": ["deleted"] },
+                        "reason": { "type": "string" }
+                    } }
+                ]
+            }
+        }));
+        builder.add_named("Events", &events);
+        assert!(builder.types.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::DiscriminatedUnion(union)
+                if union.name == "EventsItem" && union.members.len() == 2
+        )));
+        assert!(builder.types.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::Alias(alias)
+                if alias.name == "Events"
+                    && matches!(&alias.target,
+                        TypeRef::Optional(inner)
+                            if matches!(inner.as_ref(), TypeRef::Set(item)
+                                if matches!(item.as_ref(), TypeRef::Named(name) if name == "EventsItem")))
+        )));
+
+        let doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "components": { "schemas": {
+                "Base": {
+                    "type": "object",
+                    "required": ["shared", "inherited"],
+                    "properties": {
+                        "shared": { "type": "string", "description": "Inherited docs." },
+                        "inherited": { "type": "integer" }
+                    }
+                },
+                "Child": {
+                    "allOf": [
+                        { "$ref": "#/components/schemas/Base" },
+                        { "type": "object", "required": ["shared"], "properties": {
+                            "shared": { "type": "string" }
+                        } }
+                    ]
+                }
+            } }
+        }))
+        .expect("components deserialize");
+        let mut flattening = Builder {
+            types: Vec::new(),
+            schemas: &doc.components.schemas,
+            strip_discriminant: std::collections::HashMap::new(),
+            building_types: std::collections::HashSet::new(),
+        };
+        flattening.add_named("Child", &doc.components.schemas["Child"]);
+        let child = flattening
+            .types
+            .iter()
+            .find_map(|decl| match decl {
+                TypeDecl::Object(object) if object.name == "Child" => Some(object),
+                _ => None,
+            })
+            .expect("child object emitted");
+        assert!(child.bases.is_empty());
+        assert_eq!(
+            child
+                .fields
+                .iter()
+                .map(|field| field.wire_name.as_str())
+                .collect::<Vec<_>>(),
+            ["shared", "inherited"]
+        );
+        assert_eq!(
+            child.fields[0].docstring.as_deref(),
+            Some("Inherited docs.")
+        );
+
+        flattening.building_types.insert("Loop".to_string());
+        flattening.add_object(
+            "Loop",
+            "loop".to_string(),
+            &schema(serde_json::json!({ "type": "object" })),
+            None,
+        );
+        assert!(!flattening.types.iter().any(|decl| decl.name() == "Loop"));
+    }
+
+    #[test]
+    fn field_type_resolution_handles_metadata_nullable_components_and_array_models() {
+        let doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "components": { "schemas": {
+                "NullableName": { "type": "string", "nullable": true }
+            } }
+        }))
+        .expect("components deserialize");
+        let mut builder = Builder {
+            types: Vec::new(),
+            schemas: &doc.components.schemas,
+            strip_discriminant: std::collections::HashMap::new(),
+            building_types: std::collections::HashSet::new(),
+        };
+        assert_eq!(
+            builder.field_type_ref("Record", "metadata", &Schema::default()),
+            TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)))
+        );
+
+        let nullable_refs = schema(serde_json::json!({
+            "type": "array",
+            "uniqueItems": true,
+            "items": { "$ref": "#/components/schemas/NullableName" }
+        }));
+        assert_eq!(
+            builder.field_type_ref("Record", "names", &nullable_refs),
+            TypeRef::Set(Box::new(TypeRef::Optional(Box::new(TypeRef::Named(
+                "NullableName".to_string()
+            )))))
+        );
+
+        let inline_items = schema(serde_json::json!({
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+                "type": "object",
+                "nullable": true,
+                "properties": { "id": { "type": "string" } }
+            }
+        }));
+        assert_eq!(
+            builder.field_type_ref("Record", "entries", &inline_items),
+            TypeRef::Set(Box::new(TypeRef::Optional(Box::new(TypeRef::Named(
+                "RecordEntriesItem".to_string()
+            )))))
+        );
+
+        let union_items = schema(serde_json::json!({
+            "type": "array",
+            "items": {
+                "oneOf": [
+                    { "type": "object", "required": ["kind"], "properties": {
+                        "kind": { "type": "string", "enum": ["one"] }
+                    } },
+                    { "type": "object", "required": ["kind"], "properties": {
+                        "kind": { "type": "string", "enum": ["two"] }
+                    } }
+                ]
+            }
+        }));
+        assert_eq!(
+            builder.field_type_ref("Record", "events", &union_items),
+            TypeRef::List(Box::new(TypeRef::Named("RecordEventsItem".to_string())))
+        );
+        assert!(builder.types.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::DiscriminatedUnion(union) if union.name == "RecordEventsItem"
+        )));
+    }
+
+    #[test]
+    fn type_resolution_edges_preserve_optional_union_order_and_ref_nullability() {
+        assert_eq!(
+            extensible_enum(vec!["a".to_string(), "b".to_string()]),
+            TypeRef::Union(vec![
+                TypeRef::Literal(vec!["a".to_string(), "b".to_string()]),
+                TypeRef::Primitive(Prim::Any),
+            ])
+        );
+        let already_optional = TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Str)));
+        assert_eq!(
+            optional_type_ref(already_optional.clone()),
+            already_optional
+        );
+        assert_eq!(
+            optional_type_ref(TypeRef::Union(vec![
+                TypeRef::Primitive(Prim::Str),
+                TypeRef::Primitive(Prim::Int),
+            ])),
+            TypeRef::Union(vec![
+                TypeRef::Primitive(Prim::Str),
+                TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Int))),
+            ])
+        );
+
+        let doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "components": { "schemas": {
+                "Nullable": { "type": "string", "nullable": true },
+                "Middle": { "$ref": "#/components/schemas/Nullable" },
+                "CycleA": { "$ref": "#/components/schemas/CycleB" },
+                "CycleB": { "$ref": "#/components/schemas/CycleA" }
+            } }
+        }))
+        .expect("components deserialize");
+        assert_eq!(
+            full_type_ref_resolved(
+                &schema(serde_json::json!({ "$ref": "#/components/schemas/Middle" })),
+                &doc.components.schemas,
+            ),
+            TypeRef::Optional(Box::new(TypeRef::Named("Middle".to_string())))
+        );
+        assert_eq!(
+            full_type_ref_resolved(
+                &schema(serde_json::json!({ "$ref": "#/components/schemas/CycleA" })),
+                &doc.components.schemas,
+            ),
+            TypeRef::Named("CycleA".to_string())
+        );
+        assert_eq!(
+            full_type_ref_resolved(
+                &schema(serde_json::json!({ "$ref": "#/components/schemas/Missing" })),
+                &doc.components.schemas,
+            ),
+            TypeRef::Named("Missing".to_string())
+        );
+
+        assert_eq!(
+            base_type_ref(&schema(
+                serde_json::json!({ "$ref": "external.json#/Thing" })
+            )),
+            TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)))
+        );
+        assert_eq!(
+            base_type_ref(&schema(serde_json::json!({
+                "allOf": [{ "$ref": "#/components/schemas/Nullable" }]
+            }))),
+            TypeRef::Named("Nullable".to_string())
+        );
+        assert_eq!(
+            base_type_ref(&schema(serde_json::json!({ "type": "array" }))),
+            TypeRef::List(Box::new(TypeRef::Optional(Box::new(TypeRef::Primitive(
+                Prim::Any
+            )))))
+        );
+        assert_eq!(
+            base_type_ref(&schema(serde_json::json!({
+                "type": "object", "additionalProperties": true
+            }))),
+            TypeRef::Dict(
+                Box::new(TypeRef::Primitive(Prim::Str)),
+                Box::new(TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any))))
+            )
+        );
+
+        assert_eq!(super::clean_doc(Some("  docs  ")), Some("docs".to_string()));
+        assert_eq!(super::clean_doc(Some(" \n")), None);
+        assert_eq!(super::operation_doc(Some(" \n")), Some(String::new()));
+        assert_eq!(super::operation_doc(None), None);
+        assert_eq!(
+            super::declared_doc(Some("keeps spaces  \n\n")),
+            Some("keeps spaces  ".to_string())
+        );
+        assert_eq!(
+            super::example_literal(&serde_json::json!("a \"quote\"")),
+            Some("'a \"quote\"'".to_string())
+        );
+        assert_eq!(
+            super::example_literal(&serde_json::json!([1, true, "x"])),
+            Some("[1, True, \"x\"]".to_string())
+        );
+        assert_eq!(
+            super::example_literal(&serde_json::json!({ "x": null })),
+            None
+        );
+    }
+
+    #[test]
+    fn endpoint_grouping_and_fallback_names_cover_head_dotted_and_path_routes() {
+        assert_eq!(
+            synthesized_method_name("HEAD", "/widgets/{widget_id}/status"),
+            "head_widgets_widget_id_status"
+        );
+        assert_eq!(synthesized_method_name("OPTIONS", "/{id}"), "call");
+        assert_eq!(path_group("/{tenant}/{id}"), "service");
+        assert_eq!(path_group("/{tenant}/WidgetGroups/{id}"), "WidgetGroups");
+
+        assert_eq!(
+            endpoint_module(
+                &operation(serde_json::json!({
+                    "operationId": ".status",
+                    "tags": ["Ignored"]
+                })),
+                "/status"
+            ),
+            "_"
+        );
+        assert_eq!(
+            endpoint_module(
+                &operation(serde_json::json!({
+                    "operationId": "GroupV2.GetGroup",
+                    "tags": ["GroupV2"]
+                })),
+                "/groups"
+            ),
+            "groupv2"
+        );
+        assert_eq!(
+            endpoint_module(
+                &operation(serde_json::json!({
+                    "operationId": "admin-users.get",
+                    "tags": []
+                })),
+                "/users"
+            ),
+            "admin_users"
+        );
+        assert_eq!(
+            endpoint_module(
+                &operation(serde_json::json!({
+                    "operationId": "Widgets_get_by_id_now",
+                    "tags": ["Widgets"]
+                })),
+                "/widgets/{id}"
+            ),
+            "widgets"
+        );
+        assert_eq!(
+            endpoint_module(
+                &operation(serde_json::json!({
+                    "operationId": "CREATE_AttachmentPublic",
+                    "tags": ["attachment-public"]
+                })),
+                "/attachments"
+            ),
+            "attachment_public"
+        );
+        assert_eq!(
+            endpoint_module(
+                &operation(serde_json::json!({
+                    "operationId": "searchWidgets",
+                    "tags": ["Search"]
+                })),
+                "/widgets"
+            ),
+            "search"
+        );
     }
 }
