@@ -97,7 +97,7 @@ impl GenerateConfig {
 
 /// Derive a fallback package name from the API title.
 fn default_package_name(title: &str) -> String {
-    let snake = crate::naming::to_snake_case(title);
+    let snake = crate::naming::prose_identifier(title);
     if snake.is_empty() {
         "client".to_string()
     } else {

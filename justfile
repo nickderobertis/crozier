@@ -103,6 +103,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_ecosystem_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_customer_support_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_lead_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apache_org_airflow_matches_fern_output
 
 # Format the codebase in place.
 format:
