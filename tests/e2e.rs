@@ -6417,6 +6417,48 @@ const AIRBYTE_CONFIG: Corpus = Corpus {
     ],
 };
 
+const CORPORA: &[&Corpus] = &[
+    &QUERY_PARAMETERS,
+    &EXHAUSTIVE,
+    &APIDECK_CRM,
+    &BUNQ,
+    &BUNGIE,
+    &ANCHORE,
+    &APACHE_AIRFLOW,
+    &DISCOURSE,
+    &APPWRITE_SERVER,
+    &APICURIO,
+    &GAMBITCOMM_MIMIC,
+    &DND5EAPI,
+    &APACHE_QAKKA,
+    &AUTHENTIQIO,
+    &ETSI_MEC010_2,
+    &APIDECK_WEBHOOK,
+    &APIDECK_VAULT,
+    &AIRBYTE_CONFIG,
+];
+
+#[test]
+fn every_matched_entry_exists_in_its_own_golden() {
+    // Single source of truth: iterate the CORPORA registry directly and identify each
+    // corpus by its unique `api` (which maps 1:1 to a `const _: Corpus`), so there is no
+    // parallel name array to drift out of sync with it.
+    let mut violations = Vec::new();
+    for corpus in CORPORA {
+        let expected = fixture_dir(corpus.api).join("expected");
+        for relative in corpus.matched {
+            if !expected.join(relative).is_file() {
+                violations.push(format!("{} -> {relative}", corpus.api));
+            }
+        }
+    }
+    assert!(
+        violations.is_empty(),
+        "matched entries missing from their corpus golden:\n{}",
+        violations.join("\n")
+    );
+}
+
 #[test]
 fn bunq_matches_fern_output() {
     // `link-ok` like apideck: the spec is fetched (not vendored), so this **skips**
