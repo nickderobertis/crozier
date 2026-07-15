@@ -4266,3 +4266,30 @@ paths:
     assert!(raw.contains("def fetch_thing("), "{raw}");
     assert!(client.contains("def fetch_thing("), "{client}");
 }
+
+#[test]
+fn readme_marks_bodyless_dictionary_get_as_complex() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: Dictionary Readme, version: 1.0.0 }
+paths:
+  /settings:
+    get:
+      operationId: settings
+      responses:
+        '200':
+          description: Settings
+          content:
+            application/json:
+              schema: { type: object, additionalProperties: true }
+"#,
+    );
+    let readme = &files["README.md"];
+    assert!(
+        readme
+            .matches("client.settings(..., request_options={")
+            .count()
+            >= 2,
+        "{readme}"
+    );
+}

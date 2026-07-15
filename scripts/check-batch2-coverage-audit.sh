@@ -8,9 +8,9 @@ audit=docs/batch2-coverage-audit.md
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 
-for file in emit ir openapi naming; do
-    test_start=$(rg -n '^#\[cfg\(test\)\]' "src/$file.rs" | head -n1 | cut -d: -f1)
-    git diff --unified=0 origin/main..HEAD -- "src/$file.rs" | awk -v file="src/$file.rs" -v test_start="$test_start" '
+extract_constructs() {
+    local file=$1 test_start=$2
+    awk -v file="$file" -v test_start="$test_start" '
         /^@@/ {
             if (match($0, /\+[0-9]+/)) line = substr($0, RSTART + 1, RLENGTH - 1) + 0
             next
@@ -19,8 +19,9 @@ for file in emit ir openapi naming; do
         /^\+/ {
             text = substr($0, 2)
             control = text ~ /^[[:space:]]*(if|else([[:space:]]+if)?|match|for|while|loop|return|break|continue)[[:space:]({]/ \
-                || text ~ /^[[:space:]]*(pub[[:space:]]+)?fn[[:space:]]/ \
-                || text ~ /\.(or_else|and_then|is_some_and|filter|find|find_map|map_or_else|then|then_some)\(/ \
+                || text ~ /^[[:space:]]*(pub(\([^)]*\))?[[:space:]]+)?(async[[:space:]]+)?(const[[:space:]]+)?(unsafe[[:space:]]+)?fn[[:space:]]/ \
+                || text ~ /\.(or_else|and_then|is_some_and|filter|find|find_map|flat_map|map|map_or|map_or_else|any|all|then|then_some)\(/ \
+                || text ~ /\|[^|]*\|/ \
                 || text ~ /=>/ \
                 || text ~ /\?([,;.)]|$)/
             if (line < test_start && control) print file ":" line
@@ -28,21 +29,104 @@ for file in emit ir openapi naming; do
             next
         }
         /^ / { line++ }
-    ' >> "$tmp/constructs"
+    '
+}
+
+extract_inventory_lines() {
+    awk '
+        /^## (emit|ir|openapi|naming)\.rs$/ { file="src/" substr($2, 1, length($2)); next }
+        file != "" && /^\| [0-9]/ {
+            cell=$0; sub(/^\| /, "", cell); sub(/ \|.*$/, "", cell)
+            while (match(cell, /[0-9]+(-[0-9]+)?/)) {
+                token=substr(cell, RSTART, RLENGTH); cell=substr(cell, RSTART + RLENGTH)
+                split(token, bounds, "-"); start=bounds[1]+0; finish=(bounds[2] == "" ? start : bounds[2]+0)
+                for (line=start; line<=finish; line++) print file ":" line
+            }
+        }
+    '
+}
+
+mappings_are_exact() {
+    local constructs=$1 inventory=$2 construct count
+    while IFS= read -r construct; do
+        count=$(grep -cFx "$construct" "$inventory" || true)
+        [[ $count -eq 1 ]] || return 1
+    done < "$constructs"
+}
+
+if [[ ${1:-} == --self-test ]]; then
+    synthetic='@@ -0,0 +10,14 @@
++fn multiline(value: Option<u8>) -> Option<u8> {
++    if value
++        .is_some_and(
++            |item| item > 0,
++        )
++    {
++        return value.and_then(
++            |item| Some(item + 1),
++        );
++    }
++    match value {
++        Some(item) => Some(item),
++        None => None,
++    }
++}'
+    actual=$(printf '%s\n' "$synthetic" | extract_constructs src/sample.rs 999)
+    expected='src/sample.rs:10
+src/sample.rs:11
+src/sample.rs:12
+src/sample.rs:13
+src/sample.rs:16
+src/sample.rs:17
+src/sample.rs:20
+src/sample.rs:21
+src/sample.rs:22'
+    [[ $actual == "$expected" ]] || {
+        printf 'multiline extraction mismatch\nexpected:\n%s\nactual:\n%s\n' "$expected" "$actual" >&2
+        exit 1
+    }
+    synthetic_audit='## emit.rs
+| Production lines and selection | Class | Test and assertion | Why distinctive |
+|---|---|---|---|
+| 10-11: valid group | P | `measured`, 20 | assertion |
+| 11: duplicate mapping | P | `measured`, 20 | assertion |
+
+## ir.rs
+| Production lines and selection | Class | Test and assertion | Why distinctive |
+|---|---|---|---|
+| 30: orphan mapping | P | `measured`, 20 | assertion |'
+    printf '%s\n' "$synthetic_audit" | extract_inventory_lines > "$tmp/synthetic-inventory"
+    printf '%s\n' src/emit.rs:10 src/emit.rs:11 src/emit.rs:12 > "$tmp/synthetic-constructs"
+    [[ $(grep -c '^src/emit.rs:10$' "$tmp/synthetic-inventory") -eq 1 ]]
+    [[ $(grep -c '^src/emit.rs:11$' "$tmp/synthetic-inventory") -eq 2 ]]
+    ! grep -q '^src/emit.rs:12$' "$tmp/synthetic-inventory"
+    grep -qx 'src/ir.rs:30' "$tmp/synthetic-inventory"
+    ! mappings_are_exact "$tmp/synthetic-constructs" "$tmp/synthetic-inventory"
+    echo "batch2 coverage audit checker self-tests: ok"
+    exit 0
+fi
+
+for file in emit ir openapi naming; do
+    test_start=$(rg -n '^#\[cfg\(test\)\]' "src/$file.rs" | head -n1 | cut -d: -f1)
+    git diff --unified=0 origin/main..HEAD -- "src/$file.rs" \
+        | extract_constructs "src/$file.rs" "$test_start" >> "$tmp/constructs"
 done
 sort -u "$tmp/constructs" -o "$tmp/constructs"
 
-awk '
-    /^## (emit|ir|openapi|naming)\.rs$/ { file="src/" substr($2, 1, length($2)); next }
-    file != "" && /^\| [0-9]/ {
-        cell=$0; sub(/^\| /, "", cell); sub(/ \|.*$/, "", cell)
-        while (match(cell, /[0-9]+(-[0-9]+)?/)) {
-            token=substr(cell, RSTART, RLENGTH); cell=substr(cell, RSTART + RLENGTH)
-            split(token, bounds, "-"); start=bounds[1]+0; finish=(bounds[2] == "" ? start : bounds[2]+0)
-            for (line=start; line<=finish; line++) print file ":" line
-        }
-    }
-' "$audit" | sort -u > "$tmp/inventory-lines"
+extract_inventory_lines < "$audit" > "$tmp/inventory-lines-raw"
+sort -u "$tmp/inventory-lines-raw" > "$tmp/inventory-lines"
+
+mappings_are_exact "$tmp/constructs" "$tmp/inventory-lines-raw" || {
+    echo "one or more constructs do not map to exactly one inventory entry" >&2
+    exit 1
+}
+while IFS= read -r construct; do
+    count=$(grep -cFx "$construct" "$tmp/inventory-lines-raw" || true)
+    if [[ $count -ne 1 ]]; then
+        echo "construct must map to exactly one inventory entry ($count found): $construct" >&2
+        exit 1
+    fi
+done < "$tmp/constructs"
 
 comm -23 "$tmp/constructs" "$tmp/inventory-lines" > "$tmp/missing"
 if [[ -s "$tmp/missing" ]]; then
@@ -61,7 +145,7 @@ if rg -n '`[^`]*e2e[^`]*`|tests/e2e\.rs' "$audit"; then
     exit 1
 fi
 
-rg -o '^[[:space:]]*fn [A-Za-z_][A-Za-z0-9_]*\(\)' src tests \
+rg -o '^[[:space:]]*fn [A-Za-z_][A-Za-z0-9_]*\(\)' src tests/generation.rs tests/cli.rs \
     | sed -E 's/.*fn ([A-Za-z_][A-Za-z0-9_]*)\(\)/\1/' \
     | sort -u > "$tmp/tests"
 while IFS= read -r row; do
@@ -79,6 +163,17 @@ while IFS= read -r row; do
         exit 1
     fi
     found=false
+    mapfile -t cited_tests < <(printf '%s\n' "$evidence" \
+        | rg -o '`([A-Za-z_][A-Za-z0-9_]*::)*[A-Za-z_][A-Za-z0-9_]*`' \
+        | tr -d '`' \
+        | sed 's/.*:://' \
+        | grep -Fxf "$tmp/tests" || true)
+    mapfile -t cited_ranges < <(printf '%s\n' "$evidence" \
+        | rg -o '(src/(emit|ir|openapi|naming)\.rs:)?[0-9]+(-[0-9]+)?')
+    if [[ ${#cited_tests[@]} -ne ${#cited_ranges[@]} ]]; then
+        echo "audit evidence must pair each measured test with one assertion range: $row" >&2
+        exit 1
+    fi
     while IFS= read -r token; do
         if grep -qx "$token" "$tmp/tests"; then
             found=true
@@ -93,7 +188,9 @@ while IFS= read -r row; do
         exit 1
     fi
     ranges=0
-    while IFS= read -r reference; do
+    for index in "${!cited_ranges[@]}"; do
+        reference=${cited_ranges[$index]}
+        test=${cited_tests[$index]}
         ranges=$((ranges + 1))
         if [[ $reference == src/* ]]; then
             file=${reference%%:*}
@@ -105,12 +202,26 @@ while IFS= read -r row; do
         start=${span%-*}
         finish=${span#*-}
         [[ $finish == "$span" ]] && finish=$start
+        file_lines=$(wc -l < "$file")
+        if [[ $start -lt 1 || $finish -lt $start || $finish -gt $file_lines ]]; then
+            echo "audit evidence range is outside file bounds: $file:$span" >&2
+            exit 1
+        fi
         if ! sed -n "${start},${finish}p" "$file" | rg -q 'assert|expect_err|panic!'; then
             echo "audit evidence range contains no assertion: $file:$span" >&2
             exit 1
         fi
-    done < <(printf '%s\n' "$evidence" \
-        | rg -o '(src/(emit|ir|openapi|naming)\.rs:)?[0-9]+(-[0-9]+)?')
+        test_line=$(rg -n "^[[:space:]]*fn ${test}\(\)" "$file" | head -n1 | cut -d: -f1)
+        if [[ -z $test_line || $start -lt $test_line ]]; then
+            echo "assertion range is not inside cited test $test: $file:$span" >&2
+            exit 1
+        fi
+        next_test=$(awk -v start="$test_line" 'NR > start && /^[[:space:]]*fn [A-Za-z_][A-Za-z0-9_]*\(\)/ { print NR; exit }' "$file")
+        if [[ -n $next_test && $finish -ge $next_test ]]; then
+            echo "assertion range crosses out of cited test $test: $file:$span" >&2
+            exit 1
+        fi
+    done
     if [[ $ranges -eq 0 ]]; then
         echo "audit row has no assertion range: $row" >&2
         exit 1
