@@ -4302,10 +4302,12 @@ fn example_literal(value: &serde_json::Value) -> Option<String> {
 mod tests {
     use super::{
         auth_model, base_type_ref, build_endpoint, build_enum, environment_model, int_prim,
-        method_from_grouped_id, module_from_grouped_id, oauth_scope_enum, scalar_body, singularize,
-        synthesized_method_name, title_from_tag, Auth, Prim, TypeDecl, TypeRef,
+        method_from_grouped_id, module_from_grouped_id, oauth_scope_enum,
+        request_and_response_refs_match, request_schema_use_count, resolve_schema_pointer,
+        response_schema, scalar_body, singularize, success_response_entry, synthesized_method_name,
+        title_from_tag, variant_class_name, Auth, Builder, Prim, TypeDecl, TypeRef,
     };
-    use crate::openapi::{OpenApi, Schema, TypeField};
+    use crate::openapi::{OpenApi, Operation, Response, Schema, TypeField};
 
     #[test]
     fn integer_formats_select_distinct_ir_primitives() {
@@ -4799,6 +4801,302 @@ mod tests {
             synthesized_method_name("PUT", "/widgets/{id}"),
             "update_widget"
         );
+    }
+
+    fn operation(value: serde_json::Value) -> Operation {
+        serde_json::from_value(value).expect("operation deserializes")
+    }
+
+    fn schema(value: serde_json::Value) -> Schema {
+        serde_json::from_value(value).expect("schema deserializes")
+    }
+
+    #[test]
+    fn response_helpers_cover_media_precedence_and_empty_successes() {
+        let text = operation(serde_json::json!({
+            "responses": {
+                "200": { "content": { "text/plain": { "schema": { "type": "string" } } } }
+            }
+        }));
+        assert!(super::has_text_response(&text));
+        assert!(!super::has_bodyless_success(&text));
+        assert_eq!(success_response_entry(&text).unwrap().content.len(), 1);
+
+        for media_type in ["application/json", "*/*"] {
+            let mixed = operation(serde_json::json!({
+                "responses": {
+                    "201": { "content": {
+                        "text/plain": { "schema": { "type": "string" } },
+                        media_type: { "schema": { "type": "integer" } }
+                    } }
+                }
+            }));
+            assert!(!super::has_text_response(&mixed));
+            assert!(!super::has_bodyless_success(&mixed));
+        }
+
+        let bodyless = operation(serde_json::json!({
+            "responses": {
+                "199": { "content": {} },
+                "204": { "content": {} },
+                "400": { "content": { "application/json": { "schema": { "type": "string" } } } }
+            }
+        }));
+        assert!(super::has_bodyless_success(&bodyless));
+        assert!(!super::has_text_response(&bodyless));
+
+        let default_only = operation(serde_json::json!({
+            "responses": { "default": { "content": {} } }
+        }));
+        assert!(std::ptr::eq(
+            success_response_entry(&default_only).unwrap(),
+            default_only.responses.get("default").unwrap()
+        ));
+        let none = operation(serde_json::json!({ "responses": { "404": {} } }));
+        assert!(success_response_entry(&none).is_none());
+        assert!(!super::has_bodyless_success(&none));
+    }
+
+    #[test]
+    fn response_schema_checks_each_supported_media_and_missing_schema() {
+        let response = |content: serde_json::Value| -> Response {
+            serde_json::from_value(serde_json::json!({ "content": content }))
+                .expect("response deserializes")
+        };
+        for media_type in ["application/json", "application/jwt", "*/*", "text/csv"] {
+            let response = response(serde_json::json!({
+                media_type: { "schema": { "type": "string", "title": media_type } }
+            }));
+            assert_eq!(
+                response_schema(&response).unwrap().title.as_deref(),
+                Some(media_type)
+            );
+        }
+        let precedence = response(serde_json::json!({
+            "text/csv": { "schema": { "title": "fallback" } },
+            "application/jwt": { "schema": { "title": "jwt" } },
+            "application/json": { "schema": { "title": "json" } }
+        }));
+        assert_eq!(
+            response_schema(&precedence).unwrap().title.as_deref(),
+            Some("json")
+        );
+        assert!(response_schema(&response(serde_json::json!({}))).is_none());
+        assert!(response_schema(&response(serde_json::json!({
+            "application/json": {}
+        })))
+        .is_none());
+    }
+
+    #[test]
+    fn request_reference_helpers_cover_absent_mismatched_and_reused_schemas() {
+        let reference = "#/components/schemas/Input";
+        let doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "paths": {
+                "/one": { "post": {
+                    "requestBody": { "content": { "application/json": {
+                        "schema": { "$ref": reference }
+                    } } },
+                    "responses": { "200": {} }
+                } },
+                "/two": { "put": {
+                    "requestBody": { "content": {
+                        "text/plain": {},
+                        "application/json": { "schema": { "$ref": reference } }
+                    } },
+                    "responses": { "200": {} }
+                } },
+                "/other": { "post": {
+                    "requestBody": { "content": { "application/json": {
+                        "schema": { "$ref": "#/components/schemas/Other" }
+                    } } },
+                    "responses": { "200": {} }
+                } },
+                "/empty": { "post": { "responses": { "204": {} } } }
+            }
+        }))
+        .expect("document deserializes");
+        assert_eq!(request_schema_use_count(&doc, reference), 2);
+        assert_eq!(
+            request_schema_use_count(&doc, "#/components/schemas/Missing"),
+            0
+        );
+
+        let matching = operation(serde_json::json!({
+            "requestBody": { "content": { "application/json": {
+                "schema": { "$ref": reference }
+            } } },
+            "responses": { "200": { "content": { "application/json": {
+                "schema": { "$ref": reference }
+            } } } }
+        }));
+        assert!(request_and_response_refs_match(&matching));
+        let mismatched = operation(serde_json::json!({
+            "requestBody": { "content": { "application/json": {
+                "schema": { "$ref": reference }
+            } } },
+            "responses": { "200": { "content": { "application/json": {
+                "schema": { "$ref": "#/components/schemas/Other" }
+            } } } }
+        }));
+        assert!(!request_and_response_refs_match(&mismatched));
+        assert!(!request_and_response_refs_match(&operation(
+            serde_json::json!({
+                "responses": { "200": {} }
+            })
+        )));
+    }
+
+    #[test]
+    fn schema_pointer_resolution_covers_every_segment_and_failure() {
+        let doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "components": { "schemas": {
+                "Root": {
+                    "allOf": [{ "title": "all" }],
+                    "oneOf": [{ "title": "one" }],
+                    "anyOf": [{ "title": "any" }],
+                    "properties": { "field": { "title": "property" } },
+                    "items": { "title": "item" }
+                },
+                "Plain": { "type": "string" }
+            } }
+        }))
+        .expect("document deserializes");
+        let schemas = &doc.components.schemas;
+        for (suffix, title) in [
+            ("allOf/0", "all"),
+            ("oneOf/0", "one"),
+            ("anyOf/0", "any"),
+            ("properties/field", "property"),
+            ("items", "item"),
+        ] {
+            assert_eq!(
+                resolve_schema_pointer(schemas, &format!("#/components/schemas/Root/{suffix}"))
+                    .unwrap()
+                    .title
+                    .as_deref(),
+                Some(title)
+            );
+        }
+        for reference in [
+            "Root",
+            "#/components/schemas/Root",
+            "#/components/schemas/Missing/items",
+            "#/components/schemas/Root/unknown",
+            "#/components/schemas/Root/allOf",
+            "#/components/schemas/Root/allOf/nope",
+            "#/components/schemas/Root/allOf/9",
+            "#/components/schemas/Root/properties/missing",
+            "#/components/schemas/Root/items/properties/missing",
+            "#/components/schemas/Plain/allOf/0",
+            "#/components/schemas/Plain/oneOf/0",
+            "#/components/schemas/Plain/anyOf/0",
+            "#/components/schemas/Plain/items",
+        ] {
+            assert!(
+                resolve_schema_pointer(schemas, reference).is_none(),
+                "{reference}"
+            );
+        }
+    }
+
+    #[test]
+    fn schema_definition_examples_require_nonempty_schema_shaped_objects() {
+        for value in [
+            serde_json::json!(null),
+            serde_json::json!([]),
+            serde_json::json!({}),
+            serde_json::json!({ "field": "value" }),
+            serde_json::json!({ "field": {} }),
+            serde_json::json!({ "field": { "description": "only metadata" } }),
+            serde_json::json!({ "good": { "type": "string" }, "bad": {} }),
+        ] {
+            assert!(!super::example_is_schema_definition(&value), "{value}");
+        }
+        for keyword in ["type", "$ref", "properties", "allOf", "oneOf", "anyOf"] {
+            let value = serde_json::json!({ "field": { keyword: {} } });
+            assert!(super::example_is_schema_definition(&value), "{keyword}");
+        }
+    }
+
+    #[test]
+    fn variant_names_cover_enum_unique_shared_first_and_ordinal_fallbacks() {
+        let enum_variant = schema(serde_json::json!({
+            "properties": { "kind": { "type": "string", "enum": ["cat"] } }
+        }));
+        assert_eq!(variant_class_name("Pet", 0, &enum_variant, &[]), "PetCat");
+
+        let unique = schema(serde_json::json!({
+            "properties": { "resource_list": { "type": "string" }, "whiskers": { "type": "integer" } }
+        }));
+        let sibling = schema(serde_json::json!({
+            "properties": { "resource_list": { "type": "string" }, "bark": { "type": "boolean" } }
+        }));
+        assert_eq!(
+            variant_class_name("Pet", 0, &unique, &[unique.clone(), sibling]),
+            "PetWhiskers"
+        );
+
+        let shared = schema(serde_json::json!({
+            "properties": { "common": { "type": "string" } }
+        }));
+        assert_eq!(
+            variant_class_name("Pet", 0, &shared, &[shared.clone(), shared.clone()]),
+            "PetCommon"
+        );
+        assert_eq!(
+            variant_class_name("Pet", 1, &Schema::default(), &[]),
+            "PetOne"
+        );
+        let resource_only = schema(serde_json::json!({
+            "properties": { "resource_list": { "type": "string" } }
+        }));
+        assert_eq!(
+            variant_class_name(
+                "Pet",
+                0,
+                &resource_only,
+                &[resource_only.clone(), Schema::default()]
+            ),
+            "PetResourceList"
+        );
+    }
+
+    #[test]
+    fn variant_ref_covers_references_inline_objects_and_scalar_fallback() {
+        let schemas = indexmap::IndexMap::new();
+        let mut builder = Builder {
+            types: Vec::new(),
+            schemas: &schemas,
+            strip_discriminant: std::collections::HashMap::new(),
+            building_types: std::collections::HashSet::new(),
+        };
+        let referenced = schema(serde_json::json!({ "$ref": "#/components/schemas/Pet" }));
+        assert_eq!(
+            builder.variant_ref("Animal", 0, &referenced, &[]),
+            TypeRef::Named("Pet".to_string())
+        );
+        assert!(builder.types.is_empty());
+
+        let inline = schema(serde_json::json!({
+            "description": "A cat.",
+            "properties": { "kind": { "type": "string", "enum": ["cat"] } }
+        }));
+        assert_eq!(
+            builder.variant_ref("Animal", 0, &inline, std::slice::from_ref(&inline)),
+            TypeRef::Named("AnimalCat".to_string())
+        );
+        assert!(builder.types.iter().any(
+            |declaration| matches!(declaration, TypeDecl::Object(object) if object.name == "AnimalCat")
+        ));
+        let emitted = builder.types.len();
+
+        let scalar = schema(serde_json::json!({ "type": "integer", "format": "int64" }));
+        assert_eq!(
+            builder.variant_ref("Animal", 1, &scalar, &[]),
+            TypeRef::Primitive(Prim::Long)
+        );
+        assert_eq!(builder.types.len(), emitted);
     }
 
     #[test]
