@@ -6438,40 +6438,17 @@ const CORPORA: &[&Corpus] = &[
     &AIRBYTE_CONFIG,
 ];
 
-const CORPUS_CONST_NAMES: &[&str] = &[
-    "QUERY_PARAMETERS",
-    "EXHAUSTIVE",
-    "APIDECK_CRM",
-    "BUNQ",
-    "BUNGIE",
-    "ANCHORE",
-    "APACHE_AIRFLOW",
-    "DISCOURSE",
-    "APPWRITE_SERVER",
-    "APICURIO",
-    "GAMBITCOMM_MIMIC",
-    "DND5EAPI",
-    "APACHE_QAKKA",
-    "AUTHENTIQIO",
-    "ETSI_MEC010_2",
-    "APIDECK_WEBHOOK",
-    "APIDECK_VAULT",
-    "AIRBYTE_CONFIG",
-];
-
 #[test]
 fn every_matched_entry_exists_in_its_own_golden() {
-    assert_eq!(
-        CORPORA.len(),
-        CORPUS_CONST_NAMES.len(),
-        "CORPORA and CORPUS_CONST_NAMES must stay aligned"
-    );
+    // Single source of truth: iterate the CORPORA registry directly and identify each
+    // corpus by its unique `api` (which maps 1:1 to a `const _: Corpus`), so there is no
+    // parallel name array to drift out of sync with it.
     let mut violations = Vec::new();
-    for (name, corpus) in CORPUS_CONST_NAMES.iter().zip(CORPORA) {
+    for corpus in CORPORA {
         let expected = fixture_dir(corpus.api).join("expected");
         for relative in corpus.matched {
             if !expected.join(relative).is_file() {
-                violations.push(format!("{name} ({}) -> {relative}", corpus.api));
+                violations.push(format!("{} -> {relative}", corpus.api));
             }
         }
     }
