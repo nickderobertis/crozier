@@ -7942,6 +7942,91 @@ const EOS: Corpus = Corpus {
     ],
 };
 
+const APIDECK_SMS: Corpus = Corpus {
+    api: "apideck.com-sms",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[
+        ".fern/metadata.json",
+        "README.md",
+        "pyproject.toml",
+        "reference.md",
+        "requirements.txt",
+        "src/fern/__init__.py",
+        "src/fern/client.py",
+        "src/fern/core/__init__.py",
+        "src/fern/core/api_error.py",
+        "src/fern/core/client_wrapper.py",
+        "src/fern/core/datetime_utils.py",
+        "src/fern/core/file.py",
+        "src/fern/core/force_multipart.py",
+        "src/fern/core/http_client.py",
+        "src/fern/core/http_response.py",
+        "src/fern/core/http_sse/__init__.py",
+        "src/fern/core/http_sse/_api.py",
+        "src/fern/core/http_sse/_decoders.py",
+        "src/fern/core/http_sse/_exceptions.py",
+        "src/fern/core/http_sse/_models.py",
+        "src/fern/core/jsonable_encoder.py",
+        "src/fern/core/pydantic_utilities.py",
+        "src/fern/core/query_encoder.py",
+        "src/fern/core/remove_none_from_dict.py",
+        "src/fern/core/request_options.py",
+        "src/fern/core/serialization.py",
+        "src/fern/environment.py",
+        "src/fern/errors/__init__.py",
+        "src/fern/errors/bad_request_error.py",
+        "src/fern/errors/not_found_error.py",
+        "src/fern/errors/payment_required_error.py",
+        "src/fern/errors/unauthorized_error.py",
+        "src/fern/errors/unprocessable_entity_error.py",
+        "src/fern/messages/__init__.py",
+        "src/fern/messages/client.py",
+        "src/fern/messages/raw_client.py",
+        "src/fern/py.typed",
+        "src/fern/types/__init__.py",
+        "src/fern/types/bad_request_response.py",
+        "src/fern/types/bad_request_response_detail.py",
+        "src/fern/types/create_message_response.py",
+        "src/fern/types/currency.py",
+        "src/fern/types/custom_field.py",
+        "src/fern/types/custom_field_value.py",
+        "src/fern/types/delete_message_response.py",
+        "src/fern/types/email.py",
+        "src/fern/types/email_type.py",
+        "src/fern/types/get_message_response.py",
+        "src/fern/types/get_messages_response.py",
+        "src/fern/types/links.py",
+        "src/fern/types/message.py",
+        "src/fern/types/message_direction.py",
+        "src/fern/types/message_error.py",
+        "src/fern/types/message_price.py",
+        "src/fern/types/message_status.py",
+        "src/fern/types/message_type.py",
+        "src/fern/types/meta.py",
+        "src/fern/types/meta_cursors.py",
+        "src/fern/types/not_found_response.py",
+        "src/fern/types/not_found_response_detail.py",
+        "src/fern/types/not_implemented_response.py",
+        "src/fern/types/not_implemented_response_detail.py",
+        "src/fern/types/payment_required_response.py",
+        "src/fern/types/tags.py",
+        "src/fern/types/too_many_requests_response.py",
+        "src/fern/types/too_many_requests_response_detail.py",
+        "src/fern/types/unauthorized_response.py",
+        "src/fern/types/unexpected_error_response.py",
+        "src/fern/types/unexpected_error_response_detail.py",
+        "src/fern/types/unified_id.py",
+        "src/fern/types/unprocessable_response.py",
+        "src/fern/types/update_message_response.py",
+        "src/fern/version.py",
+    ],
+};
+
 const CORPORA: &[&Corpus] = &[
     &QUERY_PARAMETERS,
     &EXHAUSTIVE,
@@ -7975,6 +8060,7 @@ const CORPORA: &[&Corpus] = &[
     &APIDECK_ACCOUNTING,
     &CALORIENINJAS,
     &EOS,
+    &APIDECK_SMS,
 ];
 
 #[test]
@@ -8384,6 +8470,18 @@ fn eos_matches_fern_output() {
 }
 
 #[test]
+fn apideck_sms_matches_fern_output() {
+    if corpus_spec(APIDECK_SMS.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the Apideck SMS corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+        );
+        return;
+    }
+    assert_corpus_matches(&APIDECK_SMS);
+}
+
+#[test]
 fn feature_target_specs_generate_without_panicking() {
     // A feature-coverage target with a populated `matched` list is byte-compared
     // file-by-file; one with an empty `matched` list asserts only that crozier
@@ -8452,6 +8550,7 @@ fn report_matched_candidates() {
         &APIDECK_ACCOUNTING,
         &CALORIENINJAS,
         &EOS,
+        &APIDECK_SMS,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
@@ -8591,6 +8690,7 @@ fn report_fixture_diffs() {
         &APIDECK_ACCOUNTING,
         &CALORIENINJAS,
         &EOS,
+        &APIDECK_SMS,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
