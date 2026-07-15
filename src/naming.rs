@@ -69,6 +69,15 @@ pub fn to_snake_case(input: &str) -> String {
     out
 }
 
+/// Convert free-form prose to a legal snake-case Python identifier. Unlike
+/// [`to_snake_case`], this treats every punctuation run as a word boundary, so an
+/// operation summary such as `The /content endpoint` becomes
+/// `the_content_endpoint` rather than retaining the slash.
+#[must_use]
+pub fn prose_identifier(input: &str) -> String {
+    sanitize_identifier(&to_snake_case(&fold_non_identifier(input)))
+}
+
 /// `PascalCase` of an identifier.
 #[must_use]
 pub fn to_pascal_case(input: &str) -> String {
@@ -485,6 +494,10 @@ mod tests {
         assert_eq!(sanitize_identifier("2fa"), "_2fa");
         // Already-legal identifiers pass through unchanged.
         assert_eq!(sanitize_identifier("postwithnoauth"), "postwithnoauth");
+        assert_eq!(
+            prose_identifier("The /content endpoint"),
+            "the_content_endpoint"
+        );
         assert_eq!(
             sanitize_identifier("endpoints_container"),
             "endpoints_container"

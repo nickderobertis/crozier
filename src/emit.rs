@@ -1222,9 +1222,11 @@ fn root_init_file(
 /// abbreviated snippets (versus empty parens). Empirically `...` appears for a
 /// "non-trivial" body: a container body, or an inline object that either carries
 /// an object/union-typed field (one serialized through the convert wrapper, e.g.
-/// `inline`'s `filter`) or has two-or-more fields all required (`gettoken`). A body
-/// of only scalar fields with any optional one (`createaccount`) or a single field
-/// (`create`), or a union/enum/scalar/no body, renders empty parens.
+/// `inline`'s `filter`) or is fully required. Literal inline objects retain the
+/// placeholder even with one field, while a flattened referenced object needs at
+/// least two (`gettoken`). A body of only scalar fields with any optional one
+/// (`createaccount`), a single-field reference (`create`), or a
+/// union/enum/scalar/no body renders empty parens.
 fn complex_body(ep: &Endpoint, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) -> bool {
     if ep.body_all_of
         || (ep.body_schema_ref
@@ -1238,7 +1240,9 @@ fn complex_body(ep: &Endpoint, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) ->
         Some(RequestBody::Bytes { .. }) => true,
         Some(RequestBody::Inline(fields)) => {
             fields.iter().any(|f| f.convert)
-                || (fields.len() >= 2 && fields.iter().all(|f| f.spec_required))
+                || (!fields.is_empty()
+                    && (!ep.body_schema_ref || fields.len() >= 2)
+                    && fields.iter().all(|f| f.spec_required))
         }
         Some(RequestBody::Form(form)) => {
             ep.module.is_empty()

@@ -6584,6 +6584,81 @@ const COLOR_PIZZA: Corpus = Corpus {
     ],
 };
 
+const BYAUTOMATA_IO: Corpus = Corpus {
+    api: "byautomata.io",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[
+        ".fern/metadata.json",
+        "README.md",
+        "pyproject.toml",
+        "reference.md",
+        "requirements.txt",
+        "src/fern/__init__.py",
+        "src/fern/client.py",
+        "src/fern/contentpro_search/__init__.py",
+        "src/fern/contentpro_search/client.py",
+        "src/fern/contentpro_search/raw_client.py",
+        "src/fern/contentpro_search/types/__init__.py",
+        "src/fern/contentpro_search/types/get_contentpro_search_response.py",
+        "src/fern/contentpro_search/types/get_contentpro_search_response_data_item.py",
+        "src/fern/contentpro_similar_text/__init__.py",
+        "src/fern/contentpro_similar_text/client.py",
+        "src/fern/contentpro_similar_text/raw_client.py",
+        "src/fern/contentpro_similar_text/types/__init__.py",
+        "src/fern/contentpro_similar_text/types/post_contentpro_similar_text_response.py",
+        "src/fern/contentpro_similar_text/types/post_contentpro_similar_text_response_data_item.py",
+        "src/fern/core/__init__.py",
+        "src/fern/core/api_error.py",
+        "src/fern/core/client_wrapper.py",
+        "src/fern/core/datetime_utils.py",
+        "src/fern/core/file.py",
+        "src/fern/core/force_multipart.py",
+        "src/fern/core/http_client.py",
+        "src/fern/core/http_response.py",
+        "src/fern/core/http_sse/__init__.py",
+        "src/fern/core/http_sse/_api.py",
+        "src/fern/core/http_sse/_decoders.py",
+        "src/fern/core/http_sse/_exceptions.py",
+        "src/fern/core/http_sse/_models.py",
+        "src/fern/core/jsonable_encoder.py",
+        "src/fern/core/pydantic_utilities.py",
+        "src/fern/core/query_encoder.py",
+        "src/fern/core/remove_none_from_dict.py",
+        "src/fern/core/request_options.py",
+        "src/fern/core/serialization.py",
+        "src/fern/environment.py",
+        "src/fern/errors/__init__.py",
+        "src/fern/errors/bad_request_error.py",
+        "src/fern/errors/forbidden_error.py",
+        "src/fern/errors/not_implemented_error.py",
+        "src/fern/py.typed",
+        "src/fern/search/__init__.py",
+        "src/fern/search/client.py",
+        "src/fern/search/raw_client.py",
+        "src/fern/search/types/__init__.py",
+        "src/fern/search/types/get_search_response.py",
+        "src/fern/similar/__init__.py",
+        "src/fern/similar/client.py",
+        "src/fern/similar/raw_client.py",
+        "src/fern/similar/types/__init__.py",
+        "src/fern/similar/types/get_similar_response.py",
+        "src/fern/types/__init__.py",
+        "src/fern/types/article.py",
+        "src/fern/types/content_pro_company.py",
+        "src/fern/types/content_pro_snippets.py",
+        "src/fern/types/input_company.py",
+        "src/fern/types/similar_company.py",
+        "src/fern/types/similar_company_search.py",
+        "src/fern/types/snippet.py",
+        "src/fern/version.py",
+    ],
+};
+
 const CORPORA: &[&Corpus] = &[
     &QUERY_PARAMETERS,
     &EXHAUSTIVE,
@@ -6606,6 +6681,7 @@ const CORPORA: &[&Corpus] = &[
     &BINTABLE,
     &APIS_GURU,
     &COLOR_PIZZA,
+    &BYAUTOMATA_IO,
 ];
 
 #[test]
@@ -6883,6 +6959,18 @@ fn color_pizza_matches_fern_output() {
 }
 
 #[test]
+fn byautomata_io_matches_fern_output() {
+    if corpus_spec(BYAUTOMATA_IO.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the By Automata corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+        );
+        return;
+    }
+    assert_corpus_matches(&BYAUTOMATA_IO);
+}
+
+#[test]
 fn feature_target_specs_generate_without_panicking() {
     // A feature-coverage target with a populated `matched` list is byte-compared
     // file-by-file; one with an empty `matched` list asserts only that crozier
@@ -6940,6 +7028,7 @@ fn report_matched_candidates() {
         &BINTABLE,
         &APIS_GURU,
         &COLOR_PIZZA,
+        &BYAUTOMATA_IO,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
@@ -7068,6 +7157,7 @@ fn report_fixture_diffs() {
         &BINTABLE,
         &APIS_GURU,
         &COLOR_PIZZA,
+        &BYAUTOMATA_IO,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);

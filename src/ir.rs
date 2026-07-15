@@ -2809,7 +2809,7 @@ fn endpoint_method_name(op: &Operation, http_method: &str, url: &str) -> String 
             .filter(|summary| !summary.trim().is_empty())
             .map_or_else(
                 || synthesized_method_name(http_method, url),
-                naming::to_snake_case,
+                naming::prose_identifier,
             )
     } else if id.contains('.') {
         method_from_dotted_id(id)
