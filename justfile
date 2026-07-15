@@ -30,7 +30,7 @@ lint:
 # Fast tests (unit + integration, excluding the e2e binary target) with coverage
 # enforced. 95% line coverage is the gate; lower it only with a reason in AGENTS.md.
 test:
-    cargo llvm-cov --locked --show-missing-lines --fail-under-lines 95 \
+    cargo llvm-cov --locked --fail-under-lines 95 \
         --ignore-filename-regex 'main\.rs$' \
         nextest -E 'not binary(e2e)'
 
