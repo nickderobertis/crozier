@@ -6417,6 +6417,59 @@ const AIRBYTE_CONFIG: Corpus = Corpus {
     ],
 };
 
+const BINTABLE: Corpus = Corpus {
+    api: "bintable.com",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[
+        ".fern/metadata.json",
+        "README.md",
+        "pyproject.toml",
+        "reference.md",
+        "requirements.txt",
+        "src/fern/__init__.py",
+        "src/fern/balance/__init__.py",
+        "src/fern/balance/client.py",
+        "src/fern/balance/raw_client.py",
+        "src/fern/client.py",
+        "src/fern/core/__init__.py",
+        "src/fern/core/api_error.py",
+        "src/fern/core/client_wrapper.py",
+        "src/fern/core/datetime_utils.py",
+        "src/fern/core/file.py",
+        "src/fern/core/force_multipart.py",
+        "src/fern/core/http_client.py",
+        "src/fern/core/http_response.py",
+        "src/fern/core/http_sse/__init__.py",
+        "src/fern/core/http_sse/_api.py",
+        "src/fern/core/http_sse/_decoders.py",
+        "src/fern/core/http_sse/_exceptions.py",
+        "src/fern/core/http_sse/_models.py",
+        "src/fern/core/jsonable_encoder.py",
+        "src/fern/core/pydantic_utilities.py",
+        "src/fern/core/query_encoder.py",
+        "src/fern/core/remove_none_from_dict.py",
+        "src/fern/core/request_options.py",
+        "src/fern/core/serialization.py",
+        "src/fern/environment.py",
+        "src/fern/errors/__init__.py",
+        "src/fern/errors/forbidden_error.py",
+        "src/fern/errors/unauthorized_error.py",
+        "src/fern/errors/unprocessable_entity_error.py",
+        "src/fern/lookup/__init__.py",
+        "src/fern/lookup/client.py",
+        "src/fern/lookup/raw_client.py",
+        "src/fern/py.typed",
+        "src/fern/types/__init__.py",
+        "src/fern/types/response_item.py",
+        "src/fern/version.py",
+    ],
+};
+
 const CORPORA: &[&Corpus] = &[
     &QUERY_PARAMETERS,
     &EXHAUSTIVE,
@@ -6436,6 +6489,7 @@ const CORPORA: &[&Corpus] = &[
     &APIDECK_WEBHOOK,
     &APIDECK_VAULT,
     &AIRBYTE_CONFIG,
+    &BINTABLE,
 ];
 
 #[test]
@@ -6677,6 +6731,18 @@ fn airbyte_config_matches_fern_output() {
 }
 
 #[test]
+fn bintable_matches_fern_output() {
+    if corpus_spec(BINTABLE.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the Bintable corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+        );
+        return;
+    }
+    assert_corpus_matches(&BINTABLE);
+}
+
+#[test]
 fn feature_target_specs_generate_without_panicking() {
     // A feature-coverage target with a populated `matched` list is byte-compared
     // file-by-file; one with an empty `matched` list asserts only that crozier
@@ -6731,6 +6797,7 @@ fn report_matched_candidates() {
         &APIDECK_WEBHOOK,
         &APIDECK_VAULT,
         &AIRBYTE_CONFIG,
+        &BINTABLE,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
@@ -6856,6 +6923,7 @@ fn report_fixture_diffs() {
         &APIDECK_WEBHOOK,
         &APIDECK_VAULT,
         &AIRBYTE_CONFIG,
+        &BINTABLE,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);

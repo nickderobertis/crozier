@@ -1413,10 +1413,16 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     let async_name = format!("Async{}", ir.client_name);
 
     // The abbreviated calls in the error-handling and advanced sections show `...`
-    // for an endpoint with a complex (object/container/union) body, else empty
-    // parens; the error/raw-response calls are ruff-wrapped at the snippet width 88.
-    let complex = (first.request_body.is_none()
-        && (first.http_method != "GET" || matches!(first.response, Some(TypeRef::Dict(..)))))
+    // for a bodyless endpoint with required path/query/header arguments, or an
+    // endpoint with a complex (object/container/union) body, else empty parens; the
+    // error/raw-response calls are ruff-wrapped at the snippet width 88.
+    let has_required_non_body_params = first.request_body.is_none()
+        && (!first.path_params.is_empty()
+            || first.query_params.iter().any(|param| param.required)
+            || first.header_params.iter().any(|param| param.required));
+    let complex = has_required_non_body_params
+        || (first.request_body.is_none()
+            && (first.http_method != "GET" || matches!(first.response, Some(TypeRef::Dict(..)))))
         || (ir.openapi_31
             && first.body_schema_implicit_object
             && matches!(
