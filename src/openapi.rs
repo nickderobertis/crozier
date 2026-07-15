@@ -280,9 +280,10 @@ impl PathItem {
 /// A single API operation.
 #[derive(Debug, Deserialize)]
 pub struct Operation {
-    /// The operation identifier, `{group}_{camelMethodName}`.
+    /// The operation identifier, `{group}_{camelMethodName}`. `None` distinguishes
+    /// an omitted identifier from an explicitly empty one, which Fern names `_`.
     #[serde(rename = "operationId", default)]
-    pub operation_id: String,
+    pub operation_id: Option<String>,
     /// Tags; the first groups the operation into a client.
     #[serde(default)]
     pub tags: Vec<String>,
@@ -1197,7 +1198,7 @@ mod tests {
         doc.paths
             .values()
             .flat_map(|i| i.operations())
-            .map(|(_, op)| op.operation_id.clone())
+            .map(|(_, op)| op.operation_id.clone().unwrap_or_default())
             .collect()
     }
 

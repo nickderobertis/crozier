@@ -1481,15 +1481,16 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
         .response
         .as_ref()
         .is_some_and(|response| resolves_to_dict(response, &ir.types));
-    let complex = has_required_non_body_params
-        || (first.request_body.is_none() && (first.http_method != "GET" || has_map_response))
-        || (ir.openapi_31
-            && first.body_schema_implicit_object
-            && matches!(
-                &first.request_body,
-                Some(RequestBody::Inline(fields)) if fields.iter().all(|field| field.spec_required)
-            ))
-        || complex_body(first, &ir.types, &ir.tag_types);
+    let complex = first.method_name != "_"
+        && (has_required_non_body_params
+            || (first.request_body.is_none() && (first.http_method != "GET" || has_map_response))
+            || (ir.openapi_31
+                && first.body_schema_implicit_object
+                && matches!(
+                    &first.request_body,
+                    Some(RequestBody::Inline(fields)) if fields.iter().all(|field| field.spec_required)
+                ))
+            || complex_body(first, &ir.types, &ir.tag_types));
     let err_call = abbrev_call(4, &client_call_prefix(first), complex);
     let raw_call = abbrev_call(0, &raw_client_call_prefix(first), complex);
     let retry_prefix = client_call_prefix(first);
@@ -1712,6 +1713,8 @@ fn reference_entry(
         description: ep.docstring.as_ref().map(|description| {
             if ep.reference_description_trailing_blank {
                 format!("{description}\n")
+            } else if ep.reference_description_trailing_space {
+                format!("{description} ")
             } else {
                 description.clone()
             }
@@ -3681,6 +3684,7 @@ fn root_client_file(
         types,
         tag_decls,
         tag_map,
+        auth,
         false,
         &mut imports,
     )?;
@@ -3692,16 +3696,14 @@ fn root_client_file(
         types,
         tag_decls,
         tag_map,
+        auth,
         true,
         &mut imports,
     )?;
     let mut body = String::new();
-    // Fern's root-client emitter omits the future import when the client owns a
-    // binary streaming endpoint (Color Pizza); tagged streaming clients retain it.
-    if !root_endpoints
-        .iter()
-        .any(|endpoint| endpoint.binary_response)
-    {
+    // Fern uses postponed annotations for sub-client properties. A root-only SDK
+    // has no forward-referenced sub-client types and omits the future import.
+    if !modules.is_empty() {
         body.push_str("from __future__ import annotations\n\n");
     }
     body.push_str(&imports.render());
@@ -3774,6 +3776,7 @@ fn root_client_methods(
     types: &[TypeDecl],
     tag_decls: &[TagTypeDecl],
     tag_map: &BTreeMap<String, String>,
+    auth: &Auth,
     is_async: bool,
     imports: &mut Imports,
 ) -> Result<Vec<String>> {
@@ -3786,7 +3789,7 @@ fn root_client_methods(
         module: "",
         types,
         tag_decls,
-        auth: &Auth::None,
+        auth,
         has_environment: true,
         tag_types: tag_map,
         global_headers: &[],
@@ -6002,6 +6005,7 @@ mod tests {
             errors: Vec::new(),
             docstring: None,
             reference_description_trailing_blank: false,
+            reference_description_trailing_space: false,
             streaming: false,
             text_response: false,
             markdown_response: false,
