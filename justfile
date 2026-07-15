@@ -86,6 +86,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_vault_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e airbyte_config_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e bintable_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apis_guru_matches_fern_output
 
 # Format the codebase in place.
 format:

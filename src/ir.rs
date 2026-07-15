@@ -1861,9 +1861,7 @@ fn is_binary_response(doc: &OpenApi, op: &Operation) -> bool {
 
 /// Position of a path parameter's placeholder for OpenAPI 3.0 importer ordering.
 fn path_param_position(path: &str, name: &str) -> Option<usize> {
-    path.split('/')
-        .filter(|segment| segment.starts_with('{') && segment.ends_with('}'))
-        .position(|segment| &segment[1..segment.len() - 1] == name)
+    path.find(&format!("{{{name}}}"))
 }
 
 /// The success (2xx) response's description, cleaned for the `Returns` docstring.
@@ -4766,7 +4764,7 @@ mod tests {
         let ep = build_endpoint(
             &doc,
             &[],
-            "/widgets/{first}/{second}",
+            "/widgets/{first}/{second}.json",
             "GET",
             &o,
             &mut tag_types,

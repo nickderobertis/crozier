@@ -1319,6 +1319,28 @@ fn is_complex_type(t: &TypeRef, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) -
     }
 }
 
+/// Whether a response type is a dictionary directly or through package-root alias
+/// indirection. Fern uses a placeholder in bodyless GET README snippets for map
+/// responses, including named map aliases such as APIs.guru's `ApIs`.
+fn resolves_to_dict(t: &TypeRef, types: &[TypeDecl]) -> bool {
+    fn resolve(t: &TypeRef, types: &[TypeDecl], seen: &mut BTreeSet<String>) -> bool {
+        match t {
+            TypeRef::Dict(..) => true,
+            TypeRef::Optional(inner) => resolve(inner, types, seen),
+            TypeRef::Named(name) if seen.insert(name.clone()) => types
+                .iter()
+                .find(|decl| decl.name() == name)
+                .is_some_and(|decl| match decl {
+                    TypeDecl::Alias(alias) => resolve(&alias.target, types, seen),
+                    _ => false,
+                }),
+            _ => false,
+        }
+    }
+
+    resolve(t, types, &mut BTreeSet::new())
+}
+
 /// Render an abbreviated call `<prefix>(...)` for the README snippets: empty parens
 /// when the body is not complex, else a `...` placeholder wrapped onto its own line
 /// when the flat form overflows. Fern's snippet writer targets an 80-column width
@@ -1420,9 +1442,12 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
         && (!first.path_params.is_empty()
             || first.query_params.iter().any(|param| param.required)
             || first.header_params.iter().any(|param| param.required));
+    let has_map_response = first
+        .response
+        .as_ref()
+        .is_some_and(|response| resolves_to_dict(response, &ir.types));
     let complex = has_required_non_body_params
-        || (first.request_body.is_none()
-            && (first.http_method != "GET" || matches!(first.response, Some(TypeRef::Dict(..)))))
+        || (first.request_body.is_none() && (first.http_method != "GET" || has_map_response))
         || (ir.openapi_31
             && first.body_schema_implicit_object
             && matches!(
