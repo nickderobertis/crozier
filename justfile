@@ -94,6 +94,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_ecommerce_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_issue_tracking_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e appwrite_client_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_file_storage_matches_fern_output
 
 # Format the codebase in place.
 format:

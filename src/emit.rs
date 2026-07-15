@@ -1231,6 +1231,10 @@ fn root_init_file(
 fn complex_body(ep: &Endpoint, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) -> bool {
     if ep.body_all_of
         || (ep.body_schema_ref
+            && !ep.body_schema_dropped
+            && !ep.body_schema_is_success_response
+            && matches!(ep.request_body, Some(RequestBody::Inline(_))))
+        || (ep.body_schema_ref
             && ep.body_schema_has_example
             && matches!(ep.request_body, Some(RequestBody::Inline(_))))
     {
@@ -4998,7 +5002,7 @@ fn build_example(
     // required query/header params, then the request body (a single `request`, or
     // each required inlined field).
     let mut args: Vec<(Option<String>, Example)> = Vec::new();
-    if !ep.markdown_response {
+    if !ep.markdown_response && !ep.wildcard_binary_response {
         for pp in &ep.path_params {
             let v = if matches!(pp.type_ref, TypeRef::List(_) | TypeRef::Set(_)) {
                 // Fern's path placeholder stays a string even for the unusual array
@@ -5016,10 +5020,18 @@ fn build_example(
             args.push((Some(pp.py_name.clone()), v));
         }
     }
-    // Fern follows signature ordering: all required query/header arguments first,
-    // then optional query/header arguments that carry examples.
+    // Fern normally follows required/optional grouping for parameters. Wildcard
+    // binary requests are imported with header examples before query examples.
+    let wildcard_request = ep
+        .request_body
+        .as_ref()
+        .is_some_and(RequestBody::is_wildcard_media);
     let mut optional_query_example_used = false;
-    for qp in ep.query_params.iter().filter(|qp| qp.required) {
+    for qp in ep
+        .query_params
+        .iter()
+        .filter(|qp| !ep.wildcard_binary_response && !wildcard_request && qp.required)
+    {
         let v = if let Some(ex) = qp.example.as_ref().filter(|_| qp.example_is_scalar) {
             Example::Atom(ex.clone())
         } else if let TypeRef::List(inner) = &qp.type_ref {
@@ -5029,7 +5041,11 @@ fn build_example(
         };
         args.push((Some(qp.py_name.clone()), v));
     }
-    for hp in ep.header_params.iter().filter(|header| header.required) {
+    for hp in ep
+        .header_params
+        .iter()
+        .filter(|header| !ep.wildcard_binary_response && header.required)
+    {
         let v = hp
             .example
             .as_ref()
@@ -5040,7 +5056,41 @@ fn build_example(
             );
         args.push((Some(hp.py_name.clone()), v));
     }
-    for qp in ep.query_params.iter().filter(|qp| !qp.required) {
+    if wildcard_request {
+        for hp in ep.header_params.iter().filter(|header| {
+            !ep.wildcard_binary_response && !header.required && header.example.is_some()
+        }) {
+            let value = hp
+                .example
+                .as_ref()
+                .filter(|_| ctx.example_is_scalar(&hp.type_ref))
+                .map_or_else(
+                    || ctx.value(&hp.type_ref, Slot::Named(&hp.wire_name)),
+                    |example| Example::Atom(example.clone()),
+                );
+            args.push((Some(hp.py_name.clone()), value));
+        }
+        for qp in ep
+            .query_params
+            .iter()
+            .filter(|qp| !ep.wildcard_binary_response && qp.required)
+        {
+            let value = if let Some(example) = qp.example.as_ref().filter(|_| qp.example_is_scalar)
+            {
+                Example::Atom(example.clone())
+            } else if let TypeRef::List(inner) = &qp.type_ref {
+                Example::List(vec![ctx.value(inner, Slot::Named(&qp.wire_name))])
+            } else {
+                ctx.value(&qp.type_ref, Slot::Named(&qp.wire_name))
+            };
+            args.push((Some(qp.py_name.clone()), value));
+        }
+    }
+    for qp in ep
+        .query_params
+        .iter()
+        .filter(|qp| !ep.wildcard_binary_response && !qp.required)
+    {
         if qp.example.is_none()
             || !qp.example_is_scalar
             || (ep.request_body.is_none() && optional_query_example_used)
@@ -5053,11 +5103,12 @@ fn build_example(
             Example::Atom(qp.example.clone().unwrap_or_default()),
         ));
     }
-    for hp in ep
-        .header_params
-        .iter()
-        .filter(|header| !header.required && header.example.is_some())
-    {
+    for hp in ep.header_params.iter().filter(|header| {
+        !ep.wildcard_binary_response
+            && !wildcard_request
+            && !header.required
+            && header.example.is_some()
+    }) {
         let value = hp
             .example
             .as_ref()
@@ -5070,7 +5121,10 @@ fn build_example(
     }
     match &ep.request_body {
         Some(RequestBody::Single(s)) => {
-            let v = ctx.value(&s.type_ref, Slot::Plain);
+            let v = s.example.as_ref().map_or_else(
+                || ctx.value(&s.type_ref, Slot::Plain),
+                |example| Example::Atom(example.clone()),
+            );
             args.push((Some("request".to_string()), v));
         }
         Some(RequestBody::Inline(fields)) => {
@@ -5894,6 +5948,7 @@ mod tests {
             text_response: false,
             markdown_response: false,
             binary_response: false,
+            wildcard_binary_response: false,
             emittable: true,
         }
     }
@@ -5977,6 +6032,7 @@ mod tests {
             convert: false,
             content_type: true,
             content_type_override: None,
+            example: None,
         }));
 
         let ir = ir_with(vec![no_arg_post, body]);

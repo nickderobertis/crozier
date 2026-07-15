@@ -604,6 +604,9 @@ pub struct Endpoint {
     /// Whether the success response is a binary download (`format: binary`).
     /// Fern emits these as context-managed byte streams instead of buffering.
     pub binary_response: bool,
+    /// Whether a binary download uses wildcard (`*/*`) media. Fern omits all
+    /// method arguments from these generated worked examples.
+    pub wildcard_binary_response: bool,
     /// Whether crozier can emit this operation's raw client today. A module is
     /// only emitted when every one of its operations is emittable.
     pub emittable: bool,
@@ -748,6 +751,9 @@ pub struct SingleBody {
     /// Exact content type to emit instead of `application/json` for vendor JSON
     /// media types.
     pub content_type_override: Option<String>,
+    /// A request-body example used by Fern's worked snippets. Currently populated
+    /// for wildcard binary payloads, whose schema may supply a binary placeholder.
+    pub example: Option<String>,
 }
 
 /// A declared error (non-2xx) response, rendered as a `raise` branch keyed on the
@@ -1125,7 +1131,7 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         .cloned()
         .collect();
     for endpoint in &mut endpoints {
-        endpoint.body_schema_dropped = doc
+        let body_schema = doc
             .paths
             .get(&endpoint.path)
             .and_then(|item| {
@@ -1139,10 +1145,30 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
                 body.content
                     .values()
                     .find_map(|media| media.schema.as_ref())
-            })
+            });
+        endpoint.body_schema_dropped = body_schema
             .and_then(|schema| schema.reference.as_deref())
             .map(ref_to_class)
             .is_some_and(|name| dropped_sources.contains(&name));
+        if endpoint.body_schema_dropped {
+            let source = body_schema
+                .and_then(|schema| schema.reference.as_deref())
+                .and_then(|reference| resolve_ref(doc, reference));
+            if let (Some(source), Some(RequestBody::Inline(fields))) =
+                (source, &mut endpoint.request_body)
+            {
+                fields.retain(|field| !schema_property_is_read_only(doc, source, &field.wire_name));
+                let field_names: std::collections::HashSet<&str> =
+                    fields.iter().map(|field| field.py_name.as_str()).collect();
+                for path_param in &mut endpoint.path_params {
+                    if let Some(base) = path_param.py_name.strip_suffix('_') {
+                        if !field_names.contains(base) {
+                            path_param.py_name = base.to_string();
+                        }
+                    }
+                }
+            }
+        }
     }
     let moved_enums =
         move_inline_body_enums_to_tags(doc, &builder.types, &dropped_sources, &mut tag_types);
@@ -1517,18 +1543,24 @@ fn build_endpoint(
                 && !global_headers.contains(p.name.as_str())
                 && !is_transport_managed_header(&p.name)
         })
-        .map(|p| HeaderParam {
-            wire_name: p.name.clone(),
-            py_name: naming::field_name(header_param_stem(&p.name)),
-            type_ref: p
-                .schema
-                .as_ref()
-                .map_or(TypeRef::Primitive(Prim::Any), |schema| {
-                    hoister.hoist_param_enum(&request_ctx, &p.name, schema)
-                }),
-            required: p.required == Some(true),
-            docstring: clean_doc(p.description.as_deref()),
-            example: parameter_example(doc, p),
+        .map(|p| {
+            let type_ref = if p.schema.is_none() && !p.content.is_empty() {
+                TypeRef::Primitive(Prim::Str)
+            } else {
+                p.schema
+                    .as_ref()
+                    .map_or(TypeRef::Primitive(Prim::Any), |schema| {
+                        hoister.hoist_param_enum(&request_ctx, &p.name, schema)
+                    })
+            };
+            HeaderParam {
+                wire_name: p.name.clone(),
+                py_name: naming::field_name(header_param_stem(&p.name)),
+                type_ref,
+                required: p.required == Some(true),
+                docstring: clean_doc(p.description.as_deref()),
+                example: parameter_example(doc, p),
+            }
         })
         .collect();
 
@@ -1772,8 +1804,19 @@ fn build_endpoint(
         text_response: has_text_response(op),
         markdown_response: has_markdown_response(op),
         binary_response: is_binary_response(doc, op),
+        wildcard_binary_response: has_wildcard_binary_response(doc, op),
         emittable,
     }
+}
+
+fn schema_property_is_read_only(doc: &OpenApi, schema: &Schema, property: &str) -> bool {
+    schema.properties.get(property).is_some_and(|property| {
+        property
+            .reference
+            .as_deref()
+            .and_then(|reference| resolve_ref(doc, reference))
+            .is_some_and(|schema| schema.read_only == Some(true))
+    })
 }
 
 fn parameter_example(doc: &OpenApi, parameter: &crate::openapi::Parameter) -> Option<String> {
@@ -1874,6 +1917,17 @@ fn is_binary_response(doc: &OpenApi, op: &Operation) -> bool {
                     })
             })
     })
+}
+
+fn has_wildcard_binary_response(_doc: &OpenApi, op: &Operation) -> bool {
+    success_response_entry(op)
+        .and_then(|response| response.content.get("*/*"))
+        .and_then(|media| media.schema.as_ref())
+        .is_some_and(|schema| {
+            schema.reference.is_none()
+                && schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("string")
+                && schema.format.as_deref() == Some("binary")
+        })
 }
 
 /// Position of a path parameter's placeholder for OpenAPI 3.0 importer ordering.
@@ -2116,8 +2170,7 @@ fn resolve_request_body(
     // OpenAPI wrapper says otherwise: the importer models the wildcard payload
     // itself as the endpoint input.
     let required = media_type == "*/*" || rb.required != Some(false);
-    let content_type_override =
-        (media_type != "application/json" && media_type != "*/*").then(|| media_type.to_string());
+    let content_type_override = (media_type != "application/json").then(|| media_type.to_string());
     if let Some(reference) = &schema.reference {
         let target = resolve_ref(doc, reference)?;
         let class = ref_to_class(reference);
@@ -2273,6 +2326,26 @@ fn resolve_request_body(
     // argument with a plain `json=request` and no content-type header.
     if is_unknown(schema) {
         return Some(single(TypeRef::Primitive(Prim::Any), false, false, false));
+    }
+    if media_type == "*/*"
+        && schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("string")
+        && schema.format.as_deref() == Some("binary")
+    {
+        let mut body = single_with_override(
+            TypeRef::Primitive(Prim::Str),
+            required,
+            false,
+            false,
+            content_type_override,
+        );
+        if let RequestBody::Single(single) = &mut body {
+            single.example = media
+                .example
+                .as_ref()
+                .or_else(|| schema_example(schema))
+                .and_then(example_literal);
+        }
+        return Some(body);
     }
     scalar_body(schema).map(|(type_ref, content_type)| {
         single_with_override(
@@ -2616,6 +2689,7 @@ fn single_with_override(
         convert,
         content_type,
         content_type_override,
+        example: None,
     })
 }
 
@@ -2717,8 +2791,8 @@ fn type_ref_allows_none(t: &TypeRef, types: &[TypeDecl]) -> bool {
 
 /// A bare scalar request-body type Fern serializes with a plain `json=request`,
 /// paired with whether it carries the content-type header. Plain scalars and the
-/// date formats omit it; the `uuid`/`byte` string formats (still rendered as
-/// `str`) carry it. Non-scalar shapes and other string formats return `None`.
+/// date formats omit it; the `uuid`/`byte` string formats (still rendered as `str`)
+/// carry it. Non-scalar shapes and other string formats return `None`.
 fn scalar_body(schema: &Schema) -> Option<(TypeRef, bool)> {
     let type_ref = match schema.ty.as_ref().and_then(|t| t.primary())? {
         "string" => match schema.format.as_deref() {

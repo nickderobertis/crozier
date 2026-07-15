@@ -382,6 +382,10 @@ pub struct Parameter {
     /// The parameter's value schema.
     #[serde(default)]
     pub schema: Option<Schema>,
+    /// Content-based parameter representation, used instead of `schema` by some
+    /// JSON-valued headers. Fern exposes these headers as string arguments.
+    #[serde(default)]
+    pub content: IndexMap<String, MediaType>,
     /// A parameter-level `example` value (Fern shows it in the worked snippet).
     #[serde(default)]
     pub example: Option<serde_json::Value>,

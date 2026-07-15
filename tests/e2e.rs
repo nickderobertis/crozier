@@ -7229,6 +7229,149 @@ const APPWRITE_CLIENT: Corpus = Corpus {
     ],
 };
 
+const APIDECK_FILE_STORAGE: Corpus = Corpus {
+    api: "apideck.com-file-storage",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[
+        ".fern/metadata.json",
+        "README.md",
+        "pyproject.toml",
+        "reference.md",
+        "requirements.txt",
+        "src/fern/__init__.py",
+        "src/fern/client.py",
+        "src/fern/core/__init__.py",
+        "src/fern/core/api_error.py",
+        "src/fern/core/client_wrapper.py",
+        "src/fern/core/datetime_utils.py",
+        "src/fern/core/file.py",
+        "src/fern/core/force_multipart.py",
+        "src/fern/core/http_client.py",
+        "src/fern/core/http_response.py",
+        "src/fern/core/http_sse/__init__.py",
+        "src/fern/core/http_sse/_api.py",
+        "src/fern/core/http_sse/_decoders.py",
+        "src/fern/core/http_sse/_exceptions.py",
+        "src/fern/core/http_sse/_models.py",
+        "src/fern/core/jsonable_encoder.py",
+        "src/fern/core/pydantic_utilities.py",
+        "src/fern/core/query_encoder.py",
+        "src/fern/core/remove_none_from_dict.py",
+        "src/fern/core/request_options.py",
+        "src/fern/core/serialization.py",
+        "src/fern/drive_groups/__init__.py",
+        "src/fern/drive_groups/client.py",
+        "src/fern/drive_groups/raw_client.py",
+        "src/fern/drives/__init__.py",
+        "src/fern/drives/client.py",
+        "src/fern/drives/raw_client.py",
+        "src/fern/environment.py",
+        "src/fern/errors/__init__.py",
+        "src/fern/errors/bad_request_error.py",
+        "src/fern/errors/not_found_error.py",
+        "src/fern/errors/payment_required_error.py",
+        "src/fern/errors/unauthorized_error.py",
+        "src/fern/errors/unprocessable_entity_error.py",
+        "src/fern/files/__init__.py",
+        "src/fern/files/client.py",
+        "src/fern/files/raw_client.py",
+        "src/fern/folders/__init__.py",
+        "src/fern/folders/client.py",
+        "src/fern/folders/raw_client.py",
+        "src/fern/py.typed",
+        "src/fern/shared_links/__init__.py",
+        "src/fern/shared_links/client.py",
+        "src/fern/shared_links/raw_client.py",
+        "src/fern/types/__init__.py",
+        "src/fern/types/bad_request_response.py",
+        "src/fern/types/bad_request_response_detail.py",
+        "src/fern/types/create_drive_group_response.py",
+        "src/fern/types/create_drive_response.py",
+        "src/fern/types/create_file_request.py",
+        "src/fern/types/create_file_response.py",
+        "src/fern/types/create_folder_response.py",
+        "src/fern/types/create_shared_link_response.py",
+        "src/fern/types/create_upload_session_response.py",
+        "src/fern/types/created_at.py",
+        "src/fern/types/created_by.py",
+        "src/fern/types/delete_drive_group_response.py",
+        "src/fern/types/delete_drive_response.py",
+        "src/fern/types/delete_file_response.py",
+        "src/fern/types/delete_folder_response.py",
+        "src/fern/types/delete_shared_link_response.py",
+        "src/fern/types/delete_upload_session_response.py",
+        "src/fern/types/description.py",
+        "src/fern/types/downstream_id.py",
+        "src/fern/types/drive.py",
+        "src/fern/types/drive_group.py",
+        "src/fern/types/drive_groups_filter.py",
+        "src/fern/types/drives_filter.py",
+        "src/fern/types/expires_at.py",
+        "src/fern/types/file_size.py",
+        "src/fern/types/file_storage_event_type.py",
+        "src/fern/types/file_type.py",
+        "src/fern/types/files_filter.py",
+        "src/fern/types/files_sort.py",
+        "src/fern/types/files_sort_by.py",
+        "src/fern/types/folder.py",
+        "src/fern/types/get_drive_group_response.py",
+        "src/fern/types/get_drive_groups_response.py",
+        "src/fern/types/get_drive_response.py",
+        "src/fern/types/get_drives_response.py",
+        "src/fern/types/get_file_response.py",
+        "src/fern/types/get_files_response.py",
+        "src/fern/types/get_folder_response.py",
+        "src/fern/types/get_folders_response.py",
+        "src/fern/types/get_shared_link_response.py",
+        "src/fern/types/get_shared_links_response.py",
+        "src/fern/types/get_upload_session_response.py",
+        "src/fern/types/id.py",
+        "src/fern/types/linked_folder.py",
+        "src/fern/types/links.py",
+        "src/fern/types/meta.py",
+        "src/fern/types/meta_cursors.py",
+        "src/fern/types/not_found_response.py",
+        "src/fern/types/not_found_response_detail.py",
+        "src/fern/types/not_implemented_response.py",
+        "src/fern/types/not_implemented_response_detail.py",
+        "src/fern/types/owner.py",
+        "src/fern/types/parent_folder_id.py",
+        "src/fern/types/pass_through_query.py",
+        "src/fern/types/payment_required_response.py",
+        "src/fern/types/shared_link.py",
+        "src/fern/types/shared_link_scope.py",
+        "src/fern/types/shared_link_target.py",
+        "src/fern/types/sort_direction.py",
+        "src/fern/types/too_many_requests_response.py",
+        "src/fern/types/too_many_requests_response_detail.py",
+        "src/fern/types/unauthorized_response.py",
+        "src/fern/types/unexpected_error_response.py",
+        "src/fern/types/unexpected_error_response_detail.py",
+        "src/fern/types/unified_file.py",
+        "src/fern/types/unified_id.py",
+        "src/fern/types/unprocessable_response.py",
+        "src/fern/types/update_drive_group_response.py",
+        "src/fern/types/update_drive_response.py",
+        "src/fern/types/update_file_response.py",
+        "src/fern/types/update_folder_response.py",
+        "src/fern/types/update_shared_link_response.py",
+        "src/fern/types/update_upload_session_response.py",
+        "src/fern/types/updated_at.py",
+        "src/fern/types/updated_by.py",
+        "src/fern/types/upload_session.py",
+        "src/fern/types/webhook_event.py",
+        "src/fern/upload_sessions/__init__.py",
+        "src/fern/upload_sessions/client.py",
+        "src/fern/upload_sessions/raw_client.py",
+        "src/fern/version.py",
+    ],
+};
+
 const CORPORA: &[&Corpus] = &[
     &QUERY_PARAMETERS,
     &EXHAUSTIVE,
@@ -7257,6 +7400,7 @@ const CORPORA: &[&Corpus] = &[
     &APIDECK_ECOMMERCE,
     &APIDECK_ISSUE_TRACKING,
     &APPWRITE_CLIENT,
+    &APIDECK_FILE_STORAGE,
 ];
 
 #[test]
@@ -7606,6 +7750,18 @@ fn appwrite_client_matches_fern_output() {
 }
 
 #[test]
+fn apideck_file_storage_matches_fern_output() {
+    if corpus_spec(APIDECK_FILE_STORAGE.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the Apideck File Storage corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+        );
+        return;
+    }
+    assert_corpus_matches(&APIDECK_FILE_STORAGE);
+}
+
+#[test]
 fn feature_target_specs_generate_without_panicking() {
     // A feature-coverage target with a populated `matched` list is byte-compared
     // file-by-file; one with an empty `matched` list asserts only that crozier
@@ -7669,6 +7825,7 @@ fn report_matched_candidates() {
         &APIDECK_ECOMMERCE,
         &APIDECK_ISSUE_TRACKING,
         &APPWRITE_CLIENT,
+        &APIDECK_FILE_STORAGE,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
@@ -7803,6 +7960,7 @@ fn report_fixture_diffs() {
         &APIDECK_ECOMMERCE,
         &APIDECK_ISSUE_TRACKING,
         &APPWRITE_CLIENT,
+        &APIDECK_FILE_STORAGE,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
