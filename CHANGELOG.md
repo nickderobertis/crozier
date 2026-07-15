@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.30](https://github.com/nickderobertis/crozier/compare/v0.0.29...v0.0.30) - 2026-07-15
+
+### Other
+
+- *(e2e)* add 8 batch-2 byte-match corpora (2 dropped: Fern can't generate) ([#101](https://github.com/nickderobertis/crozier/pull/101))
+
 ## [0.0.29](https://github.com/nickderobertis/crozier/compare/v0.0.28...v0.0.29) - 2026-07-14
 
 ### Other
