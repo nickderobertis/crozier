@@ -160,10 +160,10 @@ pub struct GlobalHeader {
 /// Collect the operation headers Fern promotes to client-wrapper-level fields: a
 /// header present on **every** operation (a ubiquitous header like `X-App-Id` is an
 /// SDK-wide setting, not a per-call argument). A header on a subset of operations
-/// stays a per-method parameter. Fern orders the promoted headers optional-first —
-/// keeping the optional group in the spec's first-appearance order, and the required
-/// group by field name — and never promotes a transport-managed header (`User-Agent`,
-/// which the HTTP client sets itself), even when it rides every operation.
+/// stays a per-method parameter. Ordinary promoted headers retain first-appearance
+/// order; header api-key schemes follow them in scheme declaration order. Fern never
+/// promotes a transport-managed header (`User-Agent`, which the HTTP client sets
+/// itself), even when it rides every operation.
 fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
     let mut total = 0usize;
     // wire name → (operations carrying it, required in every one so far), first-seen.
@@ -187,6 +187,11 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
     // optional). With more than one operation, "on every one" is a deliberate
     // cross-cutting header and promotes regardless of required-ness. `User-Agent` is
     // never promoted — the client owns it — so it is dropped even when ubiquitous.
+    let api_key_headers = additional_api_key_global_headers(doc);
+    let api_key_wire_names: std::collections::HashSet<&str> = api_key_headers
+        .iter()
+        .map(|header| header.wire_name.as_str())
+        .collect();
     let mut headers: Vec<GlobalHeader> = seen
         .into_iter()
         .filter(|(wire_name, (count, required))| {
@@ -194,6 +199,7 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
                 && *count == total
                 && (!*required || total > 1)
                 && !is_transport_managed_header(wire_name)
+                && !api_key_wire_names.contains(wire_name.as_str())
         })
         .map(|(wire_name, (_, required))| GlobalHeader {
             py_name: naming::field_name(header_param_stem(&wire_name)),
@@ -204,29 +210,11 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
     // Fern also treats additional header apiKey security schemes as SDK-wide
     // constructor fields. The first apiKey scheme is the auth credential
     // (`api_key`); subsequent header schemes are named from their wire header.
-    // Skip any already promoted above: apideck's `app_id`/`consumer_id` ride every
-    // operation, so they are promoted from `seen` too — re-adding them here would
-    // emit the constructor field twice (invalid Python: duplicate parameter).
-    let promoted: std::collections::HashSet<String> =
-        headers.iter().map(|h| h.py_name.clone()).collect();
-    headers.extend(
-        additional_api_key_global_headers(doc)
-            .into_iter()
-            .filter(|h| !promoted.contains(&h.py_name)),
-    );
-    // Optional-first. The `sort_by` is stable, so optional headers keep the
-    // first-appearance order they already carry from `seen` (an insertion-ordered
-    // map); required headers sort by field name (apideck's `app_id`/`consumer_id`,
-    // appwrite's `appwrite_key`/`appwrite_locale`/`appwrite_project`).
-    headers.sort_by(|a, b| {
-        a.required.cmp(&b.required).then_with(|| {
-            if a.required {
-                a.py_name.cmp(&b.py_name)
-            } else {
-                std::cmp::Ordering::Equal
-            }
-        })
-    });
+    // An api-key header may also ride every operation as an explicit parameter.
+    // Removing it from `seen` above and appending the scheme-derived field here
+    // avoids a duplicate while preserving Fern's grouping (ordinary headers,
+    // then security headers).
+    headers.extend(api_key_headers);
     headers
 }
 
@@ -2108,9 +2096,10 @@ fn resolve_request_body(
         })?;
     let schema = media.schema.as_ref()?;
     // Fern treats a schema-bearing request body as required unless the document
-    // explicitly opts out. This differs from OpenAPI's false default but is part
-    // of the generated SDK contract.
-    let required = rb.required != Some(false);
+    // explicitly opts out. Wildcard request schemas remain required even when the
+    // OpenAPI wrapper says otherwise: the importer models the wildcard payload
+    // itself as the endpoint input.
+    let required = media_type == "*/*" || rb.required != Some(false);
     let content_type_override =
         (media_type != "application/json" && media_type != "*/*").then(|| media_type.to_string());
     if let Some(reference) = &schema.reference {
@@ -2175,18 +2164,32 @@ fn resolve_request_body(
     // serializes its selected model variant through the annotation converter.
     if schema.one_of.is_some() || schema.any_of.is_some() {
         let request_body_name = format!("{request_ctx}Body");
-        let target = base_type_ref(schema);
+        let variants = schema
+            .one_of
+            .as_ref()
+            .or(schema.any_of.as_ref())
+            .expect("union branch checked above");
+        let target = TypeRef::Union(
+            variants
+                .iter()
+                .enumerate()
+                .map(|(index, variant)| {
+                    hoister.hoist_union_variant(&request_body_name, index, variant, variants)
+                })
+                .collect(),
+        );
         hoister.out.push(TypeDecl::Alias(AliasType {
             name: request_body_name.clone(),
             module: naming::module_name(&request_body_name),
             target,
             docstring: clean_doc(schema.description.as_deref()),
         }));
-        return Some(single(
+        return Some(single_with_override(
             TypeRef::Named(request_body_name),
             required,
             true,
             true,
+            (media_type == "*/*").then(|| media_type.to_string()),
         ));
     }
     if schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("object")
@@ -2385,6 +2388,31 @@ impl InlineHoister<'_> {
             fields,
             docstring: clean_doc(schema.description.as_deref()),
         }));
+    }
+
+    /// Resolve an inline union variant, hoisting an object member to
+    /// `{parent}{Ordinal}` in the operation's tag-scoped `types/` package.
+    fn hoist_union_variant(
+        &mut self,
+        parent: &str,
+        index: usize,
+        variant: &Schema,
+        siblings: &[Schema],
+    ) -> TypeRef {
+        if let Some(reference) = &variant.reference {
+            return TypeRef::Named(ref_to_class(reference));
+        }
+        if is_inline_object(variant)
+            || is_bare_object(variant)
+                && schema_example(variant).is_some_and(|example| {
+                    example.is_object() && !example_is_schema_definition(example)
+                })
+        {
+            let name = variant_class_name(parent, index, variant, siblings);
+            self.hoist_object(&name, variant);
+            return TypeRef::Named(name);
+        }
+        base_type_ref(variant)
     }
 
     fn hoist_object_fields(
@@ -2711,14 +2739,22 @@ fn resolve_ref<'a>(doc: &'a OpenApi, reference: &str) -> Option<&'a Schema> {
 
 /// The success (2xx) response's JSON body type, if any.
 fn success_response(op: &Operation) -> Option<TypeRef> {
-    success_response_schema(op).map(base_type_ref).or_else(|| {
-        let response = success_response_entry(op)?;
-        response
-            .content
-            .get("text/plain")
-            .and_then(|media| media.schema.as_ref())
-            .map(|_| TypeRef::Primitive(Prim::Str))
-    })
+    success_response_schema(op)
+        .map(|schema| {
+            if is_unknown(schema) {
+                full_type_ref(schema)
+            } else {
+                base_type_ref(schema)
+            }
+        })
+        .or_else(|| {
+            let response = success_response_entry(op)?;
+            response
+                .content
+                .get("text/plain")
+                .and_then(|media| media.schema.as_ref())
+                .map(|_| TypeRef::Primitive(Prim::Str))
+        })
 }
 
 fn has_text_response(op: &Operation) -> bool {
