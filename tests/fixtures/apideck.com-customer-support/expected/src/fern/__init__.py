@@ -1,0 +1,218 @@
+
+
+
+
+import typing
+from importlib import import_module
+
+if typing.TYPE_CHECKING:
+    from .types import (
+        Address,
+        AddressType,
+        BadRequestResponse,
+        BadRequestResponseDetail,
+        BankAccount,
+        BankAccountAccountType,
+        Company,
+        CompanyName,
+        CompanyRowType,
+        Contact,
+        ContactGender,
+        ContactType,
+        CreateCustomerSupportCustomerResponse,
+        Currency,
+        CustomField,
+        CustomFieldValue,
+        CustomerSupportCustomer,
+        CustomerSupportCustomerStatus,
+        DeleteCustomerSupportCustomerResponse,
+        Email,
+        EmailType,
+        FirstName,
+        GetCustomerSupportCustomerResponse,
+        GetCustomerSupportCustomersResponse,
+        LastName,
+        Lead,
+        Links,
+        Meta,
+        MetaCursors,
+        NotFoundResponse,
+        NotFoundResponseDetail,
+        NotImplementedResponse,
+        NotImplementedResponseDetail,
+        Opportunity,
+        PaymentRequiredResponse,
+        PhoneNumber,
+        PhoneNumberType,
+        RowVersion,
+        SocialLink,
+        Tags,
+        TooManyRequestsResponse,
+        TooManyRequestsResponseDetail,
+        UnauthorizedResponse,
+        UnexpectedErrorResponse,
+        UnexpectedErrorResponseDetail,
+        UnifiedId,
+        UnprocessableResponse,
+        UpdateCustomerSupportCustomerResponse,
+        Website,
+        WebsiteType,
+    )
+    from .errors import (
+        BadRequestError,
+        NotFoundError,
+        PaymentRequiredError,
+        UnauthorizedError,
+        UnprocessableEntityError,
+    )
+    from . import customers
+    from .client import AsyncFernApi, FernApi
+    from .environment import FernApiEnvironment
+    from .version import __version__
+_dynamic_imports: typing.Dict[str, str] = {
+    "Address": ".types",
+    "AddressType": ".types",
+    "AsyncFernApi": ".client",
+    "BadRequestError": ".errors",
+    "BadRequestResponse": ".types",
+    "BadRequestResponseDetail": ".types",
+    "BankAccount": ".types",
+    "BankAccountAccountType": ".types",
+    "Company": ".types",
+    "CompanyName": ".types",
+    "CompanyRowType": ".types",
+    "Contact": ".types",
+    "ContactGender": ".types",
+    "ContactType": ".types",
+    "CreateCustomerSupportCustomerResponse": ".types",
+    "Currency": ".types",
+    "CustomField": ".types",
+    "CustomFieldValue": ".types",
+    "CustomerSupportCustomer": ".types",
+    "CustomerSupportCustomerStatus": ".types",
+    "DeleteCustomerSupportCustomerResponse": ".types",
+    "Email": ".types",
+    "EmailType": ".types",
+    "FernApi": ".client",
+    "FernApiEnvironment": ".environment",
+    "FirstName": ".types",
+    "GetCustomerSupportCustomerResponse": ".types",
+    "GetCustomerSupportCustomersResponse": ".types",
+    "LastName": ".types",
+    "Lead": ".types",
+    "Links": ".types",
+    "Meta": ".types",
+    "MetaCursors": ".types",
+    "NotFoundError": ".errors",
+    "NotFoundResponse": ".types",
+    "NotFoundResponseDetail": ".types",
+    "NotImplementedResponse": ".types",
+    "NotImplementedResponseDetail": ".types",
+    "Opportunity": ".types",
+    "PaymentRequiredError": ".errors",
+    "PaymentRequiredResponse": ".types",
+    "PhoneNumber": ".types",
+    "PhoneNumberType": ".types",
+    "RowVersion": ".types",
+    "SocialLink": ".types",
+    "Tags": ".types",
+    "TooManyRequestsResponse": ".types",
+    "TooManyRequestsResponseDetail": ".types",
+    "UnauthorizedError": ".errors",
+    "UnauthorizedResponse": ".types",
+    "UnexpectedErrorResponse": ".types",
+    "UnexpectedErrorResponseDetail": ".types",
+    "UnifiedId": ".types",
+    "UnprocessableEntityError": ".errors",
+    "UnprocessableResponse": ".types",
+    "UpdateCustomerSupportCustomerResponse": ".types",
+    "Website": ".types",
+    "WebsiteType": ".types",
+    "__version__": ".version",
+    "customers": ".customers",
+}
+
+
+def __getattr__(attr_name: str) -> typing.Any:
+    module_name = _dynamic_imports.get(attr_name)
+    if module_name is None:
+        raise AttributeError(f"No {attr_name} found in _dynamic_imports for module name -> {__name__}")
+    try:
+        module = import_module(module_name, __package__)
+        if module_name == f".{attr_name}":
+            return module
+        else:
+            return getattr(module, attr_name)
+    except ImportError as e:
+        raise ImportError(f"Failed to import {attr_name} from {module_name}: {e}") from e
+    except AttributeError as e:
+        raise AttributeError(f"Failed to get {attr_name} from {module_name}: {e}") from e
+
+
+def __dir__():
+    lazy_attrs = list(_dynamic_imports.keys())
+    return sorted(lazy_attrs)
+
+
+__all__ = [
+    "Address",
+    "AddressType",
+    "AsyncFernApi",
+    "BadRequestError",
+    "BadRequestResponse",
+    "BadRequestResponseDetail",
+    "BankAccount",
+    "BankAccountAccountType",
+    "Company",
+    "CompanyName",
+    "CompanyRowType",
+    "Contact",
+    "ContactGender",
+    "ContactType",
+    "CreateCustomerSupportCustomerResponse",
+    "Currency",
+    "CustomField",
+    "CustomFieldValue",
+    "CustomerSupportCustomer",
+    "CustomerSupportCustomerStatus",
+    "DeleteCustomerSupportCustomerResponse",
+    "Email",
+    "EmailType",
+    "FernApi",
+    "FernApiEnvironment",
+    "FirstName",
+    "GetCustomerSupportCustomerResponse",
+    "GetCustomerSupportCustomersResponse",
+    "LastName",
+    "Lead",
+    "Links",
+    "Meta",
+    "MetaCursors",
+    "NotFoundError",
+    "NotFoundResponse",
+    "NotFoundResponseDetail",
+    "NotImplementedResponse",
+    "NotImplementedResponseDetail",
+    "Opportunity",
+    "PaymentRequiredError",
+    "PaymentRequiredResponse",
+    "PhoneNumber",
+    "PhoneNumberType",
+    "RowVersion",
+    "SocialLink",
+    "Tags",
+    "TooManyRequestsResponse",
+    "TooManyRequestsResponseDetail",
+    "UnauthorizedError",
+    "UnauthorizedResponse",
+    "UnexpectedErrorResponse",
+    "UnexpectedErrorResponseDetail",
+    "UnifiedId",
+    "UnprocessableEntityError",
+    "UnprocessableResponse",
+    "UpdateCustomerSupportCustomerResponse",
+    "Website",
+    "WebsiteType",
+    "__version__",
+    "customers",
+]
