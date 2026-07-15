@@ -83,28 +83,28 @@ do not re-select them in a future batch.**
 
 ## Batch 3 — selected (issue #77)
 
-Thirteen `link-ok` corpora are approved for the next byte-match batch. All 13
+Thirteen `link-ok` corpora were approved for the next byte-match batch. All 13
 passed native `fern check`; their specs are fetched locally and are not vendored.
-Fern goldens are still pending Docker generation, and byte-match work begins only
-after those goldens land.
+Fern goldens were generated successfully for 12 corpora, which now proceed to byte
+matching. `groundhog-day.com` failed Fern golden generation and is dropped.
 
 | name | selected for | status |
 |---|---|---|
-| `apideck.com-accounting` | 53 ops / 140 schemas; anyOf, maps, deepObject, recursion | selected — Fern golden pending |
-| `apideck.com-file-storage` | 32 ops / 75 schemas; binary, wildcard media, maps, deepObject | selected — Fern golden pending |
-| `appwrite.io-client` | 61 ops; `multipart/form-data` | selected — Fern golden pending |
-| `apideck.com-hris` | 27 ops / 87 schemas; anyOf/allOf, maps, deepObject | selected — Fern golden pending |
-| `byautomata.io` | Crozier probe emits invalid Python from a slash-containing operation name; intentional generator-gap target | selected — Fern golden pending |
-| `groundhog-day.com` | mutually recursive `Groundhog`/`Prediction` schemas | selected — Fern golden pending |
-| `apideck.com-connector` | anyOf, recursive schema, maps, deepObject, links, `text/markdown` | selected — Fern golden pending |
-| `color.pizza` | `image/svg+xml` response media | selected — Fern golden pending |
-| `apideck.com-proxy` | all-inline schema surface, anyOf, wildcard media | selected — Fern golden pending |
-| `apis.guru` | typed free-form maps | selected — Fern golden pending |
-| `apideck.com-ecommerce` | 64 schemas; anyOf, maps, deepObject | selected — Fern golden pending |
-| `apideck.com-issue-tracking` | 65 schemas; anyOf/allOf, maps, deepObject | selected — Fern golden pending |
-| `bintable.com` | wildcard response media | selected — Fern golden pending |
+| `apideck.com-accounting` | 53 ops / 140 schemas; anyOf, maps, deepObject, recursion | Fern golden generated — byte matching pending |
+| `apideck.com-file-storage` | 32 ops / 75 schemas; binary, wildcard media, maps, deepObject | Fern golden generated — byte matching pending |
+| `appwrite.io-client` | 61 ops; `multipart/form-data` | Fern golden generated — byte matching pending |
+| `apideck.com-hris` | 27 ops / 87 schemas; anyOf/allOf, maps, deepObject | Fern golden generated — byte matching pending |
+| `byautomata.io` | Crozier probe emits invalid Python from a slash-containing operation name; intentional generator-gap target | Fern golden generated — byte matching pending |
+| `groundhog-day.com` | mutually recursive `Groundhog`/`Prediction` schemas | **DROPPED** — Fern golden generation failed (do not retry) |
+| `apideck.com-connector` | anyOf, recursive schema, maps, deepObject, links, `text/markdown` | Fern golden generated — byte matching pending |
+| `color.pizza` | `image/svg+xml` response media | Fern golden generated — byte matching pending |
+| `apideck.com-proxy` | all-inline schema surface, anyOf, wildcard media | Fern golden generated — byte matching pending |
+| `apis.guru` | typed free-form maps | Fern golden generated — byte matching pending |
+| `apideck.com-ecommerce` | 64 schemas; anyOf, maps, deepObject | Fern golden generated — byte matching pending |
+| `apideck.com-issue-tracking` | 65 schemas; anyOf/allOf, maps, deepObject | Fern golden generated — byte matching pending |
+| `bintable.com` | wildcard response media | Fern golden generated — byte matching pending |
 
-Generate the pending Fern goldens in Docker with:
+Fern golden generation was attempted in Docker with:
 
 ```sh
 for n in \
