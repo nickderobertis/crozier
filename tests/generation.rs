@@ -4245,3 +4245,24 @@ paths:
         "{wild_method}"
     );
 }
+
+#[test]
+fn missing_operation_id_uses_summary_for_method_name() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: Summary Naming, version: 1.0.0 }
+paths:
+  /things/{id}:
+    get:
+      summary: Fetch Thing
+      tags: [Things]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses: { '204': { description: Done } }
+"#,
+    );
+    let raw = &files["src/acme/things/raw_client.py"];
+    let client = &files["src/acme/things/client.py"];
+    assert!(raw.contains("def fetch_thing("), "{raw}");
+    assert!(client.contains("def fetch_thing("), "{client}");
+}

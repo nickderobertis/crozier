@@ -4303,7 +4303,7 @@ mod tests {
     use super::{
         auth_model, base_type_ref, build_endpoint, build_enum, environment_model, int_prim,
         method_from_grouped_id, module_from_grouped_id, oauth_scope_enum, scalar_body, singularize,
-        synthesized_method_name, Auth, Prim, TypeDecl, TypeRef,
+        synthesized_method_name, title_from_tag, Auth, Prim, TypeDecl, TypeRef,
     };
     use crate::openapi::{OpenApi, Schema, TypeField};
 
@@ -4643,6 +4643,19 @@ mod tests {
             serde_json::from_value(serde_json::json!({})).expect("empty document deserializes");
         let o = op("searchWidgets", "widgets");
         assert_eq!(module_title(&undeclared, &o, "/widgets"), "Widgets");
+    }
+
+    #[test]
+    fn tag_titles_distinguish_declared_labels_from_derived_names() {
+        let declared: OpenApi = serde_json::from_value(serde_json::json!({
+            "tags": [{ "name": "lower-case" }]
+        }))
+        .expect("document deserializes");
+        assert_eq!(title_from_tag(&declared, "lower-case"), "lower-case");
+
+        let undeclared: OpenApi =
+            serde_json::from_value(serde_json::json!({})).expect("document deserializes");
+        assert_eq!(title_from_tag(&undeclared, "lower-case"), "LowerCase");
     }
 
     #[test]
