@@ -91,6 +91,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e byautomata_io_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_proxy_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_connector_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_ecommerce_matches_fern_output
 
 # Format the codebase in place.
 format:
