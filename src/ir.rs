@@ -4302,10 +4302,11 @@ fn example_literal(value: &serde_json::Value) -> Option<String> {
 mod tests {
     use super::{
         auth_model, base_type_ref, build_endpoint, build_enum, environment_model, int_prim,
-        method_from_grouped_id, module_from_grouped_id, oauth_scope_enum,
-        request_and_response_refs_match, request_schema_use_count, resolve_schema_pointer,
-        response_schema, scalar_body, singularize, success_response_entry, synthesized_method_name,
-        title_from_tag, variant_class_name, Auth, Builder, Prim, TypeDecl, TypeRef,
+        method_from_grouped_id, module_from_grouped_id, module_identifier, oauth_scope_enum,
+        ref_to_class, request_and_response_refs_match, request_schema_use_count,
+        resolve_schema_pointer, response_schema, scalar_body, singularize, success_response_entry,
+        synthesized_method_name, title_from_tag, variant_class_name, Auth, Builder, InlineHoister,
+        Prim, TypeDecl, TypeRef,
     };
     use crate::openapi::{OpenApi, Operation, Response, Schema, TypeField};
 
@@ -5097,6 +5098,230 @@ mod tests {
             TypeRef::Primitive(Prim::Long)
         );
         assert_eq!(builder.types.len(), emitted);
+    }
+
+    #[test]
+    fn builder_hoists_top_level_inline_array_items() {
+        let schemas = indexmap::IndexMap::new();
+        let mut builder = Builder {
+            types: Vec::new(),
+            schemas: &schemas,
+            strip_discriminant: std::collections::HashMap::new(),
+            building_types: std::collections::HashSet::new(),
+        };
+        let array = schema(serde_json::json!({
+            "type": "array",
+            "items": {
+                "description": "One result.",
+                "type": "object",
+                "properties": { "id": { "type": "string" } }
+            }
+        }));
+        builder.add_named("Results", &array);
+        assert!(builder.types.iter().any(
+            |declaration| matches!(declaration, TypeDecl::Object(object) if object.name == "ResultsItem")
+        ));
+        assert!(builder.types.iter().any(|declaration| matches!(
+            declaration,
+            TypeDecl::Alias(alias)
+                if alias.name == "Results"
+                    && alias.target == TypeRef::List(Box::new(TypeRef::Named("ResultsItem".to_string())))
+        )));
+    }
+
+    #[test]
+    fn builder_constructs_inferred_and_explicit_discriminated_unions() {
+        let schemas = indexmap::IndexMap::new();
+        let mut inferred_builder = Builder {
+            types: Vec::new(),
+            schemas: &schemas,
+            strip_discriminant: std::collections::HashMap::new(),
+            building_types: std::collections::HashSet::new(),
+        };
+        let inferred = schema(serde_json::json!({
+            "oneOf": [
+                { "type": "object", "properties": {
+                    "kind": { "type": "string", "enum": ["cat"] },
+                    "whiskers": { "type": "integer" }
+                } },
+                { "type": "object", "properties": {
+                    "kind": { "type": "string", "enum": ["dog"] },
+                    "bark": { "type": "boolean" }
+                } }
+            ]
+        }));
+        let union = inferred_builder
+            .discriminated_union("Pet", "pet", &inferred, Some("A pet.".to_string()))
+            .expect("singleton enum property infers a discriminator");
+        assert_eq!(union.discriminant_property, "kind");
+        assert_eq!(
+            union
+                .members
+                .iter()
+                .map(|member| member.discriminant.as_str())
+                .collect::<Vec<_>>(),
+            ["cat", "dog"]
+        );
+        assert!(union.variant_targets.is_empty());
+        assert_eq!(inferred_builder.types.len(), 2);
+
+        let components: OpenApi = serde_json::from_value(serde_json::json!({
+            "components": { "schemas": {
+                "Cat": { "type": "object", "properties": { "lives": { "type": "integer" } } },
+                "Dog": { "type": "object", "properties": { "bark": { "type": "boolean" } } }
+            } }
+        }))
+        .expect("components deserialize");
+        let mut mapped_builder = Builder {
+            types: Vec::new(),
+            schemas: &components.components.schemas,
+            strip_discriminant: std::collections::HashMap::new(),
+            building_types: std::collections::HashSet::new(),
+        };
+        let mapped = schema(serde_json::json!({
+            "oneOf": [
+                { "$ref": "#/components/schemas/Cat" },
+                { "$ref": "#/components/schemas/Dog" }
+            ],
+            "discriminator": {
+                "propertyName": "kind",
+                "mapping": {
+                    "feline": "#/components/schemas/Cat",
+                    "canine": "#/components/schemas/Dog"
+                }
+            }
+        }));
+        let union = mapped_builder
+            .discriminated_union("Pet", "pet", &mapped, None)
+            .expect("explicit mapping resolves components");
+        assert_eq!(union.members.len(), 2);
+        let mut targets = union.variant_targets;
+        targets.sort();
+        assert_eq!(targets, ["Cat", "Dog"]);
+
+        let missing_target = schema(serde_json::json!({
+            "oneOf": [{ "$ref": "#/components/schemas/Missing" }],
+            "discriminator": {
+                "propertyName": "kind",
+                "mapping": { "missing": "#/components/schemas/Missing" }
+            }
+        }));
+        assert!(mapped_builder
+            .discriminated_union("Missing", "missing", &missing_target, None)
+            .is_none());
+    }
+
+    #[test]
+    fn field_type_ref_hoists_array_and_nested_property_unions() {
+        let schemas = indexmap::IndexMap::new();
+        let mut builder = Builder {
+            types: Vec::new(),
+            schemas: &schemas,
+            strip_discriminant: std::collections::HashMap::new(),
+            building_types: std::collections::HashSet::new(),
+        };
+        let array_union = schema(serde_json::json!({
+            "type": "array",
+            "items": {
+                "description": "Mixed values.",
+                "oneOf": [{ "type": "string" }, { "type": "integer" }]
+            }
+        }));
+        assert_eq!(
+            builder.field_type_ref("Record", "values", &array_union),
+            TypeRef::List(Box::new(TypeRef::Named("RecordValuesItem".to_string())))
+        );
+        assert!(builder.types.iter().any(|declaration| matches!(
+            declaration,
+            TypeDecl::Alias(alias)
+                if alias.name == "RecordValuesItem"
+                    && matches!(&alias.target, TypeRef::Union(variants) if variants.len() == 2)
+        )));
+
+        let nested_union = schema(serde_json::json!({
+            "anyOf": [
+                { "type": "array", "items": {
+                    "description": "Nested alternatives.",
+                    "anyOf": [{ "type": "string" }, { "type": "boolean" }]
+                } },
+                { "type": "object" },
+                { "type": "integer", "nullable": true }
+            ]
+        }));
+        assert_eq!(
+            builder.field_type_ref("Record", "choice", &nested_union),
+            TypeRef::Named("RecordChoice".to_string())
+        );
+        assert!(builder.types.iter().any(|declaration| matches!(
+            declaration,
+            TypeDecl::Alias(alias) if alias.name == "RecordChoiceZeroItem"
+        )));
+        assert!(builder.types.iter().any(|declaration| matches!(
+            declaration,
+            TypeDecl::Alias(alias)
+                if alias.name == "RecordChoice"
+                    && matches!(&alias.target, TypeRef::Union(variants)
+                        if variants.iter().any(|variant| matches!(variant, TypeRef::Dict(..)))
+                            && variants.iter().any(|variant| matches!(variant, TypeRef::Optional(_))))
+        )));
+    }
+
+    #[test]
+    fn inline_hoister_handles_enum_array_shapes_and_defensive_inputs() {
+        let mut hoister = InlineHoister {
+            root_types: &[],
+            out: Vec::new(),
+        };
+        for invalid in [
+            schema(serde_json::json!({ "type": "string" })),
+            schema(serde_json::json!({ "type": "array" })),
+            schema(serde_json::json!({
+                "type": "array", "items": { "$ref": "#/components/schemas/Kind" }
+            })),
+            schema(serde_json::json!({
+                "type": "array", "items": { "type": "string" }
+            })),
+        ] {
+            assert!(hoister.hoist_array_item_enum("Choice", &invalid).is_none());
+        }
+        let list = schema(serde_json::json!({
+            "type": "array",
+            "items": { "type": "string", "enum": ["a", "b"] }
+        }));
+        assert_eq!(
+            hoister.hoist_array_item_enum("Choice", &list),
+            Some(TypeRef::List(Box::new(TypeRef::Named(
+                "ChoiceItem".to_string()
+            ))))
+        );
+        let set = schema(serde_json::json!({
+            "type": "array", "uniqueItems": true,
+            "items": { "type": "string", "enum": ["x"] }
+        }));
+        assert_eq!(
+            hoister.hoist_array_item_enum("Unique", &set),
+            Some(TypeRef::Set(Box::new(TypeRef::Named(
+                "UniqueItem".to_string()
+            ))))
+        );
+        assert_eq!(hoister.out.len(), 2);
+    }
+
+    #[test]
+    fn reference_class_names_walk_properties_items_and_compositions() {
+        assert_eq!(ref_to_class("external/path-name"), "PathName");
+        assert_eq!(
+            ref_to_class(
+                "#/components/schemas/Root/properties/child/items/oneOf/0/properties/name"
+            ),
+            "RootChildItemName"
+        );
+        assert_eq!(
+            ref_to_class("#/components/schemas/Root/allOf/0/anyOf/1/items"),
+            "RootItem"
+        );
+        assert_eq!(module_identifier("list"), "list_");
+        assert_eq!(module_identifier("records"), "records");
     }
 
     #[test]
