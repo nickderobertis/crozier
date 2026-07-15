@@ -8226,6 +8226,102 @@ const APIDECK_CUSTOMER_SUPPORT: Corpus = Corpus {
     ],
 };
 
+const APIDECK_LEAD: Corpus = Corpus {
+    api: "apideck.com-lead",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[
+        ".fern/metadata.json",
+        "README.md",
+        "pyproject.toml",
+        "reference.md",
+        "requirements.txt",
+        "src/fern/__init__.py",
+        "src/fern/client.py",
+        "src/fern/core/__init__.py",
+        "src/fern/core/api_error.py",
+        "src/fern/core/client_wrapper.py",
+        "src/fern/core/datetime_utils.py",
+        "src/fern/core/file.py",
+        "src/fern/core/force_multipart.py",
+        "src/fern/core/http_client.py",
+        "src/fern/core/http_response.py",
+        "src/fern/core/http_sse/__init__.py",
+        "src/fern/core/http_sse/_api.py",
+        "src/fern/core/http_sse/_decoders.py",
+        "src/fern/core/http_sse/_exceptions.py",
+        "src/fern/core/http_sse/_models.py",
+        "src/fern/core/jsonable_encoder.py",
+        "src/fern/core/pydantic_utilities.py",
+        "src/fern/core/query_encoder.py",
+        "src/fern/core/remove_none_from_dict.py",
+        "src/fern/core/request_options.py",
+        "src/fern/core/serialization.py",
+        "src/fern/environment.py",
+        "src/fern/errors/__init__.py",
+        "src/fern/errors/bad_request_error.py",
+        "src/fern/errors/not_found_error.py",
+        "src/fern/errors/payment_required_error.py",
+        "src/fern/errors/unauthorized_error.py",
+        "src/fern/errors/unprocessable_entity_error.py",
+        "src/fern/leads/__init__.py",
+        "src/fern/leads/client.py",
+        "src/fern/leads/raw_client.py",
+        "src/fern/py.typed",
+        "src/fern/types/__init__.py",
+        "src/fern/types/address.py",
+        "src/fern/types/address_type.py",
+        "src/fern/types/bad_request_response.py",
+        "src/fern/types/bad_request_response_detail.py",
+        "src/fern/types/bank_account.py",
+        "src/fern/types/bank_account_account_type.py",
+        "src/fern/types/create_lead_response.py",
+        "src/fern/types/currency.py",
+        "src/fern/types/custom_field.py",
+        "src/fern/types/custom_field_value.py",
+        "src/fern/types/delete_lead_response.py",
+        "src/fern/types/email.py",
+        "src/fern/types/email_type.py",
+        "src/fern/types/get_lead_response.py",
+        "src/fern/types/get_leads_response.py",
+        "src/fern/types/lead.py",
+        "src/fern/types/lead_event_type.py",
+        "src/fern/types/lead_webhook_event.py",
+        "src/fern/types/leads_filter.py",
+        "src/fern/types/leads_sort.py",
+        "src/fern/types/leads_sort_by.py",
+        "src/fern/types/links.py",
+        "src/fern/types/meta.py",
+        "src/fern/types/meta_cursors.py",
+        "src/fern/types/not_found_response.py",
+        "src/fern/types/not_found_response_detail.py",
+        "src/fern/types/not_implemented_response.py",
+        "src/fern/types/not_implemented_response_detail.py",
+        "src/fern/types/payment_required_response.py",
+        "src/fern/types/phone_number.py",
+        "src/fern/types/phone_number_type.py",
+        "src/fern/types/row_version.py",
+        "src/fern/types/social_link.py",
+        "src/fern/types/sort_direction.py",
+        "src/fern/types/tags.py",
+        "src/fern/types/too_many_requests_response.py",
+        "src/fern/types/too_many_requests_response_detail.py",
+        "src/fern/types/unauthorized_response.py",
+        "src/fern/types/unexpected_error_response.py",
+        "src/fern/types/unexpected_error_response_detail.py",
+        "src/fern/types/unified_id.py",
+        "src/fern/types/unprocessable_response.py",
+        "src/fern/types/update_lead_response.py",
+        "src/fern/types/website.py",
+        "src/fern/types/website_type.py",
+        "src/fern/version.py",
+    ],
+};
+
 const CORPORA: &[&Corpus] = &[
     &QUERY_PARAMETERS,
     &EXHAUSTIVE,
@@ -8262,6 +8358,7 @@ const CORPORA: &[&Corpus] = &[
     &APIDECK_SMS,
     &APIDECK_ECOSYSTEM,
     &APIDECK_CUSTOMER_SUPPORT,
+    &APIDECK_LEAD,
 ];
 
 #[test]
@@ -8707,6 +8804,18 @@ fn apideck_customer_support_matches_fern_output() {
 }
 
 #[test]
+fn apideck_lead_matches_fern_output() {
+    if corpus_spec(APIDECK_LEAD.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the Apideck Lead corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+        );
+        return;
+    }
+    assert_corpus_matches(&APIDECK_LEAD);
+}
+
+#[test]
 fn feature_target_specs_generate_without_panicking() {
     // A feature-coverage target with a populated `matched` list is byte-compared
     // file-by-file; one with an empty `matched` list asserts only that crozier
@@ -8778,6 +8887,7 @@ fn report_matched_candidates() {
         &APIDECK_SMS,
         &APIDECK_ECOSYSTEM,
         &APIDECK_CUSTOMER_SUPPORT,
+        &APIDECK_LEAD,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
@@ -8920,6 +9030,7 @@ fn report_fixture_diffs() {
         &APIDECK_SMS,
         &APIDECK_ECOSYSTEM,
         &APIDECK_CUSTOMER_SUPPORT,
+        &APIDECK_LEAD,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
