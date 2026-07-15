@@ -272,12 +272,15 @@ fn default_package_name_derives_from_title() {
 }
 
 #[test]
-fn unique_items_array_maps_to_set() {
+fn unique_items_array_maps_to_set_unless_it_has_an_array_default() {
     let files = render(
-        "openapi: 3.0.0\ninfo:\n  title: S\ncomponents:\n  schemas:\n    Obj:\n      type: object\n      properties:\n        tags:\n          type: array\n          uniqueItems: true\n          items:\n            type: string\n",
+        "openapi: 3.0.0\ninfo:\n  title: S\ncomponents:\n  schemas:\n    Obj:\n      type: object\n      properties:\n        tags:\n          type: array\n          uniqueItems: true\n          items:\n            type: string\n        status:\n          type: array\n          uniqueItems: true\n          default: []\n          items:\n            type: string\n",
     );
     assert!(
         files["src/acme/types/obj.py"].contains("tags: typing.Optional[typing.Set[str]] = None")
+    );
+    assert!(
+        files["src/acme/types/obj.py"].contains("status: typing.Optional[typing.List[str]] = None")
     );
 }
 

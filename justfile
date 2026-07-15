@@ -85,6 +85,18 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_webhook_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_vault_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e airbyte_config_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e bintable_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apis_guru_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e color_pizza_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e byautomata_io_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_proxy_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_connector_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_ecommerce_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_issue_tracking_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e appwrite_client_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_file_storage_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_hris_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_accounting_matches_fern_output
 
 # Format the codebase in place.
 format:
