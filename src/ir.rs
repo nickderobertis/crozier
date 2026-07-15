@@ -2272,10 +2272,11 @@ fn resolve_request_body(
     }
     if schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("object")
         && schema.properties.is_empty()
-        && matches!(
-            schema.additional_properties,
-            Some(AdditionalProperties::Bool(false))
-        )
+        && (schema.properties.declared()
+            || matches!(
+                schema.additional_properties,
+                Some(AdditionalProperties::Bool(false))
+            ))
     {
         return Some(RequestBody::Inline(Vec::new()));
     }

@@ -7895,6 +7895,53 @@ const CALORIENINJAS: Corpus = Corpus {
     ],
 };
 
+const EOS: Corpus = Corpus {
+    api: "eos.local",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[
+        ".fern/metadata.json",
+        "README.md",
+        "pyproject.toml",
+        "reference.md",
+        "requirements.txt",
+        "src/fern/__init__.py",
+        "src/fern/client.py",
+        "src/fern/core/__init__.py",
+        "src/fern/core/api_error.py",
+        "src/fern/core/client_wrapper.py",
+        "src/fern/core/datetime_utils.py",
+        "src/fern/core/file.py",
+        "src/fern/core/force_multipart.py",
+        "src/fern/core/http_client.py",
+        "src/fern/core/http_response.py",
+        "src/fern/core/http_sse/__init__.py",
+        "src/fern/core/http_sse/_api.py",
+        "src/fern/core/http_sse/_decoders.py",
+        "src/fern/core/http_sse/_exceptions.py",
+        "src/fern/core/http_sse/_models.py",
+        "src/fern/core/jsonable_encoder.py",
+        "src/fern/core/pydantic_utilities.py",
+        "src/fern/core/query_encoder.py",
+        "src/fern/core/remove_none_from_dict.py",
+        "src/fern/core/request_options.py",
+        "src/fern/core/serialization.py",
+        "src/fern/environment.py",
+        "src/fern/py.typed",
+        "src/fern/raw_client.py",
+        "src/fern/types/__init__.py",
+        "src/fern/types/connections_response_item.py",
+        "src/fern/types/connections_response_item_last_handshake.py",
+        "src/fern/types/status_response.py",
+        "src/fern/types/status_response_last_handshake.py",
+        "src/fern/version.py",
+    ],
+};
+
 const CORPORA: &[&Corpus] = &[
     &QUERY_PARAMETERS,
     &EXHAUSTIVE,
@@ -7927,6 +7974,7 @@ const CORPORA: &[&Corpus] = &[
     &APIDECK_HRIS,
     &APIDECK_ACCOUNTING,
     &CALORIENINJAS,
+    &EOS,
 ];
 
 #[test]
@@ -8324,6 +8372,18 @@ fn calorieninjas_matches_fern_output() {
 }
 
 #[test]
+fn eos_matches_fern_output() {
+    if corpus_spec(EOS.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the EOS corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+        );
+        return;
+    }
+    assert_corpus_matches(&EOS);
+}
+
+#[test]
 fn feature_target_specs_generate_without_panicking() {
     // A feature-coverage target with a populated `matched` list is byte-compared
     // file-by-file; one with an empty `matched` list asserts only that crozier
@@ -8391,6 +8451,7 @@ fn report_matched_candidates() {
         &APIDECK_HRIS,
         &APIDECK_ACCOUNTING,
         &CALORIENINJAS,
+        &EOS,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
@@ -8529,6 +8590,7 @@ fn report_fixture_diffs() {
         &APIDECK_HRIS,
         &APIDECK_ACCOUNTING,
         &CALORIENINJAS,
+        &EOS,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
