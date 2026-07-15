@@ -1455,6 +1455,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     let has_required_non_body_params = first.request_body.is_none()
         && (!first.path_params.is_empty()
             || first.query_params.iter().any(|param| param.required)
+            || first.query_params.iter().any(|param| param.convert)
             || first.header_params.iter().any(|param| param.required));
     let has_map_response = first
         .response
@@ -4993,21 +4994,23 @@ fn build_example(
     // required query/header params, then the request body (a single `request`, or
     // each required inlined field).
     let mut args: Vec<(Option<String>, Example)> = Vec::new();
-    for pp in &ep.path_params {
-        let v = if matches!(pp.type_ref, TypeRef::List(_) | TypeRef::Set(_)) {
-            // Fern's path placeholder stays a string even for the unusual array
-            // path parameters accepted by its OpenAPI importer.
-            Example::Atom(format!("{:?}", pp.wire_name))
-        } else {
-            pp.example
-                .as_ref()
-                .filter(|_| !ep.binary_response && ctx.example_is_scalar(&pp.type_ref))
-                .map_or_else(
-                    || ctx.value(&pp.type_ref, Slot::Named(&pp.wire_name)),
-                    |example| Example::Atom(example.clone()),
-                )
-        };
-        args.push((Some(pp.py_name.clone()), v));
+    if !ep.markdown_response {
+        for pp in &ep.path_params {
+            let v = if matches!(pp.type_ref, TypeRef::List(_) | TypeRef::Set(_)) {
+                // Fern's path placeholder stays a string even for the unusual array
+                // path parameters accepted by its OpenAPI importer.
+                Example::Atom(format!("{:?}", pp.wire_name))
+            } else {
+                pp.example
+                    .as_ref()
+                    .filter(|_| !ep.binary_response && ctx.example_is_scalar(&pp.type_ref))
+                    .map_or_else(
+                        || ctx.value(&pp.type_ref, Slot::Named(&pp.wire_name)),
+                        |example| Example::Atom(example.clone()),
+                    )
+            };
+            args.push((Some(pp.py_name.clone()), v));
+        }
     }
     // Fern follows signature ordering: all required query/header arguments first,
     // then optional query/header arguments that carry examples.
@@ -5885,6 +5888,7 @@ mod tests {
             reference_description_trailing_blank: false,
             streaming: false,
             text_response: false,
+            markdown_response: false,
             binary_response: false,
             emittable: true,
         }

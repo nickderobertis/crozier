@@ -598,6 +598,9 @@ pub struct Endpoint {
     pub streaming: bool,
     /// Whether the selected success response uses `text/plain` media.
     pub text_response: bool,
+    /// Whether the success body is Markdown text. Fern types it as `str` but
+    /// omits path arguments from the generated worked example.
+    pub markdown_response: bool,
     /// Whether the success response is a binary download (`format: binary`).
     /// Fern emits these as context-managed byte streams instead of buffering.
     pub binary_response: bool,
@@ -1465,7 +1468,19 @@ fn build_endpoint(
                 });
             let convert = type_needs_convert(&type_ref, types);
             // A parameter-level `example` wins; otherwise the schema's own.
-            let example = parameter_example(doc, p);
+            let example = if p.required != Some(true)
+                && p.example.is_none()
+                && p.examples.is_empty()
+                && p.schema
+                    .as_ref()
+                    .and_then(|schema| schema.reference.as_deref())
+                    .and_then(|reference| resolve_ref(doc, reference))
+                    .is_some_and(|schema| string_enum_values(schema).is_some())
+            {
+                None
+            } else {
+                parameter_example(doc, p)
+            };
             let example_is_scalar = p.schema.as_ref().is_some_and(|schema| {
                 let schema = schema
                     .reference
@@ -1755,6 +1770,7 @@ fn build_endpoint(
             .is_some_and(|description| description.ends_with("\n\n")),
         streaming: is_streaming(op),
         text_response: has_text_response(op),
+        markdown_response: has_markdown_response(op),
         binary_response: is_binary_response(doc, op),
         emittable,
     }
@@ -2752,6 +2768,7 @@ fn success_response(op: &Operation) -> Option<TypeRef> {
             response
                 .content
                 .get("text/plain")
+                .or_else(|| response.content.get("text/markdown"))
                 .and_then(|media| media.schema.as_ref())
                 .map(|_| TypeRef::Primitive(Prim::Str))
         })
@@ -2761,8 +2778,14 @@ fn has_text_response(op: &Operation) -> bool {
     success_response_entry(op).is_some_and(|response| {
         !response.content.contains_key("application/json")
             && !response.content.contains_key("*/*")
-            && response.content.contains_key("text/plain")
+            && (response.content.contains_key("text/plain")
+                || response.content.contains_key("text/markdown"))
     })
+}
+
+fn has_markdown_response(op: &Operation) -> bool {
+    success_response_entry(op)
+        .is_some_and(|response| response.content.contains_key("text/markdown"))
 }
 
 fn has_bodyless_success(op: &Operation) -> bool {
@@ -2900,18 +2923,21 @@ fn method_from_groupless_id(id: &str, tag: Option<&str>) -> String {
     let snake = naming::to_snake_case(id);
     let tag_snake = tag.map(naming::to_snake_case).unwrap_or_default();
     let method = if tag_snake.is_empty() || stripped_suffix_has_acronym(id, tag) {
-        &snake
+        snake.clone()
+    } else if let Some((_, suffix)) = tag.and_then(|tag| operation_id_tag_prefix(id, tag)) {
+        naming::to_snake_case(suffix)
     } else {
         snake
             .strip_prefix(&format!("{tag_snake}_"))
             .unwrap_or(&snake)
+            .to_string()
     };
     // This name is *derived* (a tag prefix stripped off a camelCase id), so — unlike
     // the verbatim `method_from_grouped_id` — reserved words are safe-named the way
     // Fern does it: a "list all" endpoint under tag `Activities` becomes `all_`, not
     // the builtin-shadowing `all`. Uses the method-specific reserved set (keywords +
     // `all`), so appwrite's derived `list` stays `list`, matching Fern.
-    let ident = naming::sanitize_identifier(method);
+    let ident = naming::sanitize_identifier(&method);
     let reserved = tag.map_or_else(
         || naming::is_reserved(&ident),
         |_| naming::is_reserved_method(&ident),
@@ -2921,6 +2947,24 @@ fn method_from_groupless_id(id: &str, tag: Option<&str>) -> String {
     } else {
         ident
     }
+}
+
+/// Split a camelCase operation id whose leading characters spell its tag. The
+/// actual operation-id casing is retained so an acronym tag such as `APIs` paired
+/// with `apisAll` groups as `apis` rather than the generic tag spelling `ap_is`.
+fn operation_id_tag_prefix<'a>(id: &'a str, tag: &str) -> Option<(&'a str, &'a str)> {
+    let prefix = id.get(..tag.len())?;
+    let suffix = id.get(tag.len()..)?;
+    if suffix.is_empty()
+        || !prefix.eq_ignore_ascii_case(tag)
+        || !suffix
+            .chars()
+            .next()
+            .is_some_and(|ch| ch.is_ascii_uppercase())
+    {
+        return None;
+    }
+    Some((prefix, suffix))
 }
 
 fn stripped_suffix_has_acronym(id: &str, tag: Option<&str>) -> bool {
@@ -3138,6 +3182,9 @@ fn endpoint_module(op: &Operation, url: &str) -> String {
         return snake_module(first_tag(op).expect("mismatch implies a tag"));
     }
     if let Some(tag) = first_tag(op) {
+        if let Some((prefix, _)) = operation_id_tag_prefix(id, tag) {
+            return snake_module(prefix);
+        }
         return snake_module(tag);
     }
     if !id.is_empty() {
