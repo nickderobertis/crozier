@@ -4,27 +4,79 @@ set -euo pipefail
 root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 cd "$root"
 
-audit=docs/batch2-coverage-audit.md
+audit=${CROZIER_AUDIT_FILE:-docs/batch2-coverage-audit.md}
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 
 extract_constructs() {
-    local file=$1 test_start=$2
-    awk -v file="$file" -v test_start="$test_start" '
+    local file=$1 excluded=${2:-}
+    awk -v file="$file" -v excluded="$excluded" '
+        BEGIN {
+            count = split(excluded, spans, ",")
+            for (i = 1; i <= count; i++) {
+                split(spans[i], bounds, "-")
+                excluded_start[i] = bounds[1] + 0
+                excluded_end[i] = bounds[2] + 0
+            }
+        }
+        function is_excluded(candidate, i) {
+            for (i = 1; i <= count; i++) {
+                if (candidate >= excluded_start[i] && candidate <= excluded_end[i]) return 1
+            }
+            return 0
+        }
+        function code_only(source, i, ch, next_ch, output, quoted, escaped) {
+            output = ""; quoted = 0; escaped = 0
+            for (i = 1; i <= length(source); i++) {
+                ch = substr(source, i, 1); next_ch = substr(source, i + 1, 1)
+                if (!quoted && ch == "/" && next_ch == "/") break
+                if (!escaped && ch == "\"") {
+                    quoted = !quoted
+                    output = output " "
+                } else if (quoted) {
+                    escaped = !escaped && ch == "\\"
+                    output = output " "
+                } else {
+                    escaped = 0
+                    output = output ch
+                }
+            }
+            return output
+        }
         /^@@/ {
             if (match($0, /\+[0-9]+/)) line = substr($0, RSTART + 1, RLENGTH - 1) + 0
             next
         }
         /^\+\+\+/ { next }
         /^\+/ {
-            text = substr($0, 2)
-            control = text ~ /^[[:space:]]*(if|else([[:space:]]+if)?|match|for|while|loop|return|break|continue)[[:space:]({]/ \
+            text = code_only(substr($0, 2))
+            inside_macro = macro_depth > 0
+            if (text ~ /\.map_or_else\(/) expected_closures = 2
+            else if (text ~ /\.unwrap_or_else\(/) expected_closures = 1
+            named_closure = text ~ /^[[:space:]]*\|[^|]+\|/ \
+                || text ~ /[(,][[:space:]]*\|[^|]+\|/
+            zero_closure = expected_closures > 0 \
+                && (text ~ /^[[:space:]]*\|\|/ || text ~ /[(,][[:space:]]*\|\|/)
+            control = text ~ /^[[:space:]]*(if|match)[[:space:]({]/ \
+                || text ~ /[=;}][[:space:]]+(if|else([[:space:]]+if)?|match)[[:space:]({]/ \
+                || text ~ /^[[:space:]]*}[[:space:]]*else([[:space:]]+if)?[[:space:]({]/ \
+                || text ~ /^[[:space:]]*(for|while|loop|return|break|continue)[[:space:]({;]/ \
                 || text ~ /^[[:space:]]*(pub(\([^)]*\))?[[:space:]]+)?(async[[:space:]]+)?(const[[:space:]]+)?(unsafe[[:space:]]+)?fn[[:space:]]/ \
-                || text ~ /\.(or_else|and_then|is_some_and|filter|find|find_map|flat_map|map|map_or|map_or_else|any|all|then|then_some)\(/ \
-                || text ~ /\|[^|]*\|/ \
+                || text ~ /\.(or_else|and_then|is_some_and|filter|find|find_map|flat_map|map|map_or|map_or_else|unwrap_or_else|any|all|then|then_some)(::<[^>]+>)?\(/ \
+                || named_closure \
+                || zero_closure \
                 || text ~ /=>/ \
                 || text ~ /\?([,;.)]|$)/
-            if (line < test_start && control) print file ":" line
+            if (!is_excluded(line) && control && !inside_macro) print file ":" line
+            if (expected_closures > 0 && (named_closure || zero_closure)) expected_closures--
+            if (expected_closures > 0 && text ~ /^[[:space:]]*\)/) expected_closures = 0
+            if (text ~ /matches!\(/) macro_depth = 1
+            if (macro_depth > 0) {
+                opens = text; open_count = gsub(/\(/, "", opens)
+                closes = text; close_count = gsub(/\)/, "", closes)
+                macro_depth += open_count - close_count
+                if (text ~ /matches!\(/) macro_depth--
+            }
             line++
             next
         }
@@ -71,7 +123,7 @@ if [[ ${1:-} == --self-test ]]; then
 +        None => None,
 +    }
 +}'
-    actual=$(printf '%s\n' "$synthetic" | extract_constructs src/sample.rs 999)
+    actual=$(printf '%s\n' "$synthetic" | extract_constructs src/sample.rs "")
     expected='src/sample.rs:10
 src/sample.rs:11
 src/sample.rs:12
@@ -83,6 +135,39 @@ src/sample.rs:21
 src/sample.rs:22'
     [[ $actual == "$expected" ]] || {
         printf 'multiline extraction mismatch\nexpected:\n%s\nactual:\n%s\n' "$expected" "$actual" >&2
+        exit 1
+    }
+    lexical='@@ -0,0 +100,18 @@
++fn production(value: Option<u8>) -> Option<u8> {
++    // if match return |comment| => ?
++    let text = "if match return |string| => ?";
++    fake!(if true { return None; });
++    let output = value
++        .map::<u8>(
++            |item| item + 1,
++        )?;
++    match output {
++        Some(item)
++            => Some(item),
++        None => None,
++    }
++}
++#[cfg(test)]
++mod tests { fn ignored() { if true {} } }
++fn later_production() { return; }
++'
+    lexical_actual=$(printf '%s\n' "$lexical" | extract_constructs src/sample.rs "114-115")
+    lexical_expected='src/sample.rs:100
+src/sample.rs:105
+src/sample.rs:106
+src/sample.rs:107
+src/sample.rs:108
+src/sample.rs:110
+src/sample.rs:111
+src/sample.rs:116'
+    [[ $lexical_actual == "$lexical_expected" ]] || {
+        printf 'lexical extraction mismatch\nexpected:\n%s\nactual:\n%s\n' \
+            "$lexical_expected" "$lexical_actual" >&2
         exit 1
     }
     synthetic_audit='## emit.rs
@@ -107,19 +192,20 @@ src/sample.rs:22'
 fi
 
 for file in emit ir openapi naming; do
-    test_start=$(rg -n '^#\[cfg\(test\)\]' "src/$file.rs" | head -n1 | cut -d: -f1)
+    test_ranges=$(cargo run --quiet --example audit_syntax -- "src/$file.rs" | paste -sd, -)
     git diff --unified=0 origin/main..HEAD -- "src/$file.rs" \
-        | extract_constructs "src/$file.rs" "$test_start" >> "$tmp/constructs"
+        | extract_constructs "src/$file.rs" "$test_ranges" >> "$tmp/constructs"
 done
 sort -u "$tmp/constructs" -o "$tmp/constructs"
+
+if [[ ${1:-} == --dump-constructs ]]; then
+    cat "$tmp/constructs"
+    exit 0
+fi
 
 extract_inventory_lines < "$audit" > "$tmp/inventory-lines-raw"
 sort -u "$tmp/inventory-lines-raw" > "$tmp/inventory-lines"
 
-mappings_are_exact "$tmp/constructs" "$tmp/inventory-lines-raw" || {
-    echo "one or more constructs do not map to exactly one inventory entry" >&2
-    exit 1
-}
 while IFS= read -r construct; do
     count=$(grep -cFx "$construct" "$tmp/inventory-lines-raw" || true)
     if [[ $count -ne 1 ]]; then

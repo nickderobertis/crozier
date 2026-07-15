@@ -160,10 +160,12 @@ dependencies = [
  "indexmap",
  "minijinja",
  "predicates",
+ "proc-macro2",
  "schemars",
  "serde",
  "serde_json",
  "serde_yaml_ng",
+ "syn",
  "tempfile",
  "thiserror",
 ]
