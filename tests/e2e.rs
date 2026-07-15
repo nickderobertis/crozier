@@ -7131,6 +7131,104 @@ const APIDECK_ISSUE_TRACKING: Corpus = Corpus {
     ],
 };
 
+const APPWRITE_CLIENT: Corpus = Corpus {
+    api: "appwrite.io-client",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[
+        ".fern/metadata.json",
+        "README.md",
+        "pyproject.toml",
+        "reference.md",
+        "requirements.txt",
+        "src/fern/__init__.py",
+        "src/fern/account/__init__.py",
+        "src/fern/account/client.py",
+        "src/fern/account/raw_client.py",
+        "src/fern/avatars/__init__.py",
+        "src/fern/avatars/client.py",
+        "src/fern/avatars/raw_client.py",
+        "src/fern/client.py",
+        "src/fern/core/__init__.py",
+        "src/fern/core/api_error.py",
+        "src/fern/core/client_wrapper.py",
+        "src/fern/core/datetime_utils.py",
+        "src/fern/core/file.py",
+        "src/fern/core/force_multipart.py",
+        "src/fern/core/http_client.py",
+        "src/fern/core/http_response.py",
+        "src/fern/core/http_sse/__init__.py",
+        "src/fern/core/http_sse/_api.py",
+        "src/fern/core/http_sse/_decoders.py",
+        "src/fern/core/http_sse/_exceptions.py",
+        "src/fern/core/http_sse/_models.py",
+        "src/fern/core/jsonable_encoder.py",
+        "src/fern/core/pydantic_utilities.py",
+        "src/fern/core/query_encoder.py",
+        "src/fern/core/remove_none_from_dict.py",
+        "src/fern/core/request_options.py",
+        "src/fern/core/serialization.py",
+        "src/fern/database/__init__.py",
+        "src/fern/database/client.py",
+        "src/fern/database/raw_client.py",
+        "src/fern/environment.py",
+        "src/fern/functions/__init__.py",
+        "src/fern/functions/client.py",
+        "src/fern/functions/raw_client.py",
+        "src/fern/locale/__init__.py",
+        "src/fern/locale/client.py",
+        "src/fern/locale/raw_client.py",
+        "src/fern/py.typed",
+        "src/fern/storage/__init__.py",
+        "src/fern/storage/client.py",
+        "src/fern/storage/raw_client.py",
+        "src/fern/teams/__init__.py",
+        "src/fern/teams/client.py",
+        "src/fern/teams/raw_client.py",
+        "src/fern/types/__init__.py",
+        "src/fern/types/collection.py",
+        "src/fern/types/continent.py",
+        "src/fern/types/continent_list.py",
+        "src/fern/types/country.py",
+        "src/fern/types/country_list.py",
+        "src/fern/types/currency.py",
+        "src/fern/types/currency_list.py",
+        "src/fern/types/document.py",
+        "src/fern/types/document_list.py",
+        "src/fern/types/error.py",
+        "src/fern/types/execution.py",
+        "src/fern/types/execution_list.py",
+        "src/fern/types/file.py",
+        "src/fern/types/file_list.py",
+        "src/fern/types/function.py",
+        "src/fern/types/jwt.py",
+        "src/fern/types/language.py",
+        "src/fern/types/language_list.py",
+        "src/fern/types/locale.py",
+        "src/fern/types/log.py",
+        "src/fern/types/log_list.py",
+        "src/fern/types/membership.py",
+        "src/fern/types/membership_list.py",
+        "src/fern/types/permissions.py",
+        "src/fern/types/phone.py",
+        "src/fern/types/phone_list.py",
+        "src/fern/types/preferences.py",
+        "src/fern/types/rule.py",
+        "src/fern/types/session.py",
+        "src/fern/types/session_list.py",
+        "src/fern/types/tag.py",
+        "src/fern/types/team.py",
+        "src/fern/types/team_list.py",
+        "src/fern/types/token.py",
+        "src/fern/types/user.py",
+        "src/fern/version.py",
+    ],
+};
+
 const CORPORA: &[&Corpus] = &[
     &QUERY_PARAMETERS,
     &EXHAUSTIVE,
@@ -7158,6 +7256,7 @@ const CORPORA: &[&Corpus] = &[
     &APIDECK_CONNECTOR,
     &APIDECK_ECOMMERCE,
     &APIDECK_ISSUE_TRACKING,
+    &APPWRITE_CLIENT,
 ];
 
 #[test]
@@ -7495,6 +7594,18 @@ fn apideck_issue_tracking_matches_fern_output() {
 }
 
 #[test]
+fn appwrite_client_matches_fern_output() {
+    if corpus_spec(APPWRITE_CLIENT.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the Appwrite Client corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+        );
+        return;
+    }
+    assert_corpus_matches(&APPWRITE_CLIENT);
+}
+
+#[test]
 fn feature_target_specs_generate_without_panicking() {
     // A feature-coverage target with a populated `matched` list is byte-compared
     // file-by-file; one with an empty `matched` list asserts only that crozier
@@ -7557,6 +7668,7 @@ fn report_matched_candidates() {
         &APIDECK_CONNECTOR,
         &APIDECK_ECOMMERCE,
         &APIDECK_ISSUE_TRACKING,
+        &APPWRITE_CLIENT,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
@@ -7690,6 +7802,7 @@ fn report_fixture_diffs() {
         &APIDECK_CONNECTOR,
         &APIDECK_ECOMMERCE,
         &APIDECK_ISSUE_TRACKING,
+        &APPWRITE_CLIENT,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
