@@ -125,25 +125,26 @@ for n in \
 done
 ```
 
-## Batch 4 — selected (issue #77)
+## Batch 4 — byte-matched (issue #77)
 
 Native Fern CLI 5.67.1 screening exhausted the manifest's remaining unused
-entries. Exactly eight specs genuinely passed Fern and were selected below.
-Docker-backed golden generation succeeded for seven, which now proceed to byte
-matching. `codesearch.debian.net` failed Fern golden generation and is dropped.
-Every other unused entry failed Fern, so all 50 manifest rows are accounted for
-and there are no backups to invent.
+entries. Exactly eight specs genuinely passed Fern and were selected below;
+Docker-backed golden generation succeeded for seven, and all seven are now
+byte-matched. `codesearch.debian.net` failed Fern golden generation. Twelve
+corpora were dropped in total: that one golden-generation failure plus eleven
+screening failures, all marked do not retry. All 50 manifest rows are accounted
+for, with no backups to invent.
 
 | name | selected for | status |
 |---|---|---|
-| `apache.org-airflow` | 50 paths / 85 schemas; 22 allOf, anyOf, discriminator; Crozier currently fails because `airflow_api_(stable)` produces invalid Python, making this an intentional generator-gap target | Selected — Fern golden generation pending |
-| `apideck.com-lead` | anyOf/allOf, free-form maps, two deepObject params | Selected — Fern golden generation pending |
-| `apideck.com-ecosystem` | 12 paths / 32 schemas; 17 free-form maps | Selected — Fern golden generation pending |
-| `apideck.com-customer-support` | anyOf plus maps | Selected — Fern golden generation pending |
-| `apideck.com-sms` | compact anyOf corpus | Selected — Fern golden generation pending |
-| `eos.local` | four paths, all-inline / zero named schemas | Selected — Fern golden generation pending |
+| `apache.org-airflow` | 50 paths / 85 schemas; 22 allOf, anyOf, discriminator; invalid title-derived `airflow_api_(stable)` package naming made this an intentional generator-gap target | ✅ matched (182) — fixed invalid title-derived package naming |
+| `apideck.com-lead` | anyOf/allOf, free-form maps, two deepObject params | ✅ matched (84) |
+| `apideck.com-ecosystem` | 12 paths / 32 schemas; 17 free-form maps | ✅ matched (86) |
+| `apideck.com-customer-support` | anyOf plus maps | ✅ matched (89) |
+| `apideck.com-sms` | compact anyOf corpus | ✅ matched (73) |
+| `eos.local` | four paths, all-inline / zero named schemas | ✅ matched (35) |
 | `codesearch.debian.net` | compact conventional two-schema baseline | **DROPPED** — Fern golden generation failed (do not retry) |
-| `calorieninjas.com` | minimal one-path / zero-schema boundary case | Selected — Fern golden generation pending |
+| `calorieninjas.com` | minimal one-path / zero-schema boundary case | ✅ matched (30) |
 | `conjur.local` | screened but Fern did not produce a usable result | **DROPPED** — Fern falsely returned success while stderr reported an OpenAPI parse failure and an unresolved response reference (do not retry) |
 | `asana.com` | screened but failed Fern validation | **DROPPED** — Fern check failed with 17 fatal diagnostics (do not retry) |
 | `apideck.com-pos` | screened but failed Fern validation | **DROPPED** — Fern check failed with 4 fatal diagnostics (do not retry) |
