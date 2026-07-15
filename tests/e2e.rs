@@ -2007,6 +2007,199 @@ const APIDECK_CRM: Corpus = Corpus {
     matched: &[],
 };
 
+const APIDECK_HRIS: Corpus = Corpus {
+    api: "apideck.com-hris",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[
+        ".fern/metadata.json",
+        "README.md",
+        "pyproject.toml",
+        "reference.md",
+        "requirements.txt",
+        "src/fern/__init__.py",
+        "src/fern/client.py",
+        "src/fern/companies/__init__.py",
+        "src/fern/companies/client.py",
+        "src/fern/companies/raw_client.py",
+        "src/fern/core/__init__.py",
+        "src/fern/core/api_error.py",
+        "src/fern/core/client_wrapper.py",
+        "src/fern/core/datetime_utils.py",
+        "src/fern/core/file.py",
+        "src/fern/core/force_multipart.py",
+        "src/fern/core/http_client.py",
+        "src/fern/core/http_response.py",
+        "src/fern/core/http_sse/__init__.py",
+        "src/fern/core/http_sse/_api.py",
+        "src/fern/core/http_sse/_decoders.py",
+        "src/fern/core/http_sse/_exceptions.py",
+        "src/fern/core/http_sse/_models.py",
+        "src/fern/core/jsonable_encoder.py",
+        "src/fern/core/pydantic_utilities.py",
+        "src/fern/core/query_encoder.py",
+        "src/fern/core/remove_none_from_dict.py",
+        "src/fern/core/request_options.py",
+        "src/fern/core/serialization.py",
+        "src/fern/departments/__init__.py",
+        "src/fern/departments/client.py",
+        "src/fern/departments/raw_client.py",
+        "src/fern/employee_payrolls/__init__.py",
+        "src/fern/employee_payrolls/client.py",
+        "src/fern/employee_payrolls/raw_client.py",
+        "src/fern/employee_schedules/__init__.py",
+        "src/fern/employee_schedules/client.py",
+        "src/fern/employee_schedules/raw_client.py",
+        "src/fern/employees/__init__.py",
+        "src/fern/employees/client.py",
+        "src/fern/employees/raw_client.py",
+        "src/fern/environment.py",
+        "src/fern/errors/__init__.py",
+        "src/fern/errors/bad_request_error.py",
+        "src/fern/errors/not_found_error.py",
+        "src/fern/errors/payment_required_error.py",
+        "src/fern/errors/unauthorized_error.py",
+        "src/fern/errors/unprocessable_entity_error.py",
+        "src/fern/jobs/__init__.py",
+        "src/fern/jobs/client.py",
+        "src/fern/jobs/raw_client.py",
+        "src/fern/payrolls/__init__.py",
+        "src/fern/payrolls/client.py",
+        "src/fern/payrolls/raw_client.py",
+        "src/fern/py.typed",
+        "src/fern/time_off_requests/__init__.py",
+        "src/fern/time_off_requests/client.py",
+        "src/fern/time_off_requests/raw_client.py",
+        "src/fern/types/__init__.py",
+        "src/fern/types/address.py",
+        "src/fern/types/address_type.py",
+        "src/fern/types/bad_request_response.py",
+        "src/fern/types/bad_request_response_detail.py",
+        "src/fern/types/benefit.py",
+        "src/fern/types/company_id.py",
+        "src/fern/types/company_name.py",
+        "src/fern/types/compensation.py",
+        "src/fern/types/create_department_response.py",
+        "src/fern/types/create_employee_response.py",
+        "src/fern/types/create_hris_company_response.py",
+        "src/fern/types/create_time_off_request_response.py",
+        "src/fern/types/created_at.py",
+        "src/fern/types/created_by.py",
+        "src/fern/types/currency.py",
+        "src/fern/types/custom_field.py",
+        "src/fern/types/custom_field_value.py",
+        "src/fern/types/deduction.py",
+        "src/fern/types/delete_department_response.py",
+        "src/fern/types/delete_employee_response.py",
+        "src/fern/types/delete_hris_company_response.py",
+        "src/fern/types/delete_time_off_request_response.py",
+        "src/fern/types/department.py",
+        "src/fern/types/description.py",
+        "src/fern/types/division.py",
+        "src/fern/types/email.py",
+        "src/fern/types/email_type.py",
+        "src/fern/types/employee.py",
+        "src/fern/types/employee_compensations_item.py",
+        "src/fern/types/employee_compensations_item_flsa_status.py",
+        "src/fern/types/employee_employment_role.py",
+        "src/fern/types/employee_employment_role_sub_type.py",
+        "src/fern/types/employee_employment_role_type.py",
+        "src/fern/types/employee_jobs_item.py",
+        "src/fern/types/employee_leaving_reason.py",
+        "src/fern/types/employee_manager.py",
+        "src/fern/types/employee_number.py",
+        "src/fern/types/employee_partner.py",
+        "src/fern/types/employee_payroll.py",
+        "src/fern/types/employee_payrolls.py",
+        "src/fern/types/employee_schedules.py",
+        "src/fern/types/employee_social_links_item.py",
+        "src/fern/types/employee_team.py",
+        "src/fern/types/employees_filter.py",
+        "src/fern/types/employees_filter_employment_status.py",
+        "src/fern/types/employees_sort.py",
+        "src/fern/types/employees_sort_by.py",
+        "src/fern/types/employment_status.py",
+        "src/fern/types/first_name.py",
+        "src/fern/types/gender.py",
+        "src/fern/types/get_department_response.py",
+        "src/fern/types/get_departments_response.py",
+        "src/fern/types/get_employee_payroll_response.py",
+        "src/fern/types/get_employee_payrolls_response.py",
+        "src/fern/types/get_employee_response.py",
+        "src/fern/types/get_employee_schedules_response.py",
+        "src/fern/types/get_employees_response.py",
+        "src/fern/types/get_hris_companies_response.py",
+        "src/fern/types/get_hris_company_response.py",
+        "src/fern/types/get_hris_job_response.py",
+        "src/fern/types/get_hris_jobs_response.py",
+        "src/fern/types/get_payroll_response.py",
+        "src/fern/types/get_payrolls_response.py",
+        "src/fern/types/get_time_off_request_response.py",
+        "src/fern/types/get_time_off_requests_response.py",
+        "src/fern/types/hris_company.py",
+        "src/fern/types/hris_company_status.py",
+        "src/fern/types/hris_event_type.py",
+        "src/fern/types/hris_job.py",
+        "src/fern/types/hris_job_location.py",
+        "src/fern/types/hris_jobs.py",
+        "src/fern/types/id.py",
+        "src/fern/types/language.py",
+        "src/fern/types/last_name.py",
+        "src/fern/types/links.py",
+        "src/fern/types/meta.py",
+        "src/fern/types/meta_cursors.py",
+        "src/fern/types/middle_name.py",
+        "src/fern/types/not_found_response.py",
+        "src/fern/types/not_found_response_detail.py",
+        "src/fern/types/not_implemented_response.py",
+        "src/fern/types/not_implemented_response_detail.py",
+        "src/fern/types/payment_required_response.py",
+        "src/fern/types/payment_unit.py",
+        "src/fern/types/payroll.py",
+        "src/fern/types/payroll_totals.py",
+        "src/fern/types/payrolls_filter.py",
+        "src/fern/types/phone_number.py",
+        "src/fern/types/phone_number_type.py",
+        "src/fern/types/photo_url.py",
+        "src/fern/types/row_version.py",
+        "src/fern/types/schedule.py",
+        "src/fern/types/schedule_work_pattern.py",
+        "src/fern/types/schedule_work_pattern_even_weeks.py",
+        "src/fern/types/schedule_work_pattern_odd_weeks.py",
+        "src/fern/types/sort_direction.py",
+        "src/fern/types/tax.py",
+        "src/fern/types/time_off_request.py",
+        "src/fern/types/time_off_request_notes.py",
+        "src/fern/types/time_off_request_request_type.py",
+        "src/fern/types/time_off_request_status.py",
+        "src/fern/types/time_off_request_units.py",
+        "src/fern/types/time_off_requests_filter.py",
+        "src/fern/types/time_off_requests_filter_time_off_request_status.py",
+        "src/fern/types/title.py",
+        "src/fern/types/too_many_requests_response.py",
+        "src/fern/types/too_many_requests_response_detail.py",
+        "src/fern/types/unauthorized_response.py",
+        "src/fern/types/unexpected_error_response.py",
+        "src/fern/types/unexpected_error_response_detail.py",
+        "src/fern/types/unified_id.py",
+        "src/fern/types/unprocessable_response.py",
+        "src/fern/types/update_department_response.py",
+        "src/fern/types/update_employee_response.py",
+        "src/fern/types/update_hris_company_response.py",
+        "src/fern/types/update_time_off_request_response.py",
+        "src/fern/types/updated_at.py",
+        "src/fern/types/updated_by.py",
+        "src/fern/types/webhook_event.py",
+        "src/fern/types/website.py",
+        "src/fern/types/website_type.py",
+        "src/fern/version.py",
+    ],
+};
+
 /// Files crozier does not yet reproduce for `apideck.com-crm`. Now **empty** —
 /// crozier matches the whole golden byte-for-byte. Kept (with its guard) so a
 /// future regression that can only be quarantined lands here explicitly rather than
@@ -7401,6 +7594,7 @@ const CORPORA: &[&Corpus] = &[
     &APIDECK_ISSUE_TRACKING,
     &APPWRITE_CLIENT,
     &APIDECK_FILE_STORAGE,
+    &APIDECK_HRIS,
 ];
 
 #[test]
@@ -7762,6 +7956,18 @@ fn apideck_file_storage_matches_fern_output() {
 }
 
 #[test]
+fn apideck_hris_matches_fern_output() {
+    if corpus_spec(APIDECK_HRIS.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the Apideck HRIS corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+        );
+        return;
+    }
+    assert_corpus_matches(&APIDECK_HRIS);
+}
+
+#[test]
 fn feature_target_specs_generate_without_panicking() {
     // A feature-coverage target with a populated `matched` list is byte-compared
     // file-by-file; one with an empty `matched` list asserts only that crozier
@@ -7826,6 +8032,7 @@ fn report_matched_candidates() {
         &APIDECK_ISSUE_TRACKING,
         &APPWRITE_CLIENT,
         &APIDECK_FILE_STORAGE,
+        &APIDECK_HRIS,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
@@ -7961,6 +8168,7 @@ fn report_fixture_diffs() {
         &APIDECK_ISSUE_TRACKING,
         &APPWRITE_CLIENT,
         &APIDECK_FILE_STORAGE,
+        &APIDECK_HRIS,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
@@ -9457,16 +9665,26 @@ fn enums_referenced_by_retained_models_remain_root_types() {
 }
 
 #[test]
-fn optional_converted_body_fields_use_optional_annotations() {
+fn nullable_body_fields_and_array_items_use_optional_annotations() {
     let (_dir, out) = generate_ok(
-        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    patch:\n      operationId: patchWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          application/json:\n            schema: { $ref: '#/components/schemas/UpdateWidget' }\n      responses:\n        '204': { description: Updated }\ncomponents:\n  schemas:\n    WidgetMeta:\n      type: object\n      properties:\n        type: { type: string }\n    UpdateWidget:\n      type: object\n      properties:\n        metadata: { $ref: '#/components/schemas/WidgetMeta', nullable: true, readOnly: true }\n",
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    patch:\n      operationId: patchWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          application/json:\n            schema: { $ref: '#/components/schemas/UpdateWidget' }\n      responses:\n        '200':\n          description: Updated\n          content:\n            application/json:\n              schema: { $ref: '#/components/schemas/UpdateWidget' }\ncomponents:\n  schemas:\n    Language: { type: string, nullable: true }\n    WidgetMeta:\n      type: object\n      properties:\n        type: { type: string }\n    UpdateWidget:\n      type: object\n      properties:\n        languages: { type: array, items: { $ref: '#/components/schemas/Language' } }\n        metadata: { $ref: '#/components/schemas/WidgetMeta', nullable: true, readOnly: true }\n        team:\n          type: object\n          nullable: true\n          properties:\n            name: { type: string }\n",
     );
     let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
         .expect("widgets raw client is generated");
+    let model = std::fs::read_to_string(out.join("src/acme/types/update_widget.py"))
+        .expect("update widget model is generated");
     assert!(
         raw.contains("annotation=typing.Optional[WidgetMeta], direction=\"write\"")
-            && raw.contains("metadata: typing.Optional[WidgetMeta] = OMIT"),
-        "conversion metadata should carry the same optionality as the body argument: {raw}"
+            && raw.contains("metadata: typing.Optional[WidgetMeta] = OMIT")
+            && raw.contains("annotation=typing.Optional[UpdateWidgetTeam], direction=\"write\"")
+            && raw.contains("team: typing.Optional[UpdateWidgetTeam] = OMIT")
+            && raw.contains(
+                "languages: typing.Optional[typing.Sequence[typing.Optional[Language]]] = OMIT"
+            )
+            && model.contains(
+                "languages: typing.Optional[typing.List[typing.Optional[Language]]] = None"
+            ),
+        "nullable conversion metadata and referenced array items should remain optional:\n{raw}\n{model}"
     );
 }
 

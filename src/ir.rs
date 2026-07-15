@@ -3667,7 +3667,7 @@ impl Builder<'_> {
                 py_name: naming::model_field_name(prop),
                 type_ref: self.field_type_ref(owner, prop, prop_schema),
                 optional,
-                nullable: is_optional(prop_schema) && prop_schema.read_only == Some(true),
+                nullable: is_optional(prop_schema),
                 spec_required,
                 docstring: declared_doc(prop_schema.description.as_deref()),
                 example: schema_example(prop_schema)
@@ -3821,6 +3821,26 @@ impl Builder<'_> {
                             .then(|| resolve_schema_pointer(self.schemas, reference))
                             .flatten()
                     });
+                    // A nullable component used as an array item remains nullable in
+                    // the collection (`List[Optional[Language]]`), even though the
+                    // `$ref` node itself carries no `nullable` flag.
+                    if let (Some(reference), Some(resolved)) = (
+                        items.reference.as_deref(),
+                        items.reference.as_deref().and_then(|reference| {
+                            resolve_ref_from_schemas(self.schemas, reference)
+                        }),
+                    ) {
+                        if is_optional(resolved) {
+                            let item = Box::new(TypeRef::Optional(Box::new(TypeRef::Named(
+                                ref_to_class(reference),
+                            ))));
+                            return if array_uses_set(prop_schema) {
+                                TypeRef::Set(item)
+                            } else {
+                                TypeRef::List(item)
+                            };
+                        }
+                    }
                     let items = resolved_items.unwrap_or(items);
                     if let Some(values) = string_enum_values(items) {
                         let name = format!("{owner}{}Item", naming::class_name(prop));
