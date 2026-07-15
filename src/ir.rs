@@ -3373,6 +3373,57 @@ struct Builder<'a> {
     building_types: std::collections::HashSet<String>,
 }
 
+fn discriminant_value(schema: &Schema) -> Option<String> {
+    string_enum_values(schema)
+        .and_then(|values| (values.len() == 1).then(|| values[0].clone()))
+        .or_else(|| schema_example(schema)?.as_str().map(str::to_string))
+}
+
+fn inferred_discriminant_property(
+    schema: &Schema,
+    schemas: &IndexMap<String, Schema>,
+) -> Option<String> {
+    let variants = schema.one_of.as_ref().or(schema.any_of.as_ref())?;
+    let references_components = variants.iter().any(|variant| variant.reference.is_some());
+    let resolved: Vec<&Schema> = variants
+        .iter()
+        .map(|variant| {
+            variant
+                .reference
+                .as_deref()
+                .and_then(|reference| resolve_ref_from_schemas(schemas, reference))
+                .unwrap_or(variant)
+        })
+        .collect();
+    let first = resolved.first()?;
+    first.properties.keys().find_map(|property| {
+        let values: Option<Vec<String>> = resolved
+            .iter()
+            .map(|variant| {
+                let field = variant.properties.get(property)?;
+                let singleton_enum =
+                    string_enum_values(field).is_some_and(|values| values.len() == 1);
+                if references_components {
+                    if property != "type"
+                        || !variant.required.contains(property)
+                        || schema_example(field)
+                            .and_then(serde_json::Value::as_str)
+                            .is_none()
+                    {
+                        return None;
+                    }
+                } else if !singleton_enum {
+                    return None;
+                }
+                discriminant_value(field)
+            })
+            .collect();
+        let values = values?;
+        let distinct: std::collections::HashSet<&str> = values.iter().map(String::as_str).collect();
+        (distinct.len() == values.len()).then(|| property.clone())
+    })
+}
+
 /// Scan every schema for a discriminated `oneOf`/`anyOf` and record, per member
 /// class, the discriminant property to strip from its model. Keyed by class name
 /// (post-`class_name` normalization), matching the `owner` passed to
@@ -3382,18 +3433,49 @@ fn discriminant_strips(
 ) -> std::collections::HashMap<String, String> {
     let mut strips = std::collections::HashMap::new();
     for schema in schemas.values() {
-        let Some(disc) = &schema.discriminator else {
-            continue;
-        };
-        if disc.property_name.is_empty() {
-            continue;
-        }
-        for reference in disc.mapping.values() {
-            let key = reference.rsplit('/').next().unwrap_or(reference);
-            strips.insert(naming::class_name(key), disc.property_name.clone());
-        }
+        collect_discriminant_strips(schema, schemas, &mut strips);
     }
     strips
+}
+
+fn collect_discriminant_strips(
+    schema: &Schema,
+    schemas: &IndexMap<String, Schema>,
+    strips: &mut std::collections::HashMap<String, String>,
+) {
+    let property = schema
+        .discriminator
+        .as_ref()
+        .map(|disc| disc.property_name.clone())
+        .filter(|property| !property.is_empty())
+        .or_else(|| inferred_discriminant_property(schema, schemas));
+    if let Some(property) = property {
+        if schema.discriminator.is_none() {
+            if let Some(variants) = schema.one_of.as_ref().or(schema.any_of.as_ref()) {
+                for variant in variants {
+                    if let Some(reference) = &variant.reference {
+                        strips.insert(ref_to_class(reference), property.clone());
+                    }
+                }
+            }
+        }
+        if let Some(discriminator) = &schema.discriminator {
+            for reference in discriminator.mapping.values() {
+                strips.insert(ref_to_class(reference), property.clone());
+            }
+        }
+    }
+
+    for child in schema
+        .properties
+        .values()
+        .chain(schema.items.iter().map(Box::as_ref))
+        .chain(schema.one_of.iter().flatten())
+        .chain(schema.any_of.iter().flatten())
+        .chain(schema.all_of.iter().flatten())
+    {
+        collect_discriminant_strips(child, schemas, strips);
+    }
 }
 
 /// Collect a discriminated-union member's fields (the referenced model's
@@ -3518,9 +3600,25 @@ impl Builder<'_> {
         // `Error` → `Error = typing.List[ErrorItem]`), rather than `List[Any]`.
         if schema.ty.as_ref().and_then(|t| t.primary()) == Some("array") {
             if let Some(items) = &schema.items {
+                let item_name = format!("{name}Item");
+                let item_module = naming::module_name(&item_name);
+                if let Some(decl) = self.discriminated_union(&item_name, &item_module, items, None)
+                {
+                    self.types.push(TypeDecl::DiscriminatedUnion(decl));
+                    let collection = if array_uses_set(schema) {
+                        TypeRef::Set(Box::new(TypeRef::Named(item_name)))
+                    } else {
+                        TypeRef::List(Box::new(TypeRef::Named(item_name)))
+                    };
+                    let target = if schema_accepts_none(schema, self.schemas) {
+                        TypeRef::Optional(Box::new(collection))
+                    } else {
+                        collection
+                    };
+                    self.push_alias(name, module, target, docstring);
+                    return;
+                }
                 if is_inline_struct(items) {
-                    let item_name = format!("{name}Item");
-                    let item_module = naming::module_name(&item_name);
                     let item_doc = clean_doc(items.description.as_deref());
                     self.add_object(&item_name, item_module, items, item_doc);
                     self.push_alias(
@@ -3536,7 +3634,12 @@ impl Builder<'_> {
 
         // Everything else is an alias: a union, an extensible enum, a scalar, or
         // an unknown type. `full_type_ref` carries any `Optional` wrapping.
-        self.push_alias(name, module, full_type_ref(schema), docstring);
+        self.push_alias(
+            name,
+            module,
+            full_type_ref_resolved(schema, self.schemas),
+            docstring,
+        );
     }
 
     /// Build an object model. `allOf` `$ref` members become base classes and
@@ -3661,14 +3764,18 @@ impl Builder<'_> {
             let spec_required = required.contains(&prop.as_str())
                 && prop_schema.read_only != Some(true)
                 && !referenced_read_only;
-            let optional = is_optional(prop_schema) || !spec_required;
+            let referenced_nullable = prop_schema.reference.is_some()
+                && referenced_schema_accepts_none(prop_schema, self.schemas);
+            let optional = is_optional(prop_schema) || referenced_nullable || !spec_required;
             fields.push(Field {
                 wire_name: prop.clone(),
                 py_name: naming::model_field_name(prop),
                 type_ref: self.field_type_ref(owner, prop, prop_schema),
                 optional,
-                nullable: is_optional(prop_schema)
-                    && (prop_schema.reference.is_none() || prop_schema.read_only == Some(true)),
+                nullable: referenced_nullable
+                    || (is_optional(prop_schema)
+                        && (prop_schema.reference.is_none()
+                            || prop_schema.read_only == Some(true))),
                 spec_required,
                 docstring: declared_doc(prop_schema.description.as_deref()),
                 example: schema_example(prop_schema)
@@ -3697,21 +3804,13 @@ impl Builder<'_> {
         docstring: Option<String>,
     ) -> Option<DiscriminatedUnion> {
         let variants = schema.one_of.as_ref().or(schema.any_of.as_ref())?;
-        let inferred = variants.first()?.properties.keys().find(|property| {
-            variants.iter().all(|variant| {
-                variant
-                    .properties
-                    .get(*property)
-                    .and_then(string_enum_values)
-                    .is_some_and(|values| values.len() == 1)
-            })
-        });
         let property_name = schema
             .discriminator
             .as_ref()
             .map(|disc| disc.property_name.as_str())
             .filter(|property| !property.is_empty())
-            .or_else(|| inferred.map(String::as_str))?;
+            .map(str::to_string)
+            .or_else(|| inferred_discriminant_property(schema, self.schemas))?;
         let mapping = schema
             .discriminator
             .as_ref()
@@ -3719,34 +3818,50 @@ impl Builder<'_> {
             .filter(|mapping| !mapping.is_empty());
         if mapping.is_none() {
             let mut members = Vec::new();
+            let mut variant_targets = Vec::new();
             for variant in variants {
-                let value = variant
+                let (target, target_name) = if let Some(reference) = &variant.reference {
+                    (
+                        resolve_ref_from_schemas(self.schemas, reference)?,
+                        Some(ref_to_class(reference)),
+                    )
+                } else {
+                    (variant, None)
+                };
+                let value = target
                     .properties
-                    .get(property_name)
-                    .and_then(string_enum_values)
-                    .and_then(|values| (values.len() == 1).then(|| values[0].clone()))?;
+                    .get(&property_name)
+                    .and_then(discriminant_value)?;
                 let variant_name = format!("{name}{}", naming::class_name(&value));
-                let mut standalone = variant.clone();
-                standalone.properties.shift_remove(property_name);
-                self.add_object(
-                    &variant_name,
-                    naming::module_name(&variant_name),
-                    &standalone,
-                    None,
-                );
+                if let Some(target_name) = target_name {
+                    variant_targets.push(target_name);
+                } else {
+                    let mut standalone = variant.clone();
+                    standalone.properties.shift_remove(&property_name);
+                    self.add_object(
+                        &variant_name,
+                        naming::module_name(&variant_name),
+                        &standalone,
+                        None,
+                    );
+                }
                 members.push(UnionMember {
                     class_name: format!("{name}_{}", naming::class_name(&value)),
                     discriminant: value,
-                    fields: member_fields(variant, property_name),
-                    docstring: docstring.clone(),
+                    fields: member_fields(target, &property_name),
+                    docstring: variant
+                        .reference
+                        .is_none()
+                        .then(|| docstring.clone())
+                        .flatten(),
                 });
             }
             return Some(DiscriminatedUnion {
                 name: name.to_string(),
                 module: module.to_string(),
-                discriminant_property: property_name.to_string(),
+                discriminant_property: property_name,
                 members,
-                variant_targets: Vec::new(),
+                variant_targets,
                 docstring,
             });
         }
@@ -3761,7 +3876,7 @@ impl Builder<'_> {
                 // coincide only when the mapping key equals the schema name.
                 class_name: format!("{name}_{}", naming::class_name(value)),
                 discriminant: value.clone(),
-                fields: member_fields(target, property_name),
+                fields: member_fields(target, &property_name),
                 docstring: None,
             });
             variant_targets.push(naming::class_name(target_key));
@@ -3769,7 +3884,7 @@ impl Builder<'_> {
         Some(DiscriminatedUnion {
             name: name.to_string(),
             module: module.to_string(),
-            discriminant_property: property_name.to_string(),
+            discriminant_property: property_name,
             members,
             variant_targets,
             docstring,
@@ -4197,17 +4312,54 @@ fn ordinal_word(n: usize) -> &'static str {
 fn full_type_ref(schema: &Schema) -> TypeRef {
     let base = base_type_ref(schema);
     if is_optional(schema) {
-        match base {
-            TypeRef::Optional(_) => base,
-            TypeRef::Union(mut variants) if !variants.is_empty() => {
-                let last = variants.pop().expect("non-empty union checked above");
-                variants.push(TypeRef::Optional(Box::new(last)));
-                TypeRef::Union(variants)
-            }
-            other => TypeRef::Optional(Box::new(other)),
-        }
+        optional_type_ref(base)
     } else {
         base
+    }
+}
+
+fn full_type_ref_resolved(schema: &Schema, schemas: &IndexMap<String, Schema>) -> TypeRef {
+    let base = base_type_ref(schema);
+    if schema_accepts_none(schema, schemas) {
+        optional_type_ref(base)
+    } else {
+        base
+    }
+}
+
+fn optional_type_ref(base: TypeRef) -> TypeRef {
+    match base {
+        TypeRef::Optional(_) => base,
+        TypeRef::Union(mut variants) if !variants.is_empty() => {
+            let last = variants.pop().expect("non-empty union checked above");
+            variants.push(TypeRef::Optional(Box::new(last)));
+            TypeRef::Union(variants)
+        }
+        other => TypeRef::Optional(Box::new(other)),
+    }
+}
+
+fn schema_accepts_none(schema: &Schema, schemas: &IndexMap<String, Schema>) -> bool {
+    is_optional(schema) || referenced_schema_accepts_none(schema, schemas)
+}
+
+fn referenced_schema_accepts_none(schema: &Schema, schemas: &IndexMap<String, Schema>) -> bool {
+    let mut current = schema;
+    let mut seen = std::collections::HashSet::new();
+    loop {
+        let Some(reference) = current.reference.as_deref() else {
+            return false;
+        };
+        if !seen.insert(reference) {
+            return false;
+        }
+        let Some(target) = resolve_ref_from_schemas(schemas, reference) else {
+            return false;
+        };
+        if is_explicitly_nullable(target) {
+            return true;
+        }
+        current = target;
     }
 }
 
@@ -4313,12 +4465,15 @@ fn single_all_of_ref(schema: &Schema) -> Option<&str> {
 /// or when it is an unknown (untyped) schema, which Fern always renders as
 /// `Optional[Any]`.
 fn is_optional(schema: &Schema) -> bool {
+    is_explicitly_nullable(schema) || is_unknown(schema)
+}
+
+fn is_explicitly_nullable(schema: &Schema) -> bool {
     schema.nullable == Some(true)
         || matches!(
             schema.ty.as_ref(),
             Some(TypeField::Multiple(types)) if types.iter().any(|ty| ty == "null")
         )
-        || is_unknown(schema)
 }
 
 /// A schema that carries nothing to determine a type — Fern treats it as an

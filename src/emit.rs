@@ -561,6 +561,14 @@ fn forward_ref_map(
     };
 
     let mut map: HashMap<String, HashSet<String>> = HashMap::new();
+    let discriminated_unions: HashSet<&str> = types
+        .iter()
+        .chain(tag_types.iter().map(|tag| &tag.decl))
+        .filter_map(|decl| match decl {
+            TypeDecl::DiscriminatedUnion(union) => Some(union.name.as_str()),
+            _ => None,
+        })
+        .collect();
     for decl in types.iter().chain(tag_types.iter().map(|t| &t.decl)) {
         let name = decl.name();
         let defer_recursive_target = !matches!(decl, TypeDecl::Alias(_));
@@ -571,7 +579,11 @@ fn forward_ref_map(
             // cycle of its own). Importing a recursive type eagerly can trip its
             // module's own import cycle even from an acyclic referrer, so Fern defers
             // every reference *into* a cycle, not only the back-edges of one.
-            if reaches(&r, name) || (defer_recursive_target && reaches(&r, &r)) {
+            let eager_discriminated_member =
+                matches!(decl, TypeDecl::Alias(_)) && discriminated_unions.contains(r.as_str());
+            if !eager_discriminated_member
+                && (reaches(&r, name) || (defer_recursive_target && reaches(&r, &r)))
+            {
                 forward.insert(r);
             }
         }
@@ -2488,8 +2500,22 @@ fn render_discriminated_union(
         }
     }
 
+    let deferred = if imports.deferred.is_empty() {
+        String::new()
+    } else {
+        format!(
+            "\n{}\n",
+            imports
+                .deferred
+                .iter()
+                .cloned()
+                .collect::<Vec<_>>()
+                .join("\n")
+        )
+    };
+
     Ok(format!(
-        "{HEADER}\n\nfrom __future__ import annotations\n\n{}\n\n\n{}\n\n\n{alias}{trailer}\n",
+        "{HEADER}\n\nfrom __future__ import annotations\n\n{}\n\n\n{}\n\n\n{alias}{deferred}{trailer}\n",
         imports.render(),
         classes.join("\n\n\n")
     ))
@@ -4635,7 +4661,36 @@ impl<'a> ExampleCtx<'a> {
         }
     }
 
+    fn example_is_temporal(&self, t: &TypeRef) -> bool {
+        match t {
+            TypeRef::Optional(inner) => self.example_is_temporal(inner),
+            TypeRef::Primitive(Prim::Datetime | Prim::Date) => true,
+            _ => false,
+        }
+    }
+
     fn value_from_example(&mut self, t: &TypeRef, example: &str) -> Option<Example> {
+        if let TypeRef::Optional(inner) = t {
+            return self.value_from_example(inner, example);
+        }
+        if matches!(t, TypeRef::Primitive(Prim::Datetime | Prim::Date)) {
+            let mut value: String = serde_json::from_str(example).ok()?;
+            self.uses_datetime = true;
+            let constructor = if matches!(t, TypeRef::Primitive(Prim::Datetime)) {
+                value = value.replacen('T', " ", 1);
+                if let Some(without_z) = value.strip_suffix('Z') {
+                    value = format!("{without_z}+00:00");
+                }
+                value = value.replace(".000+00:00", "+00:00");
+                "datetime.datetime.fromisoformat"
+            } else {
+                "datetime.date.fromisoformat"
+            };
+            return Some(Example::Call(
+                constructor.to_string(),
+                vec![(None, Example::Atom(format!("{value:?}")))],
+            ));
+        }
         if self.example_is_scalar(t) {
             return Some(Example::Atom(example.to_string()));
         }
@@ -5144,6 +5199,7 @@ fn build_example(
                             || example.starts_with('{')
                             || ctx.example_is_scalar(&f.type_ref)
                             || ctx.example_is_composite(&f.type_ref)
+                            || ctx.example_is_temporal(&f.type_ref)
                         {
                             ctx.value_from_example(&f.type_ref, example)
                         } else {
