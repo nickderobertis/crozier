@@ -6417,6 +6417,71 @@ const AIRBYTE_CONFIG: Corpus = Corpus {
     ],
 };
 
+const CORPORA: &[&Corpus] = &[
+    &QUERY_PARAMETERS,
+    &EXHAUSTIVE,
+    &APIDECK_CRM,
+    &BUNQ,
+    &BUNGIE,
+    &ANCHORE,
+    &APACHE_AIRFLOW,
+    &DISCOURSE,
+    &APPWRITE_SERVER,
+    &APICURIO,
+    &GAMBITCOMM_MIMIC,
+    &DND5EAPI,
+    &APACHE_QAKKA,
+    &AUTHENTIQIO,
+    &ETSI_MEC010_2,
+    &APIDECK_WEBHOOK,
+    &APIDECK_VAULT,
+    &AIRBYTE_CONFIG,
+];
+
+const CORPUS_CONST_NAMES: &[&str] = &[
+    "QUERY_PARAMETERS",
+    "EXHAUSTIVE",
+    "APIDECK_CRM",
+    "BUNQ",
+    "BUNGIE",
+    "ANCHORE",
+    "APACHE_AIRFLOW",
+    "DISCOURSE",
+    "APPWRITE_SERVER",
+    "APICURIO",
+    "GAMBITCOMM_MIMIC",
+    "DND5EAPI",
+    "APACHE_QAKKA",
+    "AUTHENTIQIO",
+    "ETSI_MEC010_2",
+    "APIDECK_WEBHOOK",
+    "APIDECK_VAULT",
+    "AIRBYTE_CONFIG",
+];
+
+#[test]
+fn every_matched_entry_exists_in_its_own_golden() {
+    assert_eq!(
+        CORPORA.len(),
+        CORPUS_CONST_NAMES.len(),
+        "CORPORA and CORPUS_CONST_NAMES must stay aligned"
+    );
+    let mut violations = Vec::new();
+    for (name, corpus) in CORPUS_CONST_NAMES.iter().zip(CORPORA) {
+        let expected = fixture_dir(corpus.api).join("expected");
+        for relative in corpus.matched {
+            if !expected.join(relative).is_file() {
+                violations.push(format!("{name} ({}) -> {relative}", corpus.api));
+            }
+        }
+    }
+    assert!(
+        violations.is_empty(),
+        "matched entries missing from their corpus golden:\n{}",
+        violations.join("\n")
+    );
+}
+
 #[test]
 fn bunq_matches_fern_output() {
     // `link-ok` like apideck: the spec is fetched (not vendored), so this **skips**
