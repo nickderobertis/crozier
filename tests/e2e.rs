@@ -6523,6 +6523,67 @@ const APIS_GURU: Corpus = Corpus {
     ],
 };
 
+const COLOR_PIZZA: Corpus = Corpus {
+    api: "color.pizza",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[
+        ".fern/metadata.json",
+        "README.md",
+        "pyproject.toml",
+        "reference.md",
+        "requirements.txt",
+        "src/fern/__init__.py",
+        "src/fern/client.py",
+        "src/fern/core/__init__.py",
+        "src/fern/core/api_error.py",
+        "src/fern/core/client_wrapper.py",
+        "src/fern/core/datetime_utils.py",
+        "src/fern/core/file.py",
+        "src/fern/core/force_multipart.py",
+        "src/fern/core/http_client.py",
+        "src/fern/core/http_response.py",
+        "src/fern/core/http_sse/__init__.py",
+        "src/fern/core/http_sse/_api.py",
+        "src/fern/core/http_sse/_decoders.py",
+        "src/fern/core/http_sse/_exceptions.py",
+        "src/fern/core/http_sse/_models.py",
+        "src/fern/core/jsonable_encoder.py",
+        "src/fern/core/pydantic_utilities.py",
+        "src/fern/core/query_encoder.py",
+        "src/fern/core/remove_none_from_dict.py",
+        "src/fern/core/request_options.py",
+        "src/fern/core/serialization.py",
+        "src/fern/environment.py",
+        "src/fern/errors/__init__.py",
+        "src/fern/errors/not_found_error.py",
+        "src/fern/py.typed",
+        "src/fern/raw_client.py",
+        "src/fern/types/__init__.py",
+        "src/fern/types/color.py",
+        "src/fern/types/color_base.py",
+        "src/fern/types/color_base_hsl.py",
+        "src/fern/types/color_base_lab.py",
+        "src/fern/types/color_base_rgb.py",
+        "src/fern/types/color_base_swatch_img.py",
+        "src/fern/types/color_hsl.py",
+        "src/fern/types/color_lab.py",
+        "src/fern/types/color_rgb.py",
+        "src/fern/types/error.py",
+        "src/fern/types/get_lists_response.py",
+        "src/fern/types/get_lists_response_list_descriptions.py",
+        "src/fern/types/get_names_response.py",
+        "src/fern/types/get_response.py",
+        "src/fern/types/list_description.py",
+        "src/fern/types/possible_lists.py",
+        "src/fern/version.py",
+    ],
+};
+
 const CORPORA: &[&Corpus] = &[
     &QUERY_PARAMETERS,
     &EXHAUSTIVE,
@@ -6544,6 +6605,7 @@ const CORPORA: &[&Corpus] = &[
     &AIRBYTE_CONFIG,
     &BINTABLE,
     &APIS_GURU,
+    &COLOR_PIZZA,
 ];
 
 #[test]
@@ -6809,6 +6871,18 @@ fn apis_guru_matches_fern_output() {
 }
 
 #[test]
+fn color_pizza_matches_fern_output() {
+    if corpus_spec(COLOR_PIZZA.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the Color Pizza corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+        );
+        return;
+    }
+    assert_corpus_matches(&COLOR_PIZZA);
+}
+
+#[test]
 fn feature_target_specs_generate_without_panicking() {
     // A feature-coverage target with a populated `matched` list is byte-compared
     // file-by-file; one with an empty `matched` list asserts only that crozier
@@ -6865,6 +6939,7 @@ fn report_matched_candidates() {
         &AIRBYTE_CONFIG,
         &BINTABLE,
         &APIS_GURU,
+        &COLOR_PIZZA,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
@@ -6992,6 +7067,7 @@ fn report_fixture_diffs() {
         &AIRBYTE_CONFIG,
         &BINTABLE,
         &APIS_GURU,
+        &COLOR_PIZZA,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);

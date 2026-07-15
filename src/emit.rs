@@ -1354,6 +1354,16 @@ fn abbrev_call(indent: usize, prefix: &str, complex: bool) -> String {
     let flat = format!("{pad}{prefix}(...)");
     if flat.len() <= 80 {
         flat
+    } else if indent == 0
+        && prefix.starts_with("response = client.with_raw_response.")
+        && prefix
+            .strip_prefix("response = ")
+            .is_some_and(|call| format!("    {call}(...)").len() <= 80)
+    {
+        format!(
+            "response = (\n    {}(...)\n)",
+            prefix.strip_prefix("response = ").unwrap_or(prefix)
+        )
     } else {
         format!("{pad}{prefix}(\n{}...\n{pad})", " ".repeat(indent + 4))
     }
@@ -3647,7 +3657,14 @@ fn root_client_file(
         &mut imports,
     )?;
     let mut body = String::new();
-    body.push_str("from __future__ import annotations\n\n");
+    // Fern's root-client emitter omits the future import when the client owns a
+    // binary streaming endpoint (Color Pizza); tagged streaming clients retain it.
+    if !root_endpoints
+        .iter()
+        .any(|endpoint| endpoint.binary_response)
+    {
+        body.push_str("from __future__ import annotations\n\n");
+    }
     body.push_str(&imports.render());
     body.push_str("\n\n");
     body.push_str(&type_checking);
@@ -5696,10 +5713,18 @@ mod tests {
         assert_eq!(abbrev_call(4, "client.a.b", false), "    client.a.b()");
         // Complex + short → inline `...`.
         assert_eq!(abbrev_call(4, "client.a.b", true), "    client.a.b(...)");
-        // Complex + over the 88-col snippet width → exploded onto its own line.
+        // Complex + over the 80-col snippet width → exploded onto its own line.
         let long = format!("client.tag.{}", "m".repeat(90));
         let wrapped = abbrev_call(0, &long, true);
         assert_eq!(wrapped, format!("{long}(\n    ...\n)"));
+        // A long root raw-response expression that fits when indented inside
+        // parentheses wraps the assignment, matching Ruff's 80-column layout.
+        let root_raw =
+            "response = client.with_raw_response.get_all_colors_of_the_default_color_name_list";
+        assert_eq!(
+            abbrev_call(0, root_raw, true),
+            "response = (\n    client.with_raw_response.get_all_colors_of_the_default_color_name_list(...)\n)"
+        );
     }
 
     #[test]

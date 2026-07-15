@@ -116,6 +116,9 @@ fn resolve_server_url(server: &crate::openapi::Server) -> String {
     if url == "/" {
         return String::new();
     }
+    if url.ends_with('/') && !url.ends_with("://") {
+        url.pop();
+    }
     url
 }
 
@@ -1384,7 +1387,7 @@ fn endpoints(
     let mut tag_types = Vec::new();
     for (path, item) in &doc.paths {
         for (http_method, op) in item.operations() {
-            out.push(build_endpoint(
+            let endpoint = build_endpoint(
                 doc,
                 types,
                 path,
@@ -1392,7 +1395,16 @@ fn endpoints(
                 op,
                 &mut tag_types,
                 &global_names,
-            ));
+            );
+            // Fern exposes one method for duplicate synthesized/declared names in
+            // the same client, with the later operation replacing the earlier one.
+            // Keep all already-hoisted response types, but only the winning endpoint.
+            if let Some(index) = out.iter().position(|existing: &Endpoint| {
+                existing.module == endpoint.module && existing.method_name == endpoint.method_name
+            }) {
+                out.remove(index);
+            }
+            out.push(endpoint);
         }
     }
     (out, tag_types)
@@ -1845,16 +1857,17 @@ fn request_and_response_refs_match(op: &Operation) -> bool {
 fn is_binary_response(doc: &OpenApi, op: &Operation) -> bool {
     op.responses.iter().any(|(code, resp)| {
         code.starts_with('2')
-            && resp.content.iter().any(|(_, media)| {
-                media.schema.as_ref().is_some_and(|schema| {
-                    let schema = schema
-                        .reference
-                        .as_deref()
-                        .and_then(|reference| resolve_ref(doc, reference))
-                        .unwrap_or(schema);
-                    schema.ty.as_ref().and_then(|t| t.primary()) == Some("string")
-                        && schema.format.as_deref() == Some("binary")
-                })
+            && resp.content.iter().any(|(media_type, media)| {
+                media_type.starts_with("image/")
+                    || media.schema.as_ref().is_some_and(|schema| {
+                        let schema = schema
+                            .reference
+                            .as_deref()
+                            .and_then(|reference| resolve_ref(doc, reference))
+                            .unwrap_or(schema);
+                        schema.ty.as_ref().and_then(|t| t.primary()) == Some("string")
+                            && schema.format.as_deref() == Some("binary")
+                    })
             })
     })
 }
