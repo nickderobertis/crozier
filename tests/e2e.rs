@@ -7565,6 +7565,17 @@ const APIDECK_FILE_STORAGE: Corpus = Corpus {
     ],
 };
 
+const APIDECK_ACCOUNTING: Corpus = Corpus {
+    api: "apideck.com-accounting",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[],
+};
+
 const CORPORA: &[&Corpus] = &[
     &QUERY_PARAMETERS,
     &EXHAUSTIVE,
@@ -7595,6 +7606,7 @@ const CORPORA: &[&Corpus] = &[
     &APPWRITE_CLIENT,
     &APIDECK_FILE_STORAGE,
     &APIDECK_HRIS,
+    &APIDECK_ACCOUNTING,
 ];
 
 #[test]
@@ -7968,6 +7980,18 @@ fn apideck_hris_matches_fern_output() {
 }
 
 #[test]
+fn apideck_accounting_matches_fern_output() {
+    if corpus_spec(APIDECK_ACCOUNTING.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the Apideck Accounting corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+        );
+        return;
+    }
+    assert_corpus_matches(&APIDECK_ACCOUNTING);
+}
+
+#[test]
 fn feature_target_specs_generate_without_panicking() {
     // A feature-coverage target with a populated `matched` list is byte-compared
     // file-by-file; one with an empty `matched` list asserts only that crozier
@@ -8033,6 +8057,7 @@ fn report_matched_candidates() {
         &APPWRITE_CLIENT,
         &APIDECK_FILE_STORAGE,
         &APIDECK_HRIS,
+        &APIDECK_ACCOUNTING,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
@@ -8169,6 +8194,7 @@ fn report_fixture_diffs() {
         &APPWRITE_CLIENT,
         &APIDECK_FILE_STORAGE,
         &APIDECK_HRIS,
+        &APIDECK_ACCOUNTING,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
