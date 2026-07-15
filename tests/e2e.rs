@@ -8027,6 +8027,104 @@ const APIDECK_SMS: Corpus = Corpus {
     ],
 };
 
+const APIDECK_ECOSYSTEM: Corpus = Corpus {
+    api: "apideck.com-ecosystem",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[
+        ".fern/metadata.json",
+        "README.md",
+        "pyproject.toml",
+        "reference.md",
+        "requirements.txt",
+        "src/fern/__init__.py",
+        "src/fern/category/__init__.py",
+        "src/fern/category/client.py",
+        "src/fern/category/raw_client.py",
+        "src/fern/client.py",
+        "src/fern/collection/__init__.py",
+        "src/fern/collection/client.py",
+        "src/fern/collection/raw_client.py",
+        "src/fern/core/__init__.py",
+        "src/fern/core/api_error.py",
+        "src/fern/core/client_wrapper.py",
+        "src/fern/core/datetime_utils.py",
+        "src/fern/core/file.py",
+        "src/fern/core/force_multipart.py",
+        "src/fern/core/http_client.py",
+        "src/fern/core/http_response.py",
+        "src/fern/core/http_sse/__init__.py",
+        "src/fern/core/http_sse/_api.py",
+        "src/fern/core/http_sse/_decoders.py",
+        "src/fern/core/http_sse/_exceptions.py",
+        "src/fern/core/http_sse/_models.py",
+        "src/fern/core/jsonable_encoder.py",
+        "src/fern/core/pydantic_utilities.py",
+        "src/fern/core/query_encoder.py",
+        "src/fern/core/remove_none_from_dict.py",
+        "src/fern/core/request_options.py",
+        "src/fern/core/serialization.py",
+        "src/fern/ecosystem/__init__.py",
+        "src/fern/ecosystem/client.py",
+        "src/fern/ecosystem/raw_client.py",
+        "src/fern/environment.py",
+        "src/fern/listing/__init__.py",
+        "src/fern/listing/client.py",
+        "src/fern/listing/raw_client.py",
+        "src/fern/product/__init__.py",
+        "src/fern/product/client.py",
+        "src/fern/product/raw_client.py",
+        "src/fern/py.typed",
+        "src/fern/types/__init__.py",
+        "src/fern/types/card_settings.py",
+        "src/fern/types/category.py",
+        "src/fern/types/collection.py",
+        "src/fern/types/contact.py",
+        "src/fern/types/cta_settings.py",
+        "src/fern/types/custom_settings.py",
+        "src/fern/types/ecosystem.py",
+        "src/fern/types/ecosystem_menu_position.py",
+        "src/fern/types/ecosystem_menu_style.py",
+        "src/fern/types/ecosystem_navigation_mobile_menu_type.py",
+        "src/fern/types/file.py",
+        "src/fern/types/file_type.py",
+        "src/fern/types/get_categories_response.py",
+        "src/fern/types/get_category_response.py",
+        "src/fern/types/get_collection_response.py",
+        "src/fern/types/get_collections_response.py",
+        "src/fern/types/get_ecosystem_response.py",
+        "src/fern/types/get_listing_response.py",
+        "src/fern/types/get_listings_response.py",
+        "src/fern/types/get_product_response.py",
+        "src/fern/types/get_products_response.py",
+        "src/fern/types/integration_settings.py",
+        "src/fern/types/lead_form_settings.py",
+        "src/fern/types/links.py",
+        "src/fern/types/listing.py",
+        "src/fern/types/listing_settings.py",
+        "src/fern/types/listing_settings_naming.py",
+        "src/fern/types/listing_settings_sidebar_position.py",
+        "src/fern/types/logo.py",
+        "src/fern/types/logo_type.py",
+        "src/fern/types/masthead_settings.py",
+        "src/fern/types/media.py",
+        "src/fern/types/media_type.py",
+        "src/fern/types/meta.py",
+        "src/fern/types/meta_cursors.py",
+        "src/fern/types/meta_tag_settings.py",
+        "src/fern/types/partner.py",
+        "src/fern/types/product.py",
+        "src/fern/types/screenshot.py",
+        "src/fern/types/translation.py",
+        "src/fern/types/translations.py",
+        "src/fern/version.py",
+    ],
+};
+
 const CORPORA: &[&Corpus] = &[
     &QUERY_PARAMETERS,
     &EXHAUSTIVE,
@@ -8061,6 +8159,7 @@ const CORPORA: &[&Corpus] = &[
     &CALORIENINJAS,
     &EOS,
     &APIDECK_SMS,
+    &APIDECK_ECOSYSTEM,
 ];
 
 #[test]
@@ -8482,6 +8581,18 @@ fn apideck_sms_matches_fern_output() {
 }
 
 #[test]
+fn apideck_ecosystem_matches_fern_output() {
+    if corpus_spec(APIDECK_ECOSYSTEM.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the Apideck Ecosystem corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+        );
+        return;
+    }
+    assert_corpus_matches(&APIDECK_ECOSYSTEM);
+}
+
+#[test]
 fn feature_target_specs_generate_without_panicking() {
     // A feature-coverage target with a populated `matched` list is byte-compared
     // file-by-file; one with an empty `matched` list asserts only that crozier
@@ -8551,6 +8662,7 @@ fn report_matched_candidates() {
         &CALORIENINJAS,
         &EOS,
         &APIDECK_SMS,
+        &APIDECK_ECOSYSTEM,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
@@ -8691,6 +8803,7 @@ fn report_fixture_diffs() {
         &CALORIENINJAS,
         &EOS,
         &APIDECK_SMS,
+        &APIDECK_ECOSYSTEM,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
