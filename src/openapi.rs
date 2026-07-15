@@ -235,6 +235,9 @@ pub struct PathItem {
     /// `PATCH` operation.
     #[serde(default)]
     pub patch: Option<Operation>,
+    /// `HEAD` operation.
+    #[serde(default)]
+    pub head: Option<Operation>,
     /// Parameters declared once on the path item and shared by every operation
     /// under it (a common real-world pattern for path params). Merged into each
     /// operation at load time by `normalize_parameters`; empty after that pass.
@@ -253,6 +256,7 @@ impl PathItem {
             ("PUT", &self.put),
             ("DELETE", &self.delete),
             ("PATCH", &self.patch),
+            ("HEAD", &self.head),
         ]
         .into_iter()
         .filter_map(|(method, op)| op.as_ref().map(|o| (method, o)))
@@ -261,13 +265,14 @@ impl PathItem {
 
     /// Mutable references to each method slot, in the same stable order as
     /// [`PathItem::operations`], for filters that clear operations in place.
-    fn operation_slots(&mut self) -> [&mut Option<Operation>; 5] {
+    fn operation_slots(&mut self) -> [&mut Option<Operation>; 6] {
         [
             &mut self.get,
             &mut self.post,
             &mut self.put,
             &mut self.delete,
             &mut self.patch,
+            &mut self.head,
         ]
     }
 }
@@ -304,6 +309,10 @@ pub struct Operation {
     /// A human description; becomes the method docstring's summary line.
     #[serde(default)]
     pub description: Option<String>,
+    /// Short operation summary. Fern uses it as the method name when no
+    /// `operationId` is declared.
+    #[serde(default)]
+    pub summary: Option<String>,
     /// Path/query/header parameters, in document order.
     #[serde(default)]
     pub parameters: Vec<Parameter>,
@@ -376,6 +385,17 @@ pub struct Parameter {
     /// A parameter-level `example` value (Fern shows it in the worked snippet).
     #[serde(default)]
     pub example: Option<serde_json::Value>,
+    /// Named OpenAPI examples, in declaration order.
+    #[serde(default)]
+    pub examples: IndexMap<String, ParameterExample>,
+}
+
+/// The value-bearing portion of an OpenAPI parameter example.
+#[derive(Debug, Default, Clone, Deserialize)]
+pub struct ParameterExample {
+    /// The example value. External examples have no inline value.
+    #[serde(default)]
+    pub value: Option<serde_json::Value>,
 }
 
 /// A parameter's location, per OpenAPI's closed `in` vocabulary. Modeling it as
@@ -493,6 +513,9 @@ pub struct Schema {
     /// A `$ref` pointer, e.g. `#/components/schemas/User`.
     #[serde(rename = "$ref", default)]
     pub reference: Option<String>,
+    /// Optional schema title used by importers as declaration metadata.
+    #[serde(default)]
+    pub title: Option<String>,
     /// The schema `type` (`object`, `string`, `array`, ...). A single string in
     /// 3.0; the first entry is used if a 3.1 list is given.
     #[serde(rename = "type", default)]
@@ -521,13 +544,13 @@ pub struct Schema {
     #[serde(rename = "enum", default)]
     pub enum_values: Option<Vec<serde_json::Value>>,
     /// `oneOf` variants.
-    #[serde(rename = "oneOf", default)]
+    #[serde(rename = "oneOf", default, deserialize_with = "de_composition")]
     pub one_of: Option<Vec<Schema>>,
     /// `anyOf` variants.
-    #[serde(rename = "anyOf", default)]
+    #[serde(rename = "anyOf", default, deserialize_with = "de_composition")]
     pub any_of: Option<Vec<Schema>>,
     /// `allOf` members.
-    #[serde(rename = "allOf", default)]
+    #[serde(rename = "allOf", default, deserialize_with = "de_composition")]
     pub all_of: Option<Vec<Schema>>,
     /// Human description; becomes a docstring.
     #[serde(default)]
@@ -539,6 +562,9 @@ pub struct Schema {
     /// worked calls, after the singular `example` when both are present.
     #[serde(default)]
     pub examples: Vec<serde_json::Value>,
+    /// Inclusive lower bound used when Fern synthesizes integer examples.
+    #[serde(default)]
+    pub minimum: Option<serde_json::Value>,
     /// OpenAPI 3.0 nullability.
     #[serde(default)]
     pub nullable: Option<bool>,
@@ -578,6 +604,39 @@ impl Schema {
     #[must_use]
     pub fn ignored(&self) -> bool {
         self.ignore_crozier.or(self.ignore_fern).unwrap_or(false)
+    }
+}
+
+fn de_composition<'de, D>(deserializer: D) -> std::result::Result<Option<Vec<Schema>>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    use serde::de::Error as _;
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum Composition {
+        Sequence(Vec<Schema>),
+        Indexed(IndexMap<String, Schema>),
+    }
+    match Option::<Composition>::deserialize(deserializer)? {
+        None => Ok(None),
+        Some(Composition::Sequence(members)) => Ok(Some(members)),
+        Some(Composition::Indexed(members)) => {
+            let mut indexed = members
+                .into_iter()
+                .map(|(index, schema)| {
+                    index.parse::<usize>().map(|i| (i, schema)).map_err(|_| {
+                        D::Error::custom(format!(
+                            "composition map key {index:?} is not a non-negative integer"
+                        ))
+                    })
+                })
+                .collect::<std::result::Result<Vec<_>, D::Error>>()?;
+            indexed.sort_by_key(|(index, _)| *index);
+            Ok(Some(
+                indexed.into_iter().map(|(_, schema)| schema).collect(),
+            ))
+        }
     }
 }
 
@@ -1135,6 +1194,35 @@ mod tests {
 
     fn schema_keys(doc: &OpenApi) -> Vec<String> {
         doc.components.schemas.keys().cloned().collect()
+    }
+
+    #[test]
+    fn indexed_compositions_are_sorted_and_preserved() {
+        let schema: Schema = serde_json::from_value(serde_json::json!({
+            "allOf": { "3": { "type": "string" }, "1": { "$ref": "#/components/schemas/Base" } }
+        }))
+        .expect("indexed allOf parses");
+        let members = schema.all_of.expect("allOf is retained");
+        assert_eq!(
+            members[0].reference.as_deref(),
+            Some("#/components/schemas/Base")
+        );
+        assert_eq!(
+            members[1].ty.as_ref().and_then(TypeField::primary),
+            Some("string")
+        );
+    }
+
+    #[test]
+    fn non_indexed_composition_maps_are_rejected() {
+        let error = serde_json::from_value::<Schema>(serde_json::json!({
+            "oneOf": { "variant": { "type": "string" } }
+        }))
+        .expect_err("non-indexed composition must fail");
+        assert!(
+            error.to_string().contains("not a non-negative integer"),
+            "{error}"
+        );
     }
 
     const IGNORE_SPEC: &str = r##"

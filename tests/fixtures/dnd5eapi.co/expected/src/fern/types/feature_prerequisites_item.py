@@ -1,0 +1,11 @@
+
+
+import typing
+
+from .feature_prerequisites_item_feature import FeaturePrerequisitesItemFeature
+from .feature_prerequisites_item_level import FeaturePrerequisitesItemLevel
+from .feature_prerequisites_item_spell import FeaturePrerequisitesItemSpell
+
+FeaturePrerequisitesItem = typing.Union[
+    FeaturePrerequisitesItemLevel, FeaturePrerequisitesItemFeature, FeaturePrerequisitesItemSpell
+]

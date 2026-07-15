@@ -563,6 +563,7 @@ fn forward_ref_map(
     let mut map: HashMap<String, HashSet<String>> = HashMap::new();
     for decl in types.iter().chain(tag_types.iter().map(|t| &t.decl)) {
         let name = decl.name();
+        let defer_recursive_target = !matches!(decl, TypeDecl::Alias(_));
         let mut forward = HashSet::new();
         for r in decl_refs(decl) {
             // Render `r` as a string forward reference (deferred import) when it
@@ -570,7 +571,7 @@ fn forward_ref_map(
             // cycle of its own). Importing a recursive type eagerly can trip its
             // module's own import cycle even from an acyclic referrer, so Fern defers
             // every reference *into* a cycle, not only the back-edges of one.
-            if reaches(&r, name) || reaches(&r, &r) {
+            if reaches(&r, name) || (defer_recursive_target && reaches(&r, &r)) {
                 forward.insert(r);
             }
         }
@@ -1296,14 +1297,22 @@ fn is_complex_type(t: &TypeRef, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) -
         TypeRef::Named(n) => types
             .iter()
             .find(|d| d.name() == n)
-            .is_some_and(|d| match d {
+            .map(|d| (d, false))
+            .or_else(|| {
+                tag_decls
+                    .iter()
+                    .find(|decl| decl.decl.name() == n)
+                    .map(|decl| (&decl.decl, true))
+            })
+            .is_some_and(|(d, tag_scoped)| match d {
                 TypeDecl::Object(_) => true,
                 // A union (named or discriminated) renders empty parens; an enum
                 // is a single member-access value, likewise not "complex".
                 TypeDecl::DiscriminatedUnion(_) | TypeDecl::Enum(_) => false,
                 TypeDecl::Alias(a) => {
-                    !matches!(a.target, TypeRef::Union(_))
-                        && is_complex_type(&a.target, types, tag_decls)
+                    (tag_scoped && matches!(a.target, TypeRef::Union(_)))
+                        || (!matches!(a.target, TypeRef::Union(_))
+                            && is_complex_type(&a.target, types, tag_decls))
                 }
             }),
         TypeRef::Union(_) | TypeRef::Primitive(_) | TypeRef::Literal(_) => false,
@@ -1336,7 +1345,6 @@ fn select_readme_endpoint<'a>(
         .find(|e| {
             e.emittable
                 && e.http_method == "POST"
-                && e.request_body.is_some()
                 && !matches!(e.request_body, Some(RequestBody::Bytes { .. }))
         })
         .or_else(|| {
@@ -1365,11 +1373,11 @@ fn select_readme_endpoint<'a>(
 
 fn readme_endpoint(ir: &Ir) -> Option<&Endpoint> {
     if ir.openapi_31 {
-        select_readme_endpoint(ir.endpoints.iter())
-    } else {
-        select_readme_endpoint(ir.endpoints.iter().filter(|e| e.module.is_empty()))
-            .or_else(|| select_readme_endpoint(ir.endpoints.iter()))
+        return select_readme_endpoint(ir.endpoints.iter());
     }
+    select_readme_endpoint(ir.endpoints.iter().filter(|e| e.module.is_empty()))
+        .filter(|e| e.http_method != "GET" || e.request_body.is_some())
+        .or_else(|| select_readme_endpoint(ir.endpoints.iter()))
 }
 
 fn client_call_prefix(ep: &Endpoint) -> String {
@@ -1407,7 +1415,8 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     // The abbreviated calls in the error-handling and advanced sections show `...`
     // for an endpoint with a complex (object/container/union) body, else empty
     // parens; the error/raw-response calls are ruff-wrapped at the snippet width 88.
-    let complex = (first.request_body.is_none() && first.http_method != "GET")
+    let complex = (first.request_body.is_none()
+        && (first.http_method != "GET" || matches!(first.response, Some(TypeRef::Dict(..)))))
         || (ir.openapi_31
             && first.body_schema_implicit_object
             && matches!(
@@ -1488,6 +1497,7 @@ fn reference_file(
         .iter()
         .filter(|e| e.module.is_empty() && e.emittable)
         .filter(|e| !matches!(e.request_body, Some(RequestBody::Bytes { .. })))
+        .filter(|e| endpoint_has_worked_example(e))
         .collect();
     for ep in root_eps {
         any = true;
@@ -1501,10 +1511,8 @@ fn reference_file(
             .iter()
             .filter(|e| &e.module == *module && e.emittable)
             .filter(|e| !matches!(e.request_body, Some(RequestBody::Bytes { .. })))
+            .filter(|e| endpoint_has_worked_example(e))
             .collect();
-        if eps.is_empty() {
-            continue;
-        }
         any = true;
         let title = ir
             .endpoint_module_titles
@@ -2252,8 +2260,24 @@ fn render_type_decl(
         }
         TypeDecl::Alias(alias) => {
             let mut imports = Imports::at(loc, tag_types);
+            imports.forward = forward.clone();
+            imports.cur_module = alias.module.clone();
             let target = render_type(&alias.target, &mut imports);
             let assignment = format!("{} = {}", alias.name, target.flat());
+            if !forward.is_empty() {
+                let mut contents = format!(
+                    "{HEADER}\n\nfrom __future__ import annotations\n\n{}\n",
+                    imports.render()
+                );
+                if !imports.deferred.is_empty() {
+                    contents.push_str("\nif typing.TYPE_CHECKING:\n");
+                    for line in &imports.deferred {
+                        contents.push_str(&format!("    {line}\n"));
+                    }
+                }
+                contents.push_str(&format!("{assignment}\n"));
+                return Ok(contents);
+            }
             render(
                 env,
                 "alias.py",
@@ -2370,7 +2394,7 @@ fn render_discriminated_union(
                 docstring: rf.docstring,
             })
             .collect();
-        let body = render_class_body(env, None, fields, extra)?;
+        let body = render_class_body(env, member.docstring.clone(), fields, extra)?;
         classes.push(format!(
             "class {}(UniversalBaseModel):\n{}",
             member.class_name,
@@ -2435,8 +2459,7 @@ fn raw_type_str(t: &TypeRef, imports: &mut Imports) -> String {
 
 /// Like [`raw_type_str`], but in *request context* (`seq = true`) Fern renders
 /// list/set collections as `typing.Sequence` rather than `typing.List`/`Set` —
-/// request inputs accept any sequence. Response and parameter types use `seq =
-/// false`.
+/// request inputs accept any sequence. Response types use `seq = false`.
 fn raw_type_str_ctx(t: &TypeRef, imports: &mut Imports, seq: bool) -> String {
     match t {
         TypeRef::Primitive(Prim::Str) => "str".to_string(),
@@ -2553,7 +2576,7 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
         .map(|pp| {
             (
                 pp.py_name.clone(),
-                raw_type_str(&pp.type_ref, imports),
+                raw_type_str_ctx(&pp.type_ref, imports, true),
                 pp.docstring.clone(),
             )
         })
@@ -2913,12 +2936,19 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
     }
     lines.push(format!("            method=\"{}\",", ep.http_method));
     append_request_call_args(&mut lines, ep, imports);
-    lines.extend([
-        "        )".to_string(),
-        "        try:".to_string(),
-        "            if 200 <= _response.status_code < 300:".to_string(),
-    ]);
-    if ep.response.is_some() {
+    lines.extend(["        )".to_string(), "        try:".to_string()]);
+    if matches!(ep.response, Some(TypeRef::Optional(_))) {
+        lines.extend([
+            "            if _response is None or not _response.text.strip():".to_string(),
+            format!("                return {wrapper}(response=_response, data=None)"),
+        ]);
+    }
+    lines.push("            if 200 <= _response.status_code < 300:".to_string());
+    if ep.text_response {
+        lines.push(format!(
+            "                return {wrapper}(response=_response, data=_response.text)"
+        ));
+    } else if ep.response.is_some() {
         imports.add_core("pydantic_utilities", "parse_obj_as");
         lines.extend([
             "                _data = typing.cast(".to_string(),
@@ -3138,7 +3168,17 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                         && !ep.body_component_ref
                         && !(matches!(body, RequestBody::Inline(_))
                             && (ep.body_all_of || ep.body_response_same_ref))
-                        && (!(ep.body_documented
+                        && !matches!(body, RequestBody::Inline(fields)
+                            if ep.body_schema_ref
+                                && (!ep.body_schema_dropped
+                                    && ep.body_schema_metadata_missing
+                                    && ep.body_schema_is_open
+                                    && !ep.body_schema_is_success_response
+                                    || ep.body_schema_is_response_heavy
+                                        && ep.body_schema_is_open
+                                        && ep.body_description_missing
+                                        && fields.iter().filter(|field| field.spec_required).count() == 1))
+                        && (!(ep.body_description_empty
                             || ep.body_schema_has_example && ep.body_schema_documented)
                             || body.all_fields_required()))) =>
         {
@@ -3330,7 +3370,9 @@ fn raw_binary_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports
     imports.add_plain("typing");
     imports.add_from("json.decoder", "JSONDecodeError");
     imports.add_core("api_error", "ApiError");
-    imports.add_core("pydantic_utilities", "parse_obj_as");
+    if !ep.errors.is_empty() {
+        imports.add_core("pydantic_utilities", "parse_obj_as");
+    }
     if !ep.path_params.is_empty() {
         imports.add_core("jsonable_encoder", "jsonable_encoder");
     }
@@ -3388,6 +3430,11 @@ fn raw_binary_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports
         format!("return {wrapper}(\n                            response=_response, data={data_expr}\n                        )")
     };
     let error_branches = raw_error_branches(ep, imports);
+    let error_branches = if error_branches.is_empty() {
+        String::new()
+    } else {
+        format!("\n{error_branches}")
+    };
     let body = format!(
         "\
 {call}
@@ -3397,8 +3444,7 @@ fn raw_binary_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports
                     if 200 <= _response.status_code < 300:
                         _chunk_size = request_options.get(\"chunk_size\", None) if request_options is not None else None
                         {success_return}
-                    {read}
-{error_branches}
+                    {read}{error_branches}
                     _response_json = _response.json()
                 except JSONDecodeError:
                     raise ApiError(
@@ -4009,7 +4055,11 @@ fn client_method(cx: &ClientCtx, ep: &Endpoint, is_async: bool, imports: &mut Im
         return client_binary_stream_method(cx, ep, is_async, imports);
     }
     let mp = method_params(ep, imports);
-    let return_type = mp.inner.clone();
+    let return_type = if ep.http_method == "HEAD" {
+        "typing.Dict[str, str]".to_string()
+    } else {
+        mp.inner.clone()
+    };
     let sig = signature(ep, &mp, &return_type, is_async);
     let docstring = client_docstring(cx, ep, &mp, is_async);
 
@@ -4029,7 +4079,12 @@ fn client_method(cx: &ClientCtx, ep: &Endpoint, is_async: bool, imports: &mut Im
         "        _response = {}",
         Doc::group(open, call_args, ")").flat()
     );
-    format!("{sig}\n{docstring}\n{call}\n        return _response.data")
+    let result = if ep.http_method == "HEAD" {
+        "_response.headers"
+    } else {
+        "_response.data"
+    };
+    format!("{sig}\n{docstring}\n{call}\n        return {result}")
 }
 
 /// The high-level streaming method (sync or async): a plain generator that opens
@@ -4523,6 +4578,21 @@ impl<'a> ExampleCtx<'a> {
         if self.example_is_scalar(t) {
             return Some(Example::Atom(example.to_string()));
         }
+        if example.starts_with('{') && self.resolves_to_any(t) {
+            return serde_json::from_str(example).ok().map(example_from_json);
+        }
+        if let TypeRef::List(inner) | TypeRef::Set(inner) = t {
+            let values: Vec<serde_json::Value> = serde_json::from_str(example).ok()?;
+            let items = values
+                .into_iter()
+                .map(|value| {
+                    let literal = value.to_string();
+                    self.value_from_example(inner, &literal)
+                        .unwrap_or_else(|| example_from_json(value))
+                })
+                .collect();
+            return Some(Example::ExplicitList(items));
+        }
         if self.example_is_composite(t) && (example.starts_with('[') || example.starts_with('{')) {
             return serde_json::from_str(example).ok().map(example_from_json);
         }
@@ -4714,9 +4784,16 @@ impl<'a> ExampleCtx<'a> {
                     .into_iter()
                     .filter(|(_, _, _, required, _)| *required)
                     .map(|(py, wire, ty, _, example)| {
-                        let v = match example.filter(|_| example_scalar(&ty)) {
-                            Some(example) => Example::Atom(example),
+                        let v = match example {
+                            Some(example) if example_scalar(&ty) => Example::Atom(example),
+                            Some(example) if example.starts_with(['{', '[']) => {
+                                serde_json::from_str(&example).map_or_else(
+                                    |_| self.value(&ty, Slot::Named(&wire)),
+                                    example_from_json,
+                                )
+                            }
                             None => self.value(&ty, Slot::Named(&wire)),
+                            Some(_) => self.value(&ty, Slot::Named(&wire)),
                         };
                         (Some(py), v)
                     })
@@ -4854,7 +4931,9 @@ fn build_example(
     client_name: &str,
     ctx: &mut ExampleCtx,
 ) -> Option<Vec<String>> {
-    if matches!(ep.request_body, Some(RequestBody::Bytes { .. })) {
+    if matches!(ep.request_body, Some(RequestBody::Bytes { .. }))
+        || !endpoint_has_worked_example(ep)
+    {
         return None;
     }
 
@@ -4863,26 +4942,25 @@ fn build_example(
     // each required inlined field).
     let mut args: Vec<(Option<String>, Example)> = Vec::new();
     for pp in &ep.path_params {
-        let v = pp
-            .example
-            .as_ref()
-            .filter(|_| !ep.binary_response && ctx.example_is_scalar(&pp.type_ref))
-            .map_or_else(
-                || ctx.value(&pp.type_ref, Slot::Named(&pp.wire_name)),
-                |example| Example::Atom(example.clone()),
-            );
+        let v = if matches!(pp.type_ref, TypeRef::List(_) | TypeRef::Set(_)) {
+            // Fern's path placeholder stays a string even for the unusual array
+            // path parameters accepted by its OpenAPI importer.
+            Example::Atom(format!("{:?}", pp.wire_name))
+        } else {
+            pp.example
+                .as_ref()
+                .filter(|_| !ep.binary_response && ctx.example_is_scalar(&pp.type_ref))
+                .map_or_else(
+                    || ctx.value(&pp.type_ref, Slot::Named(&pp.wire_name)),
+                    |example| Example::Atom(example.clone()),
+                )
+        };
         args.push((Some(pp.py_name.clone()), v));
     }
-    // Fern shows a query parameter in the worked example when it is required OR
-    // carries a spec `example` (the value it then displays).
+    // Fern follows signature ordering: all required query/header arguments first,
+    // then optional query/header arguments that carry examples.
     let mut optional_query_example_used = false;
-    for qp in &ep.query_params {
-        if !qp.required {
-            if qp.example.is_none() || !qp.example_is_scalar || optional_query_example_used {
-                continue;
-            }
-            optional_query_example_used = true;
-        }
+    for qp in ep.query_params.iter().filter(|qp| qp.required) {
         let v = if let Some(ex) = qp.example.as_ref().filter(|_| qp.example_is_scalar) {
             Example::Atom(ex.clone())
         } else if let TypeRef::List(inner) = &qp.type_ref {
@@ -4892,11 +4970,7 @@ fn build_example(
         };
         args.push((Some(qp.py_name.clone()), v));
     }
-    for hp in ep
-        .header_params
-        .iter()
-        .filter(|h| h.required || h.example.is_some())
-    {
+    for hp in ep.header_params.iter().filter(|header| header.required) {
         let v = hp
             .example
             .as_ref()
@@ -4906,6 +4980,34 @@ fn build_example(
                 |example| Example::Atom(example.clone()),
             );
         args.push((Some(hp.py_name.clone()), v));
+    }
+    for qp in ep.query_params.iter().filter(|qp| !qp.required) {
+        if qp.example.is_none()
+            || !qp.example_is_scalar
+            || (ep.request_body.is_none() && optional_query_example_used)
+        {
+            continue;
+        }
+        optional_query_example_used = true;
+        args.push((
+            Some(qp.py_name.clone()),
+            Example::Atom(qp.example.clone().unwrap_or_default()),
+        ));
+    }
+    for hp in ep
+        .header_params
+        .iter()
+        .filter(|header| !header.required && header.example.is_some())
+    {
+        let value = hp
+            .example
+            .as_ref()
+            .filter(|_| ctx.example_is_scalar(&hp.type_ref))
+            .map_or_else(
+                || ctx.value(&hp.type_ref, Slot::Named(&hp.wire_name)),
+                |example| Example::Atom(example.clone()),
+            );
+        args.push((Some(hp.py_name.clone()), value));
     }
     match &ep.request_body {
         Some(RequestBody::Single(s)) => {
@@ -4926,6 +5028,7 @@ fn build_example(
                     .as_deref()
                     .and_then(|example| {
                         if f.media_example
+                            || example.starts_with('{')
                             || ctx.example_is_scalar(&f.type_ref)
                             || ctx.example_is_composite(&f.type_ref)
                         {
@@ -5086,6 +5189,14 @@ fn build_example(
         out.extend(call.split('\n').map(String::from));
     }
     Some(out)
+}
+
+fn endpoint_has_worked_example(ep: &Endpoint) -> bool {
+    !(ep.binary_response
+        && ep.path_params.is_empty()
+        && ep.query_params.is_empty()
+        && ep.header_params.is_empty()
+        && ep.request_body.is_none())
 }
 
 /// Assemble the `raw_client.py` file for one client module: the sync and async
@@ -5692,20 +5803,28 @@ mod tests {
             query_params: Vec::new(),
             header_params: Vec::new(),
             request_body: None,
-            body_documented: false,
+            body_description_empty: false,
+            body_description_missing: false,
             body_component_ref: false,
             body_schema_ref: false,
+            body_schema_dropped: false,
+            body_schema_shared: false,
+            body_schema_metadata_missing: false,
             body_schema_has_example: false,
             body_schema_documented: false,
+            body_schema_is_response_heavy: false,
+            body_schema_is_open: false,
             body_schema_implicit_object: false,
             body_all_of: false,
             body_response_same_ref: false,
+            body_schema_is_success_response: false,
             response,
             response_doc: None,
             errors: Vec::new(),
             docstring: None,
             reference_description_trailing_blank: false,
             streaming: false,
+            text_response: false,
             binary_response: false,
             emittable: true,
         }
@@ -5731,7 +5850,7 @@ mod tests {
     }
 
     #[test]
-    fn readme_endpoint_prefers_body_then_no_arg_non_get() {
+    fn readme_endpoint_prefers_the_first_non_binary_post() {
         let mut first_get = endpoint(
             "/one/{id}",
             vec![PathParam {
@@ -5754,6 +5873,31 @@ mod tests {
             Some("no_arg_post")
         );
 
+        let mut root_get = endpoint("/status", Vec::new(), None);
+        root_get.method_name = "status".to_string();
+        let mut tagged_post = endpoint("/queues", Vec::new(), None);
+        tagged_post.http_method = "POST";
+        tagged_post.method_name = "create_queue".to_string();
+        tagged_post.module = "queues".to_string();
+        let ir = ir_with(vec![root_get, tagged_post]);
+        assert_eq!(
+            readme_endpoint(&ir).map(|e| e.method_name.as_str()),
+            Some("create_queue")
+        );
+
+        let mut root_post = endpoint("/token", Vec::new(), None);
+        root_post.http_method = "POST";
+        root_post.method_name = "get_token".to_string();
+        let mut tagged_post = endpoint("/queues", Vec::new(), None);
+        tagged_post.http_method = "POST";
+        tagged_post.method_name = "create_queue".to_string();
+        tagged_post.module = "queues".to_string();
+        let ir = ir_with(vec![root_post, tagged_post]);
+        assert_eq!(
+            readme_endpoint(&ir).map(|e| e.method_name.as_str()),
+            Some("get_token")
+        );
+
         let mut no_arg_post = endpoint("/two", Vec::new(), None);
         no_arg_post.http_method = "POST";
         no_arg_post.method_name = "no_arg_post".to_string();
@@ -5767,10 +5911,10 @@ mod tests {
             content_type_override: None,
         }));
 
-        let ir = ir_with(vec![body, no_arg_post]);
+        let ir = ir_with(vec![no_arg_post, body]);
         assert_eq!(
             readme_endpoint(&ir).map(|e| e.method_name.as_str()),
-            Some("body")
+            Some("no_arg_post")
         );
     }
 

@@ -93,7 +93,12 @@ pub fn class_name(schema_key: &str) -> String {
 /// The module (file stem) name for a generated type.
 #[must_use]
 pub fn module_name(class_name: &str) -> String {
-    to_snake_case(class_name)
+    let name = to_snake_case(class_name);
+    if is_reserved(&name) {
+        format!("{name}_")
+    } else {
+        name
+    }
 }
 
 /// The Python field identifier for a wire property name: `snake_case`, with a
@@ -223,10 +228,20 @@ fn enum_words(value: &str) -> Vec<String> {
             spaced.push(' ');
         }
     }
-    split_words(&spaced)
-        .into_iter()
-        .map(|w| digit_word(&w).map_or(w, str::to_string))
-        .collect()
+    let mut words = Vec::new();
+    for word in split_words(&spaced) {
+        if words.is_empty() {
+            words.push(digit_word(&word).map_or(word, str::to_string));
+        } else if word.len() == 1 && word.as_bytes()[0].is_ascii_digit() {
+            // Fern keeps a leading numeric enum token readable (`0: Active` ->
+            // `ZERO_ACTIVE`), but concatenates a numeric suffix split by
+            // punctuation (`oauth2.0` -> `OAUTH20`).
+            words.last_mut().expect("checked non-empty").push_str(&word);
+        } else {
+            words.push(word);
+        }
+    }
+    words
 }
 
 /// Coerce a cased enum identifier into a legal, non-empty Python name: a value
@@ -283,7 +298,8 @@ pub fn enum_visit_param(value: &str) -> String {
 pub fn is_reserved(name: &str) -> bool {
     // Builtins/module names Fern munges in *field/type* contexts (confirmed in the
     // exhaustive fixture). Method names are narrower — see `is_reserved_method`.
-    const RESERVED_BUILTINS: &[&str] = &["all", "bool", "list", "long", "map", "set", "uuid"];
+    const RESERVED_BUILTINS: &[&str] =
+        &["all", "bool", "int", "list", "long", "map", "set", "uuid"];
     PYTHON_KEYWORDS.contains(&name) || RESERVED_BUILTINS.contains(&name)
 }
 
@@ -292,7 +308,7 @@ pub fn is_reserved(name: &str) -> bool {
 #[must_use]
 pub fn model_field_name(wire_name: &str) -> String {
     let name = field_name(wire_name);
-    if matches!(name.as_str(), "kwargs" | "schema") {
+    if matches!(name.as_str(), "kwargs" | "schema" | "self") {
         format!("{name}_")
     } else {
         name
@@ -308,6 +324,17 @@ pub fn model_field_name(wire_name: &str) -> String {
 #[must_use]
 pub fn is_reserved_method(name: &str) -> bool {
     PYTHON_KEYWORDS.contains(&name) || name == "all"
+}
+
+/// Apply Python's mandatory keyword escaping without treating ordinary builtins
+/// as reserved. Method derivation uses this as a final validity boundary after
+/// its context-specific Fern naming rules have run.
+#[must_use]
+pub fn escape_python_keyword(mut name: String) -> String {
+    if PYTHON_KEYWORDS.contains(&name.as_str()) {
+        name.push('_');
+    }
+    name
 }
 
 /// Python hard keywords — reserved in every naming context.
@@ -338,6 +365,13 @@ mod tests {
     }
 
     #[test]
+    fn method_keyword_escape_leaves_builtins_unchanged() {
+        assert_eq!(escape_python_keyword("del".to_string()), "del_");
+        assert_eq!(escape_python_keyword("list".to_string()), "list");
+        assert_eq!(escape_python_keyword("all".to_string()), "all");
+    }
+
+    #[test]
     fn snake_case_variants() {
         assert_eq!(to_snake_case("NestedUser"), "nested_user");
         assert_eq!(to_snake_case("SearchResponse"), "search_response");
@@ -358,6 +392,7 @@ mod tests {
     #[test]
     fn module_name_snakes_class() {
         assert_eq!(module_name("NestedUser"), "nested_user");
+        assert_eq!(module_name("Class"), "class_");
     }
 
     #[test]
@@ -367,6 +402,7 @@ mod tests {
         assert_eq!(field_name("uuid"), "uuid_");
         assert_eq!(field_name("name"), "name");
         assert_eq!(field_name("tags"), "tags");
+        assert_eq!(model_field_name("self"), "self_");
     }
 
     #[test]
@@ -409,6 +445,7 @@ mod tests {
         assert_eq!(enum_member_name("0: Active"), "ZERO_ACTIVE");
         assert_eq!(enum_visit_param("0: Active"), "zero_active");
         assert_eq!(enum_member_name("1: InActive"), "ONE_IN_ACTIVE");
+        assert_eq!(enum_member_name("oauth2.0"), "OAUTH20");
         assert_eq!(enum_visit_param("1: InActive"), "one_in_active");
     }
 
