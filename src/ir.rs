@@ -2486,7 +2486,7 @@ impl InlineHoister<'_> {
                     } else {
                         item
                     };
-                    return if prop_schema.unique_items == Some(true) {
+                    return if array_uses_set(prop_schema) {
                         TypeRef::Set(Box::new(item))
                     } else {
                         TypeRef::List(Box::new(item))
@@ -2543,7 +2543,7 @@ impl InlineHoister<'_> {
             clean_doc(item.description.as_deref()),
         )));
         let item = Box::new(TypeRef::Named(name));
-        if schema.unique_items == Some(true) {
+        if array_uses_set(schema) {
             Some(TypeRef::Set(item))
         } else {
             Some(TypeRef::List(item))
@@ -3798,7 +3798,7 @@ impl Builder<'_> {
                         } else {
                             Box::new(TypeRef::Named(name))
                         };
-                        return if prop_schema.unique_items == Some(true) {
+                        return if array_uses_set(prop_schema) {
                             TypeRef::Set(item)
                         } else {
                             TypeRef::List(item)
@@ -4188,7 +4188,7 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
                     }
                 },
             );
-            if schema.unique_items == Some(true) {
+            if array_uses_set(schema) {
                 TypeRef::Set(Box::new(item))
             } else {
                 TypeRef::List(Box::new(item))
@@ -4197,6 +4197,13 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
         Some("object") => TypeRef::Primitive(Prim::Any),
         _ => TypeRef::Primitive(Prim::Any),
     }
+}
+
+/// Fern maps a unique array to `Set` unless an array default pins its imported
+/// shape to `List` (for example, `uniqueItems: true` with `default: []`).
+fn array_uses_set(schema: &Schema) -> bool {
+    schema.unique_items == Some(true)
+        && !matches!(schema.default.as_ref(), Some(serde_json::Value::Array(_)))
 }
 
 fn single_all_of_ref(schema: &Schema) -> Option<&str> {
