@@ -207,6 +207,40 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         path = self.root / "tests" / "fixtures" / fixture / "expected" / STATE
         return json.loads(path.read_text(encoding="utf-8"))
 
+    def initialize_remote(self) -> tuple[Path, str]:
+        remote = Path(self.temporary.name) / "remote.git"
+        subprocess.run(["git", "init", "--bare", str(remote)], check=True, capture_output=True)
+        subprocess.run(
+            ["git", "init", "-b", "goldens/test"],
+            cwd=self.root,
+            check=True,
+            capture_output=True,
+        )
+        for key, value in (("user.name", "Test"), ("user.email", "test@example.test")):
+            subprocess.run(["git", "config", key, value], cwd=self.root, check=True)
+        subprocess.run(["git", "add", "-A"], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "commit", "-m", "test: baseline"],
+            cwd=self.root,
+            check=True,
+            capture_output=True,
+        )
+        baseline = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=self.root,
+            text=True,
+            capture_output=True,
+            check=True,
+        ).stdout.strip()
+        subprocess.run(["git", "remote", "add", "origin", str(remote)], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "push", "-u", "origin", "goldens/test"],
+            cwd=self.root,
+            check=True,
+            capture_output=True,
+        )
+        return remote, baseline
+
     def test_explicit_state_current_new_upgrade_and_no_op(self) -> None:
         first = self.run_tool(
             "generate", "--version", "4.9.0", "--fixture", "alpha", check=True
@@ -406,23 +440,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         )
 
     def test_publish_success_before_red_then_fixed_current_rerun_is_green(self) -> None:
-        remote = Path(self.temporary.name) / "remote.git"
-        subprocess.run(["git", "init", "--bare", str(remote)], check=True, capture_output=True)
-        subprocess.run(
-            ["git", "init", "-b", "goldens/test"], cwd=self.root, check=True, capture_output=True
-        )
-        for key, value in (("user.name", "Test"), ("user.email", "test@example.test")):
-            subprocess.run(["git", "config", key, value], cwd=self.root, check=True)
-        subprocess.run(["git", "add", "-A"], cwd=self.root, check=True)
-        subprocess.run(["git", "commit", "-m", "test: baseline"], cwd=self.root, check=True, capture_output=True)
-        subprocess.run(["git", "remote", "add", "origin", str(remote)], cwd=self.root, check=True)
-        subprocess.run(
-            ["git", "push", "-u", "origin", "goldens/test"],
-            cwd=self.root,
-            check=True,
-            capture_output=True,
-        )
-
+        remote, _ = self.initialize_remote()
         generation = self.run_tool(
             "generate",
             "--version",
@@ -431,13 +449,10 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             "alpha",
             "--fixture",
             "beta",
-            FAIL_FIXTURES="beta",
         )
-        self.assertEqual(generation.returncode, 1)
+        self.assertEqual(generation.returncode, 0)
         self.assertEqual(self.state("alpha")["fern_python_sdk_version"], "4.9.0")
-        self.assertFalse(
-            (self.root / "tests" / "fixtures" / "beta" / "expected" / STATE).exists()
-        )
+        self.assertEqual(self.state("beta")["fern_python_sdk_version"], "4.9.0")
         comparison = self.run_tool("compare", COMPARE_MODE="diff")
         self.assertEqual(comparison.returncode, 1)
         self.run_tool("publish", "--branch", "goldens/test", check=True)
@@ -451,7 +466,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         red = self.run_tool(
             "result",
             "--generation",
-            "failure",
+            "success",
             "--comparison",
             "failure",
             "--publication",
@@ -462,9 +477,17 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         # The Crozier repair changes only comparison behavior. Exact Fern state
         # skips costly generation, publication is a no-op, and the rerun is green.
         rerun = self.run_tool(
-            "generate", "--version", "4.9.0", "--fixture", "alpha", check=True
+            "generate",
+            "--version",
+            "4.9.0",
+            "--fixture",
+            "alpha",
+            "--fixture",
+            "beta",
+            check=True,
         )
-        self.assertIn("0 generated, 1 current", rerun.stdout)
+        self.assertIn("0 generated, 2 current", rerun.stdout)
+        self.assertEqual(len(self.calls()), 2)
         self.run_tool("compare", COMPARE_MODE="green", check=True)
         published = self.run_tool("publish", "--branch", "goldens/test", check=True)
         self.assertIn("no-op", published.stdout)
@@ -478,6 +501,204 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             "success",
         )
         self.assertEqual(green.returncode, 0)
+
+    def test_successful_sibling_publishes_before_generation_failure_status(self) -> None:
+        remote, _ = self.initialize_remote()
+        generation = self.run_tool(
+            "generate",
+            "--version",
+            "4.9.0",
+            "--fixture",
+            "alpha",
+            "--fixture",
+            "beta",
+            FAIL_FIXTURES="beta",
+        )
+        self.assertEqual(generation.returncode, 1)
+        self.run_tool("compare", COMPARE_MODE="green", check=True)
+        self.run_tool("publish", "--branch", "goldens/test", check=True)
+
+        alpha_state = subprocess.run(
+            [
+                "git",
+                f"--git-dir={remote}",
+                "show",
+                f"goldens/test:tests/fixtures/alpha/expected/{STATE}",
+            ],
+            text=True,
+            capture_output=True,
+            check=True,
+        ).stdout
+        self.assertEqual(json.loads(alpha_state)["fern_python_sdk_version"], "4.9.0")
+        beta_state = subprocess.run(
+            [
+                "git",
+                f"--git-dir={remote}",
+                "cat-file",
+                "-e",
+                f"goldens/test:tests/fixtures/beta/expected/{STATE}",
+            ],
+            capture_output=True,
+            check=False,
+        )
+        self.assertNotEqual(beta_state.returncode, 0)
+        final = self.run_tool(
+            "result",
+            "--generation",
+            "failure",
+            "--comparison",
+            "success",
+            "--publication",
+            "success",
+        )
+        self.assertEqual(final.returncode, 1)
+
+    def test_publish_refuses_remote_advance_without_commit_or_force(self) -> None:
+        remote, baseline = self.initialize_remote()
+        self.run_tool(
+            "generate", "--version", "4.9.0", "--fixture", "alpha", check=True
+        )
+        writer = Path(self.temporary.name) / "remote-writer"
+        subprocess.run(
+            ["git", "clone", "--branch", "goldens/test", str(remote), str(writer)],
+            check=True,
+            capture_output=True,
+        )
+        for key, value in (("user.name", "Writer"), ("user.email", "writer@example.test")):
+            subprocess.run(["git", "config", key, value], cwd=writer, check=True)
+        (writer / "remote-advance.txt").write_text("advance\n", encoding="utf-8")
+        subprocess.run(["git", "add", "remote-advance.txt"], cwd=writer, check=True)
+        subprocess.run(
+            ["git", "commit", "-m", "test: advance remote"],
+            cwd=writer,
+            check=True,
+            capture_output=True,
+        )
+        subprocess.run(
+            ["git", "push", "origin", "goldens/test"],
+            cwd=writer,
+            check=True,
+            capture_output=True,
+        )
+
+        publication = self.run_tool("publish", "--branch", "goldens/test")
+        self.assertEqual(publication.returncode, 2)
+        self.assertIn("advanced during generation", publication.stderr)
+        local_head = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=self.root,
+            text=True,
+            capture_output=True,
+            check=True,
+        ).stdout.strip()
+        self.assertEqual(local_head, baseline)
+        staged = subprocess.run(
+            ["git", "diff", "--cached", "--name-only"],
+            cwd=self.root,
+            text=True,
+            capture_output=True,
+            check=True,
+        ).stdout
+        self.assertEqual(staged, "")
+
+    def test_real_generator_script_installs_atomically_across_spaced_paths(self) -> None:
+        root = Path(self.temporary.name) / "generator repo with spaces"
+        scripts = root / "scripts"
+        fixture = root / "tests" / "fixtures" / "alpha"
+        expected = fixture / "expected"
+        fake_bin = root / "fake bin"
+        target = root / "target" / "release"
+        for directory in (scripts, expected / "src" / "fern", fake_bin, target):
+            directory.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(REPO / "scripts" / "generate-fern-fixture.sh", scripts)
+        shutil.copy2(REPO / "scripts" / "lib.sh", scripts)
+        spec_dir = root / "source specs"
+        spec_dir.mkdir()
+        spec = spec_dir / "open api.json"
+        spec.write_text('{"openapi":"3.0.3"}\n', encoding="utf-8")
+        (expected / "src" / "fern" / "version.py").write_text(
+            "prior-valid-golden\n", encoding="utf-8"
+        )
+        (expected / STATE).write_text("prior-valid-state\n", encoding="utf-8")
+        before = {
+            path.relative_to(expected).as_posix(): path.read_bytes()
+            for path in expected.rglob("*")
+            if path.is_file()
+        }
+
+        self.write_executable(
+            fake_bin / "fern",
+            r"""
+            #!/usr/bin/env python3
+            import pathlib
+            import sys
+
+            arguments = sys.argv[1:]
+            output = pathlib.Path(arguments[arguments.index("--output") + 1])
+            generated = output / "fern-python-sdk" / "src" / "fern"
+            generated.mkdir(parents=True)
+            (generated / "version.py").write_text("complete-fern-output\n", encoding="utf-8")
+            """,
+        )
+        self.write_executable(fake_bin / "docker", "#!/usr/bin/env bash\nexit 0\n")
+        self.write_executable(
+            target / "crozier",
+            r"""
+            #!/usr/bin/env python3
+            import os
+            import pathlib
+            import sys
+
+            if os.environ.get("FAIL_STRIP") == "1":
+                print("partial-strip")
+                raise SystemExit(23)
+            sys.stdout.buffer.write(pathlib.Path(sys.argv[2]).read_bytes())
+            """,
+        )
+        command = [
+            str(scripts / "generate-fern-fixture.sh"),
+            "alpha",
+            "4.35.0",
+            str(spec),
+        ]
+        environment = self.environment(
+            CROZIER_FERN_NO_DOCKER_SHIM="1",
+            PATH=f"{fake_bin}{os.pathsep}{os.environ['PATH']}",
+        )
+        failed = subprocess.run(
+            command,
+            cwd=root,
+            env={**environment, "FAIL_STRIP": "1"},
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        self.assertEqual(failed.returncode, 23, failed.stderr)
+        after_failure = {
+            path.relative_to(expected).as_posix(): path.read_bytes()
+            for path in expected.rglob("*")
+            if path.is_file()
+        }
+        self.assertEqual(after_failure, before)
+        self.assertFalse(list(fixture.glob(".fern-output.*")))
+        self.assertFalse(list(fixture.glob(".expected.backup.*")))
+
+        succeeded = subprocess.run(
+            command,
+            cwd=root,
+            env=environment,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        self.assertEqual(succeeded.returncode, 0, succeeded.stderr)
+        self.assertEqual(
+            (expected / "src" / "fern" / "version.py").read_text(encoding="utf-8"),
+            "complete-fern-output\n",
+        )
+        self.assertFalse((expected / STATE).exists())
+        self.assertFalse(list(fixture.glob(".fern-output.*")))
+        self.assertFalse(list(fixture.glob(".expected.backup.*")))
 
     def test_invalid_inputs_fail_before_generation_or_publication(self) -> None:
         cases = [
