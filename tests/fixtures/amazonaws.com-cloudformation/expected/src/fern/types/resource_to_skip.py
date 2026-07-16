@@ -1,0 +1,3 @@
+
+
+ResourceToSkip = str

@@ -90,6 +90,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e bintable_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apis_guru_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e color_pizza_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e amazonaws_com_cloudformation_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e byautomata_io_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_proxy_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_connector_matches_fern_output
@@ -106,6 +107,18 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_customer_support_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_lead_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apache_org_airflow_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e openfigi_com_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e twilio_voice_v1_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e microcks_local_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e redhat_catalog_inventory_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e xero_payroll_au_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e traccar_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e reverb_com_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e maif_otoroshi_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e portfoliooptimizer_io_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e openbanking_org_uk_account_info_openapi_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e netbox_dev_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e squareup_com_matches_fern_output
 
 # Format the codebase in place.
 format:

@@ -1,0 +1,34 @@
+
+
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from .money import Money
+
+
+class OrderRoundingAdjustment(UniversalBaseModel):
+    """
+    A rounding adjustment of the money being returned. Commonly used to apply cash rounding
+    when the minimum unit of the account is smaller than the lowest physical denomination of the currency.
+    """
+
+    amount_money: typing.Optional[Money] = None
+    name: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    The name of the rounding adjustment from the original sale order.
+    """
+
+    uid: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    A unique ID that identifies the rounding adjustment only within this order.
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

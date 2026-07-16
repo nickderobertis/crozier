@@ -1,0 +1,126 @@
+
+
+import typing
+
+import httpx
+from .http_client import AsyncHttpClient, HttpClient
+
+
+class BaseClientWrapper:
+    def __init__(
+        self,
+        *,
+        fapi_auth_date: typing.Optional[str] = None,
+        fapi_customer_ip_address: typing.Optional[str] = None,
+        fapi_interaction_id: typing.Optional[str] = None,
+        customer_user_agent: typing.Optional[str] = None,
+        token: typing.Union[str, typing.Callable[[], str]],
+        headers: typing.Optional[typing.Dict[str, str]] = None,
+        base_url: str,
+        timeout: typing.Optional[float] = None,
+    ):
+        self._fapi_auth_date = fapi_auth_date
+        self._fapi_customer_ip_address = fapi_customer_ip_address
+        self._fapi_interaction_id = fapi_interaction_id
+        self._customer_user_agent = customer_user_agent
+        self._token = token
+        self._headers = headers
+        self._base_url = base_url
+        self._timeout = timeout
+
+    def get_headers(self) -> typing.Dict[str, str]:
+        headers: typing.Dict[str, str] = {
+            "X-Fern-Language": "Python",
+            "X-Fern-SDK-Name": "default_package_name",
+            "X-Fern-SDK-Version": "0.0.0",
+            **(self.get_custom_headers() or {}),
+        }
+        if self._fapi_auth_date is not None:
+            headers["x-fapi-auth-date"] = self._fapi_auth_date
+        if self._fapi_customer_ip_address is not None:
+            headers["x-fapi-customer-ip-address"] = self._fapi_customer_ip_address
+        if self._fapi_interaction_id is not None:
+            headers["x-fapi-interaction-id"] = self._fapi_interaction_id
+        if self._customer_user_agent is not None:
+            headers["x-customer-user-agent"] = self._customer_user_agent
+        headers["Authorization"] = f"Bearer {self._get_token()}"
+        return headers
+
+    def _get_token(self) -> str:
+        if isinstance(self._token, str):
+            return self._token
+        else:
+            return self._token()
+
+    def get_custom_headers(self) -> typing.Optional[typing.Dict[str, str]]:
+        return self._headers
+
+    def get_base_url(self) -> str:
+        return self._base_url
+
+    def get_timeout(self) -> typing.Optional[float]:
+        return self._timeout
+
+
+class SyncClientWrapper(BaseClientWrapper):
+    def __init__(
+        self,
+        *,
+        fapi_auth_date: typing.Optional[str] = None,
+        fapi_customer_ip_address: typing.Optional[str] = None,
+        fapi_interaction_id: typing.Optional[str] = None,
+        customer_user_agent: typing.Optional[str] = None,
+        token: typing.Union[str, typing.Callable[[], str]],
+        headers: typing.Optional[typing.Dict[str, str]] = None,
+        base_url: str,
+        timeout: typing.Optional[float] = None,
+        httpx_client: httpx.Client,
+    ):
+        super().__init__(
+            fapi_auth_date=fapi_auth_date,
+            fapi_customer_ip_address=fapi_customer_ip_address,
+            fapi_interaction_id=fapi_interaction_id,
+            customer_user_agent=customer_user_agent,
+            token=token,
+            headers=headers,
+            base_url=base_url,
+            timeout=timeout,
+        )
+        self.httpx_client = HttpClient(
+            httpx_client=httpx_client,
+            base_headers=self.get_headers,
+            base_timeout=self.get_timeout,
+            base_url=self.get_base_url,
+        )
+
+
+class AsyncClientWrapper(BaseClientWrapper):
+    def __init__(
+        self,
+        *,
+        fapi_auth_date: typing.Optional[str] = None,
+        fapi_customer_ip_address: typing.Optional[str] = None,
+        fapi_interaction_id: typing.Optional[str] = None,
+        customer_user_agent: typing.Optional[str] = None,
+        token: typing.Union[str, typing.Callable[[], str]],
+        headers: typing.Optional[typing.Dict[str, str]] = None,
+        base_url: str,
+        timeout: typing.Optional[float] = None,
+        httpx_client: httpx.AsyncClient,
+    ):
+        super().__init__(
+            fapi_auth_date=fapi_auth_date,
+            fapi_customer_ip_address=fapi_customer_ip_address,
+            fapi_interaction_id=fapi_interaction_id,
+            customer_user_agent=customer_user_agent,
+            token=token,
+            headers=headers,
+            base_url=base_url,
+            timeout=timeout,
+        )
+        self.httpx_client = AsyncHttpClient(
+            httpx_client=httpx_client,
+            base_headers=self.get_headers,
+            base_timeout=self.get_timeout,
+            base_url=self.get_base_url,
+        )

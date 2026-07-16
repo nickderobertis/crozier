@@ -1,0 +1,41 @@
+
+
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from .order_line_item_pricing_blocklists_blocked_discount import OrderLineItemPricingBlocklistsBlockedDiscount
+from .order_line_item_pricing_blocklists_blocked_tax import OrderLineItemPricingBlocklistsBlockedTax
+
+
+class OrderLineItemPricingBlocklists(UniversalBaseModel):
+    """
+    Describes pricing adjustments that are blocked from manual and
+    automatic application to a line item. For more information, see
+    [Apply Taxes and Discounts](https://developer.squareup.com/docs/orders-api/apply-taxes-and-discounts).
+    """
+
+    blocked_discounts: typing.Optional[typing.List[OrderLineItemPricingBlocklistsBlockedDiscount]] = pydantic.Field(
+        default=None
+    )
+    """
+    A list of discounts blocked from applying to the line item. 
+    Discounts can be blocked by the `discount_uid` (for ad hoc discounts) or 
+    the `discount_catalog_object_id` (for catalog discounts).
+    """
+
+    blocked_taxes: typing.Optional[typing.List[OrderLineItemPricingBlocklistsBlockedTax]] = pydantic.Field(default=None)
+    """
+    A list of taxes blocked from applying to the line item. 
+    Taxes can be blocked by the `tax_uid` (for ad hoc taxes) or 
+    the `tax_catalog_object_id` (for catalog taxes).
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

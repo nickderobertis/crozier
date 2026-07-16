@@ -1,0 +1,3 @@
+
+
+TypeNamePrefix = str

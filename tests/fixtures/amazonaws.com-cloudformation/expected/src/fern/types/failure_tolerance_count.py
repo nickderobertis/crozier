@@ -1,0 +1,3 @@
+
+
+FailureToleranceCount = int

@@ -1,0 +1,82 @@
+
+
+import enum
+import typing
+
+T_Result = typing.TypeVar("T_Result")
+
+
+class ObReadProduct2DataProductItemOtherProductTypeCreditInterestTierBandSetItemTierBandItemCalculationFrequency(
+    str, enum.Enum
+):
+    """
+    How often is credit interest calculated for the account.
+    """
+
+    FQAT = "FQAT"
+    FQDY = "FQDY"
+    FQHY = "FQHY"
+    FQMY = "FQMY"
+    FQOT = "FQOT"
+    FQQY = "FQQY"
+    FQSD = "FQSD"
+    FQWY = "FQWY"
+    FQYY = "FQYY"
+
+    def visit(
+        self,
+        fqat: typing.Callable[[], T_Result],
+        fqdy: typing.Callable[[], T_Result],
+        fqhy: typing.Callable[[], T_Result],
+        fqmy: typing.Callable[[], T_Result],
+        fqot: typing.Callable[[], T_Result],
+        fqqy: typing.Callable[[], T_Result],
+        fqsd: typing.Callable[[], T_Result],
+        fqwy: typing.Callable[[], T_Result],
+        fqyy: typing.Callable[[], T_Result],
+    ) -> T_Result:
+        if (
+            self
+            is ObReadProduct2DataProductItemOtherProductTypeCreditInterestTierBandSetItemTierBandItemCalculationFrequency.FQAT
+        ):
+            return fqat()
+        if (
+            self
+            is ObReadProduct2DataProductItemOtherProductTypeCreditInterestTierBandSetItemTierBandItemCalculationFrequency.FQDY
+        ):
+            return fqdy()
+        if (
+            self
+            is ObReadProduct2DataProductItemOtherProductTypeCreditInterestTierBandSetItemTierBandItemCalculationFrequency.FQHY
+        ):
+            return fqhy()
+        if (
+            self
+            is ObReadProduct2DataProductItemOtherProductTypeCreditInterestTierBandSetItemTierBandItemCalculationFrequency.FQMY
+        ):
+            return fqmy()
+        if (
+            self
+            is ObReadProduct2DataProductItemOtherProductTypeCreditInterestTierBandSetItemTierBandItemCalculationFrequency.FQOT
+        ):
+            return fqot()
+        if (
+            self
+            is ObReadProduct2DataProductItemOtherProductTypeCreditInterestTierBandSetItemTierBandItemCalculationFrequency.FQQY
+        ):
+            return fqqy()
+        if (
+            self
+            is ObReadProduct2DataProductItemOtherProductTypeCreditInterestTierBandSetItemTierBandItemCalculationFrequency.FQSD
+        ):
+            return fqsd()
+        if (
+            self
+            is ObReadProduct2DataProductItemOtherProductTypeCreditInterestTierBandSetItemTierBandItemCalculationFrequency.FQWY
+        ):
+            return fqwy()
+        if (
+            self
+            is ObReadProduct2DataProductItemOtherProductTypeCreditInterestTierBandSetItemTierBandItemCalculationFrequency.FQYY
+        ):
+            return fqyy()

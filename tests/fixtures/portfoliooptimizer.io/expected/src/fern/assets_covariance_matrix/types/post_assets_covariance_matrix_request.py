@@ -1,0 +1,13 @@
+
+
+import typing
+
+from .post_assets_covariance_matrix_request_assets import PostAssetsCovarianceMatrixRequestAssets
+from .post_assets_covariance_matrix_request_assets_variances import PostAssetsCovarianceMatrixRequestAssetsVariances
+from .post_assets_covariance_matrix_request_zero import PostAssetsCovarianceMatrixRequestZero
+
+PostAssetsCovarianceMatrixRequest = typing.Union[
+    PostAssetsCovarianceMatrixRequestZero,
+    PostAssetsCovarianceMatrixRequestAssetsVariances,
+    PostAssetsCovarianceMatrixRequestAssets,
+]

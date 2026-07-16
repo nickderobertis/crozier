@@ -1,0 +1,3 @@
+
+
+FailureTolerancePercentage = int

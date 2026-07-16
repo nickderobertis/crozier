@@ -1,0 +1,33 @@
+
+
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+
+
+class CatalogQuerySet(UniversalBaseModel):
+    """
+    The query filter to return the search result(s) by exact match of the specified `attribute_name` and any of
+    the `attribute_values`.
+    """
+
+    attribute_name: str = pydantic.Field()
+    """
+    The name of the attribute to be searched. Matching of the attribute name is exact.
+    """
+
+    attribute_values: typing.List[str] = pydantic.Field()
+    """
+    The desired values of the search attribute. Matching of the attribute values is exact and case insensitive.
+    A maximum of 250 values may be searched in a request.
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

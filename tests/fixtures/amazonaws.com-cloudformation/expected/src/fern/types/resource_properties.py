@@ -1,0 +1,3 @@
+
+
+ResourceProperties = str

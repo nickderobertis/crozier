@@ -1,0 +1,3 @@
+
+
+HookInvocationCount = int

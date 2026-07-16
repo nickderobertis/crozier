@@ -1,0 +1,3 @@
+
+
+ObExternalStatementValueType1Code = str

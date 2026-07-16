@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .post_portfolio_analysis_return_request_assets import PostPortfolioAnalysisReturnRequestAssets
+from .post_portfolio_analysis_return_request_one import PostPortfolioAnalysisReturnRequestOne
+
+PostPortfolioAnalysisReturnRequest = typing.Union[
+    PostPortfolioAnalysisReturnRequestAssets, PostPortfolioAnalysisReturnRequestOne
+]

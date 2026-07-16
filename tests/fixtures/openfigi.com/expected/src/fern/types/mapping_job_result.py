@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .mapping_job_result_figi_list import MappingJobResultFigiList
+from .mapping_job_result_figi_not_found import MappingJobResultFigiNotFound
+
+MappingJobResult = typing.Union[MappingJobResultFigiList, MappingJobResultFigiNotFound]

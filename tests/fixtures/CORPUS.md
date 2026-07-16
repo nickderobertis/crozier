@@ -1,6 +1,6 @@
 # Canonical real-world OpenAPI corpus (issue #77)
 
-This manifest tracks 50 real-world OpenAPI specs with redistribution-compatible
+This manifest tracks 63 real-world OpenAPI specs with redistribution-compatible
 license metadata. `decision` is `link-ok` when the permissively licensed source
 is fetched at generation time rather than vendored. Add or change one numbered
 row per feature branch and maintain its golden through the manually dispatched
@@ -59,6 +59,19 @@ row per feature branch and maintain its golden through the manually dispatched
 | 48 | `github.com` | api-guru | https://api.apis.guru/v2/specs/github.com/1.1.4/openapi.json | `1.1.4` | MIT | link-ok | GitHub v3 REST API |
 | 49 | `gov.bc.ca-news` | api-guru | https://api.apis.guru/v2/specs/gov.bc.ca/news/1.0/openapi.json | `1.0` | Apache 2.0 | link-ok | BC Gov News API Service 1.0 |
 | 50 | `groundhog-day.com` | api-guru | https://api.apis.guru/v2/specs/groundhog-day.com/1.2.1/openapi.json | `1.2.1` | MIT | link-ok | Groundhog Day API |
+| 51 | `amazonaws.com-cloudformation` | api-guru | https://api.apis.guru/v2/specs/amazonaws.com/cloudformation/2010-05-15/openapi.json | `2010-05-15` | Apache 2.0 License | link-ok | 132 ops, 465 schemas, 859 allOf, 1,523 header/query params, XML request/response, server variables |
+| 52 | `netbox.dev` | api-guru | https://api.apis.guru/v2/specs/netbox.dev/3.4/openapi.json | `3.4` | Apache v2 License | link-ok | 844 ops, 233 schemas, 823 nullable, 1,318 readOnly, 6,867 params, custom formats/numeric enums |
+| 53 | `squareup.com` | api-guru | https://api.apis.guru/v2/specs/squareup.com/2.0/openapi.json | `2.0` | Apache 2.0 | link-ok | 200 ops, 807 schemas, mutually recursive four-schema graph, two security schemes |
+| 54 | `redhat.com-catalog_inventory` | api-guru | https://api.apis.guru/v2/specs/redhat.com/catalog_inventory/1.0.0/openapi.json | `1.0.0` | Apache 2.0 | link-ok | 40 deepObject params, 113 readOnly, multiple servers/server variables, inline bodies |
+| 55 | `microcks.local` | api-guru | https://api.apis.guru/v2/specs/microcks.local/1.7.0/openapi.json | `1.7.0` | Apache 2.0 | link-ok | discriminator with two mappings, oneOf/allOf, binary multipart bodies |
+| 56 | `xero.com-xero-payroll-au` | api-guru | https://api.apis.guru/v2/specs/xero.com/xero-payroll-au/2.9.4/openapi.json | `2.9.4` | MIT | link-ok | UUID-heavy graph, readOnly fields, inline request bodies, header/path/query mix |
+| 57 | `openfigi.com` | api-guru | https://api.apis.guru/v2/specs/openfigi.com/1.4.0/openapi.json | `1.4.0` | Apache 2.0 | link-ok | simple-style path param, wildcard response media, oneOf, alternative document security, server variable |
+| 58 | `openbanking.org.uk-account-info-openapi` | api-guru | https://api.apis.guru/v2/specs/openbanking.org.uk/account-info-openapi/3.1.7/openapi.json | `3.1.7` | open-licence (MIT) | link-ok | 209 schemas, 1,188 refs, application/jose+jwe, dual security schemes; Crozier invalid-Python gap |
+| 59 | `maif.local-otoroshi` | api-guru | https://api.apis.guru/v2/specs/maif.local/otoroshi/1.5.0-dev/openapi.json | `1.5.0-dev` | Apache 2.0 | link-ok | 22 oneOf, NDJSON request bodies, SSE response, 102 ops, format diversity |
+| 60 | `traccar.org` | api-guru | https://api.apis.guru/v2/specs/traccar.org/5.6/openapi.json | `5.6` | Apache 2.0 | link-ok | GPX/XML, CSV, XLSX media, urlencoded request, six servers/two variables |
+| 61 | `twilio.com-twilio_voice_v1` | api-guru | https://api.apis.guru/v2/specs/twilio.com/twilio_voice_v1/1.42.0/openapi.json | `1.42.0` | Apache 2.0 | link-ok | 17 path-level servers, 87 nullable nodes, urlencoded bodies, custom formats |
+| 62 | `portfoliooptimizer.io` | api-guru | https://api.apis.guru/v2/specs/portfoliooptimizer.io/1.0.9/openapi.json | `1.0.9` | Apache 2.0 | link-ok | 83 operations and 15 oneOf across an all-inline zero-component-schema surface |
+| 63 | `reverb.com` | api-guru | https://api.apis.guru/v2/specs/reverb.com/3.0/openapi.json | `3.0` | Apache 2.0 | link-ok | 163 operations, 126 paths, zero component schemas, 21 inline request bodies |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -145,3 +158,52 @@ for, with no backups to invent.
 
 The status table is the durable result of that generation pass; use the standard
 workflow for any future source change or Fern upgrade.
+
+## Batch 5 — byte-matched (issue #77)
+
+Native Fern CLI 5.75.0 screening covered 49 new non-Apideck permissively
+licensed OpenAPI 3 candidates. Exactly 10 primaries plus 3 Fern-passing backups
+are registered; all 13 passed native Fern check, generated Fern goldens, and are
+now byte-matched byte-for-byte.
+
+| name | role | selected for | status |
+|---|---|---|---|
+| `amazonaws.com-cloudformation` | primary | 132 ops, 465 schemas, 859 allOf, 1,523 header/query params, XML request/response, server variables | ✅ matched (1044) |
+| `netbox.dev` | primary | 844 ops, 233 schemas, 823 nullable, 1,318 readOnly, 6,867 params, custom formats/numeric enums | ✅ matched (705) |
+| `squareup.com` | primary | 200 ops, 807 schemas, mutually recursive four-schema graph, two security schemes | ✅ matched (860) |
+| `redhat.com-catalog_inventory` | primary | 40 deepObject params, 113 readOnly, multiple servers/server variables, inline bodies | ✅ matched (108) |
+| `microcks.local` | primary | discriminator with two mappings, oneOf/allOf, binary multipart bodies | ✅ matched (100) |
+| `xero.com-xero-payroll-au` | primary | UUID-heavy graph, readOnly fields, inline request bodies, header/path/query mix | ✅ matched (117) |
+| `openfigi.com` | primary | simple-style path param, wildcard response media, oneOf, alternative document security, server variable | ✅ matched (52) |
+| `openbanking.org.uk-account-info-openapi` | primary | 209 schemas, 1,188 refs, application/jose+jwe, dual security schemes; Crozier invalid-Python gap | ✅ matched (597) |
+| `maif.local-otoroshi` | primary | 22 oneOf, NDJSON request bodies, SSE response, 102 ops, format diversity | ✅ matched (208) |
+| `traccar.org` | primary | GPX/XML, CSV, XLSX media, urlencoded request, six servers/two variables | ✅ matched (118) |
+| `twilio.com-twilio_voice_v1` | backup | 17 path-level servers, 87 nullable nodes, urlencoded bodies, custom formats | ✅ matched (66) |
+| `portfoliooptimizer.io` | backup | 83 operations and 15 oneOf across an all-inline zero-component-schema surface | ✅ matched (379) |
+| `reverb.com` | backup | 163 operations, 126 paths, zero component schemas, 21 inline request bodies | ✅ matched (153) |
+
+### Screened failures
+
+| name | status |
+|---|---|
+| `amazonaws.com-s3` | DROPPED — 12 Fern duplicate normalized query-parameter errors (do not retry) |
+| `digitalocean.com` | DROPPED — Fern false success; stderr parse/unresolved response ref failure (do not retry) |
+| `id4i.de` | DROPPED — 3 duplicate organizationId request-property errors (do not retry) |
+| `intellifi.nl` | DROPPED — 3 duplicate id request-property errors (do not retry) |
+| `meshery.local` | DROPPED — 11 auth-import errors (do not retry) |
+| `mist.com` | DROPPED — duplicate device_mac request-property error (do not retry) |
+| `nasa.gov-apod` | DROPPED — endpoint requires auth but Fern imports none (do not retry) |
+| `nexmo.com-reports` | DROPPED — 23 date-example errors (do not retry) |
+| `openpolicy.local` | DROPPED — 2 YAML-frontmatter delimiter errors in endpoint descriptions (do not retry) |
+| `opentargets.io` | DROPPED — DRUG_ID/drug_id generated-name collision (do not retry) |
+| `osf.io` | DROPPED — YAML-frontmatter delimiter error in endpoint description (do not retry) |
+| `sinao.app` | DROPPED — 2 non-array list-default errors (do not retry) |
+| `telnyx.com` | DROPPED — 26 enum/default/example/name-collision errors (despite callbacks/multipart) (do not retry) |
+| `truora.com` | DROPPED — 70 date placeholder-example errors (do not retry) |
+| `twilio.com-api` | DROPPED — 12 normalized duplicate query-parameter errors (do not retry) |
+| `velopayments.com` | DROPPED — 15 enum/date/datetime errors (do not retry) |
+| `xero.com-xero_bankfeeds` | DROPPED — 13 unsupported-property and statementID/statementId collision errors (do not retry) |
+| `xtrf.eu` | DROPPED — 7 response example property/type errors (do not retry) |
+
+The status tables are the durable results of that generation pass; use the
+standard workflow for any future source change or Fern upgrade.
