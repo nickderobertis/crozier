@@ -3553,6 +3553,7 @@ impl Builder<'_> {
         // is a free-form object: Fern aliases it to `Dict[str, Optional[Any]]` (bunq's
         // `AttachmentPublic`, `Whitelist`, …), not an empty model class.
         if is_bare_object(schema)
+            && !schema.properties.declared()
             && !schema_example(schema).is_some_and(|example| {
                 example.is_object() && !example_is_schema_definition(example)
             })

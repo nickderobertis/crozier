@@ -876,6 +876,21 @@ fn object_with_only_additional_properties_is_a_dict_alias() {
 }
 
 #[test]
+fn named_explicit_empty_properties_is_model_while_omitted_is_dict_alias() {
+    let files = render(
+        "openapi: 3.0.0\ninfo:\n  title: M\ncomponents:\n  schemas:\n    Closed:\n      type: object\n      properties: {}\n    Open:\n      type: object\n",
+    );
+    let closed = &files["src/acme/types/closed.py"];
+    assert!(
+        closed.contains("class Closed(UniversalBaseModel):"),
+        "{closed}"
+    );
+    assert!(closed.contains("extra=\"allow\""), "{closed}");
+    assert!(files["src/acme/types/open.py"]
+        .contains("Open = typing.Dict[str, typing.Optional[typing.Any]]"));
+}
+
+#[test]
 fn empty_title_falls_back_to_client_package() {
     let dir = tempfile::tempdir().expect("tempdir");
     let spec = dir.path().join("api.yml");

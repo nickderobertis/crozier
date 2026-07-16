@@ -8580,6 +8580,84 @@ const OPENFIGI: Corpus = Corpus {
     ],
 };
 
+const TWILIO_VOICE_V1: Corpus = Corpus {
+    api: "twilio.com-twilio_voice_v1",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[
+        ".fern/metadata.json",
+        "README.md",
+        "pyproject.toml",
+        "reference.md",
+        "requirements.txt",
+        "src/fern/__init__.py",
+        "src/fern/client.py",
+        "src/fern/core/__init__.py",
+        "src/fern/core/api_error.py",
+        "src/fern/core/client_wrapper.py",
+        "src/fern/core/datetime_utils.py",
+        "src/fern/core/file.py",
+        "src/fern/core/force_multipart.py",
+        "src/fern/core/http_client.py",
+        "src/fern/core/http_response.py",
+        "src/fern/core/http_sse/__init__.py",
+        "src/fern/core/http_sse/_api.py",
+        "src/fern/core/http_sse/_decoders.py",
+        "src/fern/core/http_sse/_exceptions.py",
+        "src/fern/core/http_sse/_models.py",
+        "src/fern/core/jsonable_encoder.py",
+        "src/fern/core/pydantic_utilities.py",
+        "src/fern/core/query_encoder.py",
+        "src/fern/core/remove_none_from_dict.py",
+        "src/fern/core/request_options.py",
+        "src/fern/core/serialization.py",
+        "src/fern/environment.py",
+        "src/fern/py.typed",
+        "src/fern/raw_client.py",
+        "src/fern/types/__init__.py",
+        "src/fern/types/create_byoc_trunk_request_status_callback_method.py",
+        "src/fern/types/create_byoc_trunk_request_voice_fallback_method.py",
+        "src/fern/types/create_byoc_trunk_request_voice_method.py",
+        "src/fern/types/list_byoc_trunk_response.py",
+        "src/fern/types/list_byoc_trunk_response_meta.py",
+        "src/fern/types/list_connection_policy_response.py",
+        "src/fern/types/list_connection_policy_response_meta.py",
+        "src/fern/types/list_connection_policy_target_response.py",
+        "src/fern/types/list_connection_policy_target_response_meta.py",
+        "src/fern/types/list_dialing_permissions_country_response.py",
+        "src/fern/types/list_dialing_permissions_country_response_meta.py",
+        "src/fern/types/list_dialing_permissions_hrs_prefixes_response.py",
+        "src/fern/types/list_dialing_permissions_hrs_prefixes_response_meta.py",
+        "src/fern/types/list_ip_record_response.py",
+        "src/fern/types/list_ip_record_response_meta.py",
+        "src/fern/types/list_source_ip_mapping_response.py",
+        "src/fern/types/list_source_ip_mapping_response_meta.py",
+        "src/fern/types/update_byoc_trunk_request_status_callback_method.py",
+        "src/fern/types/update_byoc_trunk_request_voice_fallback_method.py",
+        "src/fern/types/update_byoc_trunk_request_voice_method.py",
+        "src/fern/types/voice_v1archived_call.py",
+        "src/fern/types/voice_v1byoc_trunk.py",
+        "src/fern/types/voice_v1byoc_trunk_status_callback_method.py",
+        "src/fern/types/voice_v1byoc_trunk_voice_fallback_method.py",
+        "src/fern/types/voice_v1byoc_trunk_voice_method.py",
+        "src/fern/types/voice_v1connection_policy.py",
+        "src/fern/types/voice_v1connection_policy_connection_policy_target.py",
+        "src/fern/types/voice_v1dialing_permissions.py",
+        "src/fern/types/voice_v1dialing_permissions_dialing_permissions_country.py",
+        "src/fern/types/voice_v1dialing_permissions_dialing_permissions_country_bulk_update.py",
+        "src/fern/types/voice_v1dialing_permissions_dialing_permissions_country_dialing_permissions_hrs_prefixes.py",
+        "src/fern/types/voice_v1dialing_permissions_dialing_permissions_country_instance.py",
+        "src/fern/types/voice_v1dialing_permissions_dialing_permissions_settings.py",
+        "src/fern/types/voice_v1ip_record.py",
+        "src/fern/types/voice_v1source_ip_mapping.py",
+        "src/fern/version.py",
+    ],
+};
+
 const CORPORA: &[&Corpus] = &[
     &QUERY_PARAMETERS,
     &EXHAUSTIVE,
@@ -8619,6 +8697,7 @@ const CORPORA: &[&Corpus] = &[
     &APIDECK_LEAD,
     &APACHE_ORG_AIRFLOW,
     &OPENFIGI,
+    &TWILIO_VOICE_V1,
 ];
 
 #[test]
@@ -9100,6 +9179,18 @@ fn openfigi_com_matches_fern_output() {
 }
 
 #[test]
+fn twilio_voice_v1_matches_fern_output() {
+    if corpus_spec(TWILIO_VOICE_V1.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the Twilio Voice v1 corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+        );
+        return;
+    }
+    assert_corpus_matches(&TWILIO_VOICE_V1);
+}
+
+#[test]
 fn feature_target_specs_generate_without_panicking() {
     // A feature-coverage target with a populated `matched` list is byte-compared
     // file-by-file; one with an empty `matched` list asserts only that crozier
@@ -9174,6 +9265,7 @@ fn report_matched_candidates() {
         &APIDECK_LEAD,
         &APACHE_ORG_AIRFLOW,
         &OPENFIGI,
+        &TWILIO_VOICE_V1,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
@@ -9319,6 +9411,7 @@ fn report_fixture_diffs() {
         &APIDECK_LEAD,
         &APACHE_ORG_AIRFLOW,
         &OPENFIGI,
+        &TWILIO_VOICE_V1,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
