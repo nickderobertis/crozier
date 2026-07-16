@@ -15,6 +15,7 @@ TOOL = REPO / "scripts" / "fern-goldens"
 STATE = ".crozier-fern-golden.json"
 
 
+@unittest.skipIf(os.name == "nt", "Fern golden workflow scripts run on Linux")
 class FernGoldensBoundaryTests(unittest.TestCase):
     def setUp(self) -> None:
         self.temporary = tempfile.TemporaryDirectory()
