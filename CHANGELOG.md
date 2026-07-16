@@ -6,6 +6,13 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.31](https://github.com/nickderobertis/crozier/compare/v0.0.30...v0.0.31) - 2026-07-16
+
+### Added
+
+- register Batch 4 OpenAPI corpora ([#106](https://github.com/nickderobertis/crozier/pull/106))
+- byte-match Batch 3 OpenAPI corpora ([#104](https://github.com/nickderobertis/crozier/pull/104))
+
 ## [0.0.30](https://github.com/nickderobertis/crozier/compare/v0.0.29...v0.0.30) - 2026-07-15
 
 ### Other
