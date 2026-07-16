@@ -18,16 +18,17 @@ Two fixture sources, both Fern's real output (Apache-2.0, see `NOTICE`):
 - **Offline corpus** — Fern commits Python SDK snapshots for its OpenAPI-sourced
   test APIs (the `*-openapi` seeds). These need no Docker, are reproducible, and
   gate on every run. `query-parameters-openapi` is the first one vendored.
-  Refresh with `just fixtures-refresh` (pins a Fern commit; see
-  `scripts/fixtures-refresh.sh`).
 - **Exhaustive target** — the broad `exhaustive` spec the project aims at. Fern's
   committed `exhaustive` Python output is *definition*-derived, so it is **not** a
   valid OpenAPI target. Producing the true OpenAPI-derived output requires running
-  Fern's generator, which only runs under a container runtime. Do that on a
-  machine with Docker via `scripts/generate-fern-fixture.sh` (it scaffolds a Fern
-  workspace around the vendored `tests/fixtures/exhaustive/openapi.yml`, runs the
-  Python generator locally, strips comments, and installs the fixture). Wire the
-  resulting files into the manifest below as generation lands.
+  Fern's containerized generator over the vendored
+  `tests/fixtures/exhaustive/openapi.yml`.
+
+Numbered real-world corpus goldens are maintained through the manually
+dispatched **Fern goldens** workflow, not by running the generator scripts by
+hand. The fixture/upgrade loop, exact provenance, partial-success behavior, and
+local diagnostic recipes are documented in
+[`fern-goldens.md`](fern-goldens.md).
 
 ## How the comparison works
 
@@ -348,12 +349,8 @@ corpora stay byte-identical — none of them exercised these paths):
 3. **README examples for no-body operations** (`src/emit.rs`) — matched Fern's
    rendering of the example calls.
 
-To regenerate the golden (needs Docker + the `fern` CLI + a Rust toolchain):
-
-```
-./scripts/fetch-corpus.sh                        # fetches the bungie spec into .local/corpus/
-just fixtures-generate-corpus --only bungie.net  # runs Fern (Docker) -> tests/fixtures/bungie.net/expected/
-```
+Future Bungie source changes or Fern upgrades follow the standard
+[`Fern golden lifecycle`](fern-goldens.md).
 
 ### Five more real-world corpora (issue #77): a harder batch, byte-match in progress
 
@@ -365,8 +362,8 @@ gate, and `conjur.local` hits a ref-resolution error, so all four are out). Each
 `Corpus` is registered in `tests/e2e.rs` with an **empty `matched`** list and the
 usual `link-ok` guard, so the offline `check` gate skips them; the byte-match pass
 grows each list (`just fixtures-candidates`) as the generator is brought to a match.
-Their Fern goldens are generated with Docker and land in the same PR
-(`just fixtures-generate-corpus --only <name>`).
+Their Fern goldens are generated and published to the same feature branch by the
+**Fern goldens** workflow.
 
 | corpus | shape it stresses | current crozier status |
 |---|---|---|
@@ -378,12 +375,8 @@ Their Fern goldens are generated with Docker and land in the same PR
 
 The three gaps are the batch's first byte-match work; because anchore and apache
 share the duplicate-parameter gap, the corpora are worked **serially** (one fix
-unblocks both). Regenerate any golden with, e.g.:
-
-```
-./scripts/fetch-corpus.sh                          # fetches the batch specs into .local/corpus/
-just fixtures-generate-corpus --only anchore.io    # runs Fern (Docker) -> tests/fixtures/anchore.io/expected/
-```
+unblocks both). Future fixture refreshes use the standard
+[`Fern golden lifecycle`](fern-goldens.md).
 
 ### Issue #43: error responses, discriminated-union aliases, and SSE streaming
 
@@ -490,26 +483,15 @@ the document. Each has a hand-authored feature-coverage target with the full Fer
    ([`openapi`]'s `de_properties`), which renders as Fern's `Optional[Any]` —
    matching Fern's tolerance of the same document.
 
-### Generating a gap target's golden tree
+### Adding a gap target's golden tree
 
-A new gap target ships only `openapi.yml`; its golden `expected/` tree comes from
-Fern, whose generator runs only under a container runtime — so the tree is produced
-on a Docker host, not in CI. On such a machine:
-
-```
-# prerequisites: Docker running, `npm i -g fern-api`, `cargo build --release`
-scripts/generate-fern-fixture.sh <fixture>   # writes tests/fixtures/<fixture>/expected/
-```
-
-The script scaffolds a Fern workspace around the vendored spec, runs
-`fern-python-sdk` (pinned to the same version as the other fixtures — the default
-in the script), strips comments with `crozier internal-strip`, and installs the
-result as `tests/fixtures/<fixture>/expected/`. Commit that tree, then diff crozier
-against it and add each byte-matching file to the fixture's `matched` array in
-`tests/e2e.rs` (the e2e starts comparing it immediately). Anything that does not
-match is generator work to land next; keep the file out of `matched` until it does.
-This is exactly how the four former gap targets (`basic-auth`,
-`oauth-client-credentials`, `inline-array-request`, `writeonly-fields`) were closed.
+Add the target as one numbered `CORPUS.md` row and an empty-`matched` `Corpus`,
+then dispatch **Fern goldens** for its source URL. The first red comparison is the
+generator work to land next; add a file to `matched` only after Crozier reproduces
+it exactly. See the complete [`Fern golden lifecycle`](fern-goldens.md). This is
+the maintained successor to the manual Docker process used for former gap targets
+such as `basic-auth`, `oauth-client-credentials`, `inline-array-request`, and
+`writeonly-fields`.
 
 1. **Auth models beyond bearer** (`auth-schemes`, partially implemented).
    `components.securitySchemes` plus each operation's `security` now feed an
@@ -752,9 +734,8 @@ rename.
 
 ## Fern-python parity gaps (issue #41)
 
-Issue #41's shape gaps are closed with real Fern golden trees (generated by
-`scripts/generate-fern-fixture.sh`, so all are byte-match targets like the rest of the
-corpus).
+Issue #41's shape gaps are closed with real Fern golden trees, so all are
+byte-match targets like the rest of the corpus.
 
 - **Tag-based client grouping** (`tag-based-grouping`). Plain (no `group_method`)
   operationIds `listWidgets`/`createWidget` tagged `widgets` and
@@ -777,9 +758,9 @@ corpus).
   or a hoisted parameter enum — renders as `class Name(str, enum.Enum)` with
   `SCREAMING_SNAKE` members and a `visit(...)` dispatch method
   ([`ir::EnumType`]/[`emit::render_enum`]). This is Fern's `enum_type: python_enums`
-  mode; the whole golden corpus is regenerated against it
-  (`scripts/generate-fern-fixture.sh` passes `pydantic_config.enum_type:
-  python_enums`), so exhaustive and every enum-bearing target byte-match the class
+  mode; the golden corpus was generated with
+  `pydantic_config.enum_type: python_enums`, so exhaustive and every enum-bearing
+  target byte-match the class
   form, and worked examples use member access (`TypesWeatherReport.SUNNY`). The one
   Fern-only artifact this introduces — the `generatorConfig` block Fern writes into
   `.fern/metadata.json` — is normalized out of the comparison
@@ -805,9 +786,8 @@ corpus).
   `listWidgets`→`public` and
   `getStats`→`internal`; `--audience public` byte-matches Fern's filtered SDK — the
   `admin` client and the internal-only `Stats` type are gone, `Widget`→`WidgetDetail`
-  are kept. The golden tree is regenerated by passing `FERN_AUDIENCES=public` to
-  `scripts/generate-fern-fixture.sh` (a group-level `audiences:` filter that acts on
-  the spec's `x-fern-audiences`). Property-/schema-level audiences are not yet
+  are kept. Fern's golden uses a group-level `audiences: [public]` filter that acts
+  on the spec's `x-fern-audiences`. Property-/schema-level audiences are not yet
   honoured (a follow-up); only operation-level filtering is applied.
 
 - **Strict audience subsetting** (`audience-filter-strict`, issue #62). The
@@ -820,8 +800,7 @@ corpus).
   un-annotated `healthCheck` op, so the golden is exactly the `public` subset
   (`listWidgets` + `Widget`→`WidgetDetail`). `crozier generate --audience public
   --audience-strict` byte-matches it, while the permissive default would keep
-  `healthCheck`. Regenerated the same way (`FERN_AUDIENCES=public
-  scripts/generate-fern-fixture.sh audience-filter-strict`).
+  `healthCheck`. Fern's golden uses the same `audiences: [public]` configuration.
 
 - **Ignore extension** (issue #78). `x-crozier-ignore: true` (canonical) or
   `x-fern-ignore: true` on an operation excludes it from generation, and on a
@@ -922,8 +901,8 @@ same PR family: the corpus was bumped 4.34.0 → 4.35.0 and
 issue-#43 gap #2 note above for why the bump is minimal (4.35.0's only output change
 over 4.34.0 is this annotation).
 
-> **Regenerating these golden trees.** `scripts/generate-fern-fixture.sh` pins the
-> Fern CLI to the corpus version via `fern.config.json` and installs the *packaged*
+> **How these golden trees are produced.** The workflow's generator helper pins
+> the Fern CLI via `fern.config.json` and installs the *packaged*
 > SDK (a pip package: `src/<pkg>/…` + `pyproject.toml` + `README.md`/`reference.md` +
 > `.fern/`). It gets the packaged form from `fern generate --preview --output`, which
 > — unlike a plain `--local` `local-file-system` run, that emits only the flat module
@@ -955,9 +934,8 @@ package-derived default is unchanged, so every other corpus is unaffected.
 
 `client-class-name` pins this against real Fern output: a two-endpoint `widgets`
 API generated with `client_class_name: AcmeClient` byte-matches Fern's whole
-33-file tree (`AcmeClient`/`AsyncAcmeClient`). Its golden tree is regenerated by
-passing `CLIENT_CLASS_NAME=AcmeClient` to `scripts/generate-fern-fixture.sh` (which
-adds the `client_class_name` line to the generator config); the value is recorded
+33-file tree (`AcmeClient`/`AsyncAcmeClient`). Its Fern generator config carries
+`client_class_name: AcmeClient`; the value is recorded
 in `.fern/metadata.json`'s `generatorConfig`, which the e2e already normalizes out
 (`normalize_metadata`), so the provenance difference does not gate.
 
@@ -978,9 +956,9 @@ since v2's own default is `ignore`), while `allow`/`forbid` spell it out
 (`extra="allow"`/`extra="forbid"`). The **v1** `Config` always writes the explicit
 member (`extra = pydantic.Extra.<name>`). `pydantic-extra-fields` — the two-endpoint
 `widgets` API generated with `extra_fields: ignore` — byte-matches Fern's whole
-33-file tree, so `Widget`'s model reproduces that asymmetry exactly. Regenerate the
-golden tree by passing `EXTRA_FIELDS=ignore` to `scripts/generate-fern-fixture.sh`;
-like the enum/client-class-name config, Fern records it in `.fern/metadata.json`'s
+33-file tree, so `Widget`'s model reproduces that asymmetry exactly. Its Fern
+generator config carries `extra_fields: ignore`; like the enum/client-class-name
+config, Fern records it in `.fern/metadata.json`'s
 `generatorConfig`, which the e2e normalizes out (`normalize_metadata`).
 
 ## Coverage note

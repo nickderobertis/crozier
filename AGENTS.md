@@ -88,11 +88,15 @@ Use the `just` recipes; do not hand-roll equivalents.
   [`tests/live_e2e/AGENTS.md`](tests/live_e2e/AGENTS.md).
 - `just test-corpus-match` — enforce the real-world corpus byte-match: fetch the
   `link-ok` corpus specs (not vendored) and byte-compare crozier's output against
-  the committed Fern goldens (`apideck.com-crm` today, matched file-by-file — all
-  167). Needs network; runs in the CI live-e2e leg, and the byte-diff test skips
-  when a spec is unfetched (so `check` stays offline).
+  the committed Fern goldens. Needs network; runs in the CI live-e2e leg, and the
+  byte-diff tests skip when a spec is unfetched (so `check` stays offline).
 - `just upgrade` — `cargo update`, then re-run `just check`.
-- `just fixtures-refresh` — re-vendor the Fern reference fixtures (see below).
+- `just fern-goldens` / `just fern-goldens-generate` / `just
+  fern-goldens-compare` — local diagnostics for the automated Fern lifecycle;
+  normal maintenance uses the manually dispatched **Fern goldens** workflow. See
+  [`docs/fern-goldens.md`](docs/fern-goldens.md).
+- `just test-fern-goldens` — exercise the golden automation's process,
+  filesystem, publication, and workflow boundaries. Part of `just check`.
 - `just fixtures-candidates` / `just fixtures-diff` — the fixture-match loop:
   `candidates` reports files crozier now matches (to add to `matched`); `diff`
   prints the normalized diff of files it doesn't (to fix the generator). Neither
@@ -176,12 +180,12 @@ Use the `just` recipes; do not hand-roll equivalents.
   files are ignored on purpose — crozier consumes only the OpenAPI document.
 - Fixtures are comment-stripped (Fern-vs-crozier comments differ by design); the
   same string-safe stripper produces the committed fixtures and normalizes
-  crozier's output in the e2e. Regenerate with `just fixtures-refresh`.
-- **The exhaustive target needs Docker.** Fern's generator only runs under a
-  container runtime, unavailable in some envs. `scripts/generate-fern-fixture.sh`
-  produces the exhaustive fixture where Docker exists; the offline corpus
-  (`query-parameters-openapi`, ...) needs no Docker and gates on every run. See
-  [`docs/matching.md`](docs/matching.md).
+  crozier's output in the e2e.
+- Maintain numbered corpus goldens one row at a time through the manually
+  dispatched **Fern goldens** workflow. It records exact generator/spec
+  provenance and safely publishes complete results even while comparison is red;
+  direct local commands are diagnostic only. See
+  [`docs/fern-goldens.md`](docs/fern-goldens.md).
 
 ## Scripts and output are context
 

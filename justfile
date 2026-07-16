@@ -125,9 +125,9 @@ upgrade:
     cargo update
     @just check
 
-# Re-vendor the Fern reference fixtures (comment-stripped) into tests/fixtures.
-# The offline corpus needs no Docker; pass `exhaustive` to also run Fern's
-# container generator for the exhaustive spec. See docs/matching.md.
+# Legacy reproduction aid for the offline seed; pass `exhaustive` to reproduce
+# that historical container-generated target too. Numbered corpus maintenance
+# uses the Fern goldens workflow; see docs/fern-goldens.md.
 fixtures-refresh *args:
     ./scripts/fixtures-refresh.sh {{args}}
 
@@ -139,15 +139,14 @@ fetch-corpus *args:
     ./scripts/fetch-corpus.sh {{args}}
 
 
-# Fetch missing link-only source repos, discover/vendor their OpenAPI specs, and
-# generate Fern golden `expected/` trees for the issue #77 corpus. Pass
-# `--committed` to refresh only rows already vendored. Needs Docker + fern.
+# Legacy local reproduction for issue #77 goldens. Routine generation and safe
+# publication belong to the Fern goldens workflow. Needs Docker + fern.
 fixtures-generate-corpus *args:
     ./scripts/generate-corpus-fixtures.sh {{args}}
 
-# Deterministic Fern golden refresh: resolve an exact generator tag, generate
-# every selected corpus independently, then aggregate all Crozier byte diffs.
-# `--fixture NAME` may be repeated; omitting it refreshes existing corpus goldens.
+# Local diagnostic for the workflow lifecycle: resolve an exact generator tag,
+# generate every selected corpus independently, then aggregate all Crozier byte
+# diffs. `--fixture NAME` may be repeated; omitting it selects existing goldens.
 fern-goldens *args:
     ./scripts/fern-goldens run "$@"
 
@@ -222,9 +221,9 @@ fixtures-diff corpus="" file="":
 setup-llmlint:
     ./scripts/setup-llmlint.sh
 
-# Make the generated fixture path runnable end to end (fern CLI, docker daemon,
-# release binary) — each only if not already present. Idempotent; also run by the
-# SessionStart hook. The offline path needs none of it. See tests/fixtures/AGENTS.md.
+# Set up local Fern-golden reproduction (Fern CLI, Docker daemon, release binary).
+# Idempotent; also run by the SessionStart hook. The hosted workflow is the normal
+# maintenance path. See docs/fern-goldens.md.
 setup-fern:
     ./scripts/setup-fern.sh
 
