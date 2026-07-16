@@ -5553,25 +5553,37 @@ fn build_example_with_body_example(
                     || f.spec_required && (!f.optional || is_any_type(&f.type_ref))
                     || reference_fields.is_none() && f.media_example
             };
-            let mut example_fields: Vec<&BodyField> = fields
+            let request_media_example = fields
                 .iter()
-                .filter(|field| field.spec_required)
-                .filter(selected)
-                .collect();
-            if let Some(values) = reference_fields {
-                example_fields.extend(values.keys().filter_map(|wire_name| {
-                    fields
-                        .iter()
-                        .find(|field| !field.spec_required && field.wire_name == *wire_name)
-                        .filter(selected)
-                }));
+                .any(|field| field.media_example && !field.schema_body_example);
+            let mut example_fields: Vec<&BodyField> = if request_media_example {
+                fields
+                    .iter()
+                    .filter(|field| field.spec_required)
+                    .filter(selected)
+                    .collect()
             } else {
-                example_fields.extend(
-                    fields
-                        .iter()
-                        .filter(|field| !field.spec_required)
-                        .filter(selected),
-                );
+                fields.iter().filter(selected).collect()
+            };
+            if request_media_example {
+                if let Some(values) = reference_fields {
+                    // The reference writer takes required arguments in signature
+                    // order, then optional arguments in the selected named
+                    // example's declaration order.
+                    example_fields.extend(values.keys().filter_map(|wire_name| {
+                        fields
+                            .iter()
+                            .find(|field| !field.spec_required && field.wire_name == *wire_name)
+                            .filter(selected)
+                    }));
+                } else {
+                    example_fields.extend(
+                        fields
+                            .iter()
+                            .filter(|field| !field.spec_required)
+                            .filter(selected),
+                    );
+                }
             }
             for f in example_fields {
                 let v = f
