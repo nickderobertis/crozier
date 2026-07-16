@@ -2382,10 +2382,9 @@ fn catalog_spec_resolves_refs_hoists_inline_schemas_and_promotes_headers() {
     assert!(reference.contains("limit=25"), "{reference}");
 }
 
-/// Operations with no `operationId` fall back to synthesized names: a `PUT` becomes
-/// `update_*`, a route with no static resource segment yields a verb-only method,
-/// and — lacking any tag — the client module is the leading path segment. A derived
-/// name colliding with a Python builtin gets Fern's trailing-underscore munge.
+/// Operations with neither an `operationId` nor a summary fall back to the lowercase
+/// HTTP method plus every path segment. A declared name colliding with a Python
+/// builtin still gets Fern's trailing-underscore munge.
 const SYNTH_NAMING_SPEC: &str = r##"
 openapi: 3.0.1
 info:
@@ -2414,9 +2413,8 @@ fn synthesized_names_cover_verb_resource_and_reserved_munge() {
     let files = render(SYNTH_NAMING_SPEC);
     // Untagged operations stay on Fern's package-root client.
     let client = &files["src/acme/client.py"];
-    assert!(client.contains("def update_inventory("), "{client}");
-    // `DELETE /{id}` has no static resource segment → a verb-only `delete` method,
-    assert!(client.contains("def delete("), "{client}");
+    assert!(client.contains("def put_inventory("), "{client}");
+    assert!(client.contains("def delete_id("), "{client}");
     // A groupless `list` operationId collides with the builtin and becomes `list_`.
     assert!(client.contains("def list_("), "{client}");
 }
@@ -4541,7 +4539,7 @@ paths:
     );
     let client = &files["src/acme/client.py"];
     assert!(client.contains("def _("), "{client}");
-    assert!(client.contains("def list_widgets("), "{client}");
+    assert!(client.contains("def get_widgets("), "{client}");
     let readme = &files["README.md"];
     assert!(readme.contains("client._()"), "{readme}");
     assert!(!readme.contains("client._(...)"), "{readme}");

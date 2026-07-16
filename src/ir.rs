@@ -1029,15 +1029,17 @@ fn dedupe(ident: String, seen: &mut std::collections::HashMap<String, usize>) ->
 fn build_enum(name: &str, values: Vec<String>, docstring: Option<String>) -> EnumType {
     // Fern derives the member name and `visit` parameter from each wire value,
     // sanitizing both into legal Python identifiers (issue #50): `global` →
-    // `GLOBAL`/`global_`, `0: Active` → `ZERO_ACTIVE`/`zero_active`. Two values
-    // that collapse to the same identifier would emit duplicate members/params
-    // (invalid Python), so a suffix disambiguates any collision.
+    // `GLOBAL`/`global_`, `0: Active` → `ZERO_ACTIVE`/`zero_active`. Exact duplicate
+    // wire values are omitted; distinct values that collapse to the same identifier
+    // are suffixed so the generated members and parameters remain valid Python.
     let mut seen_members: std::collections::HashMap<String, usize> =
         std::collections::HashMap::new();
     let mut seen_params: std::collections::HashMap<String, usize> =
         std::collections::HashMap::new();
+    let mut seen_values = std::collections::HashSet::new();
     let members = values
         .into_iter()
+        .filter(|value| seen_values.insert(value.clone()))
         .map(|value| EnumMember {
             name: dedupe(naming::enum_member_name(&value), &mut seen_members),
             visit_param: dedupe(naming::enum_visit_param(&value), &mut seen_params),
@@ -2942,8 +2944,9 @@ fn first_tag(op: &Operation) -> Option<&str> {
 ///   (`endpoints_put_add`);
 /// - groupless (`get-all-widgets`, `verify code`, `getThing`): the whole id is
 ///   `snake_case`d (→ `get_all_widgets`, `verify_code`, `get_thing`);
-/// - missing: [`synthesized_method_name`] infers a verb from the HTTP method and
-///   route (`GET /widgets` → `list_widgets`).
+/// - missing: a non-empty summary becomes the method name; without one,
+///   [`synthesized_method_name`] joins the HTTP method and full route
+///   (`GET /widgets/{id}` → `get_widgets_id`).
 fn endpoint_method_name(op: &Operation, http_method: &str, url: &str) -> String {
     let id = op.operation_id.as_deref().unwrap_or_default().trim();
     let method = if op
@@ -3093,61 +3096,22 @@ fn endpoint_pascal_context(op: &Operation, http_method: &str, url: &str) -> Stri
     }
 }
 
-/// Fern's fallback endpoint name for an operation that declares no `operationId`:
-/// an action verb inferred from the HTTP method and whether the route addresses a
-/// collection or a single item, joined to the trailing resource. `GET /widgets` →
-/// `list_widgets`, `GET /widgets/{id}` → `get_widget`, `POST /widgets` →
-/// `create_widget`. Item routes (ending in a `{param}`) singularize the noun.
+/// Fern's fallback endpoint name for an operation that declares neither an
+/// `operationId` nor a summary: the lowercase HTTP method followed by every path
+/// segment, including path-parameter names (`POST /mapping` → `post_mapping`,
+/// `GET /mapping/values/{key}` → `get_mapping_values_key`).
 fn synthesized_method_name(http_method: &str, url: &str) -> String {
-    let is_param = |s: &str| s.starts_with('{') && s.ends_with('}');
-    let segments: Vec<&str> = url.split('/').filter(|s| !s.is_empty()).collect();
-    if http_method.eq_ignore_ascii_case("HEAD") {
-        let path = segments
-            .iter()
-            .map(|segment| segment.trim_matches(['{', '}']))
-            .collect::<Vec<_>>()
-            .join("_");
-        return naming::sanitize_identifier(&format!("head_{}", naming::to_snake_case(&path)));
-    }
-    let ends_with_param = segments.last().is_some_and(|s| is_param(s));
-    let verb = match http_method.to_ascii_uppercase().as_str() {
-        "GET" => {
-            if ends_with_param {
-                "get"
-            } else {
-                "list"
-            }
-        }
-        "POST" => "create",
-        "PUT" | "PATCH" => "update",
-        "DELETE" => "delete",
-        "HEAD" => "head",
-        _ => "call",
-    };
-    match segments.iter().rev().find(|s| !is_param(s)) {
-        Some(resource) => {
-            let noun = naming::to_snake_case(resource);
-            let noun = if ends_with_param {
-                singularize(&noun)
-            } else {
-                noun
-            };
-            naming::sanitize_identifier(&format!("{verb}_{noun}"))
-        }
-        None => verb.to_string(),
-    }
-}
-
-/// A naive English singularizer for the resource noun of an inferred item-route
-/// name (`users` → `user`, `entries` → `entry`). Only exercised for operations
-/// with no `operationId` on a `{param}`-terminated route.
-fn singularize(word: &str) -> String {
-    if let Some(stem) = word.strip_suffix("ies") {
-        format!("{stem}y")
-    } else if word.ends_with("ss") || !word.ends_with('s') {
-        word.to_string()
+    let path = url
+        .split('/')
+        .filter(|segment| !segment.is_empty())
+        .map(|segment| segment.trim_matches(['{', '}']))
+        .collect::<Vec<_>>()
+        .join("_");
+    let method = http_method.to_ascii_lowercase();
+    if path.is_empty() {
+        naming::sanitize_identifier(&method)
     } else {
-        word[..word.len() - 1].to_string()
+        naming::sanitize_identifier(&format!("{method}_{}", naming::to_snake_case(&path)))
     }
 }
 
@@ -4672,7 +4636,7 @@ mod tests {
         extensible_enum, full_type_ref_resolved, int_prim, method_from_grouped_id,
         module_from_grouped_id, module_identifier, oauth_scope_enum, optional_type_ref, path_group,
         ref_to_class, request_and_response_refs_match, request_schema_use_count,
-        resolve_request_body, resolve_schema_pointer, response_schema, scalar_body, singularize,
+        resolve_request_body, resolve_schema_pointer, response_schema, scalar_body,
         success_response_entry, synthesized_method_name, title_from_tag, variant_class_name, Auth,
         Builder, InlineHoister, Prim, RequestBody, TypeDecl, TypeRef,
     };
@@ -4691,13 +4655,17 @@ mod tests {
     }
 
     #[test]
-    fn build_enum_disambiguates_colliding_member_names() {
-        // Two wire values that sanitize to the same identifier must not emit
-        // duplicate members/`visit` params (invalid Python); the second is
-        // suffixed. (Fern rejects such a spec; crozier keeps generation legal.)
+    fn build_enum_omits_duplicate_values_and_disambiguates_colliding_names() {
+        // Fern omits exact duplicate wire values. Distinct values that sanitize to
+        // the same identifier still need unique members/`visit` params.
         let e = build_enum(
             "Color",
-            vec!["a-b".to_string(), "a b".to_string(), "a.b".to_string()],
+            vec![
+                "a-b".to_string(),
+                "a-b".to_string(),
+                "a b".to_string(),
+                "a.b".to_string(),
+            ],
             None,
         );
         let members: Vec<&str> = e.members.iter().map(|m| m.name.as_str()).collect();
@@ -5151,24 +5119,21 @@ mod tests {
     }
 
     #[test]
-    fn synthesized_names_infer_verbs_from_method_and_route() {
-        // Fern's fallback naming for an operation with no operationId.
-        assert_eq!(synthesized_method_name("GET", "/widgets"), "list_widgets");
+    fn synthesized_names_use_method_and_full_route() {
+        // Fern's fallback naming when both operationId and summary are absent.
+        assert_eq!(synthesized_method_name("GET", "/widgets"), "get_widgets");
         assert_eq!(
             synthesized_method_name("GET", "/widgets/{id}"),
-            "get_widget"
+            "get_widgets_id"
         );
-        assert_eq!(
-            synthesized_method_name("POST", "/widgets"),
-            "create_widgets"
-        );
+        assert_eq!(synthesized_method_name("POST", "/widgets"), "post_widgets");
         assert_eq!(
             synthesized_method_name("DELETE", "/widgets/{id}"),
-            "delete_widget"
+            "delete_widgets_id"
         );
         assert_eq!(
             synthesized_method_name("PUT", "/widgets/{id}"),
-            "update_widget"
+            "put_widgets_id"
         );
     }
 
@@ -5693,15 +5658,6 @@ mod tests {
     }
 
     #[test]
-    fn singularize_handles_common_plurals() {
-        assert_eq!(singularize("widgets"), "widget");
-        assert_eq!(singularize("entries"), "entry");
-        // Words ending in `ss` and already-singular nouns pass through.
-        assert_eq!(singularize("address"), "address");
-        assert_eq!(singularize("widget"), "widget");
-    }
-
-    #[test]
     fn request_body_resolution_handles_referenced_arrays_bare_objects_and_wildcards() {
         let doc: OpenApi = serde_json::from_value(serde_json::json!({
             "components": { "schemas": {
@@ -6152,7 +6108,7 @@ mod tests {
             synthesized_method_name("HEAD", "/widgets/{widget_id}/status"),
             "head_widgets_widget_id_status"
         );
-        assert_eq!(synthesized_method_name("OPTIONS", "/{id}"), "call");
+        assert_eq!(synthesized_method_name("OPTIONS", "/{id}"), "options_id");
         assert_eq!(path_group("/{tenant}/{id}"), "service");
         assert_eq!(path_group("/{tenant}/WidgetGroups/{id}"), "WidgetGroups");
 

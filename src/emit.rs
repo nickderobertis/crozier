@@ -1269,7 +1269,34 @@ fn complex_body(ep: &Endpoint, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) ->
                 || form.fields.iter().any(|f| f.is_file)
                 || form.fields.iter().all(|f| f.spec_required)
         }
-        Some(RequestBody::Single(s)) => is_complex_type(&s.type_ref, types, tag_decls),
+        Some(RequestBody::Single(s)) => {
+            (ep.body_schema_ref && resolves_to_container(&s.type_ref, types, tag_decls))
+                || is_complex_type(&s.type_ref, types, tag_decls)
+        }
+    }
+}
+
+/// Whether a type resolves through aliases/optionals to a collection. Fern keeps
+/// the `...` placeholder for a component-referenced collection body even when an
+/// object element has optional fields (OpenFIGI's `BulkMappingJob`); inline array
+/// bodies continue to use the element-shape heuristic below.
+fn resolves_to_container(t: &TypeRef, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) -> bool {
+    match t {
+        TypeRef::List(_) | TypeRef::Set(_) | TypeRef::Dict(..) => true,
+        TypeRef::Optional(inner) => resolves_to_container(inner, types, tag_decls),
+        TypeRef::Named(name) => types
+            .iter()
+            .find(|decl| decl.name() == name)
+            .or_else(|| {
+                tag_decls
+                    .iter()
+                    .find_map(|decl| (decl.decl.name() == name).then_some(&decl.decl))
+            })
+            .is_some_and(|decl| match decl {
+                TypeDecl::Alias(alias) => resolves_to_container(&alias.target, types, tag_decls),
+                _ => false,
+            }),
+        _ => false,
     }
 }
 
@@ -4853,7 +4880,7 @@ impl<'a> ExampleCtx<'a> {
                     Example::Dict(vec![("key".to_string(), val)])
                 }
             }
-            TypeRef::Union(variants) => self.union_value(variants),
+            TypeRef::Union(variants) => self.union_value(variants, slot),
             TypeRef::Literal(values) => {
                 Example::Atom(format!("\"{}\"", values.first().map_or("", String::as_str)))
             }
@@ -4863,9 +4890,9 @@ impl<'a> ExampleCtx<'a> {
 
     /// The example for a union: its first variant (an extensible enum's first
     /// literal, else the first variant's own example).
-    fn union_value(&mut self, variants: &[TypeRef]) -> Example {
+    fn union_value(&mut self, variants: &[TypeRef], slot: Slot<'_>) -> Example {
         match variants.first() {
-            Some(first) => self.value(first, Slot::Plain),
+            Some(first) => self.value(first, slot),
             None => Example::Dict(vec![(
                 "key".to_string(),
                 Example::Atom("\"value\"".to_string()),
@@ -5599,10 +5626,10 @@ pub fn write_files(root: &std::path::Path, files: &[GeneratedFile]) -> Result<()
 mod tests {
     use super::{
         abbrev_call, auth_client_parts, auth_example_args, auth_wrapper_parts, build_example,
-        client_method, environment, escape_py_str, example_from_json, field_decl, raw_method,
-        raw_type_str, readme_endpoint, render, render_class_body, render_enum, render_type_decl,
-        url_arg, ClientCtx, Example, ExampleCtx, FieldView, Imports, ParamRow, RefLoc,
-        ReferenceEntryView, RenderedField, RootClientView, RootModuleView, Slot,
+        client_method, complex_body, environment, escape_py_str, example_from_json, field_decl,
+        raw_method, raw_type_str, readme_endpoint, render, render_class_body, render_enum,
+        render_type_decl, url_arg, ClientCtx, Example, ExampleCtx, FieldView, Imports, ParamRow,
+        RefLoc, ReferenceEntryView, RenderedField, RootClientView, RootModuleView, Slot,
     };
     use crate::ir::{
         AliasType, Auth, BodyField, DiscriminatedUnion, Endpoint, EnumMember, EnumType,
@@ -5851,6 +5878,39 @@ mod tests {
             abbrev_call(0, root_raw, true),
             "response = (\n    client.with_raw_response.get_all_colors_of_the_default_color_name_list(...)\n)"
         );
+    }
+
+    #[test]
+    fn referenced_collection_body_keeps_abbreviated_placeholder() {
+        let item = TypeDecl::Object(ObjectType {
+            name: "Item".to_string(),
+            module: "item".to_string(),
+            bases: Vec::new(),
+            fields: vec![model_field(
+                "optional",
+                TypeRef::Primitive(Prim::Str),
+                false,
+            )],
+            docstring: None,
+        });
+        let batch = TypeDecl::Alias(AliasType {
+            name: "Batch".to_string(),
+            module: "batch".to_string(),
+            target: TypeRef::List(Box::new(TypeRef::Named("Item".to_string()))),
+            docstring: None,
+        });
+        let mut ep = endpoint("/batch", Vec::new(), None);
+        ep.body_schema_ref = true;
+        ep.request_body = Some(RequestBody::Single(SingleBody {
+            type_ref: TypeRef::Named("Batch".to_string()),
+            required: true,
+            convert: true,
+            content_type: true,
+            content_type_override: None,
+            example: None,
+        }));
+
+        assert!(complex_body(&ep, &[item, batch], &[]));
     }
 
     #[test]
@@ -6719,7 +6779,10 @@ mod tests {
                 .flat(),
             r#"{"key": "value"}"#
         );
-        assert_eq!(ctx.union_value(&[]).flat(), r#"{"key": "value"}"#);
+        assert_eq!(
+            ctx.union_value(&[], Slot::Plain).flat(),
+            r#"{"key": "value"}"#
+        );
         assert_eq!(
             ctx.value(&TypeRef::Literal(Vec::new()), Slot::Plain).flat(),
             "\"\""

@@ -238,6 +238,7 @@ fn enum_words(value: &str) -> Vec<String> {
         }
     }
     let mut words = Vec::new();
+    let mut join_after_digit = false;
     for word in split_words(&spaced) {
         if words.is_empty() {
             words.push(digit_word(&word).map_or(word, str::to_string));
@@ -246,6 +247,12 @@ fn enum_words(value: &str) -> Vec<String> {
             // `ZERO_ACTIVE`), but concatenates a numeric suffix split by
             // punctuation (`oauth2.0` -> `OAUTH20`).
             words.last_mut().expect("checked non-empty").push_str(&word);
+            join_after_digit = true;
+        } else if join_after_digit {
+            // Smart casing also rejoins the word after a numeric token
+            // (`ID_CUSIP_8_CHR` -> `ID_CUSIP8CHR`).
+            words.last_mut().expect("checked non-empty").push_str(&word);
+            join_after_digit = false;
         } else {
             words.push(word);
         }
@@ -455,6 +462,8 @@ mod tests {
         assert_eq!(enum_visit_param("0: Active"), "zero_active");
         assert_eq!(enum_member_name("1: InActive"), "ONE_IN_ACTIVE");
         assert_eq!(enum_member_name("oauth2.0"), "OAUTH20");
+        assert_eq!(enum_member_name("ID_CUSIP_8_CHR"), "ID_CUSIP8CHR");
+        assert_eq!(enum_visit_param("ID_CUSIP_8_CHR"), "id_cusip8chr");
         assert_eq!(enum_visit_param("1: InActive"), "one_in_active");
     }
 

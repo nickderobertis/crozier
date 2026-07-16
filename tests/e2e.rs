@@ -8516,6 +8516,70 @@ const APACHE_ORG_AIRFLOW: Corpus = Corpus {
     ],
 };
 
+const OPENFIGI: Corpus = Corpus {
+    api: "openfigi.com",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[
+        ".fern/metadata.json",
+        "README.md",
+        "pyproject.toml",
+        "reference.md",
+        "requirements.txt",
+        "src/fern/__init__.py",
+        "src/fern/client.py",
+        "src/fern/core/__init__.py",
+        "src/fern/core/api_error.py",
+        "src/fern/core/client_wrapper.py",
+        "src/fern/core/datetime_utils.py",
+        "src/fern/core/file.py",
+        "src/fern/core/force_multipart.py",
+        "src/fern/core/http_client.py",
+        "src/fern/core/http_response.py",
+        "src/fern/core/http_sse/__init__.py",
+        "src/fern/core/http_sse/_api.py",
+        "src/fern/core/http_sse/_decoders.py",
+        "src/fern/core/http_sse/_exceptions.py",
+        "src/fern/core/http_sse/_models.py",
+        "src/fern/core/jsonable_encoder.py",
+        "src/fern/core/pydantic_utilities.py",
+        "src/fern/core/query_encoder.py",
+        "src/fern/core/remove_none_from_dict.py",
+        "src/fern/core/request_options.py",
+        "src/fern/core/serialization.py",
+        "src/fern/environment.py",
+        "src/fern/errors/__init__.py",
+        "src/fern/errors/bad_request_error.py",
+        "src/fern/errors/content_too_large_error.py",
+        "src/fern/errors/internal_server_error.py",
+        "src/fern/errors/not_acceptable_error.py",
+        "src/fern/errors/unauthorized_error.py",
+        "src/fern/py.typed",
+        "src/fern/raw_client.py",
+        "src/fern/types/__init__.py",
+        "src/fern/types/bulk_mapping_job.py",
+        "src/fern/types/bulk_mapping_job_result.py",
+        "src/fern/types/figi_result.py",
+        "src/fern/types/get_mapping_values_key_request_key.py",
+        "src/fern/types/get_mapping_values_key_response.py",
+        "src/fern/types/mapping_job.py",
+        "src/fern/types/mapping_job_id_type.py",
+        "src/fern/types/mapping_job_id_value.py",
+        "src/fern/types/mapping_job_option_type.py",
+        "src/fern/types/mapping_job_result.py",
+        "src/fern/types/mapping_job_result_figi_list.py",
+        "src/fern/types/mapping_job_result_figi_not_found.py",
+        "src/fern/types/mapping_job_state_code.py",
+        "src/fern/types/nullable_date_interval.py",
+        "src/fern/types/nullable_number_interval.py",
+        "src/fern/version.py",
+    ],
+};
+
 const CORPORA: &[&Corpus] = &[
     &QUERY_PARAMETERS,
     &EXHAUSTIVE,
@@ -8554,6 +8618,7 @@ const CORPORA: &[&Corpus] = &[
     &APIDECK_CUSTOMER_SUPPORT,
     &APIDECK_LEAD,
     &APACHE_ORG_AIRFLOW,
+    &OPENFIGI,
 ];
 
 #[test]
@@ -9023,6 +9088,18 @@ fn apache_org_airflow_matches_fern_output() {
 }
 
 #[test]
+fn openfigi_com_matches_fern_output() {
+    if corpus_spec(OPENFIGI.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the OpenFIGI corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+        );
+        return;
+    }
+    assert_corpus_matches(&OPENFIGI);
+}
+
+#[test]
 fn feature_target_specs_generate_without_panicking() {
     // A feature-coverage target with a populated `matched` list is byte-compared
     // file-by-file; one with an empty `matched` list asserts only that crozier
@@ -9096,6 +9173,7 @@ fn report_matched_candidates() {
         &APIDECK_CUSTOMER_SUPPORT,
         &APIDECK_LEAD,
         &APACHE_ORG_AIRFLOW,
+        &OPENFIGI,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
@@ -9240,6 +9318,7 @@ fn report_fixture_diffs() {
         &APIDECK_CUSTOMER_SUPPORT,
         &APIDECK_LEAD,
         &APACHE_ORG_AIRFLOW,
+        &OPENFIGI,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
