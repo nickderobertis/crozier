@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class DescribeChangeSetHooksOutputStatus(str, enum.Enum):
+class DescribeChangeSetHooksOutputStatus(enum.StrEnum):
     """
     Provides the status of the change set hook.
     """

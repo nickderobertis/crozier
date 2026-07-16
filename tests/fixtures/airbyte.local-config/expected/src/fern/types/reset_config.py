@@ -15,7 +15,9 @@ class ResetConfig(UniversalBaseModel):
     """
 
     streams_to_reset: typing_extensions.Annotated[
-        typing.Optional[typing.List[StreamDescriptor]], FieldMetadata(alias="streamsToReset")
+        typing.Optional[typing.List[StreamDescriptor]],
+        FieldMetadata(alias="streamsToReset"),
+        pydantic.Field(alias="streamsToReset"),
     ] = None
 
     if IS_PYDANTIC_V2:

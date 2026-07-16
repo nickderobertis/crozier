@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ResidencyStatus(str, enum.Enum):
+class ResidencyStatus(enum.StrEnum):
     AUSTRALIANRESIDENT = "AUSTRALIANRESIDENT"
     FOREIGNRESIDENT = "FOREIGNRESIDENT"
     WORKINGHOLIDAYMAKER = "WORKINGHOLIDAYMAKER"

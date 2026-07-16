@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class EarningsType(str, enum.Enum):
+class EarningsType(enum.StrEnum):
     FIXED = "FIXED"
     ORDINARYTIMEEARNINGS = "ORDINARYTIMEEARNINGS"
     OVERTIMEEARNINGS = "OVERTIMEEARNINGS"

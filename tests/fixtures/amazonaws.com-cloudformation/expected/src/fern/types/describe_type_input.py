@@ -10,42 +10,73 @@ from .describe_type_input_type import DescribeTypeInputType
 
 
 class DescribeTypeInput(UniversalBaseModel):
-    type: typing_extensions.Annotated[typing.Optional[DescribeTypeInputType], FieldMetadata(alias="Type")] = (
-        pydantic.Field(default=None)
-    )
+    type: typing_extensions.Annotated[
+        typing.Optional[DescribeTypeInputType],
+        FieldMetadata(alias="Type"),
+        pydantic.Field(
+            alias="Type",
+            description="<p>The kind of extension.</p> <p>Conditional: You must specify either <code>TypeName</code> and <code>Type</code>, or <code>Arn</code>.</p>",
+        ),
+    ] = None
     """
     <p>The kind of extension.</p> <p>Conditional: You must specify either <code>TypeName</code> and <code>Type</code>, or <code>Arn</code>.</p>
     """
 
-    type_name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="TypeName")] = pydantic.Field(
-        default=None
-    )
+    type_name: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="TypeName"),
+        pydantic.Field(
+            alias="TypeName",
+            description="<p>The name of the extension.</p> <p>Conditional: You must specify either <code>TypeName</code> and <code>Type</code>, or <code>Arn</code>.</p>",
+        ),
+    ] = None
     """
     <p>The name of the extension.</p> <p>Conditional: You must specify either <code>TypeName</code> and <code>Type</code>, or <code>Arn</code>.</p>
     """
 
-    arn: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="Arn")] = pydantic.Field(default=None)
+    arn: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="Arn"),
+        pydantic.Field(
+            alias="Arn",
+            description="<p>The Amazon Resource Name (ARN) of the extension.</p> <p>Conditional: You must specify either <code>TypeName</code> and <code>Type</code>, or <code>Arn</code>.</p>",
+        ),
+    ] = None
     """
     <p>The Amazon Resource Name (ARN) of the extension.</p> <p>Conditional: You must specify either <code>TypeName</code> and <code>Type</code>, or <code>Arn</code>.</p>
     """
 
-    version_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="VersionId")] = pydantic.Field(
-        default=None
-    )
+    version_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="VersionId"),
+        pydantic.Field(
+            alias="VersionId",
+            description="<p>The ID of a specific version of the extension. The version ID is the value at the end of the Amazon Resource Name (ARN) assigned to the extension version when it is registered.</p> <p>If you specify a <code>VersionId</code>, <code>DescribeType</code> returns information about that specific extension version. Otherwise, it returns information about the default extension version.</p>",
+        ),
+    ] = None
     """
     <p>The ID of a specific version of the extension. The version ID is the value at the end of the Amazon Resource Name (ARN) assigned to the extension version when it is registered.</p> <p>If you specify a <code>VersionId</code>, <code>DescribeType</code> returns information about that specific extension version. Otherwise, it returns information about the default extension version.</p>
     """
 
-    publisher_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="PublisherId")] = (
-        pydantic.Field(default=None)
-    )
+    publisher_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="PublisherId"),
+        pydantic.Field(
+            alias="PublisherId",
+            description="<p>The publisher ID of the extension publisher.</p> <p>Extensions provided by Amazon Web Services are not assigned a publisher ID.</p>",
+        ),
+    ] = None
     """
     <p>The publisher ID of the extension publisher.</p> <p>Extensions provided by Amazon Web Services are not assigned a publisher ID.</p>
     """
 
     public_version_number: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="PublicVersionNumber")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="PublicVersionNumber"),
+        pydantic.Field(
+            alias="PublicVersionNumber", description="The version number of a public third-party extension."
+        ),
+    ] = None
     """
     The version number of a public third-party extension.
     """

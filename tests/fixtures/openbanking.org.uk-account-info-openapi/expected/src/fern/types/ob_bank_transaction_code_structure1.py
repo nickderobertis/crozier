@@ -13,12 +13,20 @@ class ObBankTransactionCodeStructure1(UniversalBaseModel):
     Set of elements used to fully identify the type of underlying transaction resulting in an entry.
     """
 
-    code: typing_extensions.Annotated[str, FieldMetadata(alias="Code")] = pydantic.Field()
+    code: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="Code"),
+        pydantic.Field(alias="Code", description="Specifies the family within a domain."),
+    ]
     """
     Specifies the family within a domain.
     """
 
-    sub_code: typing_extensions.Annotated[str, FieldMetadata(alias="SubCode")] = pydantic.Field()
+    sub_code: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="SubCode"),
+        pydantic.Field(alias="SubCode", description="Specifies the sub-product family within a specific family."),
+    ]
     """
     Specifies the sub-product family within a specific family.
     """

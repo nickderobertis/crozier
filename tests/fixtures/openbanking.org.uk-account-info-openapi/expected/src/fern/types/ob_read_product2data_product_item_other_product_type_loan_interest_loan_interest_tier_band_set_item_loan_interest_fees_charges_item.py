@@ -28,12 +28,14 @@ class ObReadProduct2DataProductItemOtherProductTypeLoanInterestLoanInterestTierB
             ]
         ],
         FieldMetadata(alias="LoanInterestFeeChargeCap"),
+        pydantic.Field(alias="LoanInterestFeeChargeCap"),
     ] = None
     loan_interest_fee_charge_detail: typing_extensions.Annotated[
         typing.List[
             ObReadProduct2DataProductItemOtherProductTypeLoanInterestLoanInterestTierBandSetItemLoanInterestFeesChargesItemLoanInterestFeeChargeDetailItem
         ],
         FieldMetadata(alias="LoanInterestFeeChargeDetail"),
+        pydantic.Field(alias="LoanInterestFeeChargeDetail"),
     ]
 
     if IS_PYDANTIC_V2:

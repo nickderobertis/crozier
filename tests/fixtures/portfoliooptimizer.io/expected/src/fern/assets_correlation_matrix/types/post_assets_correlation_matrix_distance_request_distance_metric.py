@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PostAssetsCorrelationMatrixDistanceRequestDistanceMetric(str, enum.Enum):
+class PostAssetsCorrelationMatrixDistanceRequestDistanceMetric(enum.StrEnum):
     """
     The distance metric to use to compute the distance between the asset correlation matrix and the reference correlation matrix
     """

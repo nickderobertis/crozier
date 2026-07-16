@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class RegistrationStatus(str, enum.Enum):
+class RegistrationStatus(enum.StrEnum):
     COMPLETE = "COMPLETE"
     IN_PROGRESS = "IN_PROGRESS"
     FAILED = "FAILED"

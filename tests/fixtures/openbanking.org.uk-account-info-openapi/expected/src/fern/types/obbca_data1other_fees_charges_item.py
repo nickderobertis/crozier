@@ -20,35 +20,47 @@ class ObbcaData1OtherFeesChargesItem(UniversalBaseModel):
     fee_charge_cap: typing_extensions.Annotated[
         typing.Optional[typing.List[ObbcaData1OtherFeesChargesItemFeeChargeCapItem]],
         FieldMetadata(alias="FeeChargeCap"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="FeeChargeCap",
+            description="Details about any caps (maximum charges) that apply to a particular or group of fee/charge",
+        ),
+    ] = None
     """
     Details about any caps (maximum charges) that apply to a particular or group of fee/charge
     """
 
     fee_charge_detail: typing_extensions.Annotated[
-        typing.List[ObbcaData1OtherFeesChargesItemFeeChargeDetailItem], FieldMetadata(alias="FeeChargeDetail")
-    ] = pydantic.Field()
+        typing.List[ObbcaData1OtherFeesChargesItemFeeChargeDetailItem],
+        FieldMetadata(alias="FeeChargeDetail"),
+        pydantic.Field(alias="FeeChargeDetail", description="Other fees/charges details"),
+    ]
     """
     Other fees/charges details
     """
 
     other_tariff_type: typing_extensions.Annotated[
-        typing.Optional[ObbcaData1OtherFeesChargesItemOtherTariffType], FieldMetadata(alias="OtherTariffType")
-    ] = pydantic.Field(default=None)
+        typing.Optional[ObbcaData1OtherFeesChargesItemOtherTariffType],
+        FieldMetadata(alias="OtherTariffType"),
+        pydantic.Field(alias="OtherTariffType", description="Other tariff type which is not in the standard list."),
+    ] = None
     """
     Other tariff type which is not in the standard list.
     """
 
-    tariff_name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="TariffName")] = pydantic.Field(
-        default=None
-    )
+    tariff_name: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="TariffName"),
+        pydantic.Field(alias="TariffName", description="Name of the tariff"),
+    ] = None
     """
     Name of the tariff
     """
 
     tariff_type: typing_extensions.Annotated[
-        typing.Optional[ObbcaData1OtherFeesChargesItemTariffType], FieldMetadata(alias="TariffType")
-    ] = pydantic.Field(default=None)
+        typing.Optional[ObbcaData1OtherFeesChargesItemTariffType],
+        FieldMetadata(alias="TariffType"),
+        pydantic.Field(alias="TariffType", description="TariffType which defines the fee and charges."),
+    ] = None
     """
     TariffType which defines the fee and charges.
     """

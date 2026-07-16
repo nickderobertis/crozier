@@ -13,15 +13,15 @@ class PluginCollectionItem(UniversalBaseModel):
     *New in version 2.1.0*
     """
 
-    appbuilder_menu_items: typing.Optional[
-        typing.List[typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]]
-    ] = pydantic.Field(default=None)
+    appbuilder_menu_items: typing.Optional[typing.List[typing.Optional[typing.Dict[str, typing.Any]]]] = pydantic.Field(
+        default=None
+    )
     """
     The Flask Appbuilder menu items
     """
 
-    appbuilder_views: typing.Optional[typing.List[typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]]] = (
-        pydantic.Field(default=None)
+    appbuilder_views: typing.Optional[typing.List[typing.Optional[typing.Dict[str, typing.Any]]]] = pydantic.Field(
+        default=None
     )
     """
     The appuilder views
@@ -32,16 +32,16 @@ class PluginCollectionItem(UniversalBaseModel):
     The plugin executors
     """
 
-    flask_blueprints: typing.Optional[typing.List[typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]]] = (
-        pydantic.Field(default=None)
+    flask_blueprints: typing.Optional[typing.List[typing.Optional[typing.Dict[str, typing.Any]]]] = pydantic.Field(
+        default=None
     )
     """
     The flask blueprints
     """
 
-    global_operator_extra_links: typing.Optional[
-        typing.List[typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]]
-    ] = pydantic.Field(default=None)
+    global_operator_extra_links: typing.Optional[typing.List[typing.Optional[typing.Dict[str, typing.Any]]]] = (
+        pydantic.Field(default=None)
+    )
     """
     The global operator extra links
     """
@@ -51,9 +51,7 @@ class PluginCollectionItem(UniversalBaseModel):
     The plugin hooks
     """
 
-    macros: typing.Optional[typing.List[typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]]] = (
-        pydantic.Field(default=None)
-    )
+    macros: typing.Optional[typing.List[typing.Optional[typing.Dict[str, typing.Any]]]] = pydantic.Field(default=None)
     """
     The plugin macros
     """
@@ -63,9 +61,9 @@ class PluginCollectionItem(UniversalBaseModel):
     The name of the plugin
     """
 
-    operator_extra_links: typing.Optional[
-        typing.List[typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]]
-    ] = pydantic.Field(default=None)
+    operator_extra_links: typing.Optional[typing.List[typing.Optional[typing.Dict[str, typing.Any]]]] = pydantic.Field(
+        default=None
+    )
     """
     Operator extra links
     """

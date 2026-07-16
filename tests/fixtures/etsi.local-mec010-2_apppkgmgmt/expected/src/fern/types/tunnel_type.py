@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class TunnelType(str, enum.Enum):
+class TunnelType(enum.StrEnum):
     """
     Type of tunnel.
     """

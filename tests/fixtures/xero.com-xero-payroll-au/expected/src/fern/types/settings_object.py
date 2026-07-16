@@ -10,7 +10,9 @@ from .settings import Settings
 
 
 class SettingsObject(UniversalBaseModel):
-    settings: typing_extensions.Annotated[typing.Optional[Settings], FieldMetadata(alias="Settings")] = None
+    settings: typing_extensions.Annotated[
+        typing.Optional[Settings], FieldMetadata(alias="Settings"), pydantic.Field(alias="Settings")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
@@ -16,6 +17,7 @@ from ..errors.unauthorized_error import UnauthorizedError
 from ..types.error import Error
 from ..types.variable import Variable
 from ..types.variable_collection import VariableCollection
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -103,6 +105,10 @@ class RawVariableClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def post_variables(
@@ -190,6 +196,10 @@ class RawVariableClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_variable(
@@ -212,7 +222,7 @@ class RawVariableClient:
             Success.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"variables/{jsonable_encoder(variable_key)}",
+            f"variables/{encode_path_param(variable_key)}",
             method="GET",
             request_options=request_options,
         )
@@ -262,6 +272,10 @@ class RawVariableClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_variable(
@@ -281,7 +295,7 @@ class RawVariableClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"variables/{jsonable_encoder(variable_key)}",
+            f"variables/{encode_path_param(variable_key)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -335,6 +349,10 @@ class RawVariableClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def patch_variable(
@@ -377,10 +395,12 @@ class RawVariableClient:
             Success.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"variables/{jsonable_encoder(variable_key)}",
+            f"variables/{encode_path_param(variable_key)}",
             method="PATCH",
             params={
-                "update_mask": update_mask,
+                "update_mask": ",".join(map(str, update_mask))
+                if isinstance(update_mask, (list, tuple, set))
+                else update_mask,
             },
             json={
                 "value": value,
@@ -450,6 +470,10 @@ class RawVariableClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -535,6 +559,10 @@ class AsyncRawVariableClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def post_variables(
@@ -622,6 +650,10 @@ class AsyncRawVariableClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_variable(
@@ -644,7 +676,7 @@ class AsyncRawVariableClient:
             Success.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"variables/{jsonable_encoder(variable_key)}",
+            f"variables/{encode_path_param(variable_key)}",
             method="GET",
             request_options=request_options,
         )
@@ -694,6 +726,10 @@ class AsyncRawVariableClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_variable(
@@ -713,7 +749,7 @@ class AsyncRawVariableClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"variables/{jsonable_encoder(variable_key)}",
+            f"variables/{encode_path_param(variable_key)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -767,6 +803,10 @@ class AsyncRawVariableClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def patch_variable(
@@ -809,10 +849,12 @@ class AsyncRawVariableClient:
             Success.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"variables/{jsonable_encoder(variable_key)}",
+            f"variables/{encode_path_param(variable_key)}",
             method="PATCH",
             params={
-                "update_mask": update_mask,
+                "update_mask": ",".join(map(str, update_mask))
+                if isinstance(update_mask, (list, tuple, set))
+                else update_mask,
             },
             json={
                 "value": value,
@@ -882,4 +924,8 @@ class AsyncRawVariableClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class OptionActionNameType(str, enum.Enum):
+class OptionActionNameType(enum.StrEnum):
     """
     For attack options that can be melee, ranged, abilities, or thrown.
     """

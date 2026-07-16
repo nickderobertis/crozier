@@ -10,8 +10,10 @@ from ...core.serialization import FieldMetadata
 
 class PostPortfolioAnalysisDiversificationRatioResponsePortfoliosItem(UniversalBaseModel):
     portfolio_diversification_ratio: typing_extensions.Annotated[
-        float, FieldMetadata(alias="portfolioDiversificationRatio")
-    ] = pydantic.Field()
+        float,
+        FieldMetadata(alias="portfolioDiversificationRatio"),
+        pydantic.Field(alias="portfolioDiversificationRatio", description="The diversification ratio of the portfolio"),
+    ]
     """
     The diversification ratio of the portfolio
     """

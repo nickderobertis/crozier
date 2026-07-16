@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObbcaData1CreditInterestTierBandSetItemCalculationMethod(str, enum.Enum):
+class ObbcaData1CreditInterestTierBandSetItemCalculationMethod(enum.StrEnum):
     """
     Methods of calculating interest
     """

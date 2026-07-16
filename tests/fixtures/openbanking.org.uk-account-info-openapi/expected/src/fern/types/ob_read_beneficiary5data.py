@@ -11,7 +11,9 @@ from .ob_beneficiary5 import ObBeneficiary5
 
 class ObReadBeneficiary5Data(UniversalBaseModel):
     beneficiary: typing_extensions.Annotated[
-        typing.Optional[typing.List[ObBeneficiary5]], FieldMetadata(alias="Beneficiary")
+        typing.Optional[typing.List[ObBeneficiary5]],
+        FieldMetadata(alias="Beneficiary"),
+        pydantic.Field(alias="Beneficiary"),
     ] = None
 
     if IS_PYDANTIC_V2:

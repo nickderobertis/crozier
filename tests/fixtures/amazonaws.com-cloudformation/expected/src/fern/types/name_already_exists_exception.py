@@ -2,4 +2,4 @@
 
 import typing
 
-NameAlreadyExistsException = typing.Optional[typing.Any]
+NameAlreadyExistsException = typing.Any

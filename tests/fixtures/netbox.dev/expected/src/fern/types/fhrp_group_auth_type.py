@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class FhrpGroupAuthType(str, enum.Enum):
+class FhrpGroupAuthType(enum.StrEnum):
     PLAINTEXT = "plaintext"
     MD5 = "md5"
 

@@ -18,7 +18,7 @@ class SubclassLevel(UniversalBaseModel):
     Total number of ability score bonuses gained, added from previous levels.
     """
 
-    classspecific: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = pydantic.Field(default=None)
+    classspecific: typing.Optional[typing.Dict[str, typing.Any]] = pydantic.Field(default=None)
     """
     Class specific information such as dice values for bard songs and number of warlock invocations.
     """

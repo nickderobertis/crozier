@@ -12,7 +12,9 @@ class Trigger(UniversalBaseModel):
     classpath: typing.Optional[str] = None
     created_date: typing.Optional[str] = None
     id: typing.Optional[int] = None
-    kwargs_: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="kwargs")] = None
+    kwargs_: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="kwargs"), pydantic.Field(alias="kwargs")
+    ] = None
     triggerer_id: typing.Optional[int] = None
 
     if IS_PYDANTIC_V2:

@@ -22,23 +22,35 @@ class WebBackendConnectionListItem(UniversalBaseModel):
     Information about a connection that shows up in the connection list view.
     """
 
-    connection_id: typing_extensions.Annotated[ConnectionId, FieldMetadata(alias="connectionId")]
+    connection_id: typing_extensions.Annotated[
+        ConnectionId, FieldMetadata(alias="connectionId"), pydantic.Field(alias="connectionId")
+    ]
     destination: DestinationSnippetRead
-    is_syncing: typing_extensions.Annotated[bool, FieldMetadata(alias="isSyncing")]
+    is_syncing: typing_extensions.Annotated[bool, FieldMetadata(alias="isSyncing"), pydantic.Field(alias="isSyncing")]
     latest_sync_job_created_at: typing_extensions.Annotated[
-        typing.Optional[JobCreatedAt], FieldMetadata(alias="latestSyncJobCreatedAt")
+        typing.Optional[JobCreatedAt],
+        FieldMetadata(alias="latestSyncJobCreatedAt"),
+        pydantic.Field(alias="latestSyncJobCreatedAt"),
     ] = None
     latest_sync_job_status: typing_extensions.Annotated[
-        typing.Optional[JobStatus], FieldMetadata(alias="latestSyncJobStatus")
+        typing.Optional[JobStatus],
+        FieldMetadata(alias="latestSyncJobStatus"),
+        pydantic.Field(alias="latestSyncJobStatus"),
     ] = None
     name: str
     schedule_data: typing_extensions.Annotated[
-        typing.Optional[ConnectionScheduleData], FieldMetadata(alias="scheduleData")
+        typing.Optional[ConnectionScheduleData],
+        FieldMetadata(alias="scheduleData"),
+        pydantic.Field(alias="scheduleData"),
     ] = None
     schedule_type: typing_extensions.Annotated[
-        typing.Optional[ConnectionScheduleType], FieldMetadata(alias="scheduleType")
+        typing.Optional[ConnectionScheduleType],
+        FieldMetadata(alias="scheduleType"),
+        pydantic.Field(alias="scheduleType"),
     ] = None
-    schema_change: typing_extensions.Annotated[SchemaChange, FieldMetadata(alias="schemaChange")]
+    schema_change: typing_extensions.Annotated[
+        SchemaChange, FieldMetadata(alias="schemaChange"), pydantic.Field(alias="schemaChange")
+    ]
     source: SourceSnippetRead
     status: ConnectionStatus
 

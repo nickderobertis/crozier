@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class BankAccountAccountType(str, enum.Enum):
+class BankAccountAccountType(enum.StrEnum):
     """
     The type of bank account.
     """

@@ -23,8 +23,13 @@ class DestinyDefinitionsDestinyItemSourceBlockDefinition(UniversalBaseModel):
     """
 
     source_hashes: typing_extensions.Annotated[
-        typing.Optional[typing.List[int]], FieldMetadata(alias="sourceHashes")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[int]],
+        FieldMetadata(alias="sourceHashes"),
+        pydantic.Field(
+            alias="sourceHashes",
+            description="The list of hash identifiers for Reward Sources that hint where the item can be found (DestinyRewardSourceDefinition).",
+        ),
+    ] = None
     """
     The list of hash identifiers for Reward Sources that hint where the item can be found (DestinyRewardSourceDefinition).
     """
@@ -39,7 +44,11 @@ class DestinyDefinitionsDestinyItemSourceBlockDefinition(UniversalBaseModel):
     vendor_sources: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyDefinitionsDestinyItemVendorSourceReference]],
         FieldMetadata(alias="vendorSources"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="vendorSources",
+            description="A denormalized reference back to vendors that potentially sell this item.",
+        ),
+    ] = None
     """
     A denormalized reference back to vendors that potentially sell this item.
     """

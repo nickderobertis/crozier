@@ -1,6 +1,6 @@
 # Reference
 ## app-pkgm
-<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py">app_packages_get</a>(...)</code></summary>
+<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py">app_packages_get</a>(...) -> typing.List[AppPkgInfo]</code></summary>
 <dl>
 <dd>
 
@@ -28,8 +28,12 @@ queries information relating to on-boarded application packages in the MEO
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.app_pkgm.app_packages_get()
 
 ```
@@ -98,7 +102,7 @@ client.app_pkgm.app_packages_get()
 </dl>
 </details>
 
-<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py">app_packages_post</a>(...)</code></summary>
+<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py">app_packages_post</a>(...) -> typing.List[AppPkgInfo]</code></summary>
 <dl>
 <dd>
 
@@ -125,9 +129,13 @@ Create a resource for on-boarding an application package to a MEO
 <dd>
 
 ```python
-from fern import Checksum, FernApi
+from fern import FernApi, Checksum
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.app_pkgm.app_packages_post(
     app_pkg_name="appPkgName",
     app_pkg_path="appPkgPath",
@@ -215,7 +223,7 @@ The appPkgName with appPkgVersion can be used to uniquely identify the applicati
 </dl>
 </details>
 
-<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py">app_package_get</a>(...)</code></summary>
+<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py">app_package_get</a>(...) -> AppPkgInfo</code></summary>
 <dl>
 <dd>
 
@@ -243,8 +251,12 @@ Queries the information related to individual application package resources
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.app_pkgm.app_package_get(
     app_pkg_id="appPkgId",
 )
@@ -311,8 +323,12 @@ Deletes an individual application package resources
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.app_pkgm.app_package_delete(
     app_pkg_id="appPkgId",
 )
@@ -351,7 +367,7 @@ client.app_pkgm.app_package_delete(
 </dl>
 </details>
 
-<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py">app_package_patch</a>(...)</code></summary>
+<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py">app_package_patch</a>(...) -> AppPkgInfoModifications</code></summary>
 <dl>
 <dd>
 
@@ -378,9 +394,13 @@ Updates the operational state of an individual application package resources
 <dd>
 
 ```python
-from fern import AppPkgInfoModificationsOperationState, FernApi
+from fern import FernApi, AppPkgInfoModificationsOperationState
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.app_pkgm.app_package_patch(
     app_pkg_id="appPkgId",
     operation_state=AppPkgInfoModificationsOperationState.DISABLED,
@@ -408,7 +428,7 @@ client.app_pkgm.app_package_patch(
 <dl>
 <dd>
 
-**operation_state:** `AppPkgInfoModificationsOperationState` 
+**request:** `AppPkgInfoModifications` 
     
 </dd>
 </dl>
@@ -428,7 +448,7 @@ client.app_pkgm.app_package_patch(
 </dl>
 </details>
 
-<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py">app_pkg_id_get</a>(...)</code></summary>
+<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py">app_pkg_id_get</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -456,8 +476,12 @@ Reads the content of the AppD of on-boarded individual application package resou
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.app_pkgm.app_pkg_id_get(
     app_pkg_id="appPkgId",
 )
@@ -564,8 +588,12 @@ Fetch the onboarded application package content identified by appPkgId or appDId
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.app_pkgm.app_pkg_get(
     app_pkg_id="appPkgId",
 )
@@ -604,7 +632,77 @@ client.app_pkgm.app_pkg_get(
 </dl>
 </details>
 
-<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py">app_dget</a>(...)</code></summary>
+<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py">app_pkg_put</a>(...)</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Uploads the content of application package.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+client.app_pkgm.app_pkg_put(...)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**app_pkg_id:** `str` — Identifier of an on-boarded individual application package
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request:** `typing.Union[bytes, typing.Iterator[bytes], typing.AsyncIterator[bytes]]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py">app_dget</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -632,8 +730,12 @@ Reads the content of the AppD of on-boarded individual application package resou
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.app_pkgm.app_dget(
     app_d_id="appDId",
 )
@@ -740,8 +842,12 @@ Fetch the onboarded application package content identified by appPkgId or appDId
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.app_pkgm.app_d_id_get(
     app_d_id="appDId",
 )
@@ -780,7 +886,77 @@ client.app_pkgm.app_d_id_get(
 </dl>
 </details>
 
-<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py">subscriptions_get</a>()</code></summary>
+<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py">app_d_id_put</a>(...)</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Uploads the content of application package.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+client.app_pkgm.app_d_id_put(...)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**app_d_id:** `str` — Identifier of an application descriptor
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request:** `typing.Union[bytes, typing.Iterator[bytes], typing.AsyncIterator[bytes]]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py">subscriptions_get</a>() -> AppPkgSubscriptionLinkList</code></summary>
 <dl>
 <dd>
 
@@ -808,8 +984,12 @@ used to retrieve the information of subscriptions to individual application pack
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.app_pkgm.subscriptions_get()
 
 ```
@@ -838,7 +1018,7 @@ client.app_pkgm.subscriptions_get()
 </dl>
 </details>
 
-<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py">subscriptions_post</a>(...)</code></summary>
+<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py">subscriptions_post</a>(...) -> AppPkgSubscriptionInfo</code></summary>
 <dl>
 <dd>
 
@@ -866,8 +1046,12 @@ Subscribe to notifications about on-boarding an application package
 
 ```python
 from fern import FernApi, SubsctiptionTypeAppPkg
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.app_pkgm.subscriptions_post(
     callback_uri="callbackUri",
     subsctiption_type=SubsctiptionTypeAppPkg.APP_PACKAGE_ON_BOARDING,
@@ -903,7 +1087,7 @@ client.app_pkgm.subscriptions_post(
 <dl>
 <dd>
 
-**app_pkg_filter:** `typing.Optional[typing.Sequence[AppPkgFilter]]` 
+**app_pkg_filter:** `typing.Optional[typing.List[AppPkgFilter]]` 
     
 </dd>
 </dl>
@@ -923,7 +1107,7 @@ client.app_pkgm.subscriptions_post(
 </dl>
 </details>
 
-<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py">individual_subscription_get</a>(...)</code></summary>
+<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py">individual_subscription_get</a>(...) -> AppPkgSubscriptionInfo</code></summary>
 <dl>
 <dd>
 
@@ -951,8 +1135,12 @@ Used to represent an individual subscription to notifications about application 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.app_pkgm.individual_subscription_get(
     subscription_id="subscriptionId",
 )
@@ -1019,8 +1207,12 @@ Deletes the individual subscription to notifications about application package c
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.app_pkgm.individual_subscription_delete(
     subscription_id="subscriptionId",
 )
@@ -1087,17 +1279,14 @@ Registers a notification endpoint to notify application package operations
 <dd>
 
 ```python
+from fern import FernApi, AppPkgNotificationLinks, LinkType, AppPkgNotificationType, TimeStamp
+from fern.environment import FernApiEnvironment
 from fern.app_pkgm_notifications import AppPkgNotificationOperationalState
 
-from fern import (
-    AppPkgNotificationLinks,
-    AppPkgNotificationType,
-    FernApi,
-    LinkType,
-    TimeStamp,
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
 )
 
-client = FernApi()
 client.app_pkgm_notifications.app_pkg_notification_post(
     links=AppPkgNotificationLinks(
         subscription=LinkType(

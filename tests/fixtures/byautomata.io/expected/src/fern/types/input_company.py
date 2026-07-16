@@ -9,7 +9,9 @@ from ..core.serialization import FieldMetadata
 
 
 class InputCompany(UniversalBaseModel):
-    company_name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="companyName")] = None
+    company_name: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="companyName"), pydantic.Field(alias="companyName")
+    ] = None
     country: typing.Optional[str] = None
     employee: typing.Optional[str] = None
     industry: typing.Optional[str] = None

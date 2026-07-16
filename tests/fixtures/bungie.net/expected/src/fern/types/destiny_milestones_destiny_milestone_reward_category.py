@@ -20,8 +20,13 @@ class DestinyMilestonesDestinyMilestoneRewardCategory(UniversalBaseModel):
     """
 
     reward_category_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="rewardCategoryHash")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="rewardCategoryHash"),
+        pydantic.Field(
+            alias="rewardCategoryHash",
+            description="Look up the relevant DestinyMilestoneDefinition, and then use rewardCategoryHash to look up the category info in DestinyMilestoneDefinition.rewards.",
+        ),
+    ] = None
     """
     Look up the relevant DestinyMilestoneDefinition, and then use rewardCategoryHash to look up the category info in DestinyMilestoneDefinition.rewards.
     """

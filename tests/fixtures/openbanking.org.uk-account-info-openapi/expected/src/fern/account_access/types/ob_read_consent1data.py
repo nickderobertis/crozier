@@ -12,8 +12,13 @@ from .ob_read_consent1data_permissions_item import ObReadConsent1DataPermissions
 
 class ObReadConsent1Data(UniversalBaseModel):
     expiration_date_time: typing_extensions.Annotated[
-        typing.Optional[dt.datetime], FieldMetadata(alias="ExpirationDateTime")
-    ] = pydantic.Field(default=None)
+        typing.Optional[dt.datetime],
+        FieldMetadata(alias="ExpirationDateTime"),
+        pydantic.Field(
+            alias="ExpirationDateTime",
+            description="Specified date and time the permissions will expire.\nIf this is not populated, the permissions will be open ended.All dates in the JSON payloads are represented in ISO 8601 date-time format. \nAll date-time fields in responses must include the timezone. An example is below:\n2017-04-05T10:43:07+00:00",
+        ),
+    ] = None
     """
     Specified date and time the permissions will expire.
     If this is not populated, the permissions will be open ended.All dates in the JSON payloads are represented in ISO 8601 date-time format. 
@@ -22,11 +27,18 @@ class ObReadConsent1Data(UniversalBaseModel):
     """
 
     permissions: typing_extensions.Annotated[
-        typing.List[ObReadConsent1DataPermissionsItem], FieldMetadata(alias="Permissions")
+        typing.List[ObReadConsent1DataPermissionsItem],
+        FieldMetadata(alias="Permissions"),
+        pydantic.Field(alias="Permissions"),
     ]
     transaction_from_date_time: typing_extensions.Annotated[
-        typing.Optional[dt.datetime], FieldMetadata(alias="TransactionFromDateTime")
-    ] = pydantic.Field(default=None)
+        typing.Optional[dt.datetime],
+        FieldMetadata(alias="TransactionFromDateTime"),
+        pydantic.Field(
+            alias="TransactionFromDateTime",
+            description="Specified start date and time for the transaction query period.\nIf this is not populated, the start date will be open ended, and data will be returned from the earliest available transaction.All dates in the JSON payloads are represented in ISO 8601 date-time format. \nAll date-time fields in responses must include the timezone. An example is below:\n2017-04-05T10:43:07+00:00",
+        ),
+    ] = None
     """
     Specified start date and time for the transaction query period.
     If this is not populated, the start date will be open ended, and data will be returned from the earliest available transaction.All dates in the JSON payloads are represented in ISO 8601 date-time format. 
@@ -35,8 +47,13 @@ class ObReadConsent1Data(UniversalBaseModel):
     """
 
     transaction_to_date_time: typing_extensions.Annotated[
-        typing.Optional[dt.datetime], FieldMetadata(alias="TransactionToDateTime")
-    ] = pydantic.Field(default=None)
+        typing.Optional[dt.datetime],
+        FieldMetadata(alias="TransactionToDateTime"),
+        pydantic.Field(
+            alias="TransactionToDateTime",
+            description="Specified end date and time for the transaction query period.\nIf this is not populated, the end date will be open ended, and data will be returned to the latest available transaction.All dates in the JSON payloads are represented in ISO 8601 date-time format. \nAll date-time fields in responses must include the timezone. An example is below:\n2017-04-05T10:43:07+00:00",
+        ),
+    ] = None
     """
     Specified end date and time for the transaction query period.
     If this is not populated, the end date will be open ended, and data will be returned to the latest available transaction.All dates in the JSON payloads are represented in ISO 8601 date-time format. 

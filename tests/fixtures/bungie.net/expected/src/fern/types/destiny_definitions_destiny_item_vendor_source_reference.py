@@ -15,16 +15,23 @@ class DestinyDefinitionsDestinyItemVendorSourceReference(UniversalBaseModel):
      Note also that a vendor may sell the same item in multiple "ways", which means there may be multiple vendorItemIndexes for a single Vendor hash.
     """
 
-    vendor_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="vendorHash")] = pydantic.Field(
-        default=None
-    )
+    vendor_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="vendorHash"),
+        pydantic.Field(alias="vendorHash", description="The identifier for the vendor that may sell this item."),
+    ] = None
     """
     The identifier for the vendor that may sell this item.
     """
 
     vendor_item_indexes: typing_extensions.Annotated[
-        typing.Optional[typing.List[int]], FieldMetadata(alias="vendorItemIndexes")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[int]],
+        FieldMetadata(alias="vendorItemIndexes"),
+        pydantic.Field(
+            alias="vendorItemIndexes",
+            description='The Vendor sale item indexes that represent the sale information for this item. The same vendor may sell an item in multiple "ways", hence why this is a list. (for instance, a weapon may be "sold" as a reward in a quest, for Glimmer, and for Masterwork Cores: each of those ways would be represented by a different vendor sale item with a different index)',
+        ),
+    ] = None
     """
     The Vendor sale item indexes that represent the sale information for this item. The same vendor may sell an item in multiple "ways", hence why this is a list. (for instance, a weapon may be "sold" as a reward in a quest, for Glimmer, and for Masterwork Cores: each of those ways would be represented by a different vendor sale item with a different index)
     """

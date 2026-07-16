@@ -1,11 +1,14 @@
 
 
+import json
 import typing
 from json.decoder import JSONDecodeError
 
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
+from ..core.jsonable_encoder import jsonable_encoder
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -21,6 +24,7 @@ from .types.create_upload_response import CreateUploadResponse
 from .types.generate_presigned_put_request_metadata import GeneratePresignedPutRequestMetadata
 from .types.generate_presigned_put_request_type import GeneratePresignedPutRequestType
 from .types.generate_presigned_put_response import GeneratePresignedPutResponse
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -34,7 +38,7 @@ class RawUploadsClient:
         self,
         *,
         type: CreateUploadRequestType,
-        file: typing.Optional[typing.Optional[typing.Any]] = OMIT,
+        file: typing.Optional[typing.Any] = OMIT,
         synchronous: typing.Optional[bool] = OMIT,
         user_id: typing.Optional[int] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -44,7 +48,7 @@ class RawUploadsClient:
         ----------
         type : CreateUploadRequestType
 
-        file : typing.Optional[typing.Optional[typing.Any]]
+        file : typing.Optional[typing.Any]
 
         synchronous : typing.Optional[bool]
             Use this flag to return an id and url
@@ -64,7 +68,7 @@ class RawUploadsClient:
             "uploads.json",
             method="POST",
             data={
-                "file": file,
+                "file": json.dumps(jsonable_encoder(file)) if file is not OMIT else OMIT,
                 "synchronous": synchronous,
                 "type": type,
                 "user_id": user_id,
@@ -87,6 +91,10 @@ class RawUploadsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def abort_multipart(
@@ -144,12 +152,16 @@ class RawUploadsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def batch_presign_multipart_parts(
         self,
         *,
-        part_numbers: typing.Sequence[typing.Optional[typing.Any]],
+        part_numbers: typing.Sequence[typing.Any],
         unique_identifier: str,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[BatchPresignMultipartPartsResponse]:
@@ -177,7 +189,7 @@ class RawUploadsClient:
 
         Parameters
         ----------
-        part_numbers : typing.Sequence[typing.Optional[typing.Any]]
+        part_numbers : typing.Sequence[typing.Any]
             The part numbers to generate the presigned URLs for,
             must be between 1 and 10000.
 
@@ -219,6 +231,10 @@ class RawUploadsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def complete_external_upload(
@@ -302,12 +318,16 @@ class RawUploadsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def complete_multipart(
         self,
         *,
-        parts: typing.Sequence[typing.Optional[typing.Any]],
+        parts: typing.Sequence[typing.Any],
         unique_identifier: str,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[CompleteMultipartResponse]:
@@ -328,7 +348,7 @@ class RawUploadsClient:
 
         Parameters
         ----------
-        parts : typing.Sequence[typing.Optional[typing.Any]]
+        parts : typing.Sequence[typing.Any]
             All of the part numbers and their corresponding ETags
             that have been uploaded must be provided.
 
@@ -370,6 +390,10 @@ class RawUploadsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_multipart_upload(
@@ -442,6 +466,10 @@ class RawUploadsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def generate_presigned_put(
@@ -523,6 +551,10 @@ class RawUploadsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -534,7 +566,7 @@ class AsyncRawUploadsClient:
         self,
         *,
         type: CreateUploadRequestType,
-        file: typing.Optional[typing.Optional[typing.Any]] = OMIT,
+        file: typing.Optional[typing.Any] = OMIT,
         synchronous: typing.Optional[bool] = OMIT,
         user_id: typing.Optional[int] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -544,7 +576,7 @@ class AsyncRawUploadsClient:
         ----------
         type : CreateUploadRequestType
 
-        file : typing.Optional[typing.Optional[typing.Any]]
+        file : typing.Optional[typing.Any]
 
         synchronous : typing.Optional[bool]
             Use this flag to return an id and url
@@ -564,7 +596,7 @@ class AsyncRawUploadsClient:
             "uploads.json",
             method="POST",
             data={
-                "file": file,
+                "file": json.dumps(jsonable_encoder(file)) if file is not OMIT else OMIT,
                 "synchronous": synchronous,
                 "type": type,
                 "user_id": user_id,
@@ -587,6 +619,10 @@ class AsyncRawUploadsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def abort_multipart(
@@ -644,12 +680,16 @@ class AsyncRawUploadsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def batch_presign_multipart_parts(
         self,
         *,
-        part_numbers: typing.Sequence[typing.Optional[typing.Any]],
+        part_numbers: typing.Sequence[typing.Any],
         unique_identifier: str,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[BatchPresignMultipartPartsResponse]:
@@ -677,7 +717,7 @@ class AsyncRawUploadsClient:
 
         Parameters
         ----------
-        part_numbers : typing.Sequence[typing.Optional[typing.Any]]
+        part_numbers : typing.Sequence[typing.Any]
             The part numbers to generate the presigned URLs for,
             must be between 1 and 10000.
 
@@ -719,6 +759,10 @@ class AsyncRawUploadsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def complete_external_upload(
@@ -802,12 +846,16 @@ class AsyncRawUploadsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def complete_multipart(
         self,
         *,
-        parts: typing.Sequence[typing.Optional[typing.Any]],
+        parts: typing.Sequence[typing.Any],
         unique_identifier: str,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[CompleteMultipartResponse]:
@@ -828,7 +876,7 @@ class AsyncRawUploadsClient:
 
         Parameters
         ----------
-        parts : typing.Sequence[typing.Optional[typing.Any]]
+        parts : typing.Sequence[typing.Any]
             All of the part numbers and their corresponding ETags
             that have been uploaded must be provided.
 
@@ -870,6 +918,10 @@ class AsyncRawUploadsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_multipart_upload(
@@ -942,6 +994,10 @@ class AsyncRawUploadsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def generate_presigned_put(
@@ -1023,4 +1079,8 @@ class AsyncRawUploadsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

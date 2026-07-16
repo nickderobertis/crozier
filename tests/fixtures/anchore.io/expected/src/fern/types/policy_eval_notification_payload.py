@@ -8,17 +8,17 @@ from .generic_notification_payload import GenericNotificationPayload
 
 
 class PolicyEvalNotificationPayload(GenericNotificationPayload):
-    annotations: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = pydantic.Field(default=None)
+    annotations: typing.Optional[typing.Dict[str, typing.Any]] = pydantic.Field(default=None)
     """
     List of Corresponding Image Annotations
     """
 
-    curr_eval: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = pydantic.Field(default=None)
+    curr_eval: typing.Optional[typing.Dict[str, typing.Any]] = pydantic.Field(default=None)
     """
     The Current Policy Evaluation result
     """
 
-    last_eval: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = pydantic.Field(default=None)
+    last_eval: typing.Optional[typing.Dict[str, typing.Any]] = pydantic.Field(default=None)
     """
     The Previous Policy Evaluation result
     """

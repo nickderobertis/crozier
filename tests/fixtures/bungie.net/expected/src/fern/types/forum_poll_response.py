@@ -11,8 +11,12 @@ from .forum_poll_result import ForumPollResult
 
 class ForumPollResponse(UniversalBaseModel):
     results: typing.Optional[typing.List[ForumPollResult]] = None
-    topic_id: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="topicId")] = None
-    total_votes: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="totalVotes")] = None
+    topic_id: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="topicId"), pydantic.Field(alias="topicId")
+    ] = None
+    total_votes: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="totalVotes"), pydantic.Field(alias="totalVotes")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

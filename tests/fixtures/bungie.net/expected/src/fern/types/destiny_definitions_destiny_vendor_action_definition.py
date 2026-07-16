@@ -13,15 +13,23 @@ class DestinyDefinitionsDestinyVendorActionDefinition(UniversalBaseModel):
     If a vendor can ever end up performing actions, these are the properties that will be related to those actions. I'm not going to bother documenting this yet, as it is unused and unclear if it will ever be used... but in case it is ever populated and someone finds it useful, it is defined here.
     """
 
-    action_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="actionHash")] = None
-    action_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="actionId")] = None
+    action_hash: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="actionHash"), pydantic.Field(alias="actionHash")
+    ] = None
+    action_id: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="actionId"), pydantic.Field(alias="actionId")
+    ] = None
     auto_perform_action: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="autoPerformAction")
+        typing.Optional[bool], FieldMetadata(alias="autoPerformAction"), pydantic.Field(alias="autoPerformAction")
     ] = None
     description: typing.Optional[str] = None
-    execute_seconds: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="executeSeconds")] = None
+    execute_seconds: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="executeSeconds"), pydantic.Field(alias="executeSeconds")
+    ] = None
     icon: typing.Optional[str] = None
-    is_positive: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="isPositive")] = None
+    is_positive: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="isPositive"), pydantic.Field(alias="isPositive")
+    ] = None
     name: typing.Optional[str] = None
     verb: typing.Optional[str] = None
 

@@ -13,7 +13,9 @@ from .o_auth2specification import OAuth2Specification
 class AuthSpecification(UniversalBaseModel):
     auth_type: typing.Optional[AuthSpecificationAuthType] = None
     oauth2specification: typing_extensions.Annotated[
-        typing.Optional[OAuth2Specification], FieldMetadata(alias="oauth2Specification")
+        typing.Optional[OAuth2Specification],
+        FieldMetadata(alias="oauth2Specification"),
+        pydantic.Field(alias="oauth2Specification"),
     ] = None
 
     if IS_PYDANTIC_V2:

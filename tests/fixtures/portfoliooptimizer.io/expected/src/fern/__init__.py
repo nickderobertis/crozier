@@ -25,6 +25,7 @@ if typing.TYPE_CHECKING:
         portfolio_optimization_mean_variance,
         portfolio_simulation,
     )
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .assets_analysis import (
         PostAssetsAnalysisAbsorptionRatioRequestAssetsCovarianceMatrixEigenvectors,
         PostAssetsAnalysisAbsorptionRatioResponse,
@@ -343,6 +344,8 @@ if typing.TYPE_CHECKING:
     from .version import __version__
 _dynamic_imports: typing.Dict[str, str] = {
     "AsyncFernApi": ".client",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "FernApi": ".client",
     "FernApiEnvironment": ".environment",
     "PostAssetsAnalysisAbsorptionRatioRequestAssetsCovarianceMatrixEigenvectors": ".assets_analysis",
@@ -671,6 +674,8 @@ def __dir__():
 
 __all__ = [
     "AsyncFernApi",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
     "FernApi",
     "FernApiEnvironment",
     "PostAssetsAnalysisAbsorptionRatioRequestAssetsCovarianceMatrixEigenvectors",

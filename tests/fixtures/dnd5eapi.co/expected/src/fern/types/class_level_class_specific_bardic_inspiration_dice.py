@@ -15,13 +15,19 @@ class ClassLevelClassSpecificBardicInspirationDice(UniversalBaseModel):
 
     bardic_inspiration_dice: typing.Optional[float] = None
     magical_secrets_max5: typing_extensions.Annotated[
-        typing.Optional[float], FieldMetadata(alias="magical_secrets_max_5")
+        typing.Optional[float],
+        FieldMetadata(alias="magical_secrets_max_5"),
+        pydantic.Field(alias="magical_secrets_max_5"),
     ] = None
     magical_secrets_max7: typing_extensions.Annotated[
-        typing.Optional[float], FieldMetadata(alias="magical_secrets_max_7")
+        typing.Optional[float],
+        FieldMetadata(alias="magical_secrets_max_7"),
+        pydantic.Field(alias="magical_secrets_max_7"),
     ] = None
     magical_secrets_max9: typing_extensions.Annotated[
-        typing.Optional[float], FieldMetadata(alias="magical_secrets_max_9")
+        typing.Optional[float],
+        FieldMetadata(alias="magical_secrets_max_9"),
+        pydantic.Field(alias="magical_secrets_max_9"),
     ] = None
     song_of_rest_die: typing.Optional[float] = None
 

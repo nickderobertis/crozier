@@ -6,12 +6,14 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.not_found_error import NotFoundError
 from ..types.service_credential_type import ServiceCredentialType
 from ..types.service_credential_types_collection import ServiceCredentialTypesCollection
+from pydantic import ValidationError
 
 
 class RawServiceCredentialTypeClient:
@@ -23,8 +25,8 @@ class RawServiceCredentialTypeClient:
         *,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        filter: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
-        sort_by: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
+        filter: typing.Optional[typing.Dict[str, typing.Any]] = None,
+        sort_by: typing.Optional[typing.Dict[str, typing.Any]] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[ServiceCredentialTypesCollection]:
         """
@@ -38,10 +40,10 @@ class RawServiceCredentialTypeClient:
         offset : typing.Optional[int]
             The number of items to skip before starting to collect the result set.
 
-        filter : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        filter : typing.Optional[typing.Dict[str, typing.Any]]
             Filter for querying collections.
 
-        sort_by : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        sort_by : typing.Optional[typing.Dict[str, typing.Any]]
             The list of attribute and order to sort the result set by.
 
         request_options : typing.Optional[RequestOptions]
@@ -76,6 +78,10 @@ class RawServiceCredentialTypeClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def show_service_credential_type(
@@ -98,7 +104,7 @@ class RawServiceCredentialTypeClient:
             ServiceCredentialType info
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"service_credential_types/{jsonable_encoder(id)}",
+            f"service_credential_types/{encode_path_param(id)}",
             method="GET",
             request_options=request_options,
         )
@@ -116,9 +122,9 @@ class RawServiceCredentialTypeClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -126,6 +132,10 @@ class RawServiceCredentialTypeClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -138,8 +148,8 @@ class AsyncRawServiceCredentialTypeClient:
         *,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        filter: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
-        sort_by: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
+        filter: typing.Optional[typing.Dict[str, typing.Any]] = None,
+        sort_by: typing.Optional[typing.Dict[str, typing.Any]] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[ServiceCredentialTypesCollection]:
         """
@@ -153,10 +163,10 @@ class AsyncRawServiceCredentialTypeClient:
         offset : typing.Optional[int]
             The number of items to skip before starting to collect the result set.
 
-        filter : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        filter : typing.Optional[typing.Dict[str, typing.Any]]
             Filter for querying collections.
 
-        sort_by : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        sort_by : typing.Optional[typing.Dict[str, typing.Any]]
             The list of attribute and order to sort the result set by.
 
         request_options : typing.Optional[RequestOptions]
@@ -191,6 +201,10 @@ class AsyncRawServiceCredentialTypeClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def show_service_credential_type(
@@ -213,7 +227,7 @@ class AsyncRawServiceCredentialTypeClient:
             ServiceCredentialType info
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"service_credential_types/{jsonable_encoder(id)}",
+            f"service_credential_types/{encode_path_param(id)}",
             method="GET",
             request_options=request_options,
         )
@@ -231,9 +245,9 @@ class AsyncRawServiceCredentialTypeClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -241,4 +255,8 @@ class AsyncRawServiceCredentialTypeClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

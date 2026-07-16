@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -20,6 +21,7 @@ from ..types.retrieve_team_member_booking_profile_response import RetrieveTeamMe
 from ..types.search_availability_query import SearchAvailabilityQuery
 from ..types.search_availability_response import SearchAvailabilityResponse
 from ..types.update_booking_response import UpdateBookingResponse
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -82,6 +84,10 @@ class RawBookingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def search_availability(
@@ -129,6 +135,10 @@ class RawBookingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def retrieve_business_booking_profile(
@@ -165,6 +175,10 @@ class RawBookingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_team_member_booking_profiles(
@@ -225,6 +239,10 @@ class RawBookingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def retrieve_team_member_booking_profile(
@@ -247,7 +265,7 @@ class RawBookingsClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/bookings/team-member-booking-profiles/{jsonable_encoder(team_member_id)}",
+            f"v2/bookings/team-member-booking-profiles/{encode_path_param(team_member_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -264,6 +282,10 @@ class RawBookingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def retrieve_booking(
@@ -286,7 +308,7 @@ class RawBookingsClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/bookings/{jsonable_encoder(booking_id)}",
+            f"v2/bookings/{encode_path_param(booking_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -303,6 +325,10 @@ class RawBookingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_booking(
@@ -335,7 +361,7 @@ class RawBookingsClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/bookings/{jsonable_encoder(booking_id)}",
+            f"v2/bookings/{encode_path_param(booking_id)}",
             method="PUT",
             json={
                 "booking": convert_and_respect_annotation_metadata(
@@ -362,6 +388,10 @@ class RawBookingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cancel_booking(
@@ -395,7 +425,7 @@ class RawBookingsClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/bookings/{jsonable_encoder(booking_id)}/cancel",
+            f"v2/bookings/{encode_path_param(booking_id)}/cancel",
             method="POST",
             json={
                 "booking_version": booking_version,
@@ -420,6 +450,10 @@ class RawBookingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -480,6 +514,10 @@ class AsyncRawBookingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def search_availability(
@@ -527,6 +565,10 @@ class AsyncRawBookingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def retrieve_business_booking_profile(
@@ -563,6 +605,10 @@ class AsyncRawBookingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_team_member_booking_profiles(
@@ -623,6 +669,10 @@ class AsyncRawBookingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def retrieve_team_member_booking_profile(
@@ -645,7 +695,7 @@ class AsyncRawBookingsClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/bookings/team-member-booking-profiles/{jsonable_encoder(team_member_id)}",
+            f"v2/bookings/team-member-booking-profiles/{encode_path_param(team_member_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -662,6 +712,10 @@ class AsyncRawBookingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def retrieve_booking(
@@ -684,7 +738,7 @@ class AsyncRawBookingsClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/bookings/{jsonable_encoder(booking_id)}",
+            f"v2/bookings/{encode_path_param(booking_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -701,6 +755,10 @@ class AsyncRawBookingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_booking(
@@ -733,7 +791,7 @@ class AsyncRawBookingsClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/bookings/{jsonable_encoder(booking_id)}",
+            f"v2/bookings/{encode_path_param(booking_id)}",
             method="PUT",
             json={
                 "booking": convert_and_respect_annotation_metadata(
@@ -760,6 +818,10 @@ class AsyncRawBookingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cancel_booking(
@@ -793,7 +855,7 @@ class AsyncRawBookingsClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/bookings/{jsonable_encoder(booking_id)}/cancel",
+            f"v2/bookings/{encode_path_param(booking_id)}/cancel",
             method="POST",
             json={
                 "booking_version": booking_version,
@@ -818,4 +880,8 @@ class AsyncRawBookingsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

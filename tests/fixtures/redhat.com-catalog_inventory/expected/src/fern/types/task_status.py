@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class TaskStatus(str, enum.Enum):
+class TaskStatus(enum.StrEnum):
     OK = "ok"
     WARN = "warn"
     UNCHANGED = "unchanged"

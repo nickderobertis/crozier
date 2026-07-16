@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class FileType(str, enum.Enum):
+class FileType(enum.StrEnum):
     """
     The type of resource. Could be file, folder or url
     """

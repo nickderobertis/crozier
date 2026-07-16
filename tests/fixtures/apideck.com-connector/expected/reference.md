@@ -1,6 +1,6 @@
 # Reference
 ## APIs
-<details><summary><code>client.apis.<a href="src/fern/apis/client.py">all_</a>(...)</code></summary>
+<details><summary><code>client.apis.<a href="src/fern/apis/client.py">all</a>(...) -> GetApisResponse</code></summary>
 <dl>
 <dd>
 
@@ -28,11 +28,14 @@ List APIs
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.apis.all_()
 
 ```
@@ -85,7 +88,7 @@ client.apis.all_()
 </dl>
 </details>
 
-<details><summary><code>client.apis.<a href="src/fern/apis/client.py">one</a>(...)</code></summary>
+<details><summary><code>client.apis.<a href="src/fern/apis/client.py">one</a>(...) -> GetApiResponse</code></summary>
 <dl>
 <dd>
 
@@ -113,11 +116,14 @@ Get API
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.apis.one(
     id="id",
 )
@@ -157,7 +163,7 @@ client.apis.one(
 </details>
 
 ## API Resources
-<details><summary><code>client.api_resources.<a href="src/fern/api_resources/client.py">one</a>(...)</code></summary>
+<details><summary><code>client.api_resources.<a href="src/fern/api_resources/client.py">one</a>(...) -> GetApiResourceResponse</code></summary>
 <dl>
 <dd>
 
@@ -185,11 +191,14 @@ Get API Resource
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.api_resources.one(
     id="id",
     resource_id="resource_id",
@@ -237,7 +246,7 @@ client.api_resources.one(
 </dl>
 </details>
 
-<details><summary><code>client.api_resources.<a href="src/fern/api_resources/client.py">api_resource_coverage_one</a>(...)</code></summary>
+<details><summary><code>client.api_resources.<a href="src/fern/api_resources/client.py">api_resource_coverage_one</a>(...) -> GetApiResourceCoverageResponse</code></summary>
 <dl>
 <dd>
 
@@ -265,11 +274,14 @@ Get API Resource Coverage
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.api_resources.api_resource_coverage_one(
     id="id",
     resource_id="resource_id",
@@ -318,7 +330,7 @@ client.api_resources.api_resource_coverage_one(
 </details>
 
 ## Connectors
-<details><summary><code>client.connectors.<a href="src/fern/connectors/client.py">all_</a>(...)</code></summary>
+<details><summary><code>client.connectors.<a href="src/fern/connectors/client.py">all</a>(...) -> GetConnectorsResponse</code></summary>
 <dl>
 <dd>
 
@@ -346,11 +358,14 @@ List Connectors
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.connectors.all_()
 
 ```
@@ -403,7 +418,7 @@ client.connectors.all_()
 </dl>
 </details>
 
-<details><summary><code>client.connectors.<a href="src/fern/connectors/client.py">one</a>(...)</code></summary>
+<details><summary><code>client.connectors.<a href="src/fern/connectors/client.py">one</a>(...) -> GetConnectorResponse</code></summary>
 <dl>
 <dd>
 
@@ -431,11 +446,14 @@ Get Connector
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.connectors.one(
     id="id",
 )
@@ -475,7 +493,7 @@ client.connectors.one(
 </details>
 
 ## Connector Docs
-<details><summary><code>client.connector_docs.<a href="src/fern/connector_docs/client.py">one</a>(...)</code></summary>
+<details><summary><code>client.connector_docs.<a href="src/fern/connector_docs/client.py">one</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -503,11 +521,14 @@ Get Connector Doc content
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.connector_docs.one()
 
 ```
@@ -553,7 +574,7 @@ client.connector_docs.one()
 </details>
 
 ## Connector Resources
-<details><summary><code>client.connector_resources.<a href="src/fern/connector_resources/client.py">one</a>(...)</code></summary>
+<details><summary><code>client.connector_resources.<a href="src/fern/connector_resources/client.py">one</a>(...) -> GetConnectorResourceResponse</code></summary>
 <dl>
 <dd>
 
@@ -581,11 +602,14 @@ Get Connector Resource
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.connector_resources.one(
     id="id",
     resource_id="resource_id",

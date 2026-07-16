@@ -20,6 +20,7 @@ class DestinyDefinitionsLoreDestinyLoreDefinition(UniversalBaseModel):
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
+        pydantic.Field(alias="displayProperties"),
     ] = None
     hash: typing.Optional[int] = pydantic.Field(default=None)
     """

@@ -25,7 +25,9 @@ class Choice(UniversalBaseModel):
     Description of the choice to be made.
     """
 
-    from_: typing_extensions.Annotated[typing.Optional["OptionSet"], FieldMetadata(alias="from")] = None
+    from_: typing_extensions.Annotated[
+        typing.Optional["OptionSet"], FieldMetadata(alias="from"), pydantic.Field(alias="from")
+    ] = None
     type: typing.Optional[str] = pydantic.Field(default=None)
     """
     Type of the resources to choose from.
@@ -41,6 +43,17 @@ class Choice(UniversalBaseModel):
             extra = pydantic.Extra.allow
 
 
+from .option import Option
+from .option_choice import OptionChoice
+from .option_items import OptionItems
 from .option_set import OptionSet
+from .option_set_options_array import OptionSetOptionsArray
 
-update_forward_refs(Choice)
+update_forward_refs(
+    Choice,
+    Option=Option,
+    OptionChoice=OptionChoice,
+    OptionItems=OptionItems,
+    OptionSet=OptionSet,
+    OptionSetOptionsArray=OptionSetOptionsArray,
+)

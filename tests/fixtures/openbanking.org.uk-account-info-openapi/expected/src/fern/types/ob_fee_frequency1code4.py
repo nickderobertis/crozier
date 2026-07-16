@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObFeeFrequency1Code4(str, enum.Enum):
+class ObFeeFrequency1Code4(enum.StrEnum):
     """
     Period e.g. day, week, month etc. for which the fee/charge is capped
     """

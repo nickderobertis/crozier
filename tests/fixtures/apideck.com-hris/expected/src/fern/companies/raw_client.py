@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -35,6 +36,7 @@ from ..types.update_hris_company_response import UpdateHrisCompanyResponse
 from ..types.updated_at import UpdatedAt
 from ..types.updated_by import UpdatedBy
 from ..types.website import Website
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -157,6 +159,10 @@ class RawCompaniesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def add(
@@ -336,6 +342,10 @@ class RawCompaniesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def one(
@@ -369,7 +379,7 @@ class RawCompaniesClient:
             Company
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"hris/companies/{jsonable_encoder(id)}",
+            f"hris/companies/{encode_path_param(id)}",
             method="GET",
             params={
                 "raw": raw,
@@ -445,6 +455,10 @@ class RawCompaniesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete(
@@ -470,7 +484,7 @@ class RawCompaniesClient:
             Companies
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"hris/companies/{jsonable_encoder(id)}",
+            f"hris/companies/{encode_path_param(id)}",
             method="DELETE",
             params={
                 "raw": raw,
@@ -545,6 +559,10 @@ class RawCompaniesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update(
@@ -623,7 +641,7 @@ class RawCompaniesClient:
             Companies
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"hris/companies/{jsonable_encoder(id_)}",
+            f"hris/companies/{encode_path_param(id_)}",
             method="PATCH",
             params={
                 "raw": raw,
@@ -728,6 +746,10 @@ class RawCompaniesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -848,6 +870,10 @@ class AsyncRawCompaniesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def add(
@@ -1027,6 +1053,10 @@ class AsyncRawCompaniesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def one(
@@ -1060,7 +1090,7 @@ class AsyncRawCompaniesClient:
             Company
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"hris/companies/{jsonable_encoder(id)}",
+            f"hris/companies/{encode_path_param(id)}",
             method="GET",
             params={
                 "raw": raw,
@@ -1136,6 +1166,10 @@ class AsyncRawCompaniesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete(
@@ -1161,7 +1195,7 @@ class AsyncRawCompaniesClient:
             Companies
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"hris/companies/{jsonable_encoder(id)}",
+            f"hris/companies/{encode_path_param(id)}",
             method="DELETE",
             params={
                 "raw": raw,
@@ -1236,6 +1270,10 @@ class AsyncRawCompaniesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update(
@@ -1314,7 +1352,7 @@ class AsyncRawCompaniesClient:
             Companies
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"hris/companies/{jsonable_encoder(id_)}",
+            f"hris/companies/{encode_path_param(id_)}",
             method="PATCH",
             params={
                 "raw": raw,
@@ -1419,4 +1457,8 @@ class AsyncRawCompaniesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

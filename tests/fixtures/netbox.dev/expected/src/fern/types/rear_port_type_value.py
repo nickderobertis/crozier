@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class RearPortTypeValue(str, enum.Enum):
+class RearPortTypeValue(enum.StrEnum):
     EIGHT_P8C = "8p8c"
     EIGHT_P6C = "8p6c"
     EIGHT_P4C = "8p4c"

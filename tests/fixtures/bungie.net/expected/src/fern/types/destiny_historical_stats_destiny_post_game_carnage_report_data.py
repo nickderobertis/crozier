@@ -20,15 +20,22 @@ from .destiny_historical_stats_destiny_post_game_carnage_report_team_entry impor
 
 class DestinyHistoricalStatsDestinyPostGameCarnageReportData(UniversalBaseModel):
     activity_details: typing_extensions.Annotated[
-        typing.Optional[DestinyHistoricalStatsDestinyHistoricalStatsActivity], FieldMetadata(alias="activityDetails")
-    ] = pydantic.Field(default=None)
+        typing.Optional[DestinyHistoricalStatsDestinyHistoricalStatsActivity],
+        FieldMetadata(alias="activityDetails"),
+        pydantic.Field(alias="activityDetails", description="Details about the activity."),
+    ] = None
     """
     Details about the activity.
     """
 
     activity_was_started_from_beginning: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="activityWasStartedFromBeginning")
-    ] = pydantic.Field(default=None)
+        typing.Optional[bool],
+        FieldMetadata(alias="activityWasStartedFromBeginning"),
+        pydantic.Field(
+            alias="activityWasStartedFromBeginning",
+            description="True if the activity was started from the beginning, if that information is available and the activity was played post Witch Queen release.",
+        ),
+    ] = None
     """
     True if the activity was started from the beginning, if that information is available and the activity was played post Witch Queen release.
     """
@@ -46,8 +53,13 @@ class DestinyHistoricalStatsDestinyPostGameCarnageReportData(UniversalBaseModel)
     """
 
     starting_phase_index: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="startingPhaseIndex")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="startingPhaseIndex"),
+        pydantic.Field(
+            alias="startingPhaseIndex",
+            description='If this activity has "phases", this is the phase at which the activity was started. This value is only valid for activities before the Beyond Light expansion shipped. Subsequent activities will not have a valid value here.',
+        ),
+    ] = None
     """
     If this activity has "phases", this is the phase at which the activity was started. This value is only valid for activities before the Beyond Light expansion shipped. Subsequent activities will not have a valid value here.
     """

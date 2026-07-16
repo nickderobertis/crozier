@@ -10,7 +10,9 @@ from .nested_device import NestedDevice
 
 
 class NestedPowerPort(UniversalBaseModel):
-    occupied: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="_occupied")] = None
+    occupied: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="_occupied"), pydantic.Field(alias="_occupied")
+    ] = None
     cable: typing.Optional[int] = None
     device: typing.Optional[NestedDevice] = None
     display: typing.Optional[str] = None

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class NotificationType(str, enum.Enum):
+class NotificationType(enum.StrEnum):
     SLACK = "slack"
     CUSTOMERIO = "customerio"
 

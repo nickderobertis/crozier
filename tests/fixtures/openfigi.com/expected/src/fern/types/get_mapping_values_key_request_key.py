@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GetMappingValuesKeyRequestKey(str, enum.Enum):
+class GetMappingValuesKeyRequestKey(enum.StrEnum):
     ID_TYPE = "idType"
     EXCH_CODE = "exchCode"
     MIC_CODE = "micCode"

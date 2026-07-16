@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class SortDirection(str, enum.Enum):
+class SortDirection(enum.StrEnum):
     """
     The direction in which to sort the results
     """

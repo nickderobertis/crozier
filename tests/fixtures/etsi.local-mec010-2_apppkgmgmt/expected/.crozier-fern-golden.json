@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "etsi.local-mec010-2_apppkgmgmt",
+  "corpus_spec_ref": "2.1.1",
+  "corpus_spec_url": "https://api.apis.guru/v2/specs/etsi.local/MEC010-2_AppPkgMgmt/2.1.1/openapi.json"
+}

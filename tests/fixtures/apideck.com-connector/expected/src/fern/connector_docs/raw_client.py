@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.not_found_error import NotFoundError
@@ -15,6 +16,7 @@ from ..errors.unauthorized_error import UnauthorizedError
 from ..types.not_found_response import NotFoundResponse
 from ..types.payment_required_response import PaymentRequiredResponse
 from ..types.unauthorized_response import UnauthorizedResponse
+from pydantic import ValidationError
 
 
 class RawConnectorDocsClient:
@@ -44,7 +46,7 @@ class RawConnectorDocsClient:
             Connectors
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"connector/connectors/{jsonable_encoder(id)}/docs/{jsonable_encoder(doc_id)}",
+            f"connector/connectors/{encode_path_param(id)}/docs/{encode_path_param(doc_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -87,6 +89,10 @@ class RawConnectorDocsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -117,7 +123,7 @@ class AsyncRawConnectorDocsClient:
             Connectors
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"connector/connectors/{jsonable_encoder(id)}/docs/{jsonable_encoder(doc_id)}",
+            f"connector/connectors/{encode_path_param(id)}/docs/{encode_path_param(doc_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -160,4 +166,8 @@ class AsyncRawConnectorDocsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

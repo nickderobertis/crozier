@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class LocationStatus(str, enum.Enum):
+class LocationStatus(enum.StrEnum):
     """
     The status of the location, whether a location is active or inactive.
     """

@@ -15,15 +15,24 @@ class PostAssetsCovarianceMatrixRequestAssets(UniversalBaseModel):
     """
 
     assets_correlation_matrix: typing_extensions.Annotated[
-        typing.List[typing.List[float]], FieldMetadata(alias="assetsCorrelationMatrix")
-    ] = pydantic.Field()
+        typing.List[typing.List[float]],
+        FieldMetadata(alias="assetsCorrelationMatrix"),
+        pydantic.Field(
+            alias="assetsCorrelationMatrix",
+            description="assetsCorrelationMatrix[i][j] is the correlation between the asset i and the asset j",
+        ),
+    ]
     """
     assetsCorrelationMatrix[i][j] is the correlation between the asset i and the asset j
     """
 
-    assets_volatilities: typing_extensions.Annotated[typing.List[float], FieldMetadata(alias="assetsVolatilities")] = (
-        pydantic.Field()
-    )
+    assets_volatilities: typing_extensions.Annotated[
+        typing.List[float],
+        FieldMetadata(alias="assetsVolatilities"),
+        pydantic.Field(
+            alias="assetsVolatilities", description="assetsVolatilities[i] is the volatility of the asset i"
+        ),
+    ]
     """
     assetsVolatilities[i] is the volatility of the asset i
     """

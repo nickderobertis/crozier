@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ConnectionWebhookDisabledReason(str, enum.Enum):
+class ConnectionWebhookDisabledReason(enum.StrEnum):
     """
     Indicates if the webhook has has been disabled as it reached its retry limit or if account is over the usage allocated by it's plan.
     """

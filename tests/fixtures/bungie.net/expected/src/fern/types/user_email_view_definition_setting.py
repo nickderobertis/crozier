@@ -22,15 +22,25 @@ class UserEmailViewDefinitionSetting(UniversalBaseModel):
     """
 
     opt_in_aggregate_value: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="optInAggregateValue")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="optInAggregateValue"),
+        pydantic.Field(
+            alias="optInAggregateValue",
+            description="The OptInFlags value to set or clear if this setting is set or cleared in the UI. It is the aggregate of all underlying opt-in flags related to this setting.",
+        ),
+    ] = None
     """
     The OptInFlags value to set or clear if this setting is set or cleared in the UI. It is the aggregate of all underlying opt-in flags related to this setting.
     """
 
-    set_by_default: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="setByDefault")] = (
-        pydantic.Field(default=None)
-    )
+    set_by_default: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="setByDefault"),
+        pydantic.Field(
+            alias="setByDefault",
+            description="If true, this setting should be set by default if the user hasn't chosen whether it's set or cleared yet.",
+        ),
+    ] = None
     """
     If true, this setting should be set by default if the user hasn't chosen whether it's set or cleared yet.
     """

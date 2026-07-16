@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class FileStorageEventType(str, enum.Enum):
+class FileStorageEventType(enum.StrEnum):
     ALL = "*"
     FILE_STORAGE_FILE_CREATED = "file-storage.file.created"
     FILE_STORAGE_FILE_UPDATED = "file-storage.file.updated"

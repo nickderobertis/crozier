@@ -9,9 +9,11 @@ from ...core.serialization import FieldMetadata
 
 
 class PostAssetsAnalysisAbsorptionRatioResponse(UniversalBaseModel):
-    assets_absorption_ratio: typing_extensions.Annotated[float, FieldMetadata(alias="assetsAbsorptionRatio")] = (
-        pydantic.Field()
-    )
+    assets_absorption_ratio: typing_extensions.Annotated[
+        float,
+        FieldMetadata(alias="assetsAbsorptionRatio"),
+        pydantic.Field(alias="assetsAbsorptionRatio", description="The absorption ratio of the universe of assets"),
+    ]
     """
     The absorption ratio of the universe of assets
     """

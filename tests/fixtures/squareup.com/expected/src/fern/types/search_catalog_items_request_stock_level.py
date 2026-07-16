@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class SearchCatalogItemsRequestStockLevel(str, enum.Enum):
+class SearchCatalogItemsRequestStockLevel(enum.StrEnum):
     """
     Defines supported stock levels of the item inventory.
     """

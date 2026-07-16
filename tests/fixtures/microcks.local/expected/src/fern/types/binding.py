@@ -14,21 +14,33 @@ class Binding(UniversalBaseModel):
     Protocol binding details for asynchronous operations
     """
 
-    destination_name: typing_extensions.Annotated[str, FieldMetadata(alias="destinationName")] = pydantic.Field()
+    destination_name: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="destinationName"),
+        pydantic.Field(
+            alias="destinationName", description="Name of destination for asynchronous messages of this operation"
+        ),
+    ]
     """
     Name of destination for asynchronous messages of this operation
     """
 
-    destination_type: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="destinationType")] = (
-        pydantic.Field(default=None)
-    )
+    destination_type: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="destinationType"),
+        pydantic.Field(
+            alias="destinationType", description="Type of destination for asynchronous messages of this operation"
+        ),
+    ] = None
     """
     Type of destination for asynchronous messages of this operation
     """
 
-    key_type: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="keyType")] = pydantic.Field(
-        default=None
-    )
+    key_type: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="keyType"),
+        pydantic.Field(alias="keyType", description="Type of key for Kafka messages"),
+    ] = None
     """
     Type of key for Kafka messages
     """
@@ -43,7 +55,11 @@ class Binding(UniversalBaseModel):
     Persistent attribute for MQTT binding
     """
 
-    qo_s: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="qoS")] = pydantic.Field(default=None)
+    qo_s: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="qoS"),
+        pydantic.Field(alias="qoS", description="Quality of Service attribute for MQTT binding"),
+    ] = None
     """
     Quality of Service attribute for MQTT binding
     """

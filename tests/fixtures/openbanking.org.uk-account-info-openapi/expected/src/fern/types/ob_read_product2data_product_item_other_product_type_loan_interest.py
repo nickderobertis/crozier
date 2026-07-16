@@ -19,8 +19,11 @@ class ObReadProduct2DataProductItemOtherProductTypeLoanInterest(UniversalBaseMod
     loan_interest_tier_band_set: typing_extensions.Annotated[
         typing.List[ObReadProduct2DataProductItemOtherProductTypeLoanInterestLoanInterestTierBandSetItem],
         FieldMetadata(alias="LoanInterestTierBandSet"),
+        pydantic.Field(alias="LoanInterestTierBandSet"),
     ]
-    notes: typing_extensions.Annotated[typing.Optional[typing.List[str]], FieldMetadata(alias="Notes")] = None
+    notes: typing_extensions.Annotated[
+        typing.Optional[typing.List[str]], FieldMetadata(alias="Notes"), pydantic.Field(alias="Notes")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

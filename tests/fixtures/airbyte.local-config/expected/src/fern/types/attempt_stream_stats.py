@@ -11,8 +11,10 @@ from .attempt_stats import AttemptStats
 
 class AttemptStreamStats(UniversalBaseModel):
     stats: AttemptStats
-    stream_name: typing_extensions.Annotated[str, FieldMetadata(alias="streamName")]
-    stream_namespace: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="streamNamespace")] = None
+    stream_name: typing_extensions.Annotated[str, FieldMetadata(alias="streamName"), pydantic.Field(alias="streamName")]
+    stream_namespace: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="streamNamespace"), pydantic.Field(alias="streamNamespace")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class CatalogDiscountType(str, enum.Enum):
+class CatalogDiscountType(enum.StrEnum):
     """
     How to apply a CatalogDiscount to a CatalogItem.
     """

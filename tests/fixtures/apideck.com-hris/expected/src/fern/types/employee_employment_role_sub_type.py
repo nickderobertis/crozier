@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class EmployeeEmploymentRoleSubType(str, enum.Enum):
+class EmployeeEmploymentRoleSubType(enum.StrEnum):
     """
     The work schedule of the employee.
     """

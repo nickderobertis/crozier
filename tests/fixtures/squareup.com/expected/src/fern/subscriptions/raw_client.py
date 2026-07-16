@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -20,6 +21,7 @@ from ..types.search_subscriptions_query import SearchSubscriptionsQuery
 from ..types.search_subscriptions_response import SearchSubscriptionsResponse
 from ..types.subscription import Subscription
 from ..types.update_subscription_response import UpdateSubscriptionResponse
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -146,6 +148,10 @@ class RawSubscriptionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def search_subscriptions(
@@ -227,6 +233,10 @@ class RawSubscriptionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def retrieve_subscription(
@@ -249,7 +259,7 @@ class RawSubscriptionsClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/subscriptions/{jsonable_encoder(subscription_id)}",
+            f"v2/subscriptions/{encode_path_param(subscription_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -266,6 +276,10 @@ class RawSubscriptionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_subscription(
@@ -295,7 +309,7 @@ class RawSubscriptionsClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/subscriptions/{jsonable_encoder(subscription_id)}",
+            f"v2/subscriptions/{encode_path_param(subscription_id)}",
             method="PUT",
             json={
                 "subscription": convert_and_respect_annotation_metadata(
@@ -321,6 +335,10 @@ class RawSubscriptionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cancel_subscription(
@@ -344,7 +362,7 @@ class RawSubscriptionsClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/subscriptions/{jsonable_encoder(subscription_id)}/cancel",
+            f"v2/subscriptions/{encode_path_param(subscription_id)}/cancel",
             method="POST",
             request_options=request_options,
         )
@@ -361,6 +379,10 @@ class RawSubscriptionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_subscription_events(
@@ -401,7 +423,7 @@ class RawSubscriptionsClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/subscriptions/{jsonable_encoder(subscription_id)}/events",
+            f"v2/subscriptions/{encode_path_param(subscription_id)}/events",
             method="GET",
             params={
                 "cursor": cursor,
@@ -422,6 +444,10 @@ class RawSubscriptionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def resume_subscription(
@@ -444,7 +470,7 @@ class RawSubscriptionsClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/subscriptions/{jsonable_encoder(subscription_id)}/resume",
+            f"v2/subscriptions/{encode_path_param(subscription_id)}/resume",
             method="POST",
             request_options=request_options,
         )
@@ -461,6 +487,10 @@ class RawSubscriptionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -585,6 +615,10 @@ class AsyncRawSubscriptionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def search_subscriptions(
@@ -666,6 +700,10 @@ class AsyncRawSubscriptionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def retrieve_subscription(
@@ -688,7 +726,7 @@ class AsyncRawSubscriptionsClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/subscriptions/{jsonable_encoder(subscription_id)}",
+            f"v2/subscriptions/{encode_path_param(subscription_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -705,6 +743,10 @@ class AsyncRawSubscriptionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_subscription(
@@ -734,7 +776,7 @@ class AsyncRawSubscriptionsClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/subscriptions/{jsonable_encoder(subscription_id)}",
+            f"v2/subscriptions/{encode_path_param(subscription_id)}",
             method="PUT",
             json={
                 "subscription": convert_and_respect_annotation_metadata(
@@ -760,6 +802,10 @@ class AsyncRawSubscriptionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cancel_subscription(
@@ -783,7 +829,7 @@ class AsyncRawSubscriptionsClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/subscriptions/{jsonable_encoder(subscription_id)}/cancel",
+            f"v2/subscriptions/{encode_path_param(subscription_id)}/cancel",
             method="POST",
             request_options=request_options,
         )
@@ -800,6 +846,10 @@ class AsyncRawSubscriptionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_subscription_events(
@@ -840,7 +890,7 @@ class AsyncRawSubscriptionsClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/subscriptions/{jsonable_encoder(subscription_id)}/events",
+            f"v2/subscriptions/{encode_path_param(subscription_id)}/events",
             method="GET",
             params={
                 "cursor": cursor,
@@ -861,6 +911,10 @@ class AsyncRawSubscriptionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def resume_subscription(
@@ -883,7 +937,7 @@ class AsyncRawSubscriptionsClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/subscriptions/{jsonable_encoder(subscription_id)}/resume",
+            f"v2/subscriptions/{encode_path_param(subscription_id)}/resume",
             method="POST",
             request_options=request_options,
         )
@@ -900,4 +954,8 @@ class AsyncRawSubscriptionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

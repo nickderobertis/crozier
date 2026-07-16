@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PrefixStatusValue(str, enum.Enum):
+class PrefixStatusValue(enum.StrEnum):
     CONTAINER = "container"
     ACTIVE = "active"
     RESERVED = "reserved"

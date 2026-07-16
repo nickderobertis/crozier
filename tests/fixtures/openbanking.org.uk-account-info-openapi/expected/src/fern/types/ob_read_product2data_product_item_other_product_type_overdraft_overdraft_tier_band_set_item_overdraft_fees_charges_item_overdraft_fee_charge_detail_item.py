@@ -30,43 +30,70 @@ class ObReadProduct2DataProductItemOtherProductTypeOverdraftOverdraftTierBandSet
     """
 
     application_frequency: typing_extensions.Annotated[
-        ObFeeFrequency1Code0, FieldMetadata(alias="ApplicationFrequency")
+        ObFeeFrequency1Code0, FieldMetadata(alias="ApplicationFrequency"), pydantic.Field(alias="ApplicationFrequency")
     ]
     calculation_frequency: typing_extensions.Annotated[
-        typing.Optional[ObFeeFrequency1Code1], FieldMetadata(alias="CalculationFrequency")
+        typing.Optional[ObFeeFrequency1Code1],
+        FieldMetadata(alias="CalculationFrequency"),
+        pydantic.Field(alias="CalculationFrequency"),
     ] = None
-    fee_amount: typing_extensions.Annotated[typing.Optional[ObAmount12], FieldMetadata(alias="FeeAmount")] = None
-    fee_rate: typing_extensions.Annotated[typing.Optional[ObRate10], FieldMetadata(alias="FeeRate")] = None
+    fee_amount: typing_extensions.Annotated[
+        typing.Optional[ObAmount12], FieldMetadata(alias="FeeAmount"), pydantic.Field(alias="FeeAmount")
+    ] = None
+    fee_rate: typing_extensions.Annotated[
+        typing.Optional[ObRate10], FieldMetadata(alias="FeeRate"), pydantic.Field(alias="FeeRate")
+    ] = None
     fee_rate_type: typing_extensions.Annotated[
-        typing.Optional[ObInterestRateType1Code0], FieldMetadata(alias="FeeRateType")
+        typing.Optional[ObInterestRateType1Code0],
+        FieldMetadata(alias="FeeRateType"),
+        pydantic.Field(alias="FeeRateType"),
     ] = None
-    fee_type: typing_extensions.Annotated[ObOverdraftFeeType1Code, FieldMetadata(alias="FeeType")]
+    fee_type: typing_extensions.Annotated[
+        ObOverdraftFeeType1Code, FieldMetadata(alias="FeeType"), pydantic.Field(alias="FeeType")
+    ]
     incremental_borrowing_amount: typing_extensions.Annotated[
-        typing.Optional[ObAmount11], FieldMetadata(alias="IncrementalBorrowingAmount")
+        typing.Optional[ObAmount11],
+        FieldMetadata(alias="IncrementalBorrowingAmount"),
+        pydantic.Field(alias="IncrementalBorrowingAmount"),
     ] = None
     negotiable_indicator: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="NegotiableIndicator")
-    ] = pydantic.Field(default=None)
+        typing.Optional[bool],
+        FieldMetadata(alias="NegotiableIndicator"),
+        pydantic.Field(alias="NegotiableIndicator", description="Indicates whether fee and charges are negotiable"),
+    ] = None
     """
     Indicates whether fee and charges are negotiable
     """
 
-    notes: typing_extensions.Annotated[typing.Optional[typing.List[str]], FieldMetadata(alias="Notes")] = None
+    notes: typing_extensions.Annotated[
+        typing.Optional[typing.List[str]], FieldMetadata(alias="Notes"), pydantic.Field(alias="Notes")
+    ] = None
     other_application_frequency: typing_extensions.Annotated[
-        typing.Optional[ObOtherCodeType11], FieldMetadata(alias="OtherApplicationFrequency")
+        typing.Optional[ObOtherCodeType11],
+        FieldMetadata(alias="OtherApplicationFrequency"),
+        pydantic.Field(alias="OtherApplicationFrequency"),
     ] = None
     other_calculation_frequency: typing_extensions.Annotated[
-        typing.Optional[ObOtherCodeType12], FieldMetadata(alias="OtherCalculationFrequency")
+        typing.Optional[ObOtherCodeType12],
+        FieldMetadata(alias="OtherCalculationFrequency"),
+        pydantic.Field(alias="OtherCalculationFrequency"),
     ] = None
     other_fee_rate_type: typing_extensions.Annotated[
-        typing.Optional[ObOtherCodeType14], FieldMetadata(alias="OtherFeeRateType")
+        typing.Optional[ObOtherCodeType14],
+        FieldMetadata(alias="OtherFeeRateType"),
+        pydantic.Field(alias="OtherFeeRateType"),
     ] = None
     other_fee_type: typing_extensions.Annotated[
-        typing.Optional[ObOtherCodeType13], FieldMetadata(alias="OtherFeeType")
+        typing.Optional[ObOtherCodeType13], FieldMetadata(alias="OtherFeeType"), pydantic.Field(alias="OtherFeeType")
     ] = None
     overdraft_control_indicator: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="OverdraftControlIndicator")
-    ] = pydantic.Field(default=None)
+        typing.Optional[bool],
+        FieldMetadata(alias="OverdraftControlIndicator"),
+        pydantic.Field(
+            alias="OverdraftControlIndicator",
+            description="Indicates if the fee/charge is already covered by an 'Overdraft Control' fee or not.",
+        ),
+    ] = None
     """
     Indicates if the fee/charge is already covered by an 'Overdraft Control' fee or not.
     """
@@ -78,6 +105,7 @@ class ObReadProduct2DataProductItemOtherProductTypeOverdraftOverdraftTierBandSet
             ]
         ],
         FieldMetadata(alias="OverdraftFeeChargeCap"),
+        pydantic.Field(alias="OverdraftFeeChargeCap"),
     ] = None
 
     if IS_PYDANTIC_V2:

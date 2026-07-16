@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GiftCardGanSource(str, enum.Enum):
+class GiftCardGanSource(enum.StrEnum):
     """
     Indicates the source that generated the gift card
     account number (GAN).

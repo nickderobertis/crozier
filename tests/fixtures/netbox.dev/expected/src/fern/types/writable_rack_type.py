@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class WritableRackType(str, enum.Enum):
+class WritableRackType(enum.StrEnum):
     TWO_POST_FRAME = "2-post-frame"
     FOUR_POST_FRAME = "4-post-frame"
     FOUR_POST_CABINET = "4-post-cabinet"

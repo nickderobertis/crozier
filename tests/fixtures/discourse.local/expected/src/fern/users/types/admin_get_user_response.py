@@ -17,7 +17,7 @@ class AdminGetUserResponse(UniversalBaseModel):
     admin: bool
     api_key_count: int
     approved_by: typing.Optional[AdminGetUserResponseApprovedBy] = None
-    associated_accounts: typing.Optional[typing.List[typing.Optional[typing.Any]]] = None
+    associated_accounts: typing.Optional[typing.List[typing.Any]] = None
     avatar_template: str
     badge_count: int
     bounce_score: typing.Optional[int] = None
@@ -39,7 +39,7 @@ class AdminGetUserResponse(UniversalBaseModel):
     created_at: str
     created_at_age: typing.Optional[float] = None
     days_visited: int
-    external_ids: typing.Dict[str, typing.Optional[typing.Any]]
+    external_ids: typing.Dict[str, typing.Any]
     flag_level: int
     flags_given_count: int
     flags_received_count: int
@@ -73,7 +73,9 @@ class AdminGetUserResponse(UniversalBaseModel):
     time_read: int
     title: typing.Optional[str] = None
     tl3requirements: typing_extensions.Annotated[
-        typing.Optional[AdminGetUserResponseTl3Requirements], FieldMetadata(alias="tl3_requirements")
+        typing.Optional[AdminGetUserResponseTl3Requirements],
+        FieldMetadata(alias="tl3_requirements"),
+        pydantic.Field(alias="tl3_requirements"),
     ] = None
     topic_count: int
     topics_entered: int

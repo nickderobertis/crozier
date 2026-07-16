@@ -791,7 +791,7 @@ class UsersClient:
         actions: typing.Sequence[str],
         name: str,
         object_types: typing.Sequence[str],
-        constraints: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        constraints: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -813,7 +813,7 @@ class UsersClient:
 
         object_types : typing.Sequence[str]
 
-        constraints : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        constraints : typing.Optional[typing.Dict[str, typing.Any]]
             Queryset filter matching the applicable objects of the selected type(s)
 
         description : typing.Optional[str]
@@ -873,7 +873,7 @@ class UsersClient:
         actions: typing.Sequence[str],
         name: str,
         object_types: typing.Sequence[str],
-        constraints: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        constraints: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -895,7 +895,7 @@ class UsersClient:
 
         object_types : typing.Sequence[str]
 
-        constraints : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        constraints : typing.Optional[typing.Dict[str, typing.Any]]
             Queryset filter matching the applicable objects of the selected type(s)
 
         description : typing.Optional[str]
@@ -980,7 +980,7 @@ class UsersClient:
         actions: typing.Sequence[str],
         name: str,
         object_types: typing.Sequence[str],
-        constraints: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        constraints: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -1002,7 +1002,7 @@ class UsersClient:
 
         object_types : typing.Sequence[str]
 
-        constraints : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        constraints : typing.Optional[typing.Dict[str, typing.Any]]
             Queryset filter matching the applicable objects of the selected type(s)
 
         description : typing.Optional[str]
@@ -1094,7 +1094,7 @@ class UsersClient:
         actions: typing.Sequence[str],
         name: str,
         object_types: typing.Sequence[str],
-        constraints: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        constraints: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -1119,7 +1119,7 @@ class UsersClient:
 
         object_types : typing.Sequence[str]
 
-        constraints : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        constraints : typing.Optional[typing.Dict[str, typing.Any]]
             Queryset filter matching the applicable objects of the selected type(s)
 
         description : typing.Optional[str]
@@ -1212,7 +1212,7 @@ class UsersClient:
         actions: typing.Sequence[str],
         name: str,
         object_types: typing.Sequence[str],
-        constraints: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        constraints: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -1237,7 +1237,7 @@ class UsersClient:
 
         object_types : typing.Sequence[str]
 
-        constraints : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        constraints : typing.Optional[typing.Dict[str, typing.Any]]
             Queryset filter matching the applicable objects of the selected type(s)
 
         description : typing.Optional[str]
@@ -3783,7 +3783,7 @@ class AsyncUsersClient:
         actions: typing.Sequence[str],
         name: str,
         object_types: typing.Sequence[str],
-        constraints: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        constraints: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -3805,7 +3805,7 @@ class AsyncUsersClient:
 
         object_types : typing.Sequence[str]
 
-        constraints : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        constraints : typing.Optional[typing.Dict[str, typing.Any]]
             Queryset filter matching the applicable objects of the selected type(s)
 
         description : typing.Optional[str]
@@ -3873,7 +3873,7 @@ class AsyncUsersClient:
         actions: typing.Sequence[str],
         name: str,
         object_types: typing.Sequence[str],
-        constraints: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        constraints: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -3895,7 +3895,7 @@ class AsyncUsersClient:
 
         object_types : typing.Sequence[str]
 
-        constraints : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        constraints : typing.Optional[typing.Dict[str, typing.Any]]
             Queryset filter matching the applicable objects of the selected type(s)
 
         description : typing.Optional[str]
@@ -3996,7 +3996,7 @@ class AsyncUsersClient:
         actions: typing.Sequence[str],
         name: str,
         object_types: typing.Sequence[str],
-        constraints: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        constraints: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -4018,7 +4018,7 @@ class AsyncUsersClient:
 
         object_types : typing.Sequence[str]
 
-        constraints : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        constraints : typing.Optional[typing.Dict[str, typing.Any]]
             Queryset filter matching the applicable objects of the selected type(s)
 
         description : typing.Optional[str]
@@ -4128,7 +4128,7 @@ class AsyncUsersClient:
         actions: typing.Sequence[str],
         name: str,
         object_types: typing.Sequence[str],
-        constraints: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        constraints: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -4153,7 +4153,7 @@ class AsyncUsersClient:
 
         object_types : typing.Sequence[str]
 
-        constraints : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        constraints : typing.Optional[typing.Dict[str, typing.Any]]
             Queryset filter matching the applicable objects of the selected type(s)
 
         description : typing.Optional[str]
@@ -4262,7 +4262,7 @@ class AsyncUsersClient:
         actions: typing.Sequence[str],
         name: str,
         object_types: typing.Sequence[str],
-        constraints: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        constraints: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -4287,7 +4287,7 @@ class AsyncUsersClient:
 
         object_types : typing.Sequence[str]
 
-        constraints : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        constraints : typing.Optional[typing.Dict[str, typing.Any]]
             Queryset filter matching the applicable objects of the selected type(s)
 
         description : typing.Optional[str]

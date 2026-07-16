@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ParameterConstraintIn(str, enum.Enum):
+class ParameterConstraintIn(enum.StrEnum):
     """
     Parameter location
     """

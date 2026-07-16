@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class WritableDeviceTypeWeightUnit(str, enum.Enum):
+class WritableDeviceTypeWeightUnit(enum.StrEnum):
     KG = "kg"
     G = "g"
     LB = "lb"

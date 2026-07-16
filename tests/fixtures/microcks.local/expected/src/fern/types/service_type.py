@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ServiceType(str, enum.Enum):
+class ServiceType(enum.StrEnum):
     """
     Service or API Type
     """

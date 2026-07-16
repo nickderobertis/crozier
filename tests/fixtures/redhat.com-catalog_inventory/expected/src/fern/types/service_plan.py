@@ -10,10 +10,10 @@ from .id import Id
 
 class ServicePlan(UniversalBaseModel):
     archived_at: typing.Optional[dt.datetime] = None
-    create_json_schema: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    create_json_schema: typing.Optional[typing.Dict[str, typing.Any]] = None
     created_at: typing.Optional[dt.datetime] = None
     description: typing.Optional[str] = None
-    extra: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = pydantic.Field(default=None)
+    extra: typing.Optional[typing.Dict[str, typing.Any]] = pydantic.Field(default=None)
     """
     Extra information about this object in JSON format
     """

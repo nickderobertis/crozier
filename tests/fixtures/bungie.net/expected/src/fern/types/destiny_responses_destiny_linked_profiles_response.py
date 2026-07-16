@@ -18,8 +18,13 @@ class DestinyResponsesDestinyLinkedProfilesResponse(UniversalBaseModel):
     """
 
     bnet_membership: typing_extensions.Annotated[
-        typing.Optional[UserUserInfoCard], FieldMetadata(alias="bnetMembership")
-    ] = pydantic.Field(default=None)
+        typing.Optional[UserUserInfoCard],
+        FieldMetadata(alias="bnetMembership"),
+        pydantic.Field(
+            alias="bnetMembership",
+            description="If the requested membership had a linked Bungie.Net membership ID, this is the basic information about that BNet account.\r\nI know, Tetron; I know this is mixing UserServices concerns with DestinyServices concerns. But it's so damn convenient! https://www.youtube.com/watch?v=X5R-bB-gKVI",
+        ),
+    ] = None
     """
     If the requested membership had a linked Bungie.Net membership ID, this is the basic information about that BNet account.
     I know, Tetron; I know this is mixing UserServices concerns with DestinyServices concerns. But it's so damn convenient! https://www.youtube.com/watch?v=X5R-bB-gKVI
@@ -31,8 +36,13 @@ class DestinyResponsesDestinyLinkedProfilesResponse(UniversalBaseModel):
     """
 
     profiles_with_errors: typing_extensions.Annotated[
-        typing.Optional[typing.List[DestinyResponsesDestinyErrorProfile]], FieldMetadata(alias="profilesWithErrors")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[DestinyResponsesDestinyErrorProfile]],
+        FieldMetadata(alias="profilesWithErrors"),
+        pydantic.Field(
+            alias="profilesWithErrors",
+            description="This is brief summary info for profiles that we believe have valid Destiny info, but who failed to return data for some other reason and thus we know that subsequent calls for their info will also fail.",
+        ),
+    ] = None
     """
     This is brief summary info for profiles that we believe have valid Destiny info, but who failed to return data for some other reason and thus we know that subsequent calls for their info will also fail.
     """

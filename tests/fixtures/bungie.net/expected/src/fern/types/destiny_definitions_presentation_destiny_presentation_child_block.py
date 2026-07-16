@@ -9,12 +9,16 @@ from ..core.serialization import FieldMetadata
 
 
 class DestinyDefinitionsPresentationDestinyPresentationChildBlock(UniversalBaseModel):
-    display_style: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="displayStyle")] = None
+    display_style: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="displayStyle"), pydantic.Field(alias="displayStyle")
+    ] = None
     parent_presentation_node_hashes: typing_extensions.Annotated[
-        typing.Optional[typing.List[int]], FieldMetadata(alias="parentPresentationNodeHashes")
+        typing.Optional[typing.List[int]],
+        FieldMetadata(alias="parentPresentationNodeHashes"),
+        pydantic.Field(alias="parentPresentationNodeHashes"),
     ] = None
     presentation_node_type: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="presentationNodeType")
+        typing.Optional[int], FieldMetadata(alias="presentationNodeType"), pydantic.Field(alias="presentationNodeType")
     ] = None
 
     if IS_PYDANTIC_V2:

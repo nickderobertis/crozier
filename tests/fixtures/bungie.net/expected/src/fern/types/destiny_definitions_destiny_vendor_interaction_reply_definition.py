@@ -15,8 +15,10 @@ class DestinyDefinitionsDestinyVendorInteractionReplyDefinition(UniversalBaseMod
     """
 
     item_rewards_selection: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="itemRewardsSelection")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="itemRewardsSelection"),
+        pydantic.Field(alias="itemRewardsSelection", description="The rewards granted upon responding to the vendor."),
+    ] = None
     """
     The rewards granted upon responding to the vendor.
     """
@@ -26,9 +28,11 @@ class DestinyDefinitionsDestinyVendorInteractionReplyDefinition(UniversalBaseMod
     The localized text for the reply.
     """
 
-    reply_type: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="replyType")] = pydantic.Field(
-        default=None
-    )
+    reply_type: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="replyType"),
+        pydantic.Field(alias="replyType", description="An enum indicating the type of reply being made."),
+    ] = None
     """
     An enum indicating the type of reply being made.
     """

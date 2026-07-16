@@ -10,13 +10,25 @@ from ..core.serialization import FieldMetadata
 
 class UpdateTerminationProtectionInput(UniversalBaseModel):
     enable_termination_protection: typing_extensions.Annotated[
-        bool, FieldMetadata(alias="EnableTerminationProtection")
-    ] = pydantic.Field()
+        bool,
+        FieldMetadata(alias="EnableTerminationProtection"),
+        pydantic.Field(
+            alias="EnableTerminationProtection",
+            description="Whether to enable termination protection on the specified stack.",
+        ),
+    ]
     """
     Whether to enable termination protection on the specified stack.
     """
 
-    stack_name: typing_extensions.Annotated[str, FieldMetadata(alias="StackName")] = pydantic.Field()
+    stack_name: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="StackName"),
+        pydantic.Field(
+            alias="StackName",
+            description="The name or unique ID of the stack for which you want to set termination protection.",
+        ),
+    ]
     """
     The name or unique ID of the stack for which you want to set termination protection.
     """

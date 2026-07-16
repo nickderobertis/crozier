@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class StackInstanceFilterName(str, enum.Enum):
+class StackInstanceFilterName(enum.StrEnum):
     DETAILED_STATUS = "DETAILED_STATUS"
     LAST_OPERATION_ID = "LAST_OPERATION_ID"
 

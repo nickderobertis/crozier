@@ -9,9 +9,11 @@ from ...core.serialization import FieldMetadata
 
 
 class PostAssetsAnalysisTurbulenceIndexResponse(UniversalBaseModel):
-    assets_turbulence_index: typing_extensions.Annotated[float, FieldMetadata(alias="assetsTurbulenceIndex")] = (
-        pydantic.Field()
-    )
+    assets_turbulence_index: typing_extensions.Annotated[
+        float,
+        FieldMetadata(alias="assetsTurbulenceIndex"),
+        pydantic.Field(alias="assetsTurbulenceIndex", description="the turbulence index of the universe of assets"),
+    ]
     """
     the turbulence index of the universe of assets
     """

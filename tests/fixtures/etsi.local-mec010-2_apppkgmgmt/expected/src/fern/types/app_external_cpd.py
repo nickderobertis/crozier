@@ -10,7 +10,7 @@ from .virtual_network_interface_requirements import VirtualNetworkInterfaceRequi
 
 
 class AppExternalCpd(UniversalBaseModel):
-    inherited_attributes: typing.Dict[str, typing.Optional[typing.Any]] = pydantic.Field()
+    inherited_attributes: typing.Dict[str, typing.Any] = pydantic.Field()
     """
     All attributes inherited from Cpd.
     """
@@ -18,7 +18,11 @@ class AppExternalCpd(UniversalBaseModel):
     virtual_network_interface_requirements: typing_extensions.Annotated[
         typing.Optional[typing.List[VirtualNetworkInterfaceRequirements]],
         FieldMetadata(alias="virtualNetworkInterfaceRequirements"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="virtualNetworkInterfaceRequirements",
+            description="Specifies requirements on a virtual network interface realizing the CPs instantiated from this CPD.",
+        ),
+    ] = None
     """
     Specifies requirements on a virtual network interface realizing the CPs instantiated from this CPD.
     """

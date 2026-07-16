@@ -14,7 +14,7 @@ class AppPkgSubscriptionInfoLinks(UniversalBaseModel):
     Links to resources related to this resource.
     """
 
-    self_: typing_extensions.Annotated[LinkType, FieldMetadata(alias="self")]
+    self_: typing_extensions.Annotated[LinkType, FieldMetadata(alias="self"), pydantic.Field(alias="self")]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

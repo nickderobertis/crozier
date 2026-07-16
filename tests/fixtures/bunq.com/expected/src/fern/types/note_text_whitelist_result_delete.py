@@ -2,4 +2,4 @@
 
 import typing
 
-NoteTextWhitelistResultDelete = typing.Dict[str, typing.Optional[typing.Any]]
+NoteTextWhitelistResultDelete = typing.Dict[str, typing.Any]

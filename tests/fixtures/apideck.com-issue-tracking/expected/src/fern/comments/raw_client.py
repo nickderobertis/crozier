@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -30,6 +31,7 @@ from ..types.unauthorized_response import UnauthorizedResponse
 from ..types.unprocessable_response import UnprocessableResponse
 from ..types.update_comment_response import UpdateCommentResponse
 from ..types.updated_at import UpdatedAt
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -86,7 +88,7 @@ class RawCommentsClient:
             List Comments
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"issue-tracking/collections/{jsonable_encoder(collection_id)}/tickets/{jsonable_encoder(ticket_id)}/comments",
+            f"issue-tracking/collections/{encode_path_param(collection_id)}/tickets/{encode_path_param(ticket_id)}/comments",
             method="GET",
             params={
                 "raw": raw,
@@ -167,6 +169,10 @@ class RawCommentsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def collection_ticket_comments_add(
@@ -216,7 +222,7 @@ class RawCommentsClient:
             Create a Comment
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"issue-tracking/collections/{jsonable_encoder(collection_id)}/tickets/{jsonable_encoder(ticket_id)}/comments",
+            f"issue-tracking/collections/{encode_path_param(collection_id)}/tickets/{encode_path_param(ticket_id)}/comments",
             method="POST",
             params={
                 "raw": raw,
@@ -302,6 +308,10 @@ class RawCommentsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def collection_ticket_comments_one(
@@ -351,7 +361,7 @@ class RawCommentsClient:
             Get a Comment
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"issue-tracking/collections/{jsonable_encoder(collection_id)}/tickets/{jsonable_encoder(ticket_id)}/comments/{jsonable_encoder(id)}",
+            f"issue-tracking/collections/{encode_path_param(collection_id)}/tickets/{encode_path_param(ticket_id)}/comments/{encode_path_param(id)}",
             method="GET",
             params={
                 "raw": raw,
@@ -429,6 +439,10 @@ class RawCommentsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def collection_ticket_comments_delete(
@@ -466,7 +480,7 @@ class RawCommentsClient:
             Delete a Comment
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"issue-tracking/collections/{jsonable_encoder(collection_id)}/tickets/{jsonable_encoder(ticket_id)}/comments/{jsonable_encoder(id)}",
+            f"issue-tracking/collections/{encode_path_param(collection_id)}/tickets/{encode_path_param(ticket_id)}/comments/{encode_path_param(id)}",
             method="DELETE",
             params={
                 "raw": raw,
@@ -541,6 +555,10 @@ class RawCommentsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def collection_ticket_comments_update(
@@ -594,7 +612,7 @@ class RawCommentsClient:
             Update a Comment
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"issue-tracking/collections/{jsonable_encoder(collection_id)}/tickets/{jsonable_encoder(ticket_id)}/comments/{jsonable_encoder(id_)}",
+            f"issue-tracking/collections/{encode_path_param(collection_id)}/tickets/{encode_path_param(ticket_id)}/comments/{encode_path_param(id_)}",
             method="PATCH",
             params={
                 "raw": raw,
@@ -680,6 +698,10 @@ class RawCommentsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -734,7 +756,7 @@ class AsyncRawCommentsClient:
             List Comments
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"issue-tracking/collections/{jsonable_encoder(collection_id)}/tickets/{jsonable_encoder(ticket_id)}/comments",
+            f"issue-tracking/collections/{encode_path_param(collection_id)}/tickets/{encode_path_param(ticket_id)}/comments",
             method="GET",
             params={
                 "raw": raw,
@@ -815,6 +837,10 @@ class AsyncRawCommentsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def collection_ticket_comments_add(
@@ -864,7 +890,7 @@ class AsyncRawCommentsClient:
             Create a Comment
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"issue-tracking/collections/{jsonable_encoder(collection_id)}/tickets/{jsonable_encoder(ticket_id)}/comments",
+            f"issue-tracking/collections/{encode_path_param(collection_id)}/tickets/{encode_path_param(ticket_id)}/comments",
             method="POST",
             params={
                 "raw": raw,
@@ -950,6 +976,10 @@ class AsyncRawCommentsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def collection_ticket_comments_one(
@@ -999,7 +1029,7 @@ class AsyncRawCommentsClient:
             Get a Comment
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"issue-tracking/collections/{jsonable_encoder(collection_id)}/tickets/{jsonable_encoder(ticket_id)}/comments/{jsonable_encoder(id)}",
+            f"issue-tracking/collections/{encode_path_param(collection_id)}/tickets/{encode_path_param(ticket_id)}/comments/{encode_path_param(id)}",
             method="GET",
             params={
                 "raw": raw,
@@ -1077,6 +1107,10 @@ class AsyncRawCommentsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def collection_ticket_comments_delete(
@@ -1114,7 +1148,7 @@ class AsyncRawCommentsClient:
             Delete a Comment
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"issue-tracking/collections/{jsonable_encoder(collection_id)}/tickets/{jsonable_encoder(ticket_id)}/comments/{jsonable_encoder(id)}",
+            f"issue-tracking/collections/{encode_path_param(collection_id)}/tickets/{encode_path_param(ticket_id)}/comments/{encode_path_param(id)}",
             method="DELETE",
             params={
                 "raw": raw,
@@ -1189,6 +1223,10 @@ class AsyncRawCommentsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def collection_ticket_comments_update(
@@ -1242,7 +1280,7 @@ class AsyncRawCommentsClient:
             Update a Comment
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"issue-tracking/collections/{jsonable_encoder(collection_id)}/tickets/{jsonable_encoder(ticket_id)}/comments/{jsonable_encoder(id_)}",
+            f"issue-tracking/collections/{encode_path_param(collection_id)}/tickets/{encode_path_param(ticket_id)}/comments/{encode_path_param(id_)}",
             method="PATCH",
             params={
                 "raw": raw,
@@ -1328,4 +1366,8 @@ class AsyncRawCommentsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

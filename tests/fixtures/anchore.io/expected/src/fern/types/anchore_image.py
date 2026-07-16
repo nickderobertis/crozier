@@ -23,9 +23,11 @@ class AnchoreImage(UniversalBaseModel):
     A state value for the current status of the analysis progress of the image
     """
 
-    annotations: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    annotations: typing.Optional[typing.Dict[str, typing.Any]] = None
     created_at: typing.Optional[dt.datetime] = None
-    image_digest: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="imageDigest")] = None
+    image_digest: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="imageDigest"), pydantic.Field(alias="imageDigest")
+    ] = None
     image_content: typing.Optional[ImageContent] = None
     image_detail: typing.Optional[typing.List[ImageDetail]] = pydantic.Field(default=None)
     """
@@ -43,7 +45,9 @@ class AnchoreImage(UniversalBaseModel):
     The version of the record, used for internal schema updates and data migrations.
     """
 
-    user_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="userId")] = None
+    user_id: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="userId"), pydantic.Field(alias="userId")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class BusinessBookingProfileBookingPolicy(str, enum.Enum):
+class BusinessBookingProfileBookingPolicy(enum.StrEnum):
     """
     Policies for accepting bookings.
     """

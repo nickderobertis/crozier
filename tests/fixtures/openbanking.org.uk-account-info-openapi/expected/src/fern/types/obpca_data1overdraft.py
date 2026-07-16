@@ -14,16 +14,20 @@ class ObpcaData1Overdraft(UniversalBaseModel):
     Details about Overdraft rates, fees & charges
     """
 
-    notes: typing_extensions.Annotated[typing.Optional[typing.List[str]], FieldMetadata(alias="Notes")] = (
-        pydantic.Field(default=None)
-    )
+    notes: typing_extensions.Annotated[
+        typing.Optional[typing.List[str]],
+        FieldMetadata(alias="Notes"),
+        pydantic.Field(alias="Notes", description="Associated Notes about the overdraft rates"),
+    ] = None
     """
     Associated Notes about the overdraft rates
     """
 
     overdraft_tier_band_set: typing_extensions.Annotated[
-        typing.List[ObpcaData1OverdraftOverdraftTierBandSetItem], FieldMetadata(alias="OverdraftTierBandSet")
-    ] = pydantic.Field()
+        typing.List[ObpcaData1OverdraftOverdraftTierBandSetItem],
+        FieldMetadata(alias="OverdraftTierBandSet"),
+        pydantic.Field(alias="OverdraftTierBandSet", description="Tier band set details"),
+    ]
     """
     Tier band set details
     """

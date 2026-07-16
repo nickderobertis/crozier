@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
@@ -26,6 +27,7 @@ from ..types.payment_required_response import PaymentRequiredResponse
 from ..types.unauthorized_response import UnauthorizedResponse
 from ..types.unprocessable_response import UnprocessableResponse
 from ..types.update_upload_session_response import UpdateUploadSessionResponse
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -157,6 +159,10 @@ class RawUploadSessionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def one(
@@ -190,7 +196,7 @@ class RawUploadSessionsClient:
             UploadSessions
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"file-storage/upload-sessions/{jsonable_encoder(id)}",
+            f"file-storage/upload-sessions/{encode_path_param(id)}",
             method="GET",
             params={
                 "raw": raw,
@@ -266,6 +272,10 @@ class RawUploadSessionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def upload(
@@ -273,7 +283,7 @@ class RawUploadSessionsClient:
         id: str,
         *,
         part_number: float,
-        request: str,
+        request: bytes,
         raw: typing.Optional[bool] = None,
         digest: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -289,7 +299,7 @@ class RawUploadSessionsClient:
         part_number : float
             Part number of the file part being uploaded.
 
-        request : str
+        request : bytes
 
         raw : typing.Optional[bool]
             Include raw response. Mostly used for debugging purposes
@@ -306,7 +316,7 @@ class RawUploadSessionsClient:
             UploadSessions
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"file-storage/upload-sessions/{jsonable_encoder(id)}",
+            f"file-storage/upload-sessions/{encode_path_param(id)}",
             method="PUT",
             params={
                 "part_number": part_number,
@@ -387,6 +397,10 @@ class RawUploadSessionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete(
@@ -412,7 +426,7 @@ class RawUploadSessionsClient:
             UploadSessions
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"file-storage/upload-sessions/{jsonable_encoder(id)}",
+            f"file-storage/upload-sessions/{encode_path_param(id)}",
             method="DELETE",
             params={
                 "raw": raw,
@@ -487,6 +501,10 @@ class RawUploadSessionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def finish(
@@ -520,7 +538,7 @@ class RawUploadSessionsClient:
             File
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"file-storage/upload-sessions/{jsonable_encoder(id)}/finish",
+            f"file-storage/upload-sessions/{encode_path_param(id)}/finish",
             method="POST",
             params={
                 "raw": raw,
@@ -601,6 +619,10 @@ class RawUploadSessionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -730,6 +752,10 @@ class AsyncRawUploadSessionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def one(
@@ -763,7 +789,7 @@ class AsyncRawUploadSessionsClient:
             UploadSessions
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"file-storage/upload-sessions/{jsonable_encoder(id)}",
+            f"file-storage/upload-sessions/{encode_path_param(id)}",
             method="GET",
             params={
                 "raw": raw,
@@ -839,6 +865,10 @@ class AsyncRawUploadSessionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def upload(
@@ -846,7 +876,7 @@ class AsyncRawUploadSessionsClient:
         id: str,
         *,
         part_number: float,
-        request: str,
+        request: bytes,
         raw: typing.Optional[bool] = None,
         digest: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -862,7 +892,7 @@ class AsyncRawUploadSessionsClient:
         part_number : float
             Part number of the file part being uploaded.
 
-        request : str
+        request : bytes
 
         raw : typing.Optional[bool]
             Include raw response. Mostly used for debugging purposes
@@ -879,7 +909,7 @@ class AsyncRawUploadSessionsClient:
             UploadSessions
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"file-storage/upload-sessions/{jsonable_encoder(id)}",
+            f"file-storage/upload-sessions/{encode_path_param(id)}",
             method="PUT",
             params={
                 "part_number": part_number,
@@ -960,6 +990,10 @@ class AsyncRawUploadSessionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete(
@@ -985,7 +1019,7 @@ class AsyncRawUploadSessionsClient:
             UploadSessions
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"file-storage/upload-sessions/{jsonable_encoder(id)}",
+            f"file-storage/upload-sessions/{encode_path_param(id)}",
             method="DELETE",
             params={
                 "raw": raw,
@@ -1060,6 +1094,10 @@ class AsyncRawUploadSessionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def finish(
@@ -1093,7 +1131,7 @@ class AsyncRawUploadSessionsClient:
             File
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"file-storage/upload-sessions/{jsonable_encoder(id)}/finish",
+            f"file-storage/upload-sessions/{encode_path_param(id)}/finish",
             method="POST",
             params={
                 "raw": raw,
@@ -1174,4 +1212,8 @@ class AsyncRawUploadSessionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

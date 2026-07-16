@@ -2,4 +2,4 @@
 
 import typing
 
-NoteAttachmentSofortMerchantTransactionDelete = typing.Dict[str, typing.Optional[typing.Any]]
+NoteAttachmentSofortMerchantTransactionDelete = typing.Dict[str, typing.Any]

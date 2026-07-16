@@ -20,8 +20,10 @@ class UserEmailViewDefinition(UniversalBaseModel):
     """
 
     view_settings: typing_extensions.Annotated[
-        typing.Optional[typing.List[UserEmailViewDefinitionSetting]], FieldMetadata(alias="viewSettings")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[UserEmailViewDefinitionSetting]],
+        FieldMetadata(alias="viewSettings"),
+        pydantic.Field(alias="viewSettings", description="The ordered list of settings to show in this view."),
+    ] = None
     """
     The ordered list of settings to show in this view.
     """

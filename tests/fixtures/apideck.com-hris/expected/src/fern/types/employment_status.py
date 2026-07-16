@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class EmploymentStatus(str, enum.Enum):
+class EmploymentStatus(enum.StrEnum):
     """
     The employment status of the employee, indicating whether they are currently employed, inactive, terminated, or in another status.
     """

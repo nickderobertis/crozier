@@ -11,7 +11,7 @@ from .monster_special_abilities_item_usage import MonsterSpecialAbilitiesItemUsa
 
 class MonsterSpecialAbilitiesItem(UniversalBaseModel):
     attack_bonus: typing.Optional[float] = None
-    damage: typing.Optional[typing.List[typing.Optional[typing.Any]]] = None
+    damage: typing.Optional[typing.List[typing.Any]] = None
     dc: typing.Optional[Dc] = None
     desc: typing.Optional[str] = None
     name: typing.Optional[str] = None

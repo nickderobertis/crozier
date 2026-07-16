@@ -20,9 +20,11 @@ class Operation(UniversalBaseModel):
     Map of protocol binding details for this operation
     """
 
-    default_delay: typing_extensions.Annotated[typing.Optional[float], FieldMetadata(alias="defaultDelay")] = (
-        pydantic.Field(default=None)
-    )
+    default_delay: typing_extensions.Annotated[
+        typing.Optional[float],
+        FieldMetadata(alias="defaultDelay"),
+        pydantic.Field(alias="defaultDelay", description="Default response time delay for mocks"),
+    ] = None
     """
     Default response time delay for mocks
     """
@@ -32,16 +34,20 @@ class Operation(UniversalBaseModel):
     Dispatcher strategy used for mocks
     """
 
-    dispatcher_rules: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="dispatcherRules")] = (
-        pydantic.Field(default=None)
-    )
+    dispatcher_rules: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="dispatcherRules"),
+        pydantic.Field(alias="dispatcherRules", description="DispatcherRules used for mocks"),
+    ] = None
     """
     DispatcherRules used for mocks
     """
 
-    input_name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="inputName")] = pydantic.Field(
-        default=None
-    )
+    input_name: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="inputName"),
+        pydantic.Field(alias="inputName", description="Name of input parameters in case of Xml based Service"),
+    ] = None
     """
     Name of input parameters in case of Xml based Service
     """
@@ -56,23 +62,31 @@ class Operation(UniversalBaseModel):
     Unique name of this Operation within Service scope
     """
 
-    output_name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="outputName")] = pydantic.Field(
-        default=None
-    )
+    output_name: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="outputName"),
+        pydantic.Field(alias="outputName", description="Name of output parameters in case of Xml based Service"),
+    ] = None
     """
     Name of output parameters in case of Xml based Service
     """
 
     parameter_contraints: typing_extensions.Annotated[
-        typing.Optional[typing.List[ParameterConstraint]], FieldMetadata(alias="parameterContraints")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[ParameterConstraint]],
+        FieldMetadata(alias="parameterContraints"),
+        pydantic.Field(
+            alias="parameterContraints", description="Contraints that may apply to mock invocatino on this operation"
+        ),
+    ] = None
     """
     Contraints that may apply to mock invocatino on this operation
     """
 
     resource_paths: typing_extensions.Annotated[
-        typing.Optional[typing.List[str]], FieldMetadata(alias="resourcePaths")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[str]],
+        FieldMetadata(alias="resourcePaths"),
+        pydantic.Field(alias="resourcePaths", description="Paths the mocks endpoints are mapped on"),
+    ] = None
     """
     Paths the mocks endpoints are mapped on
     """

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class TransactionType(str, enum.Enum):
+class TransactionType(enum.StrEnum):
     """
     The transaction type used in the disputed payment.
     """

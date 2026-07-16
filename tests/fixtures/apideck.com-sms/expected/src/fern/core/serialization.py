@@ -26,6 +26,75 @@ class FieldMetadata:
         self.alias = alias
 
 
+
+
+
+
+_type_hints_cache: typing.Dict[typing.Any, typing.Dict[str, typing.Any]] = {}
+
+
+def _get_cached_type_hints(expected_type: typing.Any) -> typing.Dict[str, typing.Any]:
+    try:
+        cached = _type_hints_cache.get(expected_type)
+    except TypeError:
+
+        return _resolve_type_hints(expected_type)
+    if cached is None:
+        cached = _resolve_type_hints(expected_type)
+        _type_hints_cache[expected_type] = cached
+    return cached
+
+
+def _resolve_type_hints(expected_type: typing.Any) -> typing.Dict[str, typing.Any]:
+    try:
+        return typing_extensions.get_type_hints(expected_type, include_extras=True)
+    except NameError:
+
+        return getattr(expected_type, "__annotations__", {})
+
+
+
+
+
+_requires_conversion_cache: typing.Dict[typing.Any, bool] = {}
+
+
+def _requires_conversion(type_: typing.Any) -> bool:
+    try:
+        cached = _requires_conversion_cache.get(type_)
+    except TypeError:
+
+        return _compute_requires_conversion(type_, set())
+    if cached is None:
+        cached = _compute_requires_conversion(type_, set())
+        _requires_conversion_cache[type_] = cached
+    return cached
+
+
+def _compute_requires_conversion(type_: typing.Any, seen: typing.Set[typing.Any]) -> bool:
+    clean_type = _remove_annotations(type_)
+
+    try:
+        if clean_type in seen:
+            return False
+        seen = seen | {clean_type}
+    except TypeError:
+
+        pass
+
+
+    if (inspect.isclass(clean_type) and issubclass(clean_type, pydantic.BaseModel)) or typing_extensions.is_typeddict(
+        clean_type
+    ):
+        annotations = _get_cached_type_hints(clean_type)
+        if _get_alias_to_field_name(annotations):
+            return True
+        return any(_compute_requires_conversion(hint, seen) for hint in annotations.values())
+
+
+    return any(_compute_requires_conversion(arg, seen) for arg in typing_extensions.get_args(clean_type))
+
+
 def convert_and_respect_annotation_metadata(
     *,
     object_: typing.Any,
@@ -57,6 +126,13 @@ def convert_and_respect_annotation_metadata(
         return None
     if inner_type is None:
         inner_type = annotation
+
+
+
+
+
+        if not _requires_conversion(annotation):
+            return object_
 
     clean_type = _remove_annotations(inner_type)
 
@@ -160,12 +236,7 @@ def _convert_mapping(
     direction: typing.Literal["read", "write"],
 ) -> typing.Mapping[str, object]:
     converted_object: typing.Dict[str, object] = {}
-    try:
-        annotations = typing_extensions.get_type_hints(expected_type, include_extras=True)
-    except NameError:
-
-
-        annotations = getattr(expected_type, "__annotations__", {})
+    annotations = _get_cached_type_hints(expected_type)
     aliases_to_field_names = _get_alias_to_field_name(annotations)
     for key, value in object_.items():
         if direction == "read" and key in aliases_to_field_names:
@@ -221,12 +292,12 @@ def _remove_annotations(type_: typing.Any) -> typing.Any:
 
 
 def get_alias_to_field_mapping(type_: typing.Any) -> typing.Dict[str, str]:
-    annotations = typing_extensions.get_type_hints(type_, include_extras=True)
+    annotations = _get_cached_type_hints(type_)
     return _get_alias_to_field_name(annotations)
 
 
 def get_field_to_alias_mapping(type_: typing.Any) -> typing.Dict[str, str]:
-    annotations = typing_extensions.get_type_hints(type_, include_extras=True)
+    annotations = _get_cached_type_hints(type_)
     return _get_field_to_alias_name(annotations)
 
 

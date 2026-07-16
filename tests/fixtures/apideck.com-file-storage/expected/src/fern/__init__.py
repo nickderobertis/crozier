@@ -93,6 +93,7 @@ if typing.TYPE_CHECKING:
         UnprocessableEntityError,
     )
     from . import drive_groups, drives, files, folders, shared_links, upload_sessions
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .environment import FernApiEnvironment
     from .version import __version__
@@ -110,6 +111,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "CreateUploadSessionResponse": ".types",
     "CreatedAt": ".types",
     "CreatedBy": ".types",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "DeleteDriveGroupResponse": ".types",
     "DeleteDriveResponse": ".types",
     "DeleteFileResponse": ".types",
@@ -227,6 +230,8 @@ __all__ = [
     "CreateUploadSessionResponse",
     "CreatedAt",
     "CreatedBy",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
     "DeleteDriveGroupResponse",
     "DeleteDriveResponse",
     "DeleteFileResponse",

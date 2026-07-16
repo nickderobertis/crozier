@@ -7,7 +7,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -31,6 +32,7 @@ from ..types.tags import Tags
 from ..types.unauthorized_response import UnauthorizedResponse
 from ..types.unprocessable_response import UnprocessableResponse
 from ..types.update_opportunity_response import UpdateOpportunityResponse
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -167,6 +169,10 @@ class RawOpportunitiesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def add(
@@ -472,6 +478,10 @@ class RawOpportunitiesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def one(
@@ -505,7 +515,7 @@ class RawOpportunitiesClient:
             Opportunity
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"crm/opportunities/{jsonable_encoder(id)}",
+            f"crm/opportunities/{encode_path_param(id)}",
             method="GET",
             params={
                 "raw": raw,
@@ -581,6 +591,10 @@ class RawOpportunitiesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete(
@@ -606,7 +620,7 @@ class RawOpportunitiesClient:
             Opportunity deleted
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"crm/opportunities/{jsonable_encoder(id)}",
+            f"crm/opportunities/{encode_path_param(id)}",
             method="DELETE",
             params={
                 "raw": raw,
@@ -681,6 +695,10 @@ class RawOpportunitiesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update(
@@ -867,7 +885,7 @@ class RawOpportunitiesClient:
             Opportunity updated
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"crm/opportunities/{jsonable_encoder(id_)}",
+            f"crm/opportunities/{encode_path_param(id_)}",
             method="PATCH",
             params={
                 "raw": raw,
@@ -990,6 +1008,10 @@ class RawOpportunitiesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -1124,6 +1146,10 @@ class AsyncRawOpportunitiesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def add(
@@ -1429,6 +1455,10 @@ class AsyncRawOpportunitiesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def one(
@@ -1462,7 +1492,7 @@ class AsyncRawOpportunitiesClient:
             Opportunity
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"crm/opportunities/{jsonable_encoder(id)}",
+            f"crm/opportunities/{encode_path_param(id)}",
             method="GET",
             params={
                 "raw": raw,
@@ -1538,6 +1568,10 @@ class AsyncRawOpportunitiesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete(
@@ -1563,7 +1597,7 @@ class AsyncRawOpportunitiesClient:
             Opportunity deleted
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"crm/opportunities/{jsonable_encoder(id)}",
+            f"crm/opportunities/{encode_path_param(id)}",
             method="DELETE",
             params={
                 "raw": raw,
@@ -1638,6 +1672,10 @@ class AsyncRawOpportunitiesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update(
@@ -1824,7 +1862,7 @@ class AsyncRawOpportunitiesClient:
             Opportunity updated
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"crm/opportunities/{jsonable_encoder(id_)}",
+            f"crm/opportunities/{encode_path_param(id_)}",
             method="PATCH",
             params={
                 "raw": raw,
@@ -1947,4 +1985,8 @@ class AsyncRawOpportunitiesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

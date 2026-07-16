@@ -16,12 +16,14 @@ from .nested_tag import NestedTag
 
 
 class CircuitTermination(UniversalBaseModel):
-    occupied: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="_occupied")] = None
+    occupied: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="_occupied"), pydantic.Field(alias="_occupied")
+    ] = None
     cable: typing.Optional[NestedCable] = None
     cable_end: typing.Optional[str] = None
     circuit: NestedCircuit
     created: typing.Optional[dt.datetime] = None
-    custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = None
     description: typing.Optional[str] = None
     display: typing.Optional[str] = None
     id: typing.Optional[int] = None

@@ -16,15 +16,19 @@ class SettingsTrackingCategories(UniversalBaseModel):
     """
 
     employee_groups: typing_extensions.Annotated[
-        typing.Optional[SettingsTrackingCategoriesEmployeeGroups], FieldMetadata(alias="EmployeeGroups")
-    ] = pydantic.Field(default=None)
+        typing.Optional[SettingsTrackingCategoriesEmployeeGroups],
+        FieldMetadata(alias="EmployeeGroups"),
+        pydantic.Field(alias="EmployeeGroups", description="The tracking category used for employees"),
+    ] = None
     """
     The tracking category used for employees
     """
 
     timesheet_categories: typing_extensions.Annotated[
-        typing.Optional[SettingsTrackingCategoriesTimesheetCategories], FieldMetadata(alias="TimesheetCategories")
-    ] = pydantic.Field(default=None)
+        typing.Optional[SettingsTrackingCategoriesTimesheetCategories],
+        FieldMetadata(alias="TimesheetCategories"),
+        pydantic.Field(alias="TimesheetCategories", description="The tracking category used for timesheets"),
+    ] = None
     """
     The tracking category used for timesheets
     """

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class CircuitStatusLabel(str, enum.Enum):
+class CircuitStatusLabel(enum.StrEnum):
     PLANNED = "Planned"
     PROVISIONING = "Provisioning"
     ACTIVE = "Active"

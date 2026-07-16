@@ -15,8 +15,10 @@ class ObStatement2BasicStatementDateTimeItem(UniversalBaseModel):
     Set of elements used to provide details of a generic date time for the statement resource.
     """
 
-    date_time: typing_extensions.Annotated[DateTime, FieldMetadata(alias="DateTime")]
-    type: typing_extensions.Annotated[ObExternalStatementDateTimeType1Code, FieldMetadata(alias="Type")]
+    date_time: typing_extensions.Annotated[DateTime, FieldMetadata(alias="DateTime"), pydantic.Field(alias="DateTime")]
+    type: typing_extensions.Annotated[
+        ObExternalStatementDateTimeType1Code, FieldMetadata(alias="Type"), pydantic.Field(alias="Type")
+    ]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

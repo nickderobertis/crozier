@@ -9,9 +9,11 @@ from ...core.serialization import FieldMetadata
 
 
 class PostPortfolioAnalysisTrackingErrorResponsePortfoliosItem(UniversalBaseModel):
-    portfolio_tracking_error: typing_extensions.Annotated[float, FieldMetadata(alias="portfolioTrackingError")] = (
-        pydantic.Field()
-    )
+    portfolio_tracking_error: typing_extensions.Annotated[
+        float,
+        FieldMetadata(alias="portfolioTrackingError"),
+        pydantic.Field(alias="portfolioTrackingError", description="The tracking error of the portfolio"),
+    ]
     """
     The tracking error of the portfolio
     """

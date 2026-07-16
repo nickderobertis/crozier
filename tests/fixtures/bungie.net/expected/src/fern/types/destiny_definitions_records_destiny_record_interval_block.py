@@ -18,13 +18,17 @@ class DestinyDefinitionsRecordsDestinyRecordIntervalBlock(UniversalBaseModel):
     interval_objectives: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyDefinitionsRecordsDestinyRecordIntervalObjective]],
         FieldMetadata(alias="intervalObjectives"),
+        pydantic.Field(alias="intervalObjectives"),
     ] = None
     interval_rewards: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyDefinitionsRecordsDestinyRecordIntervalRewards]],
         FieldMetadata(alias="intervalRewards"),
+        pydantic.Field(alias="intervalRewards"),
     ] = None
     original_objective_array_insertion_index: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="originalObjectiveArrayInsertionIndex")
+        typing.Optional[int],
+        FieldMetadata(alias="originalObjectiveArrayInsertionIndex"),
+        pydantic.Field(alias="originalObjectiveArrayInsertionIndex"),
     ] = None
 
     if IS_PYDANTIC_V2:

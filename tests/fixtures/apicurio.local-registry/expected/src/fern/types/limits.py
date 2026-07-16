@@ -16,40 +16,56 @@ class Limits(UniversalBaseModel):
     """
 
     max_artifact_description_length_chars: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="maxArtifactDescriptionLengthChars")
+        typing.Optional[int],
+        FieldMetadata(alias="maxArtifactDescriptionLengthChars"),
+        pydantic.Field(alias="maxArtifactDescriptionLengthChars"),
     ] = None
     max_artifact_labels_count: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="maxArtifactLabelsCount")
+        typing.Optional[int],
+        FieldMetadata(alias="maxArtifactLabelsCount"),
+        pydantic.Field(alias="maxArtifactLabelsCount"),
     ] = None
     max_artifact_name_length_chars: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="maxArtifactNameLengthChars")
+        typing.Optional[int],
+        FieldMetadata(alias="maxArtifactNameLengthChars"),
+        pydantic.Field(alias="maxArtifactNameLengthChars"),
     ] = None
     max_artifact_properties_count: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="maxArtifactPropertiesCount")
+        typing.Optional[int],
+        FieldMetadata(alias="maxArtifactPropertiesCount"),
+        pydantic.Field(alias="maxArtifactPropertiesCount"),
     ] = None
-    max_artifacts_count: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="maxArtifactsCount")] = (
-        None
-    )
+    max_artifacts_count: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="maxArtifactsCount"), pydantic.Field(alias="maxArtifactsCount")
+    ] = None
     max_label_size_bytes: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="maxLabelSizeBytes")
+        typing.Optional[int], FieldMetadata(alias="maxLabelSizeBytes"), pydantic.Field(alias="maxLabelSizeBytes")
     ] = None
     max_property_key_size_bytes: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="maxPropertyKeySizeBytes")
+        typing.Optional[int],
+        FieldMetadata(alias="maxPropertyKeySizeBytes"),
+        pydantic.Field(alias="maxPropertyKeySizeBytes"),
     ] = None
     max_property_value_size_bytes: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="maxPropertyValueSizeBytes")
+        typing.Optional[int],
+        FieldMetadata(alias="maxPropertyValueSizeBytes"),
+        pydantic.Field(alias="maxPropertyValueSizeBytes"),
     ] = None
     max_requests_per_second_count: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="maxRequestsPerSecondCount")
+        typing.Optional[int],
+        FieldMetadata(alias="maxRequestsPerSecondCount"),
+        pydantic.Field(alias="maxRequestsPerSecondCount"),
     ] = None
     max_schema_size_bytes: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="maxSchemaSizeBytes")
+        typing.Optional[int], FieldMetadata(alias="maxSchemaSizeBytes"), pydantic.Field(alias="maxSchemaSizeBytes")
     ] = None
     max_total_schemas_count: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="maxTotalSchemasCount")
+        typing.Optional[int], FieldMetadata(alias="maxTotalSchemasCount"), pydantic.Field(alias="maxTotalSchemasCount")
     ] = None
     max_versions_per_artifact_count: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="maxVersionsPerArtifactCount")
+        typing.Optional[int],
+        FieldMetadata(alias="maxVersionsPerArtifactCount"),
+        pydantic.Field(alias="maxVersionsPerArtifactCount"),
     ] = None
 
     if IS_PYDANTIC_V2:

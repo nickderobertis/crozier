@@ -2,4 +2,4 @@
 
 import typing
 
-StackInstanceNotFoundException = typing.Optional[typing.Any]
+StackInstanceNotFoundException = typing.Any

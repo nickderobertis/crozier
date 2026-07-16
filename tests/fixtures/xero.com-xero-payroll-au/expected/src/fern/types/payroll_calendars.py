@@ -11,7 +11,9 @@ from .payroll_calendar import PayrollCalendar
 
 class PayrollCalendars(UniversalBaseModel):
     payroll_calendars: typing_extensions.Annotated[
-        typing.Optional[typing.List[PayrollCalendar]], FieldMetadata(alias="PayrollCalendars")
+        typing.Optional[typing.List[PayrollCalendar]],
+        FieldMetadata(alias="PayrollCalendars"),
+        pydantic.Field(alias="PayrollCalendars"),
     ] = None
 
     if IS_PYDANTIC_V2:

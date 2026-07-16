@@ -1,13 +1,14 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
 class ObReadProduct2DataProductItemOtherProductTypeCreditInterestTierBandSetItemTierBandItemApplicationFrequency(
-    str, enum.Enum
+    enum.StrEnum
 ):
     """
     How often is interest applied to the Product for this tier/band i.e. how often the financial institution pays accumulated interest to the customer's account.

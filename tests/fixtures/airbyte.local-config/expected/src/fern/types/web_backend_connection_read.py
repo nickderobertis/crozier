@@ -29,36 +29,61 @@ from .source_read import SourceRead
 
 
 class WebBackendConnectionRead(UniversalBaseModel):
-    catalog_diff: typing_extensions.Annotated[typing.Optional[CatalogDiff], FieldMetadata(alias="catalogDiff")] = None
-    catalog_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="catalogId")] = None
-    connection_id: typing_extensions.Annotated[ConnectionId, FieldMetadata(alias="connectionId")]
+    catalog_diff: typing_extensions.Annotated[
+        typing.Optional[CatalogDiff], FieldMetadata(alias="catalogDiff"), pydantic.Field(alias="catalogDiff")
+    ] = None
+    catalog_id: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="catalogId"), pydantic.Field(alias="catalogId")
+    ] = None
+    connection_id: typing_extensions.Annotated[
+        ConnectionId, FieldMetadata(alias="connectionId"), pydantic.Field(alias="connectionId")
+    ]
     destination: DestinationRead
-    destination_id: typing_extensions.Annotated[DestinationId, FieldMetadata(alias="destinationId")]
+    destination_id: typing_extensions.Annotated[
+        DestinationId, FieldMetadata(alias="destinationId"), pydantic.Field(alias="destinationId")
+    ]
     geography: typing.Optional[Geography] = None
-    is_syncing: typing_extensions.Annotated[bool, FieldMetadata(alias="isSyncing")]
+    is_syncing: typing_extensions.Annotated[bool, FieldMetadata(alias="isSyncing"), pydantic.Field(alias="isSyncing")]
     latest_sync_job_created_at: typing_extensions.Annotated[
-        typing.Optional[JobCreatedAt], FieldMetadata(alias="latestSyncJobCreatedAt")
+        typing.Optional[JobCreatedAt],
+        FieldMetadata(alias="latestSyncJobCreatedAt"),
+        pydantic.Field(alias="latestSyncJobCreatedAt"),
     ] = None
     latest_sync_job_status: typing_extensions.Annotated[
-        typing.Optional[JobStatus], FieldMetadata(alias="latestSyncJobStatus")
+        typing.Optional[JobStatus],
+        FieldMetadata(alias="latestSyncJobStatus"),
+        pydantic.Field(alias="latestSyncJobStatus"),
     ] = None
     name: str
     namespace_definition: typing_extensions.Annotated[
-        typing.Optional[NamespaceDefinitionType], FieldMetadata(alias="namespaceDefinition")
+        typing.Optional[NamespaceDefinitionType],
+        FieldMetadata(alias="namespaceDefinition"),
+        pydantic.Field(alias="namespaceDefinition"),
     ] = None
-    namespace_format: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="namespaceFormat")] = (
-        pydantic.Field(default=None)
-    )
+    namespace_format: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="namespaceFormat"),
+        pydantic.Field(
+            alias="namespaceFormat",
+            description="Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If \"${SOURCE_NAMESPACE}\" then behaves like namespaceDefinition = 'source'.",
+        ),
+    ] = None
     """
     Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'.
     """
 
     non_breaking_changes_preference: typing_extensions.Annotated[
-        NonBreakingChangesPreference, FieldMetadata(alias="nonBreakingChangesPreference")
+        NonBreakingChangesPreference,
+        FieldMetadata(alias="nonBreakingChangesPreference"),
+        pydantic.Field(alias="nonBreakingChangesPreference"),
     ]
-    notify_schema_changes: typing_extensions.Annotated[bool, FieldMetadata(alias="notifySchemaChanges")]
+    notify_schema_changes: typing_extensions.Annotated[
+        bool, FieldMetadata(alias="notifySchemaChanges"), pydantic.Field(alias="notifySchemaChanges")
+    ]
     operation_ids: typing_extensions.Annotated[
-        typing.Optional[typing.List[OperationId]], FieldMetadata(alias="operationIds")
+        typing.Optional[typing.List[OperationId]],
+        FieldMetadata(alias="operationIds"),
+        pydantic.Field(alias="operationIds"),
     ] = None
     operations: typing.Optional[typing.List[OperationRead]] = None
     prefix: typing.Optional[str] = pydantic.Field(default=None)
@@ -67,20 +92,30 @@ class WebBackendConnectionRead(UniversalBaseModel):
     """
 
     resource_requirements: typing_extensions.Annotated[
-        typing.Optional[ResourceRequirements], FieldMetadata(alias="resourceRequirements")
+        typing.Optional[ResourceRequirements],
+        FieldMetadata(alias="resourceRequirements"),
+        pydantic.Field(alias="resourceRequirements"),
     ] = None
     schedule: typing.Optional[ConnectionSchedule] = None
     schedule_data: typing_extensions.Annotated[
-        typing.Optional[ConnectionScheduleData], FieldMetadata(alias="scheduleData")
+        typing.Optional[ConnectionScheduleData],
+        FieldMetadata(alias="scheduleData"),
+        pydantic.Field(alias="scheduleData"),
     ] = None
     schedule_type: typing_extensions.Annotated[
-        typing.Optional[ConnectionScheduleType], FieldMetadata(alias="scheduleType")
+        typing.Optional[ConnectionScheduleType],
+        FieldMetadata(alias="scheduleType"),
+        pydantic.Field(alias="scheduleType"),
     ] = None
-    schema_change: typing_extensions.Annotated[SchemaChange, FieldMetadata(alias="schemaChange")]
+    schema_change: typing_extensions.Annotated[
+        SchemaChange, FieldMetadata(alias="schemaChange"), pydantic.Field(alias="schemaChange")
+    ]
     source: SourceRead
-    source_id: typing_extensions.Annotated[SourceId, FieldMetadata(alias="sourceId")]
+    source_id: typing_extensions.Annotated[SourceId, FieldMetadata(alias="sourceId"), pydantic.Field(alias="sourceId")]
     status: ConnectionStatus
-    sync_catalog: typing_extensions.Annotated[AirbyteCatalog, FieldMetadata(alias="syncCatalog")]
+    sync_catalog: typing_extensions.Annotated[
+        AirbyteCatalog, FieldMetadata(alias="syncCatalog"), pydantic.Field(alias="syncCatalog")
+    ]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

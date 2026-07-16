@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -22,6 +23,7 @@ from ..types.remove_group_from_customer_response import RemoveGroupFromCustomerR
 from ..types.retrieve_customer_response import RetrieveCustomerResponse
 from ..types.search_customers_response import SearchCustomersResponse
 from ..types.update_customer_response import UpdateCustomerResponse
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -104,6 +106,10 @@ class RawCustomersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_customer(
@@ -217,6 +223,10 @@ class RawCustomersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def search_customers(
@@ -291,6 +301,10 @@ class RawCustomersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def retrieve_customer(
@@ -313,7 +327,7 @@ class RawCustomersClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/customers/{jsonable_encoder(customer_id)}",
+            f"v2/customers/{encode_path_param(customer_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -330,6 +344,10 @@ class RawCustomersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_customer(
@@ -409,7 +427,7 @@ class RawCustomersClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/customers/{jsonable_encoder(customer_id)}",
+            f"v2/customers/{encode_path_param(customer_id)}",
             method="PUT",
             json={
                 "address": convert_and_respect_annotation_metadata(
@@ -445,6 +463,10 @@ class RawCustomersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_customer(
@@ -480,7 +502,7 @@ class RawCustomersClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/customers/{jsonable_encoder(customer_id)}",
+            f"v2/customers/{encode_path_param(customer_id)}",
             method="DELETE",
             params={
                 "version": version,
@@ -500,6 +522,10 @@ class RawCustomersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_customer_card(
@@ -553,7 +579,7 @@ class RawCustomersClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/customers/{jsonable_encoder(customer_id)}/cards",
+            f"v2/customers/{encode_path_param(customer_id)}/cards",
             method="POST",
             json={
                 "billing_address": convert_and_respect_annotation_metadata(
@@ -582,6 +608,10 @@ class RawCustomersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_customer_card(
@@ -607,7 +637,7 @@ class RawCustomersClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/customers/{jsonable_encoder(customer_id)}/cards/{jsonable_encoder(card_id)}",
+            f"v2/customers/{encode_path_param(customer_id)}/cards/{encode_path_param(card_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -624,6 +654,10 @@ class RawCustomersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def add_group_to_customer(
@@ -652,7 +686,7 @@ class RawCustomersClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/customers/{jsonable_encoder(customer_id)}/groups/{jsonable_encoder(group_id)}",
+            f"v2/customers/{encode_path_param(customer_id)}/groups/{encode_path_param(group_id)}",
             method="PUT",
             request_options=request_options,
         )
@@ -669,6 +703,10 @@ class RawCustomersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def remove_group_from_customer(
@@ -697,7 +735,7 @@ class RawCustomersClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/customers/{jsonable_encoder(customer_id)}/groups/{jsonable_encoder(group_id)}",
+            f"v2/customers/{encode_path_param(customer_id)}/groups/{encode_path_param(group_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -714,6 +752,10 @@ class RawCustomersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -794,6 +836,10 @@ class AsyncRawCustomersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_customer(
@@ -907,6 +953,10 @@ class AsyncRawCustomersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def search_customers(
@@ -981,6 +1031,10 @@ class AsyncRawCustomersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def retrieve_customer(
@@ -1003,7 +1057,7 @@ class AsyncRawCustomersClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/customers/{jsonable_encoder(customer_id)}",
+            f"v2/customers/{encode_path_param(customer_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -1020,6 +1074,10 @@ class AsyncRawCustomersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_customer(
@@ -1099,7 +1157,7 @@ class AsyncRawCustomersClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/customers/{jsonable_encoder(customer_id)}",
+            f"v2/customers/{encode_path_param(customer_id)}",
             method="PUT",
             json={
                 "address": convert_and_respect_annotation_metadata(
@@ -1135,6 +1193,10 @@ class AsyncRawCustomersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_customer(
@@ -1170,7 +1232,7 @@ class AsyncRawCustomersClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/customers/{jsonable_encoder(customer_id)}",
+            f"v2/customers/{encode_path_param(customer_id)}",
             method="DELETE",
             params={
                 "version": version,
@@ -1190,6 +1252,10 @@ class AsyncRawCustomersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_customer_card(
@@ -1243,7 +1309,7 @@ class AsyncRawCustomersClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/customers/{jsonable_encoder(customer_id)}/cards",
+            f"v2/customers/{encode_path_param(customer_id)}/cards",
             method="POST",
             json={
                 "billing_address": convert_and_respect_annotation_metadata(
@@ -1272,6 +1338,10 @@ class AsyncRawCustomersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_customer_card(
@@ -1297,7 +1367,7 @@ class AsyncRawCustomersClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/customers/{jsonable_encoder(customer_id)}/cards/{jsonable_encoder(card_id)}",
+            f"v2/customers/{encode_path_param(customer_id)}/cards/{encode_path_param(card_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -1314,6 +1384,10 @@ class AsyncRawCustomersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def add_group_to_customer(
@@ -1342,7 +1416,7 @@ class AsyncRawCustomersClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/customers/{jsonable_encoder(customer_id)}/groups/{jsonable_encoder(group_id)}",
+            f"v2/customers/{encode_path_param(customer_id)}/groups/{encode_path_param(group_id)}",
             method="PUT",
             request_options=request_options,
         )
@@ -1359,6 +1433,10 @@ class AsyncRawCustomersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def remove_group_from_customer(
@@ -1387,7 +1465,7 @@ class AsyncRawCustomersClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/customers/{jsonable_encoder(customer_id)}/groups/{jsonable_encoder(group_id)}",
+            f"v2/customers/{encode_path_param(customer_id)}/groups/{encode_path_param(group_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -1404,4 +1482,8 @@ class AsyncRawCustomersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

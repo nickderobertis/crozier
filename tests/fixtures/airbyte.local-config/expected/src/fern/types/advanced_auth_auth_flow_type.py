@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class AdvancedAuthAuthFlowType(str, enum.Enum):
+class AdvancedAuthAuthFlowType(enum.StrEnum):
     OAUTH20 = "oauth2.0"
     OAUTH10 = "oauth1.0"
 

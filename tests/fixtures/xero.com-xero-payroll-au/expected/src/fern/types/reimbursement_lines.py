@@ -15,7 +15,9 @@ class ReimbursementLines(UniversalBaseModel):
     """
 
     reimbursement_lines: typing_extensions.Annotated[
-        typing.Optional[typing.List[ReimbursementLine]], FieldMetadata(alias="ReimbursementLines")
+        typing.Optional[typing.List[ReimbursementLine]],
+        FieldMetadata(alias="ReimbursementLines"),
+        pydantic.Field(alias="ReimbursementLines"),
     ] = None
 
     if IS_PYDANTIC_V2:

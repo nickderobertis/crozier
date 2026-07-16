@@ -9,8 +9,12 @@ from ..core.serialization import FieldMetadata
 
 
 class DestinyDefinitionsAnimationsDestinyAnimationReference(UniversalBaseModel):
-    anim_identifier: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="animIdentifier")] = None
-    anim_name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="animName")] = None
+    anim_identifier: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="animIdentifier"), pydantic.Field(alias="animIdentifier")
+    ] = None
+    anim_name: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="animName"), pydantic.Field(alias="animName")
+    ] = None
     path: typing.Optional[str] = None
 
     if IS_PYDANTIC_V2:

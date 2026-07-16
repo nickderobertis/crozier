@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class HrisCompanyStatus(str, enum.Enum):
+class HrisCompanyStatus(enum.StrEnum):
     ACTIVE = "active"
     INACTIVE = "inactive"
     TRIAL = "trial"

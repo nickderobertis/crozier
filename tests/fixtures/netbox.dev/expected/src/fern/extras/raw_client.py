@@ -7,7 +7,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -42,6 +43,7 @@ from .types.extras_object_changes_list_response import ExtrasObjectChangesListRe
 from .types.extras_saved_filters_list_response import ExtrasSavedFiltersListResponse
 from .types.extras_tags_list_response import ExtrasTagsListResponse
 from .types.extras_webhooks_list_response import ExtrasWebhooksListResponse
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -499,12 +501,16 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def config_contexts_create(
         self,
         *,
-        data: typing.Dict[str, typing.Optional[typing.Any]],
+        data: typing.Dict[str, typing.Any],
         name: str,
         cluster_groups: typing.Optional[typing.Sequence[int]] = OMIT,
         cluster_types: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -534,7 +540,7 @@ class RawExtrasClient:
 
         Parameters
         ----------
-        data : typing.Dict[str, typing.Optional[typing.Any]]
+        data : typing.Dict[str, typing.Any]
 
         name : str
 
@@ -632,12 +638,16 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def config_contexts_bulk_update(
         self,
         *,
-        data: typing.Dict[str, typing.Optional[typing.Any]],
+        data: typing.Dict[str, typing.Any],
         name: str,
         cluster_groups: typing.Optional[typing.Sequence[int]] = OMIT,
         cluster_types: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -667,7 +677,7 @@ class RawExtrasClient:
 
         Parameters
         ----------
-        data : typing.Dict[str, typing.Optional[typing.Any]]
+        data : typing.Dict[str, typing.Any]
 
         name : str
 
@@ -765,6 +775,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def config_contexts_bulk_delete(
@@ -793,12 +807,16 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def config_contexts_bulk_partial_update(
         self,
         *,
-        data: typing.Dict[str, typing.Optional[typing.Any]],
+        data: typing.Dict[str, typing.Any],
         name: str,
         cluster_groups: typing.Optional[typing.Sequence[int]] = OMIT,
         cluster_types: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -828,7 +846,7 @@ class RawExtrasClient:
 
         Parameters
         ----------
-        data : typing.Dict[str, typing.Optional[typing.Any]]
+        data : typing.Dict[str, typing.Any]
 
         name : str
 
@@ -926,6 +944,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def config_contexts_read(
@@ -948,7 +970,7 @@ class RawExtrasClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/config-contexts/{jsonable_encoder(id)}/",
+            f"extras/config-contexts/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -965,13 +987,17 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def config_contexts_update(
         self,
         id_: int,
         *,
-        data: typing.Dict[str, typing.Optional[typing.Any]],
+        data: typing.Dict[str, typing.Any],
         name: str,
         cluster_groups: typing.Optional[typing.Sequence[int]] = OMIT,
         cluster_types: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -1004,7 +1030,7 @@ class RawExtrasClient:
         id_ : int
             A unique integer value identifying this config context.
 
-        data : typing.Dict[str, typing.Optional[typing.Any]]
+        data : typing.Dict[str, typing.Any]
 
         name : str
 
@@ -1059,7 +1085,7 @@ class RawExtrasClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/config-contexts/{jsonable_encoder(id_)}/",
+            f"extras/config-contexts/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "cluster_groups": cluster_groups,
@@ -1105,6 +1131,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def config_contexts_delete(
@@ -1126,7 +1156,7 @@ class RawExtrasClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/config-contexts/{jsonable_encoder(id)}/",
+            f"extras/config-contexts/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -1136,13 +1166,17 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def config_contexts_partial_update(
         self,
         id_: int,
         *,
-        data: typing.Dict[str, typing.Optional[typing.Any]],
+        data: typing.Dict[str, typing.Any],
         name: str,
         cluster_groups: typing.Optional[typing.Sequence[int]] = OMIT,
         cluster_types: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -1175,7 +1209,7 @@ class RawExtrasClient:
         id_ : int
             A unique integer value identifying this config context.
 
-        data : typing.Dict[str, typing.Optional[typing.Any]]
+        data : typing.Dict[str, typing.Any]
 
         name : str
 
@@ -1230,7 +1264,7 @@ class RawExtrasClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/config-contexts/{jsonable_encoder(id_)}/",
+            f"extras/config-contexts/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "cluster_groups": cluster_groups,
@@ -1276,6 +1310,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def content_types_list(
@@ -1351,6 +1389,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def content_types_read(
@@ -1373,7 +1415,7 @@ class RawExtrasClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/content-types/{jsonable_encoder(id)}/",
+            f"extras/content-types/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -1390,6 +1432,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def custom_fields_list(
@@ -1820,6 +1866,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def custom_fields_create(
@@ -1830,7 +1880,7 @@ class RawExtrasClient:
         choices: typing.Optional[typing.Sequence[str]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         data_type: typing.Optional[str] = OMIT,
-        default: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        default: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         filter_logic: typing.Optional[WritableCustomFieldFilterLogic] = OMIT,
@@ -1867,7 +1917,7 @@ class RawExtrasClient:
 
         data_type : typing.Optional[str]
 
-        default : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        default : typing.Optional[typing.Dict[str, typing.Any]]
             Default value for the field (must be a JSON value). Encapsulate strings with double quotes (e.g. "Foo").
 
         description : typing.Optional[str]
@@ -1967,6 +2017,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def custom_fields_bulk_update(
@@ -1977,7 +2031,7 @@ class RawExtrasClient:
         choices: typing.Optional[typing.Sequence[str]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         data_type: typing.Optional[str] = OMIT,
-        default: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        default: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         filter_logic: typing.Optional[WritableCustomFieldFilterLogic] = OMIT,
@@ -2014,7 +2068,7 @@ class RawExtrasClient:
 
         data_type : typing.Optional[str]
 
-        default : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        default : typing.Optional[typing.Dict[str, typing.Any]]
             Default value for the field (must be a JSON value). Encapsulate strings with double quotes (e.g. "Foo").
 
         description : typing.Optional[str]
@@ -2114,6 +2168,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def custom_fields_bulk_delete(
@@ -2142,6 +2200,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def custom_fields_bulk_partial_update(
@@ -2152,7 +2214,7 @@ class RawExtrasClient:
         choices: typing.Optional[typing.Sequence[str]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         data_type: typing.Optional[str] = OMIT,
-        default: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        default: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         filter_logic: typing.Optional[WritableCustomFieldFilterLogic] = OMIT,
@@ -2189,7 +2251,7 @@ class RawExtrasClient:
 
         data_type : typing.Optional[str]
 
-        default : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        default : typing.Optional[typing.Dict[str, typing.Any]]
             Default value for the field (must be a JSON value). Encapsulate strings with double quotes (e.g. "Foo").
 
         description : typing.Optional[str]
@@ -2289,6 +2351,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def custom_fields_read(
@@ -2311,7 +2377,7 @@ class RawExtrasClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/custom-fields/{jsonable_encoder(id)}/",
+            f"extras/custom-fields/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -2328,6 +2394,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def custom_fields_update(
@@ -2339,7 +2409,7 @@ class RawExtrasClient:
         choices: typing.Optional[typing.Sequence[str]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         data_type: typing.Optional[str] = OMIT,
-        default: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        default: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         filter_logic: typing.Optional[WritableCustomFieldFilterLogic] = OMIT,
@@ -2379,7 +2449,7 @@ class RawExtrasClient:
 
         data_type : typing.Optional[str]
 
-        default : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        default : typing.Optional[typing.Dict[str, typing.Any]]
             Default value for the field (must be a JSON value). Encapsulate strings with double quotes (e.g. "Foo").
 
         description : typing.Optional[str]
@@ -2436,7 +2506,7 @@ class RawExtrasClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/custom-fields/{jsonable_encoder(id_)}/",
+            f"extras/custom-fields/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "choices": choices,
@@ -2482,6 +2552,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def custom_fields_delete(
@@ -2503,7 +2577,7 @@ class RawExtrasClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/custom-fields/{jsonable_encoder(id)}/",
+            f"extras/custom-fields/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -2513,6 +2587,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def custom_fields_partial_update(
@@ -2524,7 +2602,7 @@ class RawExtrasClient:
         choices: typing.Optional[typing.Sequence[str]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         data_type: typing.Optional[str] = OMIT,
-        default: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        default: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         filter_logic: typing.Optional[WritableCustomFieldFilterLogic] = OMIT,
@@ -2564,7 +2642,7 @@ class RawExtrasClient:
 
         data_type : typing.Optional[str]
 
-        default : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        default : typing.Optional[typing.Dict[str, typing.Any]]
             Default value for the field (must be a JSON value). Encapsulate strings with double quotes (e.g. "Foo").
 
         description : typing.Optional[str]
@@ -2621,7 +2699,7 @@ class RawExtrasClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/custom-fields/{jsonable_encoder(id_)}/",
+            f"extras/custom-fields/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "choices": choices,
@@ -2667,6 +2745,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def custom_links_list(
@@ -3087,6 +3169,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def custom_links_create(
@@ -3189,6 +3275,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def custom_links_bulk_update(
@@ -3291,6 +3381,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def custom_links_bulk_delete(
@@ -3319,6 +3413,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def custom_links_bulk_partial_update(
@@ -3421,6 +3519,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def custom_links_read(
@@ -3443,7 +3545,7 @@ class RawExtrasClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/custom-links/{jsonable_encoder(id)}/",
+            f"extras/custom-links/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -3460,6 +3562,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def custom_links_update(
@@ -3532,7 +3638,7 @@ class RawExtrasClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/custom-links/{jsonable_encoder(id_)}/",
+            f"extras/custom-links/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "button_class": button_class,
@@ -3569,6 +3675,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def custom_links_delete(
@@ -3590,7 +3700,7 @@ class RawExtrasClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/custom-links/{jsonable_encoder(id)}/",
+            f"extras/custom-links/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -3600,6 +3710,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def custom_links_partial_update(
@@ -3672,7 +3786,7 @@ class RawExtrasClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/custom-links/{jsonable_encoder(id_)}/",
+            f"extras/custom-links/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "button_class": button_class,
@@ -3709,6 +3823,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def export_templates_list(
@@ -3989,6 +4107,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def export_templates_create(
@@ -4082,6 +4204,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def export_templates_bulk_update(
@@ -4175,6 +4301,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def export_templates_bulk_delete(
@@ -4203,6 +4333,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def export_templates_bulk_partial_update(
@@ -4296,6 +4430,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def export_templates_read(
@@ -4318,7 +4456,7 @@ class RawExtrasClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/export-templates/{jsonable_encoder(id)}/",
+            f"extras/export-templates/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -4335,6 +4473,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def export_templates_update(
@@ -4400,7 +4542,7 @@ class RawExtrasClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/export-templates/{jsonable_encoder(id_)}/",
+            f"extras/export-templates/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "as_attachment": as_attachment,
@@ -4435,6 +4577,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def export_templates_delete(
@@ -4456,7 +4602,7 @@ class RawExtrasClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/export-templates/{jsonable_encoder(id)}/",
+            f"extras/export-templates/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -4466,6 +4612,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def export_templates_partial_update(
@@ -4531,7 +4681,7 @@ class RawExtrasClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/export-templates/{jsonable_encoder(id_)}/",
+            f"extras/export-templates/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "as_attachment": as_attachment,
@@ -4566,6 +4716,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def image_attachments_list(
@@ -4766,6 +4920,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def image_attachments_create(
@@ -4781,7 +4939,7 @@ class RawExtrasClient:
         image: typing.Optional[str] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         name: typing.Optional[str] = OMIT,
-        parent: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        parent: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[ImageAttachment]:
@@ -4810,7 +4968,7 @@ class RawExtrasClient:
 
         name : typing.Optional[str]
 
-        parent : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        parent : typing.Optional[typing.Dict[str, typing.Any]]
 
         url : typing.Optional[str]
 
@@ -4855,6 +5013,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def image_attachments_bulk_update(
@@ -4870,7 +5032,7 @@ class RawExtrasClient:
         image: typing.Optional[str] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         name: typing.Optional[str] = OMIT,
-        parent: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        parent: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[ImageAttachment]:
@@ -4899,7 +5061,7 @@ class RawExtrasClient:
 
         name : typing.Optional[str]
 
-        parent : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        parent : typing.Optional[typing.Dict[str, typing.Any]]
 
         url : typing.Optional[str]
 
@@ -4944,6 +5106,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def image_attachments_bulk_delete(
@@ -4972,6 +5138,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def image_attachments_bulk_partial_update(
@@ -4987,7 +5157,7 @@ class RawExtrasClient:
         image: typing.Optional[str] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         name: typing.Optional[str] = OMIT,
-        parent: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        parent: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[ImageAttachment]:
@@ -5016,7 +5186,7 @@ class RawExtrasClient:
 
         name : typing.Optional[str]
 
-        parent : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        parent : typing.Optional[typing.Dict[str, typing.Any]]
 
         url : typing.Optional[str]
 
@@ -5061,6 +5231,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def image_attachments_read(
@@ -5083,7 +5257,7 @@ class RawExtrasClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/image-attachments/{jsonable_encoder(id)}/",
+            f"extras/image-attachments/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -5100,6 +5274,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def image_attachments_update(
@@ -5116,7 +5294,7 @@ class RawExtrasClient:
         image: typing.Optional[str] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         name: typing.Optional[str] = OMIT,
-        parent: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        parent: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[ImageAttachment]:
@@ -5148,7 +5326,7 @@ class RawExtrasClient:
 
         name : typing.Optional[str]
 
-        parent : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        parent : typing.Optional[typing.Dict[str, typing.Any]]
 
         url : typing.Optional[str]
 
@@ -5161,7 +5339,7 @@ class RawExtrasClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/image-attachments/{jsonable_encoder(id_)}/",
+            f"extras/image-attachments/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "content_type": content_type,
@@ -5196,6 +5374,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def image_attachments_delete(
@@ -5217,7 +5399,7 @@ class RawExtrasClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/image-attachments/{jsonable_encoder(id)}/",
+            f"extras/image-attachments/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -5227,6 +5409,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def image_attachments_partial_update(
@@ -5243,7 +5429,7 @@ class RawExtrasClient:
         image: typing.Optional[str] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         name: typing.Optional[str] = OMIT,
-        parent: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        parent: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[ImageAttachment]:
@@ -5275,7 +5461,7 @@ class RawExtrasClient:
 
         name : typing.Optional[str]
 
-        parent : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        parent : typing.Optional[typing.Dict[str, typing.Any]]
 
         url : typing.Optional[str]
 
@@ -5288,7 +5474,7 @@ class RawExtrasClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/image-attachments/{jsonable_encoder(id_)}/",
+            f"extras/image-attachments/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "content_type": content_type,
@@ -5323,6 +5509,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def job_results_list(
@@ -5588,6 +5778,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def job_results_read(
@@ -5610,7 +5804,7 @@ class RawExtrasClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/job-results/{jsonable_encoder(id)}/",
+            f"extras/job-results/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -5627,6 +5821,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def journal_entries_list(
@@ -5842,6 +6040,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def journal_entries_create(
@@ -5850,10 +6052,10 @@ class RawExtrasClient:
         assigned_object_id: int,
         assigned_object_type: str,
         comments: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         created_by: typing.Optional[int] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         kind: typing.Optional[WritableJournalEntryKind] = OMIT,
@@ -5873,13 +6075,13 @@ class RawExtrasClient:
 
         comments : str
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
         created_by : typing.Optional[int]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -5937,6 +6139,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def journal_entries_bulk_update(
@@ -5945,10 +6151,10 @@ class RawExtrasClient:
         assigned_object_id: int,
         assigned_object_type: str,
         comments: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         created_by: typing.Optional[int] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         kind: typing.Optional[WritableJournalEntryKind] = OMIT,
@@ -5968,13 +6174,13 @@ class RawExtrasClient:
 
         comments : str
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
         created_by : typing.Optional[int]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -6032,6 +6238,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def journal_entries_bulk_delete(
@@ -6060,6 +6270,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def journal_entries_bulk_partial_update(
@@ -6068,10 +6282,10 @@ class RawExtrasClient:
         assigned_object_id: int,
         assigned_object_type: str,
         comments: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         created_by: typing.Optional[int] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         kind: typing.Optional[WritableJournalEntryKind] = OMIT,
@@ -6091,13 +6305,13 @@ class RawExtrasClient:
 
         comments : str
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
         created_by : typing.Optional[int]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -6155,6 +6369,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def journal_entries_read(
@@ -6177,7 +6395,7 @@ class RawExtrasClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/journal-entries/{jsonable_encoder(id)}/",
+            f"extras/journal-entries/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -6194,6 +6412,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def journal_entries_update(
@@ -6203,10 +6425,10 @@ class RawExtrasClient:
         assigned_object_id: int,
         assigned_object_type: str,
         comments: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         created_by: typing.Optional[int] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         kind: typing.Optional[WritableJournalEntryKind] = OMIT,
@@ -6229,13 +6451,13 @@ class RawExtrasClient:
 
         comments : str
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
         created_by : typing.Optional[int]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -6258,7 +6480,7 @@ class RawExtrasClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/journal-entries/{jsonable_encoder(id_)}/",
+            f"extras/journal-entries/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "assigned_object": assigned_object,
@@ -6296,6 +6518,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def journal_entries_delete(
@@ -6317,7 +6543,7 @@ class RawExtrasClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/journal-entries/{jsonable_encoder(id)}/",
+            f"extras/journal-entries/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -6327,6 +6553,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def journal_entries_partial_update(
@@ -6336,10 +6566,10 @@ class RawExtrasClient:
         assigned_object_id: int,
         assigned_object_type: str,
         comments: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         created_by: typing.Optional[int] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         kind: typing.Optional[WritableJournalEntryKind] = OMIT,
@@ -6362,13 +6592,13 @@ class RawExtrasClient:
 
         comments : str
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
         created_by : typing.Optional[int]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -6391,7 +6621,7 @@ class RawExtrasClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/journal-entries/{jsonable_encoder(id_)}/",
+            f"extras/journal-entries/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "assigned_object": assigned_object,
@@ -6429,6 +6659,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def object_changes_list(
@@ -6719,6 +6953,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def object_changes_read(
@@ -6741,7 +6979,7 @@ class RawExtrasClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/object-changes/{jsonable_encoder(id)}/",
+            f"extras/object-changes/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -6758,6 +6996,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def reports_list(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -6784,6 +7026,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def reports_read(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -6802,7 +7048,7 @@ class RawExtrasClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/reports/{jsonable_encoder(id)}/",
+            f"extras/reports/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -6812,6 +7058,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def reports_run(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -6830,7 +7080,7 @@ class RawExtrasClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/reports/{jsonable_encoder(id)}/run/",
+            f"extras/reports/{encode_path_param(id)}/run/",
             method="POST",
             request_options=request_options,
         )
@@ -6840,6 +7090,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def saved_filters_list(
@@ -7240,6 +7494,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def saved_filters_create(
@@ -7247,7 +7505,7 @@ class RawExtrasClient:
         *,
         content_types: typing.Sequence[str],
         name: str,
-        parameters: typing.Dict[str, typing.Optional[typing.Any]],
+        parameters: typing.Dict[str, typing.Any],
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
         description: typing.Optional[str] = OMIT,
@@ -7270,7 +7528,7 @@ class RawExtrasClient:
 
         name : str
 
-        parameters : typing.Dict[str, typing.Optional[typing.Any]]
+        parameters : typing.Dict[str, typing.Any]
 
         slug : str
 
@@ -7337,6 +7595,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def saved_filters_bulk_update(
@@ -7344,7 +7606,7 @@ class RawExtrasClient:
         *,
         content_types: typing.Sequence[str],
         name: str,
-        parameters: typing.Dict[str, typing.Optional[typing.Any]],
+        parameters: typing.Dict[str, typing.Any],
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
         description: typing.Optional[str] = OMIT,
@@ -7367,7 +7629,7 @@ class RawExtrasClient:
 
         name : str
 
-        parameters : typing.Dict[str, typing.Optional[typing.Any]]
+        parameters : typing.Dict[str, typing.Any]
 
         slug : str
 
@@ -7434,6 +7696,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def saved_filters_bulk_delete(
@@ -7462,6 +7728,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def saved_filters_bulk_partial_update(
@@ -7469,7 +7739,7 @@ class RawExtrasClient:
         *,
         content_types: typing.Sequence[str],
         name: str,
-        parameters: typing.Dict[str, typing.Optional[typing.Any]],
+        parameters: typing.Dict[str, typing.Any],
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
         description: typing.Optional[str] = OMIT,
@@ -7492,7 +7762,7 @@ class RawExtrasClient:
 
         name : str
 
-        parameters : typing.Dict[str, typing.Optional[typing.Any]]
+        parameters : typing.Dict[str, typing.Any]
 
         slug : str
 
@@ -7559,6 +7829,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def saved_filters_read(
@@ -7581,7 +7855,7 @@ class RawExtrasClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/saved-filters/{jsonable_encoder(id)}/",
+            f"extras/saved-filters/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -7598,6 +7872,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def saved_filters_update(
@@ -7606,7 +7884,7 @@ class RawExtrasClient:
         *,
         content_types: typing.Sequence[str],
         name: str,
-        parameters: typing.Dict[str, typing.Optional[typing.Any]],
+        parameters: typing.Dict[str, typing.Any],
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
         description: typing.Optional[str] = OMIT,
@@ -7632,7 +7910,7 @@ class RawExtrasClient:
 
         name : str
 
-        parameters : typing.Dict[str, typing.Optional[typing.Any]]
+        parameters : typing.Dict[str, typing.Any]
 
         slug : str
 
@@ -7665,7 +7943,7 @@ class RawExtrasClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/saved-filters/{jsonable_encoder(id_)}/",
+            f"extras/saved-filters/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "content_types": content_types,
@@ -7702,6 +7980,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def saved_filters_delete(
@@ -7723,7 +8005,7 @@ class RawExtrasClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/saved-filters/{jsonable_encoder(id)}/",
+            f"extras/saved-filters/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -7733,6 +8015,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def saved_filters_partial_update(
@@ -7741,7 +8027,7 @@ class RawExtrasClient:
         *,
         content_types: typing.Sequence[str],
         name: str,
-        parameters: typing.Dict[str, typing.Optional[typing.Any]],
+        parameters: typing.Dict[str, typing.Any],
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
         description: typing.Optional[str] = OMIT,
@@ -7767,7 +8053,7 @@ class RawExtrasClient:
 
         name : str
 
-        parameters : typing.Dict[str, typing.Optional[typing.Any]]
+        parameters : typing.Dict[str, typing.Any]
 
         slug : str
 
@@ -7800,7 +8086,7 @@ class RawExtrasClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/saved-filters/{jsonable_encoder(id_)}/",
+            f"extras/saved-filters/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "content_types": content_types,
@@ -7837,6 +8123,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def scripts_list(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -7863,6 +8153,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def scripts_read(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -7881,7 +8175,7 @@ class RawExtrasClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/scripts/{jsonable_encoder(id)}/",
+            f"extras/scripts/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -7891,6 +8185,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def tags_list(
@@ -8271,6 +8569,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def tags_create(
@@ -8352,6 +8654,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def tags_bulk_update(
@@ -8433,6 +8739,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def tags_bulk_delete(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -8459,6 +8769,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def tags_bulk_partial_update(
@@ -8540,6 +8854,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def tags_read(self, id: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[Tag]:
@@ -8560,7 +8878,7 @@ class RawExtrasClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/tags/{jsonable_encoder(id)}/",
+            f"extras/tags/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -8577,6 +8895,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def tags_update(
@@ -8632,7 +8954,7 @@ class RawExtrasClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/tags/{jsonable_encoder(id_)}/",
+            f"extras/tags/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "color": color,
@@ -8665,6 +8987,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def tags_delete(self, id: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -8684,7 +9010,7 @@ class RawExtrasClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/tags/{jsonable_encoder(id)}/",
+            f"extras/tags/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -8694,6 +9020,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def tags_partial_update(
@@ -8749,7 +9079,7 @@ class RawExtrasClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/tags/{jsonable_encoder(id_)}/",
+            f"extras/tags/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "color": color,
@@ -8782,6 +9112,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def webhooks_list(
@@ -9262,6 +9596,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def webhooks_create(
@@ -9273,7 +9611,7 @@ class RawExtrasClient:
         additional_headers: typing.Optional[str] = OMIT,
         body_template: typing.Optional[str] = OMIT,
         ca_file_path: typing.Optional[str] = OMIT,
-        conditions: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        conditions: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -9310,7 +9648,7 @@ class RawExtrasClient:
         ca_file_path : typing.Optional[str]
             The specific CA certificate file to use for SSL verification. Leave blank to use the system defaults.
 
-        conditions : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        conditions : typing.Optional[typing.Dict[str, typing.Any]]
             A set of conditions which determine whether the webhook will be generated.
 
         created : typing.Optional[dt.datetime]
@@ -9394,6 +9732,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def webhooks_bulk_update(
@@ -9405,7 +9747,7 @@ class RawExtrasClient:
         additional_headers: typing.Optional[str] = OMIT,
         body_template: typing.Optional[str] = OMIT,
         ca_file_path: typing.Optional[str] = OMIT,
-        conditions: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        conditions: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -9442,7 +9784,7 @@ class RawExtrasClient:
         ca_file_path : typing.Optional[str]
             The specific CA certificate file to use for SSL verification. Leave blank to use the system defaults.
 
-        conditions : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        conditions : typing.Optional[typing.Dict[str, typing.Any]]
             A set of conditions which determine whether the webhook will be generated.
 
         created : typing.Optional[dt.datetime]
@@ -9526,6 +9868,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def webhooks_bulk_delete(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -9552,6 +9898,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def webhooks_bulk_partial_update(
@@ -9563,7 +9913,7 @@ class RawExtrasClient:
         additional_headers: typing.Optional[str] = OMIT,
         body_template: typing.Optional[str] = OMIT,
         ca_file_path: typing.Optional[str] = OMIT,
-        conditions: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        conditions: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -9600,7 +9950,7 @@ class RawExtrasClient:
         ca_file_path : typing.Optional[str]
             The specific CA certificate file to use for SSL verification. Leave blank to use the system defaults.
 
-        conditions : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        conditions : typing.Optional[typing.Dict[str, typing.Any]]
             A set of conditions which determine whether the webhook will be generated.
 
         created : typing.Optional[dt.datetime]
@@ -9684,6 +10034,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def webhooks_read(
@@ -9706,7 +10060,7 @@ class RawExtrasClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/webhooks/{jsonable_encoder(id)}/",
+            f"extras/webhooks/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -9723,6 +10077,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def webhooks_update(
@@ -9735,7 +10093,7 @@ class RawExtrasClient:
         additional_headers: typing.Optional[str] = OMIT,
         body_template: typing.Optional[str] = OMIT,
         ca_file_path: typing.Optional[str] = OMIT,
-        conditions: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        conditions: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -9775,7 +10133,7 @@ class RawExtrasClient:
         ca_file_path : typing.Optional[str]
             The specific CA certificate file to use for SSL verification. Leave blank to use the system defaults.
 
-        conditions : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        conditions : typing.Optional[typing.Dict[str, typing.Any]]
             A set of conditions which determine whether the webhook will be generated.
 
         created : typing.Optional[dt.datetime]
@@ -9819,7 +10177,7 @@ class RawExtrasClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/webhooks/{jsonable_encoder(id_)}/",
+            f"extras/webhooks/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "additional_headers": additional_headers,
@@ -9862,6 +10220,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def webhooks_delete(
@@ -9883,7 +10245,7 @@ class RawExtrasClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/webhooks/{jsonable_encoder(id)}/",
+            f"extras/webhooks/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -9893,6 +10255,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def webhooks_partial_update(
@@ -9905,7 +10271,7 @@ class RawExtrasClient:
         additional_headers: typing.Optional[str] = OMIT,
         body_template: typing.Optional[str] = OMIT,
         ca_file_path: typing.Optional[str] = OMIT,
-        conditions: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        conditions: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -9945,7 +10311,7 @@ class RawExtrasClient:
         ca_file_path : typing.Optional[str]
             The specific CA certificate file to use for SSL verification. Leave blank to use the system defaults.
 
-        conditions : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        conditions : typing.Optional[typing.Dict[str, typing.Any]]
             A set of conditions which determine whether the webhook will be generated.
 
         created : typing.Optional[dt.datetime]
@@ -9989,7 +10355,7 @@ class RawExtrasClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"extras/webhooks/{jsonable_encoder(id_)}/",
+            f"extras/webhooks/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "additional_headers": additional_headers,
@@ -10032,6 +10398,10 @@ class RawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -10487,12 +10857,16 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def config_contexts_create(
         self,
         *,
-        data: typing.Dict[str, typing.Optional[typing.Any]],
+        data: typing.Dict[str, typing.Any],
         name: str,
         cluster_groups: typing.Optional[typing.Sequence[int]] = OMIT,
         cluster_types: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -10522,7 +10896,7 @@ class AsyncRawExtrasClient:
 
         Parameters
         ----------
-        data : typing.Dict[str, typing.Optional[typing.Any]]
+        data : typing.Dict[str, typing.Any]
 
         name : str
 
@@ -10620,12 +10994,16 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def config_contexts_bulk_update(
         self,
         *,
-        data: typing.Dict[str, typing.Optional[typing.Any]],
+        data: typing.Dict[str, typing.Any],
         name: str,
         cluster_groups: typing.Optional[typing.Sequence[int]] = OMIT,
         cluster_types: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -10655,7 +11033,7 @@ class AsyncRawExtrasClient:
 
         Parameters
         ----------
-        data : typing.Dict[str, typing.Optional[typing.Any]]
+        data : typing.Dict[str, typing.Any]
 
         name : str
 
@@ -10753,6 +11131,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def config_contexts_bulk_delete(
@@ -10781,12 +11163,16 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def config_contexts_bulk_partial_update(
         self,
         *,
-        data: typing.Dict[str, typing.Optional[typing.Any]],
+        data: typing.Dict[str, typing.Any],
         name: str,
         cluster_groups: typing.Optional[typing.Sequence[int]] = OMIT,
         cluster_types: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -10816,7 +11202,7 @@ class AsyncRawExtrasClient:
 
         Parameters
         ----------
-        data : typing.Dict[str, typing.Optional[typing.Any]]
+        data : typing.Dict[str, typing.Any]
 
         name : str
 
@@ -10914,6 +11300,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def config_contexts_read(
@@ -10936,7 +11326,7 @@ class AsyncRawExtrasClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/config-contexts/{jsonable_encoder(id)}/",
+            f"extras/config-contexts/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -10953,13 +11343,17 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def config_contexts_update(
         self,
         id_: int,
         *,
-        data: typing.Dict[str, typing.Optional[typing.Any]],
+        data: typing.Dict[str, typing.Any],
         name: str,
         cluster_groups: typing.Optional[typing.Sequence[int]] = OMIT,
         cluster_types: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -10992,7 +11386,7 @@ class AsyncRawExtrasClient:
         id_ : int
             A unique integer value identifying this config context.
 
-        data : typing.Dict[str, typing.Optional[typing.Any]]
+        data : typing.Dict[str, typing.Any]
 
         name : str
 
@@ -11047,7 +11441,7 @@ class AsyncRawExtrasClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/config-contexts/{jsonable_encoder(id_)}/",
+            f"extras/config-contexts/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "cluster_groups": cluster_groups,
@@ -11093,6 +11487,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def config_contexts_delete(
@@ -11114,7 +11512,7 @@ class AsyncRawExtrasClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/config-contexts/{jsonable_encoder(id)}/",
+            f"extras/config-contexts/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -11124,13 +11522,17 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def config_contexts_partial_update(
         self,
         id_: int,
         *,
-        data: typing.Dict[str, typing.Optional[typing.Any]],
+        data: typing.Dict[str, typing.Any],
         name: str,
         cluster_groups: typing.Optional[typing.Sequence[int]] = OMIT,
         cluster_types: typing.Optional[typing.Sequence[int]] = OMIT,
@@ -11163,7 +11565,7 @@ class AsyncRawExtrasClient:
         id_ : int
             A unique integer value identifying this config context.
 
-        data : typing.Dict[str, typing.Optional[typing.Any]]
+        data : typing.Dict[str, typing.Any]
 
         name : str
 
@@ -11218,7 +11620,7 @@ class AsyncRawExtrasClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/config-contexts/{jsonable_encoder(id_)}/",
+            f"extras/config-contexts/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "cluster_groups": cluster_groups,
@@ -11264,6 +11666,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def content_types_list(
@@ -11339,6 +11745,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def content_types_read(
@@ -11361,7 +11771,7 @@ class AsyncRawExtrasClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/content-types/{jsonable_encoder(id)}/",
+            f"extras/content-types/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -11378,6 +11788,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def custom_fields_list(
@@ -11808,6 +12222,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def custom_fields_create(
@@ -11818,7 +12236,7 @@ class AsyncRawExtrasClient:
         choices: typing.Optional[typing.Sequence[str]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         data_type: typing.Optional[str] = OMIT,
-        default: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        default: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         filter_logic: typing.Optional[WritableCustomFieldFilterLogic] = OMIT,
@@ -11855,7 +12273,7 @@ class AsyncRawExtrasClient:
 
         data_type : typing.Optional[str]
 
-        default : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        default : typing.Optional[typing.Dict[str, typing.Any]]
             Default value for the field (must be a JSON value). Encapsulate strings with double quotes (e.g. "Foo").
 
         description : typing.Optional[str]
@@ -11955,6 +12373,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def custom_fields_bulk_update(
@@ -11965,7 +12387,7 @@ class AsyncRawExtrasClient:
         choices: typing.Optional[typing.Sequence[str]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         data_type: typing.Optional[str] = OMIT,
-        default: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        default: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         filter_logic: typing.Optional[WritableCustomFieldFilterLogic] = OMIT,
@@ -12002,7 +12424,7 @@ class AsyncRawExtrasClient:
 
         data_type : typing.Optional[str]
 
-        default : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        default : typing.Optional[typing.Dict[str, typing.Any]]
             Default value for the field (must be a JSON value). Encapsulate strings with double quotes (e.g. "Foo").
 
         description : typing.Optional[str]
@@ -12102,6 +12524,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def custom_fields_bulk_delete(
@@ -12130,6 +12556,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def custom_fields_bulk_partial_update(
@@ -12140,7 +12570,7 @@ class AsyncRawExtrasClient:
         choices: typing.Optional[typing.Sequence[str]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         data_type: typing.Optional[str] = OMIT,
-        default: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        default: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         filter_logic: typing.Optional[WritableCustomFieldFilterLogic] = OMIT,
@@ -12177,7 +12607,7 @@ class AsyncRawExtrasClient:
 
         data_type : typing.Optional[str]
 
-        default : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        default : typing.Optional[typing.Dict[str, typing.Any]]
             Default value for the field (must be a JSON value). Encapsulate strings with double quotes (e.g. "Foo").
 
         description : typing.Optional[str]
@@ -12277,6 +12707,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def custom_fields_read(
@@ -12299,7 +12733,7 @@ class AsyncRawExtrasClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/custom-fields/{jsonable_encoder(id)}/",
+            f"extras/custom-fields/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -12316,6 +12750,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def custom_fields_update(
@@ -12327,7 +12765,7 @@ class AsyncRawExtrasClient:
         choices: typing.Optional[typing.Sequence[str]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         data_type: typing.Optional[str] = OMIT,
-        default: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        default: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         filter_logic: typing.Optional[WritableCustomFieldFilterLogic] = OMIT,
@@ -12367,7 +12805,7 @@ class AsyncRawExtrasClient:
 
         data_type : typing.Optional[str]
 
-        default : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        default : typing.Optional[typing.Dict[str, typing.Any]]
             Default value for the field (must be a JSON value). Encapsulate strings with double quotes (e.g. "Foo").
 
         description : typing.Optional[str]
@@ -12424,7 +12862,7 @@ class AsyncRawExtrasClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/custom-fields/{jsonable_encoder(id_)}/",
+            f"extras/custom-fields/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "choices": choices,
@@ -12470,6 +12908,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def custom_fields_delete(
@@ -12491,7 +12933,7 @@ class AsyncRawExtrasClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/custom-fields/{jsonable_encoder(id)}/",
+            f"extras/custom-fields/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -12501,6 +12943,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def custom_fields_partial_update(
@@ -12512,7 +12958,7 @@ class AsyncRawExtrasClient:
         choices: typing.Optional[typing.Sequence[str]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         data_type: typing.Optional[str] = OMIT,
-        default: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        default: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         filter_logic: typing.Optional[WritableCustomFieldFilterLogic] = OMIT,
@@ -12552,7 +12998,7 @@ class AsyncRawExtrasClient:
 
         data_type : typing.Optional[str]
 
-        default : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        default : typing.Optional[typing.Dict[str, typing.Any]]
             Default value for the field (must be a JSON value). Encapsulate strings with double quotes (e.g. "Foo").
 
         description : typing.Optional[str]
@@ -12609,7 +13055,7 @@ class AsyncRawExtrasClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/custom-fields/{jsonable_encoder(id_)}/",
+            f"extras/custom-fields/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "choices": choices,
@@ -12655,6 +13101,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def custom_links_list(
@@ -13075,6 +13525,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def custom_links_create(
@@ -13177,6 +13631,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def custom_links_bulk_update(
@@ -13279,6 +13737,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def custom_links_bulk_delete(
@@ -13307,6 +13769,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def custom_links_bulk_partial_update(
@@ -13409,6 +13875,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def custom_links_read(
@@ -13431,7 +13901,7 @@ class AsyncRawExtrasClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/custom-links/{jsonable_encoder(id)}/",
+            f"extras/custom-links/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -13448,6 +13918,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def custom_links_update(
@@ -13520,7 +13994,7 @@ class AsyncRawExtrasClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/custom-links/{jsonable_encoder(id_)}/",
+            f"extras/custom-links/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "button_class": button_class,
@@ -13557,6 +14031,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def custom_links_delete(
@@ -13578,7 +14056,7 @@ class AsyncRawExtrasClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/custom-links/{jsonable_encoder(id)}/",
+            f"extras/custom-links/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -13588,6 +14066,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def custom_links_partial_update(
@@ -13660,7 +14142,7 @@ class AsyncRawExtrasClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/custom-links/{jsonable_encoder(id_)}/",
+            f"extras/custom-links/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "button_class": button_class,
@@ -13697,6 +14179,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def export_templates_list(
@@ -13977,6 +14463,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def export_templates_create(
@@ -14070,6 +14560,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def export_templates_bulk_update(
@@ -14163,6 +14657,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def export_templates_bulk_delete(
@@ -14191,6 +14689,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def export_templates_bulk_partial_update(
@@ -14284,6 +14786,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def export_templates_read(
@@ -14306,7 +14812,7 @@ class AsyncRawExtrasClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/export-templates/{jsonable_encoder(id)}/",
+            f"extras/export-templates/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -14323,6 +14829,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def export_templates_update(
@@ -14388,7 +14898,7 @@ class AsyncRawExtrasClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/export-templates/{jsonable_encoder(id_)}/",
+            f"extras/export-templates/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "as_attachment": as_attachment,
@@ -14423,6 +14933,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def export_templates_delete(
@@ -14444,7 +14958,7 @@ class AsyncRawExtrasClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/export-templates/{jsonable_encoder(id)}/",
+            f"extras/export-templates/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -14454,6 +14968,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def export_templates_partial_update(
@@ -14519,7 +15037,7 @@ class AsyncRawExtrasClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/export-templates/{jsonable_encoder(id_)}/",
+            f"extras/export-templates/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "as_attachment": as_attachment,
@@ -14554,6 +15072,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def image_attachments_list(
@@ -14754,6 +15276,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def image_attachments_create(
@@ -14769,7 +15295,7 @@ class AsyncRawExtrasClient:
         image: typing.Optional[str] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         name: typing.Optional[str] = OMIT,
-        parent: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        parent: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[ImageAttachment]:
@@ -14798,7 +15324,7 @@ class AsyncRawExtrasClient:
 
         name : typing.Optional[str]
 
-        parent : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        parent : typing.Optional[typing.Dict[str, typing.Any]]
 
         url : typing.Optional[str]
 
@@ -14843,6 +15369,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def image_attachments_bulk_update(
@@ -14858,7 +15388,7 @@ class AsyncRawExtrasClient:
         image: typing.Optional[str] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         name: typing.Optional[str] = OMIT,
-        parent: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        parent: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[ImageAttachment]:
@@ -14887,7 +15417,7 @@ class AsyncRawExtrasClient:
 
         name : typing.Optional[str]
 
-        parent : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        parent : typing.Optional[typing.Dict[str, typing.Any]]
 
         url : typing.Optional[str]
 
@@ -14932,6 +15462,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def image_attachments_bulk_delete(
@@ -14960,6 +15494,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def image_attachments_bulk_partial_update(
@@ -14975,7 +15513,7 @@ class AsyncRawExtrasClient:
         image: typing.Optional[str] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         name: typing.Optional[str] = OMIT,
-        parent: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        parent: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[ImageAttachment]:
@@ -15004,7 +15542,7 @@ class AsyncRawExtrasClient:
 
         name : typing.Optional[str]
 
-        parent : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        parent : typing.Optional[typing.Dict[str, typing.Any]]
 
         url : typing.Optional[str]
 
@@ -15049,6 +15587,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def image_attachments_read(
@@ -15071,7 +15613,7 @@ class AsyncRawExtrasClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/image-attachments/{jsonable_encoder(id)}/",
+            f"extras/image-attachments/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -15088,6 +15630,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def image_attachments_update(
@@ -15104,7 +15650,7 @@ class AsyncRawExtrasClient:
         image: typing.Optional[str] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         name: typing.Optional[str] = OMIT,
-        parent: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        parent: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[ImageAttachment]:
@@ -15136,7 +15682,7 @@ class AsyncRawExtrasClient:
 
         name : typing.Optional[str]
 
-        parent : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        parent : typing.Optional[typing.Dict[str, typing.Any]]
 
         url : typing.Optional[str]
 
@@ -15149,7 +15695,7 @@ class AsyncRawExtrasClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/image-attachments/{jsonable_encoder(id_)}/",
+            f"extras/image-attachments/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "content_type": content_type,
@@ -15184,6 +15730,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def image_attachments_delete(
@@ -15205,7 +15755,7 @@ class AsyncRawExtrasClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/image-attachments/{jsonable_encoder(id)}/",
+            f"extras/image-attachments/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -15215,6 +15765,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def image_attachments_partial_update(
@@ -15231,7 +15785,7 @@ class AsyncRawExtrasClient:
         image: typing.Optional[str] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         name: typing.Optional[str] = OMIT,
-        parent: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        parent: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[ImageAttachment]:
@@ -15263,7 +15817,7 @@ class AsyncRawExtrasClient:
 
         name : typing.Optional[str]
 
-        parent : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        parent : typing.Optional[typing.Dict[str, typing.Any]]
 
         url : typing.Optional[str]
 
@@ -15276,7 +15830,7 @@ class AsyncRawExtrasClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/image-attachments/{jsonable_encoder(id_)}/",
+            f"extras/image-attachments/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "content_type": content_type,
@@ -15311,6 +15865,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def job_results_list(
@@ -15576,6 +16134,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def job_results_read(
@@ -15598,7 +16160,7 @@ class AsyncRawExtrasClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/job-results/{jsonable_encoder(id)}/",
+            f"extras/job-results/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -15615,6 +16177,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def journal_entries_list(
@@ -15830,6 +16396,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def journal_entries_create(
@@ -15838,10 +16408,10 @@ class AsyncRawExtrasClient:
         assigned_object_id: int,
         assigned_object_type: str,
         comments: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         created_by: typing.Optional[int] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         kind: typing.Optional[WritableJournalEntryKind] = OMIT,
@@ -15861,13 +16431,13 @@ class AsyncRawExtrasClient:
 
         comments : str
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
         created_by : typing.Optional[int]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -15925,6 +16495,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def journal_entries_bulk_update(
@@ -15933,10 +16507,10 @@ class AsyncRawExtrasClient:
         assigned_object_id: int,
         assigned_object_type: str,
         comments: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         created_by: typing.Optional[int] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         kind: typing.Optional[WritableJournalEntryKind] = OMIT,
@@ -15956,13 +16530,13 @@ class AsyncRawExtrasClient:
 
         comments : str
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
         created_by : typing.Optional[int]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -16020,6 +16594,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def journal_entries_bulk_delete(
@@ -16048,6 +16626,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def journal_entries_bulk_partial_update(
@@ -16056,10 +16638,10 @@ class AsyncRawExtrasClient:
         assigned_object_id: int,
         assigned_object_type: str,
         comments: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         created_by: typing.Optional[int] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         kind: typing.Optional[WritableJournalEntryKind] = OMIT,
@@ -16079,13 +16661,13 @@ class AsyncRawExtrasClient:
 
         comments : str
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
         created_by : typing.Optional[int]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -16143,6 +16725,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def journal_entries_read(
@@ -16165,7 +16751,7 @@ class AsyncRawExtrasClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/journal-entries/{jsonable_encoder(id)}/",
+            f"extras/journal-entries/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -16182,6 +16768,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def journal_entries_update(
@@ -16191,10 +16781,10 @@ class AsyncRawExtrasClient:
         assigned_object_id: int,
         assigned_object_type: str,
         comments: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         created_by: typing.Optional[int] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         kind: typing.Optional[WritableJournalEntryKind] = OMIT,
@@ -16217,13 +16807,13 @@ class AsyncRawExtrasClient:
 
         comments : str
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
         created_by : typing.Optional[int]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -16246,7 +16836,7 @@ class AsyncRawExtrasClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/journal-entries/{jsonable_encoder(id_)}/",
+            f"extras/journal-entries/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "assigned_object": assigned_object,
@@ -16284,6 +16874,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def journal_entries_delete(
@@ -16305,7 +16899,7 @@ class AsyncRawExtrasClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/journal-entries/{jsonable_encoder(id)}/",
+            f"extras/journal-entries/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -16315,6 +16909,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def journal_entries_partial_update(
@@ -16324,10 +16922,10 @@ class AsyncRawExtrasClient:
         assigned_object_id: int,
         assigned_object_type: str,
         comments: str,
-        assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         created_by: typing.Optional[int] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         kind: typing.Optional[WritableJournalEntryKind] = OMIT,
@@ -16350,13 +16948,13 @@ class AsyncRawExtrasClient:
 
         comments : str
 
-        assigned_object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        assigned_object : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
         created_by : typing.Optional[int]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -16379,7 +16977,7 @@ class AsyncRawExtrasClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/journal-entries/{jsonable_encoder(id_)}/",
+            f"extras/journal-entries/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "assigned_object": assigned_object,
@@ -16417,6 +17015,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def object_changes_list(
@@ -16707,6 +17309,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def object_changes_read(
@@ -16729,7 +17335,7 @@ class AsyncRawExtrasClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/object-changes/{jsonable_encoder(id)}/",
+            f"extras/object-changes/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -16746,6 +17352,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def reports_list(self, *, request_options: typing.Optional[RequestOptions] = None) -> AsyncHttpResponse[None]:
@@ -16772,6 +17382,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def reports_read(
@@ -16792,7 +17406,7 @@ class AsyncRawExtrasClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/reports/{jsonable_encoder(id)}/",
+            f"extras/reports/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -16802,6 +17416,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def reports_run(
@@ -16822,7 +17440,7 @@ class AsyncRawExtrasClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/reports/{jsonable_encoder(id)}/run/",
+            f"extras/reports/{encode_path_param(id)}/run/",
             method="POST",
             request_options=request_options,
         )
@@ -16832,6 +17450,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def saved_filters_list(
@@ -17232,6 +17854,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def saved_filters_create(
@@ -17239,7 +17865,7 @@ class AsyncRawExtrasClient:
         *,
         content_types: typing.Sequence[str],
         name: str,
-        parameters: typing.Dict[str, typing.Optional[typing.Any]],
+        parameters: typing.Dict[str, typing.Any],
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
         description: typing.Optional[str] = OMIT,
@@ -17262,7 +17888,7 @@ class AsyncRawExtrasClient:
 
         name : str
 
-        parameters : typing.Dict[str, typing.Optional[typing.Any]]
+        parameters : typing.Dict[str, typing.Any]
 
         slug : str
 
@@ -17329,6 +17955,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def saved_filters_bulk_update(
@@ -17336,7 +17966,7 @@ class AsyncRawExtrasClient:
         *,
         content_types: typing.Sequence[str],
         name: str,
-        parameters: typing.Dict[str, typing.Optional[typing.Any]],
+        parameters: typing.Dict[str, typing.Any],
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
         description: typing.Optional[str] = OMIT,
@@ -17359,7 +17989,7 @@ class AsyncRawExtrasClient:
 
         name : str
 
-        parameters : typing.Dict[str, typing.Optional[typing.Any]]
+        parameters : typing.Dict[str, typing.Any]
 
         slug : str
 
@@ -17426,6 +18056,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def saved_filters_bulk_delete(
@@ -17454,6 +18088,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def saved_filters_bulk_partial_update(
@@ -17461,7 +18099,7 @@ class AsyncRawExtrasClient:
         *,
         content_types: typing.Sequence[str],
         name: str,
-        parameters: typing.Dict[str, typing.Optional[typing.Any]],
+        parameters: typing.Dict[str, typing.Any],
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
         description: typing.Optional[str] = OMIT,
@@ -17484,7 +18122,7 @@ class AsyncRawExtrasClient:
 
         name : str
 
-        parameters : typing.Dict[str, typing.Optional[typing.Any]]
+        parameters : typing.Dict[str, typing.Any]
 
         slug : str
 
@@ -17551,6 +18189,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def saved_filters_read(
@@ -17573,7 +18215,7 @@ class AsyncRawExtrasClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/saved-filters/{jsonable_encoder(id)}/",
+            f"extras/saved-filters/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -17590,6 +18232,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def saved_filters_update(
@@ -17598,7 +18244,7 @@ class AsyncRawExtrasClient:
         *,
         content_types: typing.Sequence[str],
         name: str,
-        parameters: typing.Dict[str, typing.Optional[typing.Any]],
+        parameters: typing.Dict[str, typing.Any],
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
         description: typing.Optional[str] = OMIT,
@@ -17624,7 +18270,7 @@ class AsyncRawExtrasClient:
 
         name : str
 
-        parameters : typing.Dict[str, typing.Optional[typing.Any]]
+        parameters : typing.Dict[str, typing.Any]
 
         slug : str
 
@@ -17657,7 +18303,7 @@ class AsyncRawExtrasClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/saved-filters/{jsonable_encoder(id_)}/",
+            f"extras/saved-filters/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "content_types": content_types,
@@ -17694,6 +18340,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def saved_filters_delete(
@@ -17715,7 +18365,7 @@ class AsyncRawExtrasClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/saved-filters/{jsonable_encoder(id)}/",
+            f"extras/saved-filters/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -17725,6 +18375,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def saved_filters_partial_update(
@@ -17733,7 +18387,7 @@ class AsyncRawExtrasClient:
         *,
         content_types: typing.Sequence[str],
         name: str,
-        parameters: typing.Dict[str, typing.Optional[typing.Any]],
+        parameters: typing.Dict[str, typing.Any],
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
         description: typing.Optional[str] = OMIT,
@@ -17759,7 +18413,7 @@ class AsyncRawExtrasClient:
 
         name : str
 
-        parameters : typing.Dict[str, typing.Optional[typing.Any]]
+        parameters : typing.Dict[str, typing.Any]
 
         slug : str
 
@@ -17792,7 +18446,7 @@ class AsyncRawExtrasClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/saved-filters/{jsonable_encoder(id_)}/",
+            f"extras/saved-filters/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "content_types": content_types,
@@ -17829,6 +18483,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def scripts_list(self, *, request_options: typing.Optional[RequestOptions] = None) -> AsyncHttpResponse[None]:
@@ -17855,6 +18513,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def scripts_read(
@@ -17875,7 +18537,7 @@ class AsyncRawExtrasClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/scripts/{jsonable_encoder(id)}/",
+            f"extras/scripts/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -17885,6 +18547,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def tags_list(
@@ -18265,6 +18931,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def tags_create(
@@ -18346,6 +19016,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def tags_bulk_update(
@@ -18427,6 +19101,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def tags_bulk_delete(
@@ -18455,6 +19133,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def tags_bulk_partial_update(
@@ -18536,6 +19218,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def tags_read(
@@ -18558,7 +19244,7 @@ class AsyncRawExtrasClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/tags/{jsonable_encoder(id)}/",
+            f"extras/tags/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -18575,6 +19261,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def tags_update(
@@ -18630,7 +19320,7 @@ class AsyncRawExtrasClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/tags/{jsonable_encoder(id_)}/",
+            f"extras/tags/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "color": color,
@@ -18663,6 +19353,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def tags_delete(
@@ -18684,7 +19378,7 @@ class AsyncRawExtrasClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/tags/{jsonable_encoder(id)}/",
+            f"extras/tags/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -18694,6 +19388,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def tags_partial_update(
@@ -18749,7 +19447,7 @@ class AsyncRawExtrasClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/tags/{jsonable_encoder(id_)}/",
+            f"extras/tags/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "color": color,
@@ -18782,6 +19480,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def webhooks_list(
@@ -19262,6 +19964,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def webhooks_create(
@@ -19273,7 +19979,7 @@ class AsyncRawExtrasClient:
         additional_headers: typing.Optional[str] = OMIT,
         body_template: typing.Optional[str] = OMIT,
         ca_file_path: typing.Optional[str] = OMIT,
-        conditions: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        conditions: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -19310,7 +20016,7 @@ class AsyncRawExtrasClient:
         ca_file_path : typing.Optional[str]
             The specific CA certificate file to use for SSL verification. Leave blank to use the system defaults.
 
-        conditions : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        conditions : typing.Optional[typing.Dict[str, typing.Any]]
             A set of conditions which determine whether the webhook will be generated.
 
         created : typing.Optional[dt.datetime]
@@ -19394,6 +20100,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def webhooks_bulk_update(
@@ -19405,7 +20115,7 @@ class AsyncRawExtrasClient:
         additional_headers: typing.Optional[str] = OMIT,
         body_template: typing.Optional[str] = OMIT,
         ca_file_path: typing.Optional[str] = OMIT,
-        conditions: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        conditions: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -19442,7 +20152,7 @@ class AsyncRawExtrasClient:
         ca_file_path : typing.Optional[str]
             The specific CA certificate file to use for SSL verification. Leave blank to use the system defaults.
 
-        conditions : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        conditions : typing.Optional[typing.Dict[str, typing.Any]]
             A set of conditions which determine whether the webhook will be generated.
 
         created : typing.Optional[dt.datetime]
@@ -19526,6 +20236,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def webhooks_bulk_delete(
@@ -19554,6 +20268,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def webhooks_bulk_partial_update(
@@ -19565,7 +20283,7 @@ class AsyncRawExtrasClient:
         additional_headers: typing.Optional[str] = OMIT,
         body_template: typing.Optional[str] = OMIT,
         ca_file_path: typing.Optional[str] = OMIT,
-        conditions: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        conditions: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -19602,7 +20320,7 @@ class AsyncRawExtrasClient:
         ca_file_path : typing.Optional[str]
             The specific CA certificate file to use for SSL verification. Leave blank to use the system defaults.
 
-        conditions : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        conditions : typing.Optional[typing.Dict[str, typing.Any]]
             A set of conditions which determine whether the webhook will be generated.
 
         created : typing.Optional[dt.datetime]
@@ -19686,6 +20404,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def webhooks_read(
@@ -19708,7 +20430,7 @@ class AsyncRawExtrasClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/webhooks/{jsonable_encoder(id)}/",
+            f"extras/webhooks/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -19725,6 +20447,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def webhooks_update(
@@ -19737,7 +20463,7 @@ class AsyncRawExtrasClient:
         additional_headers: typing.Optional[str] = OMIT,
         body_template: typing.Optional[str] = OMIT,
         ca_file_path: typing.Optional[str] = OMIT,
-        conditions: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        conditions: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -19777,7 +20503,7 @@ class AsyncRawExtrasClient:
         ca_file_path : typing.Optional[str]
             The specific CA certificate file to use for SSL verification. Leave blank to use the system defaults.
 
-        conditions : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        conditions : typing.Optional[typing.Dict[str, typing.Any]]
             A set of conditions which determine whether the webhook will be generated.
 
         created : typing.Optional[dt.datetime]
@@ -19821,7 +20547,7 @@ class AsyncRawExtrasClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/webhooks/{jsonable_encoder(id_)}/",
+            f"extras/webhooks/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "additional_headers": additional_headers,
@@ -19864,6 +20590,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def webhooks_delete(
@@ -19885,7 +20615,7 @@ class AsyncRawExtrasClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/webhooks/{jsonable_encoder(id)}/",
+            f"extras/webhooks/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -19895,6 +20625,10 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def webhooks_partial_update(
@@ -19907,7 +20641,7 @@ class AsyncRawExtrasClient:
         additional_headers: typing.Optional[str] = OMIT,
         body_template: typing.Optional[str] = OMIT,
         ca_file_path: typing.Optional[str] = OMIT,
-        conditions: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        conditions: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -19947,7 +20681,7 @@ class AsyncRawExtrasClient:
         ca_file_path : typing.Optional[str]
             The specific CA certificate file to use for SSL verification. Leave blank to use the system defaults.
 
-        conditions : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        conditions : typing.Optional[typing.Dict[str, typing.Any]]
             A set of conditions which determine whether the webhook will be generated.
 
         created : typing.Optional[dt.datetime]
@@ -19991,7 +20725,7 @@ class AsyncRawExtrasClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"extras/webhooks/{jsonable_encoder(id_)}/",
+            f"extras/webhooks/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "additional_headers": additional_headers,
@@ -20034,4 +20768,8 @@ class AsyncRawExtrasClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

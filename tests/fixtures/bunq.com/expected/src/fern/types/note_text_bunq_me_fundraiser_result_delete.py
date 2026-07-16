@@ -2,4 +2,4 @@
 
 import typing
 
-NoteTextBunqMeFundraiserResultDelete = typing.Dict[str, typing.Optional[typing.Any]]
+NoteTextBunqMeFundraiserResultDelete = typing.Dict[str, typing.Any]

@@ -2,4 +2,4 @@
 
 import typing
 
-NoteAttachmentScheduleInstanceDelete = typing.Dict[str, typing.Optional[typing.Any]]
+NoteAttachmentScheduleInstanceDelete = typing.Dict[str, typing.Any]

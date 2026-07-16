@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class AddressType(str, enum.Enum):
+class AddressType(enum.StrEnum):
     PRIMARY = "primary"
     SECONDARY = "secondary"
     HOME = "home"

@@ -12,10 +12,14 @@ from .tokens_twitch_drop_history_response import TokensTwitchDropHistoryResponse
 
 class TokensPartnerRewardHistoryResponse(UniversalBaseModel):
     partner_offers: typing_extensions.Annotated[
-        typing.Optional[typing.List[TokensPartnerOfferSkuHistoryResponse]], FieldMetadata(alias="PartnerOffers")
+        typing.Optional[typing.List[TokensPartnerOfferSkuHistoryResponse]],
+        FieldMetadata(alias="PartnerOffers"),
+        pydantic.Field(alias="PartnerOffers"),
     ] = None
     twitch_drops: typing_extensions.Annotated[
-        typing.Optional[typing.List[TokensTwitchDropHistoryResponse]], FieldMetadata(alias="TwitchDrops")
+        typing.Optional[typing.List[TokensTwitchDropHistoryResponse]],
+        FieldMetadata(alias="TwitchDrops"),
+        pydantic.Field(alias="TwitchDrops"),
     ] = None
 
     if IS_PYDANTIC_V2:

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GateSpecState(str, enum.Enum):
+class GateSpecState(enum.StrEnum):
     """
     State of the gate and transitively all triggers it contains if not 'active'
     """

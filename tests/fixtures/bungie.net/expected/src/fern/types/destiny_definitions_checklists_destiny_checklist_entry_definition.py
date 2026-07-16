@@ -17,20 +17,33 @@ class DestinyDefinitionsChecklistsDestinyChecklistEntryDefinition(UniversalBaseM
     Whatever UI you build, do it with the knowledge that any given entry might not actually be able to be associated with some other Destiny entity.
     """
 
-    activity_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="activityHash")] = None
-    bubble_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="bubbleHash")] = pydantic.Field(
-        default=None
-    )
+    activity_hash: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="activityHash"), pydantic.Field(alias="activityHash")
+    ] = None
+    bubble_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="bubbleHash"),
+        pydantic.Field(
+            alias="bubbleHash",
+            description="Note that a Bubble's hash doesn't uniquely identify a \"top level\" entity in Destiny. Only the combination of location and bubble can uniquely identify a place in the world of Destiny: so if bubbleHash is populated, locationHash must too be populated for it to have any meaning.\r\nYou can use this property if it is populated to look up the DestinyLocationDefinition's associated .locationReleases[].activityBubbleName property.",
+        ),
+    ] = None
     """
     Note that a Bubble's hash doesn't uniquely identify a "top level" entity in Destiny. Only the combination of location and bubble can uniquely identify a place in the world of Destiny: so if bubbleHash is populated, locationHash must too be populated for it to have any meaning.
     You can use this property if it is populated to look up the DestinyLocationDefinition's associated .locationReleases[].activityBubbleName property.
     """
 
-    destination_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="destinationHash")] = None
+    destination_hash: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="destinationHash"), pydantic.Field(alias="destinationHash")
+    ] = None
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="displayProperties",
+            description="Even if no other associations exist, we will give you *something* for display properties. In cases where we have no associated entities, it may be as simple as a numerical identifier.",
+        ),
+    ] = None
     """
     Even if no other associations exist, we will give you *something* for display properties. In cases where we have no associated entities, it may be as simple as a numerical identifier.
     """
@@ -40,16 +53,24 @@ class DestinyDefinitionsChecklistsDestinyChecklistEntryDefinition(UniversalBaseM
     The identifier for this Checklist entry. Guaranteed unique only within this Checklist Definition, and not globally/for all checklists.
     """
 
-    item_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="itemHash")] = None
-    location_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="locationHash")] = None
+    item_hash: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="itemHash"), pydantic.Field(alias="itemHash")
+    ] = None
+    location_hash: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="locationHash"), pydantic.Field(alias="locationHash")
+    ] = None
     scope: typing.Optional[int] = pydantic.Field(default=None)
     """
     The scope at which this specific entry can be computed.
     """
 
-    vendor_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="vendorHash")] = None
+    vendor_hash: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="vendorHash"), pydantic.Field(alias="vendorHash")
+    ] = None
     vendor_interaction_index: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="vendorInteractionIndex")
+        typing.Optional[int],
+        FieldMetadata(alias="vendorInteractionIndex"),
+        pydantic.Field(alias="vendorInteractionIndex"),
     ] = None
 
     if IS_PYDANTIC_V2:

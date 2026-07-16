@@ -18,7 +18,11 @@ class TestResultSummary(UniversalBaseModel):
     Unique identifier of TestResult
     """
 
-    service_id: typing_extensions.Annotated[str, FieldMetadata(alias="serviceId")] = pydantic.Field()
+    service_id: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="serviceId"),
+        pydantic.Field(alias="serviceId", description="Unique identifier of service tested"),
+    ]
     """
     Unique identifier of service tested
     """
@@ -28,7 +32,11 @@ class TestResultSummary(UniversalBaseModel):
     Flag telling if test is a success
     """
 
-    test_date: typing_extensions.Annotated[int, FieldMetadata(alias="testDate")] = pydantic.Field()
+    test_date: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="testDate"),
+        pydantic.Field(alias="testDate", description="Timestamp of creation date of this service"),
+    ]
     """
     Timestamp of creation date of this service
     """

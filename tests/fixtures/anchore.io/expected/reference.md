@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">ping</a>()</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">ping</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -27,8 +27,12 @@ Simple status check
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.ping()
 
 ```
@@ -85,8 +89,12 @@ Health check, returns 200 and no body if service is running
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.health_check()
 
 ```
@@ -115,7 +123,7 @@ client.health_check()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_file_content_search_results</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">list_file_content_search_results</a>(...) -> FileContentSearchList</code></summary>
 <dl>
 <dd>
 
@@ -129,8 +137,12 @@ client.health_check()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.list_file_content_search_results(
     image_digest="imageDigest",
 )
@@ -169,7 +181,7 @@ client.list_file_content_search_results(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_retrieved_files</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">list_retrieved_files</a>(...) -> RetrievedFileList</code></summary>
 <dl>
 <dd>
 
@@ -183,8 +195,12 @@ client.list_file_content_search_results(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.list_retrieved_files(
     image_digest="imageDigest",
 )
@@ -223,7 +239,7 @@ client.list_retrieved_files(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_secret_search_results</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">list_secret_search_results</a>(...) -> SecretSearchList</code></summary>
 <dl>
 <dd>
 
@@ -237,8 +253,12 @@ client.list_retrieved_files(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.list_secret_search_results(
     image_digest="imageDigest",
 )
@@ -277,7 +297,7 @@ client.list_secret_search_results(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_oauth_token</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_oauth_token</a>(...) -> TokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -305,8 +325,12 @@ Request a jwt token for subsequent operations, this request is authenticated wit
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.get_oauth_token()
 
 ```
@@ -367,7 +391,7 @@ client.get_oauth_token()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">version_check</a>()</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">version_check</a>() -> ServiceVersion</code></summary>
 <dl>
 <dd>
 
@@ -395,8 +419,12 @@ Returns the version object for the service, including db schema version info
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.version_check()
 
 ```
@@ -426,7 +454,7 @@ client.version_check()
 </details>
 
 ## Identity
-<details><summary><code>client.identity.<a href="src/fern/identity/client.py">get_users_account</a>()</code></summary>
+<details><summary><code>client.identity.<a href="src/fern/identity/client.py">get_users_account</a>() -> Account</code></summary>
 <dl>
 <dd>
 
@@ -440,8 +468,12 @@ client.version_check()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.identity.get_users_account()
 
 ```
@@ -470,7 +502,7 @@ client.identity.get_users_account()
 </dl>
 </details>
 
-<details><summary><code>client.identity.<a href="src/fern/identity/client.py">get_user</a>()</code></summary>
+<details><summary><code>client.identity.<a href="src/fern/identity/client.py">get_user</a>() -> User</code></summary>
 <dl>
 <dd>
 
@@ -484,8 +516,12 @@ client.identity.get_users_account()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.identity.get_user()
 
 ```
@@ -514,7 +550,7 @@ client.identity.get_user()
 </dl>
 </details>
 
-<details><summary><code>client.identity.<a href="src/fern/identity/client.py">get_credentials</a>()</code></summary>
+<details><summary><code>client.identity.<a href="src/fern/identity/client.py">get_credentials</a>() -> CredentialList</code></summary>
 <dl>
 <dd>
 
@@ -528,8 +564,12 @@ client.identity.get_user()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.identity.get_credentials()
 
 ```
@@ -558,7 +598,7 @@ client.identity.get_credentials()
 </dl>
 </details>
 
-<details><summary><code>client.identity.<a href="src/fern/identity/client.py">add_credential</a>(...)</code></summary>
+<details><summary><code>client.identity.<a href="src/fern/identity/client.py">add_credential</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -571,9 +611,13 @@ client.identity.get_credentials()
 <dd>
 
 ```python
-from fern import AccessCredentialType, FernApi
+from fern import FernApi, AccessCredentialType
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.identity.add_credential(
     type=AccessCredentialType.PASSWORD,
     value="value",
@@ -593,23 +637,7 @@ client.identity.add_credential(
 <dl>
 <dd>
 
-**type:** `AccessCredentialType` — The type of credential
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**value:** `str` — The credential value (e.g. the password)
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_at:** `typing.Optional[str]` — The timestamp of creation of the credential
+**request:** `AccessCredential` 
     
 </dd>
 </dl>
@@ -630,7 +658,7 @@ client.identity.add_credential(
 </details>
 
 ## User Management
-<details><summary><code>client.user_management.<a href="src/fern/user_management/client.py">list_accounts</a>(...)</code></summary>
+<details><summary><code>client.user_management.<a href="src/fern/user_management/client.py">list_accounts</a>(...) -> AccountList</code></summary>
 <dl>
 <dd>
 
@@ -644,8 +672,12 @@ client.identity.add_credential(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.user_management.list_accounts()
 
 ```
@@ -682,7 +714,7 @@ client.user_management.list_accounts()
 </dl>
 </details>
 
-<details><summary><code>client.user_management.<a href="src/fern/user_management/client.py">create_account</a>(...)</code></summary>
+<details><summary><code>client.user_management.<a href="src/fern/user_management/client.py">create_account</a>(...) -> Account</code></summary>
 <dl>
 <dd>
 
@@ -696,8 +728,12 @@ client.user_management.list_accounts()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.user_management.create_account(
     name="name",
 )
@@ -744,7 +780,7 @@ client.user_management.create_account(
 </dl>
 </details>
 
-<details><summary><code>client.user_management.<a href="src/fern/user_management/client.py">get_account</a>(...)</code></summary>
+<details><summary><code>client.user_management.<a href="src/fern/user_management/client.py">get_account</a>(...) -> Account</code></summary>
 <dl>
 <dd>
 
@@ -758,8 +794,12 @@ client.user_management.create_account(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.user_management.get_account(
     accountname="accountname",
 )
@@ -812,8 +852,12 @@ client.user_management.get_account(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.user_management.delete_account(
     accountname="accountname",
 )
@@ -852,7 +896,7 @@ client.user_management.delete_account(
 </dl>
 </details>
 
-<details><summary><code>client.user_management.<a href="src/fern/user_management/client.py">update_account_state</a>(...)</code></summary>
+<details><summary><code>client.user_management.<a href="src/fern/user_management/client.py">update_account_state</a>(...) -> AccountStatus</code></summary>
 <dl>
 <dd>
 
@@ -866,8 +910,12 @@ client.user_management.delete_account(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.user_management.update_account_state(
     accountname="accountname",
 )
@@ -894,7 +942,7 @@ client.user_management.update_account_state(
 <dl>
 <dd>
 
-**state:** `typing.Optional[AccountStatusState]` — The status of the account
+**request:** `AccountStatus` 
     
 </dd>
 </dl>
@@ -914,7 +962,7 @@ client.user_management.update_account_state(
 </dl>
 </details>
 
-<details><summary><code>client.user_management.<a href="src/fern/user_management/client.py">list_users</a>(...)</code></summary>
+<details><summary><code>client.user_management.<a href="src/fern/user_management/client.py">list_users</a>(...) -> typing.List[User]</code></summary>
 <dl>
 <dd>
 
@@ -928,8 +976,12 @@ client.user_management.update_account_state(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.user_management.list_users(
     accountname="accountname",
 )
@@ -968,7 +1020,7 @@ client.user_management.list_users(
 </dl>
 </details>
 
-<details><summary><code>client.user_management.<a href="src/fern/user_management/client.py">create_user</a>(...)</code></summary>
+<details><summary><code>client.user_management.<a href="src/fern/user_management/client.py">create_user</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -982,8 +1034,12 @@ client.user_management.list_users(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.user_management.create_user(
     accountname="accountname",
     password="password",
@@ -1040,7 +1096,7 @@ client.user_management.create_user(
 </dl>
 </details>
 
-<details><summary><code>client.user_management.<a href="src/fern/user_management/client.py">get_account_user</a>(...)</code></summary>
+<details><summary><code>client.user_management.<a href="src/fern/user_management/client.py">get_account_user</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -1054,8 +1110,12 @@ client.user_management.create_user(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.user_management.get_account_user(
     accountname="accountname",
     username="username",
@@ -1117,8 +1177,12 @@ client.user_management.get_account_user(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.user_management.delete_user(
     accountname="accountname",
     username="username",
@@ -1166,7 +1230,7 @@ client.user_management.delete_user(
 </dl>
 </details>
 
-<details><summary><code>client.user_management.<a href="src/fern/user_management/client.py">list_user_credentials</a>(...)</code></summary>
+<details><summary><code>client.user_management.<a href="src/fern/user_management/client.py">list_user_credentials</a>(...) -> CredentialList</code></summary>
 <dl>
 <dd>
 
@@ -1180,8 +1244,12 @@ client.user_management.delete_user(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.user_management.list_user_credentials(
     accountname="accountname",
     username="username",
@@ -1229,7 +1297,7 @@ client.user_management.list_user_credentials(
 </dl>
 </details>
 
-<details><summary><code>client.user_management.<a href="src/fern/user_management/client.py">create_user_credential</a>(...)</code></summary>
+<details><summary><code>client.user_management.<a href="src/fern/user_management/client.py">create_user_credential</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -1242,9 +1310,13 @@ client.user_management.list_user_credentials(
 <dd>
 
 ```python
-from fern import AccessCredentialType, FernApi
+from fern import FernApi, AccessCredentialType
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.user_management.create_user_credential(
     accountname="accountname",
     username="username",
@@ -1282,23 +1354,7 @@ client.user_management.create_user_credential(
 <dl>
 <dd>
 
-**type:** `AccessCredentialType` — The type of credential
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**value:** `str` — The credential value (e.g. the password)
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_at:** `typing.Optional[str]` — The timestamp of creation of the credential
+**request:** `AccessCredential` 
     
 </dd>
 </dl>
@@ -1331,11 +1387,14 @@ client.user_management.create_user_credential(
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.user_management import DeleteUserCredentialRequestCredentialType
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
 
-client = FernApi()
 client.user_management.delete_user_credential(
     accountname="accountname",
     username="username",
@@ -1393,7 +1452,7 @@ client.user_management.delete_user_credential(
 </details>
 
 ## Archives
-<details><summary><code>client.archives.<a href="src/fern/archives/client.py">list_archives</a>()</code></summary>
+<details><summary><code>client.archives.<a href="src/fern/archives/client.py">list_archives</a>() -> ArchiveSummary</code></summary>
 <dl>
 <dd>
 
@@ -1407,8 +1466,12 @@ client.user_management.delete_user_credential(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.archives.list_archives()
 
 ```
@@ -1437,7 +1500,7 @@ client.archives.list_archives()
 </dl>
 </details>
 
-<details><summary><code>client.archives.<a href="src/fern/archives/client.py">list_analysis_archive</a>()</code></summary>
+<details><summary><code>client.archives.<a href="src/fern/archives/client.py">list_analysis_archive</a>() -> ArchivedAnalyses</code></summary>
 <dl>
 <dd>
 
@@ -1451,8 +1514,12 @@ client.archives.list_archives()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.archives.list_analysis_archive()
 
 ```
@@ -1481,7 +1548,7 @@ client.archives.list_analysis_archive()
 </dl>
 </details>
 
-<details><summary><code>client.archives.<a href="src/fern/archives/client.py">archive_image_analysis</a>(...)</code></summary>
+<details><summary><code>client.archives.<a href="src/fern/archives/client.py">archive_image_analysis</a>(...) -> AddAnalysisArchiveResult</code></summary>
 <dl>
 <dd>
 
@@ -1495,10 +1562,16 @@ client.archives.list_analysis_archive()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.archives.archive_image_analysis(
-    request=["string"],
+    request=[
+        "string"
+    ],
 )
 
 ```
@@ -1535,7 +1608,7 @@ client.archives.archive_image_analysis(
 </dl>
 </details>
 
-<details><summary><code>client.archives.<a href="src/fern/archives/client.py">get_archived_analysis</a>(...)</code></summary>
+<details><summary><code>client.archives.<a href="src/fern/archives/client.py">get_archived_analysis</a>(...) -> ArchivedAnalysis</code></summary>
 <dl>
 <dd>
 
@@ -1563,8 +1636,12 @@ Returns the archive metadata record identifying the image and tags for the analy
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.archives.get_archived_analysis(
     image_digest="imageDigest",
 )
@@ -1631,8 +1708,12 @@ Performs a synchronous archive deletion
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.archives.delete_archived_analysis(
     image_digest="imageDigest",
 )
@@ -1679,7 +1760,7 @@ client.archives.delete_archived_analysis(
 </dl>
 </details>
 
-<details><summary><code>client.archives.<a href="src/fern/archives/client.py">list_analysis_archive_rules</a>(...)</code></summary>
+<details><summary><code>client.archives.<a href="src/fern/archives/client.py">list_analysis_archive_rules</a>(...) -> AnalysisArchiveRules</code></summary>
 <dl>
 <dd>
 
@@ -1693,8 +1774,12 @@ client.archives.delete_archived_analysis(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.archives.list_analysis_archive_rules()
 
 ```
@@ -1731,7 +1816,7 @@ client.archives.list_analysis_archive_rules()
 </dl>
 </details>
 
-<details><summary><code>client.archives.<a href="src/fern/archives/client.py">create_analysis_archive_rule</a>(...)</code></summary>
+<details><summary><code>client.archives.<a href="src/fern/archives/client.py">create_analysis_archive_rule</a>(...) -> AnalysisArchiveTransitionRule</code></summary>
 <dl>
 <dd>
 
@@ -1744,9 +1829,13 @@ client.archives.list_analysis_archive_rules()
 <dd>
 
 ```python
-from fern import AnalysisArchiveTransitionRuleTransition, FernApi
+from fern import FernApi, AnalysisArchiveTransitionRuleTransition
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.archives.create_analysis_archive_rule(
     transition=AnalysisArchiveTransitionRuleTransition.ARCHIVE,
 )
@@ -1765,79 +1854,7 @@ client.archives.create_analysis_archive_rule(
 <dl>
 <dd>
 
-**transition:** `AnalysisArchiveTransitionRuleTransition` — The type of transition to make. If "archive", then archive an image from the working set and remove it from the working set. If "delete", then match against archived images and delete from the archive if match.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**analysis_age_days:** `typing.Optional[int]` — Matches if the analysis is strictly older than this number of days
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_at:** `typing.Optional[dt.datetime]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**exclude:** `typing.Optional[AnalysisArchiveTransitionRuleExclude]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**last_updated:** `typing.Optional[dt.datetime]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**max_images_per_account:** `typing.Optional[int]` — This is the maximum number of image analyses an account can have. Can only be set on system_global rules
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**rule_id:** `typing.Optional[str]` — Unique identifier for archive rule
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**selector:** `typing.Optional[ImageSelector]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**system_global:** `typing.Optional[bool]` — True if the rule applies to all accounts in the system. This is only available to admin users to update/modify, but all users with permission to list rules can see them
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**tag_versions_newer:** `typing.Optional[int]` — Number of images mapped to the tag that are newer
+**request:** `AnalysisArchiveTransitionRule` 
     
 </dd>
 </dl>
@@ -1857,7 +1874,7 @@ client.archives.create_analysis_archive_rule(
 </dl>
 </details>
 
-<details><summary><code>client.archives.<a href="src/fern/archives/client.py">get_analysis_archive_rule</a>(...)</code></summary>
+<details><summary><code>client.archives.<a href="src/fern/archives/client.py">get_analysis_archive_rule</a>(...) -> AnalysisArchiveTransitionRule</code></summary>
 <dl>
 <dd>
 
@@ -1871,8 +1888,12 @@ client.archives.create_analysis_archive_rule(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.archives.get_analysis_archive_rule(
     rule_id="ruleId",
 )
@@ -1925,8 +1946,12 @@ client.archives.get_analysis_archive_rule(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.archives.delete_analysis_archive_rule(
     rule_id="ruleId",
 )
@@ -1966,7 +1991,7 @@ client.archives.delete_analysis_archive_rule(
 </details>
 
 ## Events
-<details><summary><code>client.events.<a href="src/fern/events/client.py">list_event_types</a>()</code></summary>
+<details><summary><code>client.events.<a href="src/fern/events/client.py">list_event_types</a>() -> EventTypesList</code></summary>
 <dl>
 <dd>
 
@@ -1994,8 +2019,12 @@ Returns list of event types in the category hierarchy
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.events.list_event_types()
 
 ```
@@ -2024,7 +2053,7 @@ client.events.list_event_types()
 </dl>
 </details>
 
-<details><summary><code>client.events.<a href="src/fern/events/client.py">list_events</a>(...)</code></summary>
+<details><summary><code>client.events.<a href="src/fern/events/client.py">list_events</a>(...) -> EventsList</code></summary>
 <dl>
 <dd>
 
@@ -2052,8 +2081,12 @@ Returns a paginated list of events in the descending order of their occurrence. 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.events.list_events()
 
 ```
@@ -2170,7 +2203,7 @@ client.events.list_events()
 </dl>
 </details>
 
-<details><summary><code>client.events.<a href="src/fern/events/client.py">delete_events</a>(...)</code></summary>
+<details><summary><code>client.events.<a href="src/fern/events/client.py">delete_events</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -2198,8 +2231,12 @@ Delete all or a subset of events filtered using the optional query parameters
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.events.delete_events()
 
 ```
@@ -2260,7 +2297,7 @@ client.events.delete_events()
 </dl>
 </details>
 
-<details><summary><code>client.events.<a href="src/fern/events/client.py">get_event</a>(...)</code></summary>
+<details><summary><code>client.events.<a href="src/fern/events/client.py">get_event</a>(...) -> EventResponse</code></summary>
 <dl>
 <dd>
 
@@ -2288,8 +2325,12 @@ Lookup an event by its event ID
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.events.get_event(
     event_id="eventId",
 )
@@ -2364,8 +2405,12 @@ Delete an event by its event ID
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.events.delete_event(
     event_id="eventId",
 )
@@ -2413,7 +2458,7 @@ client.events.delete_event(
 </details>
 
 ## Images
-<details><summary><code>client.images.<a href="src/fern/images/client.py">list_images</a>(...)</code></summary>
+<details><summary><code>client.images.<a href="src/fern/images/client.py">list_images</a>(...) -> AnchoreImageList</code></summary>
 <dl>
 <dd>
 
@@ -2441,8 +2486,12 @@ List all images visible to the user
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.images.list_images()
 
 ```
@@ -2511,7 +2560,7 @@ client.images.list_images()
 </dl>
 </details>
 
-<details><summary><code>client.images.<a href="src/fern/images/client.py">add_image</a>(...)</code></summary>
+<details><summary><code>client.images.<a href="src/fern/images/client.py">add_image</a>(...) -> AnchoreImageList</code></summary>
 <dl>
 <dd>
 
@@ -2539,8 +2588,12 @@ Creates a new analysis task that is executed asynchronously
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.images.add_image()
 
 ```
@@ -2581,7 +2634,7 @@ client.images.add_image()
 <dl>
 <dd>
 
-**annotations:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — Annotations to be associated with the added image in key/value form
+**annotations:** `typing.Optional[typing.Dict[str, typing.Any]]` — Annotations to be associated with the added image in key/value form
     
 </dd>
 </dl>
@@ -2589,7 +2642,7 @@ client.images.add_image()
 <dl>
 <dd>
 
-**created_at:** `typing.Optional[dt.datetime]` — Optional override of the image creation time, only honored when both tag and digest are also supplied  e.g. 2018-10-17T18:14:00Z. Deprecated in favor of the 'source' field
+**created_at:** `typing.Optional[datetime.datetime]` — Optional override of the image creation time, only honored when both tag and digest are also supplied  e.g. 2018-10-17T18:14:00Z. Deprecated in favor of the 'source' field
     
 </dd>
 </dl>
@@ -2649,7 +2702,7 @@ client.images.add_image()
 </dl>
 </details>
 
-<details><summary><code>client.images.<a href="src/fern/images/client.py">delete_images_async</a>(...)</code></summary>
+<details><summary><code>client.images.<a href="src/fern/images/client.py">delete_images_async</a>(...) -> DeleteImageResponseList</code></summary>
 <dl>
 <dd>
 
@@ -2677,10 +2730,16 @@ Delete analysis for image digests in the list asynchronously
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.images.delete_images_async(
-    image_digests=["imageDigests"],
+    image_digests=[
+        "imageDigests"
+    ],
 )
 
 ```
@@ -2733,7 +2792,7 @@ client.images.delete_images_async(
 </dl>
 </details>
 
-<details><summary><code>client.images.<a href="src/fern/images/client.py">get_image_by_image_id</a>(...)</code></summary>
+<details><summary><code>client.images.<a href="src/fern/images/client.py">get_image_by_image_id</a>(...) -> AnchoreImageList</code></summary>
 <dl>
 <dd>
 
@@ -2747,8 +2806,12 @@ client.images.delete_images_async(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.images.get_image_by_image_id(
     image_id="imageId",
 )
@@ -2795,7 +2858,7 @@ client.images.get_image_by_image_id(
 </dl>
 </details>
 
-<details><summary><code>client.images.<a href="src/fern/images/client.py">delete_image_by_image_id</a>(...)</code></summary>
+<details><summary><code>client.images.<a href="src/fern/images/client.py">delete_image_by_image_id</a>(...) -> DeleteImageResponse</code></summary>
 <dl>
 <dd>
 
@@ -2809,8 +2872,12 @@ client.images.get_image_by_image_id(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.images.delete_image_by_image_id(
     image_id="imageId",
 )
@@ -2865,7 +2932,7 @@ client.images.delete_image_by_image_id(
 </dl>
 </details>
 
-<details><summary><code>client.images.<a href="src/fern/images/client.py">get_image_policy_check_by_image_id</a>(...)</code></summary>
+<details><summary><code>client.images.<a href="src/fern/images/client.py">get_image_policy_check_by_image_id</a>(...) -> PolicyEvaluationList</code></summary>
 <dl>
 <dd>
 
@@ -2893,8 +2960,12 @@ Get the policy evaluation for the given image
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.images.get_image_policy_check_by_image_id(
     image_id="imageId",
     tag="tag",
@@ -2974,7 +3045,7 @@ client.images.get_image_policy_check_by_image_id(
 </dl>
 </details>
 
-<details><summary><code>client.images.<a href="src/fern/images/client.py">list_image_content_by_imageid</a>(...)</code></summary>
+<details><summary><code>client.images.<a href="src/fern/images/client.py">list_image_content_by_imageid</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -2988,8 +3059,12 @@ client.images.get_image_policy_check_by_image_id(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.images.list_image_content_by_imageid(
     image_id="imageId",
 )
@@ -3036,7 +3111,7 @@ client.images.list_image_content_by_imageid(
 </dl>
 </details>
 
-<details><summary><code>client.images.<a href="src/fern/images/client.py">get_image_content_by_type_image_id_files</a>(...)</code></summary>
+<details><summary><code>client.images.<a href="src/fern/images/client.py">get_image_content_by_type_image_id_files</a>(...) -> ContentFilesResponse</code></summary>
 <dl>
 <dd>
 
@@ -3050,8 +3125,12 @@ client.images.list_image_content_by_imageid(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.images.get_image_content_by_type_image_id_files(
     image_id="imageId",
 )
@@ -3098,7 +3177,7 @@ client.images.get_image_content_by_type_image_id_files(
 </dl>
 </details>
 
-<details><summary><code>client.images.<a href="src/fern/images/client.py">get_image_content_by_type_image_id_javapackage</a>(...)</code></summary>
+<details><summary><code>client.images.<a href="src/fern/images/client.py">get_image_content_by_type_image_id_javapackage</a>(...) -> ContentJavaPackageResponse</code></summary>
 <dl>
 <dd>
 
@@ -3112,8 +3191,12 @@ client.images.get_image_content_by_type_image_id_files(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.images.get_image_content_by_type_image_id_javapackage(
     image_id="imageId",
 )
@@ -3160,7 +3243,7 @@ client.images.get_image_content_by_type_image_id_javapackage(
 </dl>
 </details>
 
-<details><summary><code>client.images.<a href="src/fern/images/client.py">get_image_content_by_type_image_id</a>(...)</code></summary>
+<details><summary><code>client.images.<a href="src/fern/images/client.py">get_image_content_by_type_image_id</a>(...) -> ContentPackageResponse</code></summary>
 <dl>
 <dd>
 
@@ -3174,8 +3257,12 @@ client.images.get_image_content_by_type_image_id_javapackage(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.images.get_image_content_by_type_image_id(
     image_id="imageId",
     ctype="ctype",
@@ -3231,7 +3318,7 @@ client.images.get_image_content_by_type_image_id(
 </dl>
 </details>
 
-<details><summary><code>client.images.<a href="src/fern/images/client.py">get_image_vulnerability_types_by_image_id</a>(...)</code></summary>
+<details><summary><code>client.images.<a href="src/fern/images/client.py">get_image_vulnerability_types_by_image_id</a>(...) -> typing.List[GetImageVulnerabilityTypesByImageIdResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -3245,8 +3332,12 @@ client.images.get_image_content_by_type_image_id(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.images.get_image_vulnerability_types_by_image_id(
     image_id="imageId",
 )
@@ -3293,7 +3384,7 @@ client.images.get_image_vulnerability_types_by_image_id(
 </dl>
 </details>
 
-<details><summary><code>client.images.<a href="src/fern/images/client.py">get_image_vulnerabilities_by_type_image_id</a>(...)</code></summary>
+<details><summary><code>client.images.<a href="src/fern/images/client.py">get_image_vulnerabilities_by_type_image_id</a>(...) -> VulnerabilityResponse</code></summary>
 <dl>
 <dd>
 
@@ -3307,8 +3398,12 @@ client.images.get_image_vulnerability_types_by_image_id(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.images.get_image_vulnerabilities_by_type_image_id(
     image_id="imageId",
     vtype="vtype",
@@ -3364,7 +3459,7 @@ client.images.get_image_vulnerabilities_by_type_image_id(
 </dl>
 </details>
 
-<details><summary><code>client.images.<a href="src/fern/images/client.py">get_image</a>(...)</code></summary>
+<details><summary><code>client.images.<a href="src/fern/images/client.py">get_image</a>(...) -> AnchoreImageList</code></summary>
 <dl>
 <dd>
 
@@ -3378,8 +3473,12 @@ client.images.get_image_vulnerabilities_by_type_image_id(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.images.get_image(
     image_digest="imageDigest",
 )
@@ -3426,7 +3525,7 @@ client.images.get_image(
 </dl>
 </details>
 
-<details><summary><code>client.images.<a href="src/fern/images/client.py">delete_image</a>(...)</code></summary>
+<details><summary><code>client.images.<a href="src/fern/images/client.py">delete_image</a>(...) -> DeleteImageResponse</code></summary>
 <dl>
 <dd>
 
@@ -3440,8 +3539,12 @@ client.images.get_image(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.images.delete_image(
     image_digest="imageDigest",
 )
@@ -3496,7 +3599,7 @@ client.images.delete_image(
 </dl>
 </details>
 
-<details><summary><code>client.images.<a href="src/fern/images/client.py">get_image_policy_check</a>(...)</code></summary>
+<details><summary><code>client.images.<a href="src/fern/images/client.py">get_image_policy_check</a>(...) -> PolicyEvaluationList</code></summary>
 <dl>
 <dd>
 
@@ -3524,8 +3627,12 @@ Get the policy evaluation for the given image
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.images.get_image_policy_check(
     image_digest="imageDigest",
     tag="tag",
@@ -3613,7 +3720,7 @@ client.images.get_image_policy_check(
 </dl>
 </details>
 
-<details><summary><code>client.images.<a href="src/fern/images/client.py">list_image_content</a>(...)</code></summary>
+<details><summary><code>client.images.<a href="src/fern/images/client.py">list_image_content</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -3627,8 +3734,12 @@ client.images.get_image_policy_check(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.images.list_image_content(
     image_digest="imageDigest",
 )
@@ -3675,7 +3786,7 @@ client.images.list_image_content(
 </dl>
 </details>
 
-<details><summary><code>client.images.<a href="src/fern/images/client.py">get_image_content_by_type_files</a>(...)</code></summary>
+<details><summary><code>client.images.<a href="src/fern/images/client.py">get_image_content_by_type_files</a>(...) -> ContentFilesResponse</code></summary>
 <dl>
 <dd>
 
@@ -3689,8 +3800,12 @@ client.images.list_image_content(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.images.get_image_content_by_type_files(
     image_digest="imageDigest",
 )
@@ -3737,7 +3852,7 @@ client.images.get_image_content_by_type_files(
 </dl>
 </details>
 
-<details><summary><code>client.images.<a href="src/fern/images/client.py">get_image_content_by_type_javapackage</a>(...)</code></summary>
+<details><summary><code>client.images.<a href="src/fern/images/client.py">get_image_content_by_type_javapackage</a>(...) -> ContentJavaPackageResponse</code></summary>
 <dl>
 <dd>
 
@@ -3751,8 +3866,12 @@ client.images.get_image_content_by_type_files(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.images.get_image_content_by_type_javapackage(
     image_digest="imageDigest",
 )
@@ -3799,7 +3918,7 @@ client.images.get_image_content_by_type_javapackage(
 </dl>
 </details>
 
-<details><summary><code>client.images.<a href="src/fern/images/client.py">get_image_content_by_type_malware</a>(...)</code></summary>
+<details><summary><code>client.images.<a href="src/fern/images/client.py">get_image_content_by_type_malware</a>(...) -> ContentMalwareResponse</code></summary>
 <dl>
 <dd>
 
@@ -3813,8 +3932,12 @@ client.images.get_image_content_by_type_javapackage(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.images.get_image_content_by_type_malware(
     image_digest="imageDigest",
 )
@@ -3861,7 +3984,7 @@ client.images.get_image_content_by_type_malware(
 </dl>
 </details>
 
-<details><summary><code>client.images.<a href="src/fern/images/client.py">get_image_content_by_type</a>(...)</code></summary>
+<details><summary><code>client.images.<a href="src/fern/images/client.py">get_image_content_by_type</a>(...) -> ContentPackageResponse</code></summary>
 <dl>
 <dd>
 
@@ -3875,8 +3998,12 @@ client.images.get_image_content_by_type_malware(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.images.get_image_content_by_type(
     image_digest="imageDigest",
     ctype="ctype",
@@ -3932,7 +4059,7 @@ client.images.get_image_content_by_type(
 </dl>
 </details>
 
-<details><summary><code>client.images.<a href="src/fern/images/client.py">list_image_metadata</a>(...)</code></summary>
+<details><summary><code>client.images.<a href="src/fern/images/client.py">list_image_metadata</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -3946,8 +4073,12 @@ client.images.get_image_content_by_type(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.images.list_image_metadata(
     image_digest="imageDigest",
 )
@@ -3994,7 +4125,7 @@ client.images.list_image_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.images.<a href="src/fern/images/client.py">get_image_metadata_by_type</a>(...)</code></summary>
+<details><summary><code>client.images.<a href="src/fern/images/client.py">get_image_metadata_by_type</a>(...) -> MetadataResponse</code></summary>
 <dl>
 <dd>
 
@@ -4008,8 +4139,12 @@ client.images.list_image_metadata(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.images.get_image_metadata_by_type(
     image_digest="imageDigest",
     mtype="mtype",
@@ -4065,7 +4200,7 @@ client.images.get_image_metadata_by_type(
 </dl>
 </details>
 
-<details><summary><code>client.images.<a href="src/fern/images/client.py">get_image_sbom_native</a>(...)</code></summary>
+<details><summary><code>client.images.<a href="src/fern/images/client.py">get_image_sbom_native</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -4079,8 +4214,12 @@ client.images.get_image_metadata_by_type(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.images.get_image_sbom_native(
     image_digest="imageDigest",
 )
@@ -4115,7 +4254,7 @@ client.images.get_image_sbom_native(
 <dl>
 <dd>
 
-**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response.
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
     
 </dd>
 </dl>
@@ -4127,7 +4266,7 @@ client.images.get_image_sbom_native(
 </dl>
 </details>
 
-<details><summary><code>client.images.<a href="src/fern/images/client.py">get_image_vulnerability_types</a>(...)</code></summary>
+<details><summary><code>client.images.<a href="src/fern/images/client.py">get_image_vulnerability_types</a>(...) -> typing.List[GetImageVulnerabilityTypesResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -4141,8 +4280,12 @@ client.images.get_image_sbom_native(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.images.get_image_vulnerability_types(
     image_digest="imageDigest",
 )
@@ -4189,7 +4332,7 @@ client.images.get_image_vulnerability_types(
 </dl>
 </details>
 
-<details><summary><code>client.images.<a href="src/fern/images/client.py">get_image_vulnerabilities_by_type</a>(...)</code></summary>
+<details><summary><code>client.images.<a href="src/fern/images/client.py">get_image_vulnerabilities_by_type</a>(...) -> VulnerabilityResponse</code></summary>
 <dl>
 <dd>
 
@@ -4203,8 +4346,12 @@ client.images.get_image_vulnerability_types(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.images.get_image_vulnerabilities_by_type(
     image_digest="imageDigest",
     vtype="vtype",
@@ -4277,7 +4424,7 @@ client.images.get_image_vulnerabilities_by_type(
 </details>
 
 ## Import
-<details><summary><code>client.import_.<a href="src/fern/import_/client.py">image_archive</a>(...)</code></summary>
+<details><summary><code>client.import_.<a href="src/fern/import_/client.py">image_archive</a>(...) -> AnchoreImageList</code></summary>
 <dl>
 <dd>
 
@@ -4291,9 +4438,15 @@ client.images.get_image_vulnerabilities_by_type(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
-client.import_.image_archive()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
+client.import_.image_archive(
+    archive_file="example_archive_file",
+)
 
 ```
 </dd>
@@ -4309,9 +4462,7 @@ client.import_.image_archive()
 <dl>
 <dd>
 
-**archive_file:** `from __future__ import annotations
-
-core.File` — See core.File for more documentation
+**archive_file:** `core.File` — anchore image tar archive.
     
 </dd>
 </dl>
@@ -4332,7 +4483,7 @@ core.File` — See core.File for more documentation
 </details>
 
 ## Imports
-<details><summary><code>client.imports.<a href="src/fern/imports/client.py">list_operations</a>()</code></summary>
+<details><summary><code>client.imports.<a href="src/fern/imports/client.py">list_operations</a>() -> ImageImports</code></summary>
 <dl>
 <dd>
 
@@ -4346,8 +4497,12 @@ core.File` — See core.File for more documentation
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.imports.list_operations()
 
 ```
@@ -4376,7 +4531,7 @@ client.imports.list_operations()
 </dl>
 </details>
 
-<details><summary><code>client.imports.<a href="src/fern/imports/client.py">create_operation</a>()</code></summary>
+<details><summary><code>client.imports.<a href="src/fern/imports/client.py">create_operation</a>() -> ImageImportOperation</code></summary>
 <dl>
 <dd>
 
@@ -4390,8 +4545,12 @@ client.imports.list_operations()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.imports.create_operation()
 
 ```
@@ -4420,7 +4579,7 @@ client.imports.create_operation()
 </dl>
 </details>
 
-<details><summary><code>client.imports.<a href="src/fern/imports/client.py">get_operation</a>(...)</code></summary>
+<details><summary><code>client.imports.<a href="src/fern/imports/client.py">get_operation</a>(...) -> ImageImportOperation</code></summary>
 <dl>
 <dd>
 
@@ -4434,8 +4593,12 @@ client.imports.create_operation()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.imports.get_operation(
     operation_id="operation_id",
 )
@@ -4474,7 +4637,7 @@ client.imports.get_operation(
 </dl>
 </details>
 
-<details><summary><code>client.imports.<a href="src/fern/imports/client.py">invalidate_operation</a>(...)</code></summary>
+<details><summary><code>client.imports.<a href="src/fern/imports/client.py">invalidate_operation</a>(...) -> ImageImportOperation</code></summary>
 <dl>
 <dd>
 
@@ -4488,8 +4651,12 @@ client.imports.get_operation(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.imports.invalidate_operation(
     operation_id="operation_id",
 )
@@ -4528,7 +4695,7 @@ client.imports.invalidate_operation(
 </dl>
 </details>
 
-<details><summary><code>client.imports.<a href="src/fern/imports/client.py">list_import_dockerfiles</a>(...)</code></summary>
+<details><summary><code>client.imports.<a href="src/fern/imports/client.py">list_import_dockerfiles</a>(...) -> ImportContentDigestList</code></summary>
 <dl>
 <dd>
 
@@ -4542,8 +4709,12 @@ client.imports.invalidate_operation(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.imports.list_import_dockerfiles(
     operation_id="operation_id",
 )
@@ -4582,7 +4753,7 @@ client.imports.list_import_dockerfiles(
 </dl>
 </details>
 
-<details><summary><code>client.imports.<a href="src/fern/imports/client.py">import_image_dockerfile</a>(...)</code></summary>
+<details><summary><code>client.imports.<a href="src/fern/imports/client.py">import_image_dockerfile</a>(...) -> ImageImportContentResponse</code></summary>
 <dl>
 <dd>
 
@@ -4596,8 +4767,12 @@ client.imports.list_import_dockerfiles(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.imports.import_image_dockerfile(
     operation_id="operation_id",
 )
@@ -4636,7 +4811,7 @@ client.imports.import_image_dockerfile(
 </dl>
 </details>
 
-<details><summary><code>client.imports.<a href="src/fern/imports/client.py">list_import_image_configs</a>(...)</code></summary>
+<details><summary><code>client.imports.<a href="src/fern/imports/client.py">list_import_image_configs</a>(...) -> ImportContentDigestList</code></summary>
 <dl>
 <dd>
 
@@ -4650,8 +4825,12 @@ client.imports.import_image_dockerfile(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.imports.list_import_image_configs(
     operation_id="operation_id",
 )
@@ -4690,7 +4869,7 @@ client.imports.list_import_image_configs(
 </dl>
 </details>
 
-<details><summary><code>client.imports.<a href="src/fern/imports/client.py">import_image_config</a>(...)</code></summary>
+<details><summary><code>client.imports.<a href="src/fern/imports/client.py">import_image_config</a>(...) -> ImageImportContentResponse</code></summary>
 <dl>
 <dd>
 
@@ -4704,11 +4883,17 @@ client.imports.list_import_image_configs(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.imports.import_image_config(
     operation_id="operation_id",
-    request={"key": "value"},
+    request={
+        "key": "value"
+    },
 )
 
 ```
@@ -4733,7 +4918,7 @@ client.imports.import_image_config(
 <dl>
 <dd>
 
-**request:** `typing.Dict[str, typing.Optional[typing.Any]]` 
+**request:** `typing.Dict[str, typing.Any]` 
     
 </dd>
 </dl>
@@ -4753,7 +4938,7 @@ client.imports.import_image_config(
 </dl>
 </details>
 
-<details><summary><code>client.imports.<a href="src/fern/imports/client.py">list_import_image_manifests</a>(...)</code></summary>
+<details><summary><code>client.imports.<a href="src/fern/imports/client.py">list_import_image_manifests</a>(...) -> ImportContentDigestList</code></summary>
 <dl>
 <dd>
 
@@ -4767,8 +4952,12 @@ client.imports.import_image_config(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.imports.list_import_image_manifests(
     operation_id="operation_id",
 )
@@ -4807,7 +4996,7 @@ client.imports.list_import_image_manifests(
 </dl>
 </details>
 
-<details><summary><code>client.imports.<a href="src/fern/imports/client.py">import_image_manifest</a>(...)</code></summary>
+<details><summary><code>client.imports.<a href="src/fern/imports/client.py">import_image_manifest</a>(...) -> ImageImportContentResponse</code></summary>
 <dl>
 <dd>
 
@@ -4821,11 +5010,17 @@ client.imports.list_import_image_manifests(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.imports.import_image_manifest(
     operation_id="operation_id",
-    request={"key": "value"},
+    request={
+        "key": "value"
+    },
 )
 
 ```
@@ -4850,7 +5045,7 @@ client.imports.import_image_manifest(
 <dl>
 <dd>
 
-**request:** `typing.Dict[str, typing.Optional[typing.Any]]` 
+**request:** `typing.Dict[str, typing.Any]` 
     
 </dd>
 </dl>
@@ -4870,7 +5065,7 @@ client.imports.import_image_manifest(
 </dl>
 </details>
 
-<details><summary><code>client.imports.<a href="src/fern/imports/client.py">list_import_packages</a>(...)</code></summary>
+<details><summary><code>client.imports.<a href="src/fern/imports/client.py">list_import_packages</a>(...) -> ImportContentDigestList</code></summary>
 <dl>
 <dd>
 
@@ -4884,8 +5079,12 @@ client.imports.import_image_manifest(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.imports.list_import_packages(
     operation_id="operation_id",
 )
@@ -4924,7 +5123,7 @@ client.imports.list_import_packages(
 </dl>
 </details>
 
-<details><summary><code>client.imports.<a href="src/fern/imports/client.py">import_image_packages</a>(...)</code></summary>
+<details><summary><code>client.imports.<a href="src/fern/imports/client.py">import_image_packages</a>(...) -> ImageImportContentResponse</code></summary>
 <dl>
 <dd>
 
@@ -4937,22 +5136,24 @@ client.imports.list_import_packages(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    ImportDistribution,
-    ImportPackage,
-    ImportPackageLocation,
-    ImportSource,
+from fern import FernApi, ImportPackage, ImportPackageLocation, ImportDistribution, ImportSource
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
 )
 
-client = FernApi()
 client.imports.import_image_packages(
     operation_id="operation_id",
     artifacts=[
         ImportPackage(
-            cpes=["cpes"],
+            cpes=[
+                "cpes"
+            ],
             language="language",
-            licenses=["licenses"],
+            licenses=[
+                "licenses"
+            ],
             locations=[
                 ImportPackageLocation(
                     path="path",
@@ -4970,7 +5171,9 @@ client.imports.import_image_packages(
         version="version",
     ),
     source=ImportSource(
-        target={"key": "value"},
+        target={
+            "key": "value"
+        },
         type="type",
     ),
 )
@@ -4997,7 +5200,7 @@ client.imports.import_image_packages(
 <dl>
 <dd>
 
-**artifacts:** `typing.Sequence[ImportPackage]` 
+**artifacts:** `typing.List[ImportPackage]` 
     
 </dd>
 </dl>
@@ -5021,7 +5224,7 @@ client.imports.import_image_packages(
 <dl>
 <dd>
 
-**artifact_relationships:** `typing.Optional[typing.Sequence[ImportPackageRelationship]]` 
+**artifact_relationships:** `typing.Optional[typing.List[ImportPackageRelationship]]` 
     
 </dd>
 </dl>
@@ -5057,7 +5260,7 @@ client.imports.import_image_packages(
 </dl>
 </details>
 
-<details><summary><code>client.imports.<a href="src/fern/imports/client.py">list_import_parent_manifests</a>(...)</code></summary>
+<details><summary><code>client.imports.<a href="src/fern/imports/client.py">list_import_parent_manifests</a>(...) -> ImportContentDigestList</code></summary>
 <dl>
 <dd>
 
@@ -5071,8 +5274,12 @@ client.imports.import_image_packages(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.imports.list_import_parent_manifests(
     operation_id="operation_id",
 )
@@ -5111,7 +5318,7 @@ client.imports.list_import_parent_manifests(
 </dl>
 </details>
 
-<details><summary><code>client.imports.<a href="src/fern/imports/client.py">import_image_parent_manifest</a>(...)</code></summary>
+<details><summary><code>client.imports.<a href="src/fern/imports/client.py">import_image_parent_manifest</a>(...) -> ImageImportContentResponse</code></summary>
 <dl>
 <dd>
 
@@ -5125,11 +5332,17 @@ client.imports.list_import_parent_manifests(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.imports.import_image_parent_manifest(
     operation_id="operation_id",
-    request={"key": "value"},
+    request={
+        "key": "value"
+    },
 )
 
 ```
@@ -5154,7 +5367,7 @@ client.imports.import_image_parent_manifest(
 <dl>
 <dd>
 
-**request:** `typing.Dict[str, typing.Optional[typing.Any]]` 
+**request:** `typing.Dict[str, typing.Any]` 
     
 </dd>
 </dl>
@@ -5175,7 +5388,7 @@ client.imports.import_image_parent_manifest(
 </details>
 
 ## Policies
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">list_policies</a>(...)</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py">list_policies</a>(...) -> PolicyBundleList</code></summary>
 <dl>
 <dd>
 
@@ -5203,8 +5416,12 @@ List all saved policy bundles
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.policies.list_policies()
 
 ```
@@ -5249,7 +5466,7 @@ client.policies.list_policies()
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">add_policy</a>(...)</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py">add_policy</a>(...) -> PolicyBundleRecord</code></summary>
 <dl>
 <dd>
 
@@ -5276,9 +5493,13 @@ Adds a new policy bundle to the system
 <dd>
 
 ```python
-from fern import FernApi, ImageRef, ImageRefType, MappingRule, Policy
+from fern import FernApi, MappingRule, ImageRef, ImageRefType, Policy
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.policies.add_policy(
     id="id",
     mappings=[
@@ -5315,31 +5536,7 @@ client.policies.add_policy(
 <dl>
 <dd>
 
-**id:** `str` — Id of the bundle
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**mappings:** `typing.Sequence[MappingRule]` — Mapping rules for defining which policy and whitelist(s) to apply to an image based on a match of the image tag or id. Evaluated in order.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**policies:** `typing.Sequence[Policy]` — Policies which define the go/stop/warn status of an image using rule matches on image properties
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**version:** `str` — Version id for this bundle format
+**request:** `PolicyBundle` 
     
 </dd>
 </dl>
@@ -5348,46 +5545,6 @@ client.policies.add_policy(
 <dd>
 
 **anchore_account:** `typing.Optional[str]` — An account name to change the resource scope of the request to that account, if permissions allow (admin only)
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**blacklisted_images:** `typing.Optional[typing.Sequence[ImageSelectionRule]]` — List of mapping rules that define which images should always result in a STOP/FAIL policy result regardless of policy content or presence in whitelisted_images
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**comment:** `typing.Optional[str]` — Description of the bundle, human readable
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**name:** `typing.Optional[str]` — Human readable name for the bundle
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**whitelisted_images:** `typing.Optional[typing.Sequence[ImageSelectionRule]]` — List of mapping rules that define which images should always be passed (unless also on the blacklist), regardless of policy result.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**whitelists:** `typing.Optional[typing.Sequence[Whitelist]]` — Whitelists which define which policy matches to disregard explicitly in the final policy decision
     
 </dd>
 </dl>
@@ -5407,7 +5564,7 @@ client.policies.add_policy(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">get_policy</a>(...)</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py">get_policy</a>(...) -> PolicyBundleList</code></summary>
 <dl>
 <dd>
 
@@ -5435,8 +5592,12 @@ Get the policy bundle content
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.policies.get_policy(
     policy_id="policyId",
 )
@@ -5491,7 +5652,7 @@ client.policies.get_policy(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">update_policy</a>(...)</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py">update_policy</a>(...) -> PolicyBundleList</code></summary>
 <dl>
 <dd>
 
@@ -5519,8 +5680,12 @@ Update/replace and existing policy
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.policies.update_policy(
     policy_id_="policyId",
 )
@@ -5539,7 +5704,15 @@ client.policies.update_policy(
 <dl>
 <dd>
 
-**policy_id_:** `str` 
+**policy_id:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request:** `PolicyBundleRecord` 
     
 </dd>
 </dl>
@@ -5556,62 +5729,6 @@ client.policies.update_policy(
 <dd>
 
 **anchore_account:** `typing.Optional[str]` — An account name to change the resource scope of the request to that account, if permissions allow (admin only)
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**policy_bundle_record_active:** `typing.Optional[bool]` — True if the bundle is currently defined to be used automatically
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_at:** `typing.Optional[dt.datetime]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**last_updated:** `typing.Optional[dt.datetime]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**policy_id:** `typing.Optional[str]` — The bundle's identifier
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**policy_source:** `typing.Optional[str]` — Source location of where the policy bundle originated
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**policybundle:** `typing.Optional[PolicyBundle]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**user_id:** `typing.Optional[str]` — UserId of the user that owns the bundle
     
 </dd>
 </dl>
@@ -5659,8 +5776,12 @@ Delete the specified policy
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.policies.delete_policy(
     policy_id="policyId",
 )
@@ -5708,7 +5829,7 @@ client.policies.delete_policy(
 </details>
 
 ## Query
-<details><summary><code>client.query.<a href="src/fern/query/client.py">images_by_package</a>(...)</code></summary>
+<details><summary><code>client.query.<a href="src/fern/query/client.py">images_by_package</a>(...) -> PaginatedImageList</code></summary>
 <dl>
 <dd>
 
@@ -5736,8 +5857,12 @@ Filterable query interface to search for images containing specified package
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.query.images_by_package(
     name="name",
 )
@@ -5816,7 +5941,7 @@ client.query.images_by_package(
 </dl>
 </details>
 
-<details><summary><code>client.query.<a href="src/fern/query/client.py">images_by_vulnerability</a>(...)</code></summary>
+<details><summary><code>client.query.<a href="src/fern/query/client.py">images_by_vulnerability</a>(...) -> PaginatedVulnerableImageList</code></summary>
 <dl>
 <dd>
 
@@ -5844,8 +5969,12 @@ Returns a listing of images and their respective packages vulnerable to the give
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.query.images_by_vulnerability(
     vulnerability_id="vulnerability_id",
 )
@@ -5940,7 +6069,7 @@ client.query.images_by_vulnerability(
 </dl>
 </details>
 
-<details><summary><code>client.query.<a href="src/fern/query/client.py">vulnerabilities</a>(...)</code></summary>
+<details><summary><code>client.query.<a href="src/fern/query/client.py">vulnerabilities</a>(...) -> PaginatedVulnerabilityList</code></summary>
 <dl>
 <dd>
 
@@ -5968,10 +6097,16 @@ List (w/filters) vulnerability records known by the system, with affected packag
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.query.vulnerabilities(
-    id=["id"],
+    id=[
+        "id"
+    ],
 )
 
 ```
@@ -6049,7 +6184,7 @@ client.query.vulnerabilities(
 </details>
 
 ## Registries
-<details><summary><code>client.registries.<a href="src/fern/registries/client.py">list_registries</a>(...)</code></summary>
+<details><summary><code>client.registries.<a href="src/fern/registries/client.py">list_registries</a>(...) -> RegistryConfigurationList</code></summary>
 <dl>
 <dd>
 
@@ -6077,8 +6212,12 @@ List all configured registries the system can/will watch
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.registries.list_registries()
 
 ```
@@ -6115,7 +6254,7 @@ client.registries.list_registries()
 </dl>
 </details>
 
-<details><summary><code>client.registries.<a href="src/fern/registries/client.py">create_registry</a>(...)</code></summary>
+<details><summary><code>client.registries.<a href="src/fern/registries/client.py">create_registry</a>(...) -> RegistryConfigurationList</code></summary>
 <dl>
 <dd>
 
@@ -6143,8 +6282,12 @@ Adds a new registry to the system
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.registries.create_registry()
 
 ```
@@ -6157,6 +6300,14 @@ client.registries.create_registry()
 
 <dl>
 <dd>
+
+<dl>
+<dd>
+
+**request:** `RegistryConfigurationRequest` 
+    
+</dd>
+</dl>
 
 <dl>
 <dd>
@@ -6177,54 +6328,6 @@ client.registries.create_registry()
 <dl>
 <dd>
 
-**registry:** `typing.Optional[str]` — hostname:port string for accessing the registry, as would be used in a docker pull operation. May include some or all of a repository and wildcards (e.g. docker.io/library/* or gcr.io/myproject/myrepository)
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**registry_name:** `typing.Optional[str]` — human readable name associated with registry record
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**registry_pass:** `typing.Optional[str]` — Password portion of credential to use for this registry
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**registry_type:** `typing.Optional[str]` — Type of registry
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**registry_user:** `typing.Optional[str]` — Username portion of credential to use for this registry
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**registry_verify:** `typing.Optional[bool]` — Use TLS/SSL verification for the registry URL
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
     
 </dd>
@@ -6237,7 +6340,7 @@ client.registries.create_registry()
 </dl>
 </details>
 
-<details><summary><code>client.registries.<a href="src/fern/registries/client.py">get_registry</a>(...)</code></summary>
+<details><summary><code>client.registries.<a href="src/fern/registries/client.py">get_registry</a>(...) -> RegistryConfigurationList</code></summary>
 <dl>
 <dd>
 
@@ -6265,8 +6368,12 @@ Get information on a specific registry
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.registries.get_registry(
     registry="registry",
 )
@@ -6313,7 +6420,7 @@ client.registries.get_registry(
 </dl>
 </details>
 
-<details><summary><code>client.registries.<a href="src/fern/registries/client.py">update_registry</a>(...)</code></summary>
+<details><summary><code>client.registries.<a href="src/fern/registries/client.py">update_registry</a>(...) -> RegistryConfigurationList</code></summary>
 <dl>
 <dd>
 
@@ -6341,8 +6448,12 @@ Replaces an existing registry record with the given record
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.registries.update_registry(
     registry_="registry",
 )
@@ -6361,7 +6472,15 @@ client.registries.update_registry(
 <dl>
 <dd>
 
-**registry_:** `str` 
+**registry:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request:** `RegistryConfigurationRequest` 
     
 </dd>
 </dl>
@@ -6378,54 +6497,6 @@ client.registries.update_registry(
 <dd>
 
 **anchore_account:** `typing.Optional[str]` — An account name to change the resource scope of the request to that account, if permissions allow (admin only)
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**registry:** `typing.Optional[str]` — hostname:port string for accessing the registry, as would be used in a docker pull operation. May include some or all of a repository and wildcards (e.g. docker.io/library/* or gcr.io/myproject/myrepository)
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**registry_name:** `typing.Optional[str]` — human readable name associated with registry record
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**registry_pass:** `typing.Optional[str]` — Password portion of credential to use for this registry
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**registry_type:** `typing.Optional[str]` — Type of registry
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**registry_user:** `typing.Optional[str]` — Username portion of credential to use for this registry
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**registry_verify:** `typing.Optional[bool]` — Use TLS/SSL verification for the registry URL
     
 </dd>
 </dl>
@@ -6473,8 +6544,12 @@ Delete a registry configuration record from the system. Does not remove any imag
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.registries.delete_registry(
     registry="registry",
 )
@@ -6522,7 +6597,7 @@ client.registries.delete_registry(
 </details>
 
 ## Repository Credentials
-<details><summary><code>client.repository_credentials.<a href="src/fern/repository_credentials/client.py">add_repository</a>(...)</code></summary>
+<details><summary><code>client.repository_credentials.<a href="src/fern/repository_credentials/client.py">add_repository</a>(...) -> SubscriptionList</code></summary>
 <dl>
 <dd>
 
@@ -6550,8 +6625,12 @@ client.registries.delete_registry(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.repository_credentials.add_repository(
     repository="repository",
 )
@@ -6615,7 +6694,7 @@ client.repository_credentials.add_repository(
 </details>
 
 ## System
-<details><summary><code>client.system.<a href="src/fern/system/client.py">get_status</a>()</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py">get_status</a>() -> StatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -6643,8 +6722,12 @@ Get the API service status
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.system.get_status()
 
 ```
@@ -6673,7 +6756,7 @@ client.system.get_status()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">get_service_detail</a>()</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py">get_service_detail</a>() -> SystemStatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -6701,8 +6784,12 @@ Get the system status including queue lengths
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.system.get_service_detail()
 
 ```
@@ -6731,7 +6818,7 @@ client.system.get_service_detail()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">describe_error_codes</a>()</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py">describe_error_codes</a>() -> typing.List[AnchoreErrorCode]</code></summary>
 <dl>
 <dd>
 
@@ -6759,8 +6846,12 @@ Describe anchore engine error codes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.system.describe_error_codes()
 
 ```
@@ -6789,7 +6880,7 @@ client.system.describe_error_codes()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">get_system_feeds</a>()</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py">get_system_feeds</a>() -> typing.List[FeedMetadata]</code></summary>
 <dl>
 <dd>
 
@@ -6817,8 +6908,12 @@ Return a list of feed and their groups along with update and record count inform
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.system.get_system_feeds()
 
 ```
@@ -6847,7 +6942,7 @@ client.system.get_system_feeds()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">post_system_feeds</a>(...)</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py">post_system_feeds</a>(...) -> FeedSyncResults</code></summary>
 <dl>
 <dd>
 
@@ -6875,8 +6970,12 @@ Execute a synchronous feed sync operation. The response will block until complet
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.system.post_system_feeds()
 
 ```
@@ -6921,7 +7020,7 @@ client.system.post_system_feeds()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">toggle_feed_enabled</a>(...)</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py">toggle_feed_enabled</a>(...) -> FeedMetadata</code></summary>
 <dl>
 <dd>
 
@@ -6949,8 +7048,12 @@ Disable the feed so that it does not sync on subsequent sync operations
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.system.toggle_feed_enabled(
     feed="feed",
     enabled=True,
@@ -7026,8 +7129,12 @@ Delete the groups and data for the feed and disable the feed itself
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.system.delete_feed(
     feed="feed",
 )
@@ -7066,7 +7173,7 @@ client.system.delete_feed(
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">toggle_group_enabled</a>(...)</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py">toggle_group_enabled</a>(...) -> typing.List[FeedMetadata]</code></summary>
 <dl>
 <dd>
 
@@ -7094,8 +7201,12 @@ Disable a specific group within a feed to not sync
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.system.toggle_group_enabled(
     feed="feed",
     group="group",
@@ -7180,8 +7291,12 @@ Delete the group data and disable the group itself
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.system.delete_feed_group(
     feed="feed",
     group="group",
@@ -7229,7 +7344,7 @@ client.system.delete_feed_group(
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">describe_policy</a>()</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py">describe_policy</a>() -> typing.List[GateSpec]</code></summary>
 <dl>
 <dd>
 
@@ -7257,8 +7372,12 @@ Get the policy language spec for this service
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.system.describe_policy()
 
 ```
@@ -7287,7 +7406,7 @@ client.system.describe_policy()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">list_services</a>()</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py">list_services</a>() -> ServiceList</code></summary>
 <dl>
 <dd>
 
@@ -7301,8 +7420,12 @@ client.system.describe_policy()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.system.list_services()
 
 ```
@@ -7331,7 +7454,7 @@ client.system.list_services()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">get_services_by_name</a>(...)</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py">get_services_by_name</a>(...) -> ServiceList</code></summary>
 <dl>
 <dd>
 
@@ -7345,8 +7468,12 @@ client.system.list_services()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.system.get_services_by_name(
     servicename="servicename",
 )
@@ -7385,7 +7512,7 @@ client.system.get_services_by_name(
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">get_services_by_name_and_host</a>(...)</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py">get_services_by_name_and_host</a>(...) -> ServiceList</code></summary>
 <dl>
 <dd>
 
@@ -7399,8 +7526,12 @@ client.system.get_services_by_name(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.system.get_services_by_name_and_host(
     servicename="servicename",
     hostid="hostid",
@@ -7462,8 +7593,12 @@ client.system.get_services_by_name_and_host(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.system.delete_service(
     servicename="servicename",
     hostid="hostid",
@@ -7539,8 +7674,12 @@ Loads the Webhook configuration for webhook_type, and sends the notification out
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.system.test_webhook(
     webhook_type="webhook_type",
 )
@@ -7588,7 +7727,7 @@ client.system.test_webhook(
 </details>
 
 ## Subscriptions
-<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">list_subscriptions</a>(...)</code></summary>
+<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">list_subscriptions</a>(...) -> SubscriptionList</code></summary>
 <dl>
 <dd>
 
@@ -7602,8 +7741,12 @@ client.system.test_webhook(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.subscriptions.list_subscriptions()
 
 ```
@@ -7656,7 +7799,7 @@ client.subscriptions.list_subscriptions()
 </dl>
 </details>
 
-<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">add_subscription</a>(...)</code></summary>
+<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">add_subscription</a>(...) -> SubscriptionList</code></summary>
 <dl>
 <dd>
 
@@ -7684,8 +7827,12 @@ Create a new subscription to watch a tag and get notifications of changes
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.subscriptions.add_subscription()
 
 ```
@@ -7746,7 +7893,7 @@ client.subscriptions.add_subscription()
 </dl>
 </details>
 
-<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">get_subscription</a>(...)</code></summary>
+<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">get_subscription</a>(...) -> SubscriptionList</code></summary>
 <dl>
 <dd>
 
@@ -7760,8 +7907,12 @@ client.subscriptions.add_subscription()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.subscriptions.get_subscription(
     subscription_id="subscriptionId",
 )
@@ -7808,7 +7959,7 @@ client.subscriptions.get_subscription(
 </dl>
 </details>
 
-<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">update_subscription</a>(...)</code></summary>
+<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">update_subscription</a>(...) -> SubscriptionList</code></summary>
 <dl>
 <dd>
 
@@ -7822,8 +7973,12 @@ client.subscriptions.get_subscription(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.subscriptions.update_subscription(
     subscription_id="subscriptionId",
 )
@@ -7900,8 +8055,12 @@ client.subscriptions.update_subscription(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.subscriptions.delete_subscription(
     subscription_id="subscriptionId",
 )
@@ -7949,7 +8108,7 @@ client.subscriptions.delete_subscription(
 </details>
 
 ## Summaries
-<details><summary><code>client.summaries.<a href="src/fern/summaries/client.py">list_imagetags</a>(...)</code></summary>
+<details><summary><code>client.summaries.<a href="src/fern/summaries/client.py">list_imagetags</a>(...) -> AnchoreImageTagSummaryList</code></summary>
 <dl>
 <dd>
 
@@ -7977,8 +8136,12 @@ List all image tags visible to the user
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.summaries.list_imagetags()
 
 ```
@@ -7995,12 +8158,7 @@ client.summaries.list_imagetags()
 <dl>
 <dd>
 
-**image_status:** `typing.Optional[
-    typing.Union[
-        ListImagetagsRequestImageStatusItem,
-        typing.Sequence[ListImagetagsRequestImageStatusItem],
-    ]
-]` — Filter images in one or more states such as active, deleting. Defaults to active images only if unspecified
+**image_status:** `typing.Optional[typing.Union[ListImagetagsRequestImageStatusItem, typing.Sequence[ListImagetagsRequestImageStatusItem]]]` — Filter images in one or more states such as active, deleting. Defaults to active images only if unspecified
     
 </dd>
 </dl>

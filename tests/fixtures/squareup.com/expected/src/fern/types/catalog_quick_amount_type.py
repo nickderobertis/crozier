@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class CatalogQuickAmountType(str, enum.Enum):
+class CatalogQuickAmountType(enum.StrEnum):
     """
     Determines the type of a specific Quick Amount.
     """

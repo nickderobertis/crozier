@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class DescribePublisherOutputIdentityProvider(str, enum.Enum):
+class DescribePublisherOutputIdentityProvider(enum.StrEnum):
     """
     The type of account used as the identity provider when registering this publisher with CloudFormation.
     """

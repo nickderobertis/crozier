@@ -13,7 +13,7 @@ from .tag_entry import TagEntry
 
 class ArchivedAnalysis(UniversalBaseModel):
     analyzed_at: typing.Optional[dt.datetime] = None
-    annotations: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = pydantic.Field(default=None)
+    annotations: typing.Optional[typing.Dict[str, typing.Any]] = pydantic.Field(default=None)
     """
     User provided annotations as key-value pairs
     """
@@ -24,9 +24,14 @@ class ArchivedAnalysis(UniversalBaseModel):
     """
 
     created_at: typing.Optional[dt.datetime] = None
-    image_digest: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="imageDigest")] = (
-        pydantic.Field(default=None)
-    )
+    image_digest: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="imageDigest"),
+        pydantic.Field(
+            alias="imageDigest",
+            description="The image digest (digest of the manifest describing the image, per docker spec)",
+        ),
+    ] = None
     """
     The image digest (digest of the manifest describing the image, per docker spec)
     """
@@ -37,9 +42,11 @@ class ArchivedAnalysis(UniversalBaseModel):
     """
 
     last_updated: typing.Optional[dt.datetime] = None
-    parent_digest: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="parentDigest")] = (
-        pydantic.Field(default=None)
-    )
+    parent_digest: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="parentDigest"),
+        pydantic.Field(alias="parentDigest", description="The digest of a parent manifest (for manifest-list images)"),
+    ] = None
     """
     The digest of a parent manifest (for manifest-list images)
     """

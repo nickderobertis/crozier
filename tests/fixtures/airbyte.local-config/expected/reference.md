@@ -1,6 +1,6 @@
 # Reference
 ## attempt
-<details><summary><code>client.attempt.<a href="src/fern/attempt/client.py">save_stats</a>(...)</code></summary>
+<details><summary><code>client.attempt.<a href="src/fern/attempt/client.py">save_stats</a>(...) -> InternalOperationResult</code></summary>
 <dl>
 <dd>
 
@@ -13,11 +13,14 @@
 <dd>
 
 ```python
-from fern import AttemptStats, FernApi
+from fern import FernApi, AttemptStats
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.attempt.save_stats(
     attempt_number=1,
     job_id=1000000,
@@ -62,7 +65,7 @@ client.attempt.save_stats(
 <dl>
 <dd>
 
-**stream_stats:** `typing.Optional[typing.Sequence[AttemptStreamStats]]` 
+**stream_stats:** `typing.Optional[typing.List[AttemptStreamStats]]` 
     
 </dd>
 </dl>
@@ -82,7 +85,7 @@ client.attempt.save_stats(
 </dl>
 </details>
 
-<details><summary><code>client.attempt.<a href="src/fern/attempt/client.py">save_sync_config</a>(...)</code></summary>
+<details><summary><code>client.attempt.<a href="src/fern/attempt/client.py">save_sync_config</a>(...) -> InternalOperationResult</code></summary>
 <dl>
 <dd>
 
@@ -95,11 +98,14 @@ client.attempt.save_stats(
 <dd>
 
 ```python
-from fern import AttemptSyncConfig, FernApi
+from fern import FernApi, AttemptSyncConfig
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.attempt.save_sync_config(
     attempt_number=1,
     job_id=1000000,
@@ -159,7 +165,7 @@ client.attempt.save_sync_config(
 </dl>
 </details>
 
-<details><summary><code>client.attempt.<a href="src/fern/attempt/client.py">set_workflow_in_attempt</a>(...)</code></summary>
+<details><summary><code>client.attempt.<a href="src/fern/attempt/client.py">set_workflow_in_attempt</a>(...) -> InternalOperationResult</code></summary>
 <dl>
 <dd>
 
@@ -173,10 +179,13 @@ client.attempt.save_sync_config(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.attempt.set_workflow_in_attempt(
     attempt_number=1,
     job_id=1000000,
@@ -242,7 +251,7 @@ client.attempt.set_workflow_in_attempt(
 </details>
 
 ## connection
-<details><summary><code>client.connection.<a href="src/fern/connection/client.py">create_connection</a>(...)</code></summary>
+<details><summary><code>client.connection.<a href="src/fern/connection/client.py">create_connection</a>(...) -> ConnectionRead</code></summary>
 <dl>
 <dd>
 
@@ -255,11 +264,14 @@ client.attempt.set_workflow_in_attempt(
 <dd>
 
 ```python
-from fern import ConnectionStatus, FernApi
+from fern import FernApi, ConnectionStatus
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.connection.create_connection(
     destination_id="destinationId",
     source_id="sourceId",
@@ -352,7 +364,7 @@ client.connection.create_connection(
 <dl>
 <dd>
 
-**operation_ids:** `typing.Optional[typing.Sequence[OperationId]]` 
+**operation_ids:** `typing.Optional[typing.List[OperationId]]` 
     
 </dd>
 </dl>
@@ -442,10 +454,13 @@ client.connection.create_connection(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.connection.delete_connection(
     connection_id="connectionId",
 )
@@ -464,7 +479,7 @@ client.connection.delete_connection(
 <dl>
 <dd>
 
-**connection_id:** `ConnectionId` 
+**request:** `ConnectionIdRequestBody` 
     
 </dd>
 </dl>
@@ -484,7 +499,7 @@ client.connection.delete_connection(
 </dl>
 </details>
 
-<details><summary><code>client.connection.<a href="src/fern/connection/client.py">get_connection</a>(...)</code></summary>
+<details><summary><code>client.connection.<a href="src/fern/connection/client.py">get_connection</a>(...) -> ConnectionRead</code></summary>
 <dl>
 <dd>
 
@@ -498,10 +513,13 @@ client.connection.delete_connection(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.connection.get_connection(
     connection_id="connectionId",
 )
@@ -520,7 +538,7 @@ client.connection.get_connection(
 <dl>
 <dd>
 
-**connection_id:** `ConnectionId` 
+**request:** `ConnectionIdRequestBody` 
     
 </dd>
 </dl>
@@ -540,7 +558,7 @@ client.connection.get_connection(
 </dl>
 </details>
 
-<details><summary><code>client.connection.<a href="src/fern/connection/client.py">list_connections_for_workspace</a>(...)</code></summary>
+<details><summary><code>client.connection.<a href="src/fern/connection/client.py">list_connections_for_workspace</a>(...) -> ConnectionReadList</code></summary>
 <dl>
 <dd>
 
@@ -568,10 +586,13 @@ List connections for workspace. Does not return deleted connections.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.connection.list_connections_for_workspace(
     workspace_id="workspaceId",
 )
@@ -590,7 +611,7 @@ client.connection.list_connections_for_workspace(
 <dl>
 <dd>
 
-**workspace_id:** `WorkspaceId` 
+**request:** `WorkspaceIdRequestBody` 
     
 </dd>
 </dl>
@@ -610,7 +631,7 @@ client.connection.list_connections_for_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.connection.<a href="src/fern/connection/client.py">list_all_connections_for_workspace</a>(...)</code></summary>
+<details><summary><code>client.connection.<a href="src/fern/connection/client.py">list_all_connections_for_workspace</a>(...) -> ConnectionReadList</code></summary>
 <dl>
 <dd>
 
@@ -638,10 +659,13 @@ List connections for workspace, including deleted connections.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.connection.list_all_connections_for_workspace(
     workspace_id="workspaceId",
 )
@@ -660,7 +684,7 @@ client.connection.list_all_connections_for_workspace(
 <dl>
 <dd>
 
-**workspace_id:** `WorkspaceId` 
+**request:** `WorkspaceIdRequestBody` 
     
 </dd>
 </dl>
@@ -680,7 +704,7 @@ client.connection.list_all_connections_for_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.connection.<a href="src/fern/connection/client.py">reset_connection</a>(...)</code></summary>
+<details><summary><code>client.connection.<a href="src/fern/connection/client.py">reset_connection</a>(...) -> JobInfoRead</code></summary>
 <dl>
 <dd>
 
@@ -694,10 +718,13 @@ client.connection.list_all_connections_for_workspace(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.connection.reset_connection(
     connection_id="connectionId",
 )
@@ -716,7 +743,7 @@ client.connection.reset_connection(
 <dl>
 <dd>
 
-**connection_id:** `ConnectionId` 
+**request:** `ConnectionIdRequestBody` 
     
 </dd>
 </dl>
@@ -736,7 +763,7 @@ client.connection.reset_connection(
 </dl>
 </details>
 
-<details><summary><code>client.connection.<a href="src/fern/connection/client.py">search_connections</a>(...)</code></summary>
+<details><summary><code>client.connection.<a href="src/fern/connection/client.py">search_connections</a>(...) -> ConnectionReadList</code></summary>
 <dl>
 <dd>
 
@@ -750,10 +777,13 @@ client.connection.reset_connection(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.connection.search_connections()
 
 ```
@@ -886,7 +916,7 @@ client.connection.search_connections()
 </dl>
 </details>
 
-<details><summary><code>client.connection.<a href="src/fern/connection/client.py">sync_connection</a>(...)</code></summary>
+<details><summary><code>client.connection.<a href="src/fern/connection/client.py">sync_connection</a>(...) -> JobInfoRead</code></summary>
 <dl>
 <dd>
 
@@ -900,10 +930,13 @@ client.connection.search_connections()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.connection.sync_connection(
     connection_id="connectionId",
 )
@@ -922,7 +955,7 @@ client.connection.sync_connection(
 <dl>
 <dd>
 
-**connection_id:** `ConnectionId` 
+**request:** `ConnectionIdRequestBody` 
     
 </dd>
 </dl>
@@ -942,7 +975,7 @@ client.connection.sync_connection(
 </dl>
 </details>
 
-<details><summary><code>client.connection.<a href="src/fern/connection/client.py">update_connection</a>(...)</code></summary>
+<details><summary><code>client.connection.<a href="src/fern/connection/client.py">update_connection</a>(...) -> ConnectionRead</code></summary>
 <dl>
 <dd>
 
@@ -973,10 +1006,13 @@ containing the updated stream needs to be sent.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.connection.update_connection(
     connection_id="connectionId",
 )
@@ -1059,7 +1095,7 @@ client.connection.update_connection(
 <dl>
 <dd>
 
-**operation_ids:** `typing.Optional[typing.Sequence[OperationId]]` 
+**operation_ids:** `typing.Optional[typing.List[OperationId]]` 
     
 </dd>
 </dl>
@@ -1144,7 +1180,7 @@ client.connection.update_connection(
 </details>
 
 ## destination_definition_specification
-<details><summary><code>client.destination_definition_specification.<a href="src/fern/destination_definition_specification/client.py">get_destination_definition_specification</a>(...)</code></summary>
+<details><summary><code>client.destination_definition_specification.<a href="src/fern/destination_definition_specification/client.py">get_destination_definition_specification</a>(...) -> DestinationDefinitionSpecificationRead</code></summary>
 <dl>
 <dd>
 
@@ -1158,10 +1194,13 @@ client.connection.update_connection(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destination_definition_specification.get_destination_definition_specification(
     destination_definition_id="destinationDefinitionId",
     workspace_id="workspaceId",
@@ -1181,15 +1220,7 @@ client.destination_definition_specification.get_destination_definition_specifica
 <dl>
 <dd>
 
-**destination_definition_id:** `DestinationDefinitionId` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**workspace_id:** `WorkspaceId` 
+**request:** `DestinationDefinitionIdWithWorkspaceId` 
     
 </dd>
 </dl>
@@ -1210,7 +1241,7 @@ client.destination_definition_specification.get_destination_definition_specifica
 </details>
 
 ## destination_definition
-<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py">create_custom_destination_definition</a>(...)</code></summary>
+<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py">create_custom_destination_definition</a>(...) -> DestinationDefinitionRead</code></summary>
 <dl>
 <dd>
 
@@ -1223,11 +1254,14 @@ client.destination_definition_specification.get_destination_definition_specifica
 <dd>
 
 ```python
-from fern import DestinationDefinitionCreate, FernApi
+from fern import FernApi, DestinationDefinitionCreate
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destination_definition.create_custom_destination_definition(
     destination_definition=DestinationDefinitionCreate(
         docker_image_tag="dockerImageTag",
@@ -1294,10 +1328,13 @@ client.destination_definition.create_custom_destination_definition(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destination_definition.delete_destination_definition(
     destination_definition_id="destinationDefinitionId",
 )
@@ -1316,7 +1353,7 @@ client.destination_definition.delete_destination_definition(
 <dl>
 <dd>
 
-**destination_definition_id:** `DestinationDefinitionId` 
+**request:** `DestinationDefinitionIdRequestBody` 
     
 </dd>
 </dl>
@@ -1336,7 +1373,7 @@ client.destination_definition.delete_destination_definition(
 </dl>
 </details>
 
-<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py">get_destination_definition</a>(...)</code></summary>
+<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py">get_destination_definition</a>(...) -> DestinationDefinitionRead</code></summary>
 <dl>
 <dd>
 
@@ -1350,10 +1387,13 @@ client.destination_definition.delete_destination_definition(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destination_definition.get_destination_definition(
     destination_definition_id="destinationDefinitionId",
 )
@@ -1372,7 +1412,7 @@ client.destination_definition.get_destination_definition(
 <dl>
 <dd>
 
-**destination_definition_id:** `DestinationDefinitionId` 
+**request:** `DestinationDefinitionIdRequestBody` 
     
 </dd>
 </dl>
@@ -1392,7 +1432,7 @@ client.destination_definition.get_destination_definition(
 </dl>
 </details>
 
-<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py">get_destination_definition_for_workspace</a>(...)</code></summary>
+<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py">get_destination_definition_for_workspace</a>(...) -> DestinationDefinitionRead</code></summary>
 <dl>
 <dd>
 
@@ -1406,10 +1446,13 @@ client.destination_definition.get_destination_definition(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destination_definition.get_destination_definition_for_workspace(
     destination_definition_id="destinationDefinitionId",
     workspace_id="workspaceId",
@@ -1429,15 +1472,7 @@ client.destination_definition.get_destination_definition_for_workspace(
 <dl>
 <dd>
 
-**destination_definition_id:** `DestinationDefinitionId` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**workspace_id:** `WorkspaceId` 
+**request:** `DestinationDefinitionIdWithWorkspaceId` 
     
 </dd>
 </dl>
@@ -1457,7 +1492,7 @@ client.destination_definition.get_destination_definition_for_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py">grant_destination_definition_to_workspace</a>(...)</code></summary>
+<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py">grant_destination_definition_to_workspace</a>(...) -> PrivateDestinationDefinitionRead</code></summary>
 <dl>
 <dd>
 
@@ -1471,10 +1506,13 @@ client.destination_definition.get_destination_definition_for_workspace(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destination_definition.grant_destination_definition_to_workspace(
     destination_definition_id="destinationDefinitionId",
     workspace_id="workspaceId",
@@ -1494,15 +1532,7 @@ client.destination_definition.grant_destination_definition_to_workspace(
 <dl>
 <dd>
 
-**destination_definition_id:** `DestinationDefinitionId` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**workspace_id:** `WorkspaceId` 
+**request:** `DestinationDefinitionIdWithWorkspaceId` 
     
 </dd>
 </dl>
@@ -1522,7 +1552,7 @@ client.destination_definition.grant_destination_definition_to_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py">list_destination_definitions</a>()</code></summary>
+<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py">list_destination_definitions</a>() -> DestinationDefinitionReadList</code></summary>
 <dl>
 <dd>
 
@@ -1536,10 +1566,13 @@ client.destination_definition.grant_destination_definition_to_workspace(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destination_definition.list_destination_definitions()
 
 ```
@@ -1568,7 +1601,7 @@ client.destination_definition.list_destination_definitions()
 </dl>
 </details>
 
-<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py">list_destination_definitions_for_workspace</a>(...)</code></summary>
+<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py">list_destination_definitions_for_workspace</a>(...) -> DestinationDefinitionReadList</code></summary>
 <dl>
 <dd>
 
@@ -1582,10 +1615,13 @@ client.destination_definition.list_destination_definitions()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destination_definition.list_destination_definitions_for_workspace(
     workspace_id="workspaceId",
 )
@@ -1604,7 +1640,7 @@ client.destination_definition.list_destination_definitions_for_workspace(
 <dl>
 <dd>
 
-**workspace_id:** `WorkspaceId` 
+**request:** `WorkspaceIdRequestBody` 
     
 </dd>
 </dl>
@@ -1624,7 +1660,7 @@ client.destination_definition.list_destination_definitions_for_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py">list_latest_destination_definitions</a>()</code></summary>
+<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py">list_latest_destination_definitions</a>() -> DestinationDefinitionReadList</code></summary>
 <dl>
 <dd>
 
@@ -1652,10 +1688,13 @@ Guaranteed to retrieve the latest information on supported destinations.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destination_definition.list_latest_destination_definitions()
 
 ```
@@ -1684,7 +1723,7 @@ client.destination_definition.list_latest_destination_definitions()
 </dl>
 </details>
 
-<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py">list_private_destination_definitions</a>(...)</code></summary>
+<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py">list_private_destination_definitions</a>(...) -> PrivateDestinationDefinitionReadList</code></summary>
 <dl>
 <dd>
 
@@ -1698,10 +1737,13 @@ client.destination_definition.list_latest_destination_definitions()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destination_definition.list_private_destination_definitions(
     workspace_id="workspaceId",
 )
@@ -1720,7 +1762,7 @@ client.destination_definition.list_private_destination_definitions(
 <dl>
 <dd>
 
-**workspace_id:** `WorkspaceId` 
+**request:** `WorkspaceIdRequestBody` 
     
 </dd>
 </dl>
@@ -1754,10 +1796,13 @@ client.destination_definition.list_private_destination_definitions(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destination_definition.revoke_destination_definition_from_workspace(
     destination_definition_id="destinationDefinitionId",
     workspace_id="workspaceId",
@@ -1777,15 +1822,7 @@ client.destination_definition.revoke_destination_definition_from_workspace(
 <dl>
 <dd>
 
-**destination_definition_id:** `DestinationDefinitionId` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**workspace_id:** `WorkspaceId` 
+**request:** `DestinationDefinitionIdWithWorkspaceId` 
     
 </dd>
 </dl>
@@ -1805,7 +1842,7 @@ client.destination_definition.revoke_destination_definition_from_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py">update_destination_definition</a>(...)</code></summary>
+<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py">update_destination_definition</a>(...) -> DestinationDefinitionRead</code></summary>
 <dl>
 <dd>
 
@@ -1819,10 +1856,13 @@ client.destination_definition.revoke_destination_definition_from_workspace(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destination_definition.update_destination_definition(
     destination_definition_id="destinationDefinitionId",
 )
@@ -1878,7 +1918,7 @@ client.destination_definition.update_destination_definition(
 </details>
 
 ## destination_oauth
-<details><summary><code>client.destination_oauth.<a href="src/fern/destination_oauth/client.py">complete_destination_o_auth</a>(...)</code></summary>
+<details><summary><code>client.destination_oauth.<a href="src/fern/destination_oauth/client.py">complete_destination_o_auth</a>(...) -> CompleteOAuthResponse</code></summary>
 <dl>
 <dd>
 
@@ -1892,10 +1932,13 @@ client.destination_definition.update_destination_definition(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destination_oauth.complete_destination_o_auth(
     destination_definition_id="destinationDefinitionId",
     workspace_id="workspaceId",
@@ -1947,7 +1990,7 @@ client.destination_oauth.complete_destination_o_auth(
 <dl>
 <dd>
 
-**query_params:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — The query parameters present in the redirect URL after a user granted consent e.g auth code
+**query_params:** `typing.Optional[typing.Dict[str, typing.Any]]` — The query parameters present in the redirect URL after a user granted consent e.g auth code
     
 </dd>
 </dl>
@@ -1975,7 +2018,7 @@ client.destination_oauth.complete_destination_o_auth(
 </dl>
 </details>
 
-<details><summary><code>client.destination_oauth.<a href="src/fern/destination_oauth/client.py">get_destination_o_auth_consent</a>(...)</code></summary>
+<details><summary><code>client.destination_oauth.<a href="src/fern/destination_oauth/client.py">get_destination_o_auth_consent</a>(...) -> OAuthConsentRead</code></summary>
 <dl>
 <dd>
 
@@ -1989,10 +2032,13 @@ client.destination_oauth.complete_destination_o_auth(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destination_oauth.get_destination_o_auth_consent(
     destination_definition_id="destinationDefinitionId",
     redirect_url="redirectUrl",
@@ -2079,13 +2125,18 @@ client.destination_oauth.get_destination_o_auth_consent(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destination_oauth.set_instancewide_destination_oauth_params(
     destination_definition_id="destinationDefinitionId",
-    params={"key": "value"},
+    params={
+        "key": "value"
+    },
 )
 
 ```
@@ -2110,7 +2161,7 @@ client.destination_oauth.set_instancewide_destination_oauth_params(
 <dl>
 <dd>
 
-**params:** `typing.Dict[str, typing.Optional[typing.Any]]` 
+**params:** `typing.Dict[str, typing.Any]` 
     
 </dd>
 </dl>
@@ -2131,7 +2182,7 @@ client.destination_oauth.set_instancewide_destination_oauth_params(
 </details>
 
 ## destination
-<details><summary><code>client.destination.<a href="src/fern/destination/client.py">check_connection_to_destination</a>(...)</code></summary>
+<details><summary><code>client.destination.<a href="src/fern/destination/client.py">check_connection_to_destination</a>(...) -> CheckConnectionRead</code></summary>
 <dl>
 <dd>
 
@@ -2145,10 +2196,13 @@ client.destination_oauth.set_instancewide_destination_oauth_params(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destination.check_connection_to_destination(
     destination_id="destinationId",
 )
@@ -2167,7 +2221,7 @@ client.destination.check_connection_to_destination(
 <dl>
 <dd>
 
-**destination_id:** `DestinationId` 
+**request:** `DestinationIdRequestBody` 
     
 </dd>
 </dl>
@@ -2187,7 +2241,7 @@ client.destination.check_connection_to_destination(
 </dl>
 </details>
 
-<details><summary><code>client.destination.<a href="src/fern/destination/client.py">check_connection_to_destination_for_update</a>(...)</code></summary>
+<details><summary><code>client.destination.<a href="src/fern/destination/client.py">check_connection_to_destination_for_update</a>(...) -> CheckConnectionRead</code></summary>
 <dl>
 <dd>
 
@@ -2201,10 +2255,13 @@ client.destination.check_connection_to_destination(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destination.check_connection_to_destination_for_update(
     connection_configuration={"user": "charles"},
     destination_id="destinationId",
@@ -2225,23 +2282,7 @@ client.destination.check_connection_to_destination_for_update(
 <dl>
 <dd>
 
-**connection_configuration:** `DestinationConfiguration` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**destination_id:** `DestinationId` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**name:** `str` 
+**request:** `DestinationUpdate` 
     
 </dd>
 </dl>
@@ -2261,7 +2302,7 @@ client.destination.check_connection_to_destination_for_update(
 </dl>
 </details>
 
-<details><summary><code>client.destination.<a href="src/fern/destination/client.py">clone_destination</a>(...)</code></summary>
+<details><summary><code>client.destination.<a href="src/fern/destination/client.py">clone_destination</a>(...) -> DestinationRead</code></summary>
 <dl>
 <dd>
 
@@ -2275,10 +2316,13 @@ client.destination.check_connection_to_destination_for_update(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destination.clone_destination(
     destination_clone_id="destinationCloneId",
 )
@@ -2325,7 +2369,7 @@ client.destination.clone_destination(
 </dl>
 </details>
 
-<details><summary><code>client.destination.<a href="src/fern/destination/client.py">create_destination</a>(...)</code></summary>
+<details><summary><code>client.destination.<a href="src/fern/destination/client.py">create_destination</a>(...) -> DestinationRead</code></summary>
 <dl>
 <dd>
 
@@ -2339,10 +2383,13 @@ client.destination.clone_destination(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destination.create_destination(
     connection_configuration={"user": "charles"},
     destination_definition_id="destinationDefinitionId",
@@ -2422,10 +2469,13 @@ client.destination.create_destination(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destination.delete_destination(
     destination_id="destinationId",
 )
@@ -2444,7 +2494,7 @@ client.destination.delete_destination(
 <dl>
 <dd>
 
-**destination_id:** `DestinationId` 
+**request:** `DestinationIdRequestBody` 
     
 </dd>
 </dl>
@@ -2464,7 +2514,7 @@ client.destination.delete_destination(
 </dl>
 </details>
 
-<details><summary><code>client.destination.<a href="src/fern/destination/client.py">get_destination</a>(...)</code></summary>
+<details><summary><code>client.destination.<a href="src/fern/destination/client.py">get_destination</a>(...) -> DestinationRead</code></summary>
 <dl>
 <dd>
 
@@ -2478,10 +2528,13 @@ client.destination.delete_destination(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destination.get_destination(
     destination_id="destinationId",
 )
@@ -2500,7 +2553,7 @@ client.destination.get_destination(
 <dl>
 <dd>
 
-**destination_id:** `DestinationId` 
+**request:** `DestinationIdRequestBody` 
     
 </dd>
 </dl>
@@ -2520,7 +2573,7 @@ client.destination.get_destination(
 </dl>
 </details>
 
-<details><summary><code>client.destination.<a href="src/fern/destination/client.py">list_destinations_for_workspace</a>(...)</code></summary>
+<details><summary><code>client.destination.<a href="src/fern/destination/client.py">list_destinations_for_workspace</a>(...) -> DestinationReadList</code></summary>
 <dl>
 <dd>
 
@@ -2534,10 +2587,13 @@ client.destination.get_destination(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destination.list_destinations_for_workspace(
     workspace_id="workspaceId",
 )
@@ -2556,7 +2612,7 @@ client.destination.list_destinations_for_workspace(
 <dl>
 <dd>
 
-**workspace_id:** `WorkspaceId` 
+**request:** `WorkspaceIdRequestBody` 
     
 </dd>
 </dl>
@@ -2576,7 +2632,7 @@ client.destination.list_destinations_for_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.destination.<a href="src/fern/destination/client.py">search_destinations</a>(...)</code></summary>
+<details><summary><code>client.destination.<a href="src/fern/destination/client.py">search_destinations</a>(...) -> DestinationReadList</code></summary>
 <dl>
 <dd>
 
@@ -2590,10 +2646,13 @@ client.destination.list_destinations_for_workspace(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destination.search_destinations()
 
 ```
@@ -2610,47 +2669,7 @@ client.destination.search_destinations()
 <dl>
 <dd>
 
-**connection_configuration:** `typing.Optional[DestinationConfiguration]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**destination_definition_id:** `typing.Optional[DestinationDefinitionId]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**destination_id:** `typing.Optional[DestinationId]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**destination_name:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**name:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**workspace_id:** `typing.Optional[WorkspaceId]` 
+**request:** `DestinationSearch` 
     
 </dd>
 </dl>
@@ -2670,7 +2689,7 @@ client.destination.search_destinations()
 </dl>
 </details>
 
-<details><summary><code>client.destination.<a href="src/fern/destination/client.py">update_destination</a>(...)</code></summary>
+<details><summary><code>client.destination.<a href="src/fern/destination/client.py">update_destination</a>(...) -> DestinationRead</code></summary>
 <dl>
 <dd>
 
@@ -2684,10 +2703,13 @@ client.destination.search_destinations()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destination.update_destination(
     connection_configuration={"user": "charles"},
     destination_id="destinationId",
@@ -2708,23 +2730,7 @@ client.destination.update_destination(
 <dl>
 <dd>
 
-**connection_configuration:** `DestinationConfiguration` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**destination_id:** `DestinationId` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**name:** `str` 
+**request:** `DestinationUpdate` 
     
 </dd>
 </dl>
@@ -2745,7 +2751,7 @@ client.destination.update_destination(
 </details>
 
 ## health
-<details><summary><code>client.health.<a href="src/fern/health/client.py">get_health_check</a>()</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py">get_health_check</a>() -> HealthCheckRead</code></summary>
 <dl>
 <dd>
 
@@ -2759,10 +2765,13 @@ client.destination.update_destination(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.health.get_health_check()
 
 ```
@@ -2792,7 +2801,7 @@ client.health.get_health_check()
 </details>
 
 ## Jobs
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">cancel_job</a>(...)</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">cancel_job</a>(...) -> JobInfoRead</code></summary>
 <dl>
 <dd>
 
@@ -2806,10 +2815,13 @@ client.health.get_health_check()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.jobs.cancel_job(
     id=1000000,
 )
@@ -2828,7 +2840,7 @@ client.jobs.cancel_job(
 <dl>
 <dd>
 
-**id:** `JobId` 
+**request:** `JobIdRequestBody` 
     
 </dd>
 </dl>
@@ -2848,7 +2860,7 @@ client.jobs.cancel_job(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">get_job_info</a>(...)</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">get_job_info</a>(...) -> JobInfoRead</code></summary>
 <dl>
 <dd>
 
@@ -2862,10 +2874,13 @@ client.jobs.cancel_job(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.jobs.get_job_info(
     id=1000000,
 )
@@ -2884,7 +2899,7 @@ client.jobs.get_job_info(
 <dl>
 <dd>
 
-**id:** `JobId` 
+**request:** `JobIdRequestBody` 
     
 </dd>
 </dl>
@@ -2904,7 +2919,7 @@ client.jobs.get_job_info(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">get_job_debug_info</a>(...)</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">get_job_debug_info</a>(...) -> JobDebugInfoRead</code></summary>
 <dl>
 <dd>
 
@@ -2918,10 +2933,13 @@ client.jobs.get_job_info(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.jobs.get_job_debug_info(
     id=1000000,
 )
@@ -2940,7 +2958,7 @@ client.jobs.get_job_debug_info(
 <dl>
 <dd>
 
-**id:** `JobId` 
+**request:** `JobIdRequestBody` 
     
 </dd>
 </dl>
@@ -2960,7 +2978,7 @@ client.jobs.get_job_debug_info(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">get_last_replication_job</a>(...)</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">get_last_replication_job</a>(...) -> JobOptionalRead</code></summary>
 <dl>
 <dd>
 
@@ -2974,10 +2992,13 @@ client.jobs.get_job_debug_info(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.jobs.get_last_replication_job(
     connection_id="connectionId",
 )
@@ -2996,7 +3017,7 @@ client.jobs.get_last_replication_job(
 <dl>
 <dd>
 
-**connection_id:** `ConnectionId` 
+**request:** `ConnectionIdRequestBody` 
     
 </dd>
 </dl>
@@ -3016,7 +3037,7 @@ client.jobs.get_last_replication_job(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">get_job_info_light</a>(...)</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">get_job_info_light</a>(...) -> JobInfoLightRead</code></summary>
 <dl>
 <dd>
 
@@ -3030,10 +3051,13 @@ client.jobs.get_last_replication_job(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.jobs.get_job_info_light(
     id=1000000,
 )
@@ -3052,7 +3076,7 @@ client.jobs.get_job_info_light(
 <dl>
 <dd>
 
-**id:** `JobId` 
+**request:** `JobIdRequestBody` 
     
 </dd>
 </dl>
@@ -3072,7 +3096,7 @@ client.jobs.get_job_info_light(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">get_attempt_normalization_statuses_for_job</a>(...)</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">get_attempt_normalization_statuses_for_job</a>(...) -> AttemptNormalizationStatusReadList</code></summary>
 <dl>
 <dd>
 
@@ -3086,10 +3110,13 @@ client.jobs.get_job_info_light(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.jobs.get_attempt_normalization_statuses_for_job(
     id=1000000,
 )
@@ -3108,7 +3135,7 @@ client.jobs.get_attempt_normalization_statuses_for_job(
 <dl>
 <dd>
 
-**id:** `JobId` 
+**request:** `JobIdRequestBody` 
     
 </dd>
 </dl>
@@ -3128,7 +3155,7 @@ client.jobs.get_attempt_normalization_statuses_for_job(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">list_jobs_for</a>(...)</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">list_jobs_for</a>(...) -> JobReadList</code></summary>
 <dl>
 <dd>
 
@@ -3142,13 +3169,18 @@ client.jobs.get_attempt_normalization_statuses_for_job(
 
 ```python
 from fern import FernApi, JobConfigType
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.jobs.list_jobs_for(
     config_id="configId",
-    config_types=[JobConfigType.CHECK_CONNECTION_SOURCE],
+    config_types=[
+        JobConfigType.CHECK_CONNECTION_SOURCE
+    ],
 )
 
 ```
@@ -3173,7 +3205,7 @@ client.jobs.list_jobs_for(
 <dl>
 <dd>
 
-**config_types:** `typing.Sequence[JobConfigType]` 
+**config_types:** `typing.List[JobConfigType]` 
     
 </dd>
 </dl>
@@ -3210,7 +3242,7 @@ client.jobs.list_jobs_for(
 </details>
 
 ## Logs
-<details><summary><code>client.logs.<a href="src/fern/logs/client.py">get_logs</a>(...)</code></summary>
+<details><summary><code>client.logs.<a href="src/fern/logs/client.py">get_logs</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -3224,10 +3256,13 @@ client.jobs.list_jobs_for(
 
 ```python
 from fern import FernApi, LogType
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.logs.get_logs(
     log_type=LogType.SERVER,
 )
@@ -3254,7 +3289,7 @@ client.logs.get_logs(
 <dl>
 <dd>
 
-**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response.
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
     
 </dd>
 </dl>
@@ -3267,7 +3302,7 @@ client.logs.get_logs(
 </details>
 
 ## Notifications
-<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py">try_notification_config</a>(...)</code></summary>
+<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py">try_notification_config</a>(...) -> NotificationRead</code></summary>
 <dl>
 <dd>
 
@@ -3281,10 +3316,13 @@ client.logs.get_logs(
 
 ```python
 from fern import FernApi, NotificationType
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.notifications.try_notification_config(
     notification_type=NotificationType.SLACK,
     send_on_failure=True,
@@ -3305,39 +3343,7 @@ client.notifications.try_notification_config(
 <dl>
 <dd>
 
-**notification_type:** `NotificationType` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**send_on_failure:** `bool` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**send_on_success:** `bool` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**customerio_configuration:** `typing.Optional[CustomerioNotificationConfiguration]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**slack_configuration:** `typing.Optional[SlackNotificationConfiguration]` 
+**request:** `Notification` 
     
 </dd>
 </dl>
@@ -3358,8 +3364,48 @@ client.notifications.try_notification_config(
 </details>
 
 ## Openapi
+<details><summary><code>client.openapi.<a href="src/fern/openapi/client.py">get_open_api_spec</a>() -> typing.Iterator[bytes]</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+client.openapi.get_open_api_spec()
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## Operation
-<details><summary><code>client.operation.<a href="src/fern/operation/client.py">check_operation</a>(...)</code></summary>
+<details><summary><code>client.operation.<a href="src/fern/operation/client.py">check_operation</a>(...) -> CheckOperationRead</code></summary>
 <dl>
 <dd>
 
@@ -3373,10 +3419,13 @@ client.notifications.try_notification_config(
 
 ```python
 from fern import FernApi, OperatorType
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.operation.check_operation(
     operator_type=OperatorType.NORMALIZATION,
 )
@@ -3395,31 +3444,7 @@ client.operation.check_operation(
 <dl>
 <dd>
 
-**operator_type:** `OperatorType` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**dbt:** `typing.Optional[OperatorDbt]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**normalization:** `typing.Optional[OperatorNormalization]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**webhook:** `typing.Optional[OperatorWebhook]` 
+**request:** `OperatorConfiguration` 
     
 </dd>
 </dl>
@@ -3439,7 +3464,7 @@ client.operation.check_operation(
 </dl>
 </details>
 
-<details><summary><code>client.operation.<a href="src/fern/operation/client.py">create_operation</a>(...)</code></summary>
+<details><summary><code>client.operation.<a href="src/fern/operation/client.py">create_operation</a>(...) -> OperationRead</code></summary>
 <dl>
 <dd>
 
@@ -3453,10 +3478,13 @@ client.operation.check_operation(
 
 ```python
 from fern import FernApi, OperatorConfiguration, OperatorType
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.operation.create_operation(
     name="name",
     operator_configuration=OperatorConfiguration(
@@ -3479,23 +3507,7 @@ client.operation.create_operation(
 <dl>
 <dd>
 
-**name:** `str` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**operator_configuration:** `OperatorConfiguration` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**workspace_id:** `WorkspaceId` 
+**request:** `OperationCreate` 
     
 </dd>
 </dl>
@@ -3529,10 +3541,13 @@ client.operation.create_operation(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.operation.delete_operation(
     operation_id="operationId",
 )
@@ -3551,7 +3566,7 @@ client.operation.delete_operation(
 <dl>
 <dd>
 
-**operation_id:** `OperationId` 
+**request:** `OperationIdRequestBody` 
     
 </dd>
 </dl>
@@ -3571,7 +3586,7 @@ client.operation.delete_operation(
 </dl>
 </details>
 
-<details><summary><code>client.operation.<a href="src/fern/operation/client.py">get_operation</a>(...)</code></summary>
+<details><summary><code>client.operation.<a href="src/fern/operation/client.py">get_operation</a>(...) -> OperationRead</code></summary>
 <dl>
 <dd>
 
@@ -3585,10 +3600,13 @@ client.operation.delete_operation(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.operation.get_operation(
     operation_id="operationId",
 )
@@ -3607,7 +3625,7 @@ client.operation.get_operation(
 <dl>
 <dd>
 
-**operation_id:** `OperationId` 
+**request:** `OperationIdRequestBody` 
     
 </dd>
 </dl>
@@ -3627,7 +3645,7 @@ client.operation.get_operation(
 </dl>
 </details>
 
-<details><summary><code>client.operation.<a href="src/fern/operation/client.py">list_operations_for_connection</a>(...)</code></summary>
+<details><summary><code>client.operation.<a href="src/fern/operation/client.py">list_operations_for_connection</a>(...) -> OperationReadList</code></summary>
 <dl>
 <dd>
 
@@ -3655,10 +3673,13 @@ List operations for connection.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.operation.list_operations_for_connection(
     connection_id="connectionId",
 )
@@ -3677,7 +3698,7 @@ client.operation.list_operations_for_connection(
 <dl>
 <dd>
 
-**connection_id:** `ConnectionId` 
+**request:** `ConnectionIdRequestBody` 
     
 </dd>
 </dl>
@@ -3697,7 +3718,7 @@ client.operation.list_operations_for_connection(
 </dl>
 </details>
 
-<details><summary><code>client.operation.<a href="src/fern/operation/client.py">update_operation</a>(...)</code></summary>
+<details><summary><code>client.operation.<a href="src/fern/operation/client.py">update_operation</a>(...) -> OperationRead</code></summary>
 <dl>
 <dd>
 
@@ -3711,10 +3732,13 @@ client.operation.list_operations_for_connection(
 
 ```python
 from fern import FernApi, OperatorConfiguration, OperatorType
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.operation.update_operation(
     name="name",
     operation_id="operationId",
@@ -3774,7 +3798,7 @@ client.operation.update_operation(
 </details>
 
 ## Scheduler
-<details><summary><code>client.scheduler.<a href="src/fern/scheduler/client.py">execute_destination_check_connection</a>(...)</code></summary>
+<details><summary><code>client.scheduler.<a href="src/fern/scheduler/client.py">execute_destination_check_connection</a>(...) -> CheckConnectionRead</code></summary>
 <dl>
 <dd>
 
@@ -3788,10 +3812,13 @@ client.operation.update_operation(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.scheduler.execute_destination_check_connection(
     connection_configuration={"user": "charles"},
     destination_definition_id="destinationDefinitionId",
@@ -3856,7 +3883,7 @@ client.scheduler.execute_destination_check_connection(
 </dl>
 </details>
 
-<details><summary><code>client.scheduler.<a href="src/fern/scheduler/client.py">execute_source_check_connection</a>(...)</code></summary>
+<details><summary><code>client.scheduler.<a href="src/fern/scheduler/client.py">execute_source_check_connection</a>(...) -> CheckConnectionRead</code></summary>
 <dl>
 <dd>
 
@@ -3870,10 +3897,13 @@ client.scheduler.execute_destination_check_connection(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.scheduler.execute_source_check_connection(
     connection_configuration={"user": "charles"},
     source_definition_id="sourceDefinitionId",
@@ -3894,31 +3924,7 @@ client.scheduler.execute_source_check_connection(
 <dl>
 <dd>
 
-**connection_configuration:** `SourceConfiguration` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**source_definition_id:** `SourceDefinitionId` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**workspace_id:** `WorkspaceId` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**source_id:** `typing.Optional[SourceId]` 
+**request:** `SourceCoreConfig` 
     
 </dd>
 </dl>
@@ -3938,7 +3944,7 @@ client.scheduler.execute_source_check_connection(
 </dl>
 </details>
 
-<details><summary><code>client.scheduler.<a href="src/fern/scheduler/client.py">execute_source_discover_schema</a>(...)</code></summary>
+<details><summary><code>client.scheduler.<a href="src/fern/scheduler/client.py">execute_source_discover_schema</a>(...) -> SourceDiscoverSchemaRead</code></summary>
 <dl>
 <dd>
 
@@ -3952,10 +3958,13 @@ client.scheduler.execute_source_check_connection(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.scheduler.execute_source_discover_schema(
     connection_configuration={"user": "charles"},
     source_definition_id="sourceDefinitionId",
@@ -3976,31 +3985,7 @@ client.scheduler.execute_source_discover_schema(
 <dl>
 <dd>
 
-**connection_configuration:** `SourceConfiguration` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**source_definition_id:** `SourceDefinitionId` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**workspace_id:** `WorkspaceId` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**source_id:** `typing.Optional[SourceId]` 
+**request:** `SourceCoreConfig` 
     
 </dd>
 </dl>
@@ -4021,7 +4006,7 @@ client.scheduler.execute_source_discover_schema(
 </details>
 
 ## source_definition_specification
-<details><summary><code>client.source_definition_specification.<a href="src/fern/source_definition_specification/client.py">get_source_definition_specification</a>(...)</code></summary>
+<details><summary><code>client.source_definition_specification.<a href="src/fern/source_definition_specification/client.py">get_source_definition_specification</a>(...) -> SourceDefinitionSpecificationRead</code></summary>
 <dl>
 <dd>
 
@@ -4035,10 +4020,13 @@ client.scheduler.execute_source_discover_schema(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.source_definition_specification.get_source_definition_specification(
     source_definition_id="sourceDefinitionId",
     workspace_id="workspaceId",
@@ -4058,15 +4046,7 @@ client.source_definition_specification.get_source_definition_specification(
 <dl>
 <dd>
 
-**source_definition_id:** `SourceDefinitionId` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**workspace_id:** `WorkspaceId` 
+**request:** `SourceDefinitionIdWithWorkspaceId` 
     
 </dd>
 </dl>
@@ -4087,7 +4067,7 @@ client.source_definition_specification.get_source_definition_specification(
 </details>
 
 ## source_definition
-<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py">create_custom_source_definition</a>(...)</code></summary>
+<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py">create_custom_source_definition</a>(...) -> SourceDefinitionRead</code></summary>
 <dl>
 <dd>
 
@@ -4101,10 +4081,13 @@ client.source_definition_specification.get_source_definition_specification(
 
 ```python
 from fern import FernApi, SourceDefinitionCreate
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.source_definition.create_custom_source_definition(
     source_definition=SourceDefinitionCreate(
         docker_image_tag="dockerImageTag",
@@ -4171,10 +4154,13 @@ client.source_definition.create_custom_source_definition(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.source_definition.delete_source_definition(
     source_definition_id="sourceDefinitionId",
 )
@@ -4193,7 +4179,7 @@ client.source_definition.delete_source_definition(
 <dl>
 <dd>
 
-**source_definition_id:** `SourceDefinitionId` 
+**request:** `SourceDefinitionIdRequestBody` 
     
 </dd>
 </dl>
@@ -4213,7 +4199,7 @@ client.source_definition.delete_source_definition(
 </dl>
 </details>
 
-<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py">get_source_definition</a>(...)</code></summary>
+<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py">get_source_definition</a>(...) -> SourceDefinitionRead</code></summary>
 <dl>
 <dd>
 
@@ -4227,10 +4213,13 @@ client.source_definition.delete_source_definition(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.source_definition.get_source_definition(
     source_definition_id="sourceDefinitionId",
 )
@@ -4249,7 +4238,7 @@ client.source_definition.get_source_definition(
 <dl>
 <dd>
 
-**source_definition_id:** `SourceDefinitionId` 
+**request:** `SourceDefinitionIdRequestBody` 
     
 </dd>
 </dl>
@@ -4269,7 +4258,7 @@ client.source_definition.get_source_definition(
 </dl>
 </details>
 
-<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py">get_source_definition_for_workspace</a>(...)</code></summary>
+<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py">get_source_definition_for_workspace</a>(...) -> SourceDefinitionRead</code></summary>
 <dl>
 <dd>
 
@@ -4283,10 +4272,13 @@ client.source_definition.get_source_definition(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.source_definition.get_source_definition_for_workspace(
     source_definition_id="sourceDefinitionId",
     workspace_id="workspaceId",
@@ -4306,15 +4298,7 @@ client.source_definition.get_source_definition_for_workspace(
 <dl>
 <dd>
 
-**source_definition_id:** `SourceDefinitionId` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**workspace_id:** `WorkspaceId` 
+**request:** `SourceDefinitionIdWithWorkspaceId` 
     
 </dd>
 </dl>
@@ -4334,7 +4318,7 @@ client.source_definition.get_source_definition_for_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py">grant_source_definition_to_workspace</a>(...)</code></summary>
+<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py">grant_source_definition_to_workspace</a>(...) -> PrivateSourceDefinitionRead</code></summary>
 <dl>
 <dd>
 
@@ -4348,10 +4332,13 @@ client.source_definition.get_source_definition_for_workspace(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.source_definition.grant_source_definition_to_workspace(
     source_definition_id="sourceDefinitionId",
     workspace_id="workspaceId",
@@ -4371,15 +4358,7 @@ client.source_definition.grant_source_definition_to_workspace(
 <dl>
 <dd>
 
-**source_definition_id:** `SourceDefinitionId` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**workspace_id:** `WorkspaceId` 
+**request:** `SourceDefinitionIdWithWorkspaceId` 
     
 </dd>
 </dl>
@@ -4399,7 +4378,7 @@ client.source_definition.grant_source_definition_to_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py">list_source_definitions</a>()</code></summary>
+<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py">list_source_definitions</a>() -> SourceDefinitionReadList</code></summary>
 <dl>
 <dd>
 
@@ -4413,10 +4392,13 @@ client.source_definition.grant_source_definition_to_workspace(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.source_definition.list_source_definitions()
 
 ```
@@ -4445,7 +4427,7 @@ client.source_definition.list_source_definitions()
 </dl>
 </details>
 
-<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py">list_source_definitions_for_workspace</a>(...)</code></summary>
+<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py">list_source_definitions_for_workspace</a>(...) -> SourceDefinitionReadList</code></summary>
 <dl>
 <dd>
 
@@ -4459,10 +4441,13 @@ client.source_definition.list_source_definitions()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.source_definition.list_source_definitions_for_workspace(
     workspace_id="workspaceId",
 )
@@ -4481,7 +4466,7 @@ client.source_definition.list_source_definitions_for_workspace(
 <dl>
 <dd>
 
-**workspace_id:** `WorkspaceId` 
+**request:** `WorkspaceIdRequestBody` 
     
 </dd>
 </dl>
@@ -4501,7 +4486,7 @@ client.source_definition.list_source_definitions_for_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py">list_latest_source_definitions</a>()</code></summary>
+<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py">list_latest_source_definitions</a>() -> SourceDefinitionReadList</code></summary>
 <dl>
 <dd>
 
@@ -4529,10 +4514,13 @@ Guaranteed to retrieve the latest information on supported sources.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.source_definition.list_latest_source_definitions()
 
 ```
@@ -4561,7 +4549,7 @@ client.source_definition.list_latest_source_definitions()
 </dl>
 </details>
 
-<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py">list_private_source_definitions</a>(...)</code></summary>
+<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py">list_private_source_definitions</a>(...) -> PrivateSourceDefinitionReadList</code></summary>
 <dl>
 <dd>
 
@@ -4575,10 +4563,13 @@ client.source_definition.list_latest_source_definitions()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.source_definition.list_private_source_definitions(
     workspace_id="workspaceId",
 )
@@ -4597,7 +4588,7 @@ client.source_definition.list_private_source_definitions(
 <dl>
 <dd>
 
-**workspace_id:** `WorkspaceId` 
+**request:** `WorkspaceIdRequestBody` 
     
 </dd>
 </dl>
@@ -4631,10 +4622,13 @@ client.source_definition.list_private_source_definitions(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.source_definition.revoke_source_definition_from_workspace(
     source_definition_id="sourceDefinitionId",
     workspace_id="workspaceId",
@@ -4654,15 +4648,7 @@ client.source_definition.revoke_source_definition_from_workspace(
 <dl>
 <dd>
 
-**source_definition_id:** `SourceDefinitionId` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**workspace_id:** `WorkspaceId` 
+**request:** `SourceDefinitionIdWithWorkspaceId` 
     
 </dd>
 </dl>
@@ -4682,7 +4668,7 @@ client.source_definition.revoke_source_definition_from_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py">update_source_definition</a>(...)</code></summary>
+<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py">update_source_definition</a>(...) -> SourceDefinitionRead</code></summary>
 <dl>
 <dd>
 
@@ -4696,10 +4682,13 @@ client.source_definition.revoke_source_definition_from_workspace(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.source_definition.update_source_definition(
     docker_image_tag="dockerImageTag",
     source_definition_id="sourceDefinitionId",
@@ -4756,7 +4745,7 @@ client.source_definition.update_source_definition(
 </details>
 
 ## source_oauth
-<details><summary><code>client.source_oauth.<a href="src/fern/source_oauth/client.py">complete_source_o_auth</a>(...)</code></summary>
+<details><summary><code>client.source_oauth.<a href="src/fern/source_oauth/client.py">complete_source_o_auth</a>(...) -> CompleteOAuthResponse</code></summary>
 <dl>
 <dd>
 
@@ -4770,10 +4759,13 @@ client.source_definition.update_source_definition(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.source_oauth.complete_source_o_auth(
     source_definition_id="sourceDefinitionId",
     workspace_id="workspaceId",
@@ -4817,7 +4809,7 @@ client.source_oauth.complete_source_o_auth(
 <dl>
 <dd>
 
-**query_params:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` — The query parameters present in the redirect URL after a user granted consent e.g auth code
+**query_params:** `typing.Optional[typing.Dict[str, typing.Any]]` — The query parameters present in the redirect URL after a user granted consent e.g auth code
     
 </dd>
 </dl>
@@ -4853,7 +4845,7 @@ client.source_oauth.complete_source_o_auth(
 </dl>
 </details>
 
-<details><summary><code>client.source_oauth.<a href="src/fern/source_oauth/client.py">get_source_o_auth_consent</a>(...)</code></summary>
+<details><summary><code>client.source_oauth.<a href="src/fern/source_oauth/client.py">get_source_o_auth_consent</a>(...) -> OAuthConsentRead</code></summary>
 <dl>
 <dd>
 
@@ -4867,10 +4859,13 @@ client.source_oauth.complete_source_o_auth(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.source_oauth.get_source_o_auth_consent(
     redirect_url="redirectUrl",
     source_definition_id="sourceDefinitionId",
@@ -4957,12 +4952,17 @@ client.source_oauth.get_source_o_auth_consent(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.source_oauth.set_instancewide_source_oauth_params(
-    params={"key": "value"},
+    params={
+        "key": "value"
+    },
     source_definition_id="sourceDefinitionId",
 )
 
@@ -4980,7 +4980,7 @@ client.source_oauth.set_instancewide_source_oauth_params(
 <dl>
 <dd>
 
-**params:** `typing.Dict[str, typing.Optional[typing.Any]]` 
+**params:** `typing.Dict[str, typing.Any]` 
     
 </dd>
 </dl>
@@ -5009,7 +5009,7 @@ client.source_oauth.set_instancewide_source_oauth_params(
 </details>
 
 ## source
-<details><summary><code>client.source.<a href="src/fern/source/client.py">check_connection_to_source</a>(...)</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py">check_connection_to_source</a>(...) -> CheckConnectionRead</code></summary>
 <dl>
 <dd>
 
@@ -5023,10 +5023,13 @@ client.source_oauth.set_instancewide_source_oauth_params(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.source.check_connection_to_source(
     source_id="sourceId",
 )
@@ -5045,7 +5048,7 @@ client.source.check_connection_to_source(
 <dl>
 <dd>
 
-**source_id:** `SourceId` 
+**request:** `SourceIdRequestBody` 
     
 </dd>
 </dl>
@@ -5065,7 +5068,7 @@ client.source.check_connection_to_source(
 </dl>
 </details>
 
-<details><summary><code>client.source.<a href="src/fern/source/client.py">check_connection_to_source_for_update</a>(...)</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py">check_connection_to_source_for_update</a>(...) -> CheckConnectionRead</code></summary>
 <dl>
 <dd>
 
@@ -5079,10 +5082,13 @@ client.source.check_connection_to_source(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.source.check_connection_to_source_for_update(
     connection_configuration={"user": "charles"},
     name="name",
@@ -5103,23 +5109,7 @@ client.source.check_connection_to_source_for_update(
 <dl>
 <dd>
 
-**connection_configuration:** `SourceConfiguration` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**name:** `str` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**source_id:** `SourceId` 
+**request:** `SourceUpdate` 
     
 </dd>
 </dl>
@@ -5139,7 +5129,7 @@ client.source.check_connection_to_source_for_update(
 </dl>
 </details>
 
-<details><summary><code>client.source.<a href="src/fern/source/client.py">clone_source</a>(...)</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py">clone_source</a>(...) -> SourceRead</code></summary>
 <dl>
 <dd>
 
@@ -5153,10 +5143,13 @@ client.source.check_connection_to_source_for_update(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.source.clone_source(
     source_clone_id="sourceCloneId",
 )
@@ -5203,7 +5196,7 @@ client.source.clone_source(
 </dl>
 </details>
 
-<details><summary><code>client.source.<a href="src/fern/source/client.py">create_source</a>(...)</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py">create_source</a>(...) -> SourceRead</code></summary>
 <dl>
 <dd>
 
@@ -5217,10 +5210,13 @@ client.source.clone_source(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.source.create_source(
     connection_configuration={"user": "charles"},
     name="name",
@@ -5300,10 +5296,13 @@ client.source.create_source(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.source.delete_source(
     source_id="sourceId",
 )
@@ -5322,7 +5321,7 @@ client.source.delete_source(
 <dl>
 <dd>
 
-**source_id:** `SourceId` 
+**request:** `SourceIdRequestBody` 
     
 </dd>
 </dl>
@@ -5342,7 +5341,7 @@ client.source.delete_source(
 </dl>
 </details>
 
-<details><summary><code>client.source.<a href="src/fern/source/client.py">discover_schema_for_source</a>(...)</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py">discover_schema_for_source</a>(...) -> SourceDiscoverSchemaRead</code></summary>
 <dl>
 <dd>
 
@@ -5356,10 +5355,13 @@ client.source.delete_source(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.source.discover_schema_for_source(
     source_id="sourceId",
 )
@@ -5422,7 +5424,7 @@ client.source.discover_schema_for_source(
 </dl>
 </details>
 
-<details><summary><code>client.source.<a href="src/fern/source/client.py">get_source</a>(...)</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py">get_source</a>(...) -> SourceRead</code></summary>
 <dl>
 <dd>
 
@@ -5436,10 +5438,13 @@ client.source.discover_schema_for_source(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.source.get_source(
     source_id="sourceId",
 )
@@ -5458,7 +5463,7 @@ client.source.get_source(
 <dl>
 <dd>
 
-**source_id:** `SourceId` 
+**request:** `SourceIdRequestBody` 
     
 </dd>
 </dl>
@@ -5478,7 +5483,7 @@ client.source.get_source(
 </dl>
 </details>
 
-<details><summary><code>client.source.<a href="src/fern/source/client.py">list_sources_for_workspace</a>(...)</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py">list_sources_for_workspace</a>(...) -> SourceReadList</code></summary>
 <dl>
 <dd>
 
@@ -5506,10 +5511,13 @@ List sources for workspace. Does not return deleted sources.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.source.list_sources_for_workspace(
     workspace_id="workspaceId",
 )
@@ -5528,7 +5536,7 @@ client.source.list_sources_for_workspace(
 <dl>
 <dd>
 
-**workspace_id:** `WorkspaceId` 
+**request:** `WorkspaceIdRequestBody` 
     
 </dd>
 </dl>
@@ -5548,7 +5556,7 @@ client.source.list_sources_for_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.source.<a href="src/fern/source/client.py">get_most_recent_source_actor_catalog</a>(...)</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py">get_most_recent_source_actor_catalog</a>(...) -> ActorCatalogWithUpdatedAt</code></summary>
 <dl>
 <dd>
 
@@ -5562,10 +5570,13 @@ client.source.list_sources_for_workspace(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.source.get_most_recent_source_actor_catalog(
     source_id="sourceId",
 )
@@ -5584,7 +5595,7 @@ client.source.get_most_recent_source_actor_catalog(
 <dl>
 <dd>
 
-**source_id:** `SourceId` 
+**request:** `SourceIdRequestBody` 
     
 </dd>
 </dl>
@@ -5604,7 +5615,7 @@ client.source.get_most_recent_source_actor_catalog(
 </dl>
 </details>
 
-<details><summary><code>client.source.<a href="src/fern/source/client.py">search_sources</a>(...)</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py">search_sources</a>(...) -> SourceReadList</code></summary>
 <dl>
 <dd>
 
@@ -5618,10 +5629,13 @@ client.source.get_most_recent_source_actor_catalog(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.source.search_sources()
 
 ```
@@ -5638,47 +5652,7 @@ client.source.search_sources()
 <dl>
 <dd>
 
-**connection_configuration:** `typing.Optional[SourceConfiguration]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**name:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**source_definition_id:** `typing.Optional[SourceDefinitionId]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**source_id:** `typing.Optional[SourceId]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**source_name:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**workspace_id:** `typing.Optional[WorkspaceId]` 
+**request:** `SourceSearch` 
     
 </dd>
 </dl>
@@ -5698,7 +5672,7 @@ client.source.search_sources()
 </dl>
 </details>
 
-<details><summary><code>client.source.<a href="src/fern/source/client.py">update_source</a>(...)</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py">update_source</a>(...) -> SourceRead</code></summary>
 <dl>
 <dd>
 
@@ -5712,10 +5686,13 @@ client.source.search_sources()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.source.update_source(
     connection_configuration={"user": "charles"},
     name="name",
@@ -5736,23 +5713,7 @@ client.source.update_source(
 <dl>
 <dd>
 
-**connection_configuration:** `SourceConfiguration` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**name:** `str` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**source_id:** `SourceId` 
+**request:** `SourceUpdate` 
     
 </dd>
 </dl>
@@ -5772,7 +5733,7 @@ client.source.update_source(
 </dl>
 </details>
 
-<details><summary><code>client.source.<a href="src/fern/source/client.py">write_discover_catalog_result</a>(...)</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py">write_discover_catalog_result</a>(...) -> DiscoverCatalogResult</code></summary>
 <dl>
 <dd>
 
@@ -5785,14 +5746,19 @@ client.source.update_source(
 <dd>
 
 ```python
-from fern import AirbyteCatalog, AirbyteStreamAndConfiguration, FernApi
+from fern import FernApi, AirbyteCatalog, AirbyteStreamAndConfiguration
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.source.write_discover_catalog_result(
     catalog=AirbyteCatalog(
-        streams=[AirbyteStreamAndConfiguration()],
+        streams=[
+            AirbyteStreamAndConfiguration()
+        ],
     ),
 )
 
@@ -5855,7 +5821,7 @@ client.source.write_discover_catalog_result(
 </details>
 
 ## state
-<details><summary><code>client.state.<a href="src/fern/state/client.py">create_or_update_state</a>(...)</code></summary>
+<details><summary><code>client.state.<a href="src/fern/state/client.py">create_or_update_state</a>(...) -> ConnectionState</code></summary>
 <dl>
 <dd>
 
@@ -5868,11 +5834,14 @@ client.source.write_discover_catalog_result(
 <dd>
 
 ```python
-from fern import ConnectionState, ConnectionStateType, FernApi
+from fern import FernApi, ConnectionState, ConnectionStateType
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.state.create_or_update_state(
     connection_id="connectionId",
     connection_state=ConnectionState(
@@ -5923,7 +5892,7 @@ client.state.create_or_update_state(
 </dl>
 </details>
 
-<details><summary><code>client.state.<a href="src/fern/state/client.py">get_state</a>(...)</code></summary>
+<details><summary><code>client.state.<a href="src/fern/state/client.py">get_state</a>(...) -> ConnectionState</code></summary>
 <dl>
 <dd>
 
@@ -5937,10 +5906,13 @@ client.state.create_or_update_state(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.state.get_state(
     connection_id="connectionId",
 )
@@ -5959,7 +5931,7 @@ client.state.get_state(
 <dl>
 <dd>
 
-**connection_id:** `ConnectionId` 
+**request:** `ConnectionIdRequestBody` 
     
 </dd>
 </dl>
@@ -5980,7 +5952,7 @@ client.state.get_state(
 </details>
 
 ## web_backend
-<details><summary><code>client.web_backend.<a href="src/fern/web_backend/client.py">check_updates</a>()</code></summary>
+<details><summary><code>client.web_backend.<a href="src/fern/web_backend/client.py">check_updates</a>() -> WebBackendCheckUpdatesRead</code></summary>
 <dl>
 <dd>
 
@@ -5994,10 +5966,13 @@ client.state.get_state(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.web_backend.check_updates()
 
 ```
@@ -6026,7 +6001,7 @@ client.web_backend.check_updates()
 </dl>
 </details>
 
-<details><summary><code>client.web_backend.<a href="src/fern/web_backend/client.py">create_connection</a>(...)</code></summary>
+<details><summary><code>client.web_backend.<a href="src/fern/web_backend/client.py">create_connection</a>(...) -> WebBackendConnectionRead</code></summary>
 <dl>
 <dd>
 
@@ -6039,11 +6014,14 @@ client.web_backend.check_updates()
 <dd>
 
 ```python
-from fern import ConnectionStatus, FernApi
+from fern import FernApi, ConnectionStatus
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.web_backend.create_connection(
     destination_id="destinationId",
     source_id="sourceId",
@@ -6128,7 +6106,7 @@ client.web_backend.create_connection(
 <dl>
 <dd>
 
-**operation_ids:** `typing.Optional[typing.Sequence[OperationId]]` 
+**operation_ids:** `typing.Optional[typing.List[OperationId]]` 
     
 </dd>
 </dl>
@@ -6136,7 +6114,7 @@ client.web_backend.create_connection(
 <dl>
 <dd>
 
-**operations:** `typing.Optional[typing.Sequence[OperationCreate]]` 
+**operations:** `typing.Optional[typing.List[OperationCreate]]` 
     
 </dd>
 </dl>
@@ -6212,7 +6190,7 @@ client.web_backend.create_connection(
 </dl>
 </details>
 
-<details><summary><code>client.web_backend.<a href="src/fern/web_backend/client.py">get_connection</a>(...)</code></summary>
+<details><summary><code>client.web_backend.<a href="src/fern/web_backend/client.py">get_connection</a>(...) -> WebBackendConnectionRead</code></summary>
 <dl>
 <dd>
 
@@ -6226,10 +6204,13 @@ client.web_backend.create_connection(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.web_backend.get_connection(
     connection_id="connectionId",
 )
@@ -6276,7 +6257,7 @@ client.web_backend.get_connection(
 </dl>
 </details>
 
-<details><summary><code>client.web_backend.<a href="src/fern/web_backend/client.py">list_connections_for_workspace</a>(...)</code></summary>
+<details><summary><code>client.web_backend.<a href="src/fern/web_backend/client.py">list_connections_for_workspace</a>(...) -> WebBackendConnectionReadList</code></summary>
 <dl>
 <dd>
 
@@ -6290,10 +6271,13 @@ client.web_backend.get_connection(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.web_backend.list_connections_for_workspace(
     workspace_id="workspaceId",
 )
@@ -6320,7 +6304,7 @@ client.web_backend.list_connections_for_workspace(
 <dl>
 <dd>
 
-**destination_id:** `typing.Optional[typing.Sequence[DestinationId]]` 
+**destination_id:** `typing.Optional[typing.List[DestinationId]]` 
     
 </dd>
 </dl>
@@ -6328,7 +6312,7 @@ client.web_backend.list_connections_for_workspace(
 <dl>
 <dd>
 
-**source_id:** `typing.Optional[typing.Sequence[SourceId]]` 
+**source_id:** `typing.Optional[typing.List[SourceId]]` 
     
 </dd>
 </dl>
@@ -6348,7 +6332,7 @@ client.web_backend.list_connections_for_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.web_backend.<a href="src/fern/web_backend/client.py">update_connection</a>(...)</code></summary>
+<details><summary><code>client.web_backend.<a href="src/fern/web_backend/client.py">update_connection</a>(...) -> WebBackendConnectionRead</code></summary>
 <dl>
 <dd>
 
@@ -6382,10 +6366,13 @@ containing the updated stream needs to be sent.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.web_backend.update_connection(
     connection_id="connectionId",
 )
@@ -6460,7 +6447,7 @@ client.web_backend.update_connection(
 <dl>
 <dd>
 
-**operations:** `typing.Optional[typing.Sequence[WebBackendOperationCreateOrUpdate]]` 
+**operations:** `typing.Optional[typing.List[WebBackendOperationCreateOrUpdate]]` 
     
 </dd>
 </dl>
@@ -6552,7 +6539,7 @@ client.web_backend.update_connection(
 </dl>
 </details>
 
-<details><summary><code>client.web_backend.<a href="src/fern/web_backend/client.py">list_geographies</a>()</code></summary>
+<details><summary><code>client.web_backend.<a href="src/fern/web_backend/client.py">list_geographies</a>() -> WebBackendGeographiesListResult</code></summary>
 <dl>
 <dd>
 
@@ -6580,10 +6567,13 @@ Returns all available geographies in which a data sync can run.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.web_backend.list_geographies()
 
 ```
@@ -6612,7 +6602,7 @@ client.web_backend.list_geographies()
 </dl>
 </details>
 
-<details><summary><code>client.web_backend.<a href="src/fern/web_backend/client.py">get_state_type</a>(...)</code></summary>
+<details><summary><code>client.web_backend.<a href="src/fern/web_backend/client.py">get_state_type</a>(...) -> ConnectionStateType</code></summary>
 <dl>
 <dd>
 
@@ -6626,10 +6616,13 @@ client.web_backend.list_geographies()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.web_backend.get_state_type(
     connection_id="connectionId",
 )
@@ -6648,7 +6641,7 @@ client.web_backend.get_state_type(
 <dl>
 <dd>
 
-**connection_id:** `ConnectionId` 
+**request:** `ConnectionIdRequestBody` 
     
 </dd>
 </dl>
@@ -6668,7 +6661,7 @@ client.web_backend.get_state_type(
 </dl>
 </details>
 
-<details><summary><code>client.web_backend.<a href="src/fern/web_backend/client.py">get_workspace_state</a>(...)</code></summary>
+<details><summary><code>client.web_backend.<a href="src/fern/web_backend/client.py">get_workspace_state</a>(...) -> WebBackendWorkspaceStateResult</code></summary>
 <dl>
 <dd>
 
@@ -6682,10 +6675,13 @@ client.web_backend.get_state_type(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.web_backend.get_workspace_state(
     workspace_id="workspaceId",
 )
@@ -6725,7 +6721,7 @@ client.web_backend.get_workspace_state(
 </details>
 
 ## workspace
-<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">create_workspace</a>(...)</code></summary>
+<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">create_workspace</a>(...) -> WorkspaceRead</code></summary>
 <dl>
 <dd>
 
@@ -6739,10 +6735,13 @@ client.web_backend.get_workspace_state(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.workspace.create_workspace(
     name="name",
 )
@@ -6809,7 +6808,7 @@ client.workspace.create_workspace(
 <dl>
 <dd>
 
-**notifications:** `typing.Optional[typing.Sequence[Notification]]` 
+**notifications:** `typing.Optional[typing.List[Notification]]` 
     
 </dd>
 </dl>
@@ -6825,7 +6824,7 @@ client.workspace.create_workspace(
 <dl>
 <dd>
 
-**webhook_configs:** `typing.Optional[typing.Sequence[WebhookConfigWrite]]` 
+**webhook_configs:** `typing.Optional[typing.List[WebhookConfigWrite]]` 
     
 </dd>
 </dl>
@@ -6859,10 +6858,13 @@ client.workspace.create_workspace(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.workspace.delete_workspace(
     workspace_id="workspaceId",
 )
@@ -6881,7 +6883,7 @@ client.workspace.delete_workspace(
 <dl>
 <dd>
 
-**workspace_id:** `WorkspaceId` 
+**request:** `WorkspaceIdRequestBody` 
     
 </dd>
 </dl>
@@ -6901,7 +6903,7 @@ client.workspace.delete_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">get_workspace</a>(...)</code></summary>
+<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">get_workspace</a>(...) -> WorkspaceRead</code></summary>
 <dl>
 <dd>
 
@@ -6915,10 +6917,13 @@ client.workspace.delete_workspace(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.workspace.get_workspace(
     workspace_id="workspaceId",
 )
@@ -6937,7 +6942,7 @@ client.workspace.get_workspace(
 <dl>
 <dd>
 
-**workspace_id:** `WorkspaceId` 
+**request:** `WorkspaceIdRequestBody` 
     
 </dd>
 </dl>
@@ -6957,7 +6962,7 @@ client.workspace.get_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">get_workspace_by_connection_id</a>(...)</code></summary>
+<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">get_workspace_by_connection_id</a>(...) -> WorkspaceRead</code></summary>
 <dl>
 <dd>
 
@@ -6971,10 +6976,13 @@ client.workspace.get_workspace(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.workspace.get_workspace_by_connection_id(
     connection_id="connectionId",
 )
@@ -6993,7 +7001,7 @@ client.workspace.get_workspace_by_connection_id(
 <dl>
 <dd>
 
-**connection_id:** `ConnectionId` 
+**request:** `ConnectionIdRequestBody` 
     
 </dd>
 </dl>
@@ -7013,7 +7021,7 @@ client.workspace.get_workspace_by_connection_id(
 </dl>
 </details>
 
-<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">get_workspace_by_slug</a>(...)</code></summary>
+<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">get_workspace_by_slug</a>(...) -> WorkspaceRead</code></summary>
 <dl>
 <dd>
 
@@ -7027,10 +7035,13 @@ client.workspace.get_workspace_by_connection_id(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.workspace.get_workspace_by_slug(
     slug="slug",
 )
@@ -7069,7 +7080,7 @@ client.workspace.get_workspace_by_slug(
 </dl>
 </details>
 
-<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">list_workspaces</a>()</code></summary>
+<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">list_workspaces</a>() -> WorkspaceReadList</code></summary>
 <dl>
 <dd>
 
@@ -7083,10 +7094,13 @@ client.workspace.get_workspace_by_slug(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.workspace.list_workspaces()
 
 ```
@@ -7129,10 +7143,13 @@ client.workspace.list_workspaces()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.workspace.update_workspace_feedback(
     workspace_id="workspaceId",
 )
@@ -7171,7 +7188,7 @@ client.workspace.update_workspace_feedback(
 </dl>
 </details>
 
-<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">update_workspace</a>(...)</code></summary>
+<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">update_workspace</a>(...) -> WorkspaceRead</code></summary>
 <dl>
 <dd>
 
@@ -7185,10 +7202,13 @@ client.workspace.update_workspace_feedback(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.workspace.update_workspace(
     workspace_id="workspaceId",
 )
@@ -7263,7 +7283,7 @@ client.workspace.update_workspace(
 <dl>
 <dd>
 
-**notifications:** `typing.Optional[typing.Sequence[Notification]]` 
+**notifications:** `typing.Optional[typing.List[Notification]]` 
     
 </dd>
 </dl>
@@ -7279,7 +7299,7 @@ client.workspace.update_workspace(
 <dl>
 <dd>
 
-**webhook_configs:** `typing.Optional[typing.Sequence[WebhookConfigWrite]]` 
+**webhook_configs:** `typing.Optional[typing.List[WebhookConfigWrite]]` 
     
 </dd>
 </dl>
@@ -7299,7 +7319,7 @@ client.workspace.update_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">update_workspace_name</a>(...)</code></summary>
+<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">update_workspace_name</a>(...) -> WorkspaceRead</code></summary>
 <dl>
 <dd>
 
@@ -7313,10 +7333,13 @@ client.workspace.update_workspace(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.workspace.update_workspace_name(
     name="name",
     workspace_id="workspaceId",

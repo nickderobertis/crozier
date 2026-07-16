@@ -15,9 +15,11 @@ class DestinyHistoricalStatsDestinyClanAggregateStat(UniversalBaseModel):
     The id of the mode of stats (allPvp, allPvE, etc)
     """
 
-    stat_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="statId")] = pydantic.Field(
-        default=None
-    )
+    stat_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="statId"),
+        pydantic.Field(alias="statId", description="The id of the stat"),
+    ] = None
     """
     The id of the stat
     """

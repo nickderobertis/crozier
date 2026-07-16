@@ -16,7 +16,7 @@ class Source(UniversalBaseModel):
     created_at: typing.Optional[dt.datetime] = None
     enabled: typing.Optional[bool] = None
     id: typing.Optional[Id] = None
-    info: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    info: typing.Optional[typing.Dict[str, typing.Any]] = None
     last_available_at: typing.Optional[dt.datetime] = None
     last_checked_at: typing.Optional[dt.datetime] = None
     last_refresh_message: typing.Optional[str] = None

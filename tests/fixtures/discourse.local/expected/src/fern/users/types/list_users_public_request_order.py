@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ListUsersPublicRequestOrder(str, enum.Enum):
+class ListUsersPublicRequestOrder(enum.StrEnum):
     LIKES_RECEIVED = "likes_received"
     LIKES_GIVEN = "likes_given"
     TOPIC_COUNT = "topic_count"

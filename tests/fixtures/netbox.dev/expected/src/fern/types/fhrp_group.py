@@ -16,7 +16,7 @@ class FhrpGroup(UniversalBaseModel):
     auth_type: typing.Optional[FhrpGroupAuthType] = None
     comments: typing.Optional[str] = None
     created: typing.Optional[dt.datetime] = None
-    custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = None
     description: typing.Optional[str] = None
     display: typing.Optional[str] = None
     group_id: int

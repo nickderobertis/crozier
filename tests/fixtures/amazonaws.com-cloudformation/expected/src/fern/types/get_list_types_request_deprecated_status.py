@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GetListTypesRequestDeprecatedStatus(str, enum.Enum):
+class GetListTypesRequestDeprecatedStatus(enum.StrEnum):
     LIVE = "LIVE"
     DEPRECATED = "DEPRECATED"
 

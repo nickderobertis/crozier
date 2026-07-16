@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class AdminListUsersRequestOrder(str, enum.Enum):
+class AdminListUsersRequestOrder(enum.StrEnum):
     CREATED = "created"
     LAST_EMAILED = "last_emailed"
     SEEN = "seen"

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ResourceType(str, enum.Enum):
+class ResourceType(enum.StrEnum):
     """
     Types of managed resources for Services or APIs
     """

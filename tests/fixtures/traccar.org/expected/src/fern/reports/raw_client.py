@@ -8,6 +8,7 @@ from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.datetime_utils import serialize_datetime
 from ..core.http_response import AsyncHttpResponse, HttpResponse
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..types.event import Event
@@ -15,6 +16,7 @@ from ..types.position import Position
 from ..types.report_stops import ReportStops
 from ..types.report_summary import ReportSummary
 from ..types.report_trips import ReportTrips
+from pydantic import ValidationError
 
 
 class RawReportsClient:
@@ -63,7 +65,7 @@ class RawReportsClient:
             params={
                 "deviceId": device_id,
                 "groupId": group_id,
-                "type": type,
+                "type": ",".join(map(str, type)) if isinstance(type, (list, tuple, set)) else type,
                 "from": serialize_datetime(from_),
                 "to": serialize_datetime(to),
             },
@@ -82,6 +84,10 @@ class RawReportsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def fetch_a_list_of_positions_within_the_time_period_for_the_devices_or_groups(
@@ -140,6 +146,10 @@ class RawReportsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def fetch_a_list_of_report_stops_within_the_time_period_for_the_devices_or_groups(
@@ -198,6 +208,10 @@ class RawReportsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def fetch_a_list_of_report_summary_within_the_time_period_for_the_devices_or_groups(
@@ -256,6 +270,10 @@ class RawReportsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def fetch_a_list_of_report_trips_within_the_time_period_for_the_devices_or_groups(
@@ -314,6 +332,10 @@ class RawReportsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -363,7 +385,7 @@ class AsyncRawReportsClient:
             params={
                 "deviceId": device_id,
                 "groupId": group_id,
-                "type": type,
+                "type": ",".join(map(str, type)) if isinstance(type, (list, tuple, set)) else type,
                 "from": serialize_datetime(from_),
                 "to": serialize_datetime(to),
             },
@@ -382,6 +404,10 @@ class AsyncRawReportsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def fetch_a_list_of_positions_within_the_time_period_for_the_devices_or_groups(
@@ -440,6 +466,10 @@ class AsyncRawReportsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def fetch_a_list_of_report_stops_within_the_time_period_for_the_devices_or_groups(
@@ -498,6 +528,10 @@ class AsyncRawReportsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def fetch_a_list_of_report_summary_within_the_time_period_for_the_devices_or_groups(
@@ -556,6 +590,10 @@ class AsyncRawReportsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def fetch_a_list_of_report_trips_within_the_time_period_for_the_devices_or_groups(
@@ -614,4 +652,8 @@ class AsyncRawReportsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

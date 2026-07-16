@@ -28,16 +28,23 @@ class DestinyDefinitionsSeasonsDestinySeasonPreviewDefinition(UniversalBaseModel
     A list of images to preview the seasonal content. Should have at least three to show.
     """
 
-    link_path: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="linkPath")] = pydantic.Field(
-        default=None
-    )
+    link_path: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="linkPath"),
+        pydantic.Field(
+            alias="linkPath",
+            description='A relative path to learn more about the season. Web browsers should be automatically redirected to the user\'s Bungie.net locale. For example: "/SeasonOfTheChosen" will redirect to "/7/en/Seasons/SeasonOfTheChosen" for English users.',
+        ),
+    ] = None
     """
     A relative path to learn more about the season. Web browsers should be automatically redirected to the user's Bungie.net locale. For example: "/SeasonOfTheChosen" will redirect to "/7/en/Seasons/SeasonOfTheChosen" for English users.
     """
 
-    video_link: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="videoLink")] = pydantic.Field(
-        default=None
-    )
+    video_link: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="videoLink"),
+        pydantic.Field(alias="videoLink", description="An optional link to a localized video, probably YouTube."),
+    ] = None
     """
     An optional link to a localized video, probably YouTube.
     """

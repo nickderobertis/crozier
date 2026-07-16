@@ -17,28 +17,42 @@ from .tax_line import TaxLine
 
 class PayslipLines(UniversalBaseModel):
     deduction_lines: typing_extensions.Annotated[
-        typing.Optional[typing.List[DeductionLine]], FieldMetadata(alias="DeductionLines")
+        typing.Optional[typing.List[DeductionLine]],
+        FieldMetadata(alias="DeductionLines"),
+        pydantic.Field(alias="DeductionLines"),
     ] = None
     earnings_lines: typing_extensions.Annotated[
-        typing.Optional[typing.List[EarningsLine]], FieldMetadata(alias="EarningsLines")
+        typing.Optional[typing.List[EarningsLine]],
+        FieldMetadata(alias="EarningsLines"),
+        pydantic.Field(alias="EarningsLines"),
     ] = None
     leave_accrual_lines: typing_extensions.Annotated[
-        typing.Optional[typing.List[LeaveAccrualLine]], FieldMetadata(alias="LeaveAccrualLines")
+        typing.Optional[typing.List[LeaveAccrualLine]],
+        FieldMetadata(alias="LeaveAccrualLines"),
+        pydantic.Field(alias="LeaveAccrualLines"),
     ] = None
     leave_earnings_lines: typing_extensions.Annotated[
-        typing.Optional[typing.List[LeaveEarningsLine]], FieldMetadata(alias="LeaveEarningsLines")
+        typing.Optional[typing.List[LeaveEarningsLine]],
+        FieldMetadata(alias="LeaveEarningsLines"),
+        pydantic.Field(alias="LeaveEarningsLines"),
     ] = None
     reimbursement_lines: typing_extensions.Annotated[
-        typing.Optional[typing.List[ReimbursementLine]], FieldMetadata(alias="ReimbursementLines")
+        typing.Optional[typing.List[ReimbursementLine]],
+        FieldMetadata(alias="ReimbursementLines"),
+        pydantic.Field(alias="ReimbursementLines"),
     ] = None
     superannuation_lines: typing_extensions.Annotated[
-        typing.Optional[typing.List[SuperannuationLine]], FieldMetadata(alias="SuperannuationLines")
+        typing.Optional[typing.List[SuperannuationLine]],
+        FieldMetadata(alias="SuperannuationLines"),
+        pydantic.Field(alias="SuperannuationLines"),
     ] = None
-    tax_lines: typing_extensions.Annotated[typing.Optional[typing.List[TaxLine]], FieldMetadata(alias="TaxLines")] = (
-        None
-    )
+    tax_lines: typing_extensions.Annotated[
+        typing.Optional[typing.List[TaxLine]], FieldMetadata(alias="TaxLines"), pydantic.Field(alias="TaxLines")
+    ] = None
     timesheet_earnings_lines: typing_extensions.Annotated[
-        typing.Optional[typing.List[EarningsLine]], FieldMetadata(alias="TimesheetEarningsLines")
+        typing.Optional[typing.List[EarningsLine]],
+        FieldMetadata(alias="TimesheetEarningsLines"),
+        pydantic.Field(alias="TimesheetEarningsLines"),
     ] = None
 
     if IS_PYDANTIC_V2:

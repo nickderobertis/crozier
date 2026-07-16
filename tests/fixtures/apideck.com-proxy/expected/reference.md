@@ -1,6 +1,6 @@
 # Reference
 ## Execute
-<details><summary><code>client.execute.<a href="src/fern/execute/client.py">get_proxy</a>()</code></summary>
+<details><summary><code>client.execute.<a href="src/fern/execute/client.py">get_proxy</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -29,15 +29,17 @@ Proxies a downstream GET request to a service and injects the necessary credenti
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    apideck_downstream_url="YOUR_APIDECK_DOWNSTREAM_URL",
-    apideck_downstream_authorization="YOUR_APIDECK_DOWNSTREAM_AUTHORIZATION",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_service_id="<x-apideck-service-id>",
+    apideck_downstream_url="<x-apideck-downstream-url>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.execute.get_proxy()
 
 ```
@@ -66,7 +68,7 @@ client.execute.get_proxy()
 </dl>
 </details>
 
-<details><summary><code>client.execute.<a href="src/fern/execute/client.py">post_proxy</a>(...)</code></summary>
+<details><summary><code>client.execute.<a href="src/fern/execute/client.py">post_proxy</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -94,18 +96,19 @@ Proxies a downstream POST request to a service and injects the necessary credent
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.execute import PostProxyRequestBodyZero
 
-from fern import FernApi
-
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    apideck_downstream_url="YOUR_APIDECK_DOWNSTREAM_URL",
-    apideck_downstream_authorization="YOUR_APIDECK_DOWNSTREAM_AUTHORIZATION",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_service_id="<x-apideck-service-id>",
+    apideck_downstream_url="<x-apideck-downstream-url>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.execute.post_proxy(
     request=PostProxyRequestBodyZero(),
 )
@@ -144,7 +147,7 @@ client.execute.post_proxy(
 </dl>
 </details>
 
-<details><summary><code>client.execute.<a href="src/fern/execute/client.py">put_proxy</a>(...)</code></summary>
+<details><summary><code>client.execute.<a href="src/fern/execute/client.py">put_proxy</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -172,18 +175,19 @@ Proxies a downstream PUT request to a service and injects the necessary credenti
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.execute import PutProxyRequestBodyZero
 
-from fern import FernApi
-
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    apideck_downstream_url="YOUR_APIDECK_DOWNSTREAM_URL",
-    apideck_downstream_authorization="YOUR_APIDECK_DOWNSTREAM_AUTHORIZATION",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_service_id="<x-apideck-service-id>",
+    apideck_downstream_url="<x-apideck-downstream-url>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.execute.put_proxy(
     request=PutProxyRequestBodyZero(),
 )
@@ -222,7 +226,7 @@ client.execute.put_proxy(
 </dl>
 </details>
 
-<details><summary><code>client.execute.<a href="src/fern/execute/client.py">delete_proxy</a>()</code></summary>
+<details><summary><code>client.execute.<a href="src/fern/execute/client.py">delete_proxy</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -251,15 +255,17 @@ Proxies a downstream DELETE request to a service and injects the necessary crede
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    apideck_downstream_url="YOUR_APIDECK_DOWNSTREAM_URL",
-    apideck_downstream_authorization="YOUR_APIDECK_DOWNSTREAM_AUTHORIZATION",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_service_id="<x-apideck-service-id>",
+    apideck_downstream_url="<x-apideck-downstream-url>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.execute.delete_proxy()
 
 ```
@@ -288,7 +294,7 @@ client.execute.delete_proxy()
 </dl>
 </details>
 
-<details><summary><code>client.execute.<a href="src/fern/execute/client.py">patch_proxy</a>(...)</code></summary>
+<details><summary><code>client.execute.<a href="src/fern/execute/client.py">patch_proxy</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -316,18 +322,19 @@ Proxies a downstream PATCH request to a service and injects the necessary creden
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.execute import PatchProxyRequestBodyZero
 
-from fern import FernApi
-
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    apideck_downstream_url="YOUR_APIDECK_DOWNSTREAM_URL",
-    apideck_downstream_authorization="YOUR_APIDECK_DOWNSTREAM_AUTHORIZATION",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_service_id="<x-apideck-service-id>",
+    apideck_downstream_url="<x-apideck-downstream-url>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.execute.patch_proxy(
     request=PatchProxyRequestBodyZero(),
 )

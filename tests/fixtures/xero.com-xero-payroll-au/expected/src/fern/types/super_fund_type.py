@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class SuperFundType(str, enum.Enum):
+class SuperFundType(enum.StrEnum):
     REGULATED = "REGULATED"
     SMSF = "SMSF"
 

@@ -15,30 +15,48 @@ class DestinyComponentsProfilesDestinyProfileTransitoryCurrentActivity(Universal
     Note that we cannot guarantee any of this resembles what ends up in the PGCR in any way. They are sourced by two entirely separate systems with their own logic, and the one we source this data from should be considered non-authoritative in comparison.
     """
 
-    end_time: typing_extensions.Annotated[typing.Optional[dt.datetime], FieldMetadata(alias="endTime")] = (
-        pydantic.Field(default=None)
-    )
+    end_time: typing_extensions.Annotated[
+        typing.Optional[dt.datetime],
+        FieldMetadata(alias="endTime"),
+        pydantic.Field(
+            alias="endTime",
+            description='If you\'re still in it but it "ended" (like when folks are dancing around the loot after they beat a boss), this is when the activity ended.',
+        ),
+    ] = None
     """
     If you're still in it but it "ended" (like when folks are dancing around the loot after they beat a boss), this is when the activity ended.
     """
 
     highest_opposing_faction_score: typing_extensions.Annotated[
-        typing.Optional[float], FieldMetadata(alias="highestOpposingFactionScore")
-    ] = pydantic.Field(default=None)
+        typing.Optional[float],
+        FieldMetadata(alias="highestOpposingFactionScore"),
+        pydantic.Field(
+            alias="highestOpposingFactionScore",
+            description="If you have human opponents, this is the highest opposing team's score.",
+        ),
+    ] = None
     """
     If you have human opponents, this is the highest opposing team's score.
     """
 
-    number_of_opponents: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="numberOfOpponents")] = (
-        pydantic.Field(default=None)
-    )
+    number_of_opponents: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="numberOfOpponents"),
+        pydantic.Field(
+            alias="numberOfOpponents", description="This is how many human or poorly crafted aimbot opponents you have."
+        ),
+    ] = None
     """
     This is how many human or poorly crafted aimbot opponents you have.
     """
 
-    number_of_players: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="numberOfPlayers")] = (
-        pydantic.Field(default=None)
-    )
+    number_of_players: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="numberOfPlayers"),
+        pydantic.Field(
+            alias="numberOfPlayers", description="This is how many human or poorly crafted aimbots are on your team."
+        ),
+    ] = None
     """
     This is how many human or poorly crafted aimbots are on your team.
     """
@@ -48,9 +66,11 @@ class DestinyComponentsProfilesDestinyProfileTransitoryCurrentActivity(Universal
     This is what our non-authoritative source thought the score was.
     """
 
-    start_time: typing_extensions.Annotated[typing.Optional[dt.datetime], FieldMetadata(alias="startTime")] = (
-        pydantic.Field(default=None)
-    )
+    start_time: typing_extensions.Annotated[
+        typing.Optional[dt.datetime],
+        FieldMetadata(alias="startTime"),
+        pydantic.Field(alias="startTime", description="When the activity started."),
+    ] = None
     """
     When the activity started.
     """

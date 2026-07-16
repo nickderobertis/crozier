@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class OauthScope(str, enum.Enum):
+class OauthScope(enum.StrEnum):
     ACCOUNTS = "accounts"
     """
     Ability to read Accounts information

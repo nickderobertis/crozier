@@ -10,8 +10,12 @@ from ...core.serialization import FieldMetadata
 
 class PostPortfolioAnalysisUlcerPerformanceIndexResponsePortfoliosItem(UniversalBaseModel):
     portfolio_ulcer_performance_index: typing_extensions.Annotated[
-        float, FieldMetadata(alias="portfolioUlcerPerformanceIndex")
-    ] = pydantic.Field()
+        float,
+        FieldMetadata(alias="portfolioUlcerPerformanceIndex"),
+        pydantic.Field(
+            alias="portfolioUlcerPerformanceIndex", description="The Ulcer Performance Index of the portfolio"
+        ),
+    ]
     """
     The Ulcer Performance Index of the portfolio
     """

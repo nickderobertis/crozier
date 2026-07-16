@@ -11,10 +11,14 @@ from .social_friends_bungie_friend import SocialFriendsBungieFriend
 
 class SocialFriendsBungieFriendRequestListResponse(UniversalBaseModel):
     incoming_requests: typing_extensions.Annotated[
-        typing.Optional[typing.List[SocialFriendsBungieFriend]], FieldMetadata(alias="incomingRequests")
+        typing.Optional[typing.List[SocialFriendsBungieFriend]],
+        FieldMetadata(alias="incomingRequests"),
+        pydantic.Field(alias="incomingRequests"),
     ] = None
     outgoing_requests: typing_extensions.Annotated[
-        typing.Optional[typing.List[SocialFriendsBungieFriend]], FieldMetadata(alias="outgoingRequests")
+        typing.Optional[typing.List[SocialFriendsBungieFriend]],
+        FieldMetadata(alias="outgoingRequests"),
+        pydantic.Field(alias="outgoingRequests"),
     ] = None
 
     if IS_PYDANTIC_V2:

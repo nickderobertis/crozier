@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class WritableIpRangeStatus(str, enum.Enum):
+class WritableIpRangeStatus(enum.StrEnum):
     """
     Operational status of this range
     """

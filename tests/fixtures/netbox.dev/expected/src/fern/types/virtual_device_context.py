@@ -15,7 +15,7 @@ from .virtual_device_context_status import VirtualDeviceContextStatus
 class VirtualDeviceContext(UniversalBaseModel):
     comments: typing.Optional[str] = None
     created: typing.Optional[dt.datetime] = None
-    custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = None
     description: typing.Optional[str] = None
     device: NestedDevice
     display: typing.Optional[str] = None

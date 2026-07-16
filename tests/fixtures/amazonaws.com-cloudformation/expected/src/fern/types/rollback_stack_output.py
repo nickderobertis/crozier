@@ -9,9 +9,11 @@ from ..core.serialization import FieldMetadata
 
 
 class RollbackStackOutput(UniversalBaseModel):
-    stack_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="StackId")] = pydantic.Field(
-        default=None
-    )
+    stack_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="StackId"),
+        pydantic.Field(alias="StackId", description="Unique identifier of the stack."),
+    ] = None
     """
     Unique identifier of the stack.
     """

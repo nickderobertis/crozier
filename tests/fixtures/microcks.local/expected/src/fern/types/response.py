@@ -34,14 +34,23 @@ class Response(UniversalBaseModel):
     Unique distinct name of this Response
     """
 
-    operation_id: typing_extensions.Annotated[str, FieldMetadata(alias="operationId")] = pydantic.Field()
+    operation_id: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="operationId"),
+        pydantic.Field(alias="operationId", description="Identifier of Operation this Response is associated to"),
+    ]
     """
     Identifier of Operation this Response is associated to
     """
 
-    test_case_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="testCaseId")] = pydantic.Field(
-        default=None
-    )
+    test_case_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="testCaseId"),
+        pydantic.Field(
+            alias="testCaseId",
+            description="Unique identifier of TestCase this Response is attached (in case of a test)",
+        ),
+    ] = None
     """
     Unique identifier of TestCase this Response is attached (in case of a test)
     """

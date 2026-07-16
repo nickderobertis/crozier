@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObReadConsentResponse1DataStatus(str, enum.Enum):
+class ObReadConsentResponse1DataStatus(enum.StrEnum):
     """
     Specifies the status of consent resource in code form.
     """

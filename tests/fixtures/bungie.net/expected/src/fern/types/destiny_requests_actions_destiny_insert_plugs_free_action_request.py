@@ -12,15 +12,21 @@ from .destiny_requests_actions_destiny_insert_plugs_request_entry import (
 
 
 class DestinyRequestsActionsDestinyInsertPlugsFreeActionRequest(UniversalBaseModel):
-    character_id: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="characterId")] = None
-    item_id: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="itemId")] = pydantic.Field(
-        default=None
-    )
+    character_id: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="characterId"), pydantic.Field(alias="characterId")
+    ] = None
+    item_id: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="itemId"),
+        pydantic.Field(alias="itemId", description="The instance ID of the item for this action request."),
+    ] = None
     """
     The instance ID of the item for this action request.
     """
 
-    membership_type: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="membershipType")] = None
+    membership_type: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="membershipType"), pydantic.Field(alias="membershipType")
+    ] = None
     plug: typing.Optional[DestinyRequestsActionsDestinyInsertPlugsRequestEntry] = pydantic.Field(default=None)
     """
     The plugs being inserted.

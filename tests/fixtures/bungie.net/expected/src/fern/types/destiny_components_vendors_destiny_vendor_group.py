@@ -14,10 +14,14 @@ class DestinyComponentsVendorsDestinyVendorGroup(UniversalBaseModel):
     How do we figure out this order? It's a long story, and will likely get more complicated over time.
     """
 
-    vendor_group_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="vendorGroupHash")] = None
+    vendor_group_hash: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="vendorGroupHash"), pydantic.Field(alias="vendorGroupHash")
+    ] = None
     vendor_hashes: typing_extensions.Annotated[
-        typing.Optional[typing.List[int]], FieldMetadata(alias="vendorHashes")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[int]],
+        FieldMetadata(alias="vendorHashes"),
+        pydantic.Field(alias="vendorHashes", description="The ordered list of vendors within a particular group."),
+    ] = None
     """
     The ordered list of vendors within a particular group.
     """

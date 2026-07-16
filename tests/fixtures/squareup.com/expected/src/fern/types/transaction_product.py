@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class TransactionProduct(str, enum.Enum):
+class TransactionProduct(enum.StrEnum):
     """
     Indicates the Square product used to process a transaction.
     """

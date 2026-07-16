@@ -2,4 +2,4 @@
 
 import typing
 
-CompleteOAuthResponse = typing.Dict[str, typing.Optional[typing.Any]]
+CompleteOAuthResponse = typing.Dict[str, typing.Any]

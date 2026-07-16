@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PowerFeedSupplyLabel(str, enum.Enum):
+class PowerFeedSupplyLabel(enum.StrEnum):
     AC = "AC"
     DC = "DC"
 

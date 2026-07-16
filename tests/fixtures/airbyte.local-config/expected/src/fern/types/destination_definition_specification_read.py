@@ -15,22 +15,34 @@ from .synchronous_job_read import SynchronousJobRead
 
 
 class DestinationDefinitionSpecificationRead(UniversalBaseModel):
-    advanced_auth: typing_extensions.Annotated[typing.Optional[AdvancedAuth], FieldMetadata(alias="advancedAuth")] = (
-        None
-    )
+    advanced_auth: typing_extensions.Annotated[
+        typing.Optional[AdvancedAuth], FieldMetadata(alias="advancedAuth"), pydantic.Field(alias="advancedAuth")
+    ] = None
     auth_specification: typing_extensions.Annotated[
-        typing.Optional[DestinationAuthSpecification], FieldMetadata(alias="authSpecification")
+        typing.Optional[DestinationAuthSpecification],
+        FieldMetadata(alias="authSpecification"),
+        pydantic.Field(alias="authSpecification"),
     ] = None
     connection_specification: typing_extensions.Annotated[
-        typing.Optional[DestinationDefinitionSpecification], FieldMetadata(alias="connectionSpecification")
+        typing.Optional[DestinationDefinitionSpecification],
+        FieldMetadata(alias="connectionSpecification"),
+        pydantic.Field(alias="connectionSpecification"),
     ] = None
     destination_definition_id: typing_extensions.Annotated[
-        DestinationDefinitionId, FieldMetadata(alias="destinationDefinitionId")
+        DestinationDefinitionId,
+        FieldMetadata(alias="destinationDefinitionId"),
+        pydantic.Field(alias="destinationDefinitionId"),
     ]
-    documentation_url: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="documentationUrl")] = None
-    job_info: typing_extensions.Annotated[SynchronousJobRead, FieldMetadata(alias="jobInfo")]
+    documentation_url: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="documentationUrl"), pydantic.Field(alias="documentationUrl")
+    ] = None
+    job_info: typing_extensions.Annotated[
+        SynchronousJobRead, FieldMetadata(alias="jobInfo"), pydantic.Field(alias="jobInfo")
+    ]
     supported_destination_sync_modes: typing_extensions.Annotated[
-        typing.Optional[typing.List[DestinationSyncMode]], FieldMetadata(alias="supportedDestinationSyncModes")
+        typing.Optional[typing.List[DestinationSyncMode]],
+        FieldMetadata(alias="supportedDestinationSyncModes"),
+        pydantic.Field(alias="supportedDestinationSyncModes"),
     ] = None
 
     if IS_PYDANTIC_V2:

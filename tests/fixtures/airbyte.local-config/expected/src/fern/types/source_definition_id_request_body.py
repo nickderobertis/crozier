@@ -10,7 +10,9 @@ from .source_definition_id import SourceDefinitionId
 
 
 class SourceDefinitionIdRequestBody(UniversalBaseModel):
-    source_definition_id: typing_extensions.Annotated[SourceDefinitionId, FieldMetadata(alias="sourceDefinitionId")]
+    source_definition_id: typing_extensions.Annotated[
+        SourceDefinitionId, FieldMetadata(alias="sourceDefinitionId"), pydantic.Field(alias="sourceDefinitionId")
+    ]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

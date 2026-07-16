@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..types.ability_score import AbilityScore
@@ -20,6 +21,7 @@ from .types.get_api_alignments_index_request_index import GetApiAlignmentsIndexR
 from .types.get_api_backgrounds_index_request_index import GetApiBackgroundsIndexRequestIndex
 from .types.get_api_languages_index_request_index import GetApiLanguagesIndexRequestIndex
 from .types.get_api_skills_index_request_index import GetApiSkillsIndexRequestIndex
+from pydantic import ValidationError
 
 
 class RawCharacterDataClient:
@@ -48,7 +50,7 @@ class RawCharacterDataClient:
             OK
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/ability-scores/{jsonable_encoder(index)}",
+            f"api/ability-scores/{encode_path_param(index)}",
             method="GET",
             request_options=request_options,
         )
@@ -65,6 +67,10 @@ class RawCharacterDataClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_an_alignment_by_index(
@@ -89,7 +95,7 @@ class RawCharacterDataClient:
             OK
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/alignments/{jsonable_encoder(index)}",
+            f"api/alignments/{encode_path_param(index)}",
             method="GET",
             request_options=request_options,
         )
@@ -106,6 +112,10 @@ class RawCharacterDataClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_a_background_by_index(
@@ -132,7 +142,7 @@ class RawCharacterDataClient:
             OK
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/backgrounds/{jsonable_encoder(index)}",
+            f"api/backgrounds/{encode_path_param(index)}",
             method="GET",
             request_options=request_options,
         )
@@ -149,6 +159,10 @@ class RawCharacterDataClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_a_language_by_index(
@@ -173,7 +187,7 @@ class RawCharacterDataClient:
             OK
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/languages/{jsonable_encoder(index)}",
+            f"api/languages/{encode_path_param(index)}",
             method="GET",
             request_options=request_options,
         )
@@ -190,6 +204,10 @@ class RawCharacterDataClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_a_proficiency_by_index(
@@ -216,7 +234,7 @@ class RawCharacterDataClient:
             OK
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/proficiencies/{jsonable_encoder(index)}",
+            f"api/proficiencies/{encode_path_param(index)}",
             method="GET",
             request_options=request_options,
         )
@@ -233,6 +251,10 @@ class RawCharacterDataClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_a_skill_by_index(
@@ -257,7 +279,7 @@ class RawCharacterDataClient:
             OK
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/skills/{jsonable_encoder(index)}",
+            f"api/skills/{encode_path_param(index)}",
             method="GET",
             request_options=request_options,
         )
@@ -274,6 +296,10 @@ class RawCharacterDataClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -303,7 +329,7 @@ class AsyncRawCharacterDataClient:
             OK
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/ability-scores/{jsonable_encoder(index)}",
+            f"api/ability-scores/{encode_path_param(index)}",
             method="GET",
             request_options=request_options,
         )
@@ -320,6 +346,10 @@ class AsyncRawCharacterDataClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_an_alignment_by_index(
@@ -344,7 +374,7 @@ class AsyncRawCharacterDataClient:
             OK
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/alignments/{jsonable_encoder(index)}",
+            f"api/alignments/{encode_path_param(index)}",
             method="GET",
             request_options=request_options,
         )
@@ -361,6 +391,10 @@ class AsyncRawCharacterDataClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_a_background_by_index(
@@ -387,7 +421,7 @@ class AsyncRawCharacterDataClient:
             OK
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/backgrounds/{jsonable_encoder(index)}",
+            f"api/backgrounds/{encode_path_param(index)}",
             method="GET",
             request_options=request_options,
         )
@@ -404,6 +438,10 @@ class AsyncRawCharacterDataClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_a_language_by_index(
@@ -428,7 +466,7 @@ class AsyncRawCharacterDataClient:
             OK
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/languages/{jsonable_encoder(index)}",
+            f"api/languages/{encode_path_param(index)}",
             method="GET",
             request_options=request_options,
         )
@@ -445,6 +483,10 @@ class AsyncRawCharacterDataClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_a_proficiency_by_index(
@@ -471,7 +513,7 @@ class AsyncRawCharacterDataClient:
             OK
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/proficiencies/{jsonable_encoder(index)}",
+            f"api/proficiencies/{encode_path_param(index)}",
             method="GET",
             request_options=request_options,
         )
@@ -488,6 +530,10 @@ class AsyncRawCharacterDataClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_a_skill_by_index(
@@ -512,7 +558,7 @@ class AsyncRawCharacterDataClient:
             OK
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/skills/{jsonable_encoder(index)}",
+            f"api/skills/{encode_path_param(index)}",
             method="GET",
             request_options=request_options,
         )
@@ -529,4 +575,8 @@ class AsyncRawCharacterDataClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

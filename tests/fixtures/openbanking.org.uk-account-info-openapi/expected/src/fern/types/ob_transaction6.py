@@ -37,65 +37,105 @@ class ObTransaction6(UniversalBaseModel):
     Provides further details on an entry in the report.
     """
 
-    account_id: typing_extensions.Annotated[AccountId, FieldMetadata(alias="AccountId")]
-    address_line: typing_extensions.Annotated[typing.Optional[AddressLine], FieldMetadata(alias="AddressLine")] = None
-    amount: typing_extensions.Annotated[ObActiveOrHistoricCurrencyAndAmount9, FieldMetadata(alias="Amount")]
-    balance: typing_extensions.Annotated[typing.Optional[ObTransactionCashBalance], FieldMetadata(alias="Balance")] = (
-        None
-    )
-    bank_transaction_code: typing_extensions.Annotated[
-        typing.Optional[ObBankTransactionCodeStructure1], FieldMetadata(alias="BankTransactionCode")
+    account_id: typing_extensions.Annotated[
+        AccountId, FieldMetadata(alias="AccountId"), pydantic.Field(alias="AccountId")
+    ]
+    address_line: typing_extensions.Annotated[
+        typing.Optional[AddressLine], FieldMetadata(alias="AddressLine"), pydantic.Field(alias="AddressLine")
     ] = None
-    booking_date_time: typing_extensions.Annotated[BookingDateTime, FieldMetadata(alias="BookingDateTime")]
+    amount: typing_extensions.Annotated[
+        ObActiveOrHistoricCurrencyAndAmount9, FieldMetadata(alias="Amount"), pydantic.Field(alias="Amount")
+    ]
+    balance: typing_extensions.Annotated[
+        typing.Optional[ObTransactionCashBalance], FieldMetadata(alias="Balance"), pydantic.Field(alias="Balance")
+    ] = None
+    bank_transaction_code: typing_extensions.Annotated[
+        typing.Optional[ObBankTransactionCodeStructure1],
+        FieldMetadata(alias="BankTransactionCode"),
+        pydantic.Field(alias="BankTransactionCode"),
+    ] = None
+    booking_date_time: typing_extensions.Annotated[
+        BookingDateTime, FieldMetadata(alias="BookingDateTime"), pydantic.Field(alias="BookingDateTime")
+    ]
     card_instrument: typing_extensions.Annotated[
-        typing.Optional[ObTransactionCardInstrument1], FieldMetadata(alias="CardInstrument")
+        typing.Optional[ObTransactionCardInstrument1],
+        FieldMetadata(alias="CardInstrument"),
+        pydantic.Field(alias="CardInstrument"),
     ] = None
     charge_amount: typing_extensions.Annotated[
-        typing.Optional[ObActiveOrHistoricCurrencyAndAmount10], FieldMetadata(alias="ChargeAmount")
+        typing.Optional[ObActiveOrHistoricCurrencyAndAmount10],
+        FieldMetadata(alias="ChargeAmount"),
+        pydantic.Field(alias="ChargeAmount"),
     ] = None
-    credit_debit_indicator: typing_extensions.Annotated[ObCreditDebitCode1, FieldMetadata(alias="CreditDebitIndicator")]
+    credit_debit_indicator: typing_extensions.Annotated[
+        ObCreditDebitCode1, FieldMetadata(alias="CreditDebitIndicator"), pydantic.Field(alias="CreditDebitIndicator")
+    ]
     creditor_account: typing_extensions.Annotated[
-        typing.Optional[ObCashAccount60], FieldMetadata(alias="CreditorAccount")
+        typing.Optional[ObCashAccount60],
+        FieldMetadata(alias="CreditorAccount"),
+        pydantic.Field(alias="CreditorAccount"),
     ] = None
     creditor_agent: typing_extensions.Annotated[
-        typing.Optional[ObBranchAndFinancialInstitutionIdentification61], FieldMetadata(alias="CreditorAgent")
+        typing.Optional[ObBranchAndFinancialInstitutionIdentification61],
+        FieldMetadata(alias="CreditorAgent"),
+        pydantic.Field(alias="CreditorAgent"),
     ] = None
     currency_exchange: typing_extensions.Annotated[
-        typing.Optional[ObCurrencyExchange5], FieldMetadata(alias="CurrencyExchange")
+        typing.Optional[ObCurrencyExchange5],
+        FieldMetadata(alias="CurrencyExchange"),
+        pydantic.Field(alias="CurrencyExchange"),
     ] = None
     debtor_account: typing_extensions.Annotated[
-        typing.Optional[ObCashAccount61], FieldMetadata(alias="DebtorAccount")
+        typing.Optional[ObCashAccount61], FieldMetadata(alias="DebtorAccount"), pydantic.Field(alias="DebtorAccount")
     ] = None
     debtor_agent: typing_extensions.Annotated[
-        typing.Optional[ObBranchAndFinancialInstitutionIdentification62], FieldMetadata(alias="DebtorAgent")
+        typing.Optional[ObBranchAndFinancialInstitutionIdentification62],
+        FieldMetadata(alias="DebtorAgent"),
+        pydantic.Field(alias="DebtorAgent"),
     ] = None
     merchant_details: typing_extensions.Annotated[
-        typing.Optional[ObMerchantDetails1], FieldMetadata(alias="MerchantDetails")
+        typing.Optional[ObMerchantDetails1],
+        FieldMetadata(alias="MerchantDetails"),
+        pydantic.Field(alias="MerchantDetails"),
     ] = None
     proprietary_bank_transaction_code: typing_extensions.Annotated[
-        typing.Optional[ProprietaryBankTransactionCodeStructure1], FieldMetadata(alias="ProprietaryBankTransactionCode")
+        typing.Optional[ProprietaryBankTransactionCodeStructure1],
+        FieldMetadata(alias="ProprietaryBankTransactionCode"),
+        pydantic.Field(alias="ProprietaryBankTransactionCode"),
     ] = None
     statement_reference: typing_extensions.Annotated[
-        typing.Optional[typing.List[StatementReference]], FieldMetadata(alias="StatementReference")
+        typing.Optional[typing.List[StatementReference]],
+        FieldMetadata(alias="StatementReference"),
+        pydantic.Field(alias="StatementReference"),
     ] = None
-    status: typing_extensions.Annotated[ObEntryStatus1Code, FieldMetadata(alias="Status")]
+    status: typing_extensions.Annotated[
+        ObEntryStatus1Code, FieldMetadata(alias="Status"), pydantic.Field(alias="Status")
+    ]
     supplementary_data: typing_extensions.Annotated[
-        typing.Optional[ObSupplementaryData1], FieldMetadata(alias="SupplementaryData")
+        typing.Optional[ObSupplementaryData1],
+        FieldMetadata(alias="SupplementaryData"),
+        pydantic.Field(alias="SupplementaryData"),
     ] = None
     transaction_id: typing_extensions.Annotated[
-        typing.Optional[TransactionId], FieldMetadata(alias="TransactionId")
+        typing.Optional[TransactionId], FieldMetadata(alias="TransactionId"), pydantic.Field(alias="TransactionId")
     ] = None
     transaction_information: typing_extensions.Annotated[
-        typing.Optional[TransactionInformation], FieldMetadata(alias="TransactionInformation")
+        typing.Optional[TransactionInformation],
+        FieldMetadata(alias="TransactionInformation"),
+        pydantic.Field(alias="TransactionInformation"),
     ] = None
     transaction_mutability: typing_extensions.Annotated[
-        typing.Optional[ObTransactionMutability1Code], FieldMetadata(alias="TransactionMutability")
+        typing.Optional[ObTransactionMutability1Code],
+        FieldMetadata(alias="TransactionMutability"),
+        pydantic.Field(alias="TransactionMutability"),
     ] = None
     transaction_reference: typing_extensions.Annotated[
-        typing.Optional[TransactionReference], FieldMetadata(alias="TransactionReference")
+        typing.Optional[TransactionReference],
+        FieldMetadata(alias="TransactionReference"),
+        pydantic.Field(alias="TransactionReference"),
     ] = None
     value_date_time: typing_extensions.Annotated[
-        typing.Optional[ValueDateTime], FieldMetadata(alias="ValueDateTime")
+        typing.Optional[ValueDateTime], FieldMetadata(alias="ValueDateTime"), pydantic.Field(alias="ValueDateTime")
     ] = None
 
     if IS_PYDANTIC_V2:

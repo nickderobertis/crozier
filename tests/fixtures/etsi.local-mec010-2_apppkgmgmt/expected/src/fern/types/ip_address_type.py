@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class IpAddressType(str, enum.Enum):
+class IpAddressType(enum.StrEnum):
     """
     Specifies the IP address type
     """

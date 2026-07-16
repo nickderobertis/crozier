@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PostSetTypeDefaultVersionRequestAction(str, enum.Enum):
+class PostSetTypeDefaultVersionRequestAction(enum.StrEnum):
     SET_TYPE_DEFAULT_VERSION = "SetTypeDefaultVersion"
 
     def visit(self, set_type_default_version: typing.Callable[[], T_Result]) -> T_Result:

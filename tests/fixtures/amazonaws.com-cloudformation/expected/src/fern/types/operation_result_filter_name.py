@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class OperationResultFilterName(str, enum.Enum):
+class OperationResultFilterName(enum.StrEnum):
     OPERATION_RESULT_STATUS = "OPERATION_RESULT_STATUS"
 
     def visit(self, operation_result_status: typing.Callable[[], T_Result]) -> T_Result:

@@ -14,37 +14,58 @@ class TypeConfigurationIdentifier(UniversalBaseModel):
     Identifying information for the configuration of a CloudFormation extension.
     """
 
-    type_arn: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="TypeArn")] = pydantic.Field(
-        default=None
-    )
+    type_arn: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="TypeArn"),
+        pydantic.Field(
+            alias="TypeArn",
+            description='<p>The Amazon Resource Name (ARN) for the extension, in this account and region.</p> <p>For public extensions, this will be the ARN assigned when you <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_ActivateType.html">activate the type</a> in this account and region. For private extensions, this will be the ARN assigned when you <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_RegisterType.html">register the type</a> in this account and region.</p>',
+        ),
+    ] = None
     """
     <p>The Amazon Resource Name (ARN) for the extension, in this account and region.</p> <p>For public extensions, this will be the ARN assigned when you <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_ActivateType.html">activate the type</a> in this account and region. For private extensions, this will be the ARN assigned when you <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_RegisterType.html">register the type</a> in this account and region.</p>
     """
 
     type_configuration_alias: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="TypeConfigurationAlias")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="TypeConfigurationAlias"),
+        pydantic.Field(
+            alias="TypeConfigurationAlias",
+            description="The alias specified for this configuration, if one was specified when the configuration was set.",
+        ),
+    ] = None
     """
     The alias specified for this configuration, if one was specified when the configuration was set.
     """
 
     type_configuration_arn: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="TypeConfigurationArn")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="TypeConfigurationArn"),
+        pydantic.Field(
+            alias="TypeConfigurationArn",
+            description="The Amazon Resource Name (ARN) for the configuration, in this account and region.",
+        ),
+    ] = None
     """
     The Amazon Resource Name (ARN) for the configuration, in this account and region.
     """
 
-    type: typing_extensions.Annotated[typing.Optional[TypeConfigurationIdentifierType], FieldMetadata(alias="Type")] = (
-        pydantic.Field(default=None)
-    )
+    type: typing_extensions.Annotated[
+        typing.Optional[TypeConfigurationIdentifierType],
+        FieldMetadata(alias="Type"),
+        pydantic.Field(alias="Type", description="The type of extension."),
+    ] = None
     """
     The type of extension.
     """
 
-    type_name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="TypeName")] = pydantic.Field(
-        default=None
-    )
+    type_name: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="TypeName"),
+        pydantic.Field(
+            alias="TypeName", description="The name of the extension type to which this configuration applies."
+        ),
+    ] = None
     """
     The name of the extension type to which this configuration applies.
     """

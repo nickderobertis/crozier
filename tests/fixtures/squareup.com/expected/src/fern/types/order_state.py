@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class OrderState(str, enum.Enum):
+class OrderState(enum.StrEnum):
     """
     The state of the order.
     """

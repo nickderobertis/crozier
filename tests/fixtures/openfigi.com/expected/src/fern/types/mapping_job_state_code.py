@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class MappingJobStateCode(str, enum.Enum):
+class MappingJobStateCode(enum.StrEnum):
     AB = "AB"
     AC = "AC"
     AH = "AH"

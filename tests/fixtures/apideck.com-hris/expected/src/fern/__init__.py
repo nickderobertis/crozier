@@ -146,6 +146,7 @@ if typing.TYPE_CHECKING:
         payrolls,
         time_off_requests,
     )
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .environment import FernApiEnvironment
     from .version import __version__
@@ -170,6 +171,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "CustomField": ".types",
     "CustomFieldValue": ".types",
     "Deduction": ".types",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "DeleteDepartmentResponse": ".types",
     "DeleteEmployeeResponse": ".types",
     "DeleteHrisCompanyResponse": ".types",
@@ -333,6 +336,8 @@ __all__ = [
     "CustomField",
     "CustomFieldValue",
     "Deduction",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
     "DeleteDepartmentResponse",
     "DeleteEmployeeResponse",
     "DeleteHrisCompanyResponse",

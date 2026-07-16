@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ActivityType(str, enum.Enum):
+class ActivityType(enum.StrEnum):
     CALL = "call"
     MEETING = "meeting"
     EMAIL = "email"

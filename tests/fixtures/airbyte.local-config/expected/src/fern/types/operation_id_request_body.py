@@ -10,7 +10,9 @@ from .operation_id import OperationId
 
 
 class OperationIdRequestBody(UniversalBaseModel):
-    operation_id: typing_extensions.Annotated[OperationId, FieldMetadata(alias="operationId")]
+    operation_id: typing_extensions.Annotated[
+        OperationId, FieldMetadata(alias="operationId"), pydantic.Field(alias="operationId")
+    ]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

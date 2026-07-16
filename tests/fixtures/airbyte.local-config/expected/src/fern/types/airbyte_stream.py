@@ -16,15 +16,20 @@ class AirbyteStream(UniversalBaseModel):
     """
 
     default_cursor_field: typing_extensions.Annotated[
-        typing.Optional[typing.List[str]], FieldMetadata(alias="defaultCursorField")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[str]],
+        FieldMetadata(alias="defaultCursorField"),
+        pydantic.Field(
+            alias="defaultCursorField",
+            description="Path to the field that will be used to determine if a record is new or modified since the last sync. If not provided by the source, the end user will have to specify the comparable themselves.",
+        ),
+    ] = None
     """
     Path to the field that will be used to determine if a record is new or modified since the last sync. If not provided by the source, the end user will have to specify the comparable themselves.
     """
 
-    json_schema: typing_extensions.Annotated[typing.Optional[StreamJsonSchema], FieldMetadata(alias="jsonSchema")] = (
-        None
-    )
+    json_schema: typing_extensions.Annotated[
+        typing.Optional[StreamJsonSchema], FieldMetadata(alias="jsonSchema"), pydantic.Field(alias="jsonSchema")
+    ] = None
     name: str = pydantic.Field()
     """
     Stream's name.
@@ -36,21 +41,33 @@ class AirbyteStream(UniversalBaseModel):
     """
 
     source_defined_cursor: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="sourceDefinedCursor")
-    ] = pydantic.Field(default=None)
+        typing.Optional[bool],
+        FieldMetadata(alias="sourceDefinedCursor"),
+        pydantic.Field(
+            alias="sourceDefinedCursor",
+            description="If the source defines the cursor field, then any other cursor field inputs will be ignored. If it does not, either the user_provided one is used, or the default one is used as a backup.",
+        ),
+    ] = None
     """
     If the source defines the cursor field, then any other cursor field inputs will be ignored. If it does not, either the user_provided one is used, or the default one is used as a backup.
     """
 
     source_defined_primary_key: typing_extensions.Annotated[
-        typing.Optional[typing.List[typing.List[str]]], FieldMetadata(alias="sourceDefinedPrimaryKey")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[typing.List[str]]],
+        FieldMetadata(alias="sourceDefinedPrimaryKey"),
+        pydantic.Field(
+            alias="sourceDefinedPrimaryKey",
+            description="If the source defines the primary key, paths to the fields that will be used as a primary key. If not provided by the source, the end user will have to specify the primary key themselves.",
+        ),
+    ] = None
     """
     If the source defines the primary key, paths to the fields that will be used as a primary key. If not provided by the source, the end user will have to specify the primary key themselves.
     """
 
     supported_sync_modes: typing_extensions.Annotated[
-        typing.Optional[typing.List[SyncMode]], FieldMetadata(alias="supportedSyncModes")
+        typing.Optional[typing.List[SyncMode]],
+        FieldMetadata(alias="supportedSyncModes"),
+        pydantic.Field(alias="supportedSyncModes"),
     ] = None
 
     if IS_PYDANTIC_V2:

@@ -7,7 +7,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -25,6 +26,7 @@ from .types.tenancy_contact_roles_list_response import TenancyContactRolesListRe
 from .types.tenancy_contacts_list_response import TenancyContactsListResponse
 from .types.tenancy_tenant_groups_list_response import TenancyTenantGroupsListResponse
 from .types.tenancy_tenants_list_response import TenancyTenantsListResponse
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -267,6 +269,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def contact_assignments_create(
@@ -280,7 +286,7 @@ class RawTenancyClient:
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         priority: typing.Optional[WritableContactAssignmentPriority] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -306,7 +312,7 @@ class RawTenancyClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        object : typing.Optional[typing.Dict[str, typing.Any]]
 
         priority : typing.Optional[WritableContactAssignmentPriority]
 
@@ -352,6 +358,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def contact_assignments_bulk_update(
@@ -365,7 +375,7 @@ class RawTenancyClient:
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         priority: typing.Optional[WritableContactAssignmentPriority] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -391,7 +401,7 @@ class RawTenancyClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        object : typing.Optional[typing.Dict[str, typing.Any]]
 
         priority : typing.Optional[WritableContactAssignmentPriority]
 
@@ -437,6 +447,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def contact_assignments_bulk_delete(
@@ -465,6 +479,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def contact_assignments_bulk_partial_update(
@@ -478,7 +496,7 @@ class RawTenancyClient:
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         priority: typing.Optional[WritableContactAssignmentPriority] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -504,7 +522,7 @@ class RawTenancyClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        object : typing.Optional[typing.Dict[str, typing.Any]]
 
         priority : typing.Optional[WritableContactAssignmentPriority]
 
@@ -550,6 +568,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def contact_assignments_read(
@@ -572,7 +594,7 @@ class RawTenancyClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"tenancy/contact-assignments/{jsonable_encoder(id)}/",
+            f"tenancy/contact-assignments/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -589,6 +611,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def contact_assignments_update(
@@ -603,7 +629,7 @@ class RawTenancyClient:
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         priority: typing.Optional[WritableContactAssignmentPriority] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -632,7 +658,7 @@ class RawTenancyClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        object : typing.Optional[typing.Dict[str, typing.Any]]
 
         priority : typing.Optional[WritableContactAssignmentPriority]
 
@@ -647,7 +673,7 @@ class RawTenancyClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"tenancy/contact-assignments/{jsonable_encoder(id_)}/",
+            f"tenancy/contact-assignments/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "contact": contact,
@@ -681,6 +707,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def contact_assignments_delete(
@@ -702,7 +732,7 @@ class RawTenancyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"tenancy/contact-assignments/{jsonable_encoder(id)}/",
+            f"tenancy/contact-assignments/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -712,6 +742,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def contact_assignments_partial_update(
@@ -726,7 +760,7 @@ class RawTenancyClient:
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         priority: typing.Optional[WritableContactAssignmentPriority] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -755,7 +789,7 @@ class RawTenancyClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        object : typing.Optional[typing.Dict[str, typing.Any]]
 
         priority : typing.Optional[WritableContactAssignmentPriority]
 
@@ -770,7 +804,7 @@ class RawTenancyClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"tenancy/contact-assignments/{jsonable_encoder(id_)}/",
+            f"tenancy/contact-assignments/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "contact": contact,
@@ -804,6 +838,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def contact_groups_list(
@@ -1149,6 +1187,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def contact_groups_create(
@@ -1159,7 +1201,7 @@ class RawTenancyClient:
         depth: typing.Optional[int] = OMIT,
         contact_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -1184,7 +1226,7 @@ class RawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -1244,6 +1286,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def contact_groups_bulk_update(
@@ -1254,7 +1300,7 @@ class RawTenancyClient:
         depth: typing.Optional[int] = OMIT,
         contact_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -1279,7 +1325,7 @@ class RawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -1339,6 +1385,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def contact_groups_bulk_delete(
@@ -1367,6 +1417,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def contact_groups_bulk_partial_update(
@@ -1377,7 +1431,7 @@ class RawTenancyClient:
         depth: typing.Optional[int] = OMIT,
         contact_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -1402,7 +1456,7 @@ class RawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -1462,6 +1516,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def contact_groups_read(
@@ -1484,7 +1542,7 @@ class RawTenancyClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"tenancy/contact-groups/{jsonable_encoder(id)}/",
+            f"tenancy/contact-groups/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -1501,6 +1559,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def contact_groups_update(
@@ -1512,7 +1574,7 @@ class RawTenancyClient:
         depth: typing.Optional[int] = OMIT,
         contact_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -1540,7 +1602,7 @@ class RawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -1565,7 +1627,7 @@ class RawTenancyClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"tenancy/contact-groups/{jsonable_encoder(id_)}/",
+            f"tenancy/contact-groups/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "_depth": depth,
@@ -1603,6 +1665,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def contact_groups_delete(
@@ -1624,7 +1690,7 @@ class RawTenancyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"tenancy/contact-groups/{jsonable_encoder(id)}/",
+            f"tenancy/contact-groups/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -1634,6 +1700,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def contact_groups_partial_update(
@@ -1645,7 +1715,7 @@ class RawTenancyClient:
         depth: typing.Optional[int] = OMIT,
         contact_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -1673,7 +1743,7 @@ class RawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -1698,7 +1768,7 @@ class RawTenancyClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"tenancy/contact-groups/{jsonable_encoder(id_)}/",
+            f"tenancy/contact-groups/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "_depth": depth,
@@ -1736,6 +1806,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def contact_roles_list(
@@ -2061,6 +2135,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def contact_roles_create(
@@ -2069,7 +2147,7 @@ class RawTenancyClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -2089,7 +2167,7 @@ class RawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -2144,6 +2222,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def contact_roles_bulk_update(
@@ -2152,7 +2234,7 @@ class RawTenancyClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -2172,7 +2254,7 @@ class RawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -2227,6 +2309,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def contact_roles_bulk_delete(
@@ -2255,6 +2341,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def contact_roles_bulk_partial_update(
@@ -2263,7 +2353,7 @@ class RawTenancyClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -2283,7 +2373,7 @@ class RawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -2338,6 +2428,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def contact_roles_read(
@@ -2360,7 +2454,7 @@ class RawTenancyClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"tenancy/contact-roles/{jsonable_encoder(id)}/",
+            f"tenancy/contact-roles/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -2377,6 +2471,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def contact_roles_update(
@@ -2386,7 +2484,7 @@ class RawTenancyClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -2409,7 +2507,7 @@ class RawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -2432,7 +2530,7 @@ class RawTenancyClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"tenancy/contact-roles/{jsonable_encoder(id_)}/",
+            f"tenancy/contact-roles/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "created": created,
@@ -2467,6 +2565,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def contact_roles_delete(
@@ -2488,7 +2590,7 @@ class RawTenancyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"tenancy/contact-roles/{jsonable_encoder(id)}/",
+            f"tenancy/contact-roles/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -2498,6 +2600,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def contact_roles_partial_update(
@@ -2507,7 +2613,7 @@ class RawTenancyClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -2530,7 +2636,7 @@ class RawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -2553,7 +2659,7 @@ class RawTenancyClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"tenancy/contact-roles/{jsonable_encoder(id_)}/",
+            f"tenancy/contact-roles/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "created": created,
@@ -2588,6 +2694,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def contacts_list(
@@ -3098,6 +3208,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def contacts_create(
@@ -3107,7 +3221,7 @@ class RawTenancyClient:
         address: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         email: typing.Optional[str] = OMIT,
@@ -3134,7 +3248,7 @@ class RawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -3205,6 +3319,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def contacts_bulk_update(
@@ -3214,7 +3332,7 @@ class RawTenancyClient:
         address: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         email: typing.Optional[str] = OMIT,
@@ -3241,7 +3359,7 @@ class RawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -3312,6 +3430,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def contacts_bulk_delete(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -3338,6 +3460,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def contacts_bulk_partial_update(
@@ -3347,7 +3473,7 @@ class RawTenancyClient:
         address: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         email: typing.Optional[str] = OMIT,
@@ -3374,7 +3500,7 @@ class RawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -3445,6 +3571,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def contacts_read(
@@ -3467,7 +3597,7 @@ class RawTenancyClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"tenancy/contacts/{jsonable_encoder(id)}/",
+            f"tenancy/contacts/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -3484,6 +3614,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def contacts_update(
@@ -3494,7 +3628,7 @@ class RawTenancyClient:
         address: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         email: typing.Optional[str] = OMIT,
@@ -3524,7 +3658,7 @@ class RawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -3557,7 +3691,7 @@ class RawTenancyClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"tenancy/contacts/{jsonable_encoder(id_)}/",
+            f"tenancy/contacts/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "address": address,
@@ -3598,6 +3732,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def contacts_delete(
@@ -3619,7 +3757,7 @@ class RawTenancyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"tenancy/contacts/{jsonable_encoder(id)}/",
+            f"tenancy/contacts/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -3629,6 +3767,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def contacts_partial_update(
@@ -3639,7 +3781,7 @@ class RawTenancyClient:
         address: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         email: typing.Optional[str] = OMIT,
@@ -3669,7 +3811,7 @@ class RawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -3702,7 +3844,7 @@ class RawTenancyClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"tenancy/contacts/{jsonable_encoder(id_)}/",
+            f"tenancy/contacts/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "address": address,
@@ -3743,6 +3885,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def tenant_groups_list(
@@ -4088,6 +4234,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def tenant_groups_create(
@@ -4097,7 +4247,7 @@ class RawTenancyClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -4121,7 +4271,7 @@ class RawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -4183,6 +4333,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def tenant_groups_bulk_update(
@@ -4192,7 +4346,7 @@ class RawTenancyClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -4216,7 +4370,7 @@ class RawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -4278,6 +4432,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def tenant_groups_bulk_delete(
@@ -4306,6 +4464,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def tenant_groups_bulk_partial_update(
@@ -4315,7 +4477,7 @@ class RawTenancyClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -4339,7 +4501,7 @@ class RawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -4401,6 +4563,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def tenant_groups_read(
@@ -4423,7 +4589,7 @@ class RawTenancyClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"tenancy/tenant-groups/{jsonable_encoder(id)}/",
+            f"tenancy/tenant-groups/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -4440,6 +4606,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def tenant_groups_update(
@@ -4450,7 +4620,7 @@ class RawTenancyClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -4477,7 +4647,7 @@ class RawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -4504,7 +4674,7 @@ class RawTenancyClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"tenancy/tenant-groups/{jsonable_encoder(id_)}/",
+            f"tenancy/tenant-groups/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "_depth": depth,
@@ -4542,6 +4712,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def tenant_groups_delete(
@@ -4563,7 +4737,7 @@ class RawTenancyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"tenancy/tenant-groups/{jsonable_encoder(id)}/",
+            f"tenancy/tenant-groups/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -4573,6 +4747,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def tenant_groups_partial_update(
@@ -4583,7 +4761,7 @@ class RawTenancyClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -4610,7 +4788,7 @@ class RawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -4637,7 +4815,7 @@ class RawTenancyClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"tenancy/tenant-groups/{jsonable_encoder(id_)}/",
+            f"tenancy/tenant-groups/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "_depth": depth,
@@ -4675,6 +4853,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def tenants_list(
@@ -5050,6 +5232,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def tenants_create(
@@ -5061,7 +5247,7 @@ class RawTenancyClient:
         cluster_count: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -5096,7 +5282,7 @@ class RawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -5181,6 +5367,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def tenants_bulk_update(
@@ -5192,7 +5382,7 @@ class RawTenancyClient:
         cluster_count: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -5227,7 +5417,7 @@ class RawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -5312,6 +5502,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def tenants_bulk_delete(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -5338,6 +5532,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def tenants_bulk_partial_update(
@@ -5349,7 +5547,7 @@ class RawTenancyClient:
         cluster_count: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -5384,7 +5582,7 @@ class RawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -5469,6 +5667,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def tenants_read(self, id: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[Tenant]:
@@ -5489,7 +5691,7 @@ class RawTenancyClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"tenancy/tenants/{jsonable_encoder(id)}/",
+            f"tenancy/tenants/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -5506,6 +5708,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def tenants_update(
@@ -5518,7 +5724,7 @@ class RawTenancyClient:
         cluster_count: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -5556,7 +5762,7 @@ class RawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -5597,7 +5803,7 @@ class RawTenancyClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"tenancy/tenants/{jsonable_encoder(id_)}/",
+            f"tenancy/tenants/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "circuit_count": circuit_count,
@@ -5644,6 +5850,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def tenants_delete(self, id: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -5663,7 +5873,7 @@ class RawTenancyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"tenancy/tenants/{jsonable_encoder(id)}/",
+            f"tenancy/tenants/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -5673,6 +5883,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def tenants_partial_update(
@@ -5685,7 +5899,7 @@ class RawTenancyClient:
         cluster_count: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -5723,7 +5937,7 @@ class RawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -5764,7 +5978,7 @@ class RawTenancyClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"tenancy/tenants/{jsonable_encoder(id_)}/",
+            f"tenancy/tenants/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "circuit_count": circuit_count,
@@ -5811,6 +6025,10 @@ class RawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -6051,6 +6269,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def contact_assignments_create(
@@ -6064,7 +6286,7 @@ class AsyncRawTenancyClient:
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         priority: typing.Optional[WritableContactAssignmentPriority] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -6090,7 +6312,7 @@ class AsyncRawTenancyClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        object : typing.Optional[typing.Dict[str, typing.Any]]
 
         priority : typing.Optional[WritableContactAssignmentPriority]
 
@@ -6136,6 +6358,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def contact_assignments_bulk_update(
@@ -6149,7 +6375,7 @@ class AsyncRawTenancyClient:
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         priority: typing.Optional[WritableContactAssignmentPriority] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -6175,7 +6401,7 @@ class AsyncRawTenancyClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        object : typing.Optional[typing.Dict[str, typing.Any]]
 
         priority : typing.Optional[WritableContactAssignmentPriority]
 
@@ -6221,6 +6447,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def contact_assignments_bulk_delete(
@@ -6249,6 +6479,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def contact_assignments_bulk_partial_update(
@@ -6262,7 +6496,7 @@ class AsyncRawTenancyClient:
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         priority: typing.Optional[WritableContactAssignmentPriority] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -6288,7 +6522,7 @@ class AsyncRawTenancyClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        object : typing.Optional[typing.Dict[str, typing.Any]]
 
         priority : typing.Optional[WritableContactAssignmentPriority]
 
@@ -6334,6 +6568,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def contact_assignments_read(
@@ -6356,7 +6594,7 @@ class AsyncRawTenancyClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"tenancy/contact-assignments/{jsonable_encoder(id)}/",
+            f"tenancy/contact-assignments/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -6373,6 +6611,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def contact_assignments_update(
@@ -6387,7 +6629,7 @@ class AsyncRawTenancyClient:
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         priority: typing.Optional[WritableContactAssignmentPriority] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -6416,7 +6658,7 @@ class AsyncRawTenancyClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        object : typing.Optional[typing.Dict[str, typing.Any]]
 
         priority : typing.Optional[WritableContactAssignmentPriority]
 
@@ -6431,7 +6673,7 @@ class AsyncRawTenancyClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"tenancy/contact-assignments/{jsonable_encoder(id_)}/",
+            f"tenancy/contact-assignments/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "contact": contact,
@@ -6465,6 +6707,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def contact_assignments_delete(
@@ -6486,7 +6732,7 @@ class AsyncRawTenancyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"tenancy/contact-assignments/{jsonable_encoder(id)}/",
+            f"tenancy/contact-assignments/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -6496,6 +6742,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def contact_assignments_partial_update(
@@ -6510,7 +6760,7 @@ class AsyncRawTenancyClient:
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        object: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         priority: typing.Optional[WritableContactAssignmentPriority] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -6539,7 +6789,7 @@ class AsyncRawTenancyClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        object : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        object : typing.Optional[typing.Dict[str, typing.Any]]
 
         priority : typing.Optional[WritableContactAssignmentPriority]
 
@@ -6554,7 +6804,7 @@ class AsyncRawTenancyClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"tenancy/contact-assignments/{jsonable_encoder(id_)}/",
+            f"tenancy/contact-assignments/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "contact": contact,
@@ -6588,6 +6838,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def contact_groups_list(
@@ -6933,6 +7187,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def contact_groups_create(
@@ -6943,7 +7201,7 @@ class AsyncRawTenancyClient:
         depth: typing.Optional[int] = OMIT,
         contact_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -6968,7 +7226,7 @@ class AsyncRawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -7028,6 +7286,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def contact_groups_bulk_update(
@@ -7038,7 +7300,7 @@ class AsyncRawTenancyClient:
         depth: typing.Optional[int] = OMIT,
         contact_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -7063,7 +7325,7 @@ class AsyncRawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -7123,6 +7385,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def contact_groups_bulk_delete(
@@ -7151,6 +7417,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def contact_groups_bulk_partial_update(
@@ -7161,7 +7431,7 @@ class AsyncRawTenancyClient:
         depth: typing.Optional[int] = OMIT,
         contact_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -7186,7 +7456,7 @@ class AsyncRawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -7246,6 +7516,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def contact_groups_read(
@@ -7268,7 +7542,7 @@ class AsyncRawTenancyClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"tenancy/contact-groups/{jsonable_encoder(id)}/",
+            f"tenancy/contact-groups/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -7285,6 +7559,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def contact_groups_update(
@@ -7296,7 +7574,7 @@ class AsyncRawTenancyClient:
         depth: typing.Optional[int] = OMIT,
         contact_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -7324,7 +7602,7 @@ class AsyncRawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -7349,7 +7627,7 @@ class AsyncRawTenancyClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"tenancy/contact-groups/{jsonable_encoder(id_)}/",
+            f"tenancy/contact-groups/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "_depth": depth,
@@ -7387,6 +7665,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def contact_groups_delete(
@@ -7408,7 +7690,7 @@ class AsyncRawTenancyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"tenancy/contact-groups/{jsonable_encoder(id)}/",
+            f"tenancy/contact-groups/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -7418,6 +7700,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def contact_groups_partial_update(
@@ -7429,7 +7715,7 @@ class AsyncRawTenancyClient:
         depth: typing.Optional[int] = OMIT,
         contact_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -7457,7 +7743,7 @@ class AsyncRawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -7482,7 +7768,7 @@ class AsyncRawTenancyClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"tenancy/contact-groups/{jsonable_encoder(id_)}/",
+            f"tenancy/contact-groups/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "_depth": depth,
@@ -7520,6 +7806,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def contact_roles_list(
@@ -7845,6 +8135,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def contact_roles_create(
@@ -7853,7 +8147,7 @@ class AsyncRawTenancyClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -7873,7 +8167,7 @@ class AsyncRawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -7928,6 +8222,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def contact_roles_bulk_update(
@@ -7936,7 +8234,7 @@ class AsyncRawTenancyClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -7956,7 +8254,7 @@ class AsyncRawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -8011,6 +8309,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def contact_roles_bulk_delete(
@@ -8039,6 +8341,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def contact_roles_bulk_partial_update(
@@ -8047,7 +8353,7 @@ class AsyncRawTenancyClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -8067,7 +8373,7 @@ class AsyncRawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -8122,6 +8428,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def contact_roles_read(
@@ -8144,7 +8454,7 @@ class AsyncRawTenancyClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"tenancy/contact-roles/{jsonable_encoder(id)}/",
+            f"tenancy/contact-roles/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -8161,6 +8471,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def contact_roles_update(
@@ -8170,7 +8484,7 @@ class AsyncRawTenancyClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -8193,7 +8507,7 @@ class AsyncRawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -8216,7 +8530,7 @@ class AsyncRawTenancyClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"tenancy/contact-roles/{jsonable_encoder(id_)}/",
+            f"tenancy/contact-roles/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "created": created,
@@ -8251,6 +8565,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def contact_roles_delete(
@@ -8272,7 +8590,7 @@ class AsyncRawTenancyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"tenancy/contact-roles/{jsonable_encoder(id)}/",
+            f"tenancy/contact-roles/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -8282,6 +8600,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def contact_roles_partial_update(
@@ -8291,7 +8613,7 @@ class AsyncRawTenancyClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -8314,7 +8636,7 @@ class AsyncRawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -8337,7 +8659,7 @@ class AsyncRawTenancyClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"tenancy/contact-roles/{jsonable_encoder(id_)}/",
+            f"tenancy/contact-roles/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "created": created,
@@ -8372,6 +8694,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def contacts_list(
@@ -8882,6 +9208,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def contacts_create(
@@ -8891,7 +9221,7 @@ class AsyncRawTenancyClient:
         address: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         email: typing.Optional[str] = OMIT,
@@ -8918,7 +9248,7 @@ class AsyncRawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -8989,6 +9319,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def contacts_bulk_update(
@@ -8998,7 +9332,7 @@ class AsyncRawTenancyClient:
         address: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         email: typing.Optional[str] = OMIT,
@@ -9025,7 +9359,7 @@ class AsyncRawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -9096,6 +9430,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def contacts_bulk_delete(
@@ -9124,6 +9462,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def contacts_bulk_partial_update(
@@ -9133,7 +9475,7 @@ class AsyncRawTenancyClient:
         address: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         email: typing.Optional[str] = OMIT,
@@ -9160,7 +9502,7 @@ class AsyncRawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -9231,6 +9573,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def contacts_read(
@@ -9253,7 +9599,7 @@ class AsyncRawTenancyClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"tenancy/contacts/{jsonable_encoder(id)}/",
+            f"tenancy/contacts/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -9270,6 +9616,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def contacts_update(
@@ -9280,7 +9630,7 @@ class AsyncRawTenancyClient:
         address: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         email: typing.Optional[str] = OMIT,
@@ -9310,7 +9660,7 @@ class AsyncRawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -9343,7 +9693,7 @@ class AsyncRawTenancyClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"tenancy/contacts/{jsonable_encoder(id_)}/",
+            f"tenancy/contacts/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "address": address,
@@ -9384,6 +9734,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def contacts_delete(
@@ -9405,7 +9759,7 @@ class AsyncRawTenancyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"tenancy/contacts/{jsonable_encoder(id)}/",
+            f"tenancy/contacts/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -9415,6 +9769,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def contacts_partial_update(
@@ -9425,7 +9783,7 @@ class AsyncRawTenancyClient:
         address: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         email: typing.Optional[str] = OMIT,
@@ -9455,7 +9813,7 @@ class AsyncRawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -9488,7 +9846,7 @@ class AsyncRawTenancyClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"tenancy/contacts/{jsonable_encoder(id_)}/",
+            f"tenancy/contacts/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "address": address,
@@ -9529,6 +9887,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def tenant_groups_list(
@@ -9874,6 +10236,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def tenant_groups_create(
@@ -9883,7 +10249,7 @@ class AsyncRawTenancyClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -9907,7 +10273,7 @@ class AsyncRawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -9969,6 +10335,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def tenant_groups_bulk_update(
@@ -9978,7 +10348,7 @@ class AsyncRawTenancyClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -10002,7 +10372,7 @@ class AsyncRawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -10064,6 +10434,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def tenant_groups_bulk_delete(
@@ -10092,6 +10466,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def tenant_groups_bulk_partial_update(
@@ -10101,7 +10479,7 @@ class AsyncRawTenancyClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -10125,7 +10503,7 @@ class AsyncRawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -10187,6 +10565,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def tenant_groups_read(
@@ -10209,7 +10591,7 @@ class AsyncRawTenancyClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"tenancy/tenant-groups/{jsonable_encoder(id)}/",
+            f"tenancy/tenant-groups/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -10226,6 +10608,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def tenant_groups_update(
@@ -10236,7 +10622,7 @@ class AsyncRawTenancyClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -10263,7 +10649,7 @@ class AsyncRawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -10290,7 +10676,7 @@ class AsyncRawTenancyClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"tenancy/tenant-groups/{jsonable_encoder(id_)}/",
+            f"tenancy/tenant-groups/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "_depth": depth,
@@ -10328,6 +10714,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def tenant_groups_delete(
@@ -10349,7 +10739,7 @@ class AsyncRawTenancyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"tenancy/tenant-groups/{jsonable_encoder(id)}/",
+            f"tenancy/tenant-groups/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -10359,6 +10749,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def tenant_groups_partial_update(
@@ -10369,7 +10763,7 @@ class AsyncRawTenancyClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -10396,7 +10790,7 @@ class AsyncRawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -10423,7 +10817,7 @@ class AsyncRawTenancyClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"tenancy/tenant-groups/{jsonable_encoder(id_)}/",
+            f"tenancy/tenant-groups/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "_depth": depth,
@@ -10461,6 +10855,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def tenants_list(
@@ -10836,6 +11234,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def tenants_create(
@@ -10847,7 +11249,7 @@ class AsyncRawTenancyClient:
         cluster_count: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -10882,7 +11284,7 @@ class AsyncRawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -10967,6 +11369,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def tenants_bulk_update(
@@ -10978,7 +11384,7 @@ class AsyncRawTenancyClient:
         cluster_count: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -11013,7 +11419,7 @@ class AsyncRawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -11098,6 +11504,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def tenants_bulk_delete(
@@ -11126,6 +11536,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def tenants_bulk_partial_update(
@@ -11137,7 +11551,7 @@ class AsyncRawTenancyClient:
         cluster_count: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -11172,7 +11586,7 @@ class AsyncRawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -11257,6 +11671,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def tenants_read(
@@ -11279,7 +11697,7 @@ class AsyncRawTenancyClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"tenancy/tenants/{jsonable_encoder(id)}/",
+            f"tenancy/tenants/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -11296,6 +11714,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def tenants_update(
@@ -11308,7 +11730,7 @@ class AsyncRawTenancyClient:
         cluster_count: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -11346,7 +11768,7 @@ class AsyncRawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -11387,7 +11809,7 @@ class AsyncRawTenancyClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"tenancy/tenants/{jsonable_encoder(id_)}/",
+            f"tenancy/tenants/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "circuit_count": circuit_count,
@@ -11434,6 +11856,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def tenants_delete(
@@ -11455,7 +11881,7 @@ class AsyncRawTenancyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"tenancy/tenants/{jsonable_encoder(id)}/",
+            f"tenancy/tenants/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -11465,6 +11891,10 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def tenants_partial_update(
@@ -11477,7 +11907,7 @@ class AsyncRawTenancyClient:
         cluster_count: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -11515,7 +11945,7 @@ class AsyncRawTenancyClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -11556,7 +11986,7 @@ class AsyncRawTenancyClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"tenancy/tenants/{jsonable_encoder(id_)}/",
+            f"tenancy/tenants/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "circuit_count": circuit_count,
@@ -11603,4 +12033,8 @@ class AsyncRawTenancyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

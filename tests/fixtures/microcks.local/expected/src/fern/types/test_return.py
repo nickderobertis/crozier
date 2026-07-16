@@ -21,14 +21,20 @@ class TestReturn(UniversalBaseModel):
     Return code for test (0 means Success, 1 means Failure)
     """
 
-    elapsed_time: typing_extensions.Annotated[int, FieldMetadata(alias="elapsedTime")] = pydantic.Field()
+    elapsed_time: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="elapsedTime"),
+        pydantic.Field(alias="elapsedTime", description="Elapsed time in milliseconds"),
+    ]
     """
     Elapsed time in milliseconds
     """
 
-    event_message: typing_extensions.Annotated[typing.Optional[EventMessage], FieldMetadata(alias="eventMessage")] = (
-        pydantic.Field(default=None)
-    )
+    event_message: typing_extensions.Annotated[
+        typing.Optional[EventMessage],
+        FieldMetadata(alias="eventMessage"),
+        pydantic.Field(alias="eventMessage", description="Event Message received for this test"),
+    ] = None
     """
     Event Message received for this test
     """

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ArtifactState(str, enum.Enum):
+class ArtifactState(enum.StrEnum):
     """
     Describes the state of an artifact or artifact version.  The following states
     are possible:

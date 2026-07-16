@@ -233,6 +233,7 @@ if typing.TYPE_CHECKING:
         suppliers,
         tax_rates,
     )
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .environment import FernApiEnvironment
     from .version import __version__
@@ -298,6 +299,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "CustomField": ".types",
     "CustomFieldValue": ".types",
     "CustomersFilter": ".types",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "DeleteBillResponse": ".types",
     "DeleteCreditNoteResponse": ".types",
     "DeleteCustomerResponse": ".types",
@@ -548,6 +551,8 @@ __all__ = [
     "CustomField",
     "CustomFieldValue",
     "CustomersFilter",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
     "DeleteBillResponse",
     "DeleteCreditNoteResponse",
     "DeleteCustomerResponse",

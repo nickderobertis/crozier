@@ -1,3 +1,6 @@
 
 
 FullLegalName = str
+"""
+Specifies a character string with a maximum length of 350 characters.
+"""

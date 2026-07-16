@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class OtoroshiHealthOtoroshi(str, enum.Enum):
+class OtoroshiHealthOtoroshi(enum.StrEnum):
     HEALTHY = "healthy"
     UNHEALTHY = "unhealthy"
     DOWN = "down"

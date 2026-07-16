@@ -26,29 +26,47 @@ class ObbcaData1OverdraftOverdraftTierBandSetItem(UniversalBaseModel):
     """
 
     authorised_indicator: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="AuthorisedIndicator")
-    ] = pydantic.Field(default=None)
+        typing.Optional[bool],
+        FieldMetadata(alias="AuthorisedIndicator"),
+        pydantic.Field(
+            alias="AuthorisedIndicator", description="Indicates if the Overdraft is authorised (Y) or unauthorised (N)"
+        ),
+    ] = None
     """
     Indicates if the Overdraft is authorised (Y) or unauthorised (N)
     """
 
-    buffer_amount: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="BufferAmount")] = (
-        pydantic.Field(default=None)
-    )
+    buffer_amount: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="BufferAmount"),
+        pydantic.Field(
+            alias="BufferAmount",
+            description="When a customer exceeds their credit limit, a financial institution will not charge the customer unauthorised overdraft charges if they do not exceed by more than the buffer amount. Note: Authorised overdraft charges may still apply.",
+        ),
+    ] = None
     """
     When a customer exceeds their credit limit, a financial institution will not charge the customer unauthorised overdraft charges if they do not exceed by more than the buffer amount. Note: Authorised overdraft charges may still apply.
     """
 
-    identification: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="Identification")] = (
-        pydantic.Field(default=None)
-    )
+    identification: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="Identification"),
+        pydantic.Field(
+            alias="Identification",
+            description="Unique and unambiguous identification of a  Tier Band for a overdraft product.",
+        ),
+    ] = None
     """
     Unique and unambiguous identification of a  Tier Band for a overdraft product.
     """
 
-    notes: typing_extensions.Annotated[typing.Optional[typing.List[str]], FieldMetadata(alias="Notes")] = (
-        pydantic.Field(default=None)
-    )
+    notes: typing_extensions.Annotated[
+        typing.Optional[typing.List[str]],
+        FieldMetadata(alias="Notes"),
+        pydantic.Field(
+            alias="Notes", description="Optional additional notes to supplement the overdraft Tier Band Set details"
+        ),
+    ] = None
     """
     Optional additional notes to supplement the overdraft Tier Band Set details
     """
@@ -56,7 +74,8 @@ class ObbcaData1OverdraftOverdraftTierBandSetItem(UniversalBaseModel):
     overdraft_fees_charges: typing_extensions.Annotated[
         typing.Optional[typing.List[ObbcaData1OverdraftOverdraftTierBandSetItemOverdraftFeesChargesItem]],
         FieldMetadata(alias="OverdraftFeesCharges"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(alias="OverdraftFeesCharges", description="Overdraft fees and charges details"),
+    ] = None
     """
     Overdraft fees and charges details
     """
@@ -64,21 +83,32 @@ class ObbcaData1OverdraftOverdraftTierBandSetItem(UniversalBaseModel):
     overdraft_tier_band: typing_extensions.Annotated[
         typing.List[ObbcaData1OverdraftOverdraftTierBandSetItemOverdraftTierBandItem],
         FieldMetadata(alias="OverdraftTierBand"),
-    ] = pydantic.Field()
+        pydantic.Field(alias="OverdraftTierBand", description="Provides overdraft details for a specific tier or band"),
+    ]
     """
     Provides overdraft details for a specific tier or band
     """
 
     overdraft_type: typing_extensions.Annotated[
-        typing.Optional[ObbcaData1OverdraftOverdraftTierBandSetItemOverdraftType], FieldMetadata(alias="OverdraftType")
-    ] = pydantic.Field(default=None)
+        typing.Optional[ObbcaData1OverdraftOverdraftTierBandSetItemOverdraftType],
+        FieldMetadata(alias="OverdraftType"),
+        pydantic.Field(
+            alias="OverdraftType",
+            description="An overdraft can either be 'committed' which means that the facility cannot be withdrawn without reasonable notification before it's agreed end date, or 'on demand' which means that the financial institution can demand repayment at any point in time.",
+        ),
+    ] = None
     """
     An overdraft can either be 'committed' which means that the facility cannot be withdrawn without reasonable notification before it's agreed end date, or 'on demand' which means that the financial institution can demand repayment at any point in time.
     """
 
     tier_band_method: typing_extensions.Annotated[
-        ObbcaData1OverdraftOverdraftTierBandSetItemTierBandMethod, FieldMetadata(alias="TierBandMethod")
-    ] = pydantic.Field()
+        ObbcaData1OverdraftOverdraftTierBandSetItemTierBandMethod,
+        FieldMetadata(alias="TierBandMethod"),
+        pydantic.Field(
+            alias="TierBandMethod",
+            description="The methodology of how overdraft is charged. It can be:\n'Whole'  Where the same charge/rate is applied to the entirety of the overdraft balance (where charges are applicable). \n'Tiered' Where different charges/rates are applied dependent on overdraft maximum and minimum balance amount tiers defined by the lending financial organisation\n'Banded' Where different charges/rates are applied dependent on overdraft maximum and minimum balance amount bands defined by a government organisation.",
+        ),
+    ]
     """
     The methodology of how overdraft is charged. It can be:
     'Whole'  Where the same charge/rate is applied to the entirety of the overdraft balance (where charges are applicable). 

@@ -18,7 +18,14 @@ class Locale(UniversalBaseModel):
     Continent name. This field support localization.
     """
 
-    continent_code: typing_extensions.Annotated[str, FieldMetadata(alias="continentCode")] = pydantic.Field()
+    continent_code: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="continentCode"),
+        pydantic.Field(
+            alias="continentCode",
+            description='Continent code. A two character continent code "AF" for Africa, "AN" for Antarctica, "AS" for Asia, "EU" for Europe, "NA" for North America, "OC" for Oceania, and "SA" for South America.',
+        ),
+    ]
     """
     Continent code. A two character continent code "AF" for Africa, "AN" for Antarctica, "AS" for Asia, "EU" for Europe, "NA" for North America, "OC" for Oceania, and "SA" for South America.
     """
@@ -28,7 +35,14 @@ class Locale(UniversalBaseModel):
     Country name. This field support localization.
     """
 
-    country_code: typing_extensions.Annotated[str, FieldMetadata(alias="countryCode")] = pydantic.Field()
+    country_code: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="countryCode"),
+        pydantic.Field(
+            alias="countryCode",
+            description="Country code in [ISO 3166-1](http://en.wikipedia.org/wiki/ISO_3166-1) two-character format",
+        ),
+    ]
     """
     Country code in [ISO 3166-1](http://en.wikipedia.org/wiki/ISO_3166-1) two-character format
     """

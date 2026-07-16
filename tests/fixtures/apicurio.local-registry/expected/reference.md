@@ -1,6 +1,6 @@
 # Reference
 ## ArtifactType
-<details><summary><code>client.artifact_type.<a href="src/fern/artifact_type/client.py">list_artifact_types</a>()</code></summary>
+<details><summary><code>client.artifact_type.<a href="src/fern/artifact_type/client.py">list_artifact_types</a>() -> typing.List[ArtifactTypeInfo]</code></summary>
 <dl>
 <dd>
 
@@ -32,8 +32,12 @@ This operation can fail for the following reasons:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.artifact_type.list_artifact_types()
 
 ```
@@ -63,7 +67,7 @@ client.artifact_type.list_artifact_types()
 </details>
 
 ## Admin
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">list_config_properties</a>()</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py">list_config_properties</a>() -> typing.List[ConfigurationProperty]</code></summary>
 <dl>
 <dd>
 
@@ -95,8 +99,12 @@ This operation may fail for one of the following reasons:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.admin.list_config_properties()
 
 ```
@@ -125,7 +133,7 @@ client.admin.list_config_properties()
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">get_config_property</a>(...)</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py">get_config_property</a>(...) -> ConfigurationProperty</code></summary>
 <dl>
 <dd>
 
@@ -158,8 +166,12 @@ This operation may fail for one of the following reasons:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.admin.get_config_property(
     property_name="propertyName",
 )
@@ -231,8 +243,12 @@ This operation may fail for one of the following reasons:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.admin.update_config_property(
     property_name="propertyName",
     value="true",
@@ -315,8 +331,12 @@ This operation may fail for one of the following reasons:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.admin.reset_config_property(
     property_name="propertyName",
 )
@@ -355,7 +375,7 @@ client.admin.reset_config_property(
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">export_data</a>(...)</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py">export_data</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -383,8 +403,12 @@ Exports registry data as a ZIP archive.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.admin.export_data()
 
 ```
@@ -409,7 +433,7 @@ client.admin.export_data()
 <dl>
 <dd>
 
-**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response.
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
     
 </dd>
 </dl>
@@ -421,7 +445,69 @@ client.admin.export_data()
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">list_log_configurations</a>()</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py">import_data</a>(...)</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Imports registry data that was previously exported using the `/admin/export` operation.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+client.admin.import_data(...)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `typing.Union[bytes, typing.Iterator[bytes], typing.AsyncIterator[bytes]]` — The ZIP file representing the previously exported registry data.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py">list_log_configurations</a>() -> typing.List[NamedLogConfiguration]</code></summary>
 <dl>
 <dd>
 
@@ -450,8 +536,12 @@ logging configuration.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.admin.list_log_configurations()
 
 ```
@@ -480,7 +570,7 @@ client.admin.list_log_configurations()
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">get_log_configuration</a>(...)</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py">get_log_configuration</a>(...) -> NamedLogConfiguration</code></summary>
 <dl>
 <dd>
 
@@ -508,8 +598,12 @@ Returns the configured logger configuration for the provided logger name, if no 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.admin.get_log_configuration(
     logger="logger",
 )
@@ -548,7 +642,7 @@ client.admin.get_log_configuration(
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">set_log_configuration</a>(...)</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py">set_log_configuration</a>(...) -> NamedLogConfiguration</code></summary>
 <dl>
 <dd>
 
@@ -576,8 +670,12 @@ Configures the logger referenced by the provided logger name with the given conf
 
 ```python
 from fern import FernApi, LogLevel
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.admin.set_log_configuration(
     logger="logger",
     level=LogLevel.DEBUG,
@@ -605,7 +703,7 @@ client.admin.set_log_configuration(
 <dl>
 <dd>
 
-**level:** `LogLevel` — 
+**request:** `LogConfiguration` 
     
 </dd>
 </dl>
@@ -625,7 +723,7 @@ client.admin.set_log_configuration(
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">remove_log_configuration</a>(...)</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py">remove_log_configuration</a>(...) -> NamedLogConfiguration</code></summary>
 <dl>
 <dd>
 
@@ -653,8 +751,12 @@ Removes the configured logger configuration (if any) for the given logger.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.admin.remove_log_configuration(
     logger="logger",
 )
@@ -693,7 +795,7 @@ client.admin.remove_log_configuration(
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">list_role_mappings</a>()</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py">list_role_mappings</a>() -> typing.List[RoleMapping]</code></summary>
 <dl>
 <dd>
 
@@ -725,8 +827,12 @@ This operation can fail for the following reasons:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.admin.list_role_mappings()
 
 ```
@@ -788,8 +894,12 @@ This operation can fail for the following reasons:
 
 ```python
 from fern import FernApi, RoleType
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.admin.create_role_mapping(
     principal_id="svc_account_84874587_123484",
     principal_name="famartin-svc-account",
@@ -810,23 +920,7 @@ client.admin.create_role_mapping(
 <dl>
 <dd>
 
-**principal_id:** `str` — 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**role:** `RoleType` — 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**principal_name:** `typing.Optional[str]` — A friendly name for the principal.
+**request:** `RoleMapping` 
     
 </dd>
 </dl>
@@ -846,7 +940,7 @@ client.admin.create_role_mapping(
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">get_role_mapping</a>(...)</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py">get_role_mapping</a>(...) -> RoleMapping</code></summary>
 <dl>
 <dd>
 
@@ -879,8 +973,12 @@ This operation can fail for the following reasons:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.admin.get_role_mapping(
     principal_id="principalId",
 )
@@ -952,8 +1050,12 @@ This operation can fail for the following reasons:
 
 ```python
 from fern import FernApi, RoleType
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.admin.update_role_mapping(
     principal_id="principalId",
     role=RoleType.READ_ONLY,
@@ -1034,8 +1136,12 @@ This operation can fail for the following reasons:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.admin.delete_role_mapping(
     principal_id="principalId",
 )
@@ -1075,7 +1181,7 @@ client.admin.delete_role_mapping(
 </details>
 
 ## Global rules
-<details><summary><code>client.global_rules.<a href="src/fern/global_rules/client.py">list_global_rules</a>()</code></summary>
+<details><summary><code>client.global_rules.<a href="src/fern/global_rules/client.py">list_global_rules</a>() -> typing.List[RuleType]</code></summary>
 <dl>
 <dd>
 
@@ -1107,8 +1213,12 @@ This operation can fail for the following reasons:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.global_rules.list_global_rules()
 
 ```
@@ -1171,8 +1281,12 @@ This operation can fail for the following reasons:
 
 ```python
 from fern import FernApi, RuleType
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.global_rules.create_global_rule(
     config="FULL",
     type=RuleType.VALIDITY,
@@ -1192,15 +1306,7 @@ client.global_rules.create_global_rule(
 <dl>
 <dd>
 
-**config:** `str` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**type:** `typing.Optional[RuleType]` 
+**request:** `Rule` 
     
 </dd>
 </dl>
@@ -1252,8 +1358,12 @@ This operation can fail for the following reasons:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.global_rules.delete_all_global_rules()
 
 ```
@@ -1282,7 +1392,7 @@ client.global_rules.delete_all_global_rules()
 </dl>
 </details>
 
-<details><summary><code>client.global_rules.<a href="src/fern/global_rules/client.py">get_global_rule_config</a>(...)</code></summary>
+<details><summary><code>client.global_rules.<a href="src/fern/global_rules/client.py">get_global_rule_config</a>(...) -> Rule</code></summary>
 <dl>
 <dd>
 
@@ -1316,8 +1426,12 @@ This operation can fail for the following reasons:
 
 ```python
 from fern import FernApi, RuleType
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.global_rules.get_global_rule_config(
     rule=RuleType.VALIDITY,
 )
@@ -1356,7 +1470,7 @@ client.global_rules.get_global_rule_config(
 </dl>
 </details>
 
-<details><summary><code>client.global_rules.<a href="src/fern/global_rules/client.py">update_global_rule_config</a>(...)</code></summary>
+<details><summary><code>client.global_rules.<a href="src/fern/global_rules/client.py">update_global_rule_config</a>(...) -> Rule</code></summary>
 <dl>
 <dd>
 
@@ -1390,8 +1504,12 @@ This operation can fail for the following reasons:
 
 ```python
 from fern import FernApi, RuleType
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.global_rules.update_global_rule_config(
     rule=RuleType.VALIDITY,
     config="FULL",
@@ -1420,15 +1538,7 @@ client.global_rules.update_global_rule_config(
 <dl>
 <dd>
 
-**config:** `str` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**type:** `typing.Optional[RuleType]` 
+**request:** `Rule` 
     
 </dd>
 </dl>
@@ -1484,8 +1594,12 @@ This operation can fail for the following reasons:
 
 ```python
 from fern import FernApi, RuleType
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.global_rules.delete_global_rule(
     rule=RuleType.VALIDITY,
 )
@@ -1525,7 +1639,7 @@ client.global_rules.delete_global_rule(
 </details>
 
 ## Groups
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">list_groups</a>(...)</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py">list_groups</a>(...) -> GroupSearchResults</code></summary>
 <dl>
 <dd>
 
@@ -1553,8 +1667,12 @@ Returns a list of all groups.  This list is paged.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.groups.list_groups()
 
 ```
@@ -1620,7 +1738,7 @@ The field to sort by.  Can be one of:
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">create_group</a>(...)</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py">create_group</a>(...) -> GroupMetaData</code></summary>
 <dl>
 <dd>
 
@@ -1653,12 +1771,19 @@ This operation can fail for the following reasons:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.groups.create_group(
     description="The description of the artifact.",
     id="group-identifier",
-    properties={"custom-1": "foo", "custom-2": "bar"},
+    properties={
+        "custom-1": "foo",
+        "custom-2": "bar"
+    },
 )
 
 ```
@@ -1711,7 +1836,7 @@ client.groups.create_group(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">get_group_by_id</a>(...)</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py">get_group_by_id</a>(...) -> GroupMetaData</code></summary>
 <dl>
 <dd>
 
@@ -1744,10 +1869,14 @@ This operation can fail for the following reasons:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.groups.get_group_by_id(
-    group_id='"my-group"',
+    group_id="\"my-group\"",
 )
 
 ```
@@ -1817,10 +1946,14 @@ This operation can fail for the following reasons:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.groups.delete_group_by_id(
-    group_id='"my-group"',
+    group_id="\"my-group\"",
 )
 
 ```
@@ -1858,7 +1991,7 @@ client.groups.delete_group_by_id(
 </details>
 
 ## Artifacts
-<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">list_artifacts_in_group</a>(...)</code></summary>
+<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">list_artifacts_in_group</a>(...) -> ArtifactSearchResults</code></summary>
 <dl>
 <dd>
 
@@ -1886,10 +2019,14 @@ Returns a list of all artifacts in the group.  This list is paged.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.artifacts.list_artifacts_in_group(
-    group_id='"my-group"',
+    group_id="\"my-group\"",
 )
 
 ```
@@ -1963,7 +2100,7 @@ The field to sort by.  Can be one of:
 </dl>
 </details>
 
-<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">create_artifact</a>(...)</code></summary>
+<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">create_artifact</a>(...) -> ArtifactMetaData</code></summary>
 <dl>
 <dd>
 
@@ -2041,16 +2178,20 @@ This operation may fail for one of the following reasons:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.artifacts.create_artifact(
-    group_id='"my-group"',
+    group_id="\"my-group\"",
     registry_artifact_type="AVRO",
-    registry_version='"3.1.6"',
-    registry_description='"Artifact description"',
-    registry_description_encoded='"QXJ0aWZhY3QgZGVzY3JpcHRpb24K"',
-    registry_name='"Artifact name"',
-    registry_name_encoded='"QXJ0aWZhY3QgbmFtZQo="',
+    registry_version="\"3.1.6\"",
+    registry_description="\"Artifact description\"",
+    registry_description_encoded="\"QXJ0aWZhY3QgZGVzY3JpcHRpb24K\"",
+    registry_name="\"Artifact name\"",
+    registry_name_encoded="\"QXJ0aWZhY3QgbmFtZQo=\"",
     request="string",
 )
 
@@ -2228,10 +2369,14 @@ Deletes all of the artifacts that exist in a given group.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.artifacts.delete_artifacts_in_group(
-    group_id='"my-group"',
+    group_id="\"my-group\"",
 )
 
 ```
@@ -2268,7 +2413,7 @@ client.artifacts.delete_artifacts_in_group(
 </dl>
 </details>
 
-<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">get_latest_artifact</a>(...)</code></summary>
+<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">get_latest_artifact</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -2303,8 +2448,12 @@ This operation may fail for one of the following reasons:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.artifacts.get_latest_artifact(
     group_id="groupId",
     artifact_id="artifactId",
@@ -2348,7 +2497,7 @@ client.artifacts.get_latest_artifact(
 <dl>
 <dd>
 
-**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response.
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
     
 </dd>
 </dl>
@@ -2360,7 +2509,7 @@ client.artifacts.get_latest_artifact(
 </dl>
 </details>
 
-<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">update_artifact</a>(...)</code></summary>
+<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">update_artifact</a>(...) -> ArtifactMetaData</code></summary>
 <dl>
 <dd>
 
@@ -2403,16 +2552,20 @@ When successful, this creates a new version of the artifact, making it the most 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.artifacts.update_artifact(
-    group_id='"my-group"',
-    artifact_id='"example-artifact"',
-    registry_version='"3.1.6"',
-    registry_name='"Artifact name"',
-    registry_name_encoded='"QXJ0aWZhY3QgbmFtZQo="',
-    registry_description='"Artifact description"',
-    registry_description_encoded='"QXJ0aWZhY3QgZGVzY3JpcHRpb24K"',
+    group_id="\"my-group\"",
+    artifact_id="\"example-artifact\"",
+    registry_version="\"3.1.6\"",
+    registry_name="\"Artifact name\"",
+    registry_name_encoded="\"QXJ0aWZhY3QgbmFtZQo=\"",
+    registry_description="\"Artifact description\"",
+    registry_description_encoded="\"QXJ0aWZhY3QgZGVzY3JpcHRpb24K\"",
     request="string",
 )
 
@@ -2545,11 +2698,15 @@ deleted.  This may fail for one of the following reasons:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.artifacts.delete_artifact(
-    group_id='"my-group"',
-    artifact_id='"example-artifact"',
+    group_id="\"my-group\"",
+    artifact_id="\"example-artifact\"",
 )
 
 ```
@@ -2628,12 +2785,16 @@ This operation can fail for the following reasons:
 <dd>
 
 ```python
-from fern import ArtifactState, FernApi
+from fern import FernApi, ArtifactState
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.artifacts.update_artifact_state(
-    group_id='"my-group"',
-    artifact_id='"example-artifact"',
+    group_id="\"my-group\"",
+    artifact_id="\"example-artifact\"",
     state=ArtifactState.DISABLED,
 )
 
@@ -2667,7 +2828,7 @@ client.artifacts.update_artifact_state(
 <dl>
 <dd>
 
-**state:** `ArtifactState` 
+**request:** `UpdateState` 
     
 </dd>
 </dl>
@@ -2687,7 +2848,7 @@ client.artifacts.update_artifact_state(
 </dl>
 </details>
 
-<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">get_content_by_hash</a>(...)</code></summary>
+<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">get_content_by_hash</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -2722,8 +2883,12 @@ This operation may fail for one of the following reasons:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.artifacts.get_content_by_hash(
     content_hash="contentHash",
 )
@@ -2750,7 +2915,7 @@ client.artifacts.get_content_by_hash(
 <dl>
 <dd>
 
-**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response.
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
     
 </dd>
 </dl>
@@ -2762,7 +2927,7 @@ client.artifacts.get_content_by_hash(
 </dl>
 </details>
 
-<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">references_by_content_hash</a>(...)</code></summary>
+<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">references_by_content_hash</a>(...) -> typing.List[ArtifactReference]</code></summary>
 <dl>
 <dd>
 
@@ -2794,8 +2959,12 @@ This operation may fail for one of the following reasons:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.artifacts.references_by_content_hash(
     content_hash="contentHash",
 )
@@ -2834,7 +3003,7 @@ client.artifacts.references_by_content_hash(
 </dl>
 </details>
 
-<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">get_content_by_id</a>(...)</code></summary>
+<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">get_content_by_id</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -2869,8 +3038,12 @@ This operation may fail for one of the following reasons:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.artifacts.get_content_by_id(
     content_id=1000000,
 )
@@ -2897,7 +3070,7 @@ client.artifacts.get_content_by_id(
 <dl>
 <dd>
 
-**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response.
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
     
 </dd>
 </dl>
@@ -2909,7 +3082,7 @@ client.artifacts.get_content_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">references_by_content_id</a>(...)</code></summary>
+<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">references_by_content_id</a>(...) -> typing.List[ArtifactReference]</code></summary>
 <dl>
 <dd>
 
@@ -2941,8 +3114,12 @@ This operation may fail for one of the following reasons:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.artifacts.references_by_content_id(
     content_id=1000000,
 )
@@ -2981,7 +3158,7 @@ client.artifacts.references_by_content_id(
 </dl>
 </details>
 
-<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">get_content_by_global_id</a>(...)</code></summary>
+<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">get_content_by_global_id</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -3015,8 +3192,12 @@ This operation may fail for one of the following reasons:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.artifacts.get_content_by_global_id(
     global_id=1000000,
 )
@@ -3051,7 +3232,7 @@ client.artifacts.get_content_by_global_id(
 <dl>
 <dd>
 
-**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response.
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
     
 </dd>
 </dl>
@@ -3063,7 +3244,7 @@ client.artifacts.get_content_by_global_id(
 </dl>
 </details>
 
-<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">references_by_global_id</a>(...)</code></summary>
+<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">references_by_global_id</a>(...) -> typing.List[ArtifactReference]</code></summary>
 <dl>
 <dd>
 
@@ -3095,8 +3276,12 @@ This operation may fail for one of the following reasons:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.artifacts.references_by_global_id(
     global_id=1000000,
 )
@@ -3136,7 +3321,7 @@ client.artifacts.references_by_global_id(
 </details>
 
 ## Metadata
-<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py">get_artifact_meta_data</a>(...)</code></summary>
+<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py">get_artifact_meta_data</a>(...) -> ArtifactMetaData</code></summary>
 <dl>
 <dd>
 
@@ -3170,11 +3355,15 @@ This operation can fail for the following reasons:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.metadata.get_artifact_meta_data(
-    group_id='"my-group"',
-    artifact_id='"example-artifact"',
+    group_id="\"my-group\"",
+    artifact_id="\"example-artifact\"",
 )
 
 ```
@@ -3219,7 +3408,7 @@ client.metadata.get_artifact_meta_data(
 </dl>
 </details>
 
-<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py">get_artifact_version_meta_data_by_content</a>(...)</code></summary>
+<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py">get_artifact_version_meta_data_by_content</a>(...) -> VersionMetaData</code></summary>
 <dl>
 <dd>
 
@@ -3256,11 +3445,15 @@ This operation can fail for the following reasons:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.metadata.get_artifact_version_meta_data_by_content(
-    group_id='"my-group"',
-    artifact_id='"example-artifact"',
+    group_id="\"my-group\"",
+    artifact_id="\"example-artifact\"",
     request="string",
 )
 
@@ -3356,15 +3549,25 @@ This operation can fail for the following reasons:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.metadata.update_artifact_meta_data(
-    group_id='"my-group"',
-    artifact_id='"example-artifact"',
+    group_id="\"my-group\"",
+    artifact_id="\"example-artifact\"",
     description="The description of the artifact.",
-    labels=["regional", "global"],
+    labels=[
+        "regional",
+        "global"
+    ],
     name="Artifact Name",
-    properties={"custom-1": "foo", "custom-2": "bar"},
+    properties={
+        "custom-1": "foo",
+        "custom-2": "bar"
+    },
 )
 
 ```
@@ -3397,31 +3600,7 @@ client.metadata.update_artifact_meta_data(
 <dl>
 <dd>
 
-**description:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**labels:** `typing.Optional[typing.Sequence[str]]` — 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**name:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**properties:** `typing.Optional[Properties]` — 
+**request:** `EditableMetaData` 
     
 </dd>
 </dl>
@@ -3441,7 +3620,7 @@ client.metadata.update_artifact_meta_data(
 </dl>
 </details>
 
-<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py">get_artifact_owner</a>(...)</code></summary>
+<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py">get_artifact_owner</a>(...) -> ArtifactOwner</code></summary>
 <dl>
 <dd>
 
@@ -3474,11 +3653,15 @@ This operation can fail for the following reasons:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.metadata.get_artifact_owner(
-    group_id='"my-group"',
-    artifact_id='"example-artifact"',
+    group_id="\"my-group\"",
+    artifact_id="\"example-artifact\"",
 )
 
 ```
@@ -3556,11 +3739,15 @@ This operation can fail for the following reasons:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.metadata.update_artifact_owner(
-    group_id='"my-group"',
-    artifact_id='"example-artifact"',
+    group_id="\"my-group\"",
+    artifact_id="\"example-artifact\"",
     owner="bwayne",
 )
 
@@ -3594,7 +3781,7 @@ client.metadata.update_artifact_owner(
 <dl>
 <dd>
 
-**owner:** `typing.Optional[str]` 
+**request:** `ArtifactOwner` 
     
 </dd>
 </dl>
@@ -3614,7 +3801,7 @@ client.metadata.update_artifact_owner(
 </dl>
 </details>
 
-<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py">get_artifact_version_meta_data</a>(...)</code></summary>
+<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py">get_artifact_version_meta_data</a>(...) -> VersionMetaData</code></summary>
 <dl>
 <dd>
 
@@ -3650,12 +3837,16 @@ This operation can fail for the following reasons:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.metadata.get_artifact_version_meta_data(
-    group_id='"my-group"',
-    artifact_id='"example-artifact"',
-    version='"3.1.6"',
+    group_id="\"my-group\"",
+    artifact_id="\"example-artifact\"",
+    version="\"3.1.6\"",
 )
 
 ```
@@ -3744,16 +3935,26 @@ This operation can fail for the following reasons:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.metadata.update_artifact_version_meta_data(
-    group_id='"my-group"',
-    artifact_id='"example-artifact"',
-    version='"3.1.6"',
+    group_id="\"my-group\"",
+    artifact_id="\"example-artifact\"",
+    version="\"3.1.6\"",
     description="The description of the artifact.",
-    labels=["regional", "global"],
+    labels=[
+        "regional",
+        "global"
+    ],
     name="Artifact Name",
-    properties={"custom-1": "foo", "custom-2": "bar"},
+    properties={
+        "custom-1": "foo",
+        "custom-2": "bar"
+    },
 )
 
 ```
@@ -3794,31 +3995,7 @@ client.metadata.update_artifact_version_meta_data(
 <dl>
 <dd>
 
-**description:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**labels:** `typing.Optional[typing.Sequence[str]]` — 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**name:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**properties:** `typing.Optional[Properties]` — 
+**request:** `EditableMetaData` 
     
 </dd>
 </dl>
@@ -3873,12 +4050,16 @@ This operation can fail for the following reasons:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.metadata.delete_artifact_version_meta_data(
-    group_id='"my-group"',
-    artifact_id='"example-artifact"',
-    version='"3.1.6"',
+    group_id="\"my-group\"",
+    artifact_id="\"example-artifact\"",
+    version="\"3.1.6\"",
 )
 
 ```
@@ -3932,7 +4113,7 @@ client.metadata.delete_artifact_version_meta_data(
 </details>
 
 ## Artifact rules
-<details><summary><code>client.artifact_rules.<a href="src/fern/artifact_rules/client.py">list_artifact_rules</a>(...)</code></summary>
+<details><summary><code>client.artifact_rules.<a href="src/fern/artifact_rules/client.py">list_artifact_rules</a>(...) -> typing.List[RuleType]</code></summary>
 <dl>
 <dd>
 
@@ -3968,11 +4149,15 @@ This operation can fail for the following reasons:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.artifact_rules.list_artifact_rules(
-    group_id='"my-group"',
-    artifact_id='"example-artifact"',
+    group_id="\"my-group\"",
+    artifact_id="\"example-artifact\"",
 )
 
 ```
@@ -4052,11 +4237,15 @@ This operation can fail for the following reasons:
 
 ```python
 from fern import FernApi, RuleType
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.artifact_rules.create_artifact_rule(
-    group_id='"my-group"',
-    artifact_id='"example-artifact"',
+    group_id="\"my-group\"",
+    artifact_id="\"example-artifact\"",
     config="FULL",
     type=RuleType.VALIDITY,
 )
@@ -4091,15 +4280,7 @@ client.artifact_rules.create_artifact_rule(
 <dl>
 <dd>
 
-**config:** `str` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**type:** `typing.Optional[RuleType]` 
+**request:** `Rule` 
     
 </dd>
 </dl>
@@ -4153,11 +4334,15 @@ This operation can fail for the following reasons:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.artifact_rules.delete_artifact_rules(
-    group_id='"my-group"',
-    artifact_id='"example-artifact"',
+    group_id="\"my-group\"",
+    artifact_id="\"example-artifact\"",
 )
 
 ```
@@ -4202,7 +4387,7 @@ client.artifact_rules.delete_artifact_rules(
 </dl>
 </details>
 
-<details><summary><code>client.artifact_rules.<a href="src/fern/artifact_rules/client.py">get_artifact_rule_config</a>(...)</code></summary>
+<details><summary><code>client.artifact_rules.<a href="src/fern/artifact_rules/client.py">get_artifact_rule_config</a>(...) -> Rule</code></summary>
 <dl>
 <dd>
 
@@ -4237,14 +4422,17 @@ This operation can fail for the following reasons:
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.artifact_rules import GetArtifactRuleConfigRequestRule
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
 
-client = FernApi()
 client.artifact_rules.get_artifact_rule_config(
-    group_id='"my-group"',
-    artifact_id='"example-artifact"',
+    group_id="\"my-group\"",
+    artifact_id="\"example-artifact\"",
     rule=GetArtifactRuleConfigRequestRule.VALIDITY,
 )
 
@@ -4298,7 +4486,7 @@ client.artifact_rules.get_artifact_rule_config(
 </dl>
 </details>
 
-<details><summary><code>client.artifact_rules.<a href="src/fern/artifact_rules/client.py">update_artifact_rule_config</a>(...)</code></summary>
+<details><summary><code>client.artifact_rules.<a href="src/fern/artifact_rules/client.py">update_artifact_rule_config</a>(...) -> Rule</code></summary>
 <dl>
 <dd>
 
@@ -4334,14 +4522,17 @@ This operation can fail for the following reasons:
 <dd>
 
 ```python
+from fern import FernApi, RuleType
+from fern.environment import FernApiEnvironment
 from fern.artifact_rules import UpdateArtifactRuleConfigRequestRule
 
-from fern import FernApi, RuleType
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
 
-client = FernApi()
 client.artifact_rules.update_artifact_rule_config(
-    group_id='"my-group"',
-    artifact_id='"example-artifact"',
+    group_id="\"my-group\"",
+    artifact_id="\"example-artifact\"",
     rule=UpdateArtifactRuleConfigRequestRule.VALIDITY,
     config="FULL",
     type=RuleType.VALIDITY,
@@ -4385,15 +4576,7 @@ client.artifact_rules.update_artifact_rule_config(
 <dl>
 <dd>
 
-**config:** `str` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**type:** `typing.Optional[RuleType]` 
+**request:** `Rule` 
     
 </dd>
 </dl>
@@ -4450,14 +4633,17 @@ This operation can fail for the following reasons:
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.artifact_rules import DeleteArtifactRuleRequestRule
 
-from fern import FernApi
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
 
-client = FernApi()
 client.artifact_rules.delete_artifact_rule(
-    group_id='"my-group"',
-    artifact_id='"example-artifact"',
+    group_id="\"my-group\"",
+    artifact_id="\"example-artifact\"",
     rule=DeleteArtifactRuleRequestRule.VALIDITY,
 )
 
@@ -4558,11 +4744,15 @@ artifact (or the global rules if no artifact rules are enabled).
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.artifact_rules.test_update_artifact(
-    group_id='"my-group"',
-    artifact_id='"example-artifact"',
+    group_id="\"my-group\"",
+    artifact_id="\"example-artifact\"",
     request="string",
 )
 
@@ -4617,7 +4807,7 @@ client.artifact_rules.test_update_artifact(
 </details>
 
 ## Versions
-<details><summary><code>client.versions.<a href="src/fern/versions/client.py">list_artifact_versions</a>(...)</code></summary>
+<details><summary><code>client.versions.<a href="src/fern/versions/client.py">list_artifact_versions</a>(...) -> VersionSearchResults</code></summary>
 <dl>
 <dd>
 
@@ -4650,11 +4840,15 @@ This operation can fail for the following reasons:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.versions.list_artifact_versions(
-    group_id='"my-group"',
-    artifact_id='"example-artifact"',
+    group_id="\"my-group\"",
+    artifact_id="\"example-artifact\"",
 )
 
 ```
@@ -4715,7 +4909,7 @@ client.versions.list_artifact_versions(
 </dl>
 </details>
 
-<details><summary><code>client.versions.<a href="src/fern/versions/client.py">create_artifact_version</a>(...)</code></summary>
+<details><summary><code>client.versions.<a href="src/fern/versions/client.py">create_artifact_version</a>(...) -> VersionMetaData</code></summary>
 <dl>
 <dd>
 
@@ -4757,16 +4951,20 @@ This operation can fail for the following reasons:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.versions.create_artifact_version(
-    group_id='"my-group"',
-    artifact_id='"example-artifact"',
-    registry_version='"3.1.6"',
-    registry_name='"Artifact name"',
-    registry_description='"Artifact description"',
-    registry_description_encoded='"QXJ0aWZhY3QgZGVzY3JpcHRpb24K"',
-    registry_name_encoded='"QXJ0aWZhY3QgbmFtZQo="',
+    group_id="\"my-group\"",
+    artifact_id="\"example-artifact\"",
+    registry_version="\"3.1.6\"",
+    registry_name="\"Artifact name\"",
+    registry_description="\"Artifact description\"",
+    registry_description_encoded="\"QXJ0aWZhY3QgZGVzY3JpcHRpb24K\"",
+    registry_name_encoded="\"QXJ0aWZhY3QgbmFtZQo=\"",
     request="string",
 )
 
@@ -4867,7 +5065,7 @@ provided, the server will extract the name from the artifact content.
 </dl>
 </details>
 
-<details><summary><code>client.versions.<a href="src/fern/versions/client.py">get_artifact_version</a>(...)</code></summary>
+<details><summary><code>client.versions.<a href="src/fern/versions/client.py">get_artifact_version</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -4904,8 +5102,12 @@ This operation can fail for the following reasons:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.versions.get_artifact_version(
     group_id="groupId",
     artifact_id="artifactId",
@@ -4958,7 +5160,7 @@ client.versions.get_artifact_version(
 <dl>
 <dd>
 
-**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response.
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
     
 </dd>
 </dl>
@@ -4970,7 +5172,7 @@ client.versions.get_artifact_version(
 </dl>
 </details>
 
-<details><summary><code>client.versions.<a href="src/fern/versions/client.py">get_artifact_version_references</a>(...)</code></summary>
+<details><summary><code>client.versions.<a href="src/fern/versions/client.py">get_artifact_version_references</a>(...) -> typing.List[ArtifactReference]</code></summary>
 <dl>
 <dd>
 
@@ -5007,12 +5209,16 @@ This operation can fail for the following reasons:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.versions.get_artifact_version_references(
-    group_id='"my-group"',
-    artifact_id='"example-artifact"',
-    version='"3.1.6"',
+    group_id="\"my-group\"",
+    artifact_id="\"example-artifact\"",
+    version="\"3.1.6\"",
 )
 
 ```
@@ -5099,13 +5305,17 @@ This operation can fail for the following reasons:
 <dd>
 
 ```python
-from fern import ArtifactState, FernApi
+from fern import FernApi, ArtifactState
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.versions.update_artifact_version_state(
-    group_id='"my-group"',
-    artifact_id='"example-artifact"',
-    version='"3.1.6"',
+    group_id="\"my-group\"",
+    artifact_id="\"example-artifact\"",
+    version="\"3.1.6\"",
     state=ArtifactState.DISABLED,
 )
 
@@ -5147,7 +5357,7 @@ client.versions.update_artifact_version_state(
 <dl>
 <dd>
 
-**state:** `ArtifactState` 
+**request:** `UpdateState` 
     
 </dd>
 </dl>
@@ -5168,7 +5378,7 @@ client.versions.update_artifact_version_state(
 </details>
 
 ## Search
-<details><summary><code>client.search.<a href="src/fern/search/client.py">artifacts</a>(...)</code></summary>
+<details><summary><code>client.search.<a href="src/fern/search/client.py">artifacts</a>(...) -> ArtifactSearchResults</code></summary>
 <dl>
 <dd>
 
@@ -5196,8 +5406,12 @@ Returns a paginated list of all artifacts that match the provided filter criteri
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.search.artifacts()
 
 ```
@@ -5326,7 +5540,7 @@ and value `bar`.
 </dl>
 </details>
 
-<details><summary><code>client.search.<a href="src/fern/search/client.py">artifacts_by_content</a>(...)</code></summary>
+<details><summary><code>client.search.<a href="src/fern/search/client.py">artifacts_by_content</a>(...) -> ArtifactSearchResults</code></summary>
 <dl>
 <dd>
 
@@ -5355,8 +5569,12 @@ posted content.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.search.artifacts_by_content(
     artifact_type="AVRO",
     request="string",
@@ -5450,7 +5668,7 @@ The field to sort by.  Can be one of:
 </details>
 
 ## System
-<details><summary><code>client.system.<a href="src/fern/system/client.py">get_system_info</a>()</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py">get_system_info</a>() -> SystemInfo</code></summary>
 <dl>
 <dd>
 
@@ -5479,8 +5697,12 @@ of the software and when it was built.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.system.get_system_info()
 
 ```
@@ -5509,7 +5731,7 @@ client.system.get_system_info()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">get_resource_limits</a>()</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py">get_resource_limits</a>() -> Limits</code></summary>
 <dl>
 <dd>
 
@@ -5537,8 +5759,12 @@ This operation retrieves the list of limitations on used resources, that are app
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.system.get_resource_limits()
 
 ```
@@ -5568,7 +5794,7 @@ client.system.get_resource_limits()
 </details>
 
 ## Users
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_current_user_info</a>()</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py">get_current_user_info</a>() -> UserInfo</code></summary>
 <dl>
 <dd>
 
@@ -5596,8 +5822,12 @@ Returns information about the currently authenticated user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
 client.users.get_current_user_info()
 
 ```

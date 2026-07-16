@@ -10,10 +10,14 @@ from .user_user_search_response_detail import UserUserSearchResponseDetail
 
 
 class UserUserSearchResponse(UniversalBaseModel):
-    has_more: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="hasMore")] = None
+    has_more: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="hasMore"), pydantic.Field(alias="hasMore")
+    ] = None
     page: typing.Optional[int] = None
     search_results: typing_extensions.Annotated[
-        typing.Optional[typing.List[UserUserSearchResponseDetail]], FieldMetadata(alias="searchResults")
+        typing.Optional[typing.List[UserUserSearchResponseDetail]],
+        FieldMetadata(alias="searchResults"),
+        pydantic.Field(alias="searchResults"),
     ] = None
 
     if IS_PYDANTIC_V2:

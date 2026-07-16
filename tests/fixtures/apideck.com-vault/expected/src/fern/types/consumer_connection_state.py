@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ConsumerConnectionState(str, enum.Enum):
+class ConsumerConnectionState(enum.StrEnum):
     AVAILABLE = "available"
     CALLABLE = "callable"
     ADDED = "added"

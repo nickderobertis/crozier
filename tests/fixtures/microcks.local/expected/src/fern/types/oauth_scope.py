@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class OauthScope(str, enum.Enum):
+class OauthScope(enum.StrEnum):
     ADMIN = "admin"
     """
     Administrator of the Microcks instance

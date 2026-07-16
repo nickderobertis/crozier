@@ -2,4 +2,7 @@
 
 import typing
 
-SecurityInfo = typing.Optional[typing.Any]
+SecurityInfo = typing.Any
+"""
+See MEC011
+"""

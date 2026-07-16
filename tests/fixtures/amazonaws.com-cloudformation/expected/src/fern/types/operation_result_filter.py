@@ -14,16 +14,20 @@ class OperationResultFilter(UniversalBaseModel):
     The status that operation results are filtered by.
     """
 
-    name: typing_extensions.Annotated[typing.Optional[OperationResultFilterName], FieldMetadata(alias="Name")] = (
-        pydantic.Field(default=None)
-    )
+    name: typing_extensions.Annotated[
+        typing.Optional[OperationResultFilterName],
+        FieldMetadata(alias="Name"),
+        pydantic.Field(alias="Name", description="The type of filter to apply."),
+    ] = None
     """
     The type of filter to apply.
     """
 
-    values: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="Values")] = pydantic.Field(
-        default=None
-    )
+    values: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="Values"),
+        pydantic.Field(alias="Values", description="The value to filter by."),
+    ] = None
     """
     The value to filter by.
     """

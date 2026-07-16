@@ -9,9 +9,11 @@ from ..core.serialization import FieldMetadata
 
 
 class DestinyDefinitionsMilestonesDestinyMilestoneChallengeActivityPhase(UniversalBaseModel):
-    phase_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="phaseHash")] = pydantic.Field(
-        default=None
-    )
+    phase_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="phaseHash"),
+        pydantic.Field(alias="phaseHash", description="The hash identifier of the activity's phase."),
+    ] = None
     """
     The hash identifier of the activity's phase.
     """

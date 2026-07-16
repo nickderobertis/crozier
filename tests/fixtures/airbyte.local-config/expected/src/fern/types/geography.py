@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class Geography(str, enum.Enum):
+class Geography(enum.StrEnum):
     AUTO = "auto"
     US = "us"
     EU = "eu"

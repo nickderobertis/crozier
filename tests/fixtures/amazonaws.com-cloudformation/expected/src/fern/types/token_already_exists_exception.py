@@ -2,4 +2,4 @@
 
 import typing
 
-TokenAlreadyExistsException = typing.Optional[typing.Any]
+TokenAlreadyExistsException = typing.Any

@@ -20,22 +20,31 @@ class DestinyDefinitionsDestinyEquipmentSlotDefinition(UniversalBaseModel):
     """
 
     apply_custom_art_dyes: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="applyCustomArtDyes")
-    ] = pydantic.Field(default=None)
+        typing.Optional[bool],
+        FieldMetadata(alias="applyCustomArtDyes"),
+        pydantic.Field(
+            alias="applyCustomArtDyes",
+            description="If True, equipped items should have their custom art dyes applied when rendering the item. Otherwise, custom art dyes on an item should be ignored if the item is equipped in this slot.",
+        ),
+    ] = None
     """
     If True, equipped items should have their custom art dyes applied when rendering the item. Otherwise, custom art dyes on an item should be ignored if the item is equipped in this slot.
     """
 
     art_dye_channels: typing_extensions.Annotated[
-        typing.Optional[typing.List[DestinyDefinitionsDestinyArtDyeReference]], FieldMetadata(alias="artDyeChannels")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[DestinyDefinitionsDestinyArtDyeReference]],
+        FieldMetadata(alias="artDyeChannels"),
+        pydantic.Field(alias="artDyeChannels", description="The Art Dye Channels that apply to this equipment slot."),
+    ] = None
     """
     The Art Dye Channels that apply to this equipment slot.
     """
 
-    bucket_type_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="bucketTypeHash")] = (
-        pydantic.Field(default=None)
-    )
+    bucket_type_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="bucketTypeHash"),
+        pydantic.Field(alias="bucketTypeHash", description="The inventory bucket that owns this equipment slot."),
+    ] = None
     """
     The inventory bucket that owns this equipment slot.
     """
@@ -43,10 +52,16 @@ class DestinyDefinitionsDestinyEquipmentSlotDefinition(UniversalBaseModel):
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
+        pydantic.Field(alias="displayProperties"),
     ] = None
     equipment_category_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="equipmentCategoryHash")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="equipmentCategoryHash"),
+        pydantic.Field(
+            alias="equipmentCategoryHash",
+            description="These technically point to \"Equipment Category Definitions\". But don't get excited. There's nothing of significant value in those definitions, so I didn't bother to expose them. You can use the hash here to group equipment slots by common functionality, which serves the same purpose as if we had the Equipment Category definitions exposed.",
+        ),
+    ] = None
     """
     These technically point to "Equipment Category Definitions". But don't get excited. There's nothing of significant value in those definitions, so I didn't bother to expose them. You can use the hash here to group equipment slots by common functionality, which serves the same purpose as if we had the Equipment Category definitions exposed.
     """

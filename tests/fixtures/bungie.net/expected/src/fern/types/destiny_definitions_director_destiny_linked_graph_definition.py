@@ -20,15 +20,20 @@ class DestinyDefinitionsDirectorDestinyLinkedGraphDefinition(UniversalBaseModel)
     """
 
     description: typing.Optional[str] = None
-    linked_graph_id: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="linkedGraphId")] = None
+    linked_graph_id: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="linkedGraphId"), pydantic.Field(alias="linkedGraphId")
+    ] = None
     linked_graphs: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyDefinitionsDirectorDestinyLinkedGraphEntryDefinition]],
         FieldMetadata(alias="linkedGraphs"),
+        pydantic.Field(alias="linkedGraphs"),
     ] = None
     name: typing.Optional[str] = None
     overview: typing.Optional[str] = None
     unlock_expression: typing_extensions.Annotated[
-        typing.Optional[DestinyDefinitionsDestinyUnlockExpressionDefinition], FieldMetadata(alias="unlockExpression")
+        typing.Optional[DestinyDefinitionsDestinyUnlockExpressionDefinition],
+        FieldMetadata(alias="unlockExpression"),
+        pydantic.Field(alias="unlockExpression"),
     ] = None
 
     if IS_PYDANTIC_V2:

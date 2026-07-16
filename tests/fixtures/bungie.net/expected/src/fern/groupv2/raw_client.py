@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from .types.group_v2abdicate_foundership_response import GroupV2AbdicateFoundershipResponse
@@ -43,6 +44,7 @@ from .types.group_v2individual_group_invite_response import GroupV2IndividualGro
 from .types.group_v2kick_member_response import GroupV2KickMemberResponse
 from .types.group_v2recover_group_for_founder_response import GroupV2RecoverGroupForFounderResponse
 from .types.group_v2unban_member_response import GroupV2UnbanMemberResponse
+from pydantic import ValidationError
 
 
 class RawGroupv2Client:
@@ -83,6 +85,10 @@ class RawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getavailablethemes(
@@ -119,6 +125,10 @@ class RawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getuserclaninvitesetting(
@@ -141,7 +151,7 @@ class RawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"GroupV2/GetUserClanInviteSetting/{jsonable_encoder(m_type)}/",
+            f"GroupV2/GetUserClanInviteSetting/{encode_path_param(m_type)}/",
             method="GET",
             request_options=request_options,
         )
@@ -158,6 +168,10 @@ class RawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getgroupbyname(
@@ -183,7 +197,7 @@ class RawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"GroupV2/Name/{jsonable_encoder(group_name)}/{jsonable_encoder(group_type)}/",
+            f"GroupV2/Name/{encode_path_param(group_name)}/{encode_path_param(group_type)}/",
             method="GET",
             request_options=request_options,
         )
@@ -200,6 +214,10 @@ class RawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getgroupbynamev2(
@@ -236,6 +254,10 @@ class RawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getrecommendedgroups(
@@ -261,7 +283,7 @@ class RawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"GroupV2/Recommended/{jsonable_encoder(group_type)}/{jsonable_encoder(create_date_range)}/",
+            f"GroupV2/Recommended/{encode_path_param(group_type)}/{encode_path_param(create_date_range)}/",
             method="POST",
             request_options=request_options,
         )
@@ -278,6 +300,10 @@ class RawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def recovergroupforfounder(
@@ -311,7 +337,7 @@ class RawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"GroupV2/Recover/{jsonable_encoder(membership_type)}/{jsonable_encoder(membership_id)}/{jsonable_encoder(group_type)}/",
+            f"GroupV2/Recover/{encode_path_param(membership_type)}/{encode_path_param(membership_id)}/{encode_path_param(group_type)}/",
             method="GET",
             request_options=request_options,
         )
@@ -328,6 +354,10 @@ class RawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def groupsearch(
@@ -364,6 +394,10 @@ class RawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getpotentialgroupsformember(
@@ -401,7 +435,7 @@ class RawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"GroupV2/User/Potential/{jsonable_encoder(membership_type)}/{jsonable_encoder(membership_id)}/{jsonable_encoder(filter)}/{jsonable_encoder(group_type)}/",
+            f"GroupV2/User/Potential/{encode_path_param(membership_type)}/{encode_path_param(membership_id)}/{encode_path_param(filter)}/{encode_path_param(group_type)}/",
             method="GET",
             request_options=request_options,
         )
@@ -418,6 +452,10 @@ class RawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getgroupsformember(
@@ -455,7 +493,7 @@ class RawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"GroupV2/User/{jsonable_encoder(membership_type)}/{jsonable_encoder(membership_id)}/{jsonable_encoder(filter)}/{jsonable_encoder(group_type)}/",
+            f"GroupV2/User/{encode_path_param(membership_type)}/{encode_path_param(membership_id)}/{encode_path_param(filter)}/{encode_path_param(group_type)}/",
             method="GET",
             request_options=request_options,
         )
@@ -472,6 +510,10 @@ class RawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getgroup(
@@ -494,7 +536,7 @@ class RawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/",
+            f"GroupV2/{encode_path_param(group_id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -511,6 +553,10 @@ class RawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def abdicatefoundership(
@@ -544,7 +590,7 @@ class RawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/Admin/AbdicateFoundership/{jsonable_encoder(membership_type)}/{jsonable_encoder(founder_id_new)}/",
+            f"GroupV2/{encode_path_param(group_id)}/Admin/AbdicateFoundership/{encode_path_param(membership_type)}/{encode_path_param(founder_id_new)}/",
             method="POST",
             request_options=request_options,
         )
@@ -561,6 +607,10 @@ class RawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getadminsandfounderofgroup(
@@ -586,7 +636,7 @@ class RawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/AdminsAndFounder/",
+            f"GroupV2/{encode_path_param(group_id)}/AdminsAndFounder/",
             method="GET",
             params={
                 "currentpage": currentpage,
@@ -606,6 +656,10 @@ class RawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getbannedmembersofgroup(
@@ -631,7 +685,7 @@ class RawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/Banned/",
+            f"GroupV2/{encode_path_param(group_id)}/Banned/",
             method="GET",
             params={
                 "currentpage": currentpage,
@@ -651,6 +705,10 @@ class RawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def editgroup(
@@ -673,7 +731,7 @@ class RawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/Edit/",
+            f"GroupV2/{encode_path_param(group_id)}/Edit/",
             method="POST",
             request_options=request_options,
         )
@@ -690,6 +748,10 @@ class RawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def editclanbanner(
@@ -712,7 +774,7 @@ class RawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/EditClanBanner/",
+            f"GroupV2/{encode_path_param(group_id)}/EditClanBanner/",
             method="POST",
             request_options=request_options,
         )
@@ -729,6 +791,10 @@ class RawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def editfounderoptions(
@@ -751,7 +817,7 @@ class RawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/EditFounderOptions/",
+            f"GroupV2/{encode_path_param(group_id)}/EditFounderOptions/",
             method="POST",
             request_options=request_options,
         )
@@ -768,6 +834,10 @@ class RawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getmembersofgroup(
@@ -805,7 +875,7 @@ class RawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/Members/",
+            f"GroupV2/{encode_path_param(group_id)}/Members/",
             method="GET",
             params={
                 "currentpage": currentpage,
@@ -827,6 +897,10 @@ class RawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def approvepending(
@@ -860,7 +934,7 @@ class RawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/Members/Approve/{jsonable_encoder(membership_type)}/{jsonable_encoder(membership_id)}/",
+            f"GroupV2/{encode_path_param(group_id)}/Members/Approve/{encode_path_param(membership_type)}/{encode_path_param(membership_id)}/",
             method="POST",
             request_options=request_options,
         )
@@ -877,6 +951,10 @@ class RawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def approveallpending(
@@ -899,7 +977,7 @@ class RawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/Members/ApproveAll/",
+            f"GroupV2/{encode_path_param(group_id)}/Members/ApproveAll/",
             method="POST",
             request_options=request_options,
         )
@@ -916,6 +994,10 @@ class RawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def approvependingforlist(
@@ -938,7 +1020,7 @@ class RawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/Members/ApproveList/",
+            f"GroupV2/{encode_path_param(group_id)}/Members/ApproveList/",
             method="POST",
             request_options=request_options,
         )
@@ -955,6 +1037,10 @@ class RawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def denyallpending(
@@ -977,7 +1063,7 @@ class RawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/Members/DenyAll/",
+            f"GroupV2/{encode_path_param(group_id)}/Members/DenyAll/",
             method="POST",
             request_options=request_options,
         )
@@ -994,6 +1080,10 @@ class RawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def denypendingforlist(
@@ -1016,7 +1106,7 @@ class RawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/Members/DenyList/",
+            f"GroupV2/{encode_path_param(group_id)}/Members/DenyList/",
             method="POST",
             request_options=request_options,
         )
@@ -1033,6 +1123,10 @@ class RawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def individualgroupinvite(
@@ -1066,7 +1160,7 @@ class RawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/Members/IndividualInvite/{jsonable_encoder(membership_type)}/{jsonable_encoder(membership_id)}/",
+            f"GroupV2/{encode_path_param(group_id)}/Members/IndividualInvite/{encode_path_param(membership_type)}/{encode_path_param(membership_id)}/",
             method="POST",
             request_options=request_options,
         )
@@ -1083,6 +1177,10 @@ class RawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def individualgroupinvitecancel(
@@ -1116,7 +1214,7 @@ class RawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/Members/IndividualInviteCancel/{jsonable_encoder(membership_type)}/{jsonable_encoder(membership_id)}/",
+            f"GroupV2/{encode_path_param(group_id)}/Members/IndividualInviteCancel/{encode_path_param(membership_type)}/{encode_path_param(membership_id)}/",
             method="POST",
             request_options=request_options,
         )
@@ -1133,6 +1231,10 @@ class RawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getinvitedindividuals(
@@ -1158,7 +1260,7 @@ class RawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/Members/InvitedIndividuals/",
+            f"GroupV2/{encode_path_param(group_id)}/Members/InvitedIndividuals/",
             method="GET",
             params={
                 "currentpage": currentpage,
@@ -1178,6 +1280,10 @@ class RawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getpendingmemberships(
@@ -1203,7 +1309,7 @@ class RawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/Members/Pending/",
+            f"GroupV2/{encode_path_param(group_id)}/Members/Pending/",
             method="GET",
             params={
                 "currentpage": currentpage,
@@ -1223,6 +1329,10 @@ class RawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def banmember(
@@ -1256,7 +1366,7 @@ class RawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/Members/{jsonable_encoder(membership_type)}/{jsonable_encoder(membership_id)}/Ban/",
+            f"GroupV2/{encode_path_param(group_id)}/Members/{encode_path_param(membership_type)}/{encode_path_param(membership_id)}/Ban/",
             method="POST",
             request_options=request_options,
         )
@@ -1273,6 +1383,10 @@ class RawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def kickmember(
@@ -1306,7 +1420,7 @@ class RawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/Members/{jsonable_encoder(membership_type)}/{jsonable_encoder(membership_id)}/Kick/",
+            f"GroupV2/{encode_path_param(group_id)}/Members/{encode_path_param(membership_type)}/{encode_path_param(membership_id)}/Kick/",
             method="POST",
             request_options=request_options,
         )
@@ -1323,6 +1437,10 @@ class RawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def editgroupmembership(
@@ -1360,7 +1478,7 @@ class RawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/Members/{jsonable_encoder(membership_type)}/{jsonable_encoder(membership_id)}/SetMembershipType/{jsonable_encoder(member_type)}/",
+            f"GroupV2/{encode_path_param(group_id)}/Members/{encode_path_param(membership_type)}/{encode_path_param(membership_id)}/SetMembershipType/{encode_path_param(member_type)}/",
             method="POST",
             request_options=request_options,
         )
@@ -1377,6 +1495,10 @@ class RawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def unbanmember(
@@ -1410,7 +1532,7 @@ class RawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/Members/{jsonable_encoder(membership_type)}/{jsonable_encoder(membership_id)}/Unban/",
+            f"GroupV2/{encode_path_param(group_id)}/Members/{encode_path_param(membership_type)}/{encode_path_param(membership_id)}/Unban/",
             method="POST",
             request_options=request_options,
         )
@@ -1427,6 +1549,10 @@ class RawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getgroupoptionalconversations(
@@ -1449,7 +1575,7 @@ class RawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/OptionalConversations/",
+            f"GroupV2/{encode_path_param(group_id)}/OptionalConversations/",
             method="GET",
             request_options=request_options,
         )
@@ -1466,6 +1592,10 @@ class RawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def addoptionalconversation(
@@ -1488,7 +1618,7 @@ class RawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/OptionalConversations/Add/",
+            f"GroupV2/{encode_path_param(group_id)}/OptionalConversations/Add/",
             method="POST",
             request_options=request_options,
         )
@@ -1505,6 +1635,10 @@ class RawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def editoptionalconversation(
@@ -1530,7 +1664,7 @@ class RawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/OptionalConversations/Edit/{jsonable_encoder(conversation_id)}/",
+            f"GroupV2/{encode_path_param(group_id)}/OptionalConversations/Edit/{encode_path_param(conversation_id)}/",
             method="POST",
             request_options=request_options,
         )
@@ -1547,6 +1681,10 @@ class RawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -1588,6 +1726,10 @@ class AsyncRawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getavailablethemes(
@@ -1624,6 +1766,10 @@ class AsyncRawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getuserclaninvitesetting(
@@ -1646,7 +1792,7 @@ class AsyncRawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"GroupV2/GetUserClanInviteSetting/{jsonable_encoder(m_type)}/",
+            f"GroupV2/GetUserClanInviteSetting/{encode_path_param(m_type)}/",
             method="GET",
             request_options=request_options,
         )
@@ -1663,6 +1809,10 @@ class AsyncRawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getgroupbyname(
@@ -1688,7 +1838,7 @@ class AsyncRawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"GroupV2/Name/{jsonable_encoder(group_name)}/{jsonable_encoder(group_type)}/",
+            f"GroupV2/Name/{encode_path_param(group_name)}/{encode_path_param(group_type)}/",
             method="GET",
             request_options=request_options,
         )
@@ -1705,6 +1855,10 @@ class AsyncRawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getgroupbynamev2(
@@ -1741,6 +1895,10 @@ class AsyncRawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getrecommendedgroups(
@@ -1766,7 +1924,7 @@ class AsyncRawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"GroupV2/Recommended/{jsonable_encoder(group_type)}/{jsonable_encoder(create_date_range)}/",
+            f"GroupV2/Recommended/{encode_path_param(group_type)}/{encode_path_param(create_date_range)}/",
             method="POST",
             request_options=request_options,
         )
@@ -1783,6 +1941,10 @@ class AsyncRawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def recovergroupforfounder(
@@ -1816,7 +1978,7 @@ class AsyncRawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"GroupV2/Recover/{jsonable_encoder(membership_type)}/{jsonable_encoder(membership_id)}/{jsonable_encoder(group_type)}/",
+            f"GroupV2/Recover/{encode_path_param(membership_type)}/{encode_path_param(membership_id)}/{encode_path_param(group_type)}/",
             method="GET",
             request_options=request_options,
         )
@@ -1833,6 +1995,10 @@ class AsyncRawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def groupsearch(
@@ -1869,6 +2035,10 @@ class AsyncRawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getpotentialgroupsformember(
@@ -1906,7 +2076,7 @@ class AsyncRawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"GroupV2/User/Potential/{jsonable_encoder(membership_type)}/{jsonable_encoder(membership_id)}/{jsonable_encoder(filter)}/{jsonable_encoder(group_type)}/",
+            f"GroupV2/User/Potential/{encode_path_param(membership_type)}/{encode_path_param(membership_id)}/{encode_path_param(filter)}/{encode_path_param(group_type)}/",
             method="GET",
             request_options=request_options,
         )
@@ -1923,6 +2093,10 @@ class AsyncRawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getgroupsformember(
@@ -1960,7 +2134,7 @@ class AsyncRawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"GroupV2/User/{jsonable_encoder(membership_type)}/{jsonable_encoder(membership_id)}/{jsonable_encoder(filter)}/{jsonable_encoder(group_type)}/",
+            f"GroupV2/User/{encode_path_param(membership_type)}/{encode_path_param(membership_id)}/{encode_path_param(filter)}/{encode_path_param(group_type)}/",
             method="GET",
             request_options=request_options,
         )
@@ -1977,6 +2151,10 @@ class AsyncRawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getgroup(
@@ -1999,7 +2177,7 @@ class AsyncRawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/",
+            f"GroupV2/{encode_path_param(group_id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -2016,6 +2194,10 @@ class AsyncRawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def abdicatefoundership(
@@ -2049,7 +2231,7 @@ class AsyncRawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/Admin/AbdicateFoundership/{jsonable_encoder(membership_type)}/{jsonable_encoder(founder_id_new)}/",
+            f"GroupV2/{encode_path_param(group_id)}/Admin/AbdicateFoundership/{encode_path_param(membership_type)}/{encode_path_param(founder_id_new)}/",
             method="POST",
             request_options=request_options,
         )
@@ -2066,6 +2248,10 @@ class AsyncRawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getadminsandfounderofgroup(
@@ -2091,7 +2277,7 @@ class AsyncRawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/AdminsAndFounder/",
+            f"GroupV2/{encode_path_param(group_id)}/AdminsAndFounder/",
             method="GET",
             params={
                 "currentpage": currentpage,
@@ -2111,6 +2297,10 @@ class AsyncRawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getbannedmembersofgroup(
@@ -2136,7 +2326,7 @@ class AsyncRawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/Banned/",
+            f"GroupV2/{encode_path_param(group_id)}/Banned/",
             method="GET",
             params={
                 "currentpage": currentpage,
@@ -2156,6 +2346,10 @@ class AsyncRawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def editgroup(
@@ -2178,7 +2372,7 @@ class AsyncRawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/Edit/",
+            f"GroupV2/{encode_path_param(group_id)}/Edit/",
             method="POST",
             request_options=request_options,
         )
@@ -2195,6 +2389,10 @@ class AsyncRawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def editclanbanner(
@@ -2217,7 +2415,7 @@ class AsyncRawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/EditClanBanner/",
+            f"GroupV2/{encode_path_param(group_id)}/EditClanBanner/",
             method="POST",
             request_options=request_options,
         )
@@ -2234,6 +2432,10 @@ class AsyncRawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def editfounderoptions(
@@ -2256,7 +2458,7 @@ class AsyncRawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/EditFounderOptions/",
+            f"GroupV2/{encode_path_param(group_id)}/EditFounderOptions/",
             method="POST",
             request_options=request_options,
         )
@@ -2273,6 +2475,10 @@ class AsyncRawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getmembersofgroup(
@@ -2310,7 +2516,7 @@ class AsyncRawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/Members/",
+            f"GroupV2/{encode_path_param(group_id)}/Members/",
             method="GET",
             params={
                 "currentpage": currentpage,
@@ -2332,6 +2538,10 @@ class AsyncRawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def approvepending(
@@ -2365,7 +2575,7 @@ class AsyncRawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/Members/Approve/{jsonable_encoder(membership_type)}/{jsonable_encoder(membership_id)}/",
+            f"GroupV2/{encode_path_param(group_id)}/Members/Approve/{encode_path_param(membership_type)}/{encode_path_param(membership_id)}/",
             method="POST",
             request_options=request_options,
         )
@@ -2382,6 +2592,10 @@ class AsyncRawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def approveallpending(
@@ -2404,7 +2618,7 @@ class AsyncRawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/Members/ApproveAll/",
+            f"GroupV2/{encode_path_param(group_id)}/Members/ApproveAll/",
             method="POST",
             request_options=request_options,
         )
@@ -2421,6 +2635,10 @@ class AsyncRawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def approvependingforlist(
@@ -2443,7 +2661,7 @@ class AsyncRawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/Members/ApproveList/",
+            f"GroupV2/{encode_path_param(group_id)}/Members/ApproveList/",
             method="POST",
             request_options=request_options,
         )
@@ -2460,6 +2678,10 @@ class AsyncRawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def denyallpending(
@@ -2482,7 +2704,7 @@ class AsyncRawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/Members/DenyAll/",
+            f"GroupV2/{encode_path_param(group_id)}/Members/DenyAll/",
             method="POST",
             request_options=request_options,
         )
@@ -2499,6 +2721,10 @@ class AsyncRawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def denypendingforlist(
@@ -2521,7 +2747,7 @@ class AsyncRawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/Members/DenyList/",
+            f"GroupV2/{encode_path_param(group_id)}/Members/DenyList/",
             method="POST",
             request_options=request_options,
         )
@@ -2538,6 +2764,10 @@ class AsyncRawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def individualgroupinvite(
@@ -2571,7 +2801,7 @@ class AsyncRawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/Members/IndividualInvite/{jsonable_encoder(membership_type)}/{jsonable_encoder(membership_id)}/",
+            f"GroupV2/{encode_path_param(group_id)}/Members/IndividualInvite/{encode_path_param(membership_type)}/{encode_path_param(membership_id)}/",
             method="POST",
             request_options=request_options,
         )
@@ -2588,6 +2818,10 @@ class AsyncRawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def individualgroupinvitecancel(
@@ -2621,7 +2855,7 @@ class AsyncRawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/Members/IndividualInviteCancel/{jsonable_encoder(membership_type)}/{jsonable_encoder(membership_id)}/",
+            f"GroupV2/{encode_path_param(group_id)}/Members/IndividualInviteCancel/{encode_path_param(membership_type)}/{encode_path_param(membership_id)}/",
             method="POST",
             request_options=request_options,
         )
@@ -2638,6 +2872,10 @@ class AsyncRawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getinvitedindividuals(
@@ -2663,7 +2901,7 @@ class AsyncRawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/Members/InvitedIndividuals/",
+            f"GroupV2/{encode_path_param(group_id)}/Members/InvitedIndividuals/",
             method="GET",
             params={
                 "currentpage": currentpage,
@@ -2683,6 +2921,10 @@ class AsyncRawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getpendingmemberships(
@@ -2708,7 +2950,7 @@ class AsyncRawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/Members/Pending/",
+            f"GroupV2/{encode_path_param(group_id)}/Members/Pending/",
             method="GET",
             params={
                 "currentpage": currentpage,
@@ -2728,6 +2970,10 @@ class AsyncRawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def banmember(
@@ -2761,7 +3007,7 @@ class AsyncRawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/Members/{jsonable_encoder(membership_type)}/{jsonable_encoder(membership_id)}/Ban/",
+            f"GroupV2/{encode_path_param(group_id)}/Members/{encode_path_param(membership_type)}/{encode_path_param(membership_id)}/Ban/",
             method="POST",
             request_options=request_options,
         )
@@ -2778,6 +3024,10 @@ class AsyncRawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def kickmember(
@@ -2811,7 +3061,7 @@ class AsyncRawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/Members/{jsonable_encoder(membership_type)}/{jsonable_encoder(membership_id)}/Kick/",
+            f"GroupV2/{encode_path_param(group_id)}/Members/{encode_path_param(membership_type)}/{encode_path_param(membership_id)}/Kick/",
             method="POST",
             request_options=request_options,
         )
@@ -2828,6 +3078,10 @@ class AsyncRawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def editgroupmembership(
@@ -2865,7 +3119,7 @@ class AsyncRawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/Members/{jsonable_encoder(membership_type)}/{jsonable_encoder(membership_id)}/SetMembershipType/{jsonable_encoder(member_type)}/",
+            f"GroupV2/{encode_path_param(group_id)}/Members/{encode_path_param(membership_type)}/{encode_path_param(membership_id)}/SetMembershipType/{encode_path_param(member_type)}/",
             method="POST",
             request_options=request_options,
         )
@@ -2882,6 +3136,10 @@ class AsyncRawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def unbanmember(
@@ -2915,7 +3173,7 @@ class AsyncRawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/Members/{jsonable_encoder(membership_type)}/{jsonable_encoder(membership_id)}/Unban/",
+            f"GroupV2/{encode_path_param(group_id)}/Members/{encode_path_param(membership_type)}/{encode_path_param(membership_id)}/Unban/",
             method="POST",
             request_options=request_options,
         )
@@ -2932,6 +3190,10 @@ class AsyncRawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getgroupoptionalconversations(
@@ -2954,7 +3216,7 @@ class AsyncRawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/OptionalConversations/",
+            f"GroupV2/{encode_path_param(group_id)}/OptionalConversations/",
             method="GET",
             request_options=request_options,
         )
@@ -2971,6 +3233,10 @@ class AsyncRawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def addoptionalconversation(
@@ -2993,7 +3259,7 @@ class AsyncRawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/OptionalConversations/Add/",
+            f"GroupV2/{encode_path_param(group_id)}/OptionalConversations/Add/",
             method="POST",
             request_options=request_options,
         )
@@ -3010,6 +3276,10 @@ class AsyncRawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def editoptionalconversation(
@@ -3035,7 +3305,7 @@ class AsyncRawGroupv2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"GroupV2/{jsonable_encoder(group_id)}/OptionalConversations/Edit/{jsonable_encoder(conversation_id)}/",
+            f"GroupV2/{encode_path_param(group_id)}/OptionalConversations/Edit/{encode_path_param(conversation_id)}/",
             method="POST",
             request_options=request_options,
         )
@@ -3052,4 +3322,8 @@ class AsyncRawGroupv2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

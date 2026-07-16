@@ -15,9 +15,13 @@ class GroupsV2GroupV2ClanInfo(UniversalBaseModel):
     """
 
     clan_banner_data: typing_extensions.Annotated[
-        typing.Optional[GroupsV2ClanBanner], FieldMetadata(alias="clanBannerData")
+        typing.Optional[GroupsV2ClanBanner],
+        FieldMetadata(alias="clanBannerData"),
+        pydantic.Field(alias="clanBannerData"),
     ] = None
-    clan_callsign: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="clanCallsign")] = None
+    clan_callsign: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="clanCallsign"), pydantic.Field(alias="clanCallsign")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

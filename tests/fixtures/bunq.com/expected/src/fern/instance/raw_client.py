@@ -6,12 +6,14 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
 from ..types.payment_auto_allocate_instance_listing import PaymentAutoAllocateInstanceListing
 from ..types.payment_auto_allocate_instance_read import PaymentAutoAllocateInstanceRead
+from pydantic import ValidationError
 
 
 class RawInstanceClient:
@@ -49,7 +51,7 @@ class RawInstanceClient:
             List all the times a users payment was automatically allocated.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/payment-auto-allocate/{jsonable_encoder(payment_auto_allocate_id)}/instance",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/payment-auto-allocate/{encode_path_param(payment_auto_allocate_id)}/instance",
             method="GET",
             request_options=request_options,
         )
@@ -67,9 +69,9 @@ class RawInstanceClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -77,6 +79,10 @@ class RawInstanceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def read_instance_for_user_monetary_account_payment_auto_allocate(
@@ -114,7 +120,7 @@ class RawInstanceClient:
             List all the times a users payment was automatically allocated.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/payment-auto-allocate/{jsonable_encoder(payment_auto_allocate_id)}/instance/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/payment-auto-allocate/{encode_path_param(payment_auto_allocate_id)}/instance/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -132,9 +138,9 @@ class RawInstanceClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -142,6 +148,10 @@ class RawInstanceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -180,7 +190,7 @@ class AsyncRawInstanceClient:
             List all the times a users payment was automatically allocated.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/payment-auto-allocate/{jsonable_encoder(payment_auto_allocate_id)}/instance",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/payment-auto-allocate/{encode_path_param(payment_auto_allocate_id)}/instance",
             method="GET",
             request_options=request_options,
         )
@@ -198,9 +208,9 @@ class AsyncRawInstanceClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -208,6 +218,10 @@ class AsyncRawInstanceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def read_instance_for_user_monetary_account_payment_auto_allocate(
@@ -245,7 +259,7 @@ class AsyncRawInstanceClient:
             List all the times a users payment was automatically allocated.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/payment-auto-allocate/{jsonable_encoder(payment_auto_allocate_id)}/instance/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/payment-auto-allocate/{encode_path_param(payment_auto_allocate_id)}/instance/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -263,9 +277,9 @@ class AsyncRawInstanceClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -273,4 +287,8 @@ class AsyncRawInstanceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

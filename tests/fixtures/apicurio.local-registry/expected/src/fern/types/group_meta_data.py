@@ -14,16 +14,20 @@ from .properties import Properties
 class GroupMetaData(UniversalBaseModel):
     """ """
 
-    created_by: typing_extensions.Annotated[str, FieldMetadata(alias="createdBy")]
-    created_on: typing_extensions.Annotated[dt.datetime, FieldMetadata(alias="createdOn")]
+    created_by: typing_extensions.Annotated[str, FieldMetadata(alias="createdBy"), pydantic.Field(alias="createdBy")]
+    created_on: typing_extensions.Annotated[
+        dt.datetime, FieldMetadata(alias="createdOn"), pydantic.Field(alias="createdOn")
+    ]
     description: str
     id: GroupId = pydantic.Field()
     """
     
     """
 
-    modified_by: typing_extensions.Annotated[str, FieldMetadata(alias="modifiedBy")]
-    modified_on: typing_extensions.Annotated[dt.datetime, FieldMetadata(alias="modifiedOn")]
+    modified_by: typing_extensions.Annotated[str, FieldMetadata(alias="modifiedBy"), pydantic.Field(alias="modifiedBy")]
+    modified_on: typing_extensions.Annotated[
+        dt.datetime, FieldMetadata(alias="modifiedOn"), pydantic.Field(alias="modifiedOn")
+    ]
     properties: Properties = pydantic.Field()
     """
     

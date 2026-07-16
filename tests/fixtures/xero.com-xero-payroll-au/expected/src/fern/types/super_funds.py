@@ -11,7 +11,7 @@ from .super_fund import SuperFund
 
 class SuperFunds(UniversalBaseModel):
     super_funds: typing_extensions.Annotated[
-        typing.Optional[typing.List[SuperFund]], FieldMetadata(alias="SuperFunds")
+        typing.Optional[typing.List[SuperFund]], FieldMetadata(alias="SuperFunds"), pydantic.Field(alias="SuperFunds")
     ] = None
 
     if IS_PYDANTIC_V2:

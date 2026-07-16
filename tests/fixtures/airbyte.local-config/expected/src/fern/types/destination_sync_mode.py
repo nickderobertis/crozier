@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class DestinationSyncMode(str, enum.Enum):
+class DestinationSyncMode(enum.StrEnum):
     APPEND = "append"
     OVERWRITE = "overwrite"
     APPEND_DEDUP = "append_dedup"

@@ -15,8 +15,12 @@ class ObStatement2DetailStatementBenefitItem(UniversalBaseModel):
     Set of elements used to provide details of a benefit or reward amount for the statement resource.
     """
 
-    amount: typing_extensions.Annotated[ObActiveOrHistoricCurrencyAndAmount5, FieldMetadata(alias="Amount")]
-    type: typing_extensions.Annotated[ObExternalStatementBenefitType1Code, FieldMetadata(alias="Type")]
+    amount: typing_extensions.Annotated[
+        ObActiveOrHistoricCurrencyAndAmount5, FieldMetadata(alias="Amount"), pydantic.Field(alias="Amount")
+    ]
+    type: typing_extensions.Annotated[
+        ObExternalStatementBenefitType1Code, FieldMetadata(alias="Type"), pydantic.Field(alias="Type")
+    ]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

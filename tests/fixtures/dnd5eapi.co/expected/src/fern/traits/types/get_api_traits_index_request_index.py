@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GetApiTraitsIndexRequestIndex(str, enum.Enum):
+class GetApiTraitsIndexRequestIndex(enum.StrEnum):
     ARTIFICERS_LORE = "artificers-lore"
     BRAVE = "brave"
     BREATH_WEAPON = "breath-weapon"

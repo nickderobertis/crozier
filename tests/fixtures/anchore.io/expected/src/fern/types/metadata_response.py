@@ -13,8 +13,10 @@ class MetadataResponse(UniversalBaseModel):
     Generic wrapper for metadata listings from images
     """
 
-    image_digest: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="imageDigest")] = None
-    metadata: typing.Optional[typing.Optional[typing.Any]] = None
+    image_digest: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="imageDigest"), pydantic.Field(alias="imageDigest")
+    ] = None
+    metadata: typing.Optional[typing.Any] = None
     metadata_type: typing.Optional[str] = None
 
     if IS_PYDANTIC_V2:

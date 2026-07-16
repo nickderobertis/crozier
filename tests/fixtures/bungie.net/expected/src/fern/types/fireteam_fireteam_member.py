@@ -13,19 +13,33 @@ from .user_user_info_card import UserUserInfoCard
 
 class FireteamFireteamMember(UniversalBaseModel):
     bungie_net_user_info: typing_extensions.Annotated[
-        typing.Optional[UserUserInfoCard], FieldMetadata(alias="bungieNetUserInfo")
+        typing.Optional[UserUserInfoCard],
+        FieldMetadata(alias="bungieNetUserInfo"),
+        pydantic.Field(alias="bungieNetUserInfo"),
     ] = None
-    character_id: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="characterId")] = None
-    date_joined: typing_extensions.Annotated[typing.Optional[dt.datetime], FieldMetadata(alias="dateJoined")] = None
+    character_id: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="characterId"), pydantic.Field(alias="characterId")
+    ] = None
+    date_joined: typing_extensions.Annotated[
+        typing.Optional[dt.datetime], FieldMetadata(alias="dateJoined"), pydantic.Field(alias="dateJoined")
+    ] = None
     destiny_user_info: typing_extensions.Annotated[
-        typing.Optional[FireteamFireteamUserInfoCard], FieldMetadata(alias="destinyUserInfo")
+        typing.Optional[FireteamFireteamUserInfoCard],
+        FieldMetadata(alias="destinyUserInfo"),
+        pydantic.Field(alias="destinyUserInfo"),
     ] = None
-    has_microphone: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="hasMicrophone")] = None
+    has_microphone: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="hasMicrophone"), pydantic.Field(alias="hasMicrophone")
+    ] = None
     last_platform_invite_attempt_date: typing_extensions.Annotated[
-        typing.Optional[dt.datetime], FieldMetadata(alias="lastPlatformInviteAttemptDate")
+        typing.Optional[dt.datetime],
+        FieldMetadata(alias="lastPlatformInviteAttemptDate"),
+        pydantic.Field(alias="lastPlatformInviteAttemptDate"),
     ] = None
     last_platform_invite_attempt_result: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="lastPlatformInviteAttemptResult")
+        typing.Optional[int],
+        FieldMetadata(alias="lastPlatformInviteAttemptResult"),
+        pydantic.Field(alias="lastPlatformInviteAttemptResult"),
     ] = None
 
     if IS_PYDANTIC_V2:

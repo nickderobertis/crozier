@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class MeasurementUnitUnitType(str, enum.Enum):
+class MeasurementUnitUnitType(enum.StrEnum):
     """
     Describes the type of this unit and indicates which field contains the unit information. This is an ‘open’ enum.
     """

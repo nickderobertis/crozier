@@ -10,8 +10,13 @@ from ...core.serialization import FieldMetadata
 
 class PostFactorsResidualizationResponse(UniversalBaseModel):
     residualized_factor_returns: typing_extensions.Annotated[
-        typing.List[float], FieldMetadata(alias="residualizedFactorReturns")
-    ] = pydantic.Field()
+        typing.List[float],
+        FieldMetadata(alias="residualizedFactorReturns"),
+        pydantic.Field(
+            alias="residualizedFactorReturns",
+            description="residualizedFactorReturns[t] is the return of the residualized factor at the time t",
+        ),
+    ]
     """
     residualizedFactorReturns[t] is the return of the residualized factor at the time t
     """

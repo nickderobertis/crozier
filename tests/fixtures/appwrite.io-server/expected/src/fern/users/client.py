@@ -268,7 +268,7 @@ class UsersClient:
         self,
         user_id: str,
         *,
-        prefs: typing.Dict[str, typing.Optional[typing.Any]],
+        prefs: typing.Dict[str, typing.Any],
         request_options: typing.Optional[RequestOptions] = None,
     ) -> Preferences:
         """
@@ -279,7 +279,7 @@ class UsersClient:
         user_id : str
             User unique ID.
 
-        prefs : typing.Dict[str, typing.Optional[typing.Any]]
+        prefs : typing.Dict[str, typing.Any]
             Prefs key-value JSON object.
 
         request_options : typing.Optional[RequestOptions]
@@ -800,7 +800,7 @@ class AsyncUsersClient:
         self,
         user_id: str,
         *,
-        prefs: typing.Dict[str, typing.Optional[typing.Any]],
+        prefs: typing.Dict[str, typing.Any],
         request_options: typing.Optional[RequestOptions] = None,
     ) -> Preferences:
         """
@@ -811,7 +811,7 @@ class AsyncUsersClient:
         user_id : str
             User unique ID.
 
-        prefs : typing.Dict[str, typing.Optional[typing.Any]]
+        prefs : typing.Dict[str, typing.Any]
             Prefs key-value JSON object.
 
         request_options : typing.Optional[RequestOptions]

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class EcomVisibility(str, enum.Enum):
+class EcomVisibility(enum.StrEnum):
     """
     Determines item visibility in Ecom (Online Store) and Online Checkout.
     """

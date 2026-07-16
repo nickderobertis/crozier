@@ -2,4 +2,4 @@
 
 import typing
 
-Whitelist = typing.Dict[str, typing.Optional[typing.Any]]
+Whitelist = typing.Dict[str, typing.Any]

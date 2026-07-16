@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class SubsctiptionTypeAppPkg(str, enum.Enum):
+class SubsctiptionTypeAppPkg(enum.StrEnum):
     """
     'Subscribed notification type'
     """

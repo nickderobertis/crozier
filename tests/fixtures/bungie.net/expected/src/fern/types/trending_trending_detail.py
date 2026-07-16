@@ -17,15 +17,23 @@ from .trending_trending_entry_support_article import TrendingTrendingEntrySuppor
 class TrendingTrendingDetail(UniversalBaseModel):
     creation: typing.Optional[TrendingTrendingEntryCommunityCreation] = None
     destiny_activity: typing_extensions.Annotated[
-        typing.Optional[TrendingTrendingEntryDestinyActivity], FieldMetadata(alias="destinyActivity")
+        typing.Optional[TrendingTrendingEntryDestinyActivity],
+        FieldMetadata(alias="destinyActivity"),
+        pydantic.Field(alias="destinyActivity"),
     ] = None
     destiny_item: typing_extensions.Annotated[
-        typing.Optional[TrendingTrendingEntryDestinyItem], FieldMetadata(alias="destinyItem")
+        typing.Optional[TrendingTrendingEntryDestinyItem],
+        FieldMetadata(alias="destinyItem"),
+        pydantic.Field(alias="destinyItem"),
     ] = None
     destiny_ritual: typing_extensions.Annotated[
-        typing.Optional[TrendingTrendingEntryDestinyRitual], FieldMetadata(alias="destinyRitual")
+        typing.Optional[TrendingTrendingEntryDestinyRitual],
+        FieldMetadata(alias="destinyRitual"),
+        pydantic.Field(alias="destinyRitual"),
     ] = None
-    entity_type: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="entityType")] = None
+    entity_type: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="entityType"), pydantic.Field(alias="entityType")
+    ] = None
     identifier: typing.Optional[str] = None
     news: typing.Optional[TrendingTrendingEntryNews] = None
     support: typing.Optional[TrendingTrendingEntrySupportArticle] = None

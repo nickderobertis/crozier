@@ -13,7 +13,9 @@ from .destiny_definitions_presentation_destiny_presentation_node_requirements_bl
 
 class DestinyDefinitionsCollectiblesDestinyCollectibleStateBlock(UniversalBaseModel):
     obscured_override_item_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="obscuredOverrideItemHash")
+        typing.Optional[int],
+        FieldMetadata(alias="obscuredOverrideItemHash"),
+        pydantic.Field(alias="obscuredOverrideItemHash"),
     ] = None
     requirements: typing.Optional[DestinyDefinitionsPresentationDestinyPresentationNodeRequirementsBlock] = None
 

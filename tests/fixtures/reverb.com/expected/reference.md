@@ -14,10 +14,13 @@
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.articles.get_articles()
 
 ```
@@ -114,10 +117,13 @@ List of all article categories
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.articles.list_of_all_article_categories()
 
 ```
@@ -175,10 +181,13 @@ List of supported product categories
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.categories.list_of_supported_product_categories()
 
 ```
@@ -221,10 +230,13 @@ client.categories.list_of_supported_product_categories()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.categories.get_categories_flat()
 
 ```
@@ -281,10 +293,13 @@ Full taxonomy tree of categories including middle categories
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.categories.full_taxonomy_tree_of_categories_including_middle_categories()
 
 ```
@@ -341,10 +356,13 @@ Get subcategory details
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.categories.get_subcategory_details(
     product_type="product_type",
     category="category",
@@ -420,10 +438,13 @@ Get category details
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.categories.get_category_details(
     uuid_="uuid",
 )
@@ -442,7 +463,7 @@ client.categories.get_category_details(
 <dl>
 <dd>
 
-**uuid_:** `str` 
+**uuid:** `str` 
     
 </dd>
 </dl>
@@ -491,10 +512,13 @@ Returns a set of comparison shopping pages based on the current params
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.comparison_shopping_pages.returns_a_set_of_comparison_shopping_pages_based_on_the_current_params()
 
 ```
@@ -551,10 +575,13 @@ Show comparison shopping page
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.comparison_shopping_pages.show_comparison_shopping_page()
 
 ```
@@ -613,10 +640,13 @@ client.comparison_shopping_pages.show_comparison_shopping_page()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.comparison_shopping_pages.get_comparison_shopping_pages_id(
     id="id",
 )
@@ -683,10 +713,13 @@ Return new or used listings for a comparison shopping page
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.comparison_shopping_pages.return_new_or_used_listings_for_a_comparison_shopping_page(
     id="id",
     condition="condition",
@@ -786,10 +819,13 @@ View reviews of a comparison shopping page
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.comparison_shopping_pages.view_reviews_of_a_comparison_shopping_page(
     id="id",
 )
@@ -857,10 +893,13 @@ Make an offer to the other participant in the conversation
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.conversations.make_an_offer_to_the_other_participant_in_the_conversation(
     id="id",
     price="price",
@@ -953,10 +992,13 @@ Retrieve a list of country codes with corresponding subregions
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.countries.retrieve_a_list_of_country_codes_with_corresponding_subregions()
 
 ```
@@ -1014,10 +1056,13 @@ Returns a set of comparison shopping pages based on the current params
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.csps.returns_a_set_of_comparison_shopping_pages_based_on_the_current_params()
 
 ```
@@ -1060,10 +1105,13 @@ client.csps.returns_a_set_of_comparison_shopping_pages_based_on_the_current_para
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.csps.get_csps_categories()
 
 ```
@@ -1120,10 +1168,13 @@ Show comparison shopping page
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.csps.show_comparison_shopping_page()
 
 ```
@@ -1182,10 +1233,13 @@ client.csps.show_comparison_shopping_page()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.csps.get_csps_id(
     id="id",
 )
@@ -1239,10 +1293,13 @@ client.csps.get_csps_id(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.curated_sets.get_curated_sets_slug(
     slug="slug",
 )
@@ -1310,10 +1367,13 @@ List of supported display currencies for browsing listings
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.currencies.list_of_supported_display_currencies_for_browsing_listings()
 
 ```
@@ -1370,10 +1430,13 @@ List of supported listing currencies for shops
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.currencies.list_of_supported_listing_currencies_for_shops()
 
 ```
@@ -1431,10 +1494,13 @@ Feedback details
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.feedback.feedback_details(
     feedback_id="feedback_id",
 )
@@ -1502,10 +1568,13 @@ Get results from a handpicked collection
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.handpicked.get_results_from_a_handpicked_collection(
     slug="slug",
 )
@@ -1845,10 +1914,13 @@ List of supported product conditions
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.listing_conditions.list_of_supported_product_conditions()
 
 ```
@@ -1906,10 +1978,13 @@ Default search of listings includes only used & handmade. Add a filter to view a
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.listings.default_search_of_listings_includes_only_used_handmade_add_a_filter_to_view_all_listings_or_use_the_listings_all_endpoint()
 
 ```
@@ -2238,10 +2313,13 @@ Create a listing
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.listings.create_a_listing()
 
 ```
@@ -2258,7 +2336,7 @@ client.listings.create_a_listing()
 <dl>
 <dd>
 
-**categories:** `typing.Optional[typing.Sequence[PostListingsRequestCategoriesItem]]` 
+**categories:** `typing.Optional[typing.List[PostListingsRequestCategoriesItem]]` 
     
 </dd>
 </dl>
@@ -2362,7 +2440,7 @@ client.listings.create_a_listing()
 <dl>
 <dd>
 
-**photos:** `typing.Optional[typing.Sequence[str]]` — An array of image URLs. Ex: ['http://my.site.com/image.jpg']
+**photos:** `typing.Optional[typing.List[str]]` — An array of image URLs. Ex: ['http://my.site.com/image.jpg']
     
 </dd>
 </dl>
@@ -2498,7 +2576,7 @@ client.listings.create_a_listing()
 <dl>
 <dd>
 
-**videos:** `typing.Optional[typing.Sequence[PostListingsRequestVideosItem]]` — List of YouTube video urls. Note: ONLY ONE ALLOWED
+**videos:** `typing.Optional[typing.List[PostListingsRequestVideosItem]]` — List of YouTube video urls. Note: ONLY ONE ALLOWED
     
 </dd>
 </dl>
@@ -2554,10 +2632,13 @@ All listings including used, handmade, and brand new
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.listings.all_listings_including_used_handmade_and_brand_new()
 
 ```
@@ -2886,10 +2967,13 @@ Individual facets
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.listings.individual_facets()
 
 ```
@@ -2946,10 +3030,13 @@ Returns the latest negotiation for the requesting user given a listing id
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.listings.returns_the_latest_negotiation_for_the_requesting_user_given_a_listing_id(
     id="id",
 )
@@ -3016,10 +3103,13 @@ Make an offer to the seller of a listing
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.listings.make_an_offer_to_the_seller_of_a_listing(
     id="id",
     price="price",
@@ -3111,10 +3201,13 @@ View available bump tiers and stats for a listing
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.listings.view_available_bump_tiers_and_stats_for_a_listing(
     listing_id="listing_id",
 )
@@ -3181,10 +3274,13 @@ Bump a listing
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.listings.bump_a_listing(
     listing_id="listing_id",
     budget_type="budget_type",
@@ -3260,10 +3356,13 @@ Start a conversation with a seller
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.listings.start_a_conversation_with_a_seller(
     listing_id="listing_id",
     body="body",
@@ -3339,10 +3438,13 @@ View the images associated with a particular listing
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.listings.view_the_images_associated_with_a_particular_listing(
     listing_id="listing_id",
 )
@@ -3409,10 +3511,13 @@ Delete an image from a listing
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.listings.delete_an_image_from_a_listing(
     listing_id="listing_id",
     image_id="image_id",
@@ -3488,10 +3593,13 @@ See all sales that include a listing.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.listings.see_all_sales_that_include_a_listing(
     listing_id="listing_id",
 )
@@ -3558,10 +3666,13 @@ Listing details
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.listings.listing_details(
     slug="slug",
 )
@@ -3628,10 +3739,13 @@ Update a listing
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.listings.update_a_listing(
     slug="slug",
 )
@@ -3658,7 +3772,7 @@ client.listings.update_a_listing(
 <dl>
 <dd>
 
-**categories:** `typing.Optional[typing.Sequence[PutListingsSlugRequestCategoriesItem]]` 
+**categories:** `typing.Optional[typing.List[PutListingsSlugRequestCategoriesItem]]` 
     
 </dd>
 </dl>
@@ -3762,7 +3876,7 @@ client.listings.update_a_listing(
 <dl>
 <dd>
 
-**photos:** `typing.Optional[typing.Sequence[str]]` — An array of image URLs. Ex: ['http://my.site.com/image.jpg']
+**photos:** `typing.Optional[typing.List[str]]` — An array of image URLs. Ex: ['http://my.site.com/image.jpg']
     
 </dd>
 </dl>
@@ -3898,7 +4012,7 @@ client.listings.update_a_listing(
 <dl>
 <dd>
 
-**videos:** `typing.Optional[typing.Sequence[PutListingsSlugRequestVideosItem]]` — List of YouTube video urls. Note: ONLY ONE ALLOWED
+**videos:** `typing.Optional[typing.List[PutListingsSlugRequestVideosItem]]` — List of YouTube video urls. Note: ONLY ONE ALLOWED
     
 </dd>
 </dl>
@@ -3954,10 +4068,13 @@ Delete a draft listing. Cannot be used on non-drafts.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.listings.delete_a_draft_listing_cannot_be_used_on_non_drafts(
     slug="slug",
 )
@@ -4024,10 +4141,13 @@ Edit listing.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.listings.edit_listing(
     slug="slug",
 )
@@ -4094,10 +4214,13 @@ Flag a listing for inappropriate content or fraud
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.listings.flag_a_listing_for_inappropriate_content_or_fraud(
     slug="slug",
     reason="reason",
@@ -4181,10 +4304,13 @@ View reviews of a listing
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.listings.view_reviews_of_a_listing(
     slug="slug",
 )
@@ -4251,10 +4377,13 @@ Create a review for a listing
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.listings.create_a_review_for_a_listing(
     slug="slug",
 )
@@ -4322,10 +4451,13 @@ Get account details
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.get_account_details()
 
 ```
@@ -4382,10 +4514,13 @@ Update account details
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.update_account_details()
 
 ```
@@ -4490,10 +4625,13 @@ See all addresses in your address book
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.see_all_addresses_in_your_address_book()
 
 ```
@@ -4550,10 +4688,13 @@ Create a new address in your address book
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.create_a_new_address_in_your_address_book()
 
 ```
@@ -4610,10 +4751,13 @@ Update an existing address in your address book
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.update_an_existing_address_in_your_address_book(
     address_id="address_id",
 )
@@ -4680,10 +4824,13 @@ Delete an existing address in your address book
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.delete_an_existing_address_in_your_address_book(
     address_id="address_id",
 )
@@ -4750,10 +4897,13 @@ Get a list of your conversations
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.get_a_list_of_your_conversations()
 
 ```
@@ -4850,10 +5000,13 @@ Start a conversation
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.start_a_conversation(
     body="body",
 )
@@ -4880,7 +5033,7 @@ client.my.start_a_conversation(
 <dl>
 <dd>
 
-**cloudinary_photos:** `typing.Optional[typing.Sequence[str]]` — An array of cloudinary data hashes (Reverb internal use only).
+**cloudinary_photos:** `typing.Optional[typing.List[str]]` — An array of cloudinary data hashes (Reverb internal use only).
     
 </dd>
 </dl>
@@ -4960,10 +5113,13 @@ Send a message
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.send_a_message(
     conversation_id="conversation_id",
     body="body",
@@ -5039,10 +5195,13 @@ Display conversation details with messages in natural time order (oldest to newe
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.display_conversation_details_with_messages_in_natural_time_order_oldest_to_newest(
     id="id",
 )
@@ -5109,10 +5268,13 @@ Mark a conversation read/unread
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.mark_a_conversation_read_unread(
     id="id",
 )
@@ -5187,10 +5349,13 @@ Get your actionable status counts
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.get_your_actionable_status_counts()
 
 ```
@@ -5233,10 +5398,13 @@ client.my.get_your_actionable_status_counts()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.post_my_curated_set_product_product_id(
     product_id="product_id",
 )
@@ -5289,10 +5457,13 @@ client.my.post_my_curated_set_product_product_id(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.delete_my_curated_set_product_product_id(
     product_id="product_id",
 )
@@ -5359,10 +5530,13 @@ Get listings from your feed
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.get_listings_from_your_feed()
 
 ```
@@ -5419,10 +5593,13 @@ get your feed customization options
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.get_your_feed_customization_options()
 
 ```
@@ -5479,10 +5656,13 @@ get your feed
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.get_your_feed()
 
 ```
@@ -5539,10 +5719,13 @@ List of received feedback
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.list_of_received_feedback()
 
 ```
@@ -5599,10 +5782,13 @@ List of sent feedback
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.list_of_sent_feedback()
 
 ```
@@ -5659,10 +5845,13 @@ See what the user is following
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.see_what_the_user_is_following()
 
 ```
@@ -5719,10 +5908,13 @@ Returns a user's ArticleCategoryFollows
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.returns_a_users_article_category_follows()
 
 ```
@@ -5779,10 +5971,13 @@ Set a user's ArticleCategoryFollows
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.set_a_users_article_category_follows(
     category_uuids="category_uuids",
 )
@@ -5849,10 +6044,13 @@ Follow status for a brand
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.follow_status_for_a_brand(
     slug="slug",
 )
@@ -5919,10 +6117,13 @@ Follow a brand
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.follow_a_brand(
     slug="slug",
 )
@@ -5989,10 +6190,13 @@ Unfollow a brand
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.unfollow_a_brand(
     slug="slug",
 )
@@ -6059,10 +6263,13 @@ Follow status for a subcategory
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.follow_status_for_a_subcategory(
     category="category",
     subcategory="subcategory",
@@ -6138,10 +6345,13 @@ Follow a subcategory
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.follow_a_subcategory(
     category="category",
     subcategory="subcategory",
@@ -6217,10 +6427,13 @@ Unfollow a subcategory
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.unfollow_a_subcategory(
     category="category",
     subcategory="subcategory",
@@ -6296,10 +6509,13 @@ Follow status for a category
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.follow_status_for_a_category(
     identifier="identifier",
 )
@@ -6366,10 +6582,13 @@ Follow a category
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.follow_a_category(
     uuid_="uuid",
 )
@@ -6388,7 +6607,7 @@ client.my.follow_a_category(
 <dl>
 <dd>
 
-**uuid_:** `str` 
+**uuid:** `str` 
     
 </dd>
 </dl>
@@ -6436,10 +6655,13 @@ Unfollow a category
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.unfollow_a_category(
     identifier="identifier",
 )
@@ -6506,10 +6728,13 @@ Follow status for a collection
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.follow_status_for_a_collection(
     slug="slug",
 )
@@ -6576,10 +6801,13 @@ Follow a collection
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.follow_a_collection(
     slug="slug",
 )
@@ -6646,10 +6874,13 @@ Unfollow a collection
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.unfollow_a_collection(
     slug="slug",
 )
@@ -6716,10 +6947,13 @@ Follow status for a handpicked collection
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.follow_status_for_a_handpicked_collection(
     slug="slug",
 )
@@ -6786,10 +7020,13 @@ Follow a handpicked collection
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.follow_a_handpicked_collection(
     slug="slug",
 )
@@ -6856,10 +7093,13 @@ Unfollow a handpicked collection
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.unfollow_a_handpicked_collection(
     slug="slug",
 )
@@ -6926,10 +7166,13 @@ Follow status for a search
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.follow_status_for_a_search()
 
 ```
@@ -6986,10 +7229,13 @@ Follow a search
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.follow_a_search()
 
 ```
@@ -7038,7 +7284,7 @@ client.my.follow_a_search()
 <dl>
 <dd>
 
-**conditions:** `typing.Optional[typing.Sequence[str]]` — Condition: all,new,b-stock,used,non-functioning,all-but-new,poor,fair,good,very-good,excellent,mint
+**conditions:** `typing.Optional[typing.List[str]]` — Condition: all,new,b-stock,used,non-functioning,all-but-new,poor,fair,good,very-good,excellent,mint
     
 </dd>
 </dl>
@@ -7134,7 +7380,7 @@ client.my.follow_a_search()
 <dl>
 <dd>
 
-**make:** `typing.Optional[typing.Sequence[str]]` — Make(s)/brand of item (e.g. Fender). Can take a single value or an array.
+**make:** `typing.Optional[typing.List[str]]` — Make(s)/brand of item (e.g. Fender). Can take a single value or an array.
     
 </dd>
 </dl>
@@ -7158,7 +7404,7 @@ client.my.follow_a_search()
 <dl>
 <dd>
 
-**not_ids:** `typing.Optional[typing.Sequence[int]]` — Listing ID negation. If you want to exclude a listing, add it here.
+**not_ids:** `typing.Optional[typing.List[int]]` — Listing ID negation. If you want to exclude a listing, add it here.
     
 </dd>
 </dl>
@@ -7294,10 +7540,13 @@ Follow status for a shop
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.follow_status_for_a_shop(
     slug="slug",
 )
@@ -7364,10 +7613,13 @@ Follow a shop
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.follow_a_shop(
     slug="slug",
 )
@@ -7434,10 +7686,13 @@ Unfollow a shop
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.unfollow_a_shop(
     slug="slug",
 )
@@ -7504,10 +7759,13 @@ Delete a follow
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.delete_a_follow(
     follow_id="follow_id",
 )
@@ -7560,10 +7818,13 @@ client.my.delete_a_follow(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.post_my_follows_follow_id_alert(
     follow_id="follow_id",
 )
@@ -7616,10 +7877,13 @@ client.my.post_my_follows_follow_id_alert(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.delete_my_follows_follow_id_alert(
     follow_id="follow_id",
 )
@@ -7686,10 +7950,13 @@ Retrieve a list of live listings for the seller. To search all listings specify 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.retrieve_a_list_of_live_listings_for_the_seller_to_search_all_listings_specify_state_all()
 
 ```
@@ -8010,10 +8277,13 @@ Retrieve a list your draft listings
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.retrieve_a_list_your_draft_listings()
 
 ```
@@ -8318,10 +8588,13 @@ Get a list of active negotiations as a seller
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.get_a_list_of_active_negotiations_as_a_seller()
 
 ```
@@ -8401,13 +8674,15 @@ End a listing
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.my import PutMyListingsSlugStateEndRequestReason
 
-from fern import FernApi
-
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.end_a_listing(
     slug="slug",
     reason=PutMyListingsSlugStateEndRequestReason.NOT_SOLD,
@@ -8483,10 +8758,13 @@ Get a list of your lists (wishlist, watch list, etc)
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.get_a_list_of_your_lists_wishlist_watch_list_etc()
 
 ```
@@ -8543,10 +8821,13 @@ Get a list of active negotiations as a buyer
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.get_a_list_of_active_negotiations_as_a_buyer()
 
 ```
@@ -8627,10 +8908,13 @@ Get offer details
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.get_offer_details(
     id="id",
 )
@@ -8697,10 +8981,13 @@ Accept an offer
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.accept_an_offer(
     id="id",
 )
@@ -8775,10 +9062,13 @@ Counter an offer
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.counter_an_offer(
     id="id",
 )
@@ -8829,9 +9119,7 @@ client.my.counter_an_offer(
 <dl>
 <dd>
 
-**offer_items:** `typing.Optional[
-    typing.Sequence[PostMyNegotiationsIdCounterRequestOfferItemsItem]
-]` 
+**offer_items:** `typing.Optional[typing.List[PostMyNegotiationsIdCounterRequestOfferItemsItem]]` 
     
 </dd>
 </dl>
@@ -8919,10 +9207,13 @@ Decline an offer
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.decline_an_offer(
     id="id",
 )
@@ -8989,10 +9280,13 @@ List of orders that need feedback
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.list_of_orders_that_need_feedback()
 
 ```
@@ -9049,10 +9343,13 @@ Returns all orders, newest first.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.returns_all_orders_newest_first()
 
 ```
@@ -9095,10 +9392,13 @@ client.my.returns_all_orders_newest_first()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.get_my_orders_buying_by_uuid_uuid(
     uuid_="uuid",
 )
@@ -9117,7 +9417,7 @@ client.my.get_my_orders_buying_by_uuid_uuid(
 <dl>
 <dd>
 
-**uuid_:** `str` 
+**uuid:** `str` 
     
 </dd>
 </dl>
@@ -9165,10 +9465,13 @@ Returns unpaid orders, newest first.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.returns_unpaid_orders_newest_first()
 
 ```
@@ -9225,10 +9528,13 @@ Returns order details for a buyer
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.returns_order_details_for_a_buyer(
     id="id",
 )
@@ -9295,10 +9601,13 @@ Marks an order as received by the buyer
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.marks_an_order_as_received_by_the_buyer(
     id="id",
 )
@@ -9365,10 +9674,13 @@ Get all seller orders, newest first.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.get_all_seller_orders_newest_first()
 
 ```
@@ -9425,10 +9737,13 @@ Get unpaid seller orders, newest first.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.get_unpaid_seller_orders_newest_first()
 
 ```
@@ -9485,10 +9800,13 @@ See previous orders from buyer
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.see_previous_orders_from_buyer(
     buyer_id="buyer_id",
 )
@@ -9541,10 +9859,13 @@ client.my.see_previous_orders_from_buyer(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.get_my_orders_selling_by_uuid_uuid(
     uuid_="uuid",
 )
@@ -9563,7 +9884,7 @@ client.my.get_my_orders_selling_by_uuid_uuid(
 <dl>
 <dd>
 
-**uuid_:** `str` 
+**uuid:** `str` 
     
 </dd>
 </dl>
@@ -9611,10 +9932,13 @@ Returns order details for a seller
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.returns_order_details_for_a_seller(
     id="id",
 )
@@ -9681,10 +10005,13 @@ Marks an order as picked up
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.marks_an_order_as_picked_up(
     id="id",
 )
@@ -9759,10 +10086,13 @@ Marks an order as shipped
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.marks_an_order_as_shipped(
     id="id",
     provider="provider",
@@ -9856,10 +10186,13 @@ Initiate a refund for a sold order
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.initiate_a_refund_for_a_sold_order(
     order_id="order_id",
 )
@@ -9926,10 +10259,13 @@ Get payments
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.get_payments()
 
 ```
@@ -10050,10 +10386,13 @@ Get payment
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.get_payment(
     id="id",
 )
@@ -10120,10 +10459,13 @@ Get a list of payouts
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.get_a_list_of_payouts()
 
 ```
@@ -10180,10 +10522,13 @@ Read the line items of a payout
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.read_the_line_items_of_a_payout(
     id="id",
 )
@@ -10250,10 +10595,13 @@ Get a list of refund requests as a seller
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.get_a_list_of_refund_requests_as_a_seller()
 
 ```
@@ -10310,10 +10658,13 @@ Update a refund request for a sold order
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.update_a_refund_request_for_a_sold_order(
     id="id",
 )
@@ -10380,10 +10731,13 @@ Get a list of your recently viewed listings.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.get_a_list_of_your_recently_viewed_listings()
 
 ```
@@ -10440,10 +10794,13 @@ Get a list of wishlisted items
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.get_a_list_of_wishlisted_items()
 
 ```
@@ -10500,10 +10857,13 @@ Add a listing to your wishlist
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.add_a_listing_to_your_wishlist(
     id="id",
 )
@@ -10570,10 +10930,13 @@ Remove a listing from your wishlist
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.my.remove_a_listing_from_your_wishlist(
     id="id",
 )
@@ -10641,10 +11004,13 @@ Feedback details for an order's buyer
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.orders.feedback_details_for_an_orders_buyer(
     order_id="order_id",
 )
@@ -10711,10 +11077,13 @@ Add feedback about an order's buyer
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.orders.add_feedback_about_an_orders_buyer(
     order_id="order_id",
 )
@@ -10781,10 +11150,13 @@ Feedback details for an order's seller
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.orders.feedback_details_for_an_orders_seller(
     order_id="order_id",
 )
@@ -10851,10 +11223,13 @@ Add feedback about an order's seller
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.orders.add_feedback_about_an_orders_seller(
     order_id="order_id",
 )
@@ -10922,10 +11297,13 @@ Get list of payment methods
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payment_methods.get_list_of_payment_methods()
 
 ```
@@ -10983,10 +11361,13 @@ Get a summary of transactions for a given price guide
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.priceguide.get_a_summary_of_transactions_for_a_given_price_guide(
     id="id",
 )
@@ -11070,10 +11451,13 @@ View a review
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.products.view_a_review(
     id="id",
 )
@@ -11140,10 +11524,13 @@ Update a review
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.products.update_a_review(
     id="id",
 )
@@ -11234,10 +11621,13 @@ View reviews of a comparison shopping page
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.products.view_reviews_of_a_comparison_shopping_page(
     slug="slug",
 )
@@ -11304,10 +11694,13 @@ Create a review for a product
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.products.create_a_review_for_a_product(
     slug="slug",
 )
@@ -11375,10 +11768,13 @@ View upcoming and live Reverb official sales.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.sales.view_upcoming_and_live_reverb_official_sales()
 
 ```
@@ -11435,10 +11831,13 @@ View your created sales.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.sales.view_your_created_sales()
 
 ```
@@ -11495,10 +11894,13 @@ Add listings to a sale
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.sales.add_listings_to_a_sale(
     sale_id="sale_id",
 )
@@ -11565,10 +11967,13 @@ Remove a listing from a sale
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.sales.remove_a_listing_from_a_sale(
     sale_id="sale_id",
 )
@@ -11621,10 +12026,13 @@ client.sales.remove_a_listing_from_a_sale(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.sales.get_sales_slug(
     slug="slug",
 )
@@ -11692,10 +12100,13 @@ List of supported shipping providers
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.shipping.list_of_supported_shipping_providers()
 
 ```
@@ -11738,10 +12149,13 @@ client.shipping.list_of_supported_shipping_providers()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.shipping.get_shipping_regions()
 
 ```
@@ -11799,10 +12213,13 @@ Get your own shop details
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.shop.get_your_own_shop_details()
 
 ```
@@ -11859,10 +12276,13 @@ Update your shop profile
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.shop.update_your_shop_profile()
 
 ```
@@ -12007,10 +12427,13 @@ List of supported product conditions
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.shop.list_of_supported_product_conditions()
 
 ```
@@ -12067,10 +12490,13 @@ Get accepted payment methods
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.shop.get_accepted_payment_methods()
 
 ```
@@ -12127,10 +12553,13 @@ Returns shop vacation status
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.shop.returns_shop_vacation_status()
 
 ```
@@ -12187,10 +12616,13 @@ Enable vacation mode. All listings will be unavailable until vacation mode is tu
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.shop.enable_vacation_mode_all_listings_will_be_unavailable_until_vacation_mode_is_turned_off()
 
 ```
@@ -12247,10 +12679,13 @@ Disable vacation mode. All listings will be re-enabled.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.shop.disable_vacation_mode_all_listings_will_be_re_enabled()
 
 ```
@@ -12308,10 +12743,13 @@ Get storefront details on a shop.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.shops.get_storefront_details_on_a_shop(
     id="id",
 )
@@ -12378,10 +12816,13 @@ List of shipping profiles for your shop
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.shops.list_of_shipping_profiles_for_your_shop(
     shop_id="shop_id",
 )
@@ -12448,10 +12889,13 @@ Get details on a shop.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.shops.get_details_on_a_shop(
     slug="slug",
 )
@@ -12526,10 +12970,13 @@ Get seller's feedback
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.shops.get_sellers_feedback(
     slug="slug",
 )
@@ -12596,10 +13043,13 @@ Get seller's feedback as a buyer
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.shops.get_sellers_feedback_as_a_buyer(
     slug="slug",
 )
@@ -12666,10 +13116,13 @@ Get seller's feedback as a seller
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.shops.get_sellers_feedback_as_a_seller(
     slug="slug",
 )
@@ -12737,10 +13190,13 @@ A list of wanted items by the user
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.wants.a_list_of_wanted_items_by_the_user()
 
 ```
@@ -12797,10 +13253,13 @@ Mark an item wanted. Returns 200 on success or 422 on failure.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.wants.mark_an_item_wanted_returns200on_success_or422on_failure(
     id="id",
 )
@@ -12867,10 +13326,13 @@ Unmark an item wanted.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.wants.unmark_an_item_wanted(
     id="id",
 )
@@ -12938,10 +13400,13 @@ Get webhook registrations
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.webhooks.get_webhook_registrations()
 
 ```
@@ -12997,13 +13462,15 @@ Register a webhook
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.webhooks import PostWebhooksRegistrationsRequestTopic
 
-from fern import FernApi
-
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.webhooks.register_a_webhook(
     topic=PostWebhooksRegistrationsRequestTopic.LISTINGS_UPDATE,
     url="url",
@@ -13079,10 +13546,13 @@ Get details of a webhook registration
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.webhooks.get_details_of_a_webhook_registration(
     id="id",
 )
@@ -13149,10 +13619,13 @@ Remove a webhook
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.webhooks.remove_a_webhook(
     id="id",
 )

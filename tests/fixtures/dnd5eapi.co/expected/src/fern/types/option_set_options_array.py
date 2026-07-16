@@ -29,6 +29,17 @@ class OptionSetOptionsArray(UniversalBaseModel):
             extra = pydantic.Extra.allow
 
 
+from .choice import Choice
 from .option import Option
+from .option_choice import OptionChoice
+from .option_items import OptionItems
+from .option_set import OptionSet
 
-update_forward_refs(OptionSetOptionsArray)
+update_forward_refs(
+    OptionSetOptionsArray,
+    Choice=Choice,
+    Option=Option,
+    OptionChoice=OptionChoice,
+    OptionItems=OptionItems,
+    OptionSet=OptionSet,
+)

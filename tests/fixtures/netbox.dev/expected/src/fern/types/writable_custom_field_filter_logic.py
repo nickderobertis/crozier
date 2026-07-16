@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class WritableCustomFieldFilterLogic(str, enum.Enum):
+class WritableCustomFieldFilterLogic(enum.StrEnum):
     """
     Loose matches any instance of a given string; exact matches the entire field.
     """

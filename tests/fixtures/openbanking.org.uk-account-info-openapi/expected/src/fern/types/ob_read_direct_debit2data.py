@@ -11,7 +11,9 @@ from .ob_read_direct_debit2data_direct_debit_item import ObReadDirectDebit2DataD
 
 class ObReadDirectDebit2Data(UniversalBaseModel):
     direct_debit: typing_extensions.Annotated[
-        typing.Optional[typing.List[ObReadDirectDebit2DataDirectDebitItem]], FieldMetadata(alias="DirectDebit")
+        typing.Optional[typing.List[ObReadDirectDebit2DataDirectDebitItem]],
+        FieldMetadata(alias="DirectDebit"),
+        pydantic.Field(alias="DirectDebit"),
     ] = None
 
     if IS_PYDANTIC_V2:

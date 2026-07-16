@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class VoiceV1ByocTrunkVoiceMethod(str, enum.Enum):
+class VoiceV1ByocTrunkVoiceMethod(enum.StrEnum):
     """
     The HTTP method we use to call `voice_url`. Can be: `GET` or `POST`.
     """

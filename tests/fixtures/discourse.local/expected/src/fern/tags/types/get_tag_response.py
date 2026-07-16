@@ -9,7 +9,7 @@ from .get_tag_response_users_item import GetTagResponseUsersItem
 
 
 class GetTagResponse(UniversalBaseModel):
-    primary_groups: typing.Optional[typing.List[typing.Optional[typing.Any]]] = None
+    primary_groups: typing.Optional[typing.List[typing.Any]] = None
     topic_list: typing.Optional[GetTagResponseTopicList] = None
     users: typing.Optional[typing.List[GetTagResponseUsersItem]] = None
 

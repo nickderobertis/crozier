@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class WritableCustomFieldType(str, enum.Enum):
+class WritableCustomFieldType(enum.StrEnum):
     """
     The type of data this custom field holds
     """

@@ -69,9 +69,14 @@ class DestinyDefinitionsDestinyInventoryItemDefinition(UniversalBaseModel):
     If the item can be "used", this block will be non-null, and will have data related to the action performed when using the item. (Guess what? 99% of the time, this action is "dismantle". Shocker)
     """
 
-    allow_actions: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="allowActions")] = (
-        pydantic.Field(default=None)
-    )
+    allow_actions: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="allowActions"),
+        pydantic.Field(
+            alias="allowActions",
+            description="BNet may forbid the execution of actions on this item via the API. If that is occurring, allowActions will be set to false.",
+        ),
+    ] = None
     """
     BNet may forbid the execution of actions on this item via the API. If that is occurring, allowActions will be set to false.
     """
@@ -84,37 +89,62 @@ class DestinyDefinitionsDestinyInventoryItemDefinition(UniversalBaseModel):
     """
 
     background_color: typing_extensions.Annotated[
-        typing.Optional[DestinyMiscDestinyColor], FieldMetadata(alias="backgroundColor")
-    ] = pydantic.Field(default=None)
+        typing.Optional[DestinyMiscDestinyColor],
+        FieldMetadata(alias="backgroundColor"),
+        pydantic.Field(
+            alias="backgroundColor",
+            description='Sometimes, an item will have a background color. Most notably this occurs with Emblems, who use the Background Color for small character nameplates such as the "friends" view you see in-game. There are almost certainly other items that have background color as well, though I have not bothered to investigate what items have it nor what purposes they serve: use it as you will.',
+        ),
+    ] = None
     """
     Sometimes, an item will have a background color. Most notably this occurs with Emblems, who use the Background Color for small character nameplates such as the "friends" view you see in-game. There are almost certainly other items that have background color as well, though I have not bothered to investigate what items have it nor what purposes they serve: use it as you will.
     """
 
-    breaker_type: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="breakerType")] = (
-        pydantic.Field(default=None)
-    )
+    breaker_type: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="breakerType"),
+        pydantic.Field(
+            alias="breakerType",
+            description='Some weapons and plugs can have a "Breaker Type": a special ability that works sort of like damage type vulnerabilities. This is (almost?) always set on items by plugs.',
+        ),
+    ] = None
     """
     Some weapons and plugs can have a "Breaker Type": a special ability that works sort of like damage type vulnerabilities. This is (almost?) always set on items by plugs.
     """
 
-    breaker_type_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="breakerTypeHash")] = (
-        pydantic.Field(default=None)
-    )
+    breaker_type_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="breakerTypeHash"),
+        pydantic.Field(
+            alias="breakerTypeHash",
+            description="Since we also have a breaker type definition, this is the hash for that breaker type for your convenience. Whether you use the enum or hash and look up the definition depends on what's cleanest for your code.",
+        ),
+    ] = None
     """
     Since we also have a breaker type definition, this is the hash for that breaker type for your convenience. Whether you use the enum or hash and look up the definition depends on what's cleanest for your code.
     """
 
-    class_type: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="classType")] = pydantic.Field(
-        default=None
-    )
+    class_type: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="classType"),
+        pydantic.Field(
+            alias="classType",
+            description="We run a similarly weak-sauce algorithm to try and determine whether an item is restricted to a specific class. If we find it to be restricted in such a way, we set this classType property to match the class' enumeration value so that users can easily identify class restricted items.\r\nIf you see a mis-classed item, please inform the developers in the Bungie API forum.",
+        ),
+    ] = None
     """
     We run a similarly weak-sauce algorithm to try and determine whether an item is restricted to a specific class. If we find it to be restricted in such a way, we set this classType property to match the class' enumeration value so that users can easily identify class restricted items.
     If you see a mis-classed item, please inform the developers in the Bungie API forum.
     """
 
-    collectible_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="collectibleHash")] = (
-        pydantic.Field(default=None)
-    )
+    collectible_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="collectibleHash"),
+        pydantic.Field(
+            alias="collectibleHash",
+            description="If this item has a collectible related to it, this is the hash identifier of that collectible entry.",
+        ),
+    ] = None
     """
     If this item has a collectible related to it, this is the hash identifier of that collectible entry.
     """
@@ -125,15 +155,25 @@ class DestinyDefinitionsDestinyInventoryItemDefinition(UniversalBaseModel):
     """
 
     damage_type_hashes: typing_extensions.Annotated[
-        typing.Optional[typing.List[int]], FieldMetadata(alias="damageTypeHashes")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[int]],
+        FieldMetadata(alias="damageTypeHashes"),
+        pydantic.Field(
+            alias="damageTypeHashes",
+            description="Theoretically, an item can have many possible damage types. In *practice*, this is not true, but just in case weapons start being made that have multiple (for instance, an item where a socket has reusable plugs for every possible damage type that you can choose from freely), this field will return all of the possible damage types that are available to the weapon by default.",
+        ),
+    ] = None
     """
     Theoretically, an item can have many possible damage types. In *practice*, this is not true, but just in case weapons start being made that have multiple (for instance, an item where a socket has reusable plugs for every possible damage type that you can choose from freely), this field will return all of the possible damage types that are available to the weapon by default.
     """
 
-    damage_types: typing_extensions.Annotated[typing.Optional[typing.List[int]], FieldMetadata(alias="damageTypes")] = (
-        pydantic.Field(default=None)
-    )
+    damage_types: typing_extensions.Annotated[
+        typing.Optional[typing.List[int]],
+        FieldMetadata(alias="damageTypes"),
+        pydantic.Field(
+            alias="damageTypes",
+            description="This is the list of all damage types that we know ahead of time the item can take on. Unfortunately, this does not preclude the possibility of something funky happening to give the item a damage type that cannot be predicted beforehand: for example, if some designer decides to create arbitrary non-reusable plugs that cause damage type to change.\r\nThis damage type prediction will only use the following to determine potential damage types:\r\n- Intrinsic perks\r\n- Talent Node perks\r\n- Known, reusable plugs for sockets",
+        ),
+    ] = None
     """
     This is the list of all damage types that we know ahead of time the item can take on. Unfortunately, this does not preclude the possibility of something funky happening to give the item a damage type that cannot be predicted beforehand: for example, if some designer decides to create arbitrary non-reusable plugs that cause damage type to change.
     This damage type prediction will only use the following to determine potential damage types:
@@ -142,17 +182,27 @@ class DestinyDefinitionsDestinyInventoryItemDefinition(UniversalBaseModel):
     - Known, reusable plugs for sockets
     """
 
-    default_damage_type: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="defaultDamageType")] = (
-        pydantic.Field(default=None)
-    )
+    default_damage_type: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="defaultDamageType"),
+        pydantic.Field(
+            alias="defaultDamageType",
+            description="If the item has a damage type that could be considered to be default, it will be populated here.\r\nFor various upsetting reasons, it's surprisingly cumbersome to figure this out. I hope you're happy.",
+        ),
+    ] = None
     """
     If the item has a damage type that could be considered to be default, it will be populated here.
     For various upsetting reasons, it's surprisingly cumbersome to figure this out. I hope you're happy.
     """
 
     default_damage_type_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="defaultDamageTypeHash")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="defaultDamageTypeHash"),
+        pydantic.Field(
+            alias="defaultDamageTypeHash",
+            description="Similar to defaultDamageType, but represented as the hash identifier for a DestinyDamageTypeDefinition.\r\nI will likely regret leaving in the enumeration versions of these properties, but for now they're very convenient.",
+        ),
+    ] = None
     """
     Similar to defaultDamageType, but represented as the hash identifier for a DestinyDamageTypeDefinition.
     I will likely regret leaving in the enumeration versions of these properties, but for now they're very convenient.
@@ -161,25 +211,41 @@ class DestinyDefinitionsDestinyInventoryItemDefinition(UniversalBaseModel):
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
+        pydantic.Field(alias="displayProperties"),
     ] = None
-    display_source: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="displaySource")] = (
-        pydantic.Field(default=None)
-    )
+    display_source: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="displaySource"),
+        pydantic.Field(
+            alias="displaySource",
+            description="In theory, it is a localized string telling you about how you can find the item. I really wish this was more consistent. Many times, it has nothing. Sometimes, it's instead a more narrative-forward description of the item. Which is cool, and I wish all properties had that data, but it should really be its own property.",
+        ),
+    ] = None
     """
     In theory, it is a localized string telling you about how you can find the item. I really wish this was more consistent. Many times, it has nothing. Sometimes, it's instead a more narrative-forward description of the item. Which is cool, and I wish all properties had that data, but it should really be its own property.
     """
 
     does_postmaster_pull_have_side_effects: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="doesPostmasterPullHaveSideEffects")
-    ] = pydantic.Field(default=None)
+        typing.Optional[bool],
+        FieldMetadata(alias="doesPostmasterPullHaveSideEffects"),
+        pydantic.Field(
+            alias="doesPostmasterPullHaveSideEffects",
+            description='The boolean will indicate to us (and you!) whether something *could* happen when you transfer this item from the Postmaster that might be considered a "destructive" action.\r\nIt is not feasible currently to tell you (or ourelves!) in a consistent way whether this *will* actually cause a destructive action, so we are playing it safe: if it has the potential to do so, we will not allow it to be transferred from the Postmaster by default. You will need to check for this flag before transferring an item from the Postmaster, or else you\'ll end up receiving an error.',
+        ),
+    ] = None
     """
     The boolean will indicate to us (and you!) whether something *could* happen when you transfer this item from the Postmaster that might be considered a "destructive" action.
     It is not feasible currently to tell you (or ourelves!) in a consistent way whether this *will* actually cause a destructive action, so we are playing it safe: if it has the potential to do so, we will not allow it to be transferred from the Postmaster by default. You will need to check for this flag before transferring an item from the Postmaster, or else you'll end up receiving an error.
     """
 
     emblem_objective_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="emblemObjectiveHash")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="emblemObjectiveHash"),
+        pydantic.Field(
+            alias="emblemObjectiveHash",
+            description="If the item is an emblem that has a special Objective attached to it - for instance, if the emblem tracks PVP Kills, or what-have-you. This is a bit different from, for example, the Vanguard Kill Tracker mod, which pipes data into the \"art channel\". When I get some time, I would like to standardize these so you can get at the values they expose without having to care about what they're being used for and how they are wired up, but for now here's the raw data.",
+        ),
+    ] = None
     """
     If the item is an emblem that has a special Objective attached to it - for instance, if the emblem tracks PVP Kills, or what-have-you. This is a bit different from, for example, the Vanguard Kill Tracker mod, which pipes data into the "art channel". When I get some time, I would like to standardize these so you can get at the values they expose without having to care about what they're being used for and how they are wired up, but for now here's the raw data.
     """
@@ -191,13 +257,20 @@ class DestinyDefinitionsDestinyInventoryItemDefinition(UniversalBaseModel):
     """
 
     equipping_block: typing_extensions.Annotated[
-        typing.Optional[DestinyDefinitionsDestinyEquippingBlockDefinition], FieldMetadata(alias="equippingBlock")
-    ] = pydantic.Field(default=None)
+        typing.Optional[DestinyDefinitionsDestinyEquippingBlockDefinition],
+        FieldMetadata(alias="equippingBlock"),
+        pydantic.Field(
+            alias="equippingBlock",
+            description="If this item can be equipped, this block will be non-null and will be populated with the conditions under which it can be equipped.",
+        ),
+    ] = None
     """
     If this item can be equipped, this block will be non-null and will be populated with the conditions under which it can be equipped.
     """
 
-    flavor_text: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="flavorText")] = None
+    flavor_text: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="flavorText"), pydantic.Field(alias="flavorText")
+    ] = None
     gearset: typing.Optional[DestinyDefinitionsDestinyItemGearsetBlockDefinition] = pydantic.Field(default=None)
     """
     If this item has related items in a "Gear Set", this will be non-null and the relationships defined herein.
@@ -209,16 +282,26 @@ class DestinyDefinitionsDestinyInventoryItemDefinition(UniversalBaseModel):
     When entities refer to each other in Destiny content, it is this hash that they are referring to.
     """
 
-    icon_watermark: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="iconWatermark")] = (
-        pydantic.Field(default=None)
-    )
+    icon_watermark: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="iconWatermark"),
+        pydantic.Field(
+            alias="iconWatermark",
+            description="If available, this is the original 'active' release watermark overlay for the icon. If the item has different versions, this can be overridden by the 'display version watermark icon' from the 'quality' block. Alternatively, if there is no watermark for the version, and the item version has a power cap below the current season power cap, this can be overridden by the iconWatermarkShelved property.",
+        ),
+    ] = None
     """
     If available, this is the original 'active' release watermark overlay for the icon. If the item has different versions, this can be overridden by the 'display version watermark icon' from the 'quality' block. Alternatively, if there is no watermark for the version, and the item version has a power cap below the current season power cap, this can be overridden by the iconWatermarkShelved property.
     """
 
     icon_watermark_shelved: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="iconWatermarkShelved")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="iconWatermarkShelved"),
+        pydantic.Field(
+            alias="iconWatermarkShelved",
+            description="If available, this is the 'shelved' release watermark overlay for the icon. If the item version has a power cap below the current season power cap, it can be treated as 'shelved', and should be shown with this 'shelved' watermark overlay.",
+        ),
+    ] = None
     """
     If available, this is the 'shelved' release watermark overlay for the icon. If the item version has a power cap below the current season power cap, it can be treated as 'shelved', and should be shown with this 'shelved' watermark overlay.
     """
@@ -236,52 +319,86 @@ class DestinyDefinitionsDestinyInventoryItemDefinition(UniversalBaseModel):
     investment_stats: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyDefinitionsDestinyItemInvestmentStatDefinition]],
         FieldMetadata(alias="investmentStats"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="investmentStats",
+            description='If the item has stats, this block will be defined. It has the "raw" investment stats for the item. These investment stats don\'t take into account the ways that the items can spawn, nor do they take into account any Stat Group transformations. I have retained them for debugging purposes, but I do not know how useful people will find them.',
+        ),
+    ] = None
     """
     If the item has stats, this block will be defined. It has the "raw" investment stats for the item. These investment stats don't take into account the ways that the items can spawn, nor do they take into account any Stat Group transformations. I have retained them for debugging purposes, but I do not know how useful people will find them.
     """
 
-    is_wrapper: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="isWrapper")] = pydantic.Field(
-        default=None
-    )
+    is_wrapper: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="isWrapper"),
+        pydantic.Field(
+            alias="isWrapper",
+            description='If true, this is a dummy vendor-wrapped item template. Items purchased from Eververse will be "wrapped" by one of these items so that we can safely provide refund capabilities before the item is "unwrapped".',
+        ),
+    ] = None
     """
     If true, this is a dummy vendor-wrapped item template. Items purchased from Eververse will be "wrapped" by one of these items so that we can safely provide refund capabilities before the item is "unwrapped".
     """
 
     item_category_hashes: typing_extensions.Annotated[
-        typing.Optional[typing.List[int]], FieldMetadata(alias="itemCategoryHashes")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[int]],
+        FieldMetadata(alias="itemCategoryHashes"),
+        pydantic.Field(
+            alias="itemCategoryHashes",
+            description='BNet attempts to make a more formal definition of item "Categories", as defined by DestinyItemCategoryDefinition. This is a list of all Categories that we were able to algorithmically determine that this item is a member of. (for instance, that it\'s a "Weapon", that it\'s an "Auto Rifle", etc...)\r\nThe algorithm for these is, unfortunately, volatile. If you believe you see a miscategorized item, please let us know on the Bungie API forums.',
+        ),
+    ] = None
     """
     BNet attempts to make a more formal definition of item "Categories", as defined by DestinyItemCategoryDefinition. This is a list of all Categories that we were able to algorithmically determine that this item is a member of. (for instance, that it's a "Weapon", that it's an "Auto Rifle", etc...)
     The algorithm for these is, unfortunately, volatile. If you believe you see a miscategorized item, please let us know on the Bungie API forums.
     """
 
-    item_sub_type: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="itemSubType")] = (
-        pydantic.Field(default=None)
-    )
+    item_sub_type: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="itemSubType"),
+        pydantic.Field(
+            alias="itemSubType",
+            description='A value indicating the "sub-type" of the item. For instance, where an item might have an itemType value "Weapon", this will be something more specific like "Auto Rifle".\r\nitemCategoryHashes are the preferred way of identifying types, we have retained this enum for its convenience.',
+        ),
+    ] = None
     """
     A value indicating the "sub-type" of the item. For instance, where an item might have an itemType value "Weapon", this will be something more specific like "Auto Rifle".
     itemCategoryHashes are the preferred way of identifying types, we have retained this enum for its convenience.
     """
 
-    item_type: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="itemType")] = pydantic.Field(
-        default=None
-    )
+    item_type: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="itemType"),
+        pydantic.Field(
+            alias="itemType",
+            description='A value indicating the "base" the of the item. This enum is a useful but dramatic oversimplification of what it means for an item to have a "Type". Still, it\'s handy in many situations.\r\nitemCategoryHashes are the preferred way of identifying types, we have retained this enum for its convenience.',
+        ),
+    ] = None
     """
     A value indicating the "base" the of the item. This enum is a useful but dramatic oversimplification of what it means for an item to have a "Type". Still, it's handy in many situations.
     itemCategoryHashes are the preferred way of identifying types, we have retained this enum for its convenience.
     """
 
     item_type_and_tier_display_name: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="itemTypeAndTierDisplayName")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="itemTypeAndTierDisplayName"),
+        pydantic.Field(
+            alias="itemTypeAndTierDisplayName",
+            description="It became a common enough pattern in our UI to show Item Type and Tier combined into a single localized string that I'm just going to go ahead and start pre-creating these for items.",
+        ),
+    ] = None
     """
     It became a common enough pattern in our UI to show Item Type and Tier combined into a single localized string that I'm just going to go ahead and start pre-creating these for items.
     """
 
     item_type_display_name: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="itemTypeDisplayName")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="itemTypeDisplayName"),
+        pydantic.Field(
+            alias="itemTypeDisplayName",
+            description="The localized title/name of the item's type. This can be whatever the designers want, and has no guarantee of consistency between items.",
+        ),
+    ] = None
     """
     The localized title/name of the item's type. This can be whatever the designers want, and has no guarantee of consistency between items.
     """
@@ -291,9 +408,14 @@ class DestinyDefinitionsDestinyInventoryItemDefinition(UniversalBaseModel):
     If we added any help or informational URLs about this item, these will be those links.
     """
 
-    lore_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="loreHash")] = pydantic.Field(
-        default=None
-    )
+    lore_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="loreHash"),
+        pydantic.Field(
+            alias="loreHash",
+            description="If the item has any related Lore (DestinyLoreDefinition), this will be the hash identifier you can use to look up the lore definition.",
+        ),
+    ] = None
     """
     If the item has any related Lore (DestinyLoreDefinition), this will be the hash identifier you can use to look up the lore definition.
     """
@@ -303,9 +425,14 @@ class DestinyDefinitionsDestinyInventoryItemDefinition(UniversalBaseModel):
     If this item has available metrics to be shown, this block will be non-null have the appropriate hashes defined.
     """
 
-    non_transferrable: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="nonTransferrable")] = (
-        pydantic.Field(default=None)
-    )
+    non_transferrable: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="nonTransferrable"),
+        pydantic.Field(
+            alias="nonTransferrable",
+            description="The intrinsic transferability of an item.\r\nI hate that this boolean is negative - but there's a reason.\r\nJust because an item is intrinsically transferrable doesn't mean that it can be transferred, and we don't want to imply that this is the only source of that transferability.",
+        ),
+    ] = None
     """
     The intrinsic transferability of an item.
     I hate that this boolean is negative - but there's a reason.
@@ -352,37 +479,62 @@ class DestinyDefinitionsDestinyInventoryItemDefinition(UniversalBaseModel):
     If we were able to acquire an in-game screenshot for the item, the path to that screenshot will be returned here. Note that not all items have screenshots: particularly not any non-equippable items.
     """
 
-    season_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="seasonHash")] = pydantic.Field(
-        default=None
-    )
+    season_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="seasonHash"),
+        pydantic.Field(
+            alias="seasonHash",
+            description="If this item is related directly to a Season of Destiny, this is the hash identifier for that season.",
+        ),
+    ] = None
     """
     If this item is related directly to a Season of Destiny, this is the hash identifier for that season.
     """
 
-    secondary_icon: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="secondaryIcon")] = (
-        pydantic.Field(default=None)
-    )
+    secondary_icon: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="secondaryIcon"),
+        pydantic.Field(
+            alias="secondaryIcon",
+            description="A secondary icon associated with the item. Currently this is used in very context specific applications, such as Emblem Nameplates.",
+        ),
+    ] = None
     """
     A secondary icon associated with the item. Currently this is used in very context specific applications, such as Emblem Nameplates.
     """
 
-    secondary_overlay: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="secondaryOverlay")] = (
-        pydantic.Field(default=None)
-    )
+    secondary_overlay: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="secondaryOverlay"),
+        pydantic.Field(
+            alias="secondaryOverlay",
+            description='Pulled from the secondary icon, this is the "secondary background" of the secondary icon. Confusing? Sure, that\'s why I call it "overlay" here: because as far as it\'s been used thus far, it has been for an optional overlay image. We\'ll see if that holds up, but at least for now it explains what this image is a bit better.',
+        ),
+    ] = None
     """
     Pulled from the secondary icon, this is the "secondary background" of the secondary icon. Confusing? Sure, that's why I call it "overlay" here: because as far as it's been used thus far, it has been for an optional overlay image. We'll see if that holds up, but at least for now it explains what this image is a bit better.
     """
 
-    secondary_special: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="secondarySpecial")] = (
-        pydantic.Field(default=None)
-    )
+    secondary_special: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="secondarySpecial"),
+        pydantic.Field(
+            alias="secondarySpecial",
+            description='Pulled from the Secondary Icon, this is the "special" background for the item. For Emblems, this is the background image used on the Details view: but it need not be limited to that for other types of items.',
+        ),
+    ] = None
     """
     Pulled from the Secondary Icon, this is the "special" background for the item. For Emblems, this is the background image used on the Details view: but it need not be limited to that for other types of items.
     """
 
     set_data: typing_extensions.Annotated[
-        typing.Optional[DestinyDefinitionsDestinyItemSetBlockDefinition], FieldMetadata(alias="setData")
-    ] = pydantic.Field(default=None)
+        typing.Optional[DestinyDefinitionsDestinyItemSetBlockDefinition],
+        FieldMetadata(alias="setData"),
+        pydantic.Field(
+            alias="setData",
+            description="If this item is a quest, this block will be non-null. In practice, I wish I had called this the Quest block, but at the time it wasn't clear to me whether it would end up being used for purposes other than quests. It will contain data about the steps in the quest, and mechanics we can use for displaying and tracking the quest.",
+        ),
+    ] = None
     """
     If this item is a quest, this block will be non-null. In practice, I wish I had called this the Quest block, but at the time it wasn't clear to me whether it would end up being used for purposes other than quests. It will contain data about the steps in the quest, and mechanics we can use for displaying and tracking the quest.
     """
@@ -393,15 +545,25 @@ class DestinyDefinitionsDestinyInventoryItemDefinition(UniversalBaseModel):
     """
 
     source_data: typing_extensions.Annotated[
-        typing.Optional[DestinyDefinitionsDestinyItemSourceBlockDefinition], FieldMetadata(alias="sourceData")
-    ] = pydantic.Field(default=None)
+        typing.Optional[DestinyDefinitionsDestinyItemSourceBlockDefinition],
+        FieldMetadata(alias="sourceData"),
+        pydantic.Field(
+            alias="sourceData",
+            description="If this item has a known source, this block will be non-null and populated with source information. Unfortunately, at this time we are not generating sources: that is some aggressively manual work which we didn't have time for, and I'm hoping to get back to at some point in the future.",
+        ),
+    ] = None
     """
     If this item has a known source, this block will be non-null and populated with source information. Unfortunately, at this time we are not generating sources: that is some aggressively manual work which we didn't have time for, and I'm hoping to get back to at some point in the future.
     """
 
-    special_item_type: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="specialItemType")] = (
-        pydantic.Field(default=None)
-    )
+    special_item_type: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="specialItemType"),
+        pydantic.Field(
+            alias="specialItemType",
+            description="In Destiny 1, we identified some items as having particular categories that we'd like to know about for various internal logic purposes. These are defined in SpecialItemType, and while these days the itemCategoryHashes are the preferred way of identifying types, we have retained this enum for its convenience.",
+        ),
+    ] = None
     """
     In Destiny 1, we identified some items as having particular categories that we'd like to know about for various internal logic purposes. These are defined in SpecialItemType, and while these days the itemCategoryHashes are the preferred way of identifying types, we have retained this enum for its convenience.
     """
@@ -416,17 +578,27 @@ class DestinyDefinitionsDestinyInventoryItemDefinition(UniversalBaseModel):
     Summary data about the item.
     """
 
-    summary_item_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="summaryItemHash")] = (
-        pydantic.Field(default=None)
-    )
+    summary_item_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="summaryItemHash"),
+        pydantic.Field(
+            alias="summaryItemHash",
+            description='There are times when the game will show you a "summary/vague" version of an item - such as a description of its type represented as a DestinyInventoryItemDefinition - rather than display the item itself.\r\nThis happens sometimes when summarizing possible rewards in a tooltip. This is the item displayed instead, if it exists.',
+        ),
+    ] = None
     """
     There are times when the game will show you a "summary/vague" version of an item - such as a description of its type represented as a DestinyInventoryItemDefinition - rather than display the item itself.
     This happens sometimes when summarizing possible rewards in a tooltip. This is the item displayed instead, if it exists.
     """
 
     talent_grid: typing_extensions.Annotated[
-        typing.Optional[DestinyDefinitionsDestinyItemTalentGridBlockDefinition], FieldMetadata(alias="talentGrid")
-    ] = pydantic.Field(default=None)
+        typing.Optional[DestinyDefinitionsDestinyItemTalentGridBlockDefinition],
+        FieldMetadata(alias="talentGrid"),
+        pydantic.Field(
+            alias="talentGrid",
+            description='If the item has a Talent Grid, this will be non-null and the properties of the grid defined herein. Note that, while many items still have talent grids, the only ones with meaningful Nodes still on them will be Subclass/"Build" items.',
+        ),
+    ] = None
     """
     If the item has a Talent Grid, this will be non-null and the properties of the grid defined herein. Note that, while many items still have talent grids, the only ones with meaningful Nodes still on them will be Subclass/"Build" items.
     """
@@ -434,28 +606,47 @@ class DestinyDefinitionsDestinyInventoryItemDefinition(UniversalBaseModel):
     tooltip_notifications: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyDefinitionsDestinyItemTooltipNotification]],
         FieldMetadata(alias="tooltipNotifications"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="tooltipNotifications",
+            description="Tooltips that only come up conditionally for the item. Check the live data DestinyItemComponent.tooltipNotificationIndexes property for which of these should be shown at runtime.",
+        ),
+    ] = None
     """
     Tooltips that only come up conditionally for the item. Check the live data DestinyItemComponent.tooltipNotificationIndexes property for which of these should be shown at runtime.
     """
 
-    tooltip_style: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="tooltipStyle")] = (
-        pydantic.Field(default=None)
-    )
+    tooltip_style: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="tooltipStyle"),
+        pydantic.Field(
+            alias="tooltipStyle",
+            description="An identifier that the game UI uses to determine what type of tooltip to show for the item. These have no corresponding definitions that BNet can link to: so it'll be up to you to interpret and display your UI differently according to these styles (or ignore it).",
+        ),
+    ] = None
     """
     An identifier that the game UI uses to determine what type of tooltip to show for the item. These have no corresponding definitions that BNet can link to: so it'll be up to you to interpret and display your UI differently according to these styles (or ignore it).
     """
 
-    trait_hashes: typing_extensions.Annotated[typing.Optional[typing.List[int]], FieldMetadata(alias="traitHashes")] = (
-        pydantic.Field(default=None)
-    )
+    trait_hashes: typing_extensions.Annotated[
+        typing.Optional[typing.List[int]],
+        FieldMetadata(alias="traitHashes"),
+        pydantic.Field(
+            alias="traitHashes",
+            description="These are the corresponding trait definition hashes for the entries in traitIds.",
+        ),
+    ] = None
     """
     These are the corresponding trait definition hashes for the entries in traitIds.
     """
 
-    trait_ids: typing_extensions.Annotated[typing.Optional[typing.List[str]], FieldMetadata(alias="traitIds")] = (
-        pydantic.Field(default=None)
-    )
+    trait_ids: typing_extensions.Annotated[
+        typing.Optional[typing.List[str]],
+        FieldMetadata(alias="traitIds"),
+        pydantic.Field(
+            alias="traitIds",
+            description="Traits are metadata tags applied to this item. For example: armor slot, weapon type, foundry, faction, etc. These IDs come from the game and don't map to any content, but should still be useful.",
+        ),
+    ] = None
     """
     Traits are metadata tags applied to this item. For example: armor slot, weapon type, foundry, faction, etc. These IDs come from the game and don't map to any content, but should still be useful.
     """
@@ -463,14 +654,23 @@ class DestinyDefinitionsDestinyInventoryItemDefinition(UniversalBaseModel):
     translation_block: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsDestinyItemTranslationBlockDefinition],
         FieldMetadata(alias="translationBlock"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="translationBlock",
+            description="If this item can be rendered, this block will be non-null and will be populated with rendering information.",
+        ),
+    ] = None
     """
     If this item can be rendered, this block will be non-null and will be populated with rendering information.
     """
 
     ui_item_display_style: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="uiItemDisplayStyle")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="uiItemDisplayStyle"),
+        pydantic.Field(
+            alias="uiItemDisplayStyle",
+            description="A string identifier that the game's UI uses to determine how the item should be rendered in inventory screens and the like. This could really be anything - at the moment, we don't have the time to really breakdown and maintain all the possible strings this could be, partly because new ones could be added ad hoc. But if you want to use it to dictate your own UI, or look for items with a certain display style, go for it!",
+        ),
+    ] = None
     """
     A string identifier that the game's UI uses to determine how the item should be rendered in inventory screens and the like. This could really be anything - at the moment, we don't have the time to really breakdown and maintain all the possible strings this could be, partly because new ones could be added ad hoc. But if you want to use it to dictate your own UI, or look for items with a certain display style, go for it!
     """

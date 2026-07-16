@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class TfnExemptionType(str, enum.Enum):
+class TfnExemptionType(enum.StrEnum):
     NOTQUOTED = "NOTQUOTED"
     PENDING = "PENDING"
     PENSIONER = "PENSIONER"

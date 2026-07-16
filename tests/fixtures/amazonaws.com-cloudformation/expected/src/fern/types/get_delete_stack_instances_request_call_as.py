@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GetDeleteStackInstancesRequestCallAs(str, enum.Enum):
+class GetDeleteStackInstancesRequestCallAs(enum.StrEnum):
     SELF = "SELF"
     DELEGATED_ADMIN = "DELEGATED_ADMIN"
 

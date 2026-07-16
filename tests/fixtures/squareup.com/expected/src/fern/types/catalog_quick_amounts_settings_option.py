@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class CatalogQuickAmountsSettingsOption(str, enum.Enum):
+class CatalogQuickAmountsSettingsOption(enum.StrEnum):
     """
     Determines a seller's option on Quick Amounts feature.
     """

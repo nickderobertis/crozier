@@ -2,4 +2,7 @@
 
 import typing
 
-CategoryRef = typing.Optional[typing.Any]
+CategoryRef = typing.Any
+"""
+See MEC011
+"""

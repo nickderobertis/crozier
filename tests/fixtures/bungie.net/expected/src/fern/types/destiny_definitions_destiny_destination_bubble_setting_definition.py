@@ -20,6 +20,7 @@ class DestinyDefinitionsDestinyDestinationBubbleSettingDefinition(UniversalBaseM
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
+        pydantic.Field(alias="displayProperties"),
     ] = None
 
     if IS_PYDANTIC_V2:

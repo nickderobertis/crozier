@@ -1,6 +1,6 @@
 # Reference
 ## Config
-<details><summary><code>client.config.<a href="src/fern/config/client.py">get_config</a>()</code></summary>
+<details><summary><code>client.config.<a href="src/fern/config/client.py">get_config</a>() -> Config</code></summary>
 <dl>
 <dd>
 
@@ -14,11 +14,14 @@
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.config.get_config()
 
 ```
@@ -48,7 +51,7 @@ client.config.get_config()
 </details>
 
 ## Connection
-<details><summary><code>client.connection.<a href="src/fern/connection/client.py">get_connections</a>(...)</code></summary>
+<details><summary><code>client.connection.<a href="src/fern/connection/client.py">get_connections</a>(...) -> ConnectionCollection</code></summary>
 <dl>
 <dd>
 
@@ -62,11 +65,14 @@ client.config.get_config()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.connection.get_connections()
 
 ```
@@ -124,7 +130,7 @@ Prefix a field name with `-` to reverse the sort order.
 </dl>
 </details>
 
-<details><summary><code>client.connection.<a href="src/fern/connection/client.py">post_connection</a>(...)</code></summary>
+<details><summary><code>client.connection.<a href="src/fern/connection/client.py">post_connection</a>(...) -> Connection</code></summary>
 <dl>
 <dd>
 
@@ -138,11 +144,14 @@ Prefix a field name with `-` to reverse the sort order.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.connection.post_connection()
 
 ```
@@ -159,71 +168,7 @@ client.connection.post_connection()
 <dl>
 <dd>
 
-**extra:** `typing.Optional[str]` — Other values that cannot be put into another field, e.g. RSA keys.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**password:** `typing.Optional[str]` — Password of the connection.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**conn_type:** `typing.Optional[str]` — The connection type.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**connection_id:** `typing.Optional[str]` — The connection ID.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — The description of the connection.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**host:** `typing.Optional[str]` — Host of the connection.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**login:** `typing.Optional[str]` — Login of the connection.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**port:** `typing.Optional[int]` — Port of the connection.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**schema:** `typing.Optional[str]` — Schema of the connection.
+**request:** `Connection` 
     
 </dd>
 </dl>
@@ -243,7 +188,7 @@ client.connection.post_connection()
 </dl>
 </details>
 
-<details><summary><code>client.connection.<a href="src/fern/connection/client.py">test_connection</a>(...)</code></summary>
+<details><summary><code>client.connection.<a href="src/fern/connection/client.py">test_connection</a>(...) -> ConnectionTest</code></summary>
 <dl>
 <dd>
 
@@ -273,11 +218,14 @@ Test a connection.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.connection.test_connection()
 
 ```
@@ -294,71 +242,7 @@ client.connection.test_connection()
 <dl>
 <dd>
 
-**extra:** `typing.Optional[str]` — Other values that cannot be put into another field, e.g. RSA keys.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**password:** `typing.Optional[str]` — Password of the connection.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**conn_type:** `typing.Optional[str]` — The connection type.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**connection_id:** `typing.Optional[str]` — The connection ID.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — The description of the connection.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**host:** `typing.Optional[str]` — Host of the connection.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**login:** `typing.Optional[str]` — Login of the connection.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**port:** `typing.Optional[int]` — Port of the connection.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**schema:** `typing.Optional[str]` — Schema of the connection.
+**request:** `Connection` 
     
 </dd>
 </dl>
@@ -378,7 +262,7 @@ client.connection.test_connection()
 </dl>
 </details>
 
-<details><summary><code>client.connection.<a href="src/fern/connection/client.py">get_connection</a>(...)</code></summary>
+<details><summary><code>client.connection.<a href="src/fern/connection/client.py">get_connection</a>(...) -> Connection</code></summary>
 <dl>
 <dd>
 
@@ -392,11 +276,14 @@ client.connection.test_connection()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.connection.get_connection(
     connection_id="connection_id",
 )
@@ -449,11 +336,14 @@ client.connection.get_connection(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.connection.delete_connection(
     connection_id="connection_id",
 )
@@ -492,7 +382,7 @@ client.connection.delete_connection(
 </dl>
 </details>
 
-<details><summary><code>client.connection.<a href="src/fern/connection/client.py">patch_connection</a>(...)</code></summary>
+<details><summary><code>client.connection.<a href="src/fern/connection/client.py">patch_connection</a>(...) -> Connection</code></summary>
 <dl>
 <dd>
 
@@ -506,11 +396,14 @@ client.connection.delete_connection(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.connection.patch_connection(
     connection_id_="connection_id",
 )
@@ -529,7 +422,15 @@ client.connection.patch_connection(
 <dl>
 <dd>
 
-**connection_id_:** `str` — The connection ID.
+**connection_id:** `str` — The connection ID.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request:** `Connection` 
     
 </dd>
 </dl>
@@ -541,78 +442,6 @@ client.connection.patch_connection(
 
 The fields to update on the resource. If absent or empty, all modifiable fields are updated.
 A comma-separated list of fully qualified names of fields.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**extra:** `typing.Optional[str]` — Other values that cannot be put into another field, e.g. RSA keys.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**password:** `typing.Optional[str]` — Password of the connection.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**conn_type:** `typing.Optional[str]` — The connection type.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**connection_id:** `typing.Optional[str]` — The connection ID.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — The description of the connection.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**host:** `typing.Optional[str]` — Host of the connection.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**login:** `typing.Optional[str]` — Login of the connection.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**port:** `typing.Optional[int]` — Port of the connection.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**schema:** `typing.Optional[str]` — Schema of the connection.
     
 </dd>
 </dl>
@@ -633,7 +462,7 @@ A comma-separated list of fully qualified names of fields.
 </details>
 
 ## DAG
-<details><summary><code>client.dag.<a href="src/fern/dag/client.py">get_dag_source</a>(...)</code></summary>
+<details><summary><code>client.dag.<a href="src/fern/dag/client.py">get_dag_source</a>(...) -> GetDagSourceResponse</code></summary>
 <dl>
 <dd>
 
@@ -661,11 +490,14 @@ Get a source code using file token.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.dag.get_dag_source(
     file_token="file_token",
 )
@@ -708,7 +540,7 @@ extensibility, because the format of encrypted data may change.
 </dl>
 </details>
 
-<details><summary><code>client.dag.<a href="src/fern/dag/client.py">get_dags</a>(...)</code></summary>
+<details><summary><code>client.dag.<a href="src/fern/dag/client.py">get_dags</a>(...) -> DagCollection</code></summary>
 <dl>
 <dd>
 
@@ -737,11 +569,14 @@ List DAGs in the database.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.dag.get_dags()
 
 ```
@@ -831,7 +666,7 @@ Only filter active DAGs.
 </dl>
 </details>
 
-<details><summary><code>client.dag.<a href="src/fern/dag/client.py">patch_dags</a>(...)</code></summary>
+<details><summary><code>client.dag.<a href="src/fern/dag/client.py">patch_dags</a>(...) -> DagCollection</code></summary>
 <dl>
 <dd>
 
@@ -861,11 +696,14 @@ This endpoint allows specifying `~` as the dag_id_pattern to update all DAGs.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.dag.patch_dags(
     dag_id_pattern="dag_id_pattern",
     is_paused=True,
@@ -886,6 +724,14 @@ client.dag.patch_dags(
 <dd>
 
 **dag_id_pattern:** `str` — If set, only update DAGs with dag_ids matching this pattern.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request:** `Dag` 
     
 </dd>
 </dl>
@@ -944,281 +790,6 @@ Only filter active DAGs.
 <dl>
 <dd>
 
-**dag_id:** `typing.Optional[str]` — The ID of the DAG.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**default_view:** `typing.Optional[str]` 
-
-Default view of the DAG inside the webserver
-
-*New in version 2.3.0*
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — User-provided DAG description, which can consist of several sentences or paragraphs that describe DAG contents.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**file_token:** `typing.Optional[str]` — The key containing the encrypted path to the file. Encryption and decryption take place only on the server. This prevents the client from reading an non-DAG file. This also ensures API extensibility, because the format of encrypted data may change.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**fileloc:** `typing.Optional[str]` — The absolute path to the file.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**has_import_errors:** `typing.Optional[bool]` 
-
-Whether the DAG has import errors
-
-*New in version 2.3.0*
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**has_task_concurrency_limits:** `typing.Optional[bool]` 
-
-Whether the DAG has task concurrency limits
-
-*New in version 2.3.0*
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**is_active:** `typing.Optional[bool]` 
-
-Whether the DAG is currently seen by the scheduler(s).
-
-*New in version 2.1.1*
-
-*Changed in version 2.2.0*&#58; Field is read-only.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**is_paused:** `typing.Optional[bool]` — Whether the DAG is paused.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**is_subdag:** `typing.Optional[bool]` — Whether the DAG is SubDAG.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**last_expired:** `typing.Optional[dt.datetime]` 
-
-Time when the DAG last received a refresh signal
-(e.g. the DAG's "refresh" button was clicked in the web UI)
-
-*New in version 2.3.0*
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**last_parsed_time:** `typing.Optional[dt.datetime]` 
-
-The last time the DAG was parsed.
-
-*New in version 2.3.0*
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**last_pickled:** `typing.Optional[dt.datetime]` 
-
-The last time the DAG was pickled.
-
-*New in version 2.3.0*
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**max_active_runs:** `typing.Optional[int]` 
-
-Maximum number of active DAG runs for the DAG
-
-*New in version 2.3.0*
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**max_active_tasks:** `typing.Optional[int]` 
-
-Maximum number of active tasks that can be run on the DAG
-
-*New in version 2.3.0*
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**next_dagrun:** `typing.Optional[dt.datetime]` 
-
-The logical date of the next dag run.
-
-*New in version 2.3.0*
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**next_dagrun_create_after:** `typing.Optional[dt.datetime]` 
-
-Earliest time at which this ``next_dagrun`` can be created.
-
-*New in version 2.3.0*
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**next_dagrun_data_interval_end:** `typing.Optional[dt.datetime]` 
-
-The end of the interval of the next dag run.
-
-*New in version 2.3.0*
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**next_dagrun_data_interval_start:** `typing.Optional[dt.datetime]` 
-
-The start of the interval of the next dag run.
-
-*New in version 2.3.0*
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**owners:** `typing.Optional[typing.Sequence[str]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**pickle_id:** `typing.Optional[str]` 
-
-Foreign key to the latest pickle_id
-
-*New in version 2.3.0*
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**root_dag_id:** `typing.Optional[str]` — If the DAG is SubDAG then it is the top level DAG identifier. Otherwise, null.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**schedule_interval:** `typing.Optional[ScheduleInterval]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**scheduler_lock:** `typing.Optional[bool]` 
-
-Whether (one of) the scheduler is scheduling this DAG at the moment
-
-*New in version 2.3.0*
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**dag_tags:** `typing.Optional[typing.Sequence[Tag]]` — List of tags.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**timetable_description:** `typing.Optional[str]` 
-
-Timetable/Schedule Interval description.
-
-*New in version 2.3.0*
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
     
 </dd>
@@ -1231,7 +802,7 @@ Timetable/Schedule Interval description.
 </dl>
 </details>
 
-<details><summary><code>client.dag.<a href="src/fern/dag/client.py">get_dag</a>(...)</code></summary>
+<details><summary><code>client.dag.<a href="src/fern/dag/client.py">get_dag</a>(...) -> Dag</code></summary>
 <dl>
 <dd>
 
@@ -1260,11 +831,14 @@ If you need detailed information, consider using GET /dags/{dag_id}/details.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.dag.get_dag(
     dag_id="dag_id",
 )
@@ -1334,11 +908,14 @@ Logs are not deleted. This action cannot be undone.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.dag.delete_dag(
     dag_id="dag_id",
 )
@@ -1377,7 +954,7 @@ client.dag.delete_dag(
 </dl>
 </details>
 
-<details><summary><code>client.dag.<a href="src/fern/dag/client.py">patch_dag</a>(...)</code></summary>
+<details><summary><code>client.dag.<a href="src/fern/dag/client.py">patch_dag</a>(...) -> Dag</code></summary>
 <dl>
 <dd>
 
@@ -1391,11 +968,14 @@ client.dag.delete_dag(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.dag.patch_dag(
     dag_id_="dag_id",
     is_paused=True,
@@ -1415,7 +995,15 @@ client.dag.patch_dag(
 <dl>
 <dd>
 
-**dag_id_:** `str` — The DAG ID.
+**dag_id:** `str` — The DAG ID.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request:** `Dag` 
     
 </dd>
 </dl>
@@ -1427,281 +1015,6 @@ client.dag.patch_dag(
 
 The fields to update on the resource. If absent or empty, all modifiable fields are updated.
 A comma-separated list of fully qualified names of fields.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**dag_id:** `typing.Optional[str]` — The ID of the DAG.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**default_view:** `typing.Optional[str]` 
-
-Default view of the DAG inside the webserver
-
-*New in version 2.3.0*
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — User-provided DAG description, which can consist of several sentences or paragraphs that describe DAG contents.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**file_token:** `typing.Optional[str]` — The key containing the encrypted path to the file. Encryption and decryption take place only on the server. This prevents the client from reading an non-DAG file. This also ensures API extensibility, because the format of encrypted data may change.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**fileloc:** `typing.Optional[str]` — The absolute path to the file.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**has_import_errors:** `typing.Optional[bool]` 
-
-Whether the DAG has import errors
-
-*New in version 2.3.0*
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**has_task_concurrency_limits:** `typing.Optional[bool]` 
-
-Whether the DAG has task concurrency limits
-
-*New in version 2.3.0*
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**is_active:** `typing.Optional[bool]` 
-
-Whether the DAG is currently seen by the scheduler(s).
-
-*New in version 2.1.1*
-
-*Changed in version 2.2.0*&#58; Field is read-only.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**is_paused:** `typing.Optional[bool]` — Whether the DAG is paused.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**is_subdag:** `typing.Optional[bool]` — Whether the DAG is SubDAG.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**last_expired:** `typing.Optional[dt.datetime]` 
-
-Time when the DAG last received a refresh signal
-(e.g. the DAG's "refresh" button was clicked in the web UI)
-
-*New in version 2.3.0*
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**last_parsed_time:** `typing.Optional[dt.datetime]` 
-
-The last time the DAG was parsed.
-
-*New in version 2.3.0*
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**last_pickled:** `typing.Optional[dt.datetime]` 
-
-The last time the DAG was pickled.
-
-*New in version 2.3.0*
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**max_active_runs:** `typing.Optional[int]` 
-
-Maximum number of active DAG runs for the DAG
-
-*New in version 2.3.0*
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**max_active_tasks:** `typing.Optional[int]` 
-
-Maximum number of active tasks that can be run on the DAG
-
-*New in version 2.3.0*
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**next_dagrun:** `typing.Optional[dt.datetime]` 
-
-The logical date of the next dag run.
-
-*New in version 2.3.0*
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**next_dagrun_create_after:** `typing.Optional[dt.datetime]` 
-
-Earliest time at which this ``next_dagrun`` can be created.
-
-*New in version 2.3.0*
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**next_dagrun_data_interval_end:** `typing.Optional[dt.datetime]` 
-
-The end of the interval of the next dag run.
-
-*New in version 2.3.0*
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**next_dagrun_data_interval_start:** `typing.Optional[dt.datetime]` 
-
-The start of the interval of the next dag run.
-
-*New in version 2.3.0*
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**owners:** `typing.Optional[typing.Sequence[str]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**pickle_id:** `typing.Optional[str]` 
-
-Foreign key to the latest pickle_id
-
-*New in version 2.3.0*
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**root_dag_id:** `typing.Optional[str]` — If the DAG is SubDAG then it is the top level DAG identifier. Otherwise, null.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**schedule_interval:** `typing.Optional[ScheduleInterval]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**scheduler_lock:** `typing.Optional[bool]` 
-
-Whether (one of) the scheduler is scheduling this DAG at the moment
-
-*New in version 2.3.0*
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**tags:** `typing.Optional[typing.Sequence[Tag]]` — List of tags.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**timetable_description:** `typing.Optional[str]` 
-
-Timetable/Schedule Interval description.
-
-*New in version 2.3.0*
     
 </dd>
 </dl>
@@ -1721,7 +1034,7 @@ Timetable/Schedule Interval description.
 </dl>
 </details>
 
-<details><summary><code>client.dag.<a href="src/fern/dag/client.py">post_clear_task_instances</a>(...)</code></summary>
+<details><summary><code>client.dag.<a href="src/fern/dag/client.py">post_clear_task_instances</a>(...) -> TaskInstanceReferenceCollection</code></summary>
 <dl>
 <dd>
 
@@ -1749,11 +1062,14 @@ Clears a set of task instances associated with the DAG for a specified date rang
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.dag.post_clear_task_instances(
     dag_id="dag_id",
 )
@@ -1887,7 +1203,7 @@ planned to be cleaned, but not modified in any way.
 <dl>
 <dd>
 
-**task_ids:** `typing.Optional[typing.Sequence[str]]` 
+**task_ids:** `typing.Optional[typing.List[str]]` 
 
 A list of task ids to clear.
 
@@ -1911,7 +1227,7 @@ A list of task ids to clear.
 </dl>
 </details>
 
-<details><summary><code>client.dag.<a href="src/fern/dag/client.py">get_dag_details</a>(...)</code></summary>
+<details><summary><code>client.dag.<a href="src/fern/dag/client.py">get_dag_details</a>(...) -> DagDetail</code></summary>
 <dl>
 <dd>
 
@@ -1939,11 +1255,14 @@ The response contains many DAG attributes, so the response can be large. If poss
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.dag.get_dag_details(
     dag_id="dag_id",
 )
@@ -1982,7 +1301,7 @@ client.dag.get_dag_details(
 </dl>
 </details>
 
-<details><summary><code>client.dag.<a href="src/fern/dag/client.py">get_tasks</a>(...)</code></summary>
+<details><summary><code>client.dag.<a href="src/fern/dag/client.py">get_tasks</a>(...) -> TaskCollection</code></summary>
 <dl>
 <dd>
 
@@ -1996,11 +1315,14 @@ client.dag.get_dag_details(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.dag.get_tasks(
     dag_id="dag_id",
 )
@@ -2052,7 +1374,7 @@ Prefix a field name with `-` to reverse the sort order.
 </dl>
 </details>
 
-<details><summary><code>client.dag.<a href="src/fern/dag/client.py">get_task</a>(...)</code></summary>
+<details><summary><code>client.dag.<a href="src/fern/dag/client.py">get_task</a>(...) -> Task</code></summary>
 <dl>
 <dd>
 
@@ -2066,11 +1388,14 @@ Prefix a field name with `-` to reverse the sort order.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.dag.get_task(
     dag_id="dag_id",
     task_id="task_id",
@@ -2118,7 +1443,7 @@ client.dag.get_task(
 </dl>
 </details>
 
-<details><summary><code>client.dag.<a href="src/fern/dag/client.py">post_set_task_instances_state</a>(...)</code></summary>
+<details><summary><code>client.dag.<a href="src/fern/dag/client.py">post_set_task_instances_state</a>(...) -> TaskInstanceReferenceCollection</code></summary>
 <dl>
 <dd>
 
@@ -2146,11 +1471,14 @@ Updates the state for multiple task instances simultaneously.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.dag.post_set_task_instances_state(
     dag_id="dag_id",
 )
@@ -2269,7 +1597,7 @@ planned to be affected, but won't be modified in any way.
 </details>
 
 ## DagWarning
-<details><summary><code>client.dag_warning.<a href="src/fern/dag_warning/client.py">get_dag_warnings</a>(...)</code></summary>
+<details><summary><code>client.dag_warning.<a href="src/fern/dag_warning/client.py">get_dag_warnings</a>(...) -> DagWarningCollection</code></summary>
 <dl>
 <dd>
 
@@ -2283,11 +1611,14 @@ planned to be affected, but won't be modified in any way.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.dag_warning.get_dag_warnings()
 
 ```
@@ -2362,7 +1693,7 @@ Prefix a field name with `-` to reverse the sort order.
 </details>
 
 ## DAGRun
-<details><summary><code>client.dag_run.<a href="src/fern/dag_run/client.py">get_dag_runs</a>(...)</code></summary>
+<details><summary><code>client.dag_run.<a href="src/fern/dag_run/client.py">get_dag_runs</a>(...) -> DagRunCollection</code></summary>
 <dl>
 <dd>
 
@@ -2390,11 +1721,14 @@ This endpoint allows specifying `~` as the dag_id to retrieve DAG runs for all D
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.dag_run.get_dag_runs(
     dag_id="dag_id",
 )
@@ -2437,7 +1771,7 @@ client.dag_run.get_dag_runs(
 <dl>
 <dd>
 
-**execution_date_gte:** `typing.Optional[dt.datetime]` 
+**execution_date_gte:** `typing.Optional[datetime.datetime]` 
 
 Returns objects greater or equal to the specified date.
 
@@ -2449,7 +1783,7 @@ This can be combined with execution_date_lte parameter to receive only the selec
 <dl>
 <dd>
 
-**execution_date_lte:** `typing.Optional[dt.datetime]` 
+**execution_date_lte:** `typing.Optional[datetime.datetime]` 
 
 Returns objects less than or equal to the specified date.
 
@@ -2461,7 +1795,7 @@ This can be combined with execution_date_gte parameter to receive only the selec
 <dl>
 <dd>
 
-**start_date_gte:** `typing.Optional[dt.datetime]` 
+**start_date_gte:** `typing.Optional[datetime.datetime]` 
 
 Returns objects greater or equal the specified date.
 
@@ -2473,7 +1807,7 @@ This can be combined with start_date_lte parameter to receive only the selected 
 <dl>
 <dd>
 
-**start_date_lte:** `typing.Optional[dt.datetime]` 
+**start_date_lte:** `typing.Optional[datetime.datetime]` 
 
 Returns objects less or equal the specified date.
 
@@ -2485,7 +1819,7 @@ This can be combined with start_date_gte parameter to receive only the selected 
 <dl>
 <dd>
 
-**end_date_gte:** `typing.Optional[dt.datetime]` 
+**end_date_gte:** `typing.Optional[datetime.datetime]` 
 
 Returns objects greater or equal the specified date.
 
@@ -2497,7 +1831,7 @@ This can be combined with start_date_lte parameter to receive only the selected 
 <dl>
 <dd>
 
-**end_date_lte:** `typing.Optional[dt.datetime]` 
+**end_date_lte:** `typing.Optional[datetime.datetime]` 
 
 Returns objects less than or equal to the specified date.
 
@@ -2542,7 +1876,7 @@ Prefix a field name with `-` to reverse the sort order.
 </dl>
 </details>
 
-<details><summary><code>client.dag_run.<a href="src/fern/dag_run/client.py">post_dag_run</a>(...)</code></summary>
+<details><summary><code>client.dag_run.<a href="src/fern/dag_run/client.py">post_dag_run</a>(...) -> DagRun</code></summary>
 <dl>
 <dd>
 
@@ -2556,11 +1890,14 @@ Prefix a field name with `-` to reverse the sort order.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.dag_run.post_dag_run(
     dag_id_="dag_id",
 )
@@ -2579,7 +1916,7 @@ client.dag_run.post_dag_run(
 <dl>
 <dd>
 
-**dag_id_:** `str` — The DAG ID.
+**dag_id:** `str` — The DAG ID.
     
 </dd>
 </dl>
@@ -2587,153 +1924,7 @@ client.dag_run.post_dag_run(
 <dl>
 <dd>
 
-**conf:** `typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]` 
-
-JSON object describing additional configuration parameters.
-
-The value of this field can be set only when creating the object. If you try to modify the
-field of an existing object, the request fails with an BAD_REQUEST error.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**dag_id:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**dag_run_id:** `typing.Optional[str]` 
-
-Run ID.
-
-The value of this field can be set only when creating the object. If you try to modify the
-field of an existing object, the request fails with an BAD_REQUEST error.
-
-If not provided, a value will be generated based on execution_date.
-
-If the specified dag_run_id is in use, the creation request fails with an ALREADY_EXISTS error.
-
-This together with DAG_ID are a unique key.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**data_interval_end:** `typing.Optional[dt.datetime]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**data_interval_start:** `typing.Optional[dt.datetime]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**end_date:** `typing.Optional[dt.datetime]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**execution_date:** `typing.Optional[dt.datetime]` 
-
-The execution date. This is the same as logical_date, kept for backwards compatibility.
-If both this field and logical_date are provided but with different values, the request
-will fail with an BAD_REQUEST error.
-
-*Changed in version 2.2.0*&#58; Field becomes nullable.
-
-*Deprecated since version 2.2.0*&#58; Use 'logical_date' instead.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**external_trigger:** `typing.Optional[bool]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**last_scheduling_decision:** `typing.Optional[dt.datetime]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**logical_date:** `typing.Optional[dt.datetime]` 
-
-The logical date (previously called execution date). This is the time or interval covered by
-this DAG run, according to the DAG definition.
-
-The value of this field can be set only when creating the object. If you try to modify the
-field of an existing object, the request fails with an BAD_REQUEST error.
-
-This together with DAG_ID are a unique key.
-
-*New in version 2.2.0*
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**note:** `typing.Optional[str]` 
-
-Contains manually entered notes by the user about the DagRun.
-
-*New in version 2.5.0*
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**run_type:** `typing.Optional[DagRunRunType]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**start_date:** `typing.Optional[dt.datetime]` 
-
-The start time. The time when DAG run was actually created.
-
-*Changed in version 2.1.3*&#58; Field becomes nullable.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**state:** `typing.Optional[DagState]` 
+**request:** `DagRun` 
     
 </dd>
 </dl>
@@ -2753,7 +1944,7 @@ The start time. The time when DAG run was actually created.
 </dl>
 </details>
 
-<details><summary><code>client.dag_run.<a href="src/fern/dag_run/client.py">get_dag_run</a>(...)</code></summary>
+<details><summary><code>client.dag_run.<a href="src/fern/dag_run/client.py">get_dag_run</a>(...) -> DagRun</code></summary>
 <dl>
 <dd>
 
@@ -2767,11 +1958,14 @@ The start time. The time when DAG run was actually created.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.dag_run.get_dag_run(
     dag_id="dag_id",
     dag_run_id="dag_run_id",
@@ -2833,11 +2027,14 @@ client.dag_run.get_dag_run(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.dag_run.delete_dag_run(
     dag_id="dag_id",
     dag_run_id="dag_run_id",
@@ -2885,7 +2082,7 @@ client.dag_run.delete_dag_run(
 </dl>
 </details>
 
-<details><summary><code>client.dag_run.<a href="src/fern/dag_run/client.py">update_dag_run_state</a>(...)</code></summary>
+<details><summary><code>client.dag_run.<a href="src/fern/dag_run/client.py">update_dag_run_state</a>(...) -> DagRun</code></summary>
 <dl>
 <dd>
 
@@ -2915,11 +2112,14 @@ Modify a DAG run.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.dag_run.update_dag_run_state(
     dag_id="dag_id",
     dag_run_id="dag_run_id",
@@ -2975,7 +2175,7 @@ client.dag_run.update_dag_run_state(
 </dl>
 </details>
 
-<details><summary><code>client.dag_run.<a href="src/fern/dag_run/client.py">clear_dag_run</a>(...)</code></summary>
+<details><summary><code>client.dag_run.<a href="src/fern/dag_run/client.py">clear_dag_run</a>(...) -> DagRun</code></summary>
 <dl>
 <dd>
 
@@ -3005,11 +2205,14 @@ Clear a DAG run.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.dag_run.clear_dag_run(
     dag_id="dag_id",
     dag_run_id="dag_run_id",
@@ -3068,7 +2271,7 @@ planned to be cleaned, but not modified in any way.
 </dl>
 </details>
 
-<details><summary><code>client.dag_run.<a href="src/fern/dag_run/client.py">set_dag_run_note</a>(...)</code></summary>
+<details><summary><code>client.dag_run.<a href="src/fern/dag_run/client.py">set_dag_run_note</a>(...) -> DagRun</code></summary>
 <dl>
 <dd>
 
@@ -3098,11 +2301,14 @@ Update the manual user note of a DagRun.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.dag_run.set_dag_run_note(
     dag_id="dag_id",
     dag_run_id="dag_run_id",
@@ -3158,7 +2364,7 @@ client.dag_run.set_dag_run_note(
 </dl>
 </details>
 
-<details><summary><code>client.dag_run.<a href="src/fern/dag_run/client.py">get_upstream_dataset_events</a>(...)</code></summary>
+<details><summary><code>client.dag_run.<a href="src/fern/dag_run/client.py">get_upstream_dataset_events</a>(...) -> DatasetEventCollection</code></summary>
 <dl>
 <dd>
 
@@ -3188,11 +2394,14 @@ Get datasets for a dag run.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.dag_run.get_upstream_dataset_events(
     dag_id="dag_id",
     dag_run_id="dag_run_id",
@@ -3240,7 +2449,7 @@ client.dag_run.get_upstream_dataset_events(
 </dl>
 </details>
 
-<details><summary><code>client.dag_run.<a href="src/fern/dag_run/client.py">get_dag_runs_batch</a>(...)</code></summary>
+<details><summary><code>client.dag_run.<a href="src/fern/dag_run/client.py">get_dag_runs_batch</a>(...) -> DagRunCollection</code></summary>
 <dl>
 <dd>
 
@@ -3268,11 +2477,14 @@ This endpoint is a POST to allow filtering across a large number of DAG IDs, whe
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.dag_run.get_dag_runs_batch()
 
 ```
@@ -3289,7 +2501,7 @@ client.dag_run.get_dag_runs_batch()
 <dl>
 <dd>
 
-**dag_ids:** `typing.Optional[typing.Sequence[str]]` 
+**dag_ids:** `typing.Optional[typing.List[str]]` 
 
 Return objects with specific DAG IDs.
 The value can be repeated to retrieve multiple matching values (OR condition).
@@ -3300,7 +2512,7 @@ The value can be repeated to retrieve multiple matching values (OR condition).
 <dl>
 <dd>
 
-**end_date_gte:** `typing.Optional[dt.datetime]` 
+**end_date_gte:** `typing.Optional[datetime.datetime]` 
 
 Returns objects greater or equal the specified date.
 
@@ -3312,7 +2524,7 @@ This can be combined with end_date_lte parameter to receive only the selected pe
 <dl>
 <dd>
 
-**end_date_lte:** `typing.Optional[dt.datetime]` 
+**end_date_lte:** `typing.Optional[datetime.datetime]` 
 
 Returns objects less than or equal to the specified date.
 
@@ -3324,7 +2536,7 @@ This can be combined with end_date_gte parameter to receive only the selected pe
 <dl>
 <dd>
 
-**execution_date_gte:** `typing.Optional[dt.datetime]` 
+**execution_date_gte:** `typing.Optional[datetime.datetime]` 
 
 Returns objects greater or equal to the specified date.
 
@@ -3336,7 +2548,7 @@ This can be combined with execution_date_lte key to receive only the selected pe
 <dl>
 <dd>
 
-**execution_date_lte:** `typing.Optional[dt.datetime]` 
+**execution_date_lte:** `typing.Optional[datetime.datetime]` 
 
 Returns objects less than or equal to the specified date.
 
@@ -3377,7 +2589,7 @@ with `-` to reverse the sort order.
 <dl>
 <dd>
 
-**start_date_gte:** `typing.Optional[dt.datetime]` 
+**start_date_gte:** `typing.Optional[datetime.datetime]` 
 
 Returns objects greater or equal the specified date.
 
@@ -3389,7 +2601,7 @@ This can be combined with start_date_lte key to receive only the selected period
 <dl>
 <dd>
 
-**start_date_lte:** `typing.Optional[dt.datetime]` 
+**start_date_lte:** `typing.Optional[datetime.datetime]` 
 
 Returns objects less or equal the specified date.
 
@@ -3401,7 +2613,7 @@ This can be combined with start_date_gte parameter to receive only the selected 
 <dl>
 <dd>
 
-**states:** `typing.Optional[typing.Sequence[str]]` 
+**states:** `typing.Optional[typing.List[str]]` 
 
 Return objects with specific states.
 The value can be repeated to retrieve multiple matching values (OR condition).
@@ -3425,7 +2637,7 @@ The value can be repeated to retrieve multiple matching values (OR condition).
 </details>
 
 ## TaskInstance
-<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py">get_task_instances</a>(...)</code></summary>
+<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py">get_task_instances</a>(...) -> TaskInstanceCollection</code></summary>
 <dl>
 <dd>
 
@@ -3453,11 +2665,14 @@ This endpoint allows specifying `~` as the dag_id, dag_run_id to retrieve DAG ru
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.task_instance.get_task_instances(
     dag_id="dag_id",
     dag_run_id="dag_run_id",
@@ -3493,7 +2708,7 @@ client.task_instance.get_task_instances(
 <dl>
 <dd>
 
-**execution_date_gte:** `typing.Optional[dt.datetime]` 
+**execution_date_gte:** `typing.Optional[datetime.datetime]` 
 
 Returns objects greater or equal to the specified date.
 
@@ -3505,7 +2720,7 @@ This can be combined with execution_date_lte parameter to receive only the selec
 <dl>
 <dd>
 
-**execution_date_lte:** `typing.Optional[dt.datetime]` 
+**execution_date_lte:** `typing.Optional[datetime.datetime]` 
 
 Returns objects less than or equal to the specified date.
 
@@ -3517,7 +2732,7 @@ This can be combined with execution_date_gte parameter to receive only the selec
 <dl>
 <dd>
 
-**start_date_gte:** `typing.Optional[dt.datetime]` 
+**start_date_gte:** `typing.Optional[datetime.datetime]` 
 
 Returns objects greater or equal the specified date.
 
@@ -3529,7 +2744,7 @@ This can be combined with start_date_lte parameter to receive only the selected 
 <dl>
 <dd>
 
-**start_date_lte:** `typing.Optional[dt.datetime]` 
+**start_date_lte:** `typing.Optional[datetime.datetime]` 
 
 Returns objects less or equal the specified date.
 
@@ -3541,7 +2756,7 @@ This can be combined with start_date_gte parameter to receive only the selected 
 <dl>
 <dd>
 
-**end_date_gte:** `typing.Optional[dt.datetime]` 
+**end_date_gte:** `typing.Optional[datetime.datetime]` 
 
 Returns objects greater or equal the specified date.
 
@@ -3553,7 +2768,7 @@ This can be combined with start_date_lte parameter to receive only the selected 
 <dl>
 <dd>
 
-**end_date_lte:** `typing.Optional[dt.datetime]` 
+**end_date_lte:** `typing.Optional[datetime.datetime]` 
 
 Returns objects less than or equal to the specified date.
 
@@ -3641,7 +2856,7 @@ This can be combined with duration_gte parameter to receive only the selected ra
 </dl>
 </details>
 
-<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py">get_task_instance</a>(...)</code></summary>
+<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py">get_task_instance</a>(...) -> TaskInstance</code></summary>
 <dl>
 <dd>
 
@@ -3655,11 +2870,14 @@ This can be combined with duration_gte parameter to receive only the selected ra
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.task_instance.get_task_instance(
     dag_id="dag_id",
     dag_run_id="dag_run_id",
@@ -3716,7 +2934,7 @@ client.task_instance.get_task_instance(
 </dl>
 </details>
 
-<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py">patch_task_instance</a>(...)</code></summary>
+<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py">patch_task_instance</a>(...) -> TaskInstanceReference</code></summary>
 <dl>
 <dd>
 
@@ -3745,11 +2963,14 @@ Updates the state for single task instance.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.task_instance.patch_task_instance(
     dag_id="dag_id",
     dag_run_id="dag_run_id",
@@ -3794,18 +3015,7 @@ client.task_instance.patch_task_instance(
 <dl>
 <dd>
 
-**dry_run:** `typing.Optional[bool]` 
-
-If set, don't actually run this operation. The response will contain the task instance
-planned to be affected, but won't be modified in any way.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**new_state:** `typing.Optional[UpdateTaskInstanceNewState]` — Expected new state.
+**request:** `UpdateTaskInstance` 
     
 </dd>
 </dl>
@@ -3825,7 +3035,7 @@ planned to be affected, but won't be modified in any way.
 </dl>
 </details>
 
-<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py">get_extra_links</a>(...)</code></summary>
+<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py">get_extra_links</a>(...) -> ExtraLinkCollection</code></summary>
 <dl>
 <dd>
 
@@ -3853,11 +3063,14 @@ List extra links for task instance.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.task_instance.get_extra_links(
     dag_id="dag_id",
     dag_run_id="dag_run_id",
@@ -3914,7 +3127,7 @@ client.task_instance.get_extra_links(
 </dl>
 </details>
 
-<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py">get_mapped_task_instances</a>(...)</code></summary>
+<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py">get_mapped_task_instances</a>(...) -> TaskInstanceCollection</code></summary>
 <dl>
 <dd>
 
@@ -3944,11 +3157,14 @@ Get details of all mapped task instances.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.task_instance.get_mapped_task_instances(
     dag_id="dag_id",
     dag_run_id="dag_run_id",
@@ -4009,7 +3225,7 @@ client.task_instance.get_mapped_task_instances(
 <dl>
 <dd>
 
-**execution_date_gte:** `typing.Optional[dt.datetime]` 
+**execution_date_gte:** `typing.Optional[datetime.datetime]` 
 
 Returns objects greater or equal to the specified date.
 
@@ -4021,7 +3237,7 @@ This can be combined with execution_date_lte parameter to receive only the selec
 <dl>
 <dd>
 
-**execution_date_lte:** `typing.Optional[dt.datetime]` 
+**execution_date_lte:** `typing.Optional[datetime.datetime]` 
 
 Returns objects less than or equal to the specified date.
 
@@ -4033,7 +3249,7 @@ This can be combined with execution_date_gte parameter to receive only the selec
 <dl>
 <dd>
 
-**start_date_gte:** `typing.Optional[dt.datetime]` 
+**start_date_gte:** `typing.Optional[datetime.datetime]` 
 
 Returns objects greater or equal the specified date.
 
@@ -4045,7 +3261,7 @@ This can be combined with start_date_lte parameter to receive only the selected 
 <dl>
 <dd>
 
-**start_date_lte:** `typing.Optional[dt.datetime]` 
+**start_date_lte:** `typing.Optional[datetime.datetime]` 
 
 Returns objects less or equal the specified date.
 
@@ -4057,7 +3273,7 @@ This can be combined with start_date_gte parameter to receive only the selected 
 <dl>
 <dd>
 
-**end_date_gte:** `typing.Optional[dt.datetime]` 
+**end_date_gte:** `typing.Optional[datetime.datetime]` 
 
 Returns objects greater or equal the specified date.
 
@@ -4069,7 +3285,7 @@ This can be combined with start_date_lte parameter to receive only the selected 
 <dl>
 <dd>
 
-**end_date_lte:** `typing.Optional[dt.datetime]` 
+**end_date_lte:** `typing.Optional[datetime.datetime]` 
 
 Returns objects less than or equal to the specified date.
 
@@ -4154,7 +3370,7 @@ Prefix a field name with `-` to reverse the sort order.
 </dl>
 </details>
 
-<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py">get_log</a>(...)</code></summary>
+<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py">get_log</a>(...) -> GetLogResponse</code></summary>
 <dl>
 <dd>
 
@@ -4182,11 +3398,14 @@ Get logs for a specific task instance and its try number.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.task_instance.get_log(
     dag_id="dag_id",
     dag_run_id="dag_run_id",
@@ -4282,7 +3501,7 @@ If passed, it will specify the location from which the download should be contin
 </dl>
 </details>
 
-<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py">set_task_instance_note</a>(...)</code></summary>
+<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py">set_task_instance_note</a>(...) -> TaskInstance</code></summary>
 <dl>
 <dd>
 
@@ -4312,11 +3531,14 @@ Update the manual user note of a non-mapped Task Instance.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.task_instance.set_task_instance_note(
     dag_id="dag_id",
     dag_run_id="dag_run_id",
@@ -4362,7 +3584,7 @@ client.task_instance.set_task_instance_note(
 <dl>
 <dd>
 
-**note:** `str` — The custom note to set for this Task Instance.
+**request:** `SetTaskInstanceNote` 
     
 </dd>
 </dl>
@@ -4382,7 +3604,7 @@ client.task_instance.set_task_instance_note(
 </dl>
 </details>
 
-<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py">get_mapped_task_instance</a>(...)</code></summary>
+<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py">get_mapped_task_instance</a>(...) -> TaskInstance</code></summary>
 <dl>
 <dd>
 
@@ -4412,11 +3634,14 @@ Get details of a mapped task instance.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.task_instance.get_mapped_task_instance(
     dag_id="dag_id",
     dag_run_id="dag_run_id",
@@ -4482,7 +3707,7 @@ client.task_instance.get_mapped_task_instance(
 </dl>
 </details>
 
-<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py">patch_mapped_task_instance</a>(...)</code></summary>
+<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py">patch_mapped_task_instance</a>(...) -> TaskInstanceReference</code></summary>
 <dl>
 <dd>
 
@@ -4511,11 +3736,14 @@ Updates the state for single mapped task instance.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.task_instance.patch_mapped_task_instance(
     dag_id="dag_id",
     dag_run_id="dag_run_id",
@@ -4569,18 +3797,7 @@ client.task_instance.patch_mapped_task_instance(
 <dl>
 <dd>
 
-**dry_run:** `typing.Optional[bool]` 
-
-If set, don't actually run this operation. The response will contain the task instance
-planned to be affected, but won't be modified in any way.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**new_state:** `typing.Optional[UpdateTaskInstanceNewState]` — Expected new state.
+**request:** `UpdateTaskInstance` 
     
 </dd>
 </dl>
@@ -4600,7 +3817,7 @@ planned to be affected, but won't be modified in any way.
 </dl>
 </details>
 
-<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py">set_mapped_task_instance_note</a>(...)</code></summary>
+<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py">set_mapped_task_instance_note</a>(...) -> TaskInstance</code></summary>
 <dl>
 <dd>
 
@@ -4630,11 +3847,14 @@ Update the manual user note of a mapped Task Instance.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.task_instance.set_mapped_task_instance_note(
     dag_id="dag_id",
     dag_run_id="dag_run_id",
@@ -4689,7 +3909,7 @@ client.task_instance.set_mapped_task_instance_note(
 <dl>
 <dd>
 
-**note:** `str` — The custom note to set for this Task Instance.
+**request:** `SetTaskInstanceNote` 
     
 </dd>
 </dl>
@@ -4709,7 +3929,7 @@ client.task_instance.set_mapped_task_instance_note(
 </dl>
 </details>
 
-<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py">get_task_instances_batch</a>(...)</code></summary>
+<details><summary><code>client.task_instance.<a href="src/fern/task_instance/client.py">get_task_instances_batch</a>(...) -> TaskInstanceCollection</code></summary>
 <dl>
 <dd>
 
@@ -4738,11 +3958,14 @@ This endpoint is a POST to allow filtering across a large number of DAG IDs, whe
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.task_instance.get_task_instances_batch()
 
 ```
@@ -4759,7 +3982,7 @@ client.task_instance.get_task_instances_batch()
 <dl>
 <dd>
 
-**dag_ids:** `typing.Optional[typing.Sequence[str]]` 
+**dag_ids:** `typing.Optional[typing.List[str]]` 
 
 Return objects with specific DAG IDs.
 The value can be repeated to retrieve multiple matching values (OR condition).
@@ -4794,7 +4017,7 @@ This can be combined with duration_gte parameter to receive only the selected ra
 <dl>
 <dd>
 
-**end_date_gte:** `typing.Optional[dt.datetime]` 
+**end_date_gte:** `typing.Optional[datetime.datetime]` 
 
 Returns objects greater or equal the specified date.
 
@@ -4806,7 +4029,7 @@ This can be combined with start_date_lte parameter to receive only the selected 
 <dl>
 <dd>
 
-**end_date_lte:** `typing.Optional[dt.datetime]` 
+**end_date_lte:** `typing.Optional[datetime.datetime]` 
 
 Returns objects less than or equal to the specified date.
 
@@ -4818,7 +4041,7 @@ This can be combined with start_date_gte parameter to receive only the selected 
 <dl>
 <dd>
 
-**execution_date_gte:** `typing.Optional[dt.datetime]` 
+**execution_date_gte:** `typing.Optional[datetime.datetime]` 
 
 Returns objects greater or equal to the specified date.
 
@@ -4830,7 +4053,7 @@ This can be combined with execution_date_lte parameter to receive only the selec
 <dl>
 <dd>
 
-**execution_date_lte:** `typing.Optional[dt.datetime]` 
+**execution_date_lte:** `typing.Optional[datetime.datetime]` 
 
 Returns objects less than or equal to the specified date.
 
@@ -4842,7 +4065,7 @@ This can be combined with execution_date_gte parameter to receive only the selec
 <dl>
 <dd>
 
-**pool:** `typing.Optional[typing.Sequence[str]]` — The value can be repeated to retrieve multiple matching values (OR condition).
+**pool:** `typing.Optional[typing.List[str]]` — The value can be repeated to retrieve multiple matching values (OR condition).
     
 </dd>
 </dl>
@@ -4850,7 +4073,7 @@ This can be combined with execution_date_gte parameter to receive only the selec
 <dl>
 <dd>
 
-**queue:** `typing.Optional[typing.Sequence[str]]` — The value can be repeated to retrieve multiple matching values (OR condition).
+**queue:** `typing.Optional[typing.List[str]]` — The value can be repeated to retrieve multiple matching values (OR condition).
     
 </dd>
 </dl>
@@ -4858,7 +4081,7 @@ This can be combined with execution_date_gte parameter to receive only the selec
 <dl>
 <dd>
 
-**start_date_gte:** `typing.Optional[dt.datetime]` 
+**start_date_gte:** `typing.Optional[datetime.datetime]` 
 
 Returns objects greater or equal the specified date.
 
@@ -4870,7 +4093,7 @@ This can be combined with start_date_lte parameter to receive only the selected 
 <dl>
 <dd>
 
-**start_date_lte:** `typing.Optional[dt.datetime]` 
+**start_date_lte:** `typing.Optional[datetime.datetime]` 
 
 Returns objects less or equal the specified date.
 
@@ -4882,7 +4105,7 @@ This can be combined with start_date_gte parameter to receive only the selected 
 <dl>
 <dd>
 
-**state:** `typing.Optional[typing.Sequence[TaskState]]` — The value can be repeated to retrieve multiple matching values (OR condition).
+**state:** `typing.Optional[typing.List[TaskState]]` — The value can be repeated to retrieve multiple matching values (OR condition).
     
 </dd>
 </dl>
@@ -4903,7 +4126,7 @@ This can be combined with start_date_gte parameter to receive only the selected 
 </details>
 
 ## XCom
-<details><summary><code>client.x_com.<a href="src/fern/x_com/client.py">get_xcom_entries</a>(...)</code></summary>
+<details><summary><code>client.x_com.<a href="src/fern/x_com/client.py">get_xcom_entries</a>(...) -> XComCollection</code></summary>
 <dl>
 <dd>
 
@@ -4931,11 +4154,14 @@ This endpoint allows specifying `~` as the dag_id, dag_run_id, task_id to retrie
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.x_com.get_xcom_entries(
     dag_id="dag_id",
     dag_run_id="dag_run_id",
@@ -5008,7 +4234,7 @@ client.x_com.get_xcom_entries(
 </dl>
 </details>
 
-<details><summary><code>client.x_com.<a href="src/fern/x_com/client.py">get_xcom_entry</a>(...)</code></summary>
+<details><summary><code>client.x_com.<a href="src/fern/x_com/client.py">get_xcom_entry</a>(...) -> XCom</code></summary>
 <dl>
 <dd>
 
@@ -5022,11 +4248,14 @@ client.x_com.get_xcom_entries(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.x_com.get_xcom_entry(
     dag_id="dag_id",
     dag_run_id="dag_run_id",
@@ -5111,7 +4340,7 @@ This parameter is not meaningful when using the default XCom backend.
 </details>
 
 ## Dataset
-<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py">get_datasets</a>(...)</code></summary>
+<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py">get_datasets</a>(...) -> DatasetCollection</code></summary>
 <dl>
 <dd>
 
@@ -5125,11 +4354,14 @@ This parameter is not meaningful when using the default XCom backend.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.dataset.get_datasets()
 
 ```
@@ -5195,7 +4427,7 @@ Prefix a field name with `-` to reverse the sort order.
 </dl>
 </details>
 
-<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py">get_dataset_events</a>(...)</code></summary>
+<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py">get_dataset_events</a>(...) -> DatasetEventCollection</code></summary>
 <dl>
 <dd>
 
@@ -5223,11 +4455,14 @@ Get dataset events
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.dataset.get_dataset_events()
 
 ```
@@ -5325,7 +4560,7 @@ Prefix a field name with `-` to reverse the sort order.
 </dl>
 </details>
 
-<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py">get_dataset</a>(...)</code></summary>
+<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py">get_dataset</a>(...) -> Dataset</code></summary>
 <dl>
 <dd>
 
@@ -5353,11 +4588,14 @@ Get a dataset by uri.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.dataset.get_dataset(
     uri="uri",
 )
@@ -5397,7 +4635,7 @@ client.dataset.get_dataset(
 </details>
 
 ## EventLog
-<details><summary><code>client.event_log.<a href="src/fern/event_log/client.py">get_event_logs</a>(...)</code></summary>
+<details><summary><code>client.event_log.<a href="src/fern/event_log/client.py">get_event_logs</a>(...) -> EventLogCollection</code></summary>
 <dl>
 <dd>
 
@@ -5425,11 +4663,14 @@ List log entries from event log.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.event_log.get_event_logs()
 
 ```
@@ -5487,7 +4728,7 @@ Prefix a field name with `-` to reverse the sort order.
 </dl>
 </details>
 
-<details><summary><code>client.event_log.<a href="src/fern/event_log/client.py">get_event_log</a>(...)</code></summary>
+<details><summary><code>client.event_log.<a href="src/fern/event_log/client.py">get_event_log</a>(...) -> EventLog</code></summary>
 <dl>
 <dd>
 
@@ -5501,11 +4742,14 @@ Prefix a field name with `-` to reverse the sort order.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.event_log.get_event_log(
     event_log_id=1,
 )
@@ -5545,7 +4789,7 @@ client.event_log.get_event_log(
 </details>
 
 ## Monitoring
-<details><summary><code>client.monitoring.<a href="src/fern/monitoring/client.py">get_health</a>()</code></summary>
+<details><summary><code>client.monitoring.<a href="src/fern/monitoring/client.py">get_health</a>() -> HealthInfo</code></summary>
 <dl>
 <dd>
 
@@ -5574,11 +4818,14 @@ metadatabase and last heartbeat of scheduler.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.monitoring.get_health()
 
 ```
@@ -5607,7 +4854,7 @@ client.monitoring.get_health()
 </dl>
 </details>
 
-<details><summary><code>client.monitoring.<a href="src/fern/monitoring/client.py">get_version</a>()</code></summary>
+<details><summary><code>client.monitoring.<a href="src/fern/monitoring/client.py">get_version</a>() -> VersionInfo</code></summary>
 <dl>
 <dd>
 
@@ -5621,11 +4868,14 @@ client.monitoring.get_health()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.monitoring.get_version()
 
 ```
@@ -5655,7 +4905,7 @@ client.monitoring.get_version()
 </details>
 
 ## ImportError
-<details><summary><code>client.import_error.<a href="src/fern/import_error/client.py">get_import_errors</a>(...)</code></summary>
+<details><summary><code>client.import_error.<a href="src/fern/import_error/client.py">get_import_errors</a>(...) -> ImportErrorCollection</code></summary>
 <dl>
 <dd>
 
@@ -5669,11 +4919,14 @@ client.monitoring.get_version()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.import_error.get_import_errors()
 
 ```
@@ -5731,7 +4984,7 @@ Prefix a field name with `-` to reverse the sort order.
 </dl>
 </details>
 
-<details><summary><code>client.import_error.<a href="src/fern/import_error/client.py">get_import_error</a>(...)</code></summary>
+<details><summary><code>client.import_error.<a href="src/fern/import_error/client.py">get_import_error</a>(...) -> ImportError</code></summary>
 <dl>
 <dd>
 
@@ -5745,11 +4998,14 @@ Prefix a field name with `-` to reverse the sort order.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.import_error.get_import_error(
     import_error_id=1,
 )
@@ -5789,7 +5045,7 @@ client.import_error.get_import_error(
 </details>
 
 ## Permission
-<details><summary><code>client.permission.<a href="src/fern/permission/client.py">get_permissions</a>(...)</code></summary>
+<details><summary><code>client.permission.<a href="src/fern/permission/client.py">get_permissions</a>(...) -> ActionCollection</code></summary>
 <dl>
 <dd>
 
@@ -5819,11 +5075,14 @@ Get a list of permissions.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.permission.get_permissions()
 
 ```
@@ -5869,7 +5128,7 @@ client.permission.get_permissions()
 </details>
 
 ## Plugin
-<details><summary><code>client.plugin.<a href="src/fern/plugin/client.py">get_plugins</a>(...)</code></summary>
+<details><summary><code>client.plugin.<a href="src/fern/plugin/client.py">get_plugins</a>(...) -> PluginCollection</code></summary>
 <dl>
 <dd>
 
@@ -5899,11 +5158,14 @@ Get a list of loaded plugins.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.plugin.get_plugins()
 
 ```
@@ -5949,7 +5211,7 @@ client.plugin.get_plugins()
 </details>
 
 ## Pool
-<details><summary><code>client.pool.<a href="src/fern/pool/client.py">get_pools</a>(...)</code></summary>
+<details><summary><code>client.pool.<a href="src/fern/pool/client.py">get_pools</a>(...) -> PoolCollection</code></summary>
 <dl>
 <dd>
 
@@ -5963,11 +5225,14 @@ client.plugin.get_plugins()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.pool.get_pools()
 
 ```
@@ -6025,7 +5290,7 @@ Prefix a field name with `-` to reverse the sort order.
 </dl>
 </details>
 
-<details><summary><code>client.pool.<a href="src/fern/pool/client.py">post_pool</a>(...)</code></summary>
+<details><summary><code>client.pool.<a href="src/fern/pool/client.py">post_pool</a>(...) -> Pool</code></summary>
 <dl>
 <dd>
 
@@ -6039,11 +5304,14 @@ Prefix a field name with `-` to reverse the sort order.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.pool.post_pool()
 
 ```
@@ -6060,59 +5328,7 @@ client.pool.post_pool()
 <dl>
 <dd>
 
-**description:** `typing.Optional[str]` 
-
-The description of the pool.
-
-*New in version 2.3.0*
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**name:** `typing.Optional[str]` — The name of pool.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**occupied_slots:** `typing.Optional[int]` — The number of slots used by running/queued tasks at the moment.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**open_slots:** `typing.Optional[int]` — The number of free slots at the moment.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**queued_slots:** `typing.Optional[int]` — The number of slots used by queued tasks at the moment.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**slots:** `typing.Optional[int]` — The maximum number of slots that can be assigned to tasks. One job may occupy one or more slots.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**used_slots:** `typing.Optional[int]` — The number of slots used by running tasks at the moment.
+**request:** `Pool` 
     
 </dd>
 </dl>
@@ -6132,7 +5348,7 @@ The description of the pool.
 </dl>
 </details>
 
-<details><summary><code>client.pool.<a href="src/fern/pool/client.py">get_pool</a>(...)</code></summary>
+<details><summary><code>client.pool.<a href="src/fern/pool/client.py">get_pool</a>(...) -> Pool</code></summary>
 <dl>
 <dd>
 
@@ -6146,11 +5362,14 @@ The description of the pool.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.pool.get_pool(
     pool_name="pool_name",
 )
@@ -6203,11 +5422,14 @@ client.pool.get_pool(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.pool.delete_pool(
     pool_name="pool_name",
 )
@@ -6246,7 +5468,7 @@ client.pool.delete_pool(
 </dl>
 </details>
 
-<details><summary><code>client.pool.<a href="src/fern/pool/client.py">patch_pool</a>(...)</code></summary>
+<details><summary><code>client.pool.<a href="src/fern/pool/client.py">patch_pool</a>(...) -> Pool</code></summary>
 <dl>
 <dd>
 
@@ -6260,11 +5482,14 @@ client.pool.delete_pool(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.pool.patch_pool(
     pool_name="pool_name",
 )
@@ -6291,70 +5516,18 @@ client.pool.patch_pool(
 <dl>
 <dd>
 
+**request:** `Pool` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **update_mask:** `typing.Optional[typing.Union[str, typing.Sequence[str]]]` 
 
 The fields to update on the resource. If absent or empty, all modifiable fields are updated.
 A comma-separated list of fully qualified names of fields.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` 
-
-The description of the pool.
-
-*New in version 2.3.0*
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**name:** `typing.Optional[str]` — The name of pool.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**occupied_slots:** `typing.Optional[int]` — The number of slots used by running/queued tasks at the moment.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**open_slots:** `typing.Optional[int]` — The number of free slots at the moment.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**queued_slots:** `typing.Optional[int]` — The number of slots used by queued tasks at the moment.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**slots:** `typing.Optional[int]` — The maximum number of slots that can be assigned to tasks. One job may occupy one or more slots.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**used_slots:** `typing.Optional[int]` — The number of slots used by running tasks at the moment.
     
 </dd>
 </dl>
@@ -6375,7 +5548,7 @@ The description of the pool.
 </details>
 
 ## Provider
-<details><summary><code>client.provider.<a href="src/fern/provider/client.py">get_providers</a>()</code></summary>
+<details><summary><code>client.provider.<a href="src/fern/provider/client.py">get_providers</a>() -> GetProvidersResponse</code></summary>
 <dl>
 <dd>
 
@@ -6405,11 +5578,14 @@ Get a list of providers.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.provider.get_providers()
 
 ```
@@ -6439,7 +5615,7 @@ client.provider.get_providers()
 </details>
 
 ## Role
-<details><summary><code>client.role.<a href="src/fern/role/client.py">get_roles</a>(...)</code></summary>
+<details><summary><code>client.role.<a href="src/fern/role/client.py">get_roles</a>(...) -> RoleCollection</code></summary>
 <dl>
 <dd>
 
@@ -6469,11 +5645,14 @@ Get a list of roles.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.role.get_roles()
 
 ```
@@ -6531,7 +5710,7 @@ Prefix a field name with `-` to reverse the sort order.
 </dl>
 </details>
 
-<details><summary><code>client.role.<a href="src/fern/role/client.py">post_role</a>(...)</code></summary>
+<details><summary><code>client.role.<a href="src/fern/role/client.py">post_role</a>(...) -> Role</code></summary>
 <dl>
 <dd>
 
@@ -6561,11 +5740,14 @@ Create a new role.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.role.post_role()
 
 ```
@@ -6582,19 +5764,7 @@ client.role.post_role()
 <dl>
 <dd>
 
-**actions:** `typing.Optional[typing.Sequence[ActionResource]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**name:** `typing.Optional[str]` 
-
-The name of the role
-
-*Changed in version 2.3.0*&#58; A minimum character length requirement ('minLength') is added.
+**request:** `Role` 
     
 </dd>
 </dl>
@@ -6614,7 +5784,7 @@ The name of the role
 </dl>
 </details>
 
-<details><summary><code>client.role.<a href="src/fern/role/client.py">get_role</a>(...)</code></summary>
+<details><summary><code>client.role.<a href="src/fern/role/client.py">get_role</a>(...) -> Role</code></summary>
 <dl>
 <dd>
 
@@ -6644,11 +5814,14 @@ Get a role.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.role.get_role(
     role_name="role_name",
 )
@@ -6717,11 +5890,14 @@ Delete a role.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.role.delete_role(
     role_name="role_name",
 )
@@ -6760,7 +5936,7 @@ client.role.delete_role(
 </dl>
 </details>
 
-<details><summary><code>client.role.<a href="src/fern/role/client.py">patch_role</a>(...)</code></summary>
+<details><summary><code>client.role.<a href="src/fern/role/client.py">patch_role</a>(...) -> Role</code></summary>
 <dl>
 <dd>
 
@@ -6790,11 +5966,14 @@ Update a role.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.role.patch_role(
     role_name="role_name",
 )
@@ -6821,30 +6000,18 @@ client.role.patch_role(
 <dl>
 <dd>
 
+**request:** `Role` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **update_mask:** `typing.Optional[typing.Union[str, typing.Sequence[str]]]` 
 
 The fields to update on the resource. If absent or empty, all modifiable fields are updated.
 A comma-separated list of fully qualified names of fields.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**actions:** `typing.Optional[typing.Sequence[ActionResource]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**name:** `typing.Optional[str]` 
-
-The name of the role
-
-*Changed in version 2.3.0*&#58; A minimum character length requirement ('minLength') is added.
     
 </dd>
 </dl>
@@ -6865,7 +6032,7 @@ The name of the role
 </details>
 
 ## User
-<details><summary><code>client.user.<a href="src/fern/user/client.py">get_users</a>(...)</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py">get_users</a>(...) -> UserCollection</code></summary>
 <dl>
 <dd>
 
@@ -6895,11 +6062,14 @@ Get a list of users.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.user.get_users()
 
 ```
@@ -6957,7 +6127,7 @@ Prefix a field name with `-` to reverse the sort order.
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">post_user</a>(...)</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py">post_user</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -6987,11 +6157,14 @@ Create a new user with unique username and email.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.user.post_user()
 
 ```
@@ -7008,115 +6181,7 @@ client.user.post_user()
 <dl>
 <dd>
 
-**password:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**active:** `typing.Optional[bool]` — Whether the user is active
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**changed_on:** `typing.Optional[str]` — The date user was changed
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_on:** `typing.Optional[str]` — The date user was created
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**email:** `typing.Optional[str]` 
-
-The user's email.
-
-*Changed in version 2.2.0*&#58; A minimum character length requirement ('minLength') is added.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**failed_login_count:** `typing.Optional[int]` — The number of times the login failed
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**first_name:** `typing.Optional[str]` 
-
-The user's first name.
-
-*Changed in version 2.4.0*&#58; The requirement for this to be non-empty was removed.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**last_login:** `typing.Optional[str]` — The last user login
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**last_name:** `typing.Optional[str]` 
-
-The user's last name.
-
-*Changed in version 2.4.0*&#58; The requirement for this to be non-empty was removed.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**login_count:** `typing.Optional[int]` — The login count
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**roles:** `typing.Optional[typing.Sequence[typing.Optional[UserCollectionItemRolesItem]]]` 
-
-User roles.
-
-*Changed in version 2.2.0*&#58; Field is no longer read-only.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**username:** `typing.Optional[str]` 
-
-The username.
-
-*Changed in version 2.2.0*&#58; A minimum character length requirement ('minLength') is added.
+**request:** `User` 
     
 </dd>
 </dl>
@@ -7136,7 +6201,7 @@ The username.
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">get_user</a>(...)</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py">get_user</a>(...) -> UserCollectionItem</code></summary>
 <dl>
 <dd>
 
@@ -7166,11 +6231,14 @@ Get a user with a specific username.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.user.get_user(
     username="username",
 )
@@ -7243,11 +6311,14 @@ Delete a user with a specific username.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.user.delete_user(
     username="username",
 )
@@ -7290,7 +6361,7 @@ The username of the user.
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">patch_user</a>(...)</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py">patch_user</a>(...) -> Role</code></summary>
 <dl>
 <dd>
 
@@ -7320,11 +6391,14 @@ Update fields for a user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.user.patch_user(
     username_="username",
 )
@@ -7343,7 +6417,7 @@ client.user.patch_user(
 <dl>
 <dd>
 
-**username_:** `str` 
+**username:** `str` 
 
 The username of the user.
 
@@ -7355,126 +6429,18 @@ The username of the user.
 <dl>
 <dd>
 
+**request:** `User` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **update_mask:** `typing.Optional[typing.Union[str, typing.Sequence[str]]]` 
 
 The fields to update on the resource. If absent or empty, all modifiable fields are updated.
 A comma-separated list of fully qualified names of fields.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**password:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**active:** `typing.Optional[bool]` — Whether the user is active
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**changed_on:** `typing.Optional[str]` — The date user was changed
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_on:** `typing.Optional[str]` — The date user was created
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**email:** `typing.Optional[str]` 
-
-The user's email.
-
-*Changed in version 2.2.0*&#58; A minimum character length requirement ('minLength') is added.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**failed_login_count:** `typing.Optional[int]` — The number of times the login failed
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**first_name:** `typing.Optional[str]` 
-
-The user's first name.
-
-*Changed in version 2.4.0*&#58; The requirement for this to be non-empty was removed.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**last_login:** `typing.Optional[str]` — The last user login
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**last_name:** `typing.Optional[str]` 
-
-The user's last name.
-
-*Changed in version 2.4.0*&#58; The requirement for this to be non-empty was removed.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**login_count:** `typing.Optional[int]` — The login count
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**roles:** `typing.Optional[typing.Sequence[typing.Optional[UserCollectionItemRolesItem]]]` 
-
-User roles.
-
-*Changed in version 2.2.0*&#58; Field is no longer read-only.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**username:** `typing.Optional[str]` 
-
-The username.
-
-*Changed in version 2.2.0*&#58; A minimum character length requirement ('minLength') is added.
     
 </dd>
 </dl>
@@ -7495,7 +6461,7 @@ The username.
 </details>
 
 ## Variable
-<details><summary><code>client.variable.<a href="src/fern/variable/client.py">get_variables</a>(...)</code></summary>
+<details><summary><code>client.variable.<a href="src/fern/variable/client.py">get_variables</a>(...) -> VariableCollection</code></summary>
 <dl>
 <dd>
 
@@ -7523,11 +6489,14 @@ The collection does not contain data. To get data, you must get a single entity.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.variable.get_variables()
 
 ```
@@ -7585,7 +6554,7 @@ Prefix a field name with `-` to reverse the sort order.
 </dl>
 </details>
 
-<details><summary><code>client.variable.<a href="src/fern/variable/client.py">post_variables</a>(...)</code></summary>
+<details><summary><code>client.variable.<a href="src/fern/variable/client.py">post_variables</a>(...) -> Variable</code></summary>
 <dl>
 <dd>
 
@@ -7599,11 +6568,14 @@ Prefix a field name with `-` to reverse the sort order.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.variable.post_variables()
 
 ```
@@ -7620,27 +6592,7 @@ client.variable.post_variables()
 <dl>
 <dd>
 
-**value:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` 
-
-The description of the variable.
-
-*New in version 2.4.0*
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**key:** `typing.Optional[str]` 
+**request:** `Variable` 
     
 </dd>
 </dl>
@@ -7660,7 +6612,7 @@ The description of the variable.
 </dl>
 </details>
 
-<details><summary><code>client.variable.<a href="src/fern/variable/client.py">get_variable</a>(...)</code></summary>
+<details><summary><code>client.variable.<a href="src/fern/variable/client.py">get_variable</a>(...) -> Variable</code></summary>
 <dl>
 <dd>
 
@@ -7688,11 +6640,14 @@ Get a variable by key.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.variable.get_variable(
     variable_key="variable_key",
 )
@@ -7745,11 +6700,14 @@ client.variable.get_variable(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.variable.delete_variable(
     variable_key="variable_key",
 )
@@ -7788,7 +6746,7 @@ client.variable.delete_variable(
 </dl>
 </details>
 
-<details><summary><code>client.variable.<a href="src/fern/variable/client.py">patch_variable</a>(...)</code></summary>
+<details><summary><code>client.variable.<a href="src/fern/variable/client.py">patch_variable</a>(...) -> Variable</code></summary>
 <dl>
 <dd>
 
@@ -7816,11 +6774,14 @@ Update a variable by key.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.variable.patch_variable(
     variable_key="variable_key",
 )
@@ -7847,38 +6808,18 @@ client.variable.patch_variable(
 <dl>
 <dd>
 
+**request:** `Variable` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **update_mask:** `typing.Optional[typing.Union[str, typing.Sequence[str]]]` 
 
 The fields to update on the resource. If absent or empty, all modifiable fields are updated.
 A comma-separated list of fully qualified names of fields.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**value:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` 
-
-The description of the variable.
-
-*New in version 2.4.0*
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**key:** `typing.Optional[str]` 
     
 </dd>
 </dl>

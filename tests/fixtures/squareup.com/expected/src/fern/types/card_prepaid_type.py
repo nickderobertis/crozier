@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class CardPrepaidType(str, enum.Enum):
+class CardPrepaidType(enum.StrEnum):
     """
     Indicates a card's prepaid type, such as `NOT_PREPAID` or `PREPAID`.
     """

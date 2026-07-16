@@ -2,4 +2,4 @@
 
 import typing
 
-OperationIdAlreadyExistsException = typing.Optional[typing.Any]
+OperationIdAlreadyExistsException = typing.Any

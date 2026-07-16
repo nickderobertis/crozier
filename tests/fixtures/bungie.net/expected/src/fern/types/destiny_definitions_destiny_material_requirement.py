@@ -18,30 +18,50 @@ class DestinyDefinitionsDestinyMaterialRequirement(UniversalBaseModel):
     The amount of the material required.
     """
 
-    count_is_constant: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="countIsConstant")] = (
-        pydantic.Field(default=None)
-    )
+    count_is_constant: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="countIsConstant"),
+        pydantic.Field(
+            alias="countIsConstant",
+            description="If true, the material requirement count value is constant. Since The Witch Queen expansion, some material requirement counts can be dynamic and will need to be returned with an API call.",
+        ),
+    ] = None
     """
     If true, the material requirement count value is constant. Since The Witch Queen expansion, some material requirement counts can be dynamic and will need to be returned with an API call.
     """
 
-    delete_on_action: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="deleteOnAction")] = (
-        pydantic.Field(default=None)
-    )
+    delete_on_action: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="deleteOnAction"),
+        pydantic.Field(
+            alias="deleteOnAction",
+            description="If True, the material will be removed from the character's inventory when the action is performed.",
+        ),
+    ] = None
     """
     If True, the material will be removed from the character's inventory when the action is performed.
     """
 
-    item_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="itemHash")] = pydantic.Field(
-        default=None
-    )
+    item_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="itemHash"),
+        pydantic.Field(
+            alias="itemHash",
+            description="The hash identifier of the material required. Use it to look up the material's DestinyInventoryItemDefinition.",
+        ),
+    ] = None
     """
     The hash identifier of the material required. Use it to look up the material's DestinyInventoryItemDefinition.
     """
 
     omit_from_requirements: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="omitFromRequirements")
-    ] = pydantic.Field(default=None)
+        typing.Optional[bool],
+        FieldMetadata(alias="omitFromRequirements"),
+        pydantic.Field(
+            alias="omitFromRequirements",
+            description="If True, this requirement is \"silent\": don't bother showing it in a material requirements display. I mean, I'm not your mom: I'm not going to tell you you *can't* show it. But we won't show it in our UI.",
+        ),
+    ] = None
     """
     If True, this requirement is "silent": don't bother showing it in a material requirements display. I mean, I'm not your mom: I'm not going to tell you you *can't* show it. But we won't show it in our UI.
     """

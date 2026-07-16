@@ -9,30 +9,41 @@ from ..core.serialization import FieldMetadata
 
 
 class ReimbursementLine(UniversalBaseModel):
-    amount: typing_extensions.Annotated[typing.Optional[float], FieldMetadata(alias="Amount")] = pydantic.Field(
-        default=None
-    )
+    amount: typing_extensions.Annotated[
+        typing.Optional[float],
+        FieldMetadata(alias="Amount"),
+        pydantic.Field(alias="Amount", description="Reimbursement type amount"),
+    ] = None
     """
     Reimbursement type amount
     """
 
-    description: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="Description")] = pydantic.Field(
-        default=None
-    )
+    description: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="Description"),
+        pydantic.Field(alias="Description", description="Reimbursement lines description (max length 50)"),
+    ] = None
     """
     Reimbursement lines description (max length 50)
     """
 
-    expense_account: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="ExpenseAccount")] = (
-        pydantic.Field(default=None)
-    )
+    expense_account: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="ExpenseAccount"),
+        pydantic.Field(
+            alias="ExpenseAccount",
+            description="Reimbursement expense account. For posted pay run you should be able to see expense account code.",
+        ),
+    ] = None
     """
     Reimbursement expense account. For posted pay run you should be able to see expense account code.
     """
 
     reimbursement_type_id: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="ReimbursementTypeID")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="ReimbursementTypeID"),
+        pydantic.Field(alias="ReimbursementTypeID", description="Xero reimbursement type identifier"),
+    ] = None
     """
     Xero reimbursement type identifier
     """

@@ -13,9 +13,11 @@ class CreateStackOutput(UniversalBaseModel):
     The output for a <a>CreateStack</a> action.
     """
 
-    stack_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="StackId")] = pydantic.Field(
-        default=None
-    )
+    stack_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="StackId"),
+        pydantic.Field(alias="StackId", description="Unique identifier of the stack."),
+    ] = None
     """
     Unique identifier of the stack.
     """

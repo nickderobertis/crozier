@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..types.ap_is import ApIs
@@ -14,6 +15,7 @@ from ..types.api import Api
 from ..types.metrics import Metrics
 from .types.get_providers_response import GetProvidersResponse
 from .types.get_services_response import GetServicesResponse
+from pydantic import ValidationError
 
 
 class RawApIsClient:
@@ -56,6 +58,10 @@ class RawApIsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_metrics(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[Metrics]:
@@ -91,6 +97,10 @@ class RawApIsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_providers(
@@ -127,6 +137,10 @@ class RawApIsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_api(
@@ -150,7 +164,7 @@ class RawApIsClient:
             OK
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"specs/{jsonable_encoder(provider)}/{jsonable_encoder(api)}.json",
+            f"specs/{encode_path_param(provider)}/{encode_path_param(api)}.json",
             method="GET",
             request_options=request_options,
         )
@@ -167,6 +181,10 @@ class RawApIsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_service_api(
@@ -192,7 +210,7 @@ class RawApIsClient:
             OK
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"specs/{jsonable_encoder(provider)}/{jsonable_encoder(service)}/{jsonable_encoder(api)}.json",
+            f"specs/{encode_path_param(provider)}/{encode_path_param(service)}/{encode_path_param(api)}.json",
             method="GET",
             request_options=request_options,
         )
@@ -209,6 +227,10 @@ class RawApIsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_provider(
@@ -231,7 +253,7 @@ class RawApIsClient:
             OK
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"{jsonable_encoder(provider)}.json",
+            f"{encode_path_param(provider)}.json",
             method="GET",
             request_options=request_options,
         )
@@ -248,6 +270,10 @@ class RawApIsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_services(
@@ -269,7 +295,7 @@ class RawApIsClient:
             OK
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"{jsonable_encoder(provider)}/services.json",
+            f"{encode_path_param(provider)}/services.json",
             method="GET",
             request_options=request_options,
         )
@@ -286,6 +312,10 @@ class RawApIsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -329,6 +359,10 @@ class AsyncRawApIsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_metrics(
@@ -366,6 +400,10 @@ class AsyncRawApIsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_providers(
@@ -402,6 +440,10 @@ class AsyncRawApIsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_api(
@@ -425,7 +467,7 @@ class AsyncRawApIsClient:
             OK
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"specs/{jsonable_encoder(provider)}/{jsonable_encoder(api)}.json",
+            f"specs/{encode_path_param(provider)}/{encode_path_param(api)}.json",
             method="GET",
             request_options=request_options,
         )
@@ -442,6 +484,10 @@ class AsyncRawApIsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_service_api(
@@ -467,7 +513,7 @@ class AsyncRawApIsClient:
             OK
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"specs/{jsonable_encoder(provider)}/{jsonable_encoder(service)}/{jsonable_encoder(api)}.json",
+            f"specs/{encode_path_param(provider)}/{encode_path_param(service)}/{encode_path_param(api)}.json",
             method="GET",
             request_options=request_options,
         )
@@ -484,6 +530,10 @@ class AsyncRawApIsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_provider(
@@ -506,7 +556,7 @@ class AsyncRawApIsClient:
             OK
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"{jsonable_encoder(provider)}.json",
+            f"{encode_path_param(provider)}.json",
             method="GET",
             request_options=request_options,
         )
@@ -523,6 +573,10 @@ class AsyncRawApIsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_services(
@@ -544,7 +598,7 @@ class AsyncRawApIsClient:
             OK
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"{jsonable_encoder(provider)}/services.json",
+            f"{encode_path_param(provider)}/services.json",
             method="GET",
             request_options=request_options,
         )
@@ -561,4 +615,8 @@ class AsyncRawApIsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

@@ -10,8 +10,13 @@ from ...core.serialization import FieldMetadata
 
 class PostAssetsCorrelationMatrixDistanceResponse(UniversalBaseModel):
     assets_correlation_matrix_distance: typing_extensions.Annotated[
-        float, FieldMetadata(alias="assetsCorrelationMatrixDistance")
-    ] = pydantic.Field()
+        float,
+        FieldMetadata(alias="assetsCorrelationMatrixDistance"),
+        pydantic.Field(
+            alias="assetsCorrelationMatrixDistance",
+            description="The computed distance between the two correlation matrices",
+        ),
+    ]
     """
     The computed distance between the two correlation matrices
     """

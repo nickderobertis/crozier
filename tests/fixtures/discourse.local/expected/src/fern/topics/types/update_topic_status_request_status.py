@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class UpdateTopicStatusRequestStatus(str, enum.Enum):
+class UpdateTopicStatusRequestStatus(enum.StrEnum):
     CLOSED = "closed"
     PINNED = "pinned"
     PINNED_GLOBALLY = "pinned_globally"

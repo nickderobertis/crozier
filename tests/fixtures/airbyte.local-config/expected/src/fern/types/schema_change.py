@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class SchemaChange(str, enum.Enum):
+class SchemaChange(enum.StrEnum):
     NO_CHANGE = "no_change"
     NON_BREAKING = "non_breaking"
     BREAKING = "breaking"

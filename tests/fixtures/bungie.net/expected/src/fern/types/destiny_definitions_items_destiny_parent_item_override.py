@@ -10,9 +10,13 @@ from ..core.serialization import FieldMetadata
 
 class DestinyDefinitionsItemsDestinyParentItemOverride(UniversalBaseModel):
     additional_equip_requirements_display_strings: typing_extensions.Annotated[
-        typing.Optional[typing.List[str]], FieldMetadata(alias="additionalEquipRequirementsDisplayStrings")
+        typing.Optional[typing.List[str]],
+        FieldMetadata(alias="additionalEquipRequirementsDisplayStrings"),
+        pydantic.Field(alias="additionalEquipRequirementsDisplayStrings"),
     ] = None
-    pip_icon: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="pipIcon")] = None
+    pip_icon: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="pipIcon"), pydantic.Field(alias="pipIcon")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

@@ -15,16 +15,26 @@ class DestinyDefinitionsDestinyActivityChallengeDefinition(UniversalBaseModel):
     """
 
     dummy_rewards: typing_extensions.Annotated[
-        typing.Optional[typing.List[DestinyDestinyItemQuantity]], FieldMetadata(alias="dummyRewards")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[DestinyDestinyItemQuantity]],
+        FieldMetadata(alias="dummyRewards"),
+        pydantic.Field(
+            alias="dummyRewards",
+            description="The rewards as they're represented in the UI. Note that they generally link to \"dummy\" items that give a summary of rewards rather than direct, real items themselves.\r\nIf the quantity is 0, don't show the quantity.",
+        ),
+    ] = None
     """
     The rewards as they're represented in the UI. Note that they generally link to "dummy" items that give a summary of rewards rather than direct, real items themselves.
     If the quantity is 0, don't show the quantity.
     """
 
-    objective_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="objectiveHash")] = (
-        pydantic.Field(default=None)
-    )
+    objective_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="objectiveHash"),
+        pydantic.Field(
+            alias="objectiveHash",
+            description="The hash for the Objective that matches this challenge. Use it to look up the DestinyObjectiveDefinition.",
+        ),
+    ] = None
     """
     The hash for the Objective that matches this challenge. Use it to look up the DestinyObjectiveDefinition.
     """

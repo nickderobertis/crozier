@@ -10,8 +10,10 @@ from ..core.serialization import FieldMetadata
 
 
 class WritableInventoryItemTemplate(UniversalBaseModel):
-    depth: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="_depth")] = None
-    component: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    depth: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="_depth"), pydantic.Field(alias="_depth")
+    ] = None
+    component: typing.Optional[typing.Dict[str, typing.Any]] = None
     component_id: typing.Optional[int] = None
     component_type: typing.Optional[str] = None
     created: typing.Optional[dt.datetime] = None

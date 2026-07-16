@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PutShopRequestLegalCountryCode(str, enum.Enum):
+class PutShopRequestLegalCountryCode(enum.StrEnum):
     AD = "AD"
     AE = "AE"
     AF = "AF"

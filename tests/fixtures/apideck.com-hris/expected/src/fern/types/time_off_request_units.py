@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class TimeOffRequestUnits(str, enum.Enum):
+class TimeOffRequestUnits(enum.StrEnum):
     """
     The unit of time off requested. Possible values include: `hours`, `days`, or `other`.
     """

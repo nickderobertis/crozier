@@ -13,16 +13,30 @@ class FeaturesConfigAsyncApi(UniversalBaseModel):
     Asynchronous feature properties
     """
 
-    default_binding: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="default-binding")] = None
-    enabled: typing.Optional[str] = None
-    endpoint_amqp: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="endpoint-AMQP")] = None
-    endpoint_googlepubsub: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="endpoint-GOOGLEPUBSUB")
+    default_binding: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="default-binding"), pydantic.Field(alias="default-binding")
     ] = None
-    endpoint_kafka: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="endpoint-KAFKA")] = None
-    endpoint_mqtt: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="endpoint-MQTT")] = None
-    endpoint_nats: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="endpoint-NATS")] = None
-    endpoint_ws: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="endpoint-WS")] = None
+    enabled: typing.Optional[str] = None
+    endpoint_amqp: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="endpoint-AMQP"), pydantic.Field(alias="endpoint-AMQP")
+    ] = None
+    endpoint_googlepubsub: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="endpoint-GOOGLEPUBSUB"),
+        pydantic.Field(alias="endpoint-GOOGLEPUBSUB"),
+    ] = None
+    endpoint_kafka: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="endpoint-KAFKA"), pydantic.Field(alias="endpoint-KAFKA")
+    ] = None
+    endpoint_mqtt: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="endpoint-MQTT"), pydantic.Field(alias="endpoint-MQTT")
+    ] = None
+    endpoint_nats: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="endpoint-NATS"), pydantic.Field(alias="endpoint-NATS")
+    ] = None
+    endpoint_ws: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="endpoint-WS"), pydantic.Field(alias="endpoint-WS")
+    ] = None
     frequencies: typing.Optional[str] = None
 
     if IS_PYDANTIC_V2:

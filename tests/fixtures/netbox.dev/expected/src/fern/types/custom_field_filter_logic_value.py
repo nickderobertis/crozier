@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class CustomFieldFilterLogicValue(str, enum.Enum):
+class CustomFieldFilterLogicValue(enum.StrEnum):
     DISABLED = "disabled"
     LOOSE = "loose"
     EXACT = "exact"

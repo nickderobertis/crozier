@@ -15,22 +15,37 @@ class PostAssetsPricesAdjustedResponseAssetsItemAssetAdjustedPricesItem(Universa
     """
 
     dividend_adjusted_close: typing_extensions.Annotated[
-        typing.Optional[float], FieldMetadata(alias="dividendAdjustedClose")
-    ] = pydantic.Field(default=None)
+        typing.Optional[float],
+        FieldMetadata(alias="dividendAdjustedClose"),
+        pydantic.Field(
+            alias="dividendAdjustedClose",
+            description="The dividend(s) adjusted close price of the asset at the date t, only present if dividend(s) information are provided",
+        ),
+    ] = None
     """
     The dividend(s) adjusted close price of the asset at the date t, only present if dividend(s) information are provided
     """
 
-    fully_adjusted_close: typing_extensions.Annotated[float, FieldMetadata(alias="fullyAdjustedClose")] = (
-        pydantic.Field()
-    )
+    fully_adjusted_close: typing_extensions.Annotated[
+        float,
+        FieldMetadata(alias="fullyAdjustedClose"),
+        pydantic.Field(
+            alias="fullyAdjustedClose",
+            description="The dividend(s) and split(s) adjusted close price of the asset at the date t",
+        ),
+    ]
     """
     The dividend(s) and split(s) adjusted close price of the asset at the date t
     """
 
     split_adjusted_close: typing_extensions.Annotated[
-        typing.Optional[float], FieldMetadata(alias="splitAdjustedClose")
-    ] = pydantic.Field(default=None)
+        typing.Optional[float],
+        FieldMetadata(alias="splitAdjustedClose"),
+        pydantic.Field(
+            alias="splitAdjustedClose",
+            description="The split(s) adjusted close price of the asset at the date t, only present if split(s) information are provided",
+        ),
+    ] = None
     """
     The split(s) adjusted close price of the asset at the date t, only present if split(s) information are provided
     """

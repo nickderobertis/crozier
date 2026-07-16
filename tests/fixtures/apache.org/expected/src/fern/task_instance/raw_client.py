@@ -8,7 +8,8 @@ from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.datetime_utils import serialize_datetime
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
@@ -23,6 +24,7 @@ from ..types.task_instance_reference import TaskInstanceReference
 from ..types.task_state import TaskState
 from ..types.update_task_instance_new_state import UpdateTaskInstanceNewState
 from .types.get_log_response import GetLogResponse
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -127,7 +129,7 @@ class RawTaskInstanceClient:
             Success.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id)}/dagRuns/{jsonable_encoder(dag_run_id)}/taskInstances",
+            f"dags/{encode_path_param(dag_id)}/dagRuns/{encode_path_param(dag_run_id)}/taskInstances",
             method="GET",
             params={
                 "execution_date_gte": serialize_datetime(execution_date_gte)
@@ -185,6 +187,10 @@ class RawTaskInstanceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_task_instance(
@@ -211,7 +217,7 @@ class RawTaskInstanceClient:
             Success.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id)}/dagRuns/{jsonable_encoder(dag_run_id)}/taskInstances/{jsonable_encoder(task_id)}",
+            f"dags/{encode_path_param(dag_id)}/dagRuns/{encode_path_param(dag_run_id)}/taskInstances/{encode_path_param(task_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -261,6 +267,10 @@ class RawTaskInstanceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def patch_task_instance(
@@ -304,7 +314,7 @@ class RawTaskInstanceClient:
             Success.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id)}/dagRuns/{jsonable_encoder(dag_run_id)}/taskInstances/{jsonable_encoder(task_id)}",
+            f"dags/{encode_path_param(dag_id)}/dagRuns/{encode_path_param(dag_run_id)}/taskInstances/{encode_path_param(task_id)}",
             method="PATCH",
             json={
                 "dry_run": dry_run,
@@ -362,6 +372,10 @@ class RawTaskInstanceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_extra_links(
@@ -390,7 +404,7 @@ class RawTaskInstanceClient:
             Success.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id)}/dagRuns/{jsonable_encoder(dag_run_id)}/taskInstances/{jsonable_encoder(task_id)}/links",
+            f"dags/{encode_path_param(dag_id)}/dagRuns/{encode_path_param(dag_run_id)}/taskInstances/{encode_path_param(task_id)}/links",
             method="GET",
             request_options=request_options,
         )
@@ -440,6 +454,10 @@ class RawTaskInstanceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_mapped_task_instances(
@@ -550,7 +568,7 @@ class RawTaskInstanceClient:
             Success.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id)}/dagRuns/{jsonable_encoder(dag_run_id)}/taskInstances/{jsonable_encoder(task_id)}/listMapped",
+            f"dags/{encode_path_param(dag_id)}/dagRuns/{encode_path_param(dag_run_id)}/taskInstances/{encode_path_param(task_id)}/listMapped",
             method="GET",
             params={
                 "limit": limit,
@@ -620,6 +638,10 @@ class RawTaskInstanceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_log(
@@ -671,7 +693,7 @@ class RawTaskInstanceClient:
             Success.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id)}/dagRuns/{jsonable_encoder(dag_run_id)}/taskInstances/{jsonable_encoder(task_id)}/logs/{jsonable_encoder(task_try_number)}",
+            f"dags/{encode_path_param(dag_id)}/dagRuns/{encode_path_param(dag_run_id)}/taskInstances/{encode_path_param(task_id)}/logs/{encode_path_param(task_try_number)}",
             method="GET",
             params={
                 "full_content": full_content,
@@ -737,6 +759,10 @@ class RawTaskInstanceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def set_task_instance_note(
@@ -776,7 +802,7 @@ class RawTaskInstanceClient:
             Success.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id)}/dagRuns/{jsonable_encoder(dag_run_id)}/taskInstances/{jsonable_encoder(task_id)}/setNote",
+            f"dags/{encode_path_param(dag_id)}/dagRuns/{encode_path_param(dag_run_id)}/taskInstances/{encode_path_param(task_id)}/setNote",
             method="PATCH",
             json={
                 "note": note,
@@ -844,6 +870,10 @@ class RawTaskInstanceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_mapped_task_instance(
@@ -883,7 +913,7 @@ class RawTaskInstanceClient:
             Success.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id)}/dagRuns/{jsonable_encoder(dag_run_id)}/taskInstances/{jsonable_encoder(task_id)}/{jsonable_encoder(map_index)}",
+            f"dags/{encode_path_param(dag_id)}/dagRuns/{encode_path_param(dag_run_id)}/taskInstances/{encode_path_param(task_id)}/{encode_path_param(map_index)}",
             method="GET",
             request_options=request_options,
         )
@@ -933,6 +963,10 @@ class RawTaskInstanceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def patch_mapped_task_instance(
@@ -980,7 +1014,7 @@ class RawTaskInstanceClient:
             Success.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id)}/dagRuns/{jsonable_encoder(dag_run_id)}/taskInstances/{jsonable_encoder(task_id)}/{jsonable_encoder(map_index)}",
+            f"dags/{encode_path_param(dag_id)}/dagRuns/{encode_path_param(dag_run_id)}/taskInstances/{encode_path_param(task_id)}/{encode_path_param(map_index)}",
             method="PATCH",
             json={
                 "dry_run": dry_run,
@@ -1038,6 +1072,10 @@ class RawTaskInstanceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def set_mapped_task_instance_note(
@@ -1081,7 +1119,7 @@ class RawTaskInstanceClient:
             Success.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id)}/dagRuns/{jsonable_encoder(dag_run_id)}/taskInstances/{jsonable_encoder(task_id)}/{jsonable_encoder(map_index)}/setNote",
+            f"dags/{encode_path_param(dag_id)}/dagRuns/{encode_path_param(dag_run_id)}/taskInstances/{encode_path_param(task_id)}/{encode_path_param(map_index)}/setNote",
             method="PATCH",
             json={
                 "note": note,
@@ -1149,6 +1187,10 @@ class RawTaskInstanceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_task_instances_batch(
@@ -1304,6 +1346,10 @@ class RawTaskInstanceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -1406,7 +1452,7 @@ class AsyncRawTaskInstanceClient:
             Success.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id)}/dagRuns/{jsonable_encoder(dag_run_id)}/taskInstances",
+            f"dags/{encode_path_param(dag_id)}/dagRuns/{encode_path_param(dag_run_id)}/taskInstances",
             method="GET",
             params={
                 "execution_date_gte": serialize_datetime(execution_date_gte)
@@ -1464,6 +1510,10 @@ class AsyncRawTaskInstanceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_task_instance(
@@ -1490,7 +1540,7 @@ class AsyncRawTaskInstanceClient:
             Success.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id)}/dagRuns/{jsonable_encoder(dag_run_id)}/taskInstances/{jsonable_encoder(task_id)}",
+            f"dags/{encode_path_param(dag_id)}/dagRuns/{encode_path_param(dag_run_id)}/taskInstances/{encode_path_param(task_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -1540,6 +1590,10 @@ class AsyncRawTaskInstanceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def patch_task_instance(
@@ -1583,7 +1637,7 @@ class AsyncRawTaskInstanceClient:
             Success.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id)}/dagRuns/{jsonable_encoder(dag_run_id)}/taskInstances/{jsonable_encoder(task_id)}",
+            f"dags/{encode_path_param(dag_id)}/dagRuns/{encode_path_param(dag_run_id)}/taskInstances/{encode_path_param(task_id)}",
             method="PATCH",
             json={
                 "dry_run": dry_run,
@@ -1641,6 +1695,10 @@ class AsyncRawTaskInstanceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_extra_links(
@@ -1669,7 +1727,7 @@ class AsyncRawTaskInstanceClient:
             Success.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id)}/dagRuns/{jsonable_encoder(dag_run_id)}/taskInstances/{jsonable_encoder(task_id)}/links",
+            f"dags/{encode_path_param(dag_id)}/dagRuns/{encode_path_param(dag_run_id)}/taskInstances/{encode_path_param(task_id)}/links",
             method="GET",
             request_options=request_options,
         )
@@ -1719,6 +1777,10 @@ class AsyncRawTaskInstanceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_mapped_task_instances(
@@ -1829,7 +1891,7 @@ class AsyncRawTaskInstanceClient:
             Success.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id)}/dagRuns/{jsonable_encoder(dag_run_id)}/taskInstances/{jsonable_encoder(task_id)}/listMapped",
+            f"dags/{encode_path_param(dag_id)}/dagRuns/{encode_path_param(dag_run_id)}/taskInstances/{encode_path_param(task_id)}/listMapped",
             method="GET",
             params={
                 "limit": limit,
@@ -1899,6 +1961,10 @@ class AsyncRawTaskInstanceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_log(
@@ -1950,7 +2016,7 @@ class AsyncRawTaskInstanceClient:
             Success.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id)}/dagRuns/{jsonable_encoder(dag_run_id)}/taskInstances/{jsonable_encoder(task_id)}/logs/{jsonable_encoder(task_try_number)}",
+            f"dags/{encode_path_param(dag_id)}/dagRuns/{encode_path_param(dag_run_id)}/taskInstances/{encode_path_param(task_id)}/logs/{encode_path_param(task_try_number)}",
             method="GET",
             params={
                 "full_content": full_content,
@@ -2016,6 +2082,10 @@ class AsyncRawTaskInstanceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def set_task_instance_note(
@@ -2055,7 +2125,7 @@ class AsyncRawTaskInstanceClient:
             Success.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id)}/dagRuns/{jsonable_encoder(dag_run_id)}/taskInstances/{jsonable_encoder(task_id)}/setNote",
+            f"dags/{encode_path_param(dag_id)}/dagRuns/{encode_path_param(dag_run_id)}/taskInstances/{encode_path_param(task_id)}/setNote",
             method="PATCH",
             json={
                 "note": note,
@@ -2123,6 +2193,10 @@ class AsyncRawTaskInstanceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_mapped_task_instance(
@@ -2162,7 +2236,7 @@ class AsyncRawTaskInstanceClient:
             Success.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id)}/dagRuns/{jsonable_encoder(dag_run_id)}/taskInstances/{jsonable_encoder(task_id)}/{jsonable_encoder(map_index)}",
+            f"dags/{encode_path_param(dag_id)}/dagRuns/{encode_path_param(dag_run_id)}/taskInstances/{encode_path_param(task_id)}/{encode_path_param(map_index)}",
             method="GET",
             request_options=request_options,
         )
@@ -2212,6 +2286,10 @@ class AsyncRawTaskInstanceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def patch_mapped_task_instance(
@@ -2259,7 +2337,7 @@ class AsyncRawTaskInstanceClient:
             Success.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id)}/dagRuns/{jsonable_encoder(dag_run_id)}/taskInstances/{jsonable_encoder(task_id)}/{jsonable_encoder(map_index)}",
+            f"dags/{encode_path_param(dag_id)}/dagRuns/{encode_path_param(dag_run_id)}/taskInstances/{encode_path_param(task_id)}/{encode_path_param(map_index)}",
             method="PATCH",
             json={
                 "dry_run": dry_run,
@@ -2317,6 +2395,10 @@ class AsyncRawTaskInstanceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def set_mapped_task_instance_note(
@@ -2360,7 +2442,7 @@ class AsyncRawTaskInstanceClient:
             Success.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id)}/dagRuns/{jsonable_encoder(dag_run_id)}/taskInstances/{jsonable_encoder(task_id)}/{jsonable_encoder(map_index)}/setNote",
+            f"dags/{encode_path_param(dag_id)}/dagRuns/{encode_path_param(dag_run_id)}/taskInstances/{encode_path_param(task_id)}/{encode_path_param(map_index)}/setNote",
             method="PATCH",
             json={
                 "note": note,
@@ -2428,6 +2510,10 @@ class AsyncRawTaskInstanceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_task_instances_batch(
@@ -2583,4 +2669,8 @@ class AsyncRawTaskInstanceClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

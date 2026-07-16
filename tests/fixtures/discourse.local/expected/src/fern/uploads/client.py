@@ -41,7 +41,7 @@ class UploadsClient:
         self,
         *,
         type: CreateUploadRequestType,
-        file: typing.Optional[typing.Optional[typing.Any]] = OMIT,
+        file: typing.Optional[typing.Any] = OMIT,
         synchronous: typing.Optional[bool] = OMIT,
         user_id: typing.Optional[int] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -51,7 +51,7 @@ class UploadsClient:
         ----------
         type : CreateUploadRequestType
 
-        file : typing.Optional[typing.Optional[typing.Any]]
+        file : typing.Optional[typing.Any]
 
         synchronous : typing.Optional[bool]
             Use this flag to return an id and url
@@ -130,7 +130,7 @@ class UploadsClient:
     def batch_presign_multipart_parts(
         self,
         *,
-        part_numbers: typing.Sequence[typing.Optional[typing.Any]],
+        part_numbers: typing.Sequence[typing.Any],
         unique_identifier: str,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> BatchPresignMultipartPartsResponse:
@@ -158,7 +158,7 @@ class UploadsClient:
 
         Parameters
         ----------
-        part_numbers : typing.Sequence[typing.Optional[typing.Any]]
+        part_numbers : typing.Sequence[typing.Any]
             The part numbers to generate the presigned URLs for,
             must be between 1 and 10000.
 
@@ -263,7 +263,7 @@ class UploadsClient:
     def complete_multipart(
         self,
         *,
-        parts: typing.Sequence[typing.Optional[typing.Any]],
+        parts: typing.Sequence[typing.Any],
         unique_identifier: str,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> CompleteMultipartResponse:
@@ -284,7 +284,7 @@ class UploadsClient:
 
         Parameters
         ----------
-        parts : typing.Sequence[typing.Optional[typing.Any]]
+        parts : typing.Sequence[typing.Any]
             All of the part numbers and their corresponding ETags
             that have been uploaded must be provided.
 
@@ -467,7 +467,7 @@ class AsyncUploadsClient:
         self,
         *,
         type: CreateUploadRequestType,
-        file: typing.Optional[typing.Optional[typing.Any]] = OMIT,
+        file: typing.Optional[typing.Any] = OMIT,
         synchronous: typing.Optional[bool] = OMIT,
         user_id: typing.Optional[int] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -477,7 +477,7 @@ class AsyncUploadsClient:
         ----------
         type : CreateUploadRequestType
 
-        file : typing.Optional[typing.Optional[typing.Any]]
+        file : typing.Optional[typing.Any]
 
         synchronous : typing.Optional[bool]
             Use this flag to return an id and url
@@ -572,7 +572,7 @@ class AsyncUploadsClient:
     async def batch_presign_multipart_parts(
         self,
         *,
-        part_numbers: typing.Sequence[typing.Optional[typing.Any]],
+        part_numbers: typing.Sequence[typing.Any],
         unique_identifier: str,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> BatchPresignMultipartPartsResponse:
@@ -600,7 +600,7 @@ class AsyncUploadsClient:
 
         Parameters
         ----------
-        part_numbers : typing.Sequence[typing.Optional[typing.Any]]
+        part_numbers : typing.Sequence[typing.Any]
             The part numbers to generate the presigned URLs for,
             must be between 1 and 10000.
 
@@ -721,7 +721,7 @@ class AsyncUploadsClient:
     async def complete_multipart(
         self,
         *,
-        parts: typing.Sequence[typing.Optional[typing.Any]],
+        parts: typing.Sequence[typing.Any],
         unique_identifier: str,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> CompleteMultipartResponse:
@@ -742,7 +742,7 @@ class AsyncUploadsClient:
 
         Parameters
         ----------
-        parts : typing.Sequence[typing.Optional[typing.Any]]
+        parts : typing.Sequence[typing.Any]
             All of the part numbers and their corresponding ETags
             that have been uploaded must be provided.
 

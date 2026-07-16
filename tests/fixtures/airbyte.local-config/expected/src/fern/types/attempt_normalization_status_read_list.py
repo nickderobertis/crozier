@@ -13,6 +13,7 @@ class AttemptNormalizationStatusReadList(UniversalBaseModel):
     attempt_normalization_statuses: typing_extensions.Annotated[
         typing.Optional[typing.List[AttemptNormalizationStatusRead]],
         FieldMetadata(alias="attemptNormalizationStatuses"),
+        pydantic.Field(alias="attemptNormalizationStatuses"),
     ] = None
 
     if IS_PYDANTIC_V2:

@@ -2,4 +2,4 @@
 
 import typing
 
-ResolveWebhookEventRequest = typing.Dict[str, typing.Optional[typing.Any]]
+ResolveWebhookEventRequest = typing.Dict[str, typing.Any]

@@ -13,16 +13,20 @@ class TestStepResult(UniversalBaseModel):
     TestStepResult is an entity embedded within TestCaseResult. They are created for each request associated with an operation / action of a microservice.
     """
 
-    elapsed_time: typing_extensions.Annotated[typing.Optional[float], FieldMetadata(alias="elapsedTime")] = (
-        pydantic.Field(default=None)
-    )
+    elapsed_time: typing_extensions.Annotated[
+        typing.Optional[float],
+        FieldMetadata(alias="elapsedTime"),
+        pydantic.Field(alias="elapsedTime", description="Elapsed time in milliseconds since the test step beginning"),
+    ] = None
     """
     Elapsed time in milliseconds since the test step beginning
     """
 
-    event_message_name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="eventMessageName")] = (
-        pydantic.Field(default=None)
-    )
+    event_message_name: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="eventMessageName"),
+        pydantic.Field(alias="eventMessageName", description="Name of event this test step is bound to"),
+    ] = None
     """
     Name of event this test step is bound to
     """
@@ -32,9 +36,11 @@ class TestStepResult(UniversalBaseModel):
     Error message that may be associated to this test step
     """
 
-    request_name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="requestName")] = (
-        pydantic.Field(default=None)
-    )
+    request_name: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="requestName"),
+        pydantic.Field(alias="requestName", description="Name of request this test step is bound to"),
+    ] = None
     """
     Name of request this test step is bound to
     """

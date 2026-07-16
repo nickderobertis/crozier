@@ -6,10 +6,12 @@ from json.decoder import JSONDecodeError
 from .core.api_error import ApiError
 from .core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from .core.http_response import AsyncHttpResponse, HttpResponse
-from .core.jsonable_encoder import jsonable_encoder
+from .core.jsonable_encoder import encode_path_param
+from .core.parse_error import ParsingError
 from .core.pydantic_utilities import parse_obj_as
 from .core.request_options import RequestOptions
 from .types.resource import Resource
+from pydantic import ValidationError
 
 
 class RawFernApi:
@@ -34,7 +36,7 @@ class RawFernApi:
             List the resources attached to a Service or API
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"resources/service/{jsonable_encoder(service_id)}",
+            f"resources/service/{encode_path_param(service_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -51,6 +53,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_resource(
@@ -71,7 +77,7 @@ class RawFernApi:
             Retrieve the resource having this name
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"resources/{jsonable_encoder(name)}",
+            f"resources/{encode_path_param(name)}",
             method="GET",
             request_options=request_options,
         )
@@ -88,6 +94,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -113,7 +123,7 @@ class AsyncRawFernApi:
             List the resources attached to a Service or API
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"resources/service/{jsonable_encoder(service_id)}",
+            f"resources/service/{encode_path_param(service_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -130,6 +140,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_resource(
@@ -150,7 +164,7 @@ class AsyncRawFernApi:
             Retrieve the resource having this name
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"resources/{jsonable_encoder(name)}",
+            f"resources/{encode_path_param(name)}",
             method="GET",
             request_options=request_options,
         )
@@ -167,4 +181,8 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

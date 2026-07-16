@@ -1,6 +1,6 @@
 # Reference
 ## Companies
-<details><summary><code>client.companies.<a href="src/fern/companies/client.py">all_</a>(...)</code></summary>
+<details><summary><code>client.companies.<a href="src/fern/companies/client.py">all</a>(...) -> GetHrisCompaniesResponse</code></summary>
 <dl>
 <dd>
 
@@ -28,13 +28,15 @@ List Companies
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.companies.all_(
     fields="id,updated_at",
 )
@@ -97,7 +99,7 @@ client.companies.all_(
 </dl>
 </details>
 
-<details><summary><code>client.companies.<a href="src/fern/companies/client.py">add</a>(...)</code></summary>
+<details><summary><code>client.companies.<a href="src/fern/companies/client.py">add</a>(...) -> CreateHrisCompanyResponse</code></summary>
 <dl>
 <dd>
 
@@ -125,13 +127,15 @@ Create Company
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.companies.add(
     legal_name="SpaceX",
 )
@@ -150,7 +154,7 @@ client.companies.add(
 <dl>
 <dd>
 
-**legal_name:** `str` 
+**request:** `HrisCompany` 
     
 </dd>
 </dl>
@@ -159,126 +163,6 @@ client.companies.add(
 <dd>
 
 **raw:** `typing.Optional[bool]` — Include raw response. Mostly used for debugging purposes
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**addresses:** `typing.Optional[typing.Sequence[Address]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**company_number:** `typing.Optional[str]` — An Company Number, Company ID or Company Code, is a unique number that has been assigned to each company.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_at:** `typing.Optional[CreatedAt]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_by:** `typing.Optional[CreatedBy]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**debtor_id:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**deleted:** `typing.Optional[bool]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**display_name:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**emails:** `typing.Optional[typing.Sequence[Email]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[Id]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**phone_numbers:** `typing.Optional[typing.Sequence[PhoneNumber]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[HrisCompanyStatus]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**subdomain:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_at:** `typing.Optional[UpdatedAt]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_by:** `typing.Optional[UpdatedBy]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**websites:** `typing.Optional[typing.Sequence[Website]]` 
     
 </dd>
 </dl>
@@ -298,7 +182,7 @@ client.companies.add(
 </dl>
 </details>
 
-<details><summary><code>client.companies.<a href="src/fern/companies/client.py">one</a>(...)</code></summary>
+<details><summary><code>client.companies.<a href="src/fern/companies/client.py">one</a>(...) -> GetHrisCompanyResponse</code></summary>
 <dl>
 <dd>
 
@@ -326,13 +210,15 @@ Get Company
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.companies.one(
     id="id",
     fields="id,updated_at",
@@ -388,7 +274,7 @@ client.companies.one(
 </dl>
 </details>
 
-<details><summary><code>client.companies.<a href="src/fern/companies/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.companies.<a href="src/fern/companies/client.py">delete</a>(...) -> DeleteHrisCompanyResponse</code></summary>
 <dl>
 <dd>
 
@@ -416,13 +302,15 @@ Delete Company
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.companies.delete(
     id="id",
 )
@@ -469,7 +357,7 @@ client.companies.delete(
 </dl>
 </details>
 
-<details><summary><code>client.companies.<a href="src/fern/companies/client.py">update</a>(...)</code></summary>
+<details><summary><code>client.companies.<a href="src/fern/companies/client.py">update</a>(...) -> UpdateHrisCompanyResponse</code></summary>
 <dl>
 <dd>
 
@@ -497,13 +385,15 @@ Update Company
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.companies.update(
     id_="id",
     legal_name="SpaceX",
@@ -523,7 +413,7 @@ client.companies.update(
 <dl>
 <dd>
 
-**id_:** `str` — ID of the record you are acting upon.
+**id:** `str` — ID of the record you are acting upon.
     
 </dd>
 </dl>
@@ -531,7 +421,7 @@ client.companies.update(
 <dl>
 <dd>
 
-**legal_name:** `str` 
+**request:** `HrisCompany` 
     
 </dd>
 </dl>
@@ -540,126 +430,6 @@ client.companies.update(
 <dd>
 
 **raw:** `typing.Optional[bool]` — Include raw response. Mostly used for debugging purposes
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**addresses:** `typing.Optional[typing.Sequence[Address]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**company_number:** `typing.Optional[str]` — An Company Number, Company ID or Company Code, is a unique number that has been assigned to each company.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_at:** `typing.Optional[CreatedAt]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_by:** `typing.Optional[CreatedBy]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**debtor_id:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**deleted:** `typing.Optional[bool]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**display_name:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**emails:** `typing.Optional[typing.Sequence[Email]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[Id]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**phone_numbers:** `typing.Optional[typing.Sequence[PhoneNumber]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[HrisCompanyStatus]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**subdomain:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_at:** `typing.Optional[UpdatedAt]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_by:** `typing.Optional[UpdatedBy]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**websites:** `typing.Optional[typing.Sequence[Website]]` 
     
 </dd>
 </dl>
@@ -680,7 +450,7 @@ client.companies.update(
 </details>
 
 ## Departments
-<details><summary><code>client.departments.<a href="src/fern/departments/client.py">all_</a>(...)</code></summary>
+<details><summary><code>client.departments.<a href="src/fern/departments/client.py">all</a>(...) -> GetDepartmentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -708,13 +478,15 @@ List Departments
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.departments.all_(
     fields="id,updated_at",
 )
@@ -777,7 +549,7 @@ client.departments.all_(
 </dl>
 </details>
 
-<details><summary><code>client.departments.<a href="src/fern/departments/client.py">add</a>(...)</code></summary>
+<details><summary><code>client.departments.<a href="src/fern/departments/client.py">add</a>(...) -> CreateDepartmentResponse</code></summary>
 <dl>
 <dd>
 
@@ -805,13 +577,15 @@ Create Department
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.departments.add()
 
 ```
@@ -828,79 +602,15 @@ client.departments.add()
 <dl>
 <dd>
 
+**request:** `Department` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **raw:** `typing.Optional[bool]` — Include raw response. Mostly used for debugging purposes
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**code:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_at:** `typing.Optional[CreatedAt]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_by:** `typing.Optional[CreatedBy]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[Id]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**name:** `typing.Optional[str]` — Department name
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**parent_id:** `typing.Optional[str]` — Parent ID
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_at:** `typing.Optional[UpdatedAt]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_by:** `typing.Optional[UpdatedBy]` 
     
 </dd>
 </dl>
@@ -920,7 +630,7 @@ client.departments.add()
 </dl>
 </details>
 
-<details><summary><code>client.departments.<a href="src/fern/departments/client.py">one</a>(...)</code></summary>
+<details><summary><code>client.departments.<a href="src/fern/departments/client.py">one</a>(...) -> GetDepartmentResponse</code></summary>
 <dl>
 <dd>
 
@@ -948,13 +658,15 @@ Get Department
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.departments.one(
     id="id",
     fields="id,updated_at",
@@ -1010,7 +722,7 @@ client.departments.one(
 </dl>
 </details>
 
-<details><summary><code>client.departments.<a href="src/fern/departments/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.departments.<a href="src/fern/departments/client.py">delete</a>(...) -> DeleteDepartmentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1038,13 +750,15 @@ Delete Department
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.departments.delete(
     id="id",
 )
@@ -1091,7 +805,7 @@ client.departments.delete(
 </dl>
 </details>
 
-<details><summary><code>client.departments.<a href="src/fern/departments/client.py">update</a>(...)</code></summary>
+<details><summary><code>client.departments.<a href="src/fern/departments/client.py">update</a>(...) -> UpdateDepartmentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1119,13 +833,15 @@ Update Department
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.departments.update(
     id_="id",
 )
@@ -1144,7 +860,15 @@ client.departments.update(
 <dl>
 <dd>
 
-**id_:** `str` — ID of the record you are acting upon.
+**id:** `str` — ID of the record you are acting upon.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request:** `Department` 
     
 </dd>
 </dl>
@@ -1153,78 +877,6 @@ client.departments.update(
 <dd>
 
 **raw:** `typing.Optional[bool]` — Include raw response. Mostly used for debugging purposes
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**code:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_at:** `typing.Optional[CreatedAt]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_by:** `typing.Optional[CreatedBy]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[Id]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**name:** `typing.Optional[str]` — Department name
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**parent_id:** `typing.Optional[str]` — Parent ID
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_at:** `typing.Optional[UpdatedAt]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_by:** `typing.Optional[UpdatedBy]` 
     
 </dd>
 </dl>
@@ -1245,7 +897,7 @@ client.departments.update(
 </details>
 
 ## Employees
-<details><summary><code>client.employees.<a href="src/fern/employees/client.py">all_</a>(...)</code></summary>
+<details><summary><code>client.employees.<a href="src/fern/employees/client.py">all</a>(...) -> GetEmployeesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1273,13 +925,15 @@ List Employees
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.employees.all_(
     fields="id,updated_at",
 )
@@ -1358,7 +1012,7 @@ client.employees.all_(
 </dl>
 </details>
 
-<details><summary><code>client.employees.<a href="src/fern/employees/client.py">add</a>(...)</code></summary>
+<details><summary><code>client.employees.<a href="src/fern/employees/client.py">add</a>(...) -> CreateEmployeeResponse</code></summary>
 <dl>
 <dd>
 
@@ -1386,13 +1040,15 @@ Create Employee
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.employees.add()
 
 ```
@@ -1409,495 +1065,15 @@ client.employees.add()
 <dl>
 <dd>
 
+**request:** `Employee` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **raw:** `typing.Optional[bool]` — Include raw response. Mostly used for debugging purposes
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**addresses:** `typing.Optional[typing.Sequence[Address]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**birthday:** `typing.Optional[dt.date]` — The date of birth of the person.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**company_id:** `typing.Optional[CompanyId]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**company_name:** `typing.Optional[CompanyName]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**compensations:** `typing.Optional[typing.Sequence[EmployeeCompensationsItem]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**country_of_birth:** `typing.Optional[str]` — Country code according to ISO 3166-1 alpha-2.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_at:** `typing.Optional[CreatedAt]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_by:** `typing.Optional[CreatedBy]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**custom_fields:** `typing.Optional[typing.Sequence[CustomField]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**deceased_on:** `typing.Optional[dt.date]` — The date the person deceased.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**deleted:** `typing.Optional[bool]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**department:** `typing.Optional[str]` — The department the person is currently in. [Deprecated](https://developers.apideck.com/changelog) in favor of the dedicated department_id and department_name field.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**department_id:** `typing.Optional[str]` — Unique identifier of the department ID this employee belongs to.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**department_name:** `typing.Optional[str]` — Name of the department this employee belongs to.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[Description]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**dietary_preference:** `typing.Optional[str]` — Indicate the employee's dietary preference.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**direct_reports:** `typing.Optional[typing.Sequence[str]]` — The direct reports refer to the individuals who report directly to a person in the organizational hierarchy.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**display_name:** `typing.Optional[str]` — The name used to display the employee, often a combination of their first and last names.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**division:** `typing.Optional[Division]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**division_id:** `typing.Optional[str]` — Unique identifier of the division this employee belongs to.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**emails:** `typing.Optional[typing.Sequence[Email]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**employee_number:** `typing.Optional[EmployeeNumber]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**employment_end_date:** `typing.Optional[str]` — An End Date is the date that the employee ended working at the company
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**employment_role:** `typing.Optional[EmployeeEmploymentRole]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**employment_start_date:** `typing.Optional[str]` — A Start Date is the date that the employee started working at the company
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**employment_status:** `typing.Optional[EmploymentStatus]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**first_name:** `typing.Optional[FirstName]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**food_allergies:** `typing.Optional[typing.Sequence[str]]` — Indicate the employee's food allergies.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**gender:** `typing.Optional[Gender]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[Id]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**initials:** `typing.Optional[str]` — The initials of the person, usually derived from their first, middle, and last names.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**jobs:** `typing.Optional[typing.Sequence[EmployeeJobsItem]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**languages:** `typing.Optional[typing.Sequence[typing.Optional[Language]]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**last_name:** `typing.Optional[LastName]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**leaving_reason:** `typing.Optional[EmployeeLeavingReason]` — The reason because the employment ended.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**manager:** `typing.Optional[EmployeeManager]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**marital_status:** `typing.Optional[str]` — The marital status of the employee.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**middle_name:** `typing.Optional[MiddleName]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**nationalities:** `typing.Optional[typing.Sequence[typing.Optional[str]]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**partner:** `typing.Optional[EmployeePartner]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**phone_numbers:** `typing.Optional[typing.Sequence[PhoneNumber]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**photo_url:** `typing.Optional[PhotoUrl]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**preferred_language:** `typing.Optional[Language]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**preferred_name:** `typing.Optional[str]` — The name the employee prefers to be addressed by, which may be different from their legal name.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**pronouns:** `typing.Optional[str]` — The preferred pronouns of the person.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**record_url:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**row_version:** `typing.Optional[RowVersion]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**salutation:** `typing.Optional[str]` — A formal salutation for the person. For example, 'Mr', 'Mrs'
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**social_links:** `typing.Optional[typing.Sequence[EmployeeSocialLinksItem]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**social_security_number:** `typing.Optional[str]` — A unique identifier assigned by the government. This field is considered sensitive information and may be subject to special security and privacy restrictions.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**source:** `typing.Optional[str]` — When the employee is imported as a new hire, this field indicates what system (e.g. the name of the ATS) this employee was imported from.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**source_id:** `typing.Optional[str]` — Unique identifier of the employee in the system this employee was imported from (e.g. the ID in the ATS).
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**tags:** `typing.Optional[typing.Sequence[str]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**tax_code:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**tax_id:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**team:** `typing.Optional[EmployeeTeam]` — The team the person is currently in.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**timezone:** `typing.Optional[str]` — The time zone related to the resource. The value is a string containing a standard time zone identifier, e.g. Europe/London.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**title:** `typing.Optional[Title]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_at:** `typing.Optional[UpdatedAt]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_by:** `typing.Optional[UpdatedBy]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**works_remote:** `typing.Optional[bool]` — Indicates if the employee works from a remote location.
     
 </dd>
 </dl>
@@ -1917,7 +1093,7 @@ client.employees.add()
 </dl>
 </details>
 
-<details><summary><code>client.employees.<a href="src/fern/employees/client.py">one</a>(...)</code></summary>
+<details><summary><code>client.employees.<a href="src/fern/employees/client.py">one</a>(...) -> GetEmployeeResponse</code></summary>
 <dl>
 <dd>
 
@@ -1945,13 +1121,15 @@ Get Employee
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.employees.one(
     id="id",
     fields="id,updated_at",
@@ -2007,7 +1185,7 @@ client.employees.one(
 </dl>
 </details>
 
-<details><summary><code>client.employees.<a href="src/fern/employees/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.employees.<a href="src/fern/employees/client.py">delete</a>(...) -> DeleteEmployeeResponse</code></summary>
 <dl>
 <dd>
 
@@ -2035,13 +1213,15 @@ Delete Employee
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.employees.delete(
     id="id",
 )
@@ -2088,7 +1268,7 @@ client.employees.delete(
 </dl>
 </details>
 
-<details><summary><code>client.employees.<a href="src/fern/employees/client.py">update</a>(...)</code></summary>
+<details><summary><code>client.employees.<a href="src/fern/employees/client.py">update</a>(...) -> UpdateEmployeeResponse</code></summary>
 <dl>
 <dd>
 
@@ -2116,13 +1296,15 @@ Update Employee
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.employees.update(
     id_="id",
 )
@@ -2141,7 +1323,15 @@ client.employees.update(
 <dl>
 <dd>
 
-**id_:** `str` — ID of the record you are acting upon.
+**id:** `str` — ID of the record you are acting upon.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request:** `Employee` 
     
 </dd>
 </dl>
@@ -2150,494 +1340,6 @@ client.employees.update(
 <dd>
 
 **raw:** `typing.Optional[bool]` — Include raw response. Mostly used for debugging purposes
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**addresses:** `typing.Optional[typing.Sequence[Address]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**birthday:** `typing.Optional[dt.date]` — The date of birth of the person.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**company_id:** `typing.Optional[CompanyId]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**company_name:** `typing.Optional[CompanyName]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**compensations:** `typing.Optional[typing.Sequence[EmployeeCompensationsItem]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**country_of_birth:** `typing.Optional[str]` — Country code according to ISO 3166-1 alpha-2.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_at:** `typing.Optional[CreatedAt]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_by:** `typing.Optional[CreatedBy]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**custom_fields:** `typing.Optional[typing.Sequence[CustomField]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**deceased_on:** `typing.Optional[dt.date]` — The date the person deceased.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**deleted:** `typing.Optional[bool]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**department:** `typing.Optional[str]` — The department the person is currently in. [Deprecated](https://developers.apideck.com/changelog) in favor of the dedicated department_id and department_name field.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**department_id:** `typing.Optional[str]` — Unique identifier of the department ID this employee belongs to.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**department_name:** `typing.Optional[str]` — Name of the department this employee belongs to.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[Description]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**dietary_preference:** `typing.Optional[str]` — Indicate the employee's dietary preference.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**direct_reports:** `typing.Optional[typing.Sequence[str]]` — The direct reports refer to the individuals who report directly to a person in the organizational hierarchy.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**display_name:** `typing.Optional[str]` — The name used to display the employee, often a combination of their first and last names.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**division:** `typing.Optional[Division]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**division_id:** `typing.Optional[str]` — Unique identifier of the division this employee belongs to.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**emails:** `typing.Optional[typing.Sequence[Email]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**employee_number:** `typing.Optional[EmployeeNumber]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**employment_end_date:** `typing.Optional[str]` — An End Date is the date that the employee ended working at the company
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**employment_role:** `typing.Optional[EmployeeEmploymentRole]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**employment_start_date:** `typing.Optional[str]` — A Start Date is the date that the employee started working at the company
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**employment_status:** `typing.Optional[EmploymentStatus]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**first_name:** `typing.Optional[FirstName]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**food_allergies:** `typing.Optional[typing.Sequence[str]]` — Indicate the employee's food allergies.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**gender:** `typing.Optional[Gender]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[Id]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**initials:** `typing.Optional[str]` — The initials of the person, usually derived from their first, middle, and last names.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**jobs:** `typing.Optional[typing.Sequence[EmployeeJobsItem]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**languages:** `typing.Optional[typing.Sequence[typing.Optional[Language]]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**last_name:** `typing.Optional[LastName]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**leaving_reason:** `typing.Optional[EmployeeLeavingReason]` — The reason because the employment ended.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**manager:** `typing.Optional[EmployeeManager]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**marital_status:** `typing.Optional[str]` — The marital status of the employee.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**middle_name:** `typing.Optional[MiddleName]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**nationalities:** `typing.Optional[typing.Sequence[typing.Optional[str]]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**partner:** `typing.Optional[EmployeePartner]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**phone_numbers:** `typing.Optional[typing.Sequence[PhoneNumber]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**photo_url:** `typing.Optional[PhotoUrl]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**preferred_language:** `typing.Optional[Language]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**preferred_name:** `typing.Optional[str]` — The name the employee prefers to be addressed by, which may be different from their legal name.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**pronouns:** `typing.Optional[str]` — The preferred pronouns of the person.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**record_url:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**row_version:** `typing.Optional[RowVersion]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**salutation:** `typing.Optional[str]` — A formal salutation for the person. For example, 'Mr', 'Mrs'
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**social_links:** `typing.Optional[typing.Sequence[EmployeeSocialLinksItem]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**social_security_number:** `typing.Optional[str]` — A unique identifier assigned by the government. This field is considered sensitive information and may be subject to special security and privacy restrictions.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**source:** `typing.Optional[str]` — When the employee is imported as a new hire, this field indicates what system (e.g. the name of the ATS) this employee was imported from.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**source_id:** `typing.Optional[str]` — Unique identifier of the employee in the system this employee was imported from (e.g. the ID in the ATS).
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**tags:** `typing.Optional[typing.Sequence[str]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**tax_code:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**tax_id:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**team:** `typing.Optional[EmployeeTeam]` — The team the person is currently in.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**timezone:** `typing.Optional[str]` — The time zone related to the resource. The value is a string containing a standard time zone identifier, e.g. Europe/London.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**title:** `typing.Optional[Title]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_at:** `typing.Optional[UpdatedAt]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_by:** `typing.Optional[UpdatedBy]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**works_remote:** `typing.Optional[bool]` — Indicates if the employee works from a remote location.
     
 </dd>
 </dl>
@@ -2658,7 +1360,7 @@ client.employees.update(
 </details>
 
 ## Jobs
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">all_</a>(...)</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">all</a>(...) -> GetHrisJobsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2686,13 +1388,15 @@ List Jobs for employee.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.jobs.all_(
     employee_id="employee_id",
     fields="id,updated_at",
@@ -2748,7 +1452,7 @@ client.jobs.all_(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">one</a>(...)</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">one</a>(...) -> GetHrisJobResponse</code></summary>
 <dl>
 <dd>
 
@@ -2776,13 +1480,15 @@ A Job for employee.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.jobs.one(
     employee_id="employee_id",
     job_id="job_id",
@@ -2848,7 +1554,7 @@ client.jobs.one(
 </details>
 
 ## Payrolls
-<details><summary><code>client.payrolls.<a href="src/fern/payrolls/client.py">all_</a>(...)</code></summary>
+<details><summary><code>client.payrolls.<a href="src/fern/payrolls/client.py">all</a>(...) -> GetPayrollsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2876,13 +1582,15 @@ List Payroll
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payrolls.all_(
     fields="id,updated_at",
 )
@@ -2937,7 +1645,7 @@ client.payrolls.all_(
 </dl>
 </details>
 
-<details><summary><code>client.payrolls.<a href="src/fern/payrolls/client.py">one</a>(...)</code></summary>
+<details><summary><code>client.payrolls.<a href="src/fern/payrolls/client.py">one</a>(...) -> GetPayrollResponse</code></summary>
 <dl>
 <dd>
 
@@ -2965,13 +1673,15 @@ Get Payroll
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.payrolls.one(
     payroll_id="payroll_id",
     fields="id,updated_at",
@@ -3028,7 +1738,7 @@ client.payrolls.one(
 </details>
 
 ## Employee Payrolls
-<details><summary><code>client.employee_payrolls.<a href="src/fern/employee_payrolls/client.py">all_</a>(...)</code></summary>
+<details><summary><code>client.employee_payrolls.<a href="src/fern/employee_payrolls/client.py">all</a>(...) -> GetEmployeePayrollsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3056,13 +1766,15 @@ List payrolls for employee
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.employee_payrolls.all_(
     employee_id="employee_id",
     fields="id,updated_at",
@@ -3126,7 +1838,7 @@ client.employee_payrolls.all_(
 </dl>
 </details>
 
-<details><summary><code>client.employee_payrolls.<a href="src/fern/employee_payrolls/client.py">one</a>(...)</code></summary>
+<details><summary><code>client.employee_payrolls.<a href="src/fern/employee_payrolls/client.py">one</a>(...) -> GetEmployeePayrollResponse</code></summary>
 <dl>
 <dd>
 
@@ -3154,13 +1866,15 @@ Get payroll for employee
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.employee_payrolls.one(
     employee_id="employee_id",
     payroll_id="payroll_id",
@@ -3226,7 +1940,7 @@ client.employee_payrolls.one(
 </details>
 
 ## Employee Schedules
-<details><summary><code>client.employee_schedules.<a href="src/fern/employee_schedules/client.py">all_</a>(...)</code></summary>
+<details><summary><code>client.employee_schedules.<a href="src/fern/employee_schedules/client.py">all</a>(...) -> GetEmployeeSchedulesResponse</code></summary>
 <dl>
 <dd>
 
@@ -3254,13 +1968,15 @@ List schedules for employee, a schedule is a work pattern, not the actual worked
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.employee_schedules.all_(
     employee_id="employee_id",
     fields="id,updated_at",
@@ -3317,7 +2033,7 @@ client.employee_schedules.all_(
 </details>
 
 ## Time Off Requests
-<details><summary><code>client.time_off_requests.<a href="src/fern/time_off_requests/client.py">all_</a>(...)</code></summary>
+<details><summary><code>client.time_off_requests.<a href="src/fern/time_off_requests/client.py">all</a>(...) -> GetTimeOffRequestsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3345,13 +2061,15 @@ List Time Off Requests
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.time_off_requests.all_(
     fields="id,updated_at",
 )
@@ -3422,7 +2140,7 @@ client.time_off_requests.all_(
 </dl>
 </details>
 
-<details><summary><code>client.time_off_requests.<a href="src/fern/time_off_requests/client.py">add</a>(...)</code></summary>
+<details><summary><code>client.time_off_requests.<a href="src/fern/time_off_requests/client.py">add</a>(...) -> CreateTimeOffRequestResponse</code></summary>
 <dl>
 <dd>
 
@@ -3450,13 +2168,15 @@ Create Time Off Request
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.time_off_requests.add()
 
 ```
@@ -3473,143 +2193,15 @@ client.time_off_requests.add()
 <dl>
 <dd>
 
+**request:** `TimeOffRequest` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **raw:** `typing.Optional[bool]` — Include raw response. Mostly used for debugging purposes
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**amount:** `typing.Optional[float]` — The amount of time off requested.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**approval_date:** `typing.Optional[str]` — The date the request was approved
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_at:** `typing.Optional[CreatedAt]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_by:** `typing.Optional[CreatedBy]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — Description of the time off request.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**employee_id:** `typing.Optional[str]` — ID of the employee
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**end_date:** `typing.Optional[str]` — The end date of the time off request.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[Id]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**notes:** `typing.Optional[TimeOffRequestNotes]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**policy_id:** `typing.Optional[str]` — ID of the policy
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**request_date:** `typing.Optional[str]` — The date the request was made.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**request_type:** `typing.Optional[TimeOffRequestRequestType]` — The type of request
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**start_date:** `typing.Optional[str]` — The start date of the time off request.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[TimeOffRequestStatus]` — The status of the time off request.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**units:** `typing.Optional[TimeOffRequestUnits]` — The unit of time off requested. Possible values include: `hours`, `days`, or `other`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_at:** `typing.Optional[UpdatedAt]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_by:** `typing.Optional[UpdatedBy]` 
     
 </dd>
 </dl>
@@ -3629,7 +2221,7 @@ client.time_off_requests.add()
 </dl>
 </details>
 
-<details><summary><code>client.time_off_requests.<a href="src/fern/time_off_requests/client.py">one</a>(...)</code></summary>
+<details><summary><code>client.time_off_requests.<a href="src/fern/time_off_requests/client.py">one</a>(...) -> GetTimeOffRequestResponse</code></summary>
 <dl>
 <dd>
 
@@ -3657,13 +2249,15 @@ Get Time Off Request
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.time_off_requests.one(
     id="id",
     fields="id,updated_at",
@@ -3719,7 +2313,7 @@ client.time_off_requests.one(
 </dl>
 </details>
 
-<details><summary><code>client.time_off_requests.<a href="src/fern/time_off_requests/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.time_off_requests.<a href="src/fern/time_off_requests/client.py">delete</a>(...) -> DeleteTimeOffRequestResponse</code></summary>
 <dl>
 <dd>
 
@@ -3747,13 +2341,15 @@ Delete Time Off Request
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.time_off_requests.delete(
     id="id",
 )
@@ -3800,7 +2396,7 @@ client.time_off_requests.delete(
 </dl>
 </details>
 
-<details><summary><code>client.time_off_requests.<a href="src/fern/time_off_requests/client.py">update</a>(...)</code></summary>
+<details><summary><code>client.time_off_requests.<a href="src/fern/time_off_requests/client.py">update</a>(...) -> UpdateTimeOffRequestResponse</code></summary>
 <dl>
 <dd>
 
@@ -3828,13 +2424,15 @@ Update Time Off Request
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.time_off_requests.update(
     id_="id",
 )
@@ -3853,7 +2451,15 @@ client.time_off_requests.update(
 <dl>
 <dd>
 
-**id_:** `str` — ID of the record you are acting upon.
+**id:** `str` — ID of the record you are acting upon.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request:** `TimeOffRequest` 
     
 </dd>
 </dl>
@@ -3862,142 +2468,6 @@ client.time_off_requests.update(
 <dd>
 
 **raw:** `typing.Optional[bool]` — Include raw response. Mostly used for debugging purposes
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**amount:** `typing.Optional[float]` — The amount of time off requested.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**approval_date:** `typing.Optional[str]` — The date the request was approved
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_at:** `typing.Optional[CreatedAt]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_by:** `typing.Optional[CreatedBy]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — Description of the time off request.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**employee_id:** `typing.Optional[str]` — ID of the employee
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**end_date:** `typing.Optional[str]` — The end date of the time off request.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[Id]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**notes:** `typing.Optional[TimeOffRequestNotes]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**policy_id:** `typing.Optional[str]` — ID of the policy
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**request_date:** `typing.Optional[str]` — The date the request was made.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**request_type:** `typing.Optional[TimeOffRequestRequestType]` — The type of request
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**start_date:** `typing.Optional[str]` — The start date of the time off request.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[TimeOffRequestStatus]` — The status of the time off request.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**units:** `typing.Optional[TimeOffRequestUnits]` — The unit of time off requested. Possible values include: `hours`, `days`, or `other`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_at:** `typing.Optional[UpdatedAt]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_by:** `typing.Optional[UpdatedBy]` 
     
 </dd>
 </dl>

@@ -18,17 +18,23 @@ class SearchedVersion(UniversalBaseModel):
     Models a single artifact from the result set returned when searching for artifacts.
     """
 
-    content_id: typing_extensions.Annotated[int, FieldMetadata(alias="contentId")] = pydantic.Field()
+    content_id: typing_extensions.Annotated[
+        int, FieldMetadata(alias="contentId"), pydantic.Field(alias="contentId", description="")
+    ]
     """
     
     """
 
-    created_by: typing_extensions.Annotated[str, FieldMetadata(alias="createdBy")] = pydantic.Field()
+    created_by: typing_extensions.Annotated[
+        str, FieldMetadata(alias="createdBy"), pydantic.Field(alias="createdBy", description="")
+    ]
     """
     
     """
 
-    created_on: typing_extensions.Annotated[dt.datetime, FieldMetadata(alias="createdOn")] = pydantic.Field()
+    created_on: typing_extensions.Annotated[
+        dt.datetime, FieldMetadata(alias="createdOn"), pydantic.Field(alias="createdOn", description="")
+    ]
     """
     
     """
@@ -38,7 +44,9 @@ class SearchedVersion(UniversalBaseModel):
     
     """
 
-    global_id: typing_extensions.Annotated[int, FieldMetadata(alias="globalId")] = pydantic.Field()
+    global_id: typing_extensions.Annotated[
+        int, FieldMetadata(alias="globalId"), pydantic.Field(alias="globalId", description="")
+    ]
     """
     
     """

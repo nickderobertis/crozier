@@ -12,14 +12,18 @@ from .fireteam_fireteam_summary import FireteamFireteamSummary
 
 class FireteamFireteamResponse(UniversalBaseModel):
     alternates: typing_extensions.Annotated[
-        typing.Optional[typing.List[FireteamFireteamMember]], FieldMetadata(alias="Alternates")
+        typing.Optional[typing.List[FireteamFireteamMember]],
+        FieldMetadata(alias="Alternates"),
+        pydantic.Field(alias="Alternates"),
     ] = None
     members: typing_extensions.Annotated[
-        typing.Optional[typing.List[FireteamFireteamMember]], FieldMetadata(alias="Members")
+        typing.Optional[typing.List[FireteamFireteamMember]],
+        FieldMetadata(alias="Members"),
+        pydantic.Field(alias="Members"),
     ] = None
-    summary: typing_extensions.Annotated[typing.Optional[FireteamFireteamSummary], FieldMetadata(alias="Summary")] = (
-        None
-    )
+    summary: typing_extensions.Annotated[
+        typing.Optional[FireteamFireteamSummary], FieldMetadata(alias="Summary"), pydantic.Field(alias="Summary")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

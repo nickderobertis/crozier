@@ -18,9 +18,14 @@ class DestinyMilestonesDestinyMilestoneActivityPhase(UniversalBaseModel):
     Indicates if the phase has been completed.
     """
 
-    phase_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="phaseHash")] = pydantic.Field(
-        default=None
-    )
+    phase_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="phaseHash"),
+        pydantic.Field(
+            alias="phaseHash",
+            description='In DestinyActivityDefinition, if the activity has phases, there will be a set of phases defined in the "insertionPoints" property. This is the hash that maps to that phase.',
+        ),
+    ] = None
     """
     In DestinyActivityDefinition, if the activity has phases, there will be a set of phases defined in the "insertionPoints" property. This is the hash that maps to that phase.
     """

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GiftCardType(str, enum.Enum):
+class GiftCardType(enum.StrEnum):
     """ """
 
     PHYSICAL = "PHYSICAL"

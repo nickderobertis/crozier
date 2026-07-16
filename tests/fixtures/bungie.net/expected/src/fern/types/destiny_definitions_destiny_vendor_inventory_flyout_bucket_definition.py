@@ -19,15 +19,19 @@ class DestinyDefinitionsDestinyVendorInventoryFlyoutBucketDefinition(UniversalBa
     """
 
     inventory_bucket_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="inventoryBucketHash")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="inventoryBucketHash"),
+        pydantic.Field(alias="inventoryBucketHash", description="The inventory bucket whose contents should be shown."),
+    ] = None
     """
     The inventory bucket whose contents should be shown.
     """
 
-    sort_items_by: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="sortItemsBy")] = (
-        pydantic.Field(default=None)
-    )
+    sort_items_by: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="sortItemsBy"),
+        pydantic.Field(alias="sortItemsBy", description="The methodology to use for sorting items from the flyout."),
+    ] = None
     """
     The methodology to use for sorting items from the flyout.
     """

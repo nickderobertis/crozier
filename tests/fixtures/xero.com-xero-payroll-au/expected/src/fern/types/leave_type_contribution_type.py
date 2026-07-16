@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class LeaveTypeContributionType(str, enum.Enum):
+class LeaveTypeContributionType(enum.StrEnum):
     SGC = "SGC"
     SALARYSACRIFICE = "SALARYSACRIFICE"
     EMPLOYERADDITIONAL = "EMPLOYERADDITIONAL"

@@ -16,49 +16,88 @@ class ObCurrencyExchange5(UniversalBaseModel):
     """
 
     contract_identification: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="ContractIdentification")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="ContractIdentification"),
+        pydantic.Field(
+            alias="ContractIdentification",
+            description="Unique identification to unambiguously identify the foreign exchange contract.",
+        ),
+    ] = None
     """
     Unique identification to unambiguously identify the foreign exchange contract.
     """
 
-    exchange_rate: typing_extensions.Annotated[float, FieldMetadata(alias="ExchangeRate")] = pydantic.Field()
+    exchange_rate: typing_extensions.Annotated[
+        float,
+        FieldMetadata(alias="ExchangeRate"),
+        pydantic.Field(
+            alias="ExchangeRate",
+            description="Factor used to convert an amount from one currency into another. This reflects the price at which one currency was bought with another currency.\nUsage: ExchangeRate expresses the ratio between UnitCurrency and QuotedCurrency (ExchangeRate = UnitCurrency/QuotedCurrency).",
+        ),
+    ]
     """
     Factor used to convert an amount from one currency into another. This reflects the price at which one currency was bought with another currency.
     Usage: ExchangeRate expresses the ratio between UnitCurrency and QuotedCurrency (ExchangeRate = UnitCurrency/QuotedCurrency).
     """
 
     instructed_amount: typing_extensions.Annotated[
-        typing.Optional[ObCurrencyExchange5InstructedAmount], FieldMetadata(alias="InstructedAmount")
-    ] = pydantic.Field(default=None)
+        typing.Optional[ObCurrencyExchange5InstructedAmount],
+        FieldMetadata(alias="InstructedAmount"),
+        pydantic.Field(
+            alias="InstructedAmount",
+            description="Amount of money to be moved between the debtor and creditor, before deduction of charges, expressed in the currency as ordered by the initiating party.",
+        ),
+    ] = None
     """
     Amount of money to be moved between the debtor and creditor, before deduction of charges, expressed in the currency as ordered by the initiating party.
     """
 
-    quotation_date: typing_extensions.Annotated[typing.Optional[dt.datetime], FieldMetadata(alias="QuotationDate")] = (
-        pydantic.Field(default=None)
-    )
+    quotation_date: typing_extensions.Annotated[
+        typing.Optional[dt.datetime],
+        FieldMetadata(alias="QuotationDate"),
+        pydantic.Field(
+            alias="QuotationDate",
+            description="Date and time at which an exchange rate is quoted.All dates in the JSON payloads are represented in ISO 8601 date-time format. \nAll date-time fields in responses must include the timezone. An example is below:\n2017-04-05T10:43:07+00:00",
+        ),
+    ] = None
     """
     Date and time at which an exchange rate is quoted.All dates in the JSON payloads are represented in ISO 8601 date-time format. 
     All date-time fields in responses must include the timezone. An example is below:
     2017-04-05T10:43:07+00:00
     """
 
-    source_currency: typing_extensions.Annotated[str, FieldMetadata(alias="SourceCurrency")] = pydantic.Field()
+    source_currency: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="SourceCurrency"),
+        pydantic.Field(
+            alias="SourceCurrency",
+            description="Currency from which an amount is to be converted in a currency conversion.",
+        ),
+    ]
     """
     Currency from which an amount is to be converted in a currency conversion.
     """
 
-    target_currency: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="TargetCurrency")] = (
-        pydantic.Field(default=None)
-    )
+    target_currency: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="TargetCurrency"),
+        pydantic.Field(
+            alias="TargetCurrency",
+            description="Currency into which an amount is to be converted in a currency conversion.",
+        ),
+    ] = None
     """
     Currency into which an amount is to be converted in a currency conversion.
     """
 
-    unit_currency: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="UnitCurrency")] = (
-        pydantic.Field(default=None)
-    )
+    unit_currency: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="UnitCurrency"),
+        pydantic.Field(
+            alias="UnitCurrency",
+            description="Currency in which the rate of exchange is expressed in a currency exchange. In the example 1GBP = xxxCUR, the unit currency is GBP.",
+        ),
+    ] = None
     """
     Currency in which the rate of exchange is expressed in a currency exchange. In the example 1GBP = xxxCUR, the unit currency is GBP.
     """

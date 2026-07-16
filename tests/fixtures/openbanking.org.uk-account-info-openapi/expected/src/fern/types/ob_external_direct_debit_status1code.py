@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObExternalDirectDebitStatus1Code(str, enum.Enum):
+class ObExternalDirectDebitStatus1Code(enum.StrEnum):
     """
     Specifies the status of the direct debit in code form.
     """

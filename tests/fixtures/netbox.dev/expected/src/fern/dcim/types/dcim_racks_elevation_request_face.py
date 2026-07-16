@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class DcimRacksElevationRequestFace(str, enum.Enum):
+class DcimRacksElevationRequestFace(enum.StrEnum):
     FRONT = "front"
     REAR = "rear"
 

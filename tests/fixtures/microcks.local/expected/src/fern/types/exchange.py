@@ -8,7 +8,6 @@ import pydantic
 import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from ..core.serialization import FieldMetadata
-from .abstract_exchange_type import AbstractExchangeType
 from .event_message import EventMessage
 from .request import Request
 from .response import Response
@@ -22,7 +21,6 @@ class Exchange_ReqRespPair(UniversalBaseModel):
     type: typing.Literal["reqRespPair"] = "reqRespPair"
     request: Request
     response: Response
-    type: AbstractExchangeType
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
@@ -40,8 +38,9 @@ class Exchange_UnidirEvent(UniversalBaseModel):
     """
 
     type: typing.Literal["unidirEvent"] = "unidirEvent"
-    event_message: typing_extensions.Annotated[EventMessage, FieldMetadata(alias="eventMessage")]
-    type: AbstractExchangeType
+    event_message: typing_extensions.Annotated[
+        EventMessage, FieldMetadata(alias="eventMessage"), pydantic.Field(alias="eventMessage")
+    ]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

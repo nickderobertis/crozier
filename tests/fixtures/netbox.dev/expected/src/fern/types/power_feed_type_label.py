@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PowerFeedTypeLabel(str, enum.Enum):
+class PowerFeedTypeLabel(enum.StrEnum):
     PRIMARY = "Primary"
     REDUNDANT = "Redundant"
 

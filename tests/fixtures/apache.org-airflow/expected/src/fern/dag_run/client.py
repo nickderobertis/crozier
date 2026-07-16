@@ -141,7 +141,7 @@ class DagRunClient:
         self,
         dag_id_: str,
         *,
-        conf: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        conf: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         dag_id: typing.Optional[str] = OMIT,
         dag_run_id: typing.Optional[str] = OMIT,
         data_interval_end: typing.Optional[dt.datetime] = OMIT,
@@ -163,7 +163,7 @@ class DagRunClient:
         dag_id_ : str
             The DAG ID.
 
-        conf : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        conf : typing.Optional[typing.Dict[str, typing.Any]]
             JSON object describing additional configuration parameters.
 
             The value of this field can be set only when creating the object. If you try to modify the
@@ -763,7 +763,7 @@ class AsyncDagRunClient:
         self,
         dag_id_: str,
         *,
-        conf: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        conf: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         dag_id: typing.Optional[str] = OMIT,
         dag_run_id: typing.Optional[str] = OMIT,
         data_interval_end: typing.Optional[dt.datetime] = OMIT,
@@ -785,7 +785,7 @@ class AsyncDagRunClient:
         dag_id_ : str
             The DAG ID.
 
-        conf : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        conf : typing.Optional[typing.Dict[str, typing.Any]]
             JSON object describing additional configuration parameters.
 
             The value of this field can be set only when creating the object. If you try to modify the

@@ -19,76 +19,117 @@ class GlobalConfig(UniversalBaseModel):
     The global config object of Otoroshi, used to customize settings of the current Otoroshi instance
     """
 
-    alerts_emails: typing_extensions.Annotated[typing.List[str], FieldMetadata(alias="alertsEmails")] = pydantic.Field()
+    alerts_emails: typing_extensions.Annotated[
+        typing.List[str],
+        FieldMetadata(alias="alertsEmails"),
+        pydantic.Field(alias="alertsEmails", description="Email addresses that will receive all Otoroshi alert events"),
+    ]
     """
     Email addresses that will receive all Otoroshi alert events
     """
 
-    alerts_webhooks: typing_extensions.Annotated[typing.List[Webhook], FieldMetadata(alias="alertsWebhooks")] = (
-        pydantic.Field()
-    )
+    alerts_webhooks: typing_extensions.Annotated[
+        typing.List[Webhook],
+        FieldMetadata(alias="alertsWebhooks"),
+        pydantic.Field(alias="alertsWebhooks", description="Webhook that will receive all Otoroshi alert events"),
+    ]
     """
     Webhook that will receive all Otoroshi alert events
     """
 
-    analytics_webhooks: typing_extensions.Annotated[typing.List[Webhook], FieldMetadata(alias="analyticsWebhooks")] = (
-        pydantic.Field()
-    )
+    analytics_webhooks: typing_extensions.Annotated[
+        typing.List[Webhook],
+        FieldMetadata(alias="analyticsWebhooks"),
+        pydantic.Field(alias="analyticsWebhooks", description="Webhook that will receive all internal Otoroshi events"),
+    ]
     """
     Webhook that will receive all internal Otoroshi events
     """
 
-    api_read_only: typing_extensions.Annotated[bool, FieldMetadata(alias="apiReadOnly")] = pydantic.Field()
+    api_read_only: typing_extensions.Annotated[
+        bool,
+        FieldMetadata(alias="apiReadOnly"),
+        pydantic.Field(
+            alias="apiReadOnly", description="If enabled, Admin API won't be able to write/update/delete entities"
+        ),
+    ]
     """
     If enabled, Admin API won't be able to write/update/delete entities
     """
 
-    auto_link_to_default_group: typing_extensions.Annotated[bool, FieldMetadata(alias="autoLinkToDefaultGroup")] = (
-        pydantic.Field()
-    )
+    auto_link_to_default_group: typing_extensions.Annotated[
+        bool,
+        FieldMetadata(alias="autoLinkToDefaultGroup"),
+        pydantic.Field(
+            alias="autoLinkToDefaultGroup",
+            description="If not defined, every new service descriptor will be added to the default group",
+        ),
+    ]
     """
     If not defined, every new service descriptor will be added to the default group
     """
 
     backoffice_auth0config: typing_extensions.Annotated[
-        typing.Optional[Auth0Config], FieldMetadata(alias="backofficeAuth0Config")
-    ] = pydantic.Field(default=None)
+        typing.Optional[Auth0Config],
+        FieldMetadata(alias="backofficeAuth0Config"),
+        pydantic.Field(
+            alias="backofficeAuth0Config", description="Optional configuration for the backoffice Auth0 domain"
+        ),
+    ] = None
     """
     Optional configuration for the backoffice Auth0 domain
     """
 
     clever_settings: typing_extensions.Annotated[
-        typing.Optional[CleverSettings], FieldMetadata(alias="cleverSettings")
-    ] = pydantic.Field(default=None)
+        typing.Optional[CleverSettings],
+        FieldMetadata(alias="cleverSettings"),
+        pydantic.Field(alias="cleverSettings", description="Optional CleverCloud configuration"),
+    ] = None
     """
     Optional CleverCloud configuration
     """
 
     elastic_reads_config: typing_extensions.Annotated[
-        typing.Optional[ElasticConfig], FieldMetadata(alias="elasticReadsConfig")
-    ] = pydantic.Field(default=None)
+        typing.Optional[ElasticConfig],
+        FieldMetadata(alias="elasticReadsConfig"),
+        pydantic.Field(alias="elasticReadsConfig", description="Config. for elastic reads"),
+    ] = None
     """
     Config. for elastic reads
     """
 
     elastic_writes_configs: typing_extensions.Annotated[
-        typing.Optional[typing.List[ElasticConfig]], FieldMetadata(alias="elasticWritesConfigs")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[ElasticConfig]],
+        FieldMetadata(alias="elasticWritesConfigs"),
+        pydantic.Field(alias="elasticWritesConfigs", description="Configs. for Elastic writes"),
+    ] = None
     """
     Configs. for Elastic writes
     """
 
-    endless_ip_addresses: typing_extensions.Annotated[typing.List[str], FieldMetadata(alias="endlessIpAddresses")] = (
-        pydantic.Field()
-    )
+    endless_ip_addresses: typing_extensions.Annotated[
+        typing.List[str],
+        FieldMetadata(alias="endlessIpAddresses"),
+        pydantic.Field(
+            alias="endlessIpAddresses",
+            description="IP addresses for which any request to Otoroshi will respond with 128 Gb of zeros",
+        ),
+    ]
     """
     IP addresses for which any request to Otoroshi will respond with 128 Gb of zeros
     """
 
-    ip_filtering: typing_extensions.Annotated[IpFiltering, FieldMetadata(alias="ipFiltering")]
-    limit_concurrent_requests: typing_extensions.Annotated[bool, FieldMetadata(alias="limitConcurrentRequests")] = (
-        pydantic.Field()
-    )
+    ip_filtering: typing_extensions.Annotated[
+        IpFiltering, FieldMetadata(alias="ipFiltering"), pydantic.Field(alias="ipFiltering")
+    ]
+    limit_concurrent_requests: typing_extensions.Annotated[
+        bool,
+        FieldMetadata(alias="limitConcurrentRequests"),
+        pydantic.Field(
+            alias="limitConcurrentRequests",
+            description="If enabled, Otoroshi will reject new request if too much at the same time",
+        ),
+    ]
     """
     If enabled, Otoroshi will reject new request if too much at the same time
     """
@@ -99,72 +140,119 @@ class GlobalConfig(UniversalBaseModel):
     """
 
     mailer_settings: typing_extensions.Annotated[
-        typing.Optional[MailerSettings], FieldMetadata(alias="mailerSettings")
-    ] = pydantic.Field(default=None)
+        typing.Optional[MailerSettings],
+        FieldMetadata(alias="mailerSettings"),
+        pydantic.Field(alias="mailerSettings", description="Optional mailer configuration"),
+    ] = None
     """
     Optional mailer configuration
     """
 
-    max_concurrent_requests: typing_extensions.Annotated[int, FieldMetadata(alias="maxConcurrentRequests")] = (
-        pydantic.Field()
-    )
+    max_concurrent_requests: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="maxConcurrentRequests"),
+        pydantic.Field(
+            alias="maxConcurrentRequests", description="The number of authorized request processed at the same time"
+        ),
+    ]
     """
     The number of authorized request processed at the same time
     """
 
     max_http10response_size: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="maxHttp10ResponseSize")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="maxHttp10ResponseSize"),
+        pydantic.Field(alias="maxHttp10ResponseSize", description="The max size in bytes of an HTTP 1.0 response"),
+    ] = None
     """
     The max size in bytes of an HTTP 1.0 response
     """
 
-    max_logs_size: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="maxLogsSize")] = (
-        pydantic.Field(default=None)
-    )
+    max_logs_size: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="maxLogsSize"),
+        pydantic.Field(alias="maxLogsSize", description="Number of events kept locally"),
+    ] = None
     """
     Number of events kept locally
     """
 
-    middle_fingers: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="middleFingers")] = (
-        pydantic.Field(default=None)
-    )
+    middle_fingers: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="middleFingers"),
+        pydantic.Field(
+            alias="middleFingers",
+            description="Use middle finger emoji as a response character for endless HTTP responses",
+        ),
+    ] = None
     """
     Use middle finger emoji as a response character for endless HTTP responses
     """
 
-    per_ip_throttling_quota: typing_extensions.Annotated[int, FieldMetadata(alias="perIpThrottlingQuota")] = (
-        pydantic.Field()
-    )
+    per_ip_throttling_quota: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="perIpThrottlingQuota"),
+        pydantic.Field(
+            alias="perIpThrottlingQuota",
+            description="Authorized number of calls per second globally per IP address, measured on 10 seconds",
+        ),
+    ]
     """
     Authorized number of calls per second globally per IP address, measured on 10 seconds
     """
 
     private_apps_auth0config: typing_extensions.Annotated[
-        typing.Optional[Auth0Config], FieldMetadata(alias="privateAppsAuth0Config")
-    ] = pydantic.Field(default=None)
+        typing.Optional[Auth0Config],
+        FieldMetadata(alias="privateAppsAuth0Config"),
+        pydantic.Field(
+            alias="privateAppsAuth0Config", description="Optional configuration for the private apps Auth0 domain"
+        ),
+    ] = None
     """
     Optional configuration for the private apps Auth0 domain
     """
 
-    stream_entity_only: typing_extensions.Annotated[bool, FieldMetadata(alias="streamEntityOnly")] = pydantic.Field()
+    stream_entity_only: typing_extensions.Annotated[
+        bool,
+        FieldMetadata(alias="streamEntityOnly"),
+        pydantic.Field(
+            alias="streamEntityOnly", description="HTTP will be streamed only. Doesn't work with old browsers"
+        ),
+    ]
     """
     HTTP will be streamed only. Doesn't work with old browsers
     """
 
-    throttling_quota: typing_extensions.Annotated[int, FieldMetadata(alias="throttlingQuota")] = pydantic.Field()
+    throttling_quota: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="throttlingQuota"),
+        pydantic.Field(
+            alias="throttlingQuota",
+            description="Authorized number of calls per second globally, measured on 10 seconds",
+        ),
+    ]
     """
     Authorized number of calls per second globally, measured on 10 seconds
     """
 
-    u2f_login_only: typing_extensions.Annotated[bool, FieldMetadata(alias="u2fLoginOnly")] = pydantic.Field()
+    u2f_login_only: typing_extensions.Annotated[
+        bool,
+        FieldMetadata(alias="u2fLoginOnly"),
+        pydantic.Field(
+            alias="u2fLoginOnly", description="If enabled, login to backoffice through Auth0 will be disabled"
+        ),
+    ]
     """
     If enabled, login to backoffice through Auth0 will be disabled
     """
 
-    use_circuit_breakers: typing_extensions.Annotated[bool, FieldMetadata(alias="useCircuitBreakers")] = (
-        pydantic.Field()
-    )
+    use_circuit_breakers: typing_extensions.Annotated[
+        bool,
+        FieldMetadata(alias="useCircuitBreakers"),
+        pydantic.Field(
+            alias="useCircuitBreakers", description="If enabled, services will be authorized to use circuit breakers"
+        ),
+    ]
     """
     If enabled, services will be authorized to use circuit breakers
     """

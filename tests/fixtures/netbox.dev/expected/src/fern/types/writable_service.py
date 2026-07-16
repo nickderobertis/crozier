@@ -12,7 +12,7 @@ from .writable_service_protocol import WritableServiceProtocol
 class WritableService(UniversalBaseModel):
     comments: typing.Optional[str] = None
     created: typing.Optional[dt.datetime] = None
-    custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = None
     description: typing.Optional[str] = None
     device: typing.Optional[int] = None
     display: typing.Optional[str] = None

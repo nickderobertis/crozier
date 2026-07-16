@@ -10,10 +10,12 @@ from ..core.serialization import FieldMetadata
 
 class DestinyDefinitionsRecordsDestinyRecordIntervalObjective(UniversalBaseModel):
     interval_objective_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="intervalObjectiveHash")
+        typing.Optional[int],
+        FieldMetadata(alias="intervalObjectiveHash"),
+        pydantic.Field(alias="intervalObjectiveHash"),
     ] = None
     interval_score_value: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="intervalScoreValue")
+        typing.Optional[int], FieldMetadata(alias="intervalScoreValue"), pydantic.Field(alias="intervalScoreValue")
     ] = None
 
     if IS_PYDANTIC_V2:

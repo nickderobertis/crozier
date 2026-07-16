@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PostImportStacksToStackSetRequestAction(str, enum.Enum):
+class PostImportStacksToStackSetRequestAction(enum.StrEnum):
     IMPORT_STACKS_TO_STACK_SET = "ImportStacksToStackSet"
 
     def visit(self, import_stacks_to_stack_set: typing.Callable[[], T_Result]) -> T_Result:

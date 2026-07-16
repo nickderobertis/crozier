@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class StackSetDriftStatus(str, enum.Enum):
+class StackSetDriftStatus(enum.StrEnum):
     DRIFTED = "DRIFTED"
     IN_SYNC = "IN_SYNC"
     NOT_CHECKED = "NOT_CHECKED"

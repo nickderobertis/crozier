@@ -13,14 +13,24 @@ class ProprietaryBankTransactionCodeStructure1(UniversalBaseModel):
     Set of elements to fully identify a proprietary bank transaction code.
     """
 
-    code: typing_extensions.Annotated[str, FieldMetadata(alias="Code")] = pydantic.Field()
+    code: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="Code"),
+        pydantic.Field(
+            alias="Code", description="Proprietary bank transaction code to identify the underlying transaction."
+        ),
+    ]
     """
     Proprietary bank transaction code to identify the underlying transaction.
     """
 
-    issuer: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="Issuer")] = pydantic.Field(
-        default=None
-    )
+    issuer: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="Issuer"),
+        pydantic.Field(
+            alias="Issuer", description="Identification of the issuer of the proprietary bank transaction code."
+        ),
+    ] = None
     """
     Identification of the issuer of the proprietary bank transaction code.
     """

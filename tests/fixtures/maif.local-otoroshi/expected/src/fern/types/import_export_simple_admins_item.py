@@ -13,7 +13,11 @@ class ImportExportSimpleAdminsItem(UniversalBaseModel):
     Administrator using just login/password tuple to access Otoroshi
     """
 
-    created_at: typing_extensions.Annotated[int, FieldMetadata(alias="createdAt")] = pydantic.Field()
+    created_at: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="createdAt"),
+        pydantic.Field(alias="createdAt", description="The creation date of the user"),
+    ]
     """
     The creation date of the user
     """

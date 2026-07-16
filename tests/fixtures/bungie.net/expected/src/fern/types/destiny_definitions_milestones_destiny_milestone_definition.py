@@ -49,10 +49,17 @@ class DestinyDefinitionsMilestonesDestinyMilestoneDefinition(UniversalBaseModel)
     A Milestone can now be represented by one or more activities directly (without a backing Quest), and that activity can have many challenges, modifiers, and related to it.
     """
 
-    default_order: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="defaultOrder")] = None
-    display_preference: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="displayPreference")] = (
-        pydantic.Field(default=None)
-    )
+    default_order: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="defaultOrder"), pydantic.Field(alias="defaultOrder")
+    ] = None
+    display_preference: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="displayPreference"),
+        pydantic.Field(
+            alias="displayPreference",
+            description='A hint to the UI to indicate what to show as the display properties for this Milestone when showing "Live" milestone data. Feel free to show more than this if desired: this hint is meant to simplify our own UI, but it may prove useful to you as well.',
+        ),
+    ] = None
     """
     A hint to the UI to indicate what to show as the display properties for this Milestone when showing "Live" milestone data. Feel free to show more than this if desired: this hint is meant to simplify our own UI, but it may prove useful to you as well.
     """
@@ -60,24 +67,40 @@ class DestinyDefinitionsMilestonesDestinyMilestoneDefinition(UniversalBaseModel)
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
+        pydantic.Field(alias="displayProperties"),
     ] = None
     explore_prioritizes_activity_image: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="explorePrioritizesActivityImage")
-    ] = pydantic.Field(default=None)
+        typing.Optional[bool],
+        FieldMetadata(alias="explorePrioritizesActivityImage"),
+        pydantic.Field(
+            alias="explorePrioritizesActivityImage",
+            description='If TRUE, "Explore Destiny" (the front page of BNet and the companion app) prioritize using the activity image over any overriding Quest or Milestone image provided. This unfortunate hack is brought to you by Trials of The Nine.',
+        ),
+    ] = None
     """
     If TRUE, "Explore Destiny" (the front page of BNet and the companion app) prioritize using the activity image over any overriding Quest or Milestone image provided. This unfortunate hack is brought to you by Trials of The Nine.
     """
 
-    friendly_name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="friendlyName")] = (
-        pydantic.Field(default=None)
-    )
+    friendly_name: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="friendlyName"),
+        pydantic.Field(
+            alias="friendlyName",
+            description='If the milestone has a friendly identifier for association with other features - such as Recruiting - that identifier can be found here. This is "friendly" in that it looks better in a URL than whatever the identifier for the Milestone actually is.',
+        ),
+    ] = None
     """
     If the milestone has a friendly identifier for association with other features - such as Recruiting - that identifier can be found here. This is "friendly" in that it looks better in a URL than whatever the identifier for the Milestone actually is.
     """
 
     has_predictable_dates: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="hasPredictableDates")
-    ] = pydantic.Field(default=None)
+        typing.Optional[bool],
+        FieldMetadata(alias="hasPredictableDates"),
+        pydantic.Field(
+            alias="hasPredictableDates",
+            description="A shortcut for clients - and the server - to understand whether we can predict the start and end dates for this event. In practice, there are multiple ways that an event could have predictable date ranges, but not all events will be able to be predicted via any mechanism (for instance, events that are manually triggered on and off)",
+        ),
+    ] = None
     """
     A shortcut for clients - and the server - to understand whether we can predict the start and end dates for this event. In practice, there are multiple ways that an event could have predictable date ranges, but not all events will be able to be predicted via any mechanism (for instance, events that are manually triggered on and off)
     """
@@ -99,15 +122,25 @@ class DestinyDefinitionsMilestonesDestinyMilestoneDefinition(UniversalBaseModel)
     """
 
     is_in_game_milestone: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="isInGameMilestone")
-    ] = pydantic.Field(default=None)
+        typing.Optional[bool],
+        FieldMetadata(alias="isInGameMilestone"),
+        pydantic.Field(
+            alias="isInGameMilestone",
+            description="Some milestones are explicit objectives that you can see and interact with in the game. Some milestones are more conceptual, built by BNet to help advise you on activities and events that happen in-game but that aren't explicitly shown in game as Milestones. If this is TRUE, you can see this as a milestone in the game. If this is FALSE, it's an event or activity you can participate in, but you won't see it as a Milestone in the game's UI.",
+        ),
+    ] = None
     """
     Some milestones are explicit objectives that you can see and interact with in the game. Some milestones are more conceptual, built by BNet to help advise you on activities and events that happen in-game but that aren't explicitly shown in game as Milestones. If this is TRUE, you can see this as a milestone in the game. If this is FALSE, it's an event or activity you can participate in, but you won't see it as a Milestone in the game's UI.
     """
 
-    milestone_type: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="milestoneType")] = (
-        pydantic.Field(default=None)
-    )
+    milestone_type: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="milestoneType"),
+        pydantic.Field(
+            alias="milestoneType",
+            description="An enumeration listing one of the possible types of milestones. Check out the DestinyMilestoneType enum for more info!",
+        ),
+    ] = None
     """
     An enumeration listing one of the possible types of milestones. Check out the DestinyMilestoneType enum for more info!
     """
@@ -138,16 +171,26 @@ class DestinyDefinitionsMilestonesDestinyMilestoneDefinition(UniversalBaseModel)
     This is keyed by the Category's hash, which is only guaranteed to be unique within a given Milestone.
     """
 
-    show_in_explorer: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="showInExplorer")] = (
-        pydantic.Field(default=None)
-    )
+    show_in_explorer: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="showInExplorer"),
+        pydantic.Field(
+            alias="showInExplorer",
+            description='If TRUE, this entry should be returned in the list of milestones for the "Explore Destiny" (i.e. new BNet homepage) features of Bungie.net (as long as the underlying event is active) Note that this is a property specifically used by BNet and the companion app for the "Live Events" feature of the front page/welcome view: it\'s not a reflection of what you see in-game.',
+        ),
+    ] = None
     """
     If TRUE, this entry should be returned in the list of milestones for the "Explore Destiny" (i.e. new BNet homepage) features of Bungie.net (as long as the underlying event is active) Note that this is a property specifically used by BNet and the companion app for the "Live Events" feature of the front page/welcome view: it's not a reflection of what you see in-game.
     """
 
-    show_in_milestones: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="showInMilestones")] = (
-        pydantic.Field(default=None)
-    )
+    show_in_milestones: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="showInMilestones"),
+        pydantic.Field(
+            alias="showInMilestones",
+            description="Determines whether we'll show this Milestone in the user's personal Milestones list.",
+        ),
+    ] = None
     """
     Determines whether we'll show this Milestone in the user's personal Milestones list.
     """
@@ -167,8 +210,13 @@ class DestinyDefinitionsMilestonesDestinyMilestoneDefinition(UniversalBaseModel)
     """
 
     vendors_display_title: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="vendorsDisplayTitle")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="vendorsDisplayTitle"),
+        pydantic.Field(
+            alias="vendorsDisplayTitle",
+            description="If you're going to show Vendors for the Milestone, you can use this as a localized \"header\" for the section where you show that vendor data. It'll provide a more context-relevant clue about what the vendor's role is in the Milestone.",
+        ),
+    ] = None
     """
     If you're going to show Vendors for the Milestone, you can use this as a localized "header" for the section where you show that vendor data. It'll provide a more context-relevant clue about what the vendor's role is in the Milestone.
     """

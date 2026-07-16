@@ -12,10 +12,16 @@ from .destiny_components_loadouts_destiny_loadout_item_component import (
 
 
 class DestinyComponentsLoadoutsDestinyLoadoutComponent(UniversalBaseModel):
-    color_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="colorHash")] = None
-    icon_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="iconHash")] = None
+    color_hash: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="colorHash"), pydantic.Field(alias="colorHash")
+    ] = None
+    icon_hash: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="iconHash"), pydantic.Field(alias="iconHash")
+    ] = None
     items: typing.Optional[typing.List[DestinyComponentsLoadoutsDestinyLoadoutItemComponent]] = None
-    name_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="nameHash")] = None
+    name_hash: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="nameHash"), pydantic.Field(alias="nameHash")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

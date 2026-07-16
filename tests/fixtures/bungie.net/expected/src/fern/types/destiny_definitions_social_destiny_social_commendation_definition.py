@@ -14,22 +14,31 @@ from .destiny_misc_destiny_color import DestinyMiscDestinyColor
 
 class DestinyDefinitionsSocialDestinySocialCommendationDefinition(UniversalBaseModel):
     activity_giving_limit: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="activityGivingLimit")
+        typing.Optional[int], FieldMetadata(alias="activityGivingLimit"), pydantic.Field(alias="activityGivingLimit")
     ] = None
-    card_image_path: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="cardImagePath")] = None
+    card_image_path: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="cardImagePath"), pydantic.Field(alias="cardImagePath")
+    ] = None
     color: typing.Optional[DestinyMiscDestinyColor] = None
     display_activities: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition]],
         FieldMetadata(alias="displayActivities"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="displayActivities",
+            description="The display properties for the the activities that this commendation is available in.",
+        ),
+    ] = None
     """
     The display properties for the the activities that this commendation is available in.
     """
 
-    display_priority: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="displayPriority")] = None
+    display_priority: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="displayPriority"), pydantic.Field(alias="displayPriority")
+    ] = None
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
+        pydantic.Field(alias="displayProperties"),
     ] = None
     hash: typing.Optional[int] = pydantic.Field(default=None)
     """
@@ -43,7 +52,9 @@ class DestinyDefinitionsSocialDestinySocialCommendationDefinition(UniversalBaseM
     """
 
     parent_commendation_node_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="parentCommendationNodeHash")
+        typing.Optional[int],
+        FieldMetadata(alias="parentCommendationNodeHash"),
+        pydantic.Field(alias="parentCommendationNodeHash"),
     ] = None
     redacted: typing.Optional[bool] = pydantic.Field(default=None)
     """

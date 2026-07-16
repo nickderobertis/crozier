@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -34,6 +35,7 @@ from ..types.search_loyalty_accounts_response import SearchLoyaltyAccountsRespon
 from ..types.search_loyalty_events_response import SearchLoyaltyEventsResponse
 from ..types.search_loyalty_rewards_request_loyalty_reward_query import SearchLoyaltyRewardsRequestLoyaltyRewardQuery
 from ..types.search_loyalty_rewards_response import SearchLoyaltyRewardsResponse
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -97,6 +99,10 @@ class RawLoyaltyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def search_loyalty_accounts(
@@ -166,6 +172,10 @@ class RawLoyaltyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def retrieve_loyalty_account(
@@ -188,7 +198,7 @@ class RawLoyaltyClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/loyalty/accounts/{jsonable_encoder(account_id)}",
+            f"v2/loyalty/accounts/{encode_path_param(account_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -205,6 +215,10 @@ class RawLoyaltyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def accumulate_loyalty_points(
@@ -253,7 +267,7 @@ class RawLoyaltyClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/loyalty/accounts/{jsonable_encoder(account_id)}/accumulate",
+            f"v2/loyalty/accounts/{encode_path_param(account_id)}/accumulate",
             method="POST",
             json={
                 "accumulate_points": convert_and_respect_annotation_metadata(
@@ -281,6 +295,10 @@ class RawLoyaltyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def adjust_loyalty_points(
@@ -318,7 +336,7 @@ class RawLoyaltyClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/loyalty/accounts/{jsonable_encoder(account_id)}/adjust",
+            f"v2/loyalty/accounts/{encode_path_param(account_id)}/adjust",
             method="POST",
             json={
                 "adjust_points": convert_and_respect_annotation_metadata(
@@ -345,6 +363,10 @@ class RawLoyaltyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def search_loyalty_events(
@@ -416,6 +438,10 @@ class RawLoyaltyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_loyalty_programs(
@@ -456,6 +482,10 @@ class RawLoyaltyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def retrieve_loyalty_program(
@@ -480,7 +510,7 @@ class RawLoyaltyClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/loyalty/programs/{jsonable_encoder(program_id)}",
+            f"v2/loyalty/programs/{encode_path_param(program_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -497,6 +527,10 @@ class RawLoyaltyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def calculate_loyalty_points(
@@ -542,7 +576,7 @@ class RawLoyaltyClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/loyalty/programs/{jsonable_encoder(program_id)}/calculate",
+            f"v2/loyalty/programs/{encode_path_param(program_id)}/calculate",
             method="POST",
             json={
                 "order_id": order_id,
@@ -569,6 +603,10 @@ class RawLoyaltyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_loyalty_reward(
@@ -628,6 +666,10 @@ class RawLoyaltyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def search_loyalty_rewards(
@@ -699,6 +741,10 @@ class RawLoyaltyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def retrieve_loyalty_reward(
@@ -721,7 +767,7 @@ class RawLoyaltyClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/loyalty/rewards/{jsonable_encoder(reward_id)}",
+            f"v2/loyalty/rewards/{encode_path_param(reward_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -738,6 +784,10 @@ class RawLoyaltyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_loyalty_reward(
@@ -768,7 +818,7 @@ class RawLoyaltyClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/loyalty/rewards/{jsonable_encoder(reward_id)}",
+            f"v2/loyalty/rewards/{encode_path_param(reward_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -785,6 +835,10 @@ class RawLoyaltyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def redeem_loyalty_reward(
@@ -829,7 +883,7 @@ class RawLoyaltyClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/loyalty/rewards/{jsonable_encoder(reward_id)}/redeem",
+            f"v2/loyalty/rewards/{encode_path_param(reward_id)}/redeem",
             method="POST",
             json={
                 "idempotency_key": idempotency_key,
@@ -854,6 +908,10 @@ class RawLoyaltyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -915,6 +973,10 @@ class AsyncRawLoyaltyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def search_loyalty_accounts(
@@ -984,6 +1046,10 @@ class AsyncRawLoyaltyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def retrieve_loyalty_account(
@@ -1006,7 +1072,7 @@ class AsyncRawLoyaltyClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/loyalty/accounts/{jsonable_encoder(account_id)}",
+            f"v2/loyalty/accounts/{encode_path_param(account_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -1023,6 +1089,10 @@ class AsyncRawLoyaltyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def accumulate_loyalty_points(
@@ -1071,7 +1141,7 @@ class AsyncRawLoyaltyClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/loyalty/accounts/{jsonable_encoder(account_id)}/accumulate",
+            f"v2/loyalty/accounts/{encode_path_param(account_id)}/accumulate",
             method="POST",
             json={
                 "accumulate_points": convert_and_respect_annotation_metadata(
@@ -1099,6 +1169,10 @@ class AsyncRawLoyaltyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def adjust_loyalty_points(
@@ -1136,7 +1210,7 @@ class AsyncRawLoyaltyClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/loyalty/accounts/{jsonable_encoder(account_id)}/adjust",
+            f"v2/loyalty/accounts/{encode_path_param(account_id)}/adjust",
             method="POST",
             json={
                 "adjust_points": convert_and_respect_annotation_metadata(
@@ -1163,6 +1237,10 @@ class AsyncRawLoyaltyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def search_loyalty_events(
@@ -1234,6 +1312,10 @@ class AsyncRawLoyaltyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_loyalty_programs(
@@ -1274,6 +1356,10 @@ class AsyncRawLoyaltyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def retrieve_loyalty_program(
@@ -1298,7 +1384,7 @@ class AsyncRawLoyaltyClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/loyalty/programs/{jsonable_encoder(program_id)}",
+            f"v2/loyalty/programs/{encode_path_param(program_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -1315,6 +1401,10 @@ class AsyncRawLoyaltyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def calculate_loyalty_points(
@@ -1360,7 +1450,7 @@ class AsyncRawLoyaltyClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/loyalty/programs/{jsonable_encoder(program_id)}/calculate",
+            f"v2/loyalty/programs/{encode_path_param(program_id)}/calculate",
             method="POST",
             json={
                 "order_id": order_id,
@@ -1387,6 +1477,10 @@ class AsyncRawLoyaltyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_loyalty_reward(
@@ -1446,6 +1540,10 @@ class AsyncRawLoyaltyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def search_loyalty_rewards(
@@ -1517,6 +1615,10 @@ class AsyncRawLoyaltyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def retrieve_loyalty_reward(
@@ -1539,7 +1641,7 @@ class AsyncRawLoyaltyClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/loyalty/rewards/{jsonable_encoder(reward_id)}",
+            f"v2/loyalty/rewards/{encode_path_param(reward_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -1556,6 +1658,10 @@ class AsyncRawLoyaltyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_loyalty_reward(
@@ -1586,7 +1692,7 @@ class AsyncRawLoyaltyClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/loyalty/rewards/{jsonable_encoder(reward_id)}",
+            f"v2/loyalty/rewards/{encode_path_param(reward_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -1603,6 +1709,10 @@ class AsyncRawLoyaltyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def redeem_loyalty_reward(
@@ -1647,7 +1757,7 @@ class AsyncRawLoyaltyClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/loyalty/rewards/{jsonable_encoder(reward_id)}/redeem",
+            f"v2/loyalty/rewards/{encode_path_param(reward_id)}/redeem",
             method="POST",
             json={
                 "idempotency_key": idempotency_key,
@@ -1672,4 +1782,8 @@ class AsyncRawLoyaltyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

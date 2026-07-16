@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObbcaData1OtherFeesChargesItemFeeChargeDetailItemFeeChargeCapItemMinMaxType(str, enum.Enum):
+class ObbcaData1OtherFeesChargesItemFeeChargeDetailItemFeeChargeCapItemMinMaxType(enum.StrEnum):
     """
     Min Max type
     """

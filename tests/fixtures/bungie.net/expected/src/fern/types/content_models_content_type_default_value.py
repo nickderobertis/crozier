@@ -9,9 +9,15 @@ from ..core.serialization import FieldMetadata
 
 
 class ContentModelsContentTypeDefaultValue(UniversalBaseModel):
-    default_value: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="defaultValue")] = None
-    when_clause: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="whenClause")] = None
-    when_value: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="whenValue")] = None
+    default_value: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="defaultValue"), pydantic.Field(alias="defaultValue")
+    ] = None
+    when_clause: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="whenClause"), pydantic.Field(alias="whenClause")
+    ] = None
+    when_value: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="whenValue"), pydantic.Field(alias="whenValue")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

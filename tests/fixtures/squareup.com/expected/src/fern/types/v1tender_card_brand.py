@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class V1TenderCardBrand(str, enum.Enum):
+class V1TenderCardBrand(enum.StrEnum):
     """
     The brand of a credit card.
     """

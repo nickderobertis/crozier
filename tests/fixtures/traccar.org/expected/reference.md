@@ -1,6 +1,6 @@
 # Reference
 ## Attributes
-<details><summary><code>client.attributes.<a href="src/fern/attributes/client.py">fetch_a_list_of_attributes</a>(...)</code></summary>
+<details><summary><code>client.attributes.<a href="src/fern/attributes/client.py">fetch_a_list_of_attributes</a>(...) -> typing.List[Attribute]</code></summary>
 <dl>
 <dd>
 
@@ -28,11 +28,14 @@ Without params, it returns a list of Attributes the user has access to
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.attributes.fetch_a_list_of_attributes()
 
 ```
@@ -49,7 +52,7 @@ client.attributes.fetch_a_list_of_attributes()
 <dl>
 <dd>
 
-**all_:** `typing.Optional[bool]` — Can only be used by admins or managers to fetch all entities
+**all:** `typing.Optional[bool]` — Can only be used by admins or managers to fetch all entities
     
 </dd>
 </dl>
@@ -101,7 +104,7 @@ client.attributes.fetch_a_list_of_attributes()
 </dl>
 </details>
 
-<details><summary><code>client.attributes.<a href="src/fern/attributes/client.py">create_an_attribute</a>(...)</code></summary>
+<details><summary><code>client.attributes.<a href="src/fern/attributes/client.py">create_an_attribute</a>(...) -> Attribute</code></summary>
 <dl>
 <dd>
 
@@ -115,11 +118,14 @@ client.attributes.fetch_a_list_of_attributes()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.attributes.create_an_attribute()
 
 ```
@@ -136,39 +142,7 @@ client.attributes.create_an_attribute()
 <dl>
 <dd>
 
-**attribute:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**expression:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**type:** `typing.Optional[str]` — String|Number|Boolean
+**request:** `Attribute` 
     
 </dd>
 </dl>
@@ -188,7 +162,7 @@ client.attributes.create_an_attribute()
 </dl>
 </details>
 
-<details><summary><code>client.attributes.<a href="src/fern/attributes/client.py">update_an_attribute</a>(...)</code></summary>
+<details><summary><code>client.attributes.<a href="src/fern/attributes/client.py">update_an_attribute</a>(...) -> Attribute</code></summary>
 <dl>
 <dd>
 
@@ -202,11 +176,14 @@ client.attributes.create_an_attribute()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.attributes.update_an_attribute(
     id_=1,
 )
@@ -225,7 +202,7 @@ client.attributes.update_an_attribute(
 <dl>
 <dd>
 
-**id_:** `int` 
+**id:** `int` 
     
 </dd>
 </dl>
@@ -233,39 +210,7 @@ client.attributes.update_an_attribute(
 <dl>
 <dd>
 
-**attribute:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**expression:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**type:** `typing.Optional[str]` — String|Number|Boolean
+**request:** `Attribute` 
     
 </dd>
 </dl>
@@ -299,11 +244,14 @@ client.attributes.update_an_attribute(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.attributes.delete_an_attribute(
     id=1,
 )
@@ -343,7 +291,7 @@ client.attributes.delete_an_attribute(
 </details>
 
 ## Calendars
-<details><summary><code>client.calendars.<a href="src/fern/calendars/client.py">fetch_a_list_of_calendars</a>(...)</code></summary>
+<details><summary><code>client.calendars.<a href="src/fern/calendars/client.py">fetch_a_list_of_calendars</a>(...) -> typing.List[Calendar]</code></summary>
 <dl>
 <dd>
 
@@ -371,11 +319,14 @@ Without params, it returns a list of Calendars the user has access to
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.calendars.fetch_a_list_of_calendars()
 
 ```
@@ -392,7 +343,7 @@ client.calendars.fetch_a_list_of_calendars()
 <dl>
 <dd>
 
-**all_:** `typing.Optional[bool]` — Can only be used by admins or managers to fetch all entities
+**all:** `typing.Optional[bool]` — Can only be used by admins or managers to fetch all entities
     
 </dd>
 </dl>
@@ -420,7 +371,7 @@ client.calendars.fetch_a_list_of_calendars()
 </dl>
 </details>
 
-<details><summary><code>client.calendars.<a href="src/fern/calendars/client.py">create_a_calendar</a>(...)</code></summary>
+<details><summary><code>client.calendars.<a href="src/fern/calendars/client.py">create_a_calendar</a>(...) -> Calendar</code></summary>
 <dl>
 <dd>
 
@@ -434,11 +385,14 @@ client.calendars.fetch_a_list_of_calendars()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.calendars.create_a_calendar()
 
 ```
@@ -455,31 +409,7 @@ client.calendars.create_a_calendar()
 <dl>
 <dd>
 
-**attributes:** `typing.Optional[CalendarAttributes]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**data:** `typing.Optional[str]` — base64 encoded in iCalendar format
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**name:** `typing.Optional[str]` 
+**request:** `Calendar` 
     
 </dd>
 </dl>
@@ -499,7 +429,7 @@ client.calendars.create_a_calendar()
 </dl>
 </details>
 
-<details><summary><code>client.calendars.<a href="src/fern/calendars/client.py">update_a_calendar</a>(...)</code></summary>
+<details><summary><code>client.calendars.<a href="src/fern/calendars/client.py">update_a_calendar</a>(...) -> Calendar</code></summary>
 <dl>
 <dd>
 
@@ -513,11 +443,14 @@ client.calendars.create_a_calendar()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.calendars.update_a_calendar(
     id_=1,
 )
@@ -536,7 +469,7 @@ client.calendars.update_a_calendar(
 <dl>
 <dd>
 
-**id_:** `int` 
+**id:** `int` 
     
 </dd>
 </dl>
@@ -544,31 +477,7 @@ client.calendars.update_a_calendar(
 <dl>
 <dd>
 
-**attributes:** `typing.Optional[CalendarAttributes]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**data:** `typing.Optional[str]` — base64 encoded in iCalendar format
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**name:** `typing.Optional[str]` 
+**request:** `Calendar` 
     
 </dd>
 </dl>
@@ -602,11 +511,14 @@ client.calendars.update_a_calendar(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.calendars.delete_a_calendar(
     id=1,
 )
@@ -646,7 +558,7 @@ client.calendars.delete_a_calendar(
 </details>
 
 ## Commands
-<details><summary><code>client.commands.<a href="src/fern/commands/client.py">fetch_a_list_of_saved_commands</a>(...)</code></summary>
+<details><summary><code>client.commands.<a href="src/fern/commands/client.py">fetch_a_list_of_saved_commands</a>(...) -> typing.List[Command]</code></summary>
 <dl>
 <dd>
 
@@ -674,11 +586,14 @@ Without params, it returns a list of Saved Commands the user has access to
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.commands.fetch_a_list_of_saved_commands()
 
 ```
@@ -695,7 +610,7 @@ client.commands.fetch_a_list_of_saved_commands()
 <dl>
 <dd>
 
-**all_:** `typing.Optional[bool]` — Can only be used by admins or managers to fetch all entities
+**all:** `typing.Optional[bool]` — Can only be used by admins or managers to fetch all entities
     
 </dd>
 </dl>
@@ -747,7 +662,7 @@ client.commands.fetch_a_list_of_saved_commands()
 </dl>
 </details>
 
-<details><summary><code>client.commands.<a href="src/fern/commands/client.py">create_a_saved_command</a>(...)</code></summary>
+<details><summary><code>client.commands.<a href="src/fern/commands/client.py">create_a_saved_command</a>(...) -> Command</code></summary>
 <dl>
 <dd>
 
@@ -761,11 +676,14 @@ client.commands.fetch_a_list_of_saved_commands()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.commands.create_a_saved_command()
 
 ```
@@ -782,39 +700,7 @@ client.commands.create_a_saved_command()
 <dl>
 <dd>
 
-**attributes:** `typing.Optional[CommandAttributes]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**device_id:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**type:** `typing.Optional[str]` 
+**request:** `Command` 
     
 </dd>
 </dl>
@@ -834,7 +720,7 @@ client.commands.create_a_saved_command()
 </dl>
 </details>
 
-<details><summary><code>client.commands.<a href="src/fern/commands/client.py">fetch_a_list_of_saved_commands_supported_by_device_at_the_moment</a>(...)</code></summary>
+<details><summary><code>client.commands.<a href="src/fern/commands/client.py">fetch_a_list_of_saved_commands_supported_by_device_at_the_moment</a>(...) -> typing.List[Command]</code></summary>
 <dl>
 <dd>
 
@@ -862,11 +748,14 @@ Return a list of saved commands linked to Device and its groups, filtered by cur
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.commands.fetch_a_list_of_saved_commands_supported_by_device_at_the_moment()
 
 ```
@@ -903,7 +792,7 @@ client.commands.fetch_a_list_of_saved_commands_supported_by_device_at_the_moment
 </dl>
 </details>
 
-<details><summary><code>client.commands.<a href="src/fern/commands/client.py">dispatch_commands_to_device</a>(...)</code></summary>
+<details><summary><code>client.commands.<a href="src/fern/commands/client.py">dispatch_commands_to_device</a>(...) -> Command</code></summary>
 <dl>
 <dd>
 
@@ -931,11 +820,14 @@ Dispatch a new command or Saved Command if _body.id_ set
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.commands.dispatch_commands_to_device()
 
 ```
@@ -952,39 +844,7 @@ client.commands.dispatch_commands_to_device()
 <dl>
 <dd>
 
-**attributes:** `typing.Optional[CommandAttributes]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**device_id:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**type:** `typing.Optional[str]` 
+**request:** `Command` 
     
 </dd>
 </dl>
@@ -1004,7 +864,7 @@ client.commands.dispatch_commands_to_device()
 </dl>
 </details>
 
-<details><summary><code>client.commands.<a href="src/fern/commands/client.py">fetch_a_list_of_available_commands_for_the_device_or_all_possible_commands_if_device_ommited</a>(...)</code></summary>
+<details><summary><code>client.commands.<a href="src/fern/commands/client.py">fetch_a_list_of_available_commands_for_the_device_or_all_possible_commands_if_device_ommited</a>(...) -> typing.List[CommandType]</code></summary>
 <dl>
 <dd>
 
@@ -1018,11 +878,14 @@ client.commands.dispatch_commands_to_device()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.commands.fetch_a_list_of_available_commands_for_the_device_or_all_possible_commands_if_device_ommited()
 
 ```
@@ -1075,7 +938,7 @@ client.commands.fetch_a_list_of_available_commands_for_the_device_or_all_possibl
 </dl>
 </details>
 
-<details><summary><code>client.commands.<a href="src/fern/commands/client.py">update_a_saved_command</a>(...)</code></summary>
+<details><summary><code>client.commands.<a href="src/fern/commands/client.py">update_a_saved_command</a>(...) -> Command</code></summary>
 <dl>
 <dd>
 
@@ -1089,11 +952,14 @@ client.commands.fetch_a_list_of_available_commands_for_the_device_or_all_possibl
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.commands.update_a_saved_command(
     id_=1,
 )
@@ -1112,7 +978,7 @@ client.commands.update_a_saved_command(
 <dl>
 <dd>
 
-**id_:** `int` 
+**id:** `int` 
     
 </dd>
 </dl>
@@ -1120,39 +986,7 @@ client.commands.update_a_saved_command(
 <dl>
 <dd>
 
-**attributes:** `typing.Optional[CommandAttributes]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**device_id:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**type:** `typing.Optional[str]` 
+**request:** `Command` 
     
 </dd>
 </dl>
@@ -1186,11 +1020,14 @@ client.commands.update_a_saved_command(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.commands.delete_a_saved_command(
     id=1,
 )
@@ -1230,7 +1067,7 @@ client.commands.delete_a_saved_command(
 </details>
 
 ## Devices
-<details><summary><code>client.devices.<a href="src/fern/devices/client.py">fetch_a_list_of_devices</a>(...)</code></summary>
+<details><summary><code>client.devices.<a href="src/fern/devices/client.py">fetch_a_list_of_devices</a>(...) -> typing.List[Device]</code></summary>
 <dl>
 <dd>
 
@@ -1258,11 +1095,14 @@ Without any params, returns a list of the user's devices
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.devices.fetch_a_list_of_devices()
 
 ```
@@ -1279,7 +1119,7 @@ client.devices.fetch_a_list_of_devices()
 <dl>
 <dd>
 
-**all_:** `typing.Optional[bool]` — Can only be used by admins or managers to fetch all entities
+**all:** `typing.Optional[bool]` — Can only be used by admins or managers to fetch all entities
     
 </dd>
 </dl>
@@ -1323,7 +1163,7 @@ client.devices.fetch_a_list_of_devices()
 </dl>
 </details>
 
-<details><summary><code>client.devices.<a href="src/fern/devices/client.py">create_a_device</a>(...)</code></summary>
+<details><summary><code>client.devices.<a href="src/fern/devices/client.py">create_a_device</a>(...) -> Device</code></summary>
 <dl>
 <dd>
 
@@ -1337,11 +1177,14 @@ client.devices.fetch_a_list_of_devices()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.devices.create_a_device()
 
 ```
@@ -1358,111 +1201,7 @@ client.devices.create_a_device()
 <dl>
 <dd>
 
-**attributes:** `typing.Optional[DeviceAttributes]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**category:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**contact:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**disabled:** `typing.Optional[bool]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**geofence_ids:** `typing.Optional[typing.Sequence[int]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**group_id:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**last_update:** `typing.Optional[dt.datetime]` — in IS0 8601 format. eg. `1963-11-22T18:30:00Z`
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**model:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**name:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**phone:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**position_id:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**unique_id:** `typing.Optional[str]` 
+**request:** `Device` 
     
 </dd>
 </dl>
@@ -1482,7 +1221,7 @@ client.devices.create_a_device()
 </dl>
 </details>
 
-<details><summary><code>client.devices.<a href="src/fern/devices/client.py">update_a_device</a>(...)</code></summary>
+<details><summary><code>client.devices.<a href="src/fern/devices/client.py">update_a_device</a>(...) -> Device</code></summary>
 <dl>
 <dd>
 
@@ -1496,11 +1235,14 @@ client.devices.create_a_device()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.devices.update_a_device(
     id_=1,
 )
@@ -1519,7 +1261,7 @@ client.devices.update_a_device(
 <dl>
 <dd>
 
-**id_:** `int` 
+**id:** `int` 
     
 </dd>
 </dl>
@@ -1527,111 +1269,7 @@ client.devices.update_a_device(
 <dl>
 <dd>
 
-**attributes:** `typing.Optional[DeviceAttributes]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**category:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**contact:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**disabled:** `typing.Optional[bool]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**geofence_ids:** `typing.Optional[typing.Sequence[int]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**group_id:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**last_update:** `typing.Optional[dt.datetime]` — in IS0 8601 format. eg. `1963-11-22T18:30:00Z`
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**model:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**name:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**phone:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**position_id:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**unique_id:** `typing.Optional[str]` 
+**request:** `Device` 
     
 </dd>
 </dl>
@@ -1665,11 +1303,14 @@ client.devices.update_a_device(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.devices.delete_a_device(
     id=1,
 )
@@ -1722,11 +1363,14 @@ client.devices.delete_a_device(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.devices.update_total_distance_and_hours_of_the_device(
     id=1,
 )
@@ -1790,7 +1434,7 @@ client.devices.update_total_distance_and_hours_of_the_device(
 </details>
 
 ## Drivers
-<details><summary><code>client.drivers.<a href="src/fern/drivers/client.py">fetch_a_list_of_drivers</a>(...)</code></summary>
+<details><summary><code>client.drivers.<a href="src/fern/drivers/client.py">fetch_a_list_of_drivers</a>(...) -> typing.List[Driver]</code></summary>
 <dl>
 <dd>
 
@@ -1818,11 +1462,14 @@ Without params, it returns a list of Drivers the user has access to
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.drivers.fetch_a_list_of_drivers()
 
 ```
@@ -1839,7 +1486,7 @@ client.drivers.fetch_a_list_of_drivers()
 <dl>
 <dd>
 
-**all_:** `typing.Optional[bool]` — Can only be used by admins or managers to fetch all entities
+**all:** `typing.Optional[bool]` — Can only be used by admins or managers to fetch all entities
     
 </dd>
 </dl>
@@ -1891,7 +1538,7 @@ client.drivers.fetch_a_list_of_drivers()
 </dl>
 </details>
 
-<details><summary><code>client.drivers.<a href="src/fern/drivers/client.py">create_a_driver</a>(...)</code></summary>
+<details><summary><code>client.drivers.<a href="src/fern/drivers/client.py">create_a_driver</a>(...) -> Driver</code></summary>
 <dl>
 <dd>
 
@@ -1905,11 +1552,14 @@ client.drivers.fetch_a_list_of_drivers()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.drivers.create_a_driver()
 
 ```
@@ -1926,31 +1576,7 @@ client.drivers.create_a_driver()
 <dl>
 <dd>
 
-**attributes:** `typing.Optional[DriverAttributes]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**name:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**unique_id:** `typing.Optional[str]` 
+**request:** `Driver` 
     
 </dd>
 </dl>
@@ -1970,7 +1596,7 @@ client.drivers.create_a_driver()
 </dl>
 </details>
 
-<details><summary><code>client.drivers.<a href="src/fern/drivers/client.py">update_a_driver</a>(...)</code></summary>
+<details><summary><code>client.drivers.<a href="src/fern/drivers/client.py">update_a_driver</a>(...) -> Driver</code></summary>
 <dl>
 <dd>
 
@@ -1984,11 +1610,14 @@ client.drivers.create_a_driver()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.drivers.update_a_driver(
     id_=1,
 )
@@ -2007,7 +1636,7 @@ client.drivers.update_a_driver(
 <dl>
 <dd>
 
-**id_:** `int` 
+**id:** `int` 
     
 </dd>
 </dl>
@@ -2015,31 +1644,7 @@ client.drivers.update_a_driver(
 <dl>
 <dd>
 
-**attributes:** `typing.Optional[DriverAttributes]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**name:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**unique_id:** `typing.Optional[str]` 
+**request:** `Driver` 
     
 </dd>
 </dl>
@@ -2073,11 +1678,14 @@ client.drivers.update_a_driver(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.drivers.delete_a_driver(
     id=1,
 )
@@ -2117,7 +1725,7 @@ client.drivers.delete_a_driver(
 </details>
 
 ## Events
-<details><summary><code>client.events.<a href="src/fern/events/client.py">get_events_id</a>(...)</code></summary>
+<details><summary><code>client.events.<a href="src/fern/events/client.py">get_events_id</a>(...) -> Event</code></summary>
 <dl>
 <dd>
 
@@ -2131,11 +1739,14 @@ client.drivers.delete_a_driver(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.events.get_events_id(
     id=1,
 )
@@ -2175,7 +1786,7 @@ client.events.get_events_id(
 </details>
 
 ## Geofences
-<details><summary><code>client.geofences.<a href="src/fern/geofences/client.py">fetch_a_list_of_geofences</a>(...)</code></summary>
+<details><summary><code>client.geofences.<a href="src/fern/geofences/client.py">fetch_a_list_of_geofences</a>(...) -> typing.List[Geofence]</code></summary>
 <dl>
 <dd>
 
@@ -2203,11 +1814,14 @@ Without params, it returns a list of Geofences the user has access to
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.geofences.fetch_a_list_of_geofences()
 
 ```
@@ -2224,7 +1838,7 @@ client.geofences.fetch_a_list_of_geofences()
 <dl>
 <dd>
 
-**all_:** `typing.Optional[bool]` — Can only be used by admins or managers to fetch all entities
+**all:** `typing.Optional[bool]` — Can only be used by admins or managers to fetch all entities
     
 </dd>
 </dl>
@@ -2276,7 +1890,7 @@ client.geofences.fetch_a_list_of_geofences()
 </dl>
 </details>
 
-<details><summary><code>client.geofences.<a href="src/fern/geofences/client.py">create_a_geofence</a>(...)</code></summary>
+<details><summary><code>client.geofences.<a href="src/fern/geofences/client.py">create_a_geofence</a>(...) -> Geofence</code></summary>
 <dl>
 <dd>
 
@@ -2290,11 +1904,14 @@ client.geofences.fetch_a_list_of_geofences()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.geofences.create_a_geofence()
 
 ```
@@ -2311,47 +1928,7 @@ client.geofences.create_a_geofence()
 <dl>
 <dd>
 
-**area:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**attributes:** `typing.Optional[GeofenceAttributes]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**calendar_id:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**name:** `typing.Optional[str]` 
+**request:** `Geofence` 
     
 </dd>
 </dl>
@@ -2371,7 +1948,7 @@ client.geofences.create_a_geofence()
 </dl>
 </details>
 
-<details><summary><code>client.geofences.<a href="src/fern/geofences/client.py">update_a_geofence</a>(...)</code></summary>
+<details><summary><code>client.geofences.<a href="src/fern/geofences/client.py">update_a_geofence</a>(...) -> Geofence</code></summary>
 <dl>
 <dd>
 
@@ -2385,11 +1962,14 @@ client.geofences.create_a_geofence()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.geofences.update_a_geofence(
     id_=1,
 )
@@ -2408,7 +1988,7 @@ client.geofences.update_a_geofence(
 <dl>
 <dd>
 
-**id_:** `int` 
+**id:** `int` 
     
 </dd>
 </dl>
@@ -2416,47 +1996,7 @@ client.geofences.update_a_geofence(
 <dl>
 <dd>
 
-**area:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**attributes:** `typing.Optional[GeofenceAttributes]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**calendar_id:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**name:** `typing.Optional[str]` 
+**request:** `Geofence` 
     
 </dd>
 </dl>
@@ -2490,11 +2030,14 @@ client.geofences.update_a_geofence(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.geofences.delete_a_geofence(
     id=1,
 )
@@ -2534,7 +2077,7 @@ client.geofences.delete_a_geofence(
 </details>
 
 ## Groups
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">fetch_a_list_of_groups</a>(...)</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py">fetch_a_list_of_groups</a>(...) -> typing.List[Group]</code></summary>
 <dl>
 <dd>
 
@@ -2562,11 +2105,14 @@ Without any params, returns a list of the Groups the user belongs to
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.groups.fetch_a_list_of_groups()
 
 ```
@@ -2583,7 +2129,7 @@ client.groups.fetch_a_list_of_groups()
 <dl>
 <dd>
 
-**all_:** `typing.Optional[bool]` — Can only be used by admins or managers to fetch all entities
+**all:** `typing.Optional[bool]` — Can only be used by admins or managers to fetch all entities
     
 </dd>
 </dl>
@@ -2611,7 +2157,7 @@ client.groups.fetch_a_list_of_groups()
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">create_a_group</a>(...)</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py">create_a_group</a>(...) -> Group</code></summary>
 <dl>
 <dd>
 
@@ -2625,11 +2171,14 @@ client.groups.fetch_a_list_of_groups()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.groups.create_a_group()
 
 ```
@@ -2646,31 +2195,7 @@ client.groups.create_a_group()
 <dl>
 <dd>
 
-**attributes:** `typing.Optional[GroupAttributes]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**group_id:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**name:** `typing.Optional[str]` 
+**request:** `Group` 
     
 </dd>
 </dl>
@@ -2690,7 +2215,7 @@ client.groups.create_a_group()
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">update_a_group</a>(...)</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py">update_a_group</a>(...) -> Group</code></summary>
 <dl>
 <dd>
 
@@ -2704,11 +2229,14 @@ client.groups.create_a_group()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.groups.update_a_group(
     id_=1,
 )
@@ -2727,7 +2255,7 @@ client.groups.update_a_group(
 <dl>
 <dd>
 
-**id_:** `int` 
+**id:** `int` 
     
 </dd>
 </dl>
@@ -2735,31 +2263,7 @@ client.groups.update_a_group(
 <dl>
 <dd>
 
-**attributes:** `typing.Optional[GroupAttributes]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**group_id:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**name:** `typing.Optional[str]` 
+**request:** `Group` 
     
 </dd>
 </dl>
@@ -2793,11 +2297,14 @@ client.groups.update_a_group(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.groups.delete_a_group(
     id=1,
 )
@@ -2837,7 +2344,7 @@ client.groups.delete_a_group(
 </details>
 
 ## Maintenance
-<details><summary><code>client.maintenance.<a href="src/fern/maintenance/client.py">fetch_a_list_of_maintenance</a>(...)</code></summary>
+<details><summary><code>client.maintenance.<a href="src/fern/maintenance/client.py">fetch_a_list_of_maintenance</a>(...) -> typing.List[Maintenance]</code></summary>
 <dl>
 <dd>
 
@@ -2865,11 +2372,14 @@ Without params, it returns a list of Maintenance the user has access to
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.maintenance.fetch_a_list_of_maintenance()
 
 ```
@@ -2886,7 +2396,7 @@ client.maintenance.fetch_a_list_of_maintenance()
 <dl>
 <dd>
 
-**all_:** `typing.Optional[bool]` — Can only be used by admins or managers to fetch all entities
+**all:** `typing.Optional[bool]` — Can only be used by admins or managers to fetch all entities
     
 </dd>
 </dl>
@@ -2938,7 +2448,7 @@ client.maintenance.fetch_a_list_of_maintenance()
 </dl>
 </details>
 
-<details><summary><code>client.maintenance.<a href="src/fern/maintenance/client.py">create_a_maintenance</a>(...)</code></summary>
+<details><summary><code>client.maintenance.<a href="src/fern/maintenance/client.py">create_a_maintenance</a>(...) -> Maintenance</code></summary>
 <dl>
 <dd>
 
@@ -2952,11 +2462,14 @@ client.maintenance.fetch_a_list_of_maintenance()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.maintenance.create_a_maintenance()
 
 ```
@@ -2973,47 +2486,7 @@ client.maintenance.create_a_maintenance()
 <dl>
 <dd>
 
-**attributes:** `typing.Optional[MaintenanceAttributes]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**name:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**period:** `typing.Optional[float]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**start:** `typing.Optional[float]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**type:** `typing.Optional[str]` 
+**request:** `Maintenance` 
     
 </dd>
 </dl>
@@ -3033,7 +2506,7 @@ client.maintenance.create_a_maintenance()
 </dl>
 </details>
 
-<details><summary><code>client.maintenance.<a href="src/fern/maintenance/client.py">update_a_maintenance</a>(...)</code></summary>
+<details><summary><code>client.maintenance.<a href="src/fern/maintenance/client.py">update_a_maintenance</a>(...) -> Maintenance</code></summary>
 <dl>
 <dd>
 
@@ -3047,11 +2520,14 @@ client.maintenance.create_a_maintenance()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.maintenance.update_a_maintenance(
     id_=1,
 )
@@ -3070,7 +2546,7 @@ client.maintenance.update_a_maintenance(
 <dl>
 <dd>
 
-**id_:** `int` 
+**id:** `int` 
     
 </dd>
 </dl>
@@ -3078,47 +2554,7 @@ client.maintenance.update_a_maintenance(
 <dl>
 <dd>
 
-**attributes:** `typing.Optional[MaintenanceAttributes]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**name:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**period:** `typing.Optional[float]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**start:** `typing.Optional[float]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**type:** `typing.Optional[str]` 
+**request:** `Maintenance` 
     
 </dd>
 </dl>
@@ -3152,11 +2588,14 @@ client.maintenance.update_a_maintenance(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.maintenance.delete_a_maintenance(
     id=1,
 )
@@ -3196,7 +2635,7 @@ client.maintenance.delete_a_maintenance(
 </details>
 
 ## Notifications
-<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py">fetch_a_list_of_notifications</a>(...)</code></summary>
+<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py">fetch_a_list_of_notifications</a>(...) -> typing.List[Notification]</code></summary>
 <dl>
 <dd>
 
@@ -3224,11 +2663,14 @@ Without params, it returns a list of Notifications the user has access to
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.notifications.fetch_a_list_of_notifications()
 
 ```
@@ -3245,7 +2687,7 @@ client.notifications.fetch_a_list_of_notifications()
 <dl>
 <dd>
 
-**all_:** `typing.Optional[bool]` — Can only be used by admins or managers to fetch all entities
+**all:** `typing.Optional[bool]` — Can only be used by admins or managers to fetch all entities
     
 </dd>
 </dl>
@@ -3297,7 +2739,7 @@ client.notifications.fetch_a_list_of_notifications()
 </dl>
 </details>
 
-<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py">create_a_notification</a>(...)</code></summary>
+<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py">create_a_notification</a>(...) -> Notification</code></summary>
 <dl>
 <dd>
 
@@ -3311,11 +2753,14 @@ client.notifications.fetch_a_list_of_notifications()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.notifications.create_a_notification()
 
 ```
@@ -3332,63 +2777,7 @@ client.notifications.create_a_notification()
 <dl>
 <dd>
 
-**always:** `typing.Optional[bool]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**attributes:** `typing.Optional[NotificationAttributes]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**calendar_id:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**mail:** `typing.Optional[bool]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**sms:** `typing.Optional[bool]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**type:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**web:** `typing.Optional[bool]` 
+**request:** `Notification` 
     
 </dd>
 </dl>
@@ -3422,11 +2811,14 @@ client.notifications.create_a_notification()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.notifications.send_test_notification_to_current_user_via_email_and_sms()
 
 ```
@@ -3455,7 +2847,7 @@ client.notifications.send_test_notification_to_current_user_via_email_and_sms()
 </dl>
 </details>
 
-<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py">fetch_a_list_of_available_notification_types</a>()</code></summary>
+<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py">fetch_a_list_of_available_notification_types</a>() -> typing.List[NotificationType]</code></summary>
 <dl>
 <dd>
 
@@ -3469,11 +2861,14 @@ client.notifications.send_test_notification_to_current_user_via_email_and_sms()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.notifications.fetch_a_list_of_available_notification_types()
 
 ```
@@ -3502,7 +2897,7 @@ client.notifications.fetch_a_list_of_available_notification_types()
 </dl>
 </details>
 
-<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py">update_a_notification</a>(...)</code></summary>
+<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py">update_a_notification</a>(...) -> Notification</code></summary>
 <dl>
 <dd>
 
@@ -3516,11 +2911,14 @@ client.notifications.fetch_a_list_of_available_notification_types()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.notifications.update_a_notification(
     id_=1,
 )
@@ -3539,7 +2937,7 @@ client.notifications.update_a_notification(
 <dl>
 <dd>
 
-**id_:** `int` 
+**id:** `int` 
     
 </dd>
 </dl>
@@ -3547,63 +2945,7 @@ client.notifications.update_a_notification(
 <dl>
 <dd>
 
-**always:** `typing.Optional[bool]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**attributes:** `typing.Optional[NotificationAttributes]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**calendar_id:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**mail:** `typing.Optional[bool]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**sms:** `typing.Optional[bool]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**type:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**web:** `typing.Optional[bool]` 
+**request:** `Notification` 
     
 </dd>
 </dl>
@@ -3637,11 +2979,14 @@ client.notifications.update_a_notification(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.notifications.delete_a_notification(
     id=1,
 )
@@ -3681,7 +3026,7 @@ client.notifications.delete_a_notification(
 </details>
 
 ## Permissions
-<details><summary><code>client.permissions.<a href="src/fern/permissions/client.py">link_an_object_to_another_object</a>(...)</code></summary>
+<details><summary><code>client.permissions.<a href="src/fern/permissions/client.py">link_an_object_to_another_object</a>(...) -> Permission</code></summary>
 <dl>
 <dd>
 
@@ -3695,11 +3040,14 @@ client.notifications.delete_a_notification(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.permissions.link_an_object_to_another_object()
 
 ```
@@ -3716,71 +3064,7 @@ client.permissions.link_an_object_to_another_object()
 <dl>
 <dd>
 
-**attribute_id:** `typing.Optional[int]` — Computed Attribute Id, can be second parameter only
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**calendar_id:** `typing.Optional[int]` — Calendar Id, can be second parameter only and only in combination with userId
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**device_id:** `typing.Optional[int]` — Device Id, can be first parameter or second only in combination with userId
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**driver_id:** `typing.Optional[int]` — Driver Id, can be second parameter only
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**geofence_id:** `typing.Optional[int]` — Geofence Id, can be second parameter only
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**group_id:** `typing.Optional[int]` — Group Id, can be first parameter or second only in combination with userId
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**managed_user_id:** `typing.Optional[int]` — User Id, can be second parameter only and only in combination with userId
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**notification_id:** `typing.Optional[int]` — Notification Id, can be second parameter only
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**user_id:** `typing.Optional[int]` — User Id, can be only first parameter
+**request:** `Permission` 
     
 </dd>
 </dl>
@@ -3814,11 +3098,14 @@ client.permissions.link_an_object_to_another_object()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.permissions.unlink_an_object_from_another_object()
 
 ```
@@ -3835,71 +3122,7 @@ client.permissions.unlink_an_object_from_another_object()
 <dl>
 <dd>
 
-**attribute_id:** `typing.Optional[int]` — Computed Attribute Id, can be second parameter only
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**calendar_id:** `typing.Optional[int]` — Calendar Id, can be second parameter only and only in combination with userId
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**device_id:** `typing.Optional[int]` — Device Id, can be first parameter or second only in combination with userId
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**driver_id:** `typing.Optional[int]` — Driver Id, can be second parameter only
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**geofence_id:** `typing.Optional[int]` — Geofence Id, can be second parameter only
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**group_id:** `typing.Optional[int]` — Group Id, can be first parameter or second only in combination with userId
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**managed_user_id:** `typing.Optional[int]` — User Id, can be second parameter only and only in combination with userId
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**notification_id:** `typing.Optional[int]` — Notification Id, can be second parameter only
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**user_id:** `typing.Optional[int]` — User Id, can be only first parameter
+**request:** `Permission` 
     
 </dd>
 </dl>
@@ -3920,7 +3143,7 @@ client.permissions.unlink_an_object_from_another_object()
 </details>
 
 ## Positions
-<details><summary><code>client.positions.<a href="src/fern/positions/client.py">fetches_a_list_of_positions</a>(...)</code></summary>
+<details><summary><code>client.positions.<a href="src/fern/positions/client.py">fetches_a_list_of_positions</a>(...) -> typing.List[Position]</code></summary>
 <dl>
 <dd>
 
@@ -3948,11 +3171,14 @@ We strongly recommend using [Traccar WebSocket API](https://www.traccar.org/trac
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.positions.fetches_a_list_of_positions()
 
 ```
@@ -3977,7 +3203,7 @@ client.positions.fetches_a_list_of_positions()
 <dl>
 <dd>
 
-**from_:** `typing.Optional[dt.datetime]` — in IS0 8601 format. eg. `1963-11-22T18:30:00Z`
+**from:** `typing.Optional[datetime.datetime]` — in IS0 8601 format. eg. `1963-11-22T18:30:00Z`
     
 </dd>
 </dl>
@@ -3985,7 +3211,7 @@ client.positions.fetches_a_list_of_positions()
 <dl>
 <dd>
 
-**to:** `typing.Optional[dt.datetime]` — in IS0 8601 format. eg. `1963-11-22T18:30:00Z`
+**to:** `typing.Optional[datetime.datetime]` — in IS0 8601 format. eg. `1963-11-22T18:30:00Z`
     
 </dd>
 </dl>
@@ -4014,7 +3240,7 @@ client.positions.fetches_a_list_of_positions()
 </details>
 
 ## Reports
-<details><summary><code>client.reports.<a href="src/fern/reports/client.py">fetch_a_list_of_events_within_the_time_period_for_the_devices_or_groups</a>(...)</code></summary>
+<details><summary><code>client.reports.<a href="src/fern/reports/client.py">fetch_a_list_of_events_within_the_time_period_for_the_devices_or_groups</a>(...) -> typing.List[Event]</code></summary>
 <dl>
 <dd>
 
@@ -4041,21 +3267,19 @@ At least one _deviceId_ or one _groupId_ must be passed
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 import datetime
 
-from fern import FernApi
-
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.reports.fetch_a_list_of_events_within_the_time_period_for_the_devices_or_groups(
-    from_=datetime.datetime.fromisoformat(
-        "2024-01-15 09:30:00+00:00",
-    ),
-    to=datetime.datetime.fromisoformat(
-        "2024-01-15 09:30:00+00:00",
-    ),
+    from_=datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00"),
+    to=datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00"),
 )
 
 ```
@@ -4072,7 +3296,7 @@ client.reports.fetch_a_list_of_events_within_the_time_period_for_the_devices_or_
 <dl>
 <dd>
 
-**from_:** `dt.datetime` — in IS0 8601 format. eg. `1963-11-22T18:30:00Z`
+**from:** `datetime.datetime` — in IS0 8601 format. eg. `1963-11-22T18:30:00Z`
     
 </dd>
 </dl>
@@ -4080,7 +3304,7 @@ client.reports.fetch_a_list_of_events_within_the_time_period_for_the_devices_or_
 <dl>
 <dd>
 
-**to:** `dt.datetime` — in IS0 8601 format. eg. `1963-11-22T18:30:00Z`
+**to:** `datetime.datetime` — in IS0 8601 format. eg. `1963-11-22T18:30:00Z`
     
 </dd>
 </dl>
@@ -4124,7 +3348,7 @@ client.reports.fetch_a_list_of_events_within_the_time_period_for_the_devices_or_
 </dl>
 </details>
 
-<details><summary><code>client.reports.<a href="src/fern/reports/client.py">fetch_a_list_of_positions_within_the_time_period_for_the_devices_or_groups</a>(...)</code></summary>
+<details><summary><code>client.reports.<a href="src/fern/reports/client.py">fetch_a_list_of_positions_within_the_time_period_for_the_devices_or_groups</a>(...) -> typing.List[Position]</code></summary>
 <dl>
 <dd>
 
@@ -4151,21 +3375,19 @@ At least one _deviceId_ or one _groupId_ must be passed
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 import datetime
 
-from fern import FernApi
-
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.reports.fetch_a_list_of_positions_within_the_time_period_for_the_devices_or_groups(
-    from_=datetime.datetime.fromisoformat(
-        "2024-01-15 09:30:00+00:00",
-    ),
-    to=datetime.datetime.fromisoformat(
-        "2024-01-15 09:30:00+00:00",
-    ),
+    from_=datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00"),
+    to=datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00"),
 )
 
 ```
@@ -4182,7 +3404,7 @@ client.reports.fetch_a_list_of_positions_within_the_time_period_for_the_devices_
 <dl>
 <dd>
 
-**from_:** `dt.datetime` — in IS0 8601 format. eg. `1963-11-22T18:30:00Z`
+**from:** `datetime.datetime` — in IS0 8601 format. eg. `1963-11-22T18:30:00Z`
     
 </dd>
 </dl>
@@ -4190,7 +3412,7 @@ client.reports.fetch_a_list_of_positions_within_the_time_period_for_the_devices_
 <dl>
 <dd>
 
-**to:** `dt.datetime` — in IS0 8601 format. eg. `1963-11-22T18:30:00Z`
+**to:** `datetime.datetime` — in IS0 8601 format. eg. `1963-11-22T18:30:00Z`
     
 </dd>
 </dl>
@@ -4226,7 +3448,7 @@ client.reports.fetch_a_list_of_positions_within_the_time_period_for_the_devices_
 </dl>
 </details>
 
-<details><summary><code>client.reports.<a href="src/fern/reports/client.py">fetch_a_list_of_report_stops_within_the_time_period_for_the_devices_or_groups</a>(...)</code></summary>
+<details><summary><code>client.reports.<a href="src/fern/reports/client.py">fetch_a_list_of_report_stops_within_the_time_period_for_the_devices_or_groups</a>(...) -> typing.List[ReportStops]</code></summary>
 <dl>
 <dd>
 
@@ -4253,21 +3475,19 @@ At least one _deviceId_ or one _groupId_ must be passed
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 import datetime
 
-from fern import FernApi
-
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.reports.fetch_a_list_of_report_stops_within_the_time_period_for_the_devices_or_groups(
-    from_=datetime.datetime.fromisoformat(
-        "2024-01-15 09:30:00+00:00",
-    ),
-    to=datetime.datetime.fromisoformat(
-        "2024-01-15 09:30:00+00:00",
-    ),
+    from_=datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00"),
+    to=datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00"),
 )
 
 ```
@@ -4284,7 +3504,7 @@ client.reports.fetch_a_list_of_report_stops_within_the_time_period_for_the_devic
 <dl>
 <dd>
 
-**from_:** `dt.datetime` — in IS0 8601 format. eg. `1963-11-22T18:30:00Z`
+**from:** `datetime.datetime` — in IS0 8601 format. eg. `1963-11-22T18:30:00Z`
     
 </dd>
 </dl>
@@ -4292,7 +3512,7 @@ client.reports.fetch_a_list_of_report_stops_within_the_time_period_for_the_devic
 <dl>
 <dd>
 
-**to:** `dt.datetime` — in IS0 8601 format. eg. `1963-11-22T18:30:00Z`
+**to:** `datetime.datetime` — in IS0 8601 format. eg. `1963-11-22T18:30:00Z`
     
 </dd>
 </dl>
@@ -4328,7 +3548,7 @@ client.reports.fetch_a_list_of_report_stops_within_the_time_period_for_the_devic
 </dl>
 </details>
 
-<details><summary><code>client.reports.<a href="src/fern/reports/client.py">fetch_a_list_of_report_summary_within_the_time_period_for_the_devices_or_groups</a>(...)</code></summary>
+<details><summary><code>client.reports.<a href="src/fern/reports/client.py">fetch_a_list_of_report_summary_within_the_time_period_for_the_devices_or_groups</a>(...) -> typing.List[ReportSummary]</code></summary>
 <dl>
 <dd>
 
@@ -4355,21 +3575,19 @@ At least one _deviceId_ or one _groupId_ must be passed
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 import datetime
 
-from fern import FernApi
-
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.reports.fetch_a_list_of_report_summary_within_the_time_period_for_the_devices_or_groups(
-    from_=datetime.datetime.fromisoformat(
-        "2024-01-15 09:30:00+00:00",
-    ),
-    to=datetime.datetime.fromisoformat(
-        "2024-01-15 09:30:00+00:00",
-    ),
+    from_=datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00"),
+    to=datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00"),
 )
 
 ```
@@ -4386,7 +3604,7 @@ client.reports.fetch_a_list_of_report_summary_within_the_time_period_for_the_dev
 <dl>
 <dd>
 
-**from_:** `dt.datetime` — in IS0 8601 format. eg. `1963-11-22T18:30:00Z`
+**from:** `datetime.datetime` — in IS0 8601 format. eg. `1963-11-22T18:30:00Z`
     
 </dd>
 </dl>
@@ -4394,7 +3612,7 @@ client.reports.fetch_a_list_of_report_summary_within_the_time_period_for_the_dev
 <dl>
 <dd>
 
-**to:** `dt.datetime` — in IS0 8601 format. eg. `1963-11-22T18:30:00Z`
+**to:** `datetime.datetime` — in IS0 8601 format. eg. `1963-11-22T18:30:00Z`
     
 </dd>
 </dl>
@@ -4430,7 +3648,7 @@ client.reports.fetch_a_list_of_report_summary_within_the_time_period_for_the_dev
 </dl>
 </details>
 
-<details><summary><code>client.reports.<a href="src/fern/reports/client.py">fetch_a_list_of_report_trips_within_the_time_period_for_the_devices_or_groups</a>(...)</code></summary>
+<details><summary><code>client.reports.<a href="src/fern/reports/client.py">fetch_a_list_of_report_trips_within_the_time_period_for_the_devices_or_groups</a>(...) -> typing.List[ReportTrips]</code></summary>
 <dl>
 <dd>
 
@@ -4457,21 +3675,19 @@ At least one _deviceId_ or one _groupId_ must be passed
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 import datetime
 
-from fern import FernApi
-
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.reports.fetch_a_list_of_report_trips_within_the_time_period_for_the_devices_or_groups(
-    from_=datetime.datetime.fromisoformat(
-        "2024-01-15 09:30:00+00:00",
-    ),
-    to=datetime.datetime.fromisoformat(
-        "2024-01-15 09:30:00+00:00",
-    ),
+    from_=datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00"),
+    to=datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00"),
 )
 
 ```
@@ -4488,7 +3704,7 @@ client.reports.fetch_a_list_of_report_trips_within_the_time_period_for_the_devic
 <dl>
 <dd>
 
-**from_:** `dt.datetime` — in IS0 8601 format. eg. `1963-11-22T18:30:00Z`
+**from:** `datetime.datetime` — in IS0 8601 format. eg. `1963-11-22T18:30:00Z`
     
 </dd>
 </dl>
@@ -4496,7 +3712,7 @@ client.reports.fetch_a_list_of_report_trips_within_the_time_period_for_the_devic
 <dl>
 <dd>
 
-**to:** `dt.datetime` — in IS0 8601 format. eg. `1963-11-22T18:30:00Z`
+**to:** `datetime.datetime` — in IS0 8601 format. eg. `1963-11-22T18:30:00Z`
     
 </dd>
 </dl>
@@ -4533,7 +3749,7 @@ client.reports.fetch_a_list_of_report_trips_within_the_time_period_for_the_devic
 </details>
 
 ## Server
-<details><summary><code>client.server.<a href="src/fern/server/client.py">fetch_server_information</a>()</code></summary>
+<details><summary><code>client.server.<a href="src/fern/server/client.py">fetch_server_information</a>() -> Server</code></summary>
 <dl>
 <dd>
 
@@ -4547,11 +3763,14 @@ client.reports.fetch_a_list_of_report_trips_within_the_time_period_for_the_devic
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.server.fetch_server_information()
 
 ```
@@ -4580,7 +3799,7 @@ client.server.fetch_server_information()
 </dl>
 </details>
 
-<details><summary><code>client.server.<a href="src/fern/server/client.py">update_server_information</a>(...)</code></summary>
+<details><summary><code>client.server.<a href="src/fern/server/client.py">update_server_information</a>(...) -> Server</code></summary>
 <dl>
 <dd>
 
@@ -4594,11 +3813,14 @@ client.server.fetch_server_information()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.server.update_server_information()
 
 ```
@@ -4615,135 +3837,7 @@ client.server.update_server_information()
 <dl>
 <dd>
 
-**attributes:** `typing.Optional[ServerAttributes]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**bing_key:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**coordinate_format:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**device_readonly:** `typing.Optional[bool]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**force_settings:** `typing.Optional[bool]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**latitude:** `typing.Optional[float]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**limit_commands:** `typing.Optional[bool]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**longitude:** `typing.Optional[float]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**map_:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**map_url:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**poi_layer:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**readonly:** `typing.Optional[bool]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**registration:** `typing.Optional[bool]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**twelve_hour_format:** `typing.Optional[bool]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**version:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**zoom:** `typing.Optional[int]` 
+**request:** `Server` 
     
 </dd>
 </dl>
@@ -4764,7 +3858,7 @@ client.server.update_server_information()
 </details>
 
 ## Session
-<details><summary><code>client.session.<a href="src/fern/session/client.py">fetch_session_information</a>(...)</code></summary>
+<details><summary><code>client.session.<a href="src/fern/session/client.py">fetch_session_information</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -4778,11 +3872,14 @@ client.server.update_server_information()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.session.fetch_session_information()
 
 ```
@@ -4819,7 +3916,7 @@ client.session.fetch_session_information()
 </dl>
 </details>
 
-<details><summary><code>client.session.<a href="src/fern/session/client.py">create_a_new_session</a>(...)</code></summary>
+<details><summary><code>client.session.<a href="src/fern/session/client.py">create_a_new_session</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -4833,11 +3930,14 @@ client.session.fetch_session_information()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.session.create_a_new_session(
     email="email",
     password="password",
@@ -4899,11 +3999,14 @@ client.session.create_a_new_session(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.session.close_the_session()
 
 ```
@@ -4933,7 +4036,7 @@ client.session.close_the_session()
 </details>
 
 ## Statistics
-<details><summary><code>client.statistics.<a href="src/fern/statistics/client.py">fetch_server_statistics</a>(...)</code></summary>
+<details><summary><code>client.statistics.<a href="src/fern/statistics/client.py">fetch_server_statistics</a>(...) -> typing.List[Statistics]</code></summary>
 <dl>
 <dd>
 
@@ -4946,21 +4049,19 @@ client.session.close_the_session()
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 import datetime
 
-from fern import FernApi
-
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.statistics.fetch_server_statistics(
-    from_=datetime.datetime.fromisoformat(
-        "2024-01-15 09:30:00+00:00",
-    ),
-    to=datetime.datetime.fromisoformat(
-        "2024-01-15 09:30:00+00:00",
-    ),
+    from_=datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00"),
+    to=datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00"),
 )
 
 ```
@@ -4977,7 +4078,7 @@ client.statistics.fetch_server_statistics(
 <dl>
 <dd>
 
-**from_:** `dt.datetime` — in IS0 8601 format. eg. `1963-11-22T18:30:00Z`
+**from:** `datetime.datetime` — in IS0 8601 format. eg. `1963-11-22T18:30:00Z`
     
 </dd>
 </dl>
@@ -4985,7 +4086,7 @@ client.statistics.fetch_server_statistics(
 <dl>
 <dd>
 
-**to:** `dt.datetime` — in IS0 8601 format. eg. `1963-11-22T18:30:00Z`
+**to:** `datetime.datetime` — in IS0 8601 format. eg. `1963-11-22T18:30:00Z`
     
 </dd>
 </dl>
@@ -5006,7 +4107,7 @@ client.statistics.fetch_server_statistics(
 </details>
 
 ## Users
-<details><summary><code>client.users.<a href="src/fern/users/client.py">fetch_a_list_of_users</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py">fetch_a_list_of_users</a>(...) -> typing.List[User]</code></summary>
 <dl>
 <dd>
 
@@ -5020,11 +4121,14 @@ client.statistics.fetch_server_statistics(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.users.fetch_a_list_of_users()
 
 ```
@@ -5061,7 +4165,7 @@ client.users.fetch_a_list_of_users()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">create_a_user</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py">create_a_user</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -5075,11 +4179,14 @@ client.users.fetch_a_list_of_users()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.users.create_a_user()
 
 ```
@@ -5096,167 +4203,7 @@ client.users.create_a_user()
 <dl>
 <dd>
 
-**administrator:** `typing.Optional[bool]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**attributes:** `typing.Optional[UserAttributes]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**coordinate_format:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**device_limit:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**device_readonly:** `typing.Optional[bool]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**disabled:** `typing.Optional[bool]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**email:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**expiration_time:** `typing.Optional[dt.datetime]` — in IS0 8601 format. eg. `1963-11-22T18:30:00Z`
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**latitude:** `typing.Optional[float]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**limit_commands:** `typing.Optional[bool]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**longitude:** `typing.Optional[float]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**map_:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**name:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**password:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**phone:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**poi_layer:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**readonly:** `typing.Optional[bool]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**twelve_hour_format:** `typing.Optional[bool]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**user_limit:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**zoom:** `typing.Optional[int]` 
+**request:** `User` 
     
 </dd>
 </dl>
@@ -5276,7 +4223,7 @@ client.users.create_a_user()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">update_a_user</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py">update_a_user</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -5290,11 +4237,14 @@ client.users.create_a_user()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.users.update_a_user(
     id_=1,
 )
@@ -5313,7 +4263,7 @@ client.users.update_a_user(
 <dl>
 <dd>
 
-**id_:** `int` 
+**id:** `int` 
     
 </dd>
 </dl>
@@ -5321,167 +4271,7 @@ client.users.update_a_user(
 <dl>
 <dd>
 
-**administrator:** `typing.Optional[bool]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**attributes:** `typing.Optional[UserAttributes]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**coordinate_format:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**device_limit:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**device_readonly:** `typing.Optional[bool]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**disabled:** `typing.Optional[bool]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**email:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**expiration_time:** `typing.Optional[dt.datetime]` — in IS0 8601 format. eg. `1963-11-22T18:30:00Z`
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**latitude:** `typing.Optional[float]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**limit_commands:** `typing.Optional[bool]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**longitude:** `typing.Optional[float]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**map_:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**name:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**password:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**phone:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**poi_layer:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**readonly:** `typing.Optional[bool]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**twelve_hour_format:** `typing.Optional[bool]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**user_limit:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**zoom:** `typing.Optional[int]` 
+**request:** `User` 
     
 </dd>
 </dl>
@@ -5515,11 +4305,14 @@ client.users.update_a_user(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.users.delete_a_user(
     id=1,
 )

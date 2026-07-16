@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class CashDrawerEventType(str, enum.Enum):
+class CashDrawerEventType(enum.StrEnum):
     """
     The types of events on a CashDrawerShift.
     Each event type represents an employee action on the actual cash drawer

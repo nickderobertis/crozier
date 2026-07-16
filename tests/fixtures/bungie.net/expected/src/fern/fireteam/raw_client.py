@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from .types.fireteam_get_active_private_clan_fireteam_count_response import (
@@ -18,6 +19,7 @@ from .types.fireteam_get_my_clan_fireteams_response import FireteamGetMyClanFire
 from .types.fireteam_search_public_available_clan_fireteams_response import (
     FireteamSearchPublicAvailableClanFireteamsResponse,
 )
+from pydantic import ValidationError
 
 
 class RawFireteamClient:
@@ -44,7 +46,7 @@ class RawFireteamClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Fireteam/Clan/{jsonable_encoder(group_id)}/ActiveCount/",
+            f"Fireteam/Clan/{encode_path_param(group_id)}/ActiveCount/",
             method="GET",
             request_options=request_options,
         )
@@ -61,6 +63,10 @@ class RawFireteamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getavailableclanfireteams(
@@ -118,7 +124,7 @@ class RawFireteamClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Fireteam/Clan/{jsonable_encoder(group_id)}/Available/{jsonable_encoder(platform)}/{jsonable_encoder(activity_type)}/{jsonable_encoder(date_range)}/{jsonable_encoder(slot_filter)}/{jsonable_encoder(public_only)}/{jsonable_encoder(page)}/",
+            f"Fireteam/Clan/{encode_path_param(group_id)}/Available/{encode_path_param(platform)}/{encode_path_param(activity_type)}/{encode_path_param(date_range)}/{encode_path_param(slot_filter)}/{encode_path_param(public_only)}/{encode_path_param(page)}/",
             method="GET",
             params={
                 "excludeImmediate": exclude_immediate,
@@ -139,6 +145,10 @@ class RawFireteamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getmyclanfireteams(
@@ -184,7 +194,7 @@ class RawFireteamClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Fireteam/Clan/{jsonable_encoder(group_id)}/My/{jsonable_encoder(platform)}/{jsonable_encoder(include_closed)}/{jsonable_encoder(page)}/",
+            f"Fireteam/Clan/{encode_path_param(group_id)}/My/{encode_path_param(platform)}/{encode_path_param(include_closed)}/{encode_path_param(page)}/",
             method="GET",
             params={
                 "groupFilter": group_filter,
@@ -205,6 +215,10 @@ class RawFireteamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getclanfireteam(
@@ -230,7 +244,7 @@ class RawFireteamClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Fireteam/Clan/{jsonable_encoder(group_id)}/Summary/{jsonable_encoder(fireteam_id)}/",
+            f"Fireteam/Clan/{encode_path_param(group_id)}/Summary/{encode_path_param(fireteam_id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -247,6 +261,10 @@ class RawFireteamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def searchpublicavailableclanfireteams(
@@ -296,7 +314,7 @@ class RawFireteamClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Fireteam/Search/Available/{jsonable_encoder(platform)}/{jsonable_encoder(activity_type)}/{jsonable_encoder(date_range)}/{jsonable_encoder(slot_filter)}/{jsonable_encoder(page)}/",
+            f"Fireteam/Search/Available/{encode_path_param(platform)}/{encode_path_param(activity_type)}/{encode_path_param(date_range)}/{encode_path_param(slot_filter)}/{encode_path_param(page)}/",
             method="GET",
             params={
                 "excludeImmediate": exclude_immediate,
@@ -317,6 +335,10 @@ class RawFireteamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -344,7 +366,7 @@ class AsyncRawFireteamClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Fireteam/Clan/{jsonable_encoder(group_id)}/ActiveCount/",
+            f"Fireteam/Clan/{encode_path_param(group_id)}/ActiveCount/",
             method="GET",
             request_options=request_options,
         )
@@ -361,6 +383,10 @@ class AsyncRawFireteamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getavailableclanfireteams(
@@ -418,7 +444,7 @@ class AsyncRawFireteamClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Fireteam/Clan/{jsonable_encoder(group_id)}/Available/{jsonable_encoder(platform)}/{jsonable_encoder(activity_type)}/{jsonable_encoder(date_range)}/{jsonable_encoder(slot_filter)}/{jsonable_encoder(public_only)}/{jsonable_encoder(page)}/",
+            f"Fireteam/Clan/{encode_path_param(group_id)}/Available/{encode_path_param(platform)}/{encode_path_param(activity_type)}/{encode_path_param(date_range)}/{encode_path_param(slot_filter)}/{encode_path_param(public_only)}/{encode_path_param(page)}/",
             method="GET",
             params={
                 "excludeImmediate": exclude_immediate,
@@ -439,6 +465,10 @@ class AsyncRawFireteamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getmyclanfireteams(
@@ -484,7 +514,7 @@ class AsyncRawFireteamClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Fireteam/Clan/{jsonable_encoder(group_id)}/My/{jsonable_encoder(platform)}/{jsonable_encoder(include_closed)}/{jsonable_encoder(page)}/",
+            f"Fireteam/Clan/{encode_path_param(group_id)}/My/{encode_path_param(platform)}/{encode_path_param(include_closed)}/{encode_path_param(page)}/",
             method="GET",
             params={
                 "groupFilter": group_filter,
@@ -505,6 +535,10 @@ class AsyncRawFireteamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getclanfireteam(
@@ -530,7 +564,7 @@ class AsyncRawFireteamClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Fireteam/Clan/{jsonable_encoder(group_id)}/Summary/{jsonable_encoder(fireteam_id)}/",
+            f"Fireteam/Clan/{encode_path_param(group_id)}/Summary/{encode_path_param(fireteam_id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -547,6 +581,10 @@ class AsyncRawFireteamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def searchpublicavailableclanfireteams(
@@ -596,7 +634,7 @@ class AsyncRawFireteamClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Fireteam/Search/Available/{jsonable_encoder(platform)}/{jsonable_encoder(activity_type)}/{jsonable_encoder(date_range)}/{jsonable_encoder(slot_filter)}/{jsonable_encoder(page)}/",
+            f"Fireteam/Search/Available/{encode_path_param(platform)}/{encode_path_param(activity_type)}/{encode_path_param(date_range)}/{encode_path_param(slot_filter)}/{encode_path_param(page)}/",
             method="GET",
             params={
                 "excludeImmediate": exclude_immediate,
@@ -617,4 +655,8 @@ class AsyncRawFireteamClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

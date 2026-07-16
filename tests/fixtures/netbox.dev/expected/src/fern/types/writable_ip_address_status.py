@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class WritableIpAddressStatus(str, enum.Enum):
+class WritableIpAddressStatus(enum.StrEnum):
     """
     The operational status of this IP
     """

@@ -16,7 +16,9 @@ class ConnectionScheduleData(UniversalBaseModel):
     """
 
     basic_schedule: typing_extensions.Annotated[
-        typing.Optional[ConnectionScheduleDataBasicSchedule], FieldMetadata(alias="basicSchedule")
+        typing.Optional[ConnectionScheduleDataBasicSchedule],
+        FieldMetadata(alias="basicSchedule"),
+        pydantic.Field(alias="basicSchedule"),
     ] = None
     cron: typing.Optional[ConnectionScheduleDataCron] = None
 

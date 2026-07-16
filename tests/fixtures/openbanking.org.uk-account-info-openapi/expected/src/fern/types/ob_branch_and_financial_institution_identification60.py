@@ -19,14 +19,18 @@ class ObBranchAndFinancialInstitutionIdentification60(UniversalBaseModel):
     """
 
     identification: typing_extensions.Annotated[
-        typing.Optional[Identification1], FieldMetadata(alias="Identification")
+        typing.Optional[Identification1], FieldMetadata(alias="Identification"), pydantic.Field(alias="Identification")
     ] = None
-    name: typing_extensions.Annotated[typing.Optional[Name1], FieldMetadata(alias="Name")] = None
+    name: typing_extensions.Annotated[
+        typing.Optional[Name1], FieldMetadata(alias="Name"), pydantic.Field(alias="Name")
+    ] = None
     postal_address: typing_extensions.Annotated[
-        typing.Optional[ObPostalAddress6], FieldMetadata(alias="PostalAddress")
+        typing.Optional[ObPostalAddress6], FieldMetadata(alias="PostalAddress"), pydantic.Field(alias="PostalAddress")
     ] = None
     scheme_name: typing_extensions.Annotated[
-        typing.Optional[ObExternalFinancialInstitutionIdentification4Code], FieldMetadata(alias="SchemeName")
+        typing.Optional[ObExternalFinancialInstitutionIdentification4Code],
+        FieldMetadata(alias="SchemeName"),
+        pydantic.Field(alias="SchemeName"),
     ] = None
 
     if IS_PYDANTIC_V2:

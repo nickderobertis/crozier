@@ -12,7 +12,7 @@ class CableTermination(UniversalBaseModel):
     cable_end: CableTerminationCableEnd
     display: typing.Optional[str] = None
     id: typing.Optional[int] = None
-    termination: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    termination: typing.Optional[typing.Dict[str, typing.Any]] = None
     termination_id: int
     termination_type: str
     url: typing.Optional[str] = None

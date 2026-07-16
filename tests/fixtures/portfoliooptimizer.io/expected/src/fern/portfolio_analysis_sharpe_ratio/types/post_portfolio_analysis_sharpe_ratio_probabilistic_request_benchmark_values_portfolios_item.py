@@ -9,9 +9,14 @@ from ...core.serialization import FieldMetadata
 
 
 class PostPortfolioAnalysisSharpeRatioProbabilisticRequestBenchmarkValuesPortfoliosItem(UniversalBaseModel):
-    portfolio_values: typing_extensions.Annotated[typing.List[float], FieldMetadata(alias="portfolioValues")] = (
-        pydantic.Field()
-    )
+    portfolio_values: typing_extensions.Annotated[
+        typing.List[float],
+        FieldMetadata(alias="portfolioValues"),
+        pydantic.Field(
+            alias="portfolioValues",
+            description="portfolioValues[t] is the value of the portfolio at the time t; all the portfolioValues arrays must have the same length as the benchmarkValues array",
+        ),
+    ]
     """
     portfolioValues[t] is the value of the portfolio at the time t; all the portfolioValues arrays must have the same length as the benchmarkValues array
     """

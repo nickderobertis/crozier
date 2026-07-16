@@ -7,9 +7,9 @@ from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 
 
 class RemoveGroupMembersResponse(UniversalBaseModel):
-    skipped_usernames: typing.List[typing.Optional[typing.Any]]
+    skipped_usernames: typing.List[typing.Any]
     success: str
-    usernames: typing.List[typing.Optional[typing.Any]]
+    usernames: typing.List[typing.Any]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

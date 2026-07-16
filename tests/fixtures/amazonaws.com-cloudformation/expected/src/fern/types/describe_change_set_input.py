@@ -13,21 +13,38 @@ class DescribeChangeSetInput(UniversalBaseModel):
     The input for the <a>DescribeChangeSet</a> action.
     """
 
-    change_set_name: typing_extensions.Annotated[str, FieldMetadata(alias="ChangeSetName")] = pydantic.Field()
+    change_set_name: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="ChangeSetName"),
+        pydantic.Field(
+            alias="ChangeSetName",
+            description="The name or Amazon Resource Name (ARN) of the change set that you want to describe.",
+        ),
+    ]
     """
     The name or Amazon Resource Name (ARN) of the change set that you want to describe.
     """
 
-    stack_name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="StackName")] = pydantic.Field(
-        default=None
-    )
+    stack_name: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="StackName"),
+        pydantic.Field(
+            alias="StackName",
+            description="If you specified the name of a change set, specify the stack name or ID (ARN) of the change set you want to describe.",
+        ),
+    ] = None
     """
     If you specified the name of a change set, specify the stack name or ID (ARN) of the change set you want to describe.
     """
 
-    next_token: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="NextToken")] = pydantic.Field(
-        default=None
-    )
+    next_token: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="NextToken"),
+        pydantic.Field(
+            alias="NextToken",
+            description="A string (provided by the <a>DescribeChangeSet</a> response output) that identifies the next page of information that you want to retrieve.",
+        ),
+    ] = None
     """
     A string (provided by the <a>DescribeChangeSet</a> response output) that identifies the next page of information that you want to retrieve.
     """

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObTransactionMutability1Code(str, enum.Enum):
+class ObTransactionMutability1Code(enum.StrEnum):
     """
     Specifies the Mutability of the Transaction record.
     """

@@ -13,21 +13,27 @@ class ApiException(UniversalBaseModel):
     The object returned for a bad request
     """
 
-    error_number: typing_extensions.Annotated[typing.Optional[float], FieldMetadata(alias="ErrorNumber")] = (
-        pydantic.Field(default=None)
-    )
+    error_number: typing_extensions.Annotated[
+        typing.Optional[float],
+        FieldMetadata(alias="ErrorNumber"),
+        pydantic.Field(alias="ErrorNumber", description="The error number"),
+    ] = None
     """
     The error number
     """
 
-    message: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="Message")] = pydantic.Field(
-        default=None
-    )
+    message: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="Message"),
+        pydantic.Field(alias="Message", description="The message describing the error"),
+    ] = None
     """
     The message describing the error
     """
 
-    type: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="Type")] = pydantic.Field(default=None)
+    type: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="Type"), pydantic.Field(alias="Type", description="The type of error")
+    ] = None
     """
     The type of error
     """

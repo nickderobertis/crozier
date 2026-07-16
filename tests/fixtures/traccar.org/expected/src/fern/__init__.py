@@ -61,6 +61,7 @@ if typing.TYPE_CHECKING:
         statistics,
         users,
     )
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .environment import FernApiEnvironment
     from .version import __version__
@@ -73,6 +74,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "Command": ".types",
     "CommandAttributes": ".types",
     "CommandType": ".types",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "Device": ".types",
     "DeviceAttributes": ".types",
     "Driver": ".types",
@@ -155,6 +158,8 @@ __all__ = [
     "Command",
     "CommandAttributes",
     "CommandType",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
     "Device",
     "DeviceAttributes",
     "Driver",

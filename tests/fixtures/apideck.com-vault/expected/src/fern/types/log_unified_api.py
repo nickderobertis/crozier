@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class LogUnifiedApi(str, enum.Enum):
+class LogUnifiedApi(enum.StrEnum):
     """
     Which Unified Api request was made to.
     """

@@ -12,9 +12,14 @@ from .destiny_definitions_common_destiny_display_properties_definition import (
 
 
 class DestinyDefinitionsTraitsDestinyTraitDefinition(UniversalBaseModel):
-    display_hint: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="displayHint")] = (
-        pydantic.Field(default=None)
-    )
+    display_hint: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="displayHint"),
+        pydantic.Field(
+            alias="displayHint",
+            description="An identifier for how this trait can be displayed. For example: a 'keyword' hint to show an explanation for certain related terms.",
+        ),
+    ] = None
     """
     An identifier for how this trait can be displayed. For example: a 'keyword' hint to show an explanation for certain related terms.
     """
@@ -22,6 +27,7 @@ class DestinyDefinitionsTraitsDestinyTraitDefinition(UniversalBaseModel):
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
+        pydantic.Field(alias="displayProperties"),
     ] = None
     hash: typing.Optional[int] = pydantic.Field(default=None)
     """

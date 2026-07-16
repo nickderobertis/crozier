@@ -9,9 +9,14 @@ from ..core.serialization import FieldMetadata
 
 
 class PublishTypeOutput(UniversalBaseModel):
-    public_type_arn: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="PublicTypeArn")] = (
-        pydantic.Field(default=None)
-    )
+    public_type_arn: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="PublicTypeArn"),
+        pydantic.Field(
+            alias="PublicTypeArn",
+            description="The Amazon Resource Name (ARN) assigned to the public extension upon publication.",
+        ),
+    ] = None
     """
     The Amazon Resource Name (ARN) assigned to the public extension upon publication.
     """

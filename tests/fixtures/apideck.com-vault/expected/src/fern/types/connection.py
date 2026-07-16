@@ -55,7 +55,7 @@ class Connection(UniversalBaseModel):
     The logo of the connection, that will be shown in the Vault
     """
 
-    metadata: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = pydantic.Field(default=None)
+    metadata: typing.Optional[typing.Dict[str, typing.Any]] = pydantic.Field(default=None)
     """
     Attach your own consumer specific metadata
     """
@@ -78,7 +78,7 @@ class Connection(UniversalBaseModel):
     The ID of the service this connection belongs to.
     """
 
-    settings: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = pydantic.Field(default=None)
+    settings: typing.Optional[typing.Dict[str, typing.Any]] = pydantic.Field(default=None)
     """
     Connection settings. Values will persist to `form_fields` with corresponding id
     """

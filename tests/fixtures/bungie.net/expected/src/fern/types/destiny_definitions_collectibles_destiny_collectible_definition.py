@@ -28,10 +28,12 @@ class DestinyDefinitionsCollectiblesDestinyCollectibleDefinition(UniversalBaseMo
     acquisition_info: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCollectiblesDestinyCollectibleAcquisitionBlock],
         FieldMetadata(alias="acquisitionInfo"),
+        pydantic.Field(alias="acquisitionInfo"),
     ] = None
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
+        pydantic.Field(alias="displayProperties"),
     ] = None
     hash: typing.Optional[int] = pydantic.Field(default=None)
     """
@@ -44,10 +46,17 @@ class DestinyDefinitionsCollectiblesDestinyCollectibleDefinition(UniversalBaseMo
     The index of the entity as it was found in the investment tables.
     """
 
-    item_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="itemHash")] = None
+    item_hash: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="itemHash"), pydantic.Field(alias="itemHash")
+    ] = None
     parent_node_hashes: typing_extensions.Annotated[
-        typing.Optional[typing.List[int]], FieldMetadata(alias="parentNodeHashes")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[int]],
+        FieldMetadata(alias="parentNodeHashes"),
+        pydantic.Field(
+            alias="parentNodeHashes",
+            description="A quick reference to presentation nodes that have this node as a child. Presentation nodes can be parented under multiple parents.",
+        ),
+    ] = None
     """
     A quick reference to presentation nodes that have this node as a child. Presentation nodes can be parented under multiple parents.
     """
@@ -55,9 +64,10 @@ class DestinyDefinitionsCollectiblesDestinyCollectibleDefinition(UniversalBaseMo
     presentation_info: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsPresentationDestinyPresentationChildBlock],
         FieldMetadata(alias="presentationInfo"),
+        pydantic.Field(alias="presentationInfo"),
     ] = None
     presentation_node_type: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="presentationNodeType")
+        typing.Optional[int], FieldMetadata(alias="presentationNodeType"), pydantic.Field(alias="presentationNodeType")
     ] = None
     redacted: typing.Optional[bool] = pydantic.Field(default=None)
     """
@@ -69,29 +79,42 @@ class DestinyDefinitionsCollectiblesDestinyCollectibleDefinition(UniversalBaseMo
     Indicates whether the state of this Collectible is determined on a per-character or on an account-wide basis.
     """
 
-    source_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="sourceHash")] = pydantic.Field(
-        default=None
-    )
+    source_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="sourceHash"),
+        pydantic.Field(
+            alias="sourceHash",
+            description="This is a hash identifier we are building on the BNet side in an attempt to let people group collectibles by similar sources.\r\nI can't promise that it's going to be 100% accurate, but if the designers were consistent in assigning the same source strings to items with the same sources, it *ought to* be. No promises though.\r\nThis hash also doesn't relate to an actual definition, just to note: we've got nothing useful other than the source string for this data.",
+        ),
+    ] = None
     """
     This is a hash identifier we are building on the BNet side in an attempt to let people group collectibles by similar sources.
     I can't promise that it's going to be 100% accurate, but if the designers were consistent in assigning the same source strings to items with the same sources, it *ought to* be. No promises though.
     This hash also doesn't relate to an actual definition, just to note: we've got nothing useful other than the source string for this data.
     """
 
-    source_string: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="sourceString")] = (
-        pydantic.Field(default=None)
-    )
+    source_string: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="sourceString"),
+        pydantic.Field(
+            alias="sourceString", description="A human readable string for a hint about how to acquire the item."
+        ),
+    ] = None
     """
     A human readable string for a hint about how to acquire the item.
     """
 
     state_info: typing_extensions.Annotated[
-        typing.Optional[DestinyDefinitionsCollectiblesDestinyCollectibleStateBlock], FieldMetadata(alias="stateInfo")
+        typing.Optional[DestinyDefinitionsCollectiblesDestinyCollectibleStateBlock],
+        FieldMetadata(alias="stateInfo"),
+        pydantic.Field(alias="stateInfo"),
     ] = None
-    trait_hashes: typing_extensions.Annotated[typing.Optional[typing.List[int]], FieldMetadata(alias="traitHashes")] = (
-        None
-    )
-    trait_ids: typing_extensions.Annotated[typing.Optional[typing.List[str]], FieldMetadata(alias="traitIds")] = None
+    trait_hashes: typing_extensions.Annotated[
+        typing.Optional[typing.List[int]], FieldMetadata(alias="traitHashes"), pydantic.Field(alias="traitHashes")
+    ] = None
+    trait_ids: typing_extensions.Annotated[
+        typing.Optional[typing.List[str]], FieldMetadata(alias="traitIds"), pydantic.Field(alias="traitIds")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

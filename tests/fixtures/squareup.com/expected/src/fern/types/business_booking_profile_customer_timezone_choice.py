@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class BusinessBookingProfileCustomerTimezoneChoice(str, enum.Enum):
+class BusinessBookingProfileCustomerTimezoneChoice(enum.StrEnum):
     """
     Choices of customer-facing time zone used for bookings.
     """

@@ -37,8 +37,8 @@ class TaskClient:
         *,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        filter: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
-        sort_by: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
+        filter: typing.Optional[typing.Dict[str, typing.Any]] = None,
+        sort_by: typing.Optional[typing.Dict[str, typing.Any]] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> TasksCollection:
         """
@@ -52,10 +52,10 @@ class TaskClient:
         offset : typing.Optional[int]
             The number of items to skip before starting to collect the result set.
 
-        filter : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        filter : typing.Optional[typing.Dict[str, typing.Any]]
             Filter for querying collections.
 
-        sort_by : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        sort_by : typing.Optional[typing.Dict[str, typing.Any]]
             The list of attribute and order to sort the result set by.
 
         request_options : typing.Optional[RequestOptions]
@@ -123,10 +123,10 @@ class TaskClient:
         controller_message_id: typing.Optional[str] = OMIT,
         created_at: typing.Optional[dt.datetime] = OMIT,
         id: typing.Optional[Uuid] = OMIT,
-        input: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        input: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         message: typing.Optional[str] = OMIT,
         name: typing.Optional[str] = OMIT,
-        output: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        output: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         owner: typing.Optional[str] = OMIT,
         source_id: typing.Optional[Id] = OMIT,
         state: typing.Optional[TaskState] = OMIT,
@@ -157,13 +157,13 @@ class TaskClient:
 
         id : typing.Optional[Uuid]
 
-        input : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        input : typing.Optional[typing.Dict[str, typing.Any]]
 
         message : typing.Optional[str]
 
         name : typing.Optional[str]
 
-        output : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        output : typing.Optional[typing.Dict[str, typing.Any]]
 
         owner : typing.Optional[str]
 
@@ -245,8 +245,8 @@ class AsyncTaskClient:
         *,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        filter: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
-        sort_by: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
+        filter: typing.Optional[typing.Dict[str, typing.Any]] = None,
+        sort_by: typing.Optional[typing.Dict[str, typing.Any]] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> TasksCollection:
         """
@@ -260,10 +260,10 @@ class AsyncTaskClient:
         offset : typing.Optional[int]
             The number of items to skip before starting to collect the result set.
 
-        filter : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        filter : typing.Optional[typing.Dict[str, typing.Any]]
             Filter for querying collections.
 
-        sort_by : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        sort_by : typing.Optional[typing.Dict[str, typing.Any]]
             The list of attribute and order to sort the result set by.
 
         request_options : typing.Optional[RequestOptions]
@@ -347,10 +347,10 @@ class AsyncTaskClient:
         controller_message_id: typing.Optional[str] = OMIT,
         created_at: typing.Optional[dt.datetime] = OMIT,
         id: typing.Optional[Uuid] = OMIT,
-        input: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        input: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         message: typing.Optional[str] = OMIT,
         name: typing.Optional[str] = OMIT,
-        output: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        output: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         owner: typing.Optional[str] = OMIT,
         source_id: typing.Optional[Id] = OMIT,
         state: typing.Optional[TaskState] = OMIT,
@@ -381,13 +381,13 @@ class AsyncTaskClient:
 
         id : typing.Optional[Uuid]
 
-        input : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        input : typing.Optional[typing.Dict[str, typing.Any]]
 
         message : typing.Optional[str]
 
         name : typing.Optional[str]
 
-        output : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        output : typing.Optional[typing.Dict[str, typing.Any]]
 
         owner : typing.Optional[str]
 

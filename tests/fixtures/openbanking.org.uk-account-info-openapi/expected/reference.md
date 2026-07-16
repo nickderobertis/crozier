@@ -1,6 +1,6 @@
 # Reference
 ## AccountAccess
-<details><summary><code>client.account_access.<a href="src/fern/account_access/client.py">create_account_access_consents</a>(...)</code></summary>
+<details><summary><code>client.account_access.<a href="src/fern/account_access/client.py">create_account_access_consents</a>(...) -> ObReadConsentResponse1</code></summary>
 <dl>
 <dd>
 
@@ -13,23 +13,20 @@
 <dd>
 
 ```python
-from fern.account_access import (
-    ObReadConsent1Data,
-    ObReadConsent1DataPermissionsItem,
-)
-
 from fern import FernApi, ObRisk2
+from fern.environment import FernApiEnvironment
+from fern.account_access import ObReadConsent1Data, ObReadConsent1DataPermissionsItem
 
 client = FernApi(
-    fapi_auth_date="YOUR_FAPI_AUTH_DATE",
-    fapi_customer_ip_address="YOUR_FAPI_CUSTOMER_IP_ADDRESS",
-    fapi_interaction_id="YOUR_FAPI_INTERACTION_ID",
-    customer_user_agent="YOUR_CUSTOMER_USER_AGENT",
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.account_access.create_account_access_consents(
     data=ObReadConsent1Data(
-        permissions=[ObReadConsent1DataPermissionsItem.READ_ACCOUNTS_BASIC],
+        permissions=[
+            ObReadConsent1DataPermissionsItem.READ_ACCOUNTS_BASIC
+        ],
     ),
     risk=ObRisk2(),
 )
@@ -76,7 +73,7 @@ client.account_access.create_account_access_consents(
 </dl>
 </details>
 
-<details><summary><code>client.account_access.<a href="src/fern/account_access/client.py">get_account_access_consents_consent_id</a>(...)</code></summary>
+<details><summary><code>client.account_access.<a href="src/fern/account_access/client.py">get_account_access_consents_consent_id</a>(...) -> ObReadConsentResponse1</code></summary>
 <dl>
 <dd>
 
@@ -90,14 +87,13 @@ client.account_access.create_account_access_consents(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    fapi_auth_date="YOUR_FAPI_AUTH_DATE",
-    fapi_customer_ip_address="YOUR_FAPI_CUSTOMER_IP_ADDRESS",
-    fapi_interaction_id="YOUR_FAPI_INTERACTION_ID",
-    customer_user_agent="YOUR_CUSTOMER_USER_AGENT",
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.account_access.get_account_access_consents_consent_id(
     consent_id="ConsentId",
 )
@@ -150,14 +146,13 @@ client.account_access.get_account_access_consents_consent_id(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    fapi_auth_date="YOUR_FAPI_AUTH_DATE",
-    fapi_customer_ip_address="YOUR_FAPI_CUSTOMER_IP_ADDRESS",
-    fapi_interaction_id="YOUR_FAPI_INTERACTION_ID",
-    customer_user_agent="YOUR_CUSTOMER_USER_AGENT",
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.account_access.delete_account_access_consents_consent_id(
     consent_id="ConsentId",
 )
@@ -197,7 +192,7 @@ client.account_access.delete_account_access_consents_consent_id(
 </details>
 
 ## Accounts
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">get_accounts</a>()</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">get_accounts</a>() -> ObReadAccount6</code></summary>
 <dl>
 <dd>
 
@@ -211,14 +206,13 @@ client.account_access.delete_account_access_consents_consent_id(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    fapi_auth_date="YOUR_FAPI_AUTH_DATE",
-    fapi_customer_ip_address="YOUR_FAPI_CUSTOMER_IP_ADDRESS",
-    fapi_interaction_id="YOUR_FAPI_INTERACTION_ID",
-    customer_user_agent="YOUR_CUSTOMER_USER_AGENT",
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.accounts.get_accounts()
 
 ```
@@ -247,7 +241,7 @@ client.accounts.get_accounts()
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">get_accounts_account_id</a>(...)</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">get_accounts_account_id</a>(...) -> ObReadAccount6</code></summary>
 <dl>
 <dd>
 
@@ -261,14 +255,13 @@ client.accounts.get_accounts()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    fapi_auth_date="YOUR_FAPI_AUTH_DATE",
-    fapi_customer_ip_address="YOUR_FAPI_CUSTOMER_IP_ADDRESS",
-    fapi_interaction_id="YOUR_FAPI_INTERACTION_ID",
-    customer_user_agent="YOUR_CUSTOMER_USER_AGENT",
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.accounts.get_accounts_account_id(
     account_id="AccountId",
 )
@@ -308,7 +301,7 @@ client.accounts.get_accounts_account_id(
 </details>
 
 ## Balances
-<details><summary><code>client.balances.<a href="src/fern/balances/client.py">get_accounts_account_id_balances</a>(...)</code></summary>
+<details><summary><code>client.balances.<a href="src/fern/balances/client.py">get_accounts_account_id_balances</a>(...) -> ObReadBalance1</code></summary>
 <dl>
 <dd>
 
@@ -322,14 +315,13 @@ client.accounts.get_accounts_account_id(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    fapi_auth_date="YOUR_FAPI_AUTH_DATE",
-    fapi_customer_ip_address="YOUR_FAPI_CUSTOMER_IP_ADDRESS",
-    fapi_interaction_id="YOUR_FAPI_INTERACTION_ID",
-    customer_user_agent="YOUR_CUSTOMER_USER_AGENT",
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.balances.get_accounts_account_id_balances(
     account_id="AccountId",
 )
@@ -368,7 +360,7 @@ client.balances.get_accounts_account_id_balances(
 </dl>
 </details>
 
-<details><summary><code>client.balances.<a href="src/fern/balances/client.py">get_balances</a>()</code></summary>
+<details><summary><code>client.balances.<a href="src/fern/balances/client.py">get_balances</a>() -> ObReadBalance1</code></summary>
 <dl>
 <dd>
 
@@ -382,14 +374,13 @@ client.balances.get_accounts_account_id_balances(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    fapi_auth_date="YOUR_FAPI_AUTH_DATE",
-    fapi_customer_ip_address="YOUR_FAPI_CUSTOMER_IP_ADDRESS",
-    fapi_interaction_id="YOUR_FAPI_INTERACTION_ID",
-    customer_user_agent="YOUR_CUSTOMER_USER_AGENT",
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.balances.get_balances()
 
 ```
@@ -419,7 +410,7 @@ client.balances.get_balances()
 </details>
 
 ## Beneficiaries
-<details><summary><code>client.beneficiaries.<a href="src/fern/beneficiaries/client.py">get_accounts_account_id_beneficiaries</a>(...)</code></summary>
+<details><summary><code>client.beneficiaries.<a href="src/fern/beneficiaries/client.py">get_accounts_account_id_beneficiaries</a>(...) -> ObReadBeneficiary5</code></summary>
 <dl>
 <dd>
 
@@ -433,14 +424,13 @@ client.balances.get_balances()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    fapi_auth_date="YOUR_FAPI_AUTH_DATE",
-    fapi_customer_ip_address="YOUR_FAPI_CUSTOMER_IP_ADDRESS",
-    fapi_interaction_id="YOUR_FAPI_INTERACTION_ID",
-    customer_user_agent="YOUR_CUSTOMER_USER_AGENT",
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.beneficiaries.get_accounts_account_id_beneficiaries(
     account_id="AccountId",
 )
@@ -479,7 +469,7 @@ client.beneficiaries.get_accounts_account_id_beneficiaries(
 </dl>
 </details>
 
-<details><summary><code>client.beneficiaries.<a href="src/fern/beneficiaries/client.py">get_beneficiaries</a>()</code></summary>
+<details><summary><code>client.beneficiaries.<a href="src/fern/beneficiaries/client.py">get_beneficiaries</a>() -> ObReadBeneficiary5</code></summary>
 <dl>
 <dd>
 
@@ -493,14 +483,13 @@ client.beneficiaries.get_accounts_account_id_beneficiaries(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    fapi_auth_date="YOUR_FAPI_AUTH_DATE",
-    fapi_customer_ip_address="YOUR_FAPI_CUSTOMER_IP_ADDRESS",
-    fapi_interaction_id="YOUR_FAPI_INTERACTION_ID",
-    customer_user_agent="YOUR_CUSTOMER_USER_AGENT",
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.beneficiaries.get_beneficiaries()
 
 ```
@@ -530,7 +519,7 @@ client.beneficiaries.get_beneficiaries()
 </details>
 
 ## DirectDebits
-<details><summary><code>client.direct_debits.<a href="src/fern/direct_debits/client.py">get_accounts_account_id_direct_debits</a>(...)</code></summary>
+<details><summary><code>client.direct_debits.<a href="src/fern/direct_debits/client.py">get_accounts_account_id_direct_debits</a>(...) -> ObReadDirectDebit2</code></summary>
 <dl>
 <dd>
 
@@ -544,14 +533,13 @@ client.beneficiaries.get_beneficiaries()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    fapi_auth_date="YOUR_FAPI_AUTH_DATE",
-    fapi_customer_ip_address="YOUR_FAPI_CUSTOMER_IP_ADDRESS",
-    fapi_interaction_id="YOUR_FAPI_INTERACTION_ID",
-    customer_user_agent="YOUR_CUSTOMER_USER_AGENT",
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.direct_debits.get_accounts_account_id_direct_debits(
     account_id="AccountId",
 )
@@ -590,7 +578,7 @@ client.direct_debits.get_accounts_account_id_direct_debits(
 </dl>
 </details>
 
-<details><summary><code>client.direct_debits.<a href="src/fern/direct_debits/client.py">get_direct_debits</a>()</code></summary>
+<details><summary><code>client.direct_debits.<a href="src/fern/direct_debits/client.py">get_direct_debits</a>() -> ObReadDirectDebit2</code></summary>
 <dl>
 <dd>
 
@@ -604,14 +592,13 @@ client.direct_debits.get_accounts_account_id_direct_debits(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    fapi_auth_date="YOUR_FAPI_AUTH_DATE",
-    fapi_customer_ip_address="YOUR_FAPI_CUSTOMER_IP_ADDRESS",
-    fapi_interaction_id="YOUR_FAPI_INTERACTION_ID",
-    customer_user_agent="YOUR_CUSTOMER_USER_AGENT",
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.direct_debits.get_direct_debits()
 
 ```
@@ -641,7 +628,7 @@ client.direct_debits.get_direct_debits()
 </details>
 
 ## Offers
-<details><summary><code>client.offers.<a href="src/fern/offers/client.py">get_accounts_account_id_offers</a>(...)</code></summary>
+<details><summary><code>client.offers.<a href="src/fern/offers/client.py">get_accounts_account_id_offers</a>(...) -> ObReadOffer1</code></summary>
 <dl>
 <dd>
 
@@ -655,14 +642,13 @@ client.direct_debits.get_direct_debits()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    fapi_auth_date="YOUR_FAPI_AUTH_DATE",
-    fapi_customer_ip_address="YOUR_FAPI_CUSTOMER_IP_ADDRESS",
-    fapi_interaction_id="YOUR_FAPI_INTERACTION_ID",
-    customer_user_agent="YOUR_CUSTOMER_USER_AGENT",
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.offers.get_accounts_account_id_offers(
     account_id="AccountId",
 )
@@ -701,7 +687,7 @@ client.offers.get_accounts_account_id_offers(
 </dl>
 </details>
 
-<details><summary><code>client.offers.<a href="src/fern/offers/client.py">get_offers</a>()</code></summary>
+<details><summary><code>client.offers.<a href="src/fern/offers/client.py">get_offers</a>() -> ObReadOffer1</code></summary>
 <dl>
 <dd>
 
@@ -715,14 +701,13 @@ client.offers.get_accounts_account_id_offers(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    fapi_auth_date="YOUR_FAPI_AUTH_DATE",
-    fapi_customer_ip_address="YOUR_FAPI_CUSTOMER_IP_ADDRESS",
-    fapi_interaction_id="YOUR_FAPI_INTERACTION_ID",
-    customer_user_agent="YOUR_CUSTOMER_USER_AGENT",
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.offers.get_offers()
 
 ```
@@ -752,7 +737,7 @@ client.offers.get_offers()
 </details>
 
 ## Parties
-<details><summary><code>client.parties.<a href="src/fern/parties/client.py">get_accounts_account_id_parties</a>(...)</code></summary>
+<details><summary><code>client.parties.<a href="src/fern/parties/client.py">get_accounts_account_id_parties</a>(...) -> ObReadParty3</code></summary>
 <dl>
 <dd>
 
@@ -766,14 +751,13 @@ client.offers.get_offers()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    fapi_auth_date="YOUR_FAPI_AUTH_DATE",
-    fapi_customer_ip_address="YOUR_FAPI_CUSTOMER_IP_ADDRESS",
-    fapi_interaction_id="YOUR_FAPI_INTERACTION_ID",
-    customer_user_agent="YOUR_CUSTOMER_USER_AGENT",
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.parties.get_accounts_account_id_parties(
     account_id="AccountId",
 )
@@ -812,7 +796,7 @@ client.parties.get_accounts_account_id_parties(
 </dl>
 </details>
 
-<details><summary><code>client.parties.<a href="src/fern/parties/client.py">get_accounts_account_id_party</a>(...)</code></summary>
+<details><summary><code>client.parties.<a href="src/fern/parties/client.py">get_accounts_account_id_party</a>(...) -> ObReadParty2</code></summary>
 <dl>
 <dd>
 
@@ -826,14 +810,13 @@ client.parties.get_accounts_account_id_parties(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    fapi_auth_date="YOUR_FAPI_AUTH_DATE",
-    fapi_customer_ip_address="YOUR_FAPI_CUSTOMER_IP_ADDRESS",
-    fapi_interaction_id="YOUR_FAPI_INTERACTION_ID",
-    customer_user_agent="YOUR_CUSTOMER_USER_AGENT",
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.parties.get_accounts_account_id_party(
     account_id="AccountId",
 )
@@ -872,7 +855,7 @@ client.parties.get_accounts_account_id_party(
 </dl>
 </details>
 
-<details><summary><code>client.parties.<a href="src/fern/parties/client.py">get_party</a>()</code></summary>
+<details><summary><code>client.parties.<a href="src/fern/parties/client.py">get_party</a>() -> ObReadParty2</code></summary>
 <dl>
 <dd>
 
@@ -886,14 +869,13 @@ client.parties.get_accounts_account_id_party(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    fapi_auth_date="YOUR_FAPI_AUTH_DATE",
-    fapi_customer_ip_address="YOUR_FAPI_CUSTOMER_IP_ADDRESS",
-    fapi_interaction_id="YOUR_FAPI_INTERACTION_ID",
-    customer_user_agent="YOUR_CUSTOMER_USER_AGENT",
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.parties.get_party()
 
 ```
@@ -923,7 +905,7 @@ client.parties.get_party()
 </details>
 
 ## Products
-<details><summary><code>client.products.<a href="src/fern/products/client.py">get_accounts_account_id_product</a>(...)</code></summary>
+<details><summary><code>client.products.<a href="src/fern/products/client.py">get_accounts_account_id_product</a>(...) -> ObReadProduct2</code></summary>
 <dl>
 <dd>
 
@@ -937,14 +919,13 @@ client.parties.get_party()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    fapi_auth_date="YOUR_FAPI_AUTH_DATE",
-    fapi_customer_ip_address="YOUR_FAPI_CUSTOMER_IP_ADDRESS",
-    fapi_interaction_id="YOUR_FAPI_INTERACTION_ID",
-    customer_user_agent="YOUR_CUSTOMER_USER_AGENT",
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.products.get_accounts_account_id_product(
     account_id="AccountId",
 )
@@ -983,7 +964,7 @@ client.products.get_accounts_account_id_product(
 </dl>
 </details>
 
-<details><summary><code>client.products.<a href="src/fern/products/client.py">get_products</a>()</code></summary>
+<details><summary><code>client.products.<a href="src/fern/products/client.py">get_products</a>() -> ObReadProduct2</code></summary>
 <dl>
 <dd>
 
@@ -997,14 +978,13 @@ client.products.get_accounts_account_id_product(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    fapi_auth_date="YOUR_FAPI_AUTH_DATE",
-    fapi_customer_ip_address="YOUR_FAPI_CUSTOMER_IP_ADDRESS",
-    fapi_interaction_id="YOUR_FAPI_INTERACTION_ID",
-    customer_user_agent="YOUR_CUSTOMER_USER_AGENT",
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.products.get_products()
 
 ```
@@ -1034,7 +1014,7 @@ client.products.get_products()
 </details>
 
 ## ScheduledPayments
-<details><summary><code>client.scheduled_payments.<a href="src/fern/scheduled_payments/client.py">get_accounts_account_id_scheduled_payments</a>(...)</code></summary>
+<details><summary><code>client.scheduled_payments.<a href="src/fern/scheduled_payments/client.py">get_accounts_account_id_scheduled_payments</a>(...) -> ObReadScheduledPayment3</code></summary>
 <dl>
 <dd>
 
@@ -1048,14 +1028,13 @@ client.products.get_products()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    fapi_auth_date="YOUR_FAPI_AUTH_DATE",
-    fapi_customer_ip_address="YOUR_FAPI_CUSTOMER_IP_ADDRESS",
-    fapi_interaction_id="YOUR_FAPI_INTERACTION_ID",
-    customer_user_agent="YOUR_CUSTOMER_USER_AGENT",
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.scheduled_payments.get_accounts_account_id_scheduled_payments(
     account_id="AccountId",
 )
@@ -1094,7 +1073,7 @@ client.scheduled_payments.get_accounts_account_id_scheduled_payments(
 </dl>
 </details>
 
-<details><summary><code>client.scheduled_payments.<a href="src/fern/scheduled_payments/client.py">get_scheduled_payments</a>()</code></summary>
+<details><summary><code>client.scheduled_payments.<a href="src/fern/scheduled_payments/client.py">get_scheduled_payments</a>() -> ObReadScheduledPayment3</code></summary>
 <dl>
 <dd>
 
@@ -1108,14 +1087,13 @@ client.scheduled_payments.get_accounts_account_id_scheduled_payments(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    fapi_auth_date="YOUR_FAPI_AUTH_DATE",
-    fapi_customer_ip_address="YOUR_FAPI_CUSTOMER_IP_ADDRESS",
-    fapi_interaction_id="YOUR_FAPI_INTERACTION_ID",
-    customer_user_agent="YOUR_CUSTOMER_USER_AGENT",
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.scheduled_payments.get_scheduled_payments()
 
 ```
@@ -1145,7 +1123,7 @@ client.scheduled_payments.get_scheduled_payments()
 </details>
 
 ## StandingOrders
-<details><summary><code>client.standing_orders.<a href="src/fern/standing_orders/client.py">get_accounts_account_id_standing_orders</a>(...)</code></summary>
+<details><summary><code>client.standing_orders.<a href="src/fern/standing_orders/client.py">get_accounts_account_id_standing_orders</a>(...) -> ObReadStandingOrder6</code></summary>
 <dl>
 <dd>
 
@@ -1159,14 +1137,13 @@ client.scheduled_payments.get_scheduled_payments()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    fapi_auth_date="YOUR_FAPI_AUTH_DATE",
-    fapi_customer_ip_address="YOUR_FAPI_CUSTOMER_IP_ADDRESS",
-    fapi_interaction_id="YOUR_FAPI_INTERACTION_ID",
-    customer_user_agent="YOUR_CUSTOMER_USER_AGENT",
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.standing_orders.get_accounts_account_id_standing_orders(
     account_id="AccountId",
 )
@@ -1205,7 +1182,7 @@ client.standing_orders.get_accounts_account_id_standing_orders(
 </dl>
 </details>
 
-<details><summary><code>client.standing_orders.<a href="src/fern/standing_orders/client.py">get_standing_orders</a>()</code></summary>
+<details><summary><code>client.standing_orders.<a href="src/fern/standing_orders/client.py">get_standing_orders</a>() -> ObReadStandingOrder6</code></summary>
 <dl>
 <dd>
 
@@ -1219,14 +1196,13 @@ client.standing_orders.get_accounts_account_id_standing_orders(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    fapi_auth_date="YOUR_FAPI_AUTH_DATE",
-    fapi_customer_ip_address="YOUR_FAPI_CUSTOMER_IP_ADDRESS",
-    fapi_interaction_id="YOUR_FAPI_INTERACTION_ID",
-    customer_user_agent="YOUR_CUSTOMER_USER_AGENT",
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.standing_orders.get_standing_orders()
 
 ```
@@ -1256,7 +1232,7 @@ client.standing_orders.get_standing_orders()
 </details>
 
 ## Statements
-<details><summary><code>client.statements.<a href="src/fern/statements/client.py">get_accounts_account_id_statements</a>(...)</code></summary>
+<details><summary><code>client.statements.<a href="src/fern/statements/client.py">get_accounts_account_id_statements</a>(...) -> ObReadStatement2</code></summary>
 <dl>
 <dd>
 
@@ -1270,14 +1246,13 @@ client.standing_orders.get_standing_orders()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    fapi_auth_date="YOUR_FAPI_AUTH_DATE",
-    fapi_customer_ip_address="YOUR_FAPI_CUSTOMER_IP_ADDRESS",
-    fapi_interaction_id="YOUR_FAPI_INTERACTION_ID",
-    customer_user_agent="YOUR_CUSTOMER_USER_AGENT",
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.statements.get_accounts_account_id_statements(
     account_id="AccountId",
 )
@@ -1304,7 +1279,7 @@ client.statements.get_accounts_account_id_statements(
 <dl>
 <dd>
 
-**from_statement_date_time:** `typing.Optional[dt.datetime]` 
+**from_statement_date_time:** `typing.Optional[datetime.datetime]` 
 
 The UTC ISO 8601 Date Time to filter statements FROM
 NB Time component is optional - set to 00:00:00 for just Date.
@@ -1316,7 +1291,7 @@ If the Date Time contains a timezone, the ASPSP must ignore the timezone compone
 <dl>
 <dd>
 
-**to_statement_date_time:** `typing.Optional[dt.datetime]` 
+**to_statement_date_time:** `typing.Optional[datetime.datetime]` 
 
 The UTC ISO 8601 Date Time to filter statements TO
 NB Time component is optional - set to 00:00:00 for just Date.
@@ -1340,7 +1315,7 @@ If the Date Time contains a timezone, the ASPSP must ignore the timezone compone
 </dl>
 </details>
 
-<details><summary><code>client.statements.<a href="src/fern/statements/client.py">get_accounts_account_id_statements_statement_id</a>(...)</code></summary>
+<details><summary><code>client.statements.<a href="src/fern/statements/client.py">get_accounts_account_id_statements_statement_id</a>(...) -> ObReadStatement2</code></summary>
 <dl>
 <dd>
 
@@ -1354,14 +1329,13 @@ If the Date Time contains a timezone, the ASPSP must ignore the timezone compone
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    fapi_auth_date="YOUR_FAPI_AUTH_DATE",
-    fapi_customer_ip_address="YOUR_FAPI_CUSTOMER_IP_ADDRESS",
-    fapi_interaction_id="YOUR_FAPI_INTERACTION_ID",
-    customer_user_agent="YOUR_CUSTOMER_USER_AGENT",
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.statements.get_accounts_account_id_statements_statement_id(
     account_id="AccountId",
     statement_id="StatementId",
@@ -1409,7 +1383,7 @@ client.statements.get_accounts_account_id_statements_statement_id(
 </dl>
 </details>
 
-<details><summary><code>client.statements.<a href="src/fern/statements/client.py">get_accounts_account_id_statements_statement_id_file</a>(...)</code></summary>
+<details><summary><code>client.statements.<a href="src/fern/statements/client.py">get_accounts_account_id_statements_statement_id_file</a>(...) -> File</code></summary>
 <dl>
 <dd>
 
@@ -1423,14 +1397,13 @@ client.statements.get_accounts_account_id_statements_statement_id(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    fapi_auth_date="YOUR_FAPI_AUTH_DATE",
-    fapi_customer_ip_address="YOUR_FAPI_CUSTOMER_IP_ADDRESS",
-    fapi_interaction_id="YOUR_FAPI_INTERACTION_ID",
-    customer_user_agent="YOUR_CUSTOMER_USER_AGENT",
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.statements.get_accounts_account_id_statements_statement_id_file(
     account_id="AccountId",
     statement_id="StatementId",
@@ -1478,7 +1451,7 @@ client.statements.get_accounts_account_id_statements_statement_id_file(
 </dl>
 </details>
 
-<details><summary><code>client.statements.<a href="src/fern/statements/client.py">get_statements</a>(...)</code></summary>
+<details><summary><code>client.statements.<a href="src/fern/statements/client.py">get_statements</a>(...) -> ObReadStatement2</code></summary>
 <dl>
 <dd>
 
@@ -1492,14 +1465,13 @@ client.statements.get_accounts_account_id_statements_statement_id_file(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    fapi_auth_date="YOUR_FAPI_AUTH_DATE",
-    fapi_customer_ip_address="YOUR_FAPI_CUSTOMER_IP_ADDRESS",
-    fapi_interaction_id="YOUR_FAPI_INTERACTION_ID",
-    customer_user_agent="YOUR_CUSTOMER_USER_AGENT",
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.statements.get_statements()
 
 ```
@@ -1516,7 +1488,7 @@ client.statements.get_statements()
 <dl>
 <dd>
 
-**from_statement_date_time:** `typing.Optional[dt.datetime]` 
+**from_statement_date_time:** `typing.Optional[datetime.datetime]` 
 
 The UTC ISO 8601 Date Time to filter statements FROM
 NB Time component is optional - set to 00:00:00 for just Date.
@@ -1528,7 +1500,7 @@ If the Date Time contains a timezone, the ASPSP must ignore the timezone compone
 <dl>
 <dd>
 
-**to_statement_date_time:** `typing.Optional[dt.datetime]` 
+**to_statement_date_time:** `typing.Optional[datetime.datetime]` 
 
 The UTC ISO 8601 Date Time to filter statements TO
 NB Time component is optional - set to 00:00:00 for just Date.
@@ -1553,7 +1525,7 @@ If the Date Time contains a timezone, the ASPSP must ignore the timezone compone
 </details>
 
 ## Transactions
-<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py">get_accounts_account_id_statements_statement_id_transactions</a>(...)</code></summary>
+<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py">get_accounts_account_id_statements_statement_id_transactions</a>(...) -> ObReadTransaction6</code></summary>
 <dl>
 <dd>
 
@@ -1567,14 +1539,13 @@ If the Date Time contains a timezone, the ASPSP must ignore the timezone compone
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    fapi_auth_date="YOUR_FAPI_AUTH_DATE",
-    fapi_customer_ip_address="YOUR_FAPI_CUSTOMER_IP_ADDRESS",
-    fapi_interaction_id="YOUR_FAPI_INTERACTION_ID",
-    customer_user_agent="YOUR_CUSTOMER_USER_AGENT",
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.transactions.get_accounts_account_id_statements_statement_id_transactions(
     account_id="AccountId",
     statement_id="StatementId",
@@ -1622,7 +1593,7 @@ client.transactions.get_accounts_account_id_statements_statement_id_transactions
 </dl>
 </details>
 
-<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py">get_accounts_account_id_transactions</a>(...)</code></summary>
+<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py">get_accounts_account_id_transactions</a>(...) -> ObReadTransaction6</code></summary>
 <dl>
 <dd>
 
@@ -1636,14 +1607,13 @@ client.transactions.get_accounts_account_id_statements_statement_id_transactions
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    fapi_auth_date="YOUR_FAPI_AUTH_DATE",
-    fapi_customer_ip_address="YOUR_FAPI_CUSTOMER_IP_ADDRESS",
-    fapi_interaction_id="YOUR_FAPI_INTERACTION_ID",
-    customer_user_agent="YOUR_CUSTOMER_USER_AGENT",
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.transactions.get_accounts_account_id_transactions(
     account_id="AccountId",
 )
@@ -1670,7 +1640,7 @@ client.transactions.get_accounts_account_id_transactions(
 <dl>
 <dd>
 
-**from_booking_date_time:** `typing.Optional[dt.datetime]` 
+**from_booking_date_time:** `typing.Optional[datetime.datetime]` 
 
 The UTC ISO 8601 Date Time to filter transactions FROM
 NB Time component is optional - set to 00:00:00 for just Date.
@@ -1682,7 +1652,7 @@ If the Date Time contains a timezone, the ASPSP must ignore the timezone compone
 <dl>
 <dd>
 
-**to_booking_date_time:** `typing.Optional[dt.datetime]` 
+**to_booking_date_time:** `typing.Optional[datetime.datetime]` 
 
 The UTC ISO 8601 Date Time to filter transactions TO
 NB Time component is optional - set to 00:00:00 for just Date.
@@ -1706,7 +1676,7 @@ If the Date Time contains a timezone, the ASPSP must ignore the timezone compone
 </dl>
 </details>
 
-<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py">get_transactions</a>(...)</code></summary>
+<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py">get_transactions</a>(...) -> ObReadTransaction6</code></summary>
 <dl>
 <dd>
 
@@ -1720,14 +1690,13 @@ If the Date Time contains a timezone, the ASPSP must ignore the timezone compone
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    fapi_auth_date="YOUR_FAPI_AUTH_DATE",
-    fapi_customer_ip_address="YOUR_FAPI_CUSTOMER_IP_ADDRESS",
-    fapi_interaction_id="YOUR_FAPI_INTERACTION_ID",
-    customer_user_agent="YOUR_CUSTOMER_USER_AGENT",
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.transactions.get_transactions()
 
 ```
@@ -1744,7 +1713,7 @@ client.transactions.get_transactions()
 <dl>
 <dd>
 
-**from_booking_date_time:** `typing.Optional[dt.datetime]` 
+**from_booking_date_time:** `typing.Optional[datetime.datetime]` 
 
 The UTC ISO 8601 Date Time to filter transactions FROM
 NB Time component is optional - set to 00:00:00 for just Date.
@@ -1756,7 +1725,7 @@ If the Date Time contains a timezone, the ASPSP must ignore the timezone compone
 <dl>
 <dd>
 
-**to_booking_date_time:** `typing.Optional[dt.datetime]` 
+**to_booking_date_time:** `typing.Optional[datetime.datetime]` 
 
 The UTC ISO 8601 Date Time to filter transactions TO
 NB Time component is optional - set to 00:00:00 for just Date.

@@ -10,9 +10,15 @@ from .destiny_artifacts_destiny_artifact_tier import DestinyArtifactsDestinyArti
 
 
 class DestinyArtifactsDestinyArtifactCharacterScoped(UniversalBaseModel):
-    artifact_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="artifactHash")] = None
-    points_used: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="pointsUsed")] = None
-    reset_count: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="resetCount")] = None
+    artifact_hash: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="artifactHash"), pydantic.Field(alias="artifactHash")
+    ] = None
+    points_used: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="pointsUsed"), pydantic.Field(alias="pointsUsed")
+    ] = None
+    reset_count: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="resetCount"), pydantic.Field(alias="resetCount")
+    ] = None
     tiers: typing.Optional[typing.List[DestinyArtifactsDestinyArtifactTier]] = None
 
     if IS_PYDANTIC_V2:

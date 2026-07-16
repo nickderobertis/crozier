@@ -10,16 +10,23 @@ from .export import Export
 
 
 class ListExportsOutput(UniversalBaseModel):
-    exports: typing_extensions.Annotated[typing.Optional[typing.List[Export]], FieldMetadata(alias="Exports")] = (
-        pydantic.Field(default=None)
-    )
+    exports: typing_extensions.Annotated[
+        typing.Optional[typing.List[Export]],
+        FieldMetadata(alias="Exports"),
+        pydantic.Field(alias="Exports", description="The output for the <a>ListExports</a> action."),
+    ] = None
     """
     The output for the <a>ListExports</a> action.
     """
 
-    next_token: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="NextToken")] = pydantic.Field(
-        default=None
-    )
+    next_token: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="NextToken"),
+        pydantic.Field(
+            alias="NextToken",
+            description="If the output exceeds 100 exported output values, a string that identifies the next page of exports. If there is no additional page, this value is null.",
+        ),
+    ] = None
     """
     If the output exceeds 100 exported output values, a string that identifies the next page of exports. If there is no additional page, this value is null.
     """

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class AccountStatusState(str, enum.Enum):
+class AccountStatusState(enum.StrEnum):
     """
     The status of the account
     """

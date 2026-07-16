@@ -18,7 +18,11 @@ class Metadata(UniversalBaseModel):
     Annotations of attached object
     """
 
-    created_on: typing_extensions.Annotated[int, FieldMetadata(alias="createdOn")] = pydantic.Field()
+    created_on: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="createdOn"),
+        pydantic.Field(alias="createdOn", description="Creation date of attached object"),
+    ]
     """
     Creation date of attached object
     """
@@ -28,7 +32,11 @@ class Metadata(UniversalBaseModel):
     Labels put on attached object
     """
 
-    last_update: typing_extensions.Annotated[int, FieldMetadata(alias="lastUpdate")] = pydantic.Field()
+    last_update: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="lastUpdate"),
+        pydantic.Field(alias="lastUpdate", description="Last update of attached object"),
+    ]
     """
     Last update of attached object
     """

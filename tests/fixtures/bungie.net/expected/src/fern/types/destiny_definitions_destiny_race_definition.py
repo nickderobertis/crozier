@@ -19,16 +19,24 @@ class DestinyDefinitionsDestinyRaceDefinition(UniversalBaseModel):
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
+        pydantic.Field(alias="displayProperties"),
     ] = None
     gendered_race_names: typing_extensions.Annotated[
-        typing.Optional[typing.Dict[str, str]], FieldMetadata(alias="genderedRaceNames")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.Dict[str, str]],
+        FieldMetadata(alias="genderedRaceNames"),
+        pydantic.Field(
+            alias="genderedRaceNames",
+            description="A localized string referring to the singular form of the Race's name when referred to in gendered form. Keyed by the DestinyGender.",
+        ),
+    ] = None
     """
     A localized string referring to the singular form of the Race's name when referred to in gendered form. Keyed by the DestinyGender.
     """
 
     gendered_race_names_by_gender_hash: typing_extensions.Annotated[
-        typing.Optional[typing.Dict[str, str]], FieldMetadata(alias="genderedRaceNamesByGenderHash")
+        typing.Optional[typing.Dict[str, str]],
+        FieldMetadata(alias="genderedRaceNamesByGenderHash"),
+        pydantic.Field(alias="genderedRaceNamesByGenderHash"),
     ] = None
     hash: typing.Optional[int] = pydantic.Field(default=None)
     """
@@ -41,9 +49,14 @@ class DestinyDefinitionsDestinyRaceDefinition(UniversalBaseModel):
     The index of the entity as it was found in the investment tables.
     """
 
-    race_type: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="raceType")] = pydantic.Field(
-        default=None
-    )
+    race_type: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="raceType"),
+        pydantic.Field(
+            alias="raceType",
+            description="An enumeration defining the existing, known Races/Species for player characters. This value will be the enum value matching this definition.",
+        ),
+    ] = None
     """
     An enumeration defining the existing, known Races/Species for player characters. This value will be the enum value matching this definition.
     """

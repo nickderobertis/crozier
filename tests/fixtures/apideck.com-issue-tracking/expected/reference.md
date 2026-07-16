@@ -1,6 +1,6 @@
 # Reference
 ## Collections
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">all_</a>(...)</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py">all</a>(...) -> GetCollectionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -28,13 +28,15 @@ List Collections
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.collections.all_(
     fields="id,updated_at",
 )
@@ -105,7 +107,7 @@ client.collections.all_(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">one</a>(...)</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py">one</a>(...) -> GetCollectionResponse</code></summary>
 <dl>
 <dd>
 
@@ -133,13 +135,15 @@ Get Collection
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.collections.one(
     collection_id="apideck-io",
     fields="id,updated_at",
@@ -196,7 +200,7 @@ client.collections.one(
 </details>
 
 ## Tags
-<details><summary><code>client.tags.<a href="src/fern/tags/client.py">collection_tags_all</a>(...)</code></summary>
+<details><summary><code>client.tags.<a href="src/fern/tags/client.py">collection_tags_all</a>(...) -> GetCollectionTagsResponse</code></summary>
 <dl>
 <dd>
 
@@ -224,13 +228,15 @@ List Tags
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tags.collection_tags_all(
     collection_id="apideck-io",
     fields="id,updated_at",
@@ -303,7 +309,7 @@ client.tags.collection_tags_all(
 </details>
 
 ## Tickets
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">collection_tickets_all</a>(...)</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">collection_tickets_all</a>(...) -> GetTicketsResponse</code></summary>
 <dl>
 <dd>
 
@@ -331,13 +337,15 @@ List Tickets
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tickets.collection_tickets_all(
     collection_id="apideck-io",
     fields="id,updated_at",
@@ -425,7 +433,7 @@ client.tickets.collection_tickets_all(
 </dl>
 </details>
 
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">collection_tickets_add</a>(...)</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">collection_tickets_add</a>(...) -> CreateTicketResponse</code></summary>
 <dl>
 <dd>
 
@@ -453,13 +461,15 @@ Create Ticket
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tickets.collection_tickets_add(
     collection_id_="apideck-io",
 )
@@ -478,7 +488,15 @@ client.tickets.collection_tickets_add(
 <dl>
 <dd>
 
-**collection_id_:** `str` — The collection ID
+**collection_id:** `str` — The collection ID
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request:** `Ticket` 
     
 </dd>
 </dl>
@@ -487,126 +505,6 @@ client.tickets.collection_tickets_add(
 <dd>
 
 **raw:** `typing.Optional[bool]` — Include raw response. Mostly used for debugging purposes
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**assignees:** `typing.Optional[typing.Sequence[Assignee]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**collection_id:** `typing.Optional[str]` — The ticket's collection ID
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**completed_at:** `typing.Optional[dt.datetime]` — When the ticket was completed
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_at:** `typing.Optional[CreatedAt]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_by:** `typing.Optional[CreatedBy]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — The ticket's description. HTML version of description is mapped if supported by the third-party platform
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**due_date:** `typing.Optional[dt.datetime]` — Due date of the ticket
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[Id]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**parent_id:** `typing.Optional[str]` — The ticket's parent ID
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**priority:** `typing.Optional[TicketPriority]` — Priority of the ticket
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` — The current status of the ticket. Possible values include: open, in_progress, closed, or - in cases where there is no clear mapping - the original value passed through.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**subject:** `typing.Optional[str]` — Subject of the ticket
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**tags:** `typing.Optional[typing.Sequence[CollectionTag]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**type:** `typing.Optional[str]` — The ticket's type
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_at:** `typing.Optional[UpdatedAt]` 
     
 </dd>
 </dl>
@@ -626,7 +524,7 @@ client.tickets.collection_tickets_add(
 </dl>
 </details>
 
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">collection_tickets_one</a>(...)</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">collection_tickets_one</a>(...) -> GetTicketResponse</code></summary>
 <dl>
 <dd>
 
@@ -654,13 +552,15 @@ Get Ticket
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tickets.collection_tickets_one(
     collection_id="apideck-io",
     ticket_id="ticket_id",
@@ -725,7 +625,7 @@ client.tickets.collection_tickets_one(
 </dl>
 </details>
 
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">collection_tickets_delete</a>(...)</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">collection_tickets_delete</a>(...) -> DeleteTicketResponse</code></summary>
 <dl>
 <dd>
 
@@ -753,13 +653,15 @@ Delete Ticket
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tickets.collection_tickets_delete(
     collection_id="apideck-io",
     ticket_id="ticket_id",
@@ -815,7 +717,7 @@ client.tickets.collection_tickets_delete(
 </dl>
 </details>
 
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">collection_tickets_update</a>(...)</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">collection_tickets_update</a>(...) -> UpdateTicketResponse</code></summary>
 <dl>
 <dd>
 
@@ -843,13 +745,15 @@ Update Ticket
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tickets.collection_tickets_update(
     collection_id_="apideck-io",
     ticket_id="ticket_id",
@@ -869,7 +773,7 @@ client.tickets.collection_tickets_update(
 <dl>
 <dd>
 
-**collection_id_:** `str` — The collection ID
+**collection_id:** `str` — The collection ID
     
 </dd>
 </dl>
@@ -885,127 +789,15 @@ client.tickets.collection_tickets_update(
 <dl>
 <dd>
 
+**request:** `Ticket` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **raw:** `typing.Optional[bool]` — Include raw response. Mostly used for debugging purposes
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**assignees:** `typing.Optional[typing.Sequence[Assignee]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**collection_id:** `typing.Optional[str]` — The ticket's collection ID
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**completed_at:** `typing.Optional[dt.datetime]` — When the ticket was completed
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_at:** `typing.Optional[CreatedAt]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_by:** `typing.Optional[CreatedBy]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — The ticket's description. HTML version of description is mapped if supported by the third-party platform
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**due_date:** `typing.Optional[dt.datetime]` — Due date of the ticket
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[Id]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**parent_id:** `typing.Optional[str]` — The ticket's parent ID
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**priority:** `typing.Optional[TicketPriority]` — Priority of the ticket
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[str]` — The current status of the ticket. Possible values include: open, in_progress, closed, or - in cases where there is no clear mapping - the original value passed through.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**subject:** `typing.Optional[str]` — Subject of the ticket
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**tags:** `typing.Optional[typing.Sequence[CollectionTag]]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**type:** `typing.Optional[str]` — The ticket's type
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_at:** `typing.Optional[UpdatedAt]` 
     
 </dd>
 </dl>
@@ -1026,7 +818,7 @@ client.tickets.collection_tickets_update(
 </details>
 
 ## Comments
-<details><summary><code>client.comments.<a href="src/fern/comments/client.py">collection_ticket_comments_all</a>(...)</code></summary>
+<details><summary><code>client.comments.<a href="src/fern/comments/client.py">collection_ticket_comments_all</a>(...) -> GetCommentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1054,13 +846,15 @@ List Comments
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.comments.collection_ticket_comments_all(
     collection_id="apideck-io",
     ticket_id="ticket_id",
@@ -1149,7 +943,7 @@ client.comments.collection_ticket_comments_all(
 </dl>
 </details>
 
-<details><summary><code>client.comments.<a href="src/fern/comments/client.py">collection_ticket_comments_add</a>(...)</code></summary>
+<details><summary><code>client.comments.<a href="src/fern/comments/client.py">collection_ticket_comments_add</a>(...) -> CreateCommentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1177,13 +971,15 @@ Create Comment
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.comments.collection_ticket_comments_add(
     collection_id="apideck-io",
     ticket_id="ticket_id",
@@ -1219,47 +1015,15 @@ client.comments.collection_ticket_comments_add(
 <dl>
 <dd>
 
+**request:** `CollectionTicketComment` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **raw:** `typing.Optional[bool]` — Include raw response. Mostly used for debugging purposes
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**body:** `typing.Optional[str]` — Body of the comment
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_at:** `typing.Optional[CreatedAt]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_by:** `typing.Optional[CreatedBy]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[Id]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_at:** `typing.Optional[UpdatedAt]` 
     
 </dd>
 </dl>
@@ -1279,7 +1043,7 @@ client.comments.collection_ticket_comments_add(
 </dl>
 </details>
 
-<details><summary><code>client.comments.<a href="src/fern/comments/client.py">collection_ticket_comments_one</a>(...)</code></summary>
+<details><summary><code>client.comments.<a href="src/fern/comments/client.py">collection_ticket_comments_one</a>(...) -> GetCommentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1307,13 +1071,15 @@ Get Comment
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.comments.collection_ticket_comments_one(
     collection_id="apideck-io",
     ticket_id="ticket_id",
@@ -1403,7 +1169,7 @@ client.comments.collection_ticket_comments_one(
 </dl>
 </details>
 
-<details><summary><code>client.comments.<a href="src/fern/comments/client.py">collection_ticket_comments_delete</a>(...)</code></summary>
+<details><summary><code>client.comments.<a href="src/fern/comments/client.py">collection_ticket_comments_delete</a>(...) -> DeleteCommentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1431,13 +1197,15 @@ Delete Comment
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.comments.collection_ticket_comments_delete(
     collection_id="apideck-io",
     ticket_id="ticket_id",
@@ -1502,7 +1270,7 @@ client.comments.collection_ticket_comments_delete(
 </dl>
 </details>
 
-<details><summary><code>client.comments.<a href="src/fern/comments/client.py">collection_ticket_comments_update</a>(...)</code></summary>
+<details><summary><code>client.comments.<a href="src/fern/comments/client.py">collection_ticket_comments_update</a>(...) -> UpdateCommentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1530,13 +1298,15 @@ Update Comment
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.comments.collection_ticket_comments_update(
     collection_id="apideck-io",
     ticket_id="ticket_id",
@@ -1573,7 +1343,15 @@ client.comments.collection_ticket_comments_update(
 <dl>
 <dd>
 
-**id_:** `str` — ID of the record you are acting upon.
+**id:** `str` — ID of the record you are acting upon.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request:** `CollectionTicketComment` 
     
 </dd>
 </dl>
@@ -1582,46 +1360,6 @@ client.comments.collection_ticket_comments_update(
 <dd>
 
 **raw:** `typing.Optional[bool]` — Include raw response. Mostly used for debugging purposes
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**body:** `typing.Optional[str]` — Body of the comment
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_at:** `typing.Optional[CreatedAt]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_by:** `typing.Optional[CreatedBy]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[Id]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_at:** `typing.Optional[UpdatedAt]` 
     
 </dd>
 </dl>
@@ -1642,7 +1380,7 @@ client.comments.collection_ticket_comments_update(
 </details>
 
 ## Users
-<details><summary><code>client.users.<a href="src/fern/users/client.py">collection_users_all</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py">collection_users_all</a>(...) -> GetCollectionUsersResponse</code></summary>
 <dl>
 <dd>
 
@@ -1670,13 +1408,15 @@ List Users
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.users.collection_users_all(
     collection_id="apideck-io",
     fields="id,updated_at",
@@ -1748,7 +1488,7 @@ client.users.collection_users_all(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">collection_users_one</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py">collection_users_one</a>(...) -> GetCollectionUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -1776,13 +1516,15 @@ Get user
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.users.collection_users_one(
     collection_id="apideck-io",
     id="id",

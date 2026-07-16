@@ -9,7 +9,9 @@ from ..core.serialization import FieldMetadata
 
 
 class NestedContactGroup(UniversalBaseModel):
-    depth: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="_depth")] = None
+    depth: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="_depth"), pydantic.Field(alias="_depth")
+    ] = None
     contact_count: typing.Optional[int] = None
     display: typing.Optional[str] = None
     id: typing.Optional[int] = None

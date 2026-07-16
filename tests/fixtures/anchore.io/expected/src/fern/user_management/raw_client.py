@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
@@ -22,6 +23,7 @@ from ..types.credential_list import CredentialList
 from ..types.user import User
 from .types.delete_user_credential_request_credential_type import DeleteUserCredentialRequestCredentialType
 from .types.list_accounts_request_state import ListAccountsRequestState
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -73,9 +75,9 @@ class RawUserManagementClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -83,6 +85,10 @@ class RawUserManagementClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_account(
@@ -143,9 +149,9 @@ class RawUserManagementClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -153,6 +159,10 @@ class RawUserManagementClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_account(
@@ -172,7 +182,7 @@ class RawUserManagementClient:
             Get user information
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"accounts/{jsonable_encoder(accountname)}",
+            f"accounts/{encode_path_param(accountname)}",
             method="GET",
             request_options=request_options,
         )
@@ -190,9 +200,9 @@ class RawUserManagementClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -200,6 +210,10 @@ class RawUserManagementClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_account(
@@ -218,7 +232,7 @@ class RawUserManagementClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"accounts/{jsonable_encoder(accountname)}",
+            f"accounts/{encode_path_param(accountname)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -229,9 +243,9 @@ class RawUserManagementClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -239,6 +253,10 @@ class RawUserManagementClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_account_state(
@@ -265,7 +283,7 @@ class RawUserManagementClient:
             Updated state of the account
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"accounts/{jsonable_encoder(accountname)}/state",
+            f"accounts/{encode_path_param(accountname)}/state",
             method="PUT",
             json={
                 "state": state,
@@ -290,9 +308,9 @@ class RawUserManagementClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -301,9 +319,9 @@ class RawUserManagementClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -311,6 +329,10 @@ class RawUserManagementClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_users(
@@ -330,7 +352,7 @@ class RawUserManagementClient:
             User listing
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"accounts/{jsonable_encoder(accountname)}/users",
+            f"accounts/{encode_path_param(accountname)}/users",
             method="GET",
             request_options=request_options,
         )
@@ -348,9 +370,9 @@ class RawUserManagementClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -358,6 +380,10 @@ class RawUserManagementClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_user(
@@ -383,7 +409,7 @@ class RawUserManagementClient:
             Credential summary
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"accounts/{jsonable_encoder(accountname)}/users",
+            f"accounts/{encode_path_param(accountname)}/users",
             method="POST",
             json={
                 "password": password,
@@ -408,6 +434,10 @@ class RawUserManagementClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_account_user(
@@ -429,7 +459,7 @@ class RawUserManagementClient:
             User record
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"accounts/{jsonable_encoder(accountname)}/users/{jsonable_encoder(username)}",
+            f"accounts/{encode_path_param(accountname)}/users/{encode_path_param(username)}",
             method="GET",
             request_options=request_options,
         )
@@ -447,9 +477,9 @@ class RawUserManagementClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -457,6 +487,10 @@ class RawUserManagementClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_user(
@@ -477,7 +511,7 @@ class RawUserManagementClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"accounts/{jsonable_encoder(accountname)}/users/{jsonable_encoder(username)}",
+            f"accounts/{encode_path_param(accountname)}/users/{encode_path_param(username)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -488,9 +522,9 @@ class RawUserManagementClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -498,6 +532,10 @@ class RawUserManagementClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_user_credentials(
@@ -519,7 +557,7 @@ class RawUserManagementClient:
             User credential listing
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"accounts/{jsonable_encoder(accountname)}/users/{jsonable_encoder(username)}/credentials",
+            f"accounts/{encode_path_param(accountname)}/users/{encode_path_param(username)}/credentials",
             method="GET",
             request_options=request_options,
         )
@@ -537,9 +575,9 @@ class RawUserManagementClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -547,6 +585,10 @@ class RawUserManagementClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_user_credential(
@@ -584,7 +626,7 @@ class RawUserManagementClient:
             Add a credential, overwritting if already exists
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"accounts/{jsonable_encoder(accountname)}/users/{jsonable_encoder(username)}/credentials",
+            f"accounts/{encode_path_param(accountname)}/users/{encode_path_param(username)}/credentials",
             method="POST",
             json={
                 "created_at": created_at,
@@ -611,9 +653,9 @@ class RawUserManagementClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -621,6 +663,10 @@ class RawUserManagementClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_user_credential(
@@ -648,7 +694,7 @@ class RawUserManagementClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"accounts/{jsonable_encoder(accountname)}/users/{jsonable_encoder(username)}/credentials",
+            f"accounts/{encode_path_param(accountname)}/users/{encode_path_param(username)}/credentials",
             method="DELETE",
             params={
                 "credential_type": credential_type,
@@ -662,9 +708,9 @@ class RawUserManagementClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -673,9 +719,9 @@ class RawUserManagementClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -683,6 +729,10 @@ class RawUserManagementClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -732,9 +782,9 @@ class AsyncRawUserManagementClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -742,6 +792,10 @@ class AsyncRawUserManagementClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_account(
@@ -802,9 +856,9 @@ class AsyncRawUserManagementClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -812,6 +866,10 @@ class AsyncRawUserManagementClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_account(
@@ -831,7 +889,7 @@ class AsyncRawUserManagementClient:
             Get user information
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"accounts/{jsonable_encoder(accountname)}",
+            f"accounts/{encode_path_param(accountname)}",
             method="GET",
             request_options=request_options,
         )
@@ -849,9 +907,9 @@ class AsyncRawUserManagementClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -859,6 +917,10 @@ class AsyncRawUserManagementClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_account(
@@ -877,7 +939,7 @@ class AsyncRawUserManagementClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"accounts/{jsonable_encoder(accountname)}",
+            f"accounts/{encode_path_param(accountname)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -888,9 +950,9 @@ class AsyncRawUserManagementClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -898,6 +960,10 @@ class AsyncRawUserManagementClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_account_state(
@@ -924,7 +990,7 @@ class AsyncRawUserManagementClient:
             Updated state of the account
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"accounts/{jsonable_encoder(accountname)}/state",
+            f"accounts/{encode_path_param(accountname)}/state",
             method="PUT",
             json={
                 "state": state,
@@ -949,9 +1015,9 @@ class AsyncRawUserManagementClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -960,9 +1026,9 @@ class AsyncRawUserManagementClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -970,6 +1036,10 @@ class AsyncRawUserManagementClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_users(
@@ -989,7 +1059,7 @@ class AsyncRawUserManagementClient:
             User listing
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"accounts/{jsonable_encoder(accountname)}/users",
+            f"accounts/{encode_path_param(accountname)}/users",
             method="GET",
             request_options=request_options,
         )
@@ -1007,9 +1077,9 @@ class AsyncRawUserManagementClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1017,6 +1087,10 @@ class AsyncRawUserManagementClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_user(
@@ -1042,7 +1116,7 @@ class AsyncRawUserManagementClient:
             Credential summary
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"accounts/{jsonable_encoder(accountname)}/users",
+            f"accounts/{encode_path_param(accountname)}/users",
             method="POST",
             json={
                 "password": password,
@@ -1067,6 +1141,10 @@ class AsyncRawUserManagementClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_account_user(
@@ -1088,7 +1166,7 @@ class AsyncRawUserManagementClient:
             User record
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"accounts/{jsonable_encoder(accountname)}/users/{jsonable_encoder(username)}",
+            f"accounts/{encode_path_param(accountname)}/users/{encode_path_param(username)}",
             method="GET",
             request_options=request_options,
         )
@@ -1106,9 +1184,9 @@ class AsyncRawUserManagementClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1116,6 +1194,10 @@ class AsyncRawUserManagementClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_user(
@@ -1136,7 +1218,7 @@ class AsyncRawUserManagementClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"accounts/{jsonable_encoder(accountname)}/users/{jsonable_encoder(username)}",
+            f"accounts/{encode_path_param(accountname)}/users/{encode_path_param(username)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -1147,9 +1229,9 @@ class AsyncRawUserManagementClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1157,6 +1239,10 @@ class AsyncRawUserManagementClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_user_credentials(
@@ -1178,7 +1264,7 @@ class AsyncRawUserManagementClient:
             User credential listing
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"accounts/{jsonable_encoder(accountname)}/users/{jsonable_encoder(username)}/credentials",
+            f"accounts/{encode_path_param(accountname)}/users/{encode_path_param(username)}/credentials",
             method="GET",
             request_options=request_options,
         )
@@ -1196,9 +1282,9 @@ class AsyncRawUserManagementClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1206,6 +1292,10 @@ class AsyncRawUserManagementClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_user_credential(
@@ -1243,7 +1333,7 @@ class AsyncRawUserManagementClient:
             Add a credential, overwritting if already exists
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"accounts/{jsonable_encoder(accountname)}/users/{jsonable_encoder(username)}/credentials",
+            f"accounts/{encode_path_param(accountname)}/users/{encode_path_param(username)}/credentials",
             method="POST",
             json={
                 "created_at": created_at,
@@ -1270,9 +1360,9 @@ class AsyncRawUserManagementClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1280,6 +1370,10 @@ class AsyncRawUserManagementClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_user_credential(
@@ -1307,7 +1401,7 @@ class AsyncRawUserManagementClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"accounts/{jsonable_encoder(accountname)}/users/{jsonable_encoder(username)}/credentials",
+            f"accounts/{encode_path_param(accountname)}/users/{encode_path_param(username)}/credentials",
             method="DELETE",
             params={
                 "credential_type": credential_type,
@@ -1321,9 +1415,9 @@ class AsyncRawUserManagementClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1332,9 +1426,9 @@ class AsyncRawUserManagementClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1342,4 +1436,8 @@ class AsyncRawUserManagementClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

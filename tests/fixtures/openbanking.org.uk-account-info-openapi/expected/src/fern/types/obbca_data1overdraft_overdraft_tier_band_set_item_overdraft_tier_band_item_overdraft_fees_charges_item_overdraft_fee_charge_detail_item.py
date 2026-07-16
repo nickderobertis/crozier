@@ -45,7 +45,11 @@ class ObbcaData1OverdraftOverdraftTierBandSetItemOverdraftTierBandItemOverdraftF
     application_frequency: typing_extensions.Annotated[
         ObbcaData1OverdraftOverdraftTierBandSetItemOverdraftTierBandItemOverdraftFeesChargesItemOverdraftFeeChargeDetailItemApplicationFrequency,
         FieldMetadata(alias="ApplicationFrequency"),
-    ] = pydantic.Field()
+        pydantic.Field(
+            alias="ApplicationFrequency",
+            description="Frequency at which the overdraft charge is applied to the account",
+        ),
+    ]
     """
     Frequency at which the overdraft charge is applied to the account
     """
@@ -55,21 +59,35 @@ class ObbcaData1OverdraftOverdraftTierBandSetItemOverdraftTierBandItemOverdraftF
             ObbcaData1OverdraftOverdraftTierBandSetItemOverdraftTierBandItemOverdraftFeesChargesItemOverdraftFeeChargeDetailItemCalculationFrequency
         ],
         FieldMetadata(alias="CalculationFrequency"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="CalculationFrequency",
+            description="How often is the overdraft fee/charge calculated for the account.",
+        ),
+    ] = None
     """
     How often is the overdraft fee/charge calculated for the account.
     """
 
-    fee_amount: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="FeeAmount")] = pydantic.Field(
-        default=None
-    )
+    fee_amount: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="FeeAmount"),
+        pydantic.Field(
+            alias="FeeAmount",
+            description="Amount charged for an overdraft fee/charge (where it is charged in terms of an amount rather than a rate)",
+        ),
+    ] = None
     """
     Amount charged for an overdraft fee/charge (where it is charged in terms of an amount rather than a rate)
     """
 
-    fee_rate: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="FeeRate")] = pydantic.Field(
-        default=None
-    )
+    fee_rate: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="FeeRate"),
+        pydantic.Field(
+            alias="FeeRate",
+            description="Rate charged for overdraft fee/charge (where it is charged in terms of a rate rather than an amount)",
+        ),
+    ] = None
     """
     Rate charged for overdraft fee/charge (where it is charged in terms of a rate rather than an amount)
     """
@@ -79,7 +97,11 @@ class ObbcaData1OverdraftOverdraftTierBandSetItemOverdraftTierBandItemOverdraftF
             ObbcaData1OverdraftOverdraftTierBandSetItemOverdraftTierBandItemOverdraftFeesChargesItemOverdraftFeeChargeDetailItemFeeRateType
         ],
         FieldMetadata(alias="FeeRateType"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="FeeRateType",
+            description="Rate type for overdraft fee/charge (where it is charged in terms of a rate rather than an amount)",
+        ),
+    ] = None
     """
     Rate type for overdraft fee/charge (where it is charged in terms of a rate rather than an amount)
     """
@@ -87,28 +109,40 @@ class ObbcaData1OverdraftOverdraftTierBandSetItemOverdraftTierBandItemOverdraftF
     fee_type: typing_extensions.Annotated[
         ObbcaData1OverdraftOverdraftTierBandSetItemOverdraftTierBandItemOverdraftFeesChargesItemOverdraftFeeChargeDetailItemFeeType,
         FieldMetadata(alias="FeeType"),
-    ] = pydantic.Field()
+        pydantic.Field(alias="FeeType", description="Overdraft fee type"),
+    ]
     """
     Overdraft fee type
     """
 
     incremental_borrowing_amount: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="IncrementalBorrowingAmount")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="IncrementalBorrowingAmount"),
+        pydantic.Field(
+            alias="IncrementalBorrowingAmount",
+            description="Every additional tranche of an overdraft balance to which an overdraft fee is applied",
+        ),
+    ] = None
     """
     Every additional tranche of an overdraft balance to which an overdraft fee is applied
     """
 
     negotiable_indicator: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="NegotiableIndicator")
-    ] = pydantic.Field(default=None)
+        typing.Optional[bool],
+        FieldMetadata(alias="NegotiableIndicator"),
+        pydantic.Field(alias="NegotiableIndicator", description="Indicates whether fee and charges are negotiable"),
+    ] = None
     """
     Indicates whether fee and charges are negotiable
     """
 
-    notes: typing_extensions.Annotated[typing.Optional[typing.List[str]], FieldMetadata(alias="Notes")] = (
-        pydantic.Field(default=None)
-    )
+    notes: typing_extensions.Annotated[
+        typing.Optional[typing.List[str]],
+        FieldMetadata(alias="Notes"),
+        pydantic.Field(
+            alias="Notes", description="Free text for capturing any other info related to Overdraft Fees Charge Details"
+        ),
+    ] = None
     """
     Free text for capturing any other info related to Overdraft Fees Charge Details
     """
@@ -118,7 +152,11 @@ class ObbcaData1OverdraftOverdraftTierBandSetItemOverdraftTierBandItemOverdraftF
             ObbcaData1OverdraftOverdraftTierBandSetItemOverdraftTierBandItemOverdraftFeesChargesItemOverdraftFeeChargeDetailItemOtherApplicationFrequency
         ],
         FieldMetadata(alias="OtherApplicationFrequency"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="OtherApplicationFrequency",
+            description="Other application frequencies that are not available in the standard code list",
+        ),
+    ] = None
     """
     Other application frequencies that are not available in the standard code list
     """
@@ -128,7 +166,11 @@ class ObbcaData1OverdraftOverdraftTierBandSetItemOverdraftTierBandItemOverdraftF
             ObbcaData1OverdraftOverdraftTierBandSetItemOverdraftTierBandItemOverdraftFeesChargesItemOverdraftFeeChargeDetailItemOtherCalculationFrequency
         ],
         FieldMetadata(alias="OtherCalculationFrequency"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="OtherCalculationFrequency",
+            description="Other calculation frequency which is not available in the standard code set.",
+        ),
+    ] = None
     """
     Other calculation frequency which is not available in the standard code set.
     """
@@ -138,7 +180,11 @@ class ObbcaData1OverdraftOverdraftTierBandSetItemOverdraftTierBandItemOverdraftF
             ObbcaData1OverdraftOverdraftTierBandSetItemOverdraftTierBandItemOverdraftFeesChargesItemOverdraftFeeChargeDetailItemOtherFeeRateType
         ],
         FieldMetadata(alias="OtherFeeRateType"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="OtherFeeRateType",
+            description="Other fee rate type code which is not available in the standard code set",
+        ),
+    ] = None
     """
     Other fee rate type code which is not available in the standard code set
     """
@@ -148,14 +194,22 @@ class ObbcaData1OverdraftOverdraftTierBandSetItemOverdraftTierBandItemOverdraftF
             ObbcaData1OverdraftOverdraftTierBandSetItemOverdraftTierBandItemOverdraftFeesChargesItemOverdraftFeeChargeDetailItemOtherFeeType
         ],
         FieldMetadata(alias="OtherFeeType"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="OtherFeeType", description="Other Fee type which is not available in the standard code set"
+        ),
+    ] = None
     """
     Other Fee type which is not available in the standard code set
     """
 
     overdraft_control_indicator: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="OverdraftControlIndicator")
-    ] = pydantic.Field(default=None)
+        typing.Optional[bool],
+        FieldMetadata(alias="OverdraftControlIndicator"),
+        pydantic.Field(
+            alias="OverdraftControlIndicator",
+            description="Indicates if the fee/charge is already covered by an 'Overdraft Control' fee or not.",
+        ),
+    ] = None
     """
     Indicates if the fee/charge is already covered by an 'Overdraft Control' fee or not.
     """
@@ -167,7 +221,11 @@ class ObbcaData1OverdraftOverdraftTierBandSetItemOverdraftTierBandItemOverdraftF
             ]
         ],
         FieldMetadata(alias="OverdraftFeeChargeCap"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="OverdraftFeeChargeCap",
+            description="Details about any caps (maximum charges) that apply to a particular fee/charge. Capping can either be based on an amount (in gbp), an amount (in items) or a rate.",
+        ),
+    ] = None
     """
     Details about any caps (maximum charges) that apply to a particular fee/charge. Capping can either be based on an amount (in gbp), an amount (in items) or a rate.
     """

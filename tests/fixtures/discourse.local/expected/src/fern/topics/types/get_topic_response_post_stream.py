@@ -9,7 +9,7 @@ from .get_topic_response_post_stream_posts_item import GetTopicResponsePostStrea
 
 class GetTopicResponsePostStream(UniversalBaseModel):
     posts: typing.List[GetTopicResponsePostStreamPostsItem]
-    stream: typing.List[typing.Optional[typing.Any]]
+    stream: typing.List[typing.Any]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

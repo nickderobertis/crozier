@@ -10,13 +10,20 @@ from ..core.serialization import FieldMetadata
 
 class DestinyComponentsCraftablesDestinyCraftableSocketPlugComponent(UniversalBaseModel):
     failed_requirement_indexes: typing_extensions.Annotated[
-        typing.Optional[typing.List[int]], FieldMetadata(alias="failedRequirementIndexes")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[int]],
+        FieldMetadata(alias="failedRequirementIndexes"),
+        pydantic.Field(
+            alias="failedRequirementIndexes",
+            description="Index into the unlock requirements to display failure descriptions",
+        ),
+    ] = None
     """
     Index into the unlock requirements to display failure descriptions
     """
 
-    plug_item_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="plugItemHash")] = None
+    plug_item_hash: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="plugItemHash"), pydantic.Field(alias="plugItemHash")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

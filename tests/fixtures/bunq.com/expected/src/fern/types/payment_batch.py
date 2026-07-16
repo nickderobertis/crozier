@@ -24,6 +24,13 @@ class PaymentBatch(UniversalBaseModel):
             extra = pydantic.Extra.allow
 
 
+from .payment import Payment
+from .payment_auto_allocate_instance import PaymentAutoAllocateInstance
 from .payment_batch_anchored_payment import PaymentBatchAnchoredPayment
 
-update_forward_refs(PaymentBatch)
+update_forward_refs(
+    PaymentBatch,
+    Payment=Payment,
+    PaymentAutoAllocateInstance=PaymentAutoAllocateInstance,
+    PaymentBatchAnchoredPayment=PaymentBatchAnchoredPayment,
+)

@@ -7,7 +7,8 @@ from json.decoder import JSONDecodeError
 from .core.api_error import ApiError
 from .core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from .core.http_response import AsyncHttpResponse, HttpResponse
-from .core.jsonable_encoder import jsonable_encoder
+from .core.jsonable_encoder import encode_path_param
+from .core.parse_error import ParsingError
 from .core.pydantic_utilities import parse_obj_as
 from .core.request_options import RequestOptions
 from .types.create_byoc_trunk_request_status_callback_method import CreateByocTrunkRequestStatusCallbackMethod
@@ -37,6 +38,7 @@ from .types.voice_v1dialing_permissions_dialing_permissions_settings import (
 )
 from .types.voice_v1ip_record import VoiceV1IpRecord
 from .types.voice_v1source_ip_mapping import VoiceV1SourceIpMapping
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -68,7 +70,7 @@ class RawFernApi:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v1/Archives/{jsonable_encoder(date)}/Calls/{jsonable_encoder(sid)}",
+            f"v1/Archives/{encode_path_param(date)}/Calls/{encode_path_param(sid)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -78,6 +80,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_byoc_trunk(
@@ -133,6 +139,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_byoc_trunk(
@@ -227,6 +237,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def fetch_byoc_trunk(
@@ -249,7 +263,7 @@ class RawFernApi:
             OK
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v1/ByocTrunks/{jsonable_encoder(sid)}",
+            f"v1/ByocTrunks/{encode_path_param(sid)}",
             method="GET",
             request_options=request_options,
         )
@@ -266,6 +280,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_byoc_trunk(
@@ -331,7 +349,7 @@ class RawFernApi:
             OK
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v1/ByocTrunks/{jsonable_encoder(sid)}",
+            f"v1/ByocTrunks/{encode_path_param(sid)}",
             method="POST",
             data={
                 "CnamLookupEnabled": cnam_lookup_enabled,
@@ -364,6 +382,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_byoc_trunk(
@@ -385,7 +407,7 @@ class RawFernApi:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v1/ByocTrunks/{jsonable_encoder(sid)}",
+            f"v1/ByocTrunks/{encode_path_param(sid)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -395,6 +417,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_connection_policy(
@@ -450,6 +476,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_connection_policy(
@@ -496,6 +526,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_connection_policy_target(
@@ -533,7 +567,7 @@ class RawFernApi:
             OK
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v1/ConnectionPolicies/{jsonable_encoder(connection_policy_sid)}/Targets",
+            f"v1/ConnectionPolicies/{encode_path_param(connection_policy_sid)}/Targets",
             method="GET",
             params={
                 "PageSize": page_size,
@@ -555,6 +589,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_connection_policy_target(
@@ -600,7 +638,7 @@ class RawFernApi:
             Created
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v1/ConnectionPolicies/{jsonable_encoder(connection_policy_sid)}/Targets",
+            f"v1/ConnectionPolicies/{encode_path_param(connection_policy_sid)}/Targets",
             method="POST",
             data={
                 "Enabled": enabled,
@@ -628,6 +666,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def fetch_connection_policy_target(
@@ -653,7 +695,7 @@ class RawFernApi:
             OK
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v1/ConnectionPolicies/{jsonable_encoder(connection_policy_sid)}/Targets/{jsonable_encoder(sid)}",
+            f"v1/ConnectionPolicies/{encode_path_param(connection_policy_sid)}/Targets/{encode_path_param(sid)}",
             method="GET",
             request_options=request_options,
         )
@@ -670,6 +712,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_connection_policy_target(
@@ -719,7 +765,7 @@ class RawFernApi:
             OK
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v1/ConnectionPolicies/{jsonable_encoder(connection_policy_sid)}/Targets/{jsonable_encoder(sid)}",
+            f"v1/ConnectionPolicies/{encode_path_param(connection_policy_sid)}/Targets/{encode_path_param(sid)}",
             method="POST",
             data={
                 "Enabled": enabled,
@@ -747,6 +793,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_connection_policy_target(
@@ -771,7 +821,7 @@ class RawFernApi:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v1/ConnectionPolicies/{jsonable_encoder(connection_policy_sid)}/Targets/{jsonable_encoder(sid)}",
+            f"v1/ConnectionPolicies/{encode_path_param(connection_policy_sid)}/Targets/{encode_path_param(sid)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -781,6 +831,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def fetch_connection_policy(
@@ -803,7 +857,7 @@ class RawFernApi:
             OK
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v1/ConnectionPolicies/{jsonable_encoder(sid)}",
+            f"v1/ConnectionPolicies/{encode_path_param(sid)}",
             method="GET",
             request_options=request_options,
         )
@@ -820,6 +874,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_connection_policy(
@@ -849,7 +907,7 @@ class RawFernApi:
             OK
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v1/ConnectionPolicies/{jsonable_encoder(sid)}",
+            f"v1/ConnectionPolicies/{encode_path_param(sid)}",
             method="POST",
             data={
                 "FriendlyName": friendly_name,
@@ -873,6 +931,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_connection_policy(
@@ -894,7 +956,7 @@ class RawFernApi:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v1/ConnectionPolicies/{jsonable_encoder(sid)}",
+            f"v1/ConnectionPolicies/{encode_path_param(sid)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -904,6 +966,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_dialing_permissions_country_bulk_update(
@@ -950,6 +1016,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_dialing_permissions_country(
@@ -1035,6 +1105,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def fetch_dialing_permissions_country(
@@ -1057,7 +1131,7 @@ class RawFernApi:
             OK
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v1/DialingPermissions/Countries/{jsonable_encoder(iso_code)}",
+            f"v1/DialingPermissions/Countries/{encode_path_param(iso_code)}",
             method="GET",
             request_options=request_options,
         )
@@ -1074,6 +1148,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_dialing_permissions_hrs_prefixes(
@@ -1111,7 +1189,7 @@ class RawFernApi:
             OK
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v1/DialingPermissions/Countries/{jsonable_encoder(iso_code)}/HighRiskSpecialPrefixes",
+            f"v1/DialingPermissions/Countries/{encode_path_param(iso_code)}/HighRiskSpecialPrefixes",
             method="GET",
             params={
                 "PageSize": page_size,
@@ -1133,6 +1211,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_ip_record(
@@ -1188,6 +1270,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_ip_record(
@@ -1247,6 +1333,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def fetch_ip_record(
@@ -1269,7 +1359,7 @@ class RawFernApi:
             OK
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v1/IpRecords/{jsonable_encoder(sid)}",
+            f"v1/IpRecords/{encode_path_param(sid)}",
             method="GET",
             request_options=request_options,
         )
@@ -1286,6 +1376,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_ip_record(
@@ -1315,7 +1409,7 @@ class RawFernApi:
             OK
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v1/IpRecords/{jsonable_encoder(sid)}",
+            f"v1/IpRecords/{encode_path_param(sid)}",
             method="POST",
             data={
                 "FriendlyName": friendly_name,
@@ -1339,6 +1433,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_ip_record(
@@ -1360,7 +1458,7 @@ class RawFernApi:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v1/IpRecords/{jsonable_encoder(sid)}",
+            f"v1/IpRecords/{encode_path_param(sid)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -1370,6 +1468,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def fetch_dialing_permissions_settings(
@@ -1406,6 +1508,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_dialing_permissions_settings(
@@ -1455,6 +1561,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_source_ip_mapping(
@@ -1510,6 +1620,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_source_ip_mapping(
@@ -1560,6 +1674,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def fetch_source_ip_mapping(
@@ -1582,7 +1700,7 @@ class RawFernApi:
             OK
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v1/SourceIpMappings/{jsonable_encoder(sid)}",
+            f"v1/SourceIpMappings/{encode_path_param(sid)}",
             method="GET",
             request_options=request_options,
         )
@@ -1599,6 +1717,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_source_ip_mapping(
@@ -1624,7 +1746,7 @@ class RawFernApi:
             OK
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v1/SourceIpMappings/{jsonable_encoder(sid)}",
+            f"v1/SourceIpMappings/{encode_path_param(sid)}",
             method="POST",
             data={
                 "SipDomainSid": sip_domain_sid,
@@ -1648,6 +1770,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_source_ip_mapping(
@@ -1669,7 +1795,7 @@ class RawFernApi:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v1/SourceIpMappings/{jsonable_encoder(sid)}",
+            f"v1/SourceIpMappings/{encode_path_param(sid)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -1679,6 +1805,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -1708,7 +1838,7 @@ class AsyncRawFernApi:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v1/Archives/{jsonable_encoder(date)}/Calls/{jsonable_encoder(sid)}",
+            f"v1/Archives/{encode_path_param(date)}/Calls/{encode_path_param(sid)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -1718,6 +1848,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_byoc_trunk(
@@ -1773,6 +1907,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_byoc_trunk(
@@ -1867,6 +2005,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def fetch_byoc_trunk(
@@ -1889,7 +2031,7 @@ class AsyncRawFernApi:
             OK
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v1/ByocTrunks/{jsonable_encoder(sid)}",
+            f"v1/ByocTrunks/{encode_path_param(sid)}",
             method="GET",
             request_options=request_options,
         )
@@ -1906,6 +2048,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_byoc_trunk(
@@ -1971,7 +2117,7 @@ class AsyncRawFernApi:
             OK
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v1/ByocTrunks/{jsonable_encoder(sid)}",
+            f"v1/ByocTrunks/{encode_path_param(sid)}",
             method="POST",
             data={
                 "CnamLookupEnabled": cnam_lookup_enabled,
@@ -2004,6 +2150,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_byoc_trunk(
@@ -2025,7 +2175,7 @@ class AsyncRawFernApi:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v1/ByocTrunks/{jsonable_encoder(sid)}",
+            f"v1/ByocTrunks/{encode_path_param(sid)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -2035,6 +2185,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_connection_policy(
@@ -2090,6 +2244,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_connection_policy(
@@ -2136,6 +2294,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_connection_policy_target(
@@ -2173,7 +2335,7 @@ class AsyncRawFernApi:
             OK
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v1/ConnectionPolicies/{jsonable_encoder(connection_policy_sid)}/Targets",
+            f"v1/ConnectionPolicies/{encode_path_param(connection_policy_sid)}/Targets",
             method="GET",
             params={
                 "PageSize": page_size,
@@ -2195,6 +2357,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_connection_policy_target(
@@ -2240,7 +2406,7 @@ class AsyncRawFernApi:
             Created
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v1/ConnectionPolicies/{jsonable_encoder(connection_policy_sid)}/Targets",
+            f"v1/ConnectionPolicies/{encode_path_param(connection_policy_sid)}/Targets",
             method="POST",
             data={
                 "Enabled": enabled,
@@ -2268,6 +2434,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def fetch_connection_policy_target(
@@ -2293,7 +2463,7 @@ class AsyncRawFernApi:
             OK
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v1/ConnectionPolicies/{jsonable_encoder(connection_policy_sid)}/Targets/{jsonable_encoder(sid)}",
+            f"v1/ConnectionPolicies/{encode_path_param(connection_policy_sid)}/Targets/{encode_path_param(sid)}",
             method="GET",
             request_options=request_options,
         )
@@ -2310,6 +2480,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_connection_policy_target(
@@ -2359,7 +2533,7 @@ class AsyncRawFernApi:
             OK
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v1/ConnectionPolicies/{jsonable_encoder(connection_policy_sid)}/Targets/{jsonable_encoder(sid)}",
+            f"v1/ConnectionPolicies/{encode_path_param(connection_policy_sid)}/Targets/{encode_path_param(sid)}",
             method="POST",
             data={
                 "Enabled": enabled,
@@ -2387,6 +2561,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_connection_policy_target(
@@ -2411,7 +2589,7 @@ class AsyncRawFernApi:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v1/ConnectionPolicies/{jsonable_encoder(connection_policy_sid)}/Targets/{jsonable_encoder(sid)}",
+            f"v1/ConnectionPolicies/{encode_path_param(connection_policy_sid)}/Targets/{encode_path_param(sid)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -2421,6 +2599,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def fetch_connection_policy(
@@ -2443,7 +2625,7 @@ class AsyncRawFernApi:
             OK
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v1/ConnectionPolicies/{jsonable_encoder(sid)}",
+            f"v1/ConnectionPolicies/{encode_path_param(sid)}",
             method="GET",
             request_options=request_options,
         )
@@ -2460,6 +2642,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_connection_policy(
@@ -2489,7 +2675,7 @@ class AsyncRawFernApi:
             OK
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v1/ConnectionPolicies/{jsonable_encoder(sid)}",
+            f"v1/ConnectionPolicies/{encode_path_param(sid)}",
             method="POST",
             data={
                 "FriendlyName": friendly_name,
@@ -2513,6 +2699,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_connection_policy(
@@ -2534,7 +2724,7 @@ class AsyncRawFernApi:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v1/ConnectionPolicies/{jsonable_encoder(sid)}",
+            f"v1/ConnectionPolicies/{encode_path_param(sid)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -2544,6 +2734,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_dialing_permissions_country_bulk_update(
@@ -2590,6 +2784,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_dialing_permissions_country(
@@ -2675,6 +2873,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def fetch_dialing_permissions_country(
@@ -2697,7 +2899,7 @@ class AsyncRawFernApi:
             OK
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v1/DialingPermissions/Countries/{jsonable_encoder(iso_code)}",
+            f"v1/DialingPermissions/Countries/{encode_path_param(iso_code)}",
             method="GET",
             request_options=request_options,
         )
@@ -2714,6 +2916,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_dialing_permissions_hrs_prefixes(
@@ -2751,7 +2957,7 @@ class AsyncRawFernApi:
             OK
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v1/DialingPermissions/Countries/{jsonable_encoder(iso_code)}/HighRiskSpecialPrefixes",
+            f"v1/DialingPermissions/Countries/{encode_path_param(iso_code)}/HighRiskSpecialPrefixes",
             method="GET",
             params={
                 "PageSize": page_size,
@@ -2773,6 +2979,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_ip_record(
@@ -2828,6 +3038,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_ip_record(
@@ -2887,6 +3101,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def fetch_ip_record(
@@ -2909,7 +3127,7 @@ class AsyncRawFernApi:
             OK
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v1/IpRecords/{jsonable_encoder(sid)}",
+            f"v1/IpRecords/{encode_path_param(sid)}",
             method="GET",
             request_options=request_options,
         )
@@ -2926,6 +3144,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_ip_record(
@@ -2955,7 +3177,7 @@ class AsyncRawFernApi:
             OK
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v1/IpRecords/{jsonable_encoder(sid)}",
+            f"v1/IpRecords/{encode_path_param(sid)}",
             method="POST",
             data={
                 "FriendlyName": friendly_name,
@@ -2979,6 +3201,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_ip_record(
@@ -3000,7 +3226,7 @@ class AsyncRawFernApi:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v1/IpRecords/{jsonable_encoder(sid)}",
+            f"v1/IpRecords/{encode_path_param(sid)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -3010,6 +3236,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def fetch_dialing_permissions_settings(
@@ -3046,6 +3276,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_dialing_permissions_settings(
@@ -3095,6 +3329,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_source_ip_mapping(
@@ -3150,6 +3388,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_source_ip_mapping(
@@ -3200,6 +3442,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def fetch_source_ip_mapping(
@@ -3222,7 +3468,7 @@ class AsyncRawFernApi:
             OK
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v1/SourceIpMappings/{jsonable_encoder(sid)}",
+            f"v1/SourceIpMappings/{encode_path_param(sid)}",
             method="GET",
             request_options=request_options,
         )
@@ -3239,6 +3485,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_source_ip_mapping(
@@ -3264,7 +3514,7 @@ class AsyncRawFernApi:
             OK
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v1/SourceIpMappings/{jsonable_encoder(sid)}",
+            f"v1/SourceIpMappings/{encode_path_param(sid)}",
             method="POST",
             data={
                 "SipDomainSid": sip_domain_sid,
@@ -3288,6 +3538,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_source_ip_mapping(
@@ -3309,7 +3563,7 @@ class AsyncRawFernApi:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v1/SourceIpMappings/{jsonable_encoder(sid)}",
+            f"v1/SourceIpMappings/{encode_path_param(sid)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -3319,4 +3573,8 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

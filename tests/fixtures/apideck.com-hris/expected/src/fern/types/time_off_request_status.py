@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class TimeOffRequestStatus(str, enum.Enum):
+class TimeOffRequestStatus(enum.StrEnum):
     """
     The status of the time off request.
     """

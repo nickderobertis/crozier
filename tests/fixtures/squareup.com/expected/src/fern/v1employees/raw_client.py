@@ -6,11 +6,13 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..types.v1employee import V1Employee
 from ..types.v1employee_role import V1EmployeeRole
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -104,6 +106,10 @@ class RawV1EmployeesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_employee(
@@ -202,6 +208,10 @@ class RawV1EmployeesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def retrieve_employee(
@@ -224,7 +234,7 @@ class RawV1EmployeesClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v1/me/employees/{jsonable_encoder(employee_id)}",
+            f"v1/me/employees/{encode_path_param(employee_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -241,6 +251,10 @@ class RawV1EmployeesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_employee(
@@ -306,7 +320,7 @@ class RawV1EmployeesClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v1/me/employees/{jsonable_encoder(employee_id)}",
+            f"v1/me/employees/{encode_path_param(employee_id)}",
             method="PUT",
             json={
                 "authorized_location_ids": authorized_location_ids,
@@ -339,6 +353,10 @@ class RawV1EmployeesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_employee_roles(
@@ -395,6 +413,10 @@ class RawV1EmployeesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_employee_role(
@@ -478,6 +500,10 @@ class RawV1EmployeesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def retrieve_employee_role(
@@ -500,7 +526,7 @@ class RawV1EmployeesClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v1/me/roles/{jsonable_encoder(role_id)}",
+            f"v1/me/roles/{encode_path_param(role_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -517,6 +543,10 @@ class RawV1EmployeesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_employee_role(
@@ -566,7 +596,7 @@ class RawV1EmployeesClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v1/me/roles/{jsonable_encoder(role_id)}",
+            f"v1/me/roles/{encode_path_param(role_id)}",
             method="PUT",
             json={
                 "created_at": created_at,
@@ -595,6 +625,10 @@ class RawV1EmployeesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -686,6 +720,10 @@ class AsyncRawV1EmployeesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_employee(
@@ -784,6 +822,10 @@ class AsyncRawV1EmployeesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def retrieve_employee(
@@ -806,7 +848,7 @@ class AsyncRawV1EmployeesClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v1/me/employees/{jsonable_encoder(employee_id)}",
+            f"v1/me/employees/{encode_path_param(employee_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -823,6 +865,10 @@ class AsyncRawV1EmployeesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_employee(
@@ -888,7 +934,7 @@ class AsyncRawV1EmployeesClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v1/me/employees/{jsonable_encoder(employee_id)}",
+            f"v1/me/employees/{encode_path_param(employee_id)}",
             method="PUT",
             json={
                 "authorized_location_ids": authorized_location_ids,
@@ -921,6 +967,10 @@ class AsyncRawV1EmployeesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_employee_roles(
@@ -977,6 +1027,10 @@ class AsyncRawV1EmployeesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_employee_role(
@@ -1060,6 +1114,10 @@ class AsyncRawV1EmployeesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def retrieve_employee_role(
@@ -1082,7 +1140,7 @@ class AsyncRawV1EmployeesClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v1/me/roles/{jsonable_encoder(role_id)}",
+            f"v1/me/roles/{encode_path_param(role_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -1099,6 +1157,10 @@ class AsyncRawV1EmployeesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_employee_role(
@@ -1148,7 +1210,7 @@ class AsyncRawV1EmployeesClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v1/me/roles/{jsonable_encoder(role_id)}",
+            f"v1/me/roles/{encode_path_param(role_id)}",
             method="PUT",
             json={
                 "created_at": created_at,
@@ -1177,4 +1239,8 @@ class AsyncRawV1EmployeesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

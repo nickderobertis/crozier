@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PostPortfolioAnalysisEffectiveNumberOfBetsRequestFactorsExtractionMethod(str, enum.Enum):
+class PostPortfolioAnalysisEffectiveNumberOfBetsRequestFactorsExtractionMethod(enum.StrEnum):
     """
     The method used to extract the uncorrelated risk factors from the asset covariance matrix
     """

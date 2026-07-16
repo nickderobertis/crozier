@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class EcommerceOrderPaymentStatus(str, enum.Enum):
+class EcommerceOrderPaymentStatus(enum.StrEnum):
     """
     Current payment status of the order.
     """

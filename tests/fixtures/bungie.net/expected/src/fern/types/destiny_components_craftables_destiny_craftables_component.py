@@ -20,8 +20,13 @@ class DestinyComponentsCraftablesDestinyCraftablesComponent(UniversalBaseModel):
     """
 
     crafting_root_node_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="craftingRootNodeHash")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="craftingRootNodeHash"),
+        pydantic.Field(
+            alias="craftingRootNodeHash",
+            description="The hash for the root presentation node definition of craftable item categories.",
+        ),
+    ] = None
     """
     The hash for the root presentation node definition of craftable item categories.
     """

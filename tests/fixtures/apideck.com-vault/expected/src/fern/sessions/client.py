@@ -34,7 +34,7 @@ class SessionsClient:
         *,
         apideck_consumer_id: str,
         consumer_metadata: typing.Optional[ConsumerMetadata] = OMIT,
-        custom_consumer_settings: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_consumer_settings: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         redirect_uri: typing.Optional[str] = OMIT,
         settings: typing.Optional[SessionSettings] = OMIT,
         theme: typing.Optional[SessionTheme] = OMIT,
@@ -53,7 +53,7 @@ class SessionsClient:
 
         consumer_metadata : typing.Optional[ConsumerMetadata]
 
-        custom_consumer_settings : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_consumer_settings : typing.Optional[typing.Dict[str, typing.Any]]
             Custom consumer settings that are passed as part of the session.
 
         redirect_uri : typing.Optional[str]
@@ -117,7 +117,7 @@ class AsyncSessionsClient:
         *,
         apideck_consumer_id: str,
         consumer_metadata: typing.Optional[ConsumerMetadata] = OMIT,
-        custom_consumer_settings: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_consumer_settings: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         redirect_uri: typing.Optional[str] = OMIT,
         settings: typing.Optional[SessionSettings] = OMIT,
         theme: typing.Optional[SessionTheme] = OMIT,
@@ -136,7 +136,7 @@ class AsyncSessionsClient:
 
         consumer_metadata : typing.Optional[ConsumerMetadata]
 
-        custom_consumer_settings : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_consumer_settings : typing.Optional[typing.Dict[str, typing.Any]]
             Custom consumer settings that are passed as part of the session.
 
         redirect_uri : typing.Optional[str]

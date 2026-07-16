@@ -15,8 +15,10 @@ class ParameterConstraints(UniversalBaseModel):
     """
 
     allowed_values: typing_extensions.Annotated[
-        typing.Optional[typing.List[AllowedValue]], FieldMetadata(alias="AllowedValues")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[AllowedValue]],
+        FieldMetadata(alias="AllowedValues"),
+        pydantic.Field(alias="AllowedValues", description="A list of values that are permitted for a parameter."),
+    ] = None
     """
     A list of values that are permitted for a parameter.
     """

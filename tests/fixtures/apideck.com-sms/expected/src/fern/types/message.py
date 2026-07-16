@@ -40,7 +40,11 @@ class Message(UniversalBaseModel):
     The error returned if your message status is failed or undelivered.
     """
 
-    from_: typing_extensions.Annotated[str, FieldMetadata(alias="from")] = pydantic.Field()
+    from_: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="from"),
+        pydantic.Field(alias="from", description="The phone number that initiated the message."),
+    ]
     """
     The phone number that initiated the message.
     """

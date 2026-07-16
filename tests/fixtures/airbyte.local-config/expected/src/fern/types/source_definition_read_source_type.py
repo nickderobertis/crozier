@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class SourceDefinitionReadSourceType(str, enum.Enum):
+class SourceDefinitionReadSourceType(enum.StrEnum):
     API = "api"
     FILE = "file"
     DATABASE = "database"

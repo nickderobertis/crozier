@@ -20,17 +20,31 @@ class ObStatement2DetailStatementInterestItem(UniversalBaseModel):
     Set of elements used to provide details of a generic interest amount related to the statement resource.
     """
 
-    amount: typing_extensions.Annotated[ObActiveOrHistoricCurrencyAndAmount7, FieldMetadata(alias="Amount")]
-    credit_debit_indicator: typing_extensions.Annotated[ObCreditDebitCode0, FieldMetadata(alias="CreditDebitIndicator")]
-    description: typing_extensions.Annotated[typing.Optional[Description2], FieldMetadata(alias="Description")] = None
+    amount: typing_extensions.Annotated[
+        ObActiveOrHistoricCurrencyAndAmount7, FieldMetadata(alias="Amount"), pydantic.Field(alias="Amount")
+    ]
+    credit_debit_indicator: typing_extensions.Annotated[
+        ObCreditDebitCode0, FieldMetadata(alias="CreditDebitIndicator"), pydantic.Field(alias="CreditDebitIndicator")
+    ]
+    description: typing_extensions.Annotated[
+        typing.Optional[Description2], FieldMetadata(alias="Description"), pydantic.Field(alias="Description")
+    ] = None
     frequency: typing_extensions.Annotated[
-        typing.Optional[ObExternalStatementInterestFrequency1Code], FieldMetadata(alias="Frequency")
+        typing.Optional[ObExternalStatementInterestFrequency1Code],
+        FieldMetadata(alias="Frequency"),
+        pydantic.Field(alias="Frequency"),
     ] = None
-    rate: typing_extensions.Annotated[typing.Optional[ObRate11], FieldMetadata(alias="Rate")] = None
+    rate: typing_extensions.Annotated[
+        typing.Optional[ObRate11], FieldMetadata(alias="Rate"), pydantic.Field(alias="Rate")
+    ] = None
     rate_type: typing_extensions.Annotated[
-        typing.Optional[ObExternalStatementInterestRateType1Code], FieldMetadata(alias="RateType")
+        typing.Optional[ObExternalStatementInterestRateType1Code],
+        FieldMetadata(alias="RateType"),
+        pydantic.Field(alias="RateType"),
     ] = None
-    type: typing_extensions.Annotated[ObExternalStatementInterestType1Code, FieldMetadata(alias="Type")]
+    type: typing_extensions.Annotated[
+        ObExternalStatementInterestType1Code, FieldMetadata(alias="Type"), pydantic.Field(alias="Type")
+    ]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

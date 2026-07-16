@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class DcimRacksElevationRequestRender(str, enum.Enum):
+class DcimRacksElevationRequestRender(enum.StrEnum):
     JSON = "json"
     SVG = "svg"
 

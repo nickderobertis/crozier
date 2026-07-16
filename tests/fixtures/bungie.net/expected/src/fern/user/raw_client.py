@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from .types.user_get_available_themes_response import UserGetAvailableThemesResponse
@@ -20,6 +21,7 @@ from .types.user_get_membership_from_hard_linked_credential_response import (
 from .types.user_get_sanitized_platform_display_names_response import UserGetSanitizedPlatformDisplayNamesResponse
 from .types.user_search_by_global_name_post_response import UserSearchByGlobalNamePostResponse
 from .types.user_search_by_global_name_prefix_response import UserSearchByGlobalNamePrefixResponse
+from pydantic import ValidationError
 
 
 class RawUserClient:
@@ -60,6 +62,10 @@ class RawUserClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getbungienetuserbyid(
@@ -82,7 +88,7 @@ class RawUserClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"User/GetBungieNetUserById/{jsonable_encoder(id)}/",
+            f"User/GetBungieNetUserById/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -99,6 +105,10 @@ class RawUserClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getcredentialtypesfortargetaccount(
@@ -121,7 +131,7 @@ class RawUserClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"User/GetCredentialTypesForTargetAccount/{jsonable_encoder(membership_id)}/",
+            f"User/GetCredentialTypesForTargetAccount/{encode_path_param(membership_id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -138,6 +148,10 @@ class RawUserClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getmembershipfromhardlinkedcredential(
@@ -163,7 +177,7 @@ class RawUserClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"User/GetMembershipFromHardLinkedCredential/{jsonable_encoder(cr_type)}/{jsonable_encoder(credential)}/",
+            f"User/GetMembershipFromHardLinkedCredential/{encode_path_param(cr_type)}/{encode_path_param(credential)}/",
             method="GET",
             request_options=request_options,
         )
@@ -180,6 +194,10 @@ class RawUserClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getmembershipdatabyid(
@@ -205,7 +223,7 @@ class RawUserClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"User/GetMembershipsById/{jsonable_encoder(membership_id)}/{jsonable_encoder(membership_type)}/",
+            f"User/GetMembershipsById/{encode_path_param(membership_id)}/{encode_path_param(membership_type)}/",
             method="GET",
             request_options=request_options,
         )
@@ -222,6 +240,10 @@ class RawUserClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getmembershipdataforcurrentuser(
@@ -258,6 +280,10 @@ class RawUserClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getsanitizedplatformdisplaynames(
@@ -280,7 +306,7 @@ class RawUserClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"User/GetSanitizedPlatformDisplayNames/{jsonable_encoder(membership_id)}/",
+            f"User/GetSanitizedPlatformDisplayNames/{encode_path_param(membership_id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -297,6 +323,10 @@ class RawUserClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def searchbyglobalnamepost(
@@ -319,7 +349,7 @@ class RawUserClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"User/Search/GlobalName/{jsonable_encoder(page)}/",
+            f"User/Search/GlobalName/{encode_path_param(page)}/",
             method="POST",
             request_options=request_options,
         )
@@ -336,6 +366,10 @@ class RawUserClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def searchbyglobalnameprefix(
@@ -361,7 +395,7 @@ class RawUserClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"User/Search/Prefix/{jsonable_encoder(display_name_prefix)}/{jsonable_encoder(page)}/",
+            f"User/Search/Prefix/{encode_path_param(display_name_prefix)}/{encode_path_param(page)}/",
             method="GET",
             request_options=request_options,
         )
@@ -378,6 +412,10 @@ class RawUserClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -419,6 +457,10 @@ class AsyncRawUserClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getbungienetuserbyid(
@@ -441,7 +483,7 @@ class AsyncRawUserClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"User/GetBungieNetUserById/{jsonable_encoder(id)}/",
+            f"User/GetBungieNetUserById/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -458,6 +500,10 @@ class AsyncRawUserClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getcredentialtypesfortargetaccount(
@@ -480,7 +526,7 @@ class AsyncRawUserClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"User/GetCredentialTypesForTargetAccount/{jsonable_encoder(membership_id)}/",
+            f"User/GetCredentialTypesForTargetAccount/{encode_path_param(membership_id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -497,6 +543,10 @@ class AsyncRawUserClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getmembershipfromhardlinkedcredential(
@@ -522,7 +572,7 @@ class AsyncRawUserClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"User/GetMembershipFromHardLinkedCredential/{jsonable_encoder(cr_type)}/{jsonable_encoder(credential)}/",
+            f"User/GetMembershipFromHardLinkedCredential/{encode_path_param(cr_type)}/{encode_path_param(credential)}/",
             method="GET",
             request_options=request_options,
         )
@@ -539,6 +589,10 @@ class AsyncRawUserClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getmembershipdatabyid(
@@ -564,7 +618,7 @@ class AsyncRawUserClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"User/GetMembershipsById/{jsonable_encoder(membership_id)}/{jsonable_encoder(membership_type)}/",
+            f"User/GetMembershipsById/{encode_path_param(membership_id)}/{encode_path_param(membership_type)}/",
             method="GET",
             request_options=request_options,
         )
@@ -581,6 +635,10 @@ class AsyncRawUserClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getmembershipdataforcurrentuser(
@@ -617,6 +675,10 @@ class AsyncRawUserClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getsanitizedplatformdisplaynames(
@@ -639,7 +701,7 @@ class AsyncRawUserClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"User/GetSanitizedPlatformDisplayNames/{jsonable_encoder(membership_id)}/",
+            f"User/GetSanitizedPlatformDisplayNames/{encode_path_param(membership_id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -656,6 +718,10 @@ class AsyncRawUserClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def searchbyglobalnamepost(
@@ -678,7 +744,7 @@ class AsyncRawUserClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"User/Search/GlobalName/{jsonable_encoder(page)}/",
+            f"User/Search/GlobalName/{encode_path_param(page)}/",
             method="POST",
             request_options=request_options,
         )
@@ -695,6 +761,10 @@ class AsyncRawUserClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def searchbyglobalnameprefix(
@@ -720,7 +790,7 @@ class AsyncRawUserClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"User/Search/Prefix/{jsonable_encoder(display_name_prefix)}/{jsonable_encoder(page)}/",
+            f"User/Search/Prefix/{encode_path_param(display_name_prefix)}/{encode_path_param(page)}/",
             method="GET",
             request_options=request_options,
         )
@@ -737,4 +807,8 @@ class AsyncRawUserClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

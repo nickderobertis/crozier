@@ -15,16 +15,24 @@ class ClassLevelClassSpecificInvocationsKnown(UniversalBaseModel):
 
     invocations_known: typing.Optional[float] = None
     mystic_arcanum_level6: typing_extensions.Annotated[
-        typing.Optional[float], FieldMetadata(alias="mystic_arcanum_level_6")
+        typing.Optional[float],
+        FieldMetadata(alias="mystic_arcanum_level_6"),
+        pydantic.Field(alias="mystic_arcanum_level_6"),
     ] = None
     mystic_arcanum_level7: typing_extensions.Annotated[
-        typing.Optional[float], FieldMetadata(alias="mystic_arcanum_level_7")
+        typing.Optional[float],
+        FieldMetadata(alias="mystic_arcanum_level_7"),
+        pydantic.Field(alias="mystic_arcanum_level_7"),
     ] = None
     mystic_arcanum_level8: typing_extensions.Annotated[
-        typing.Optional[float], FieldMetadata(alias="mystic_arcanum_level_8")
+        typing.Optional[float],
+        FieldMetadata(alias="mystic_arcanum_level_8"),
+        pydantic.Field(alias="mystic_arcanum_level_8"),
     ] = None
     mystic_arcanum_level9: typing_extensions.Annotated[
-        typing.Optional[float], FieldMetadata(alias="mystic_arcanum_level_9")
+        typing.Optional[float],
+        FieldMetadata(alias="mystic_arcanum_level_9"),
+        pydantic.Field(alias="mystic_arcanum_level_9"),
     ] = None
 
     if IS_PYDANTIC_V2:

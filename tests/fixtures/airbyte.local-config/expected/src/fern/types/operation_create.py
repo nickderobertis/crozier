@@ -13,9 +13,13 @@ from .workspace_id import WorkspaceId
 class OperationCreate(UniversalBaseModel):
     name: str
     operator_configuration: typing_extensions.Annotated[
-        OperatorConfiguration, FieldMetadata(alias="operatorConfiguration")
+        OperatorConfiguration,
+        FieldMetadata(alias="operatorConfiguration"),
+        pydantic.Field(alias="operatorConfiguration"),
     ]
-    workspace_id: typing_extensions.Annotated[WorkspaceId, FieldMetadata(alias="workspaceId")]
+    workspace_id: typing_extensions.Annotated[
+        WorkspaceId, FieldMetadata(alias="workspaceId"), pydantic.Field(alias="workspaceId")
+    ]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

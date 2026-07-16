@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class MappingJobIdType(str, enum.Enum):
+class MappingJobIdType(enum.StrEnum):
     ID_ISIN = "ID_ISIN"
     ID_BB_UNIQUE = "ID_BB_UNIQUE"
     ID_SEDOL = "ID_SEDOL"

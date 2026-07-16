@@ -13,7 +13,14 @@ class GetStackPolicyInput(UniversalBaseModel):
     The input for the <a>GetStackPolicy</a> action.
     """
 
-    stack_name: typing_extensions.Annotated[str, FieldMetadata(alias="StackName")] = pydantic.Field()
+    stack_name: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="StackName"),
+        pydantic.Field(
+            alias="StackName",
+            description="The name or unique stack ID that's associated with the stack whose policy you want to get.",
+        ),
+    ]
     """
     The name or unique stack ID that's associated with the stack whose policy you want to get.
     """

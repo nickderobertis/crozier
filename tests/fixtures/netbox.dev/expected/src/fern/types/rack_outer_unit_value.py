@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class RackOuterUnitValue(str, enum.Enum):
+class RackOuterUnitValue(enum.StrEnum):
     MM = "mm"
     IN = "in"
 

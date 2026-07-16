@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class LedgerAccountClassification(str, enum.Enum):
+class LedgerAccountClassification(enum.StrEnum):
     """
     The classification of account.
     """

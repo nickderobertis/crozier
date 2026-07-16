@@ -12,7 +12,7 @@ class DamageAtSlotLevel(UniversalBaseModel):
     'Spell Damage'
     """
 
-    damage_at_slot_level: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    damage_at_slot_level: typing.Optional[typing.Dict[str, typing.Any]] = None
     damage_type: typing.Optional[ApiReference] = None
 
     if IS_PYDANTIC_V2:

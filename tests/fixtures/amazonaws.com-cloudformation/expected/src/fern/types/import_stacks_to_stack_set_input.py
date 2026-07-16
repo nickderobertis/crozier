@@ -13,45 +13,78 @@ from .stack_set_operation_preferences import StackSetOperationPreferences
 
 
 class ImportStacksToStackSetInput(UniversalBaseModel):
-    stack_set_name: typing_extensions.Annotated[str, FieldMetadata(alias="StackSetName")] = pydantic.Field()
+    stack_set_name: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="StackSetName"),
+        pydantic.Field(
+            alias="StackSetName",
+            description="The name of the stack set. The name must be unique in the Region where you create your stack set.",
+        ),
+    ]
     """
     The name of the stack set. The name must be unique in the Region where you create your stack set.
     """
 
-    stack_ids: typing_extensions.Annotated[typing.Optional[typing.List[StackId]], FieldMetadata(alias="StackIds")] = (
-        pydantic.Field(default=None)
-    )
+    stack_ids: typing_extensions.Annotated[
+        typing.Optional[typing.List[StackId]],
+        FieldMetadata(alias="StackIds"),
+        pydantic.Field(
+            alias="StackIds",
+            description="<p>The IDs of the stacks you are importing into a stack set. You import up to 10 stacks per stack set at a time.</p> <p>Specify either <code>StackIds</code> or <code>StackIdsUrl</code>.</p>",
+        ),
+    ] = None
     """
     <p>The IDs of the stacks you are importing into a stack set. You import up to 10 stacks per stack set at a time.</p> <p>Specify either <code>StackIds</code> or <code>StackIdsUrl</code>.</p>
     """
 
-    stack_ids_url: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="StackIdsUrl")] = (
-        pydantic.Field(default=None)
-    )
+    stack_ids_url: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="StackIdsUrl"),
+        pydantic.Field(
+            alias="StackIdsUrl",
+            description="<p>The Amazon S3 URL which contains list of stack ids to be inputted.</p> <p>Specify either <code>StackIds</code> or <code>StackIdsUrl</code>.</p>",
+        ),
+    ] = None
     """
     <p>The Amazon S3 URL which contains list of stack ids to be inputted.</p> <p>Specify either <code>StackIds</code> or <code>StackIdsUrl</code>.</p>
     """
 
     organizational_unit_ids: typing_extensions.Annotated[
-        typing.Optional[typing.List[OrganizationalUnitId]], FieldMetadata(alias="OrganizationalUnitIds")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[OrganizationalUnitId]],
+        FieldMetadata(alias="OrganizationalUnitIds"),
+        pydantic.Field(
+            alias="OrganizationalUnitIds",
+            description="The list of OU ID's to which the stacks being imported has to be mapped as deployment target.",
+        ),
+    ] = None
     """
     The list of OU ID's to which the stacks being imported has to be mapped as deployment target.
     """
 
     operation_preferences: typing_extensions.Annotated[
-        typing.Optional[StackSetOperationPreferences], FieldMetadata(alias="OperationPreferences")
+        typing.Optional[StackSetOperationPreferences],
+        FieldMetadata(alias="OperationPreferences"),
+        pydantic.Field(alias="OperationPreferences"),
     ] = None
-    operation_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="OperationId")] = (
-        pydantic.Field(default=None)
-    )
+    operation_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="OperationId"),
+        pydantic.Field(
+            alias="OperationId", description="A unique, user defined, identifier for the stack set operation."
+        ),
+    ] = None
     """
     A unique, user defined, identifier for the stack set operation.
     """
 
     call_as: typing_extensions.Annotated[
-        typing.Optional[ImportStacksToStackSetInputCallAs], FieldMetadata(alias="CallAs")
-    ] = pydantic.Field(default=None)
+        typing.Optional[ImportStacksToStackSetInputCallAs],
+        FieldMetadata(alias="CallAs"),
+        pydantic.Field(
+            alias="CallAs",
+            description="<p>By default, <code>SELF</code> is specified. Use <code>SELF</code> for stack sets with self-managed permissions.</p> <ul> <li> <p>If you are signed in to the management account, specify <code>SELF</code>.</p> </li> <li> <p>For service managed stack sets, specify <code>DELEGATED_ADMIN</code>.</p> </li> </ul>",
+        ),
+    ] = None
     """
     <p>By default, <code>SELF</code> is specified. Use <code>SELF</code> for stack sets with self-managed permissions.</p> <ul> <li> <p>If you are signed in to the management account, specify <code>SELF</code>.</p> </li> <li> <p>For service managed stack sets, specify <code>DELEGATED_ADMIN</code>.</p> </li> </ul>
     """

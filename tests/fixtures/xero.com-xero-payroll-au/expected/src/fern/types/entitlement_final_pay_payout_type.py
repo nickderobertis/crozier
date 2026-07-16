@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class EntitlementFinalPayPayoutType(str, enum.Enum):
+class EntitlementFinalPayPayoutType(enum.StrEnum):
     NOTPAIDOUT = "NOTPAIDOUT"
     PAIDOUT = "PAIDOUT"
 

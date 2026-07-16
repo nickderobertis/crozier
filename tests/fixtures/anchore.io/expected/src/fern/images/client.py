@@ -104,7 +104,7 @@ class ImagesClient:
         force: typing.Optional[bool] = None,
         autosubscribe: typing.Optional[bool] = None,
         anchore_account: typing.Optional[str] = None,
-        annotations: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        annotations: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created_at: typing.Optional[dt.datetime] = OMIT,
         digest: typing.Optional[str] = OMIT,
         dockerfile: typing.Optional[str] = OMIT,
@@ -127,7 +127,7 @@ class ImagesClient:
         anchore_account : typing.Optional[str]
             An account name to change the resource scope of the request to that account, if permissions allow (admin only)
 
-        annotations : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        annotations : typing.Optional[typing.Dict[str, typing.Any]]
             Annotations to be associated with the added image in key/value form
 
         created_at : typing.Optional[dt.datetime]
@@ -1202,7 +1202,7 @@ class AsyncImagesClient:
         force: typing.Optional[bool] = None,
         autosubscribe: typing.Optional[bool] = None,
         anchore_account: typing.Optional[str] = None,
-        annotations: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        annotations: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created_at: typing.Optional[dt.datetime] = OMIT,
         digest: typing.Optional[str] = OMIT,
         dockerfile: typing.Optional[str] = OMIT,
@@ -1225,7 +1225,7 @@ class AsyncImagesClient:
         anchore_account : typing.Optional[str]
             An account name to change the resource scope of the request to that account, if permissions allow (admin only)
 
-        annotations : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        annotations : typing.Optional[typing.Dict[str, typing.Any]]
             Annotations to be associated with the added image in key/value form
 
         created_at : typing.Optional[dt.datetime]

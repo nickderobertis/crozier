@@ -38,7 +38,7 @@ class DestinationOauthClient:
         workspace_id: WorkspaceId,
         destination_id: typing.Optional[DestinationId] = OMIT,
         o_auth_input_configuration: typing.Optional[OAuthInputConfiguration] = OMIT,
-        query_params: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        query_params: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         redirect_url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> CompleteOAuthResponse:
@@ -53,7 +53,7 @@ class DestinationOauthClient:
 
         o_auth_input_configuration : typing.Optional[OAuthInputConfiguration]
 
-        query_params : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        query_params : typing.Optional[typing.Dict[str, typing.Any]]
             The query parameters present in the redirect URL after a user granted consent e.g auth code
 
         redirect_url : typing.Optional[str]
@@ -149,7 +149,7 @@ class DestinationOauthClient:
         self,
         *,
         destination_definition_id: DestinationDefinitionId,
-        params: typing.Dict[str, typing.Optional[typing.Any]],
+        params: typing.Dict[str, typing.Any],
         request_options: typing.Optional[RequestOptions] = None,
     ) -> None:
         """
@@ -157,7 +157,7 @@ class DestinationOauthClient:
         ----------
         destination_definition_id : DestinationDefinitionId
 
-        params : typing.Dict[str, typing.Optional[typing.Any]]
+        params : typing.Dict[str, typing.Any]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -206,7 +206,7 @@ class AsyncDestinationOauthClient:
         workspace_id: WorkspaceId,
         destination_id: typing.Optional[DestinationId] = OMIT,
         o_auth_input_configuration: typing.Optional[OAuthInputConfiguration] = OMIT,
-        query_params: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        query_params: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         redirect_url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> CompleteOAuthResponse:
@@ -221,7 +221,7 @@ class AsyncDestinationOauthClient:
 
         o_auth_input_configuration : typing.Optional[OAuthInputConfiguration]
 
-        query_params : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        query_params : typing.Optional[typing.Dict[str, typing.Any]]
             The query parameters present in the redirect URL after a user granted consent e.g auth code
 
         redirect_url : typing.Optional[str]
@@ -333,7 +333,7 @@ class AsyncDestinationOauthClient:
         self,
         *,
         destination_definition_id: DestinationDefinitionId,
-        params: typing.Dict[str, typing.Optional[typing.Any]],
+        params: typing.Dict[str, typing.Any],
         request_options: typing.Optional[RequestOptions] = None,
     ) -> None:
         """
@@ -341,7 +341,7 @@ class AsyncDestinationOauthClient:
         ----------
         destination_definition_id : DestinationDefinitionId
 
-        params : typing.Dict[str, typing.Optional[typing.Any]]
+        params : typing.Dict[str, typing.Any]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.

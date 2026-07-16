@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class CustomFieldTypeValue(str, enum.Enum):
+class CustomFieldTypeValue(enum.StrEnum):
     TEXT = "text"
     LONGTEXT = "longtext"
     INTEGER = "integer"

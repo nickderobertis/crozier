@@ -14,7 +14,7 @@ class StatusResponse(UniversalBaseModel):
     available: typing.Optional[bool] = None
     busy: typing.Optional[bool] = None
     db_version: typing.Optional[str] = None
-    detail: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    detail: typing.Optional[typing.Dict[str, typing.Any]] = None
     message: typing.Optional[str] = None
     up: typing.Optional[bool] = None
     version: typing.Optional[str] = None

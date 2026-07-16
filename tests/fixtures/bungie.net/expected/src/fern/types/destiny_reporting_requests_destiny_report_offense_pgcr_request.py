@@ -16,22 +16,37 @@ class DestinyReportingRequestsDestinyReportOffensePgcrRequest(UniversalBaseModel
     """
 
     offending_character_id: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="offendingCharacterId")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="offendingCharacterId"),
+        pydantic.Field(
+            alias="offendingCharacterId",
+            description="Within the PGCR provided when calling the Reporting endpoint, this should be the character ID of the user that you thought was violating terms of use. They must exist in the PGCR provided.",
+        ),
+    ] = None
     """
     Within the PGCR provided when calling the Reporting endpoint, this should be the character ID of the user that you thought was violating terms of use. They must exist in the PGCR provided.
     """
 
     reason_category_hashes: typing_extensions.Annotated[
-        typing.Optional[typing.List[int]], FieldMetadata(alias="reasonCategoryHashes")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[int]],
+        FieldMetadata(alias="reasonCategoryHashes"),
+        pydantic.Field(
+            alias="reasonCategoryHashes",
+            description="So you've decided to report someone instead of cursing them and their descendants. Well, okay then. This is the category or categorie(s) of infractions for which you are reporting the user. These are hash identifiers that map to DestinyReportReasonCategoryDefinition entries.",
+        ),
+    ] = None
     """
     So you've decided to report someone instead of cursing them and their descendants. Well, okay then. This is the category or categorie(s) of infractions for which you are reporting the user. These are hash identifiers that map to DestinyReportReasonCategoryDefinition entries.
     """
 
     reason_hashes: typing_extensions.Annotated[
-        typing.Optional[typing.List[int]], FieldMetadata(alias="reasonHashes")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[int]],
+        FieldMetadata(alias="reasonHashes"),
+        pydantic.Field(
+            alias="reasonHashes",
+            description="If applicable, provide a more specific reason(s) within the general category of problems provided by the reasonHash. This is also an identifier for a reason. All reasonHashes provided must be children of at least one the reasonCategoryHashes provided.",
+        ),
+    ] = None
     """
     If applicable, provide a more specific reason(s) within the general category of problems provided by the reasonHash. This is also an identifier for a reason. All reasonHashes provided must be children of at least one the reasonCategoryHashes provided.
     """

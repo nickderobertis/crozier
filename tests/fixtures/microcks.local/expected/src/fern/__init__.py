@@ -61,6 +61,7 @@ if typing.TYPE_CHECKING:
     )
     from .errors import BadRequestError, InternalServerError
     from . import config, job, metrics, mock, test
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .environment import FernApiEnvironment
     from .mock import GetServiceResponse
@@ -75,6 +76,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "Counter": ".types",
     "CounterMap": ".types",
     "DailyInvocationStatistic": ".types",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "EventMessage": ".types",
     "Exchange": ".types",
     "Exchange_ReqRespPair": ".types",
@@ -163,6 +166,8 @@ __all__ = [
     "Counter",
     "CounterMap",
     "DailyInvocationStatistic",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
     "EventMessage",
     "Exchange",
     "Exchange_ReqRespPair",

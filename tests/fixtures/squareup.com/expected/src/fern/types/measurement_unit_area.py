@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class MeasurementUnitArea(str, enum.Enum):
+class MeasurementUnitArea(enum.StrEnum):
     """
     Unit of area used to measure a quantity.
     """

@@ -13,10 +13,14 @@ class GenericNotificationPayload(UniversalBaseModel):
     Parent class for Notification Payloads
     """
 
-    notification_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="notificationId")] = None
+    notification_id: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="notificationId"), pydantic.Field(alias="notificationId")
+    ] = None
     subscription_key: typing.Optional[str] = None
     subscription_type: typing.Optional[str] = None
-    user_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="userId")] = None
+    user_id: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="userId"), pydantic.Field(alias="userId")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

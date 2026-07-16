@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class EcosystemNavigationMobileMenuType(str, enum.Enum):
+class EcosystemNavigationMobileMenuType(enum.StrEnum):
     ICON = "ICON"
     TEXT = "TEXT"
 

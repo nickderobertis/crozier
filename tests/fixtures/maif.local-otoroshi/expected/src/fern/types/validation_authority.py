@@ -13,12 +13,20 @@ class ValidationAuthority(UniversalBaseModel):
     Settings to access a validation authority server
     """
 
-    always_valid: typing_extensions.Annotated[bool, FieldMetadata(alias="alwaysValid")] = pydantic.Field()
+    always_valid: typing_extensions.Annotated[
+        bool,
+        FieldMetadata(alias="alwaysValid"),
+        pydantic.Field(alias="alwaysValid", description="Bypass http calls, every certificates are valids"),
+    ]
     """
     Bypass http calls, every certificates are valids
     """
 
-    bad_ttl: typing_extensions.Annotated[int, FieldMetadata(alias="badTtl")] = pydantic.Field()
+    bad_ttl: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="badTtl"),
+        pydantic.Field(alias="badTtl", description="The TTL for invalid access response caching"),
+    ]
     """
     The TTL for invalid access response caching
     """
@@ -28,7 +36,11 @@ class ValidationAuthority(UniversalBaseModel):
     The description of the settings
     """
 
-    good_ttl: typing_extensions.Annotated[int, FieldMetadata(alias="goodTtl")] = pydantic.Field()
+    good_ttl: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="goodTtl"),
+        pydantic.Field(alias="goodTtl", description="The TTL for valid access response caching"),
+    ]
     """
     The TTL for valid access response caching
     """
@@ -58,7 +70,9 @@ class ValidationAuthority(UniversalBaseModel):
     The name of the settings
     """
 
-    no_cache: typing_extensions.Annotated[bool, FieldMetadata(alias="noCache")] = pydantic.Field()
+    no_cache: typing_extensions.Annotated[
+        bool, FieldMetadata(alias="noCache"), pydantic.Field(alias="noCache", description="Avoid caching responses")
+    ]
     """
     Avoid caching responses
     """

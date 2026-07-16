@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class InvoiceDeliveryMethod(str, enum.Enum):
+class InvoiceDeliveryMethod(enum.StrEnum):
     """
     Indicates how Square delivers the [invoice](https://developer.squareup.com/reference/square_2021-08-18/objects/Invoice) to the customer.
     """

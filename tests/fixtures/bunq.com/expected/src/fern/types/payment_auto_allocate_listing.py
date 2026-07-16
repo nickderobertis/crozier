@@ -56,5 +56,14 @@ class PaymentAutoAllocateListing(UniversalBaseModel):
 
 
 from .payment import Payment
+from .payment_auto_allocate_instance import PaymentAutoAllocateInstance
+from .payment_batch import PaymentBatch
+from .payment_batch_anchored_payment import PaymentBatchAnchoredPayment
 
-update_forward_refs(PaymentAutoAllocateListing)
+update_forward_refs(
+    PaymentAutoAllocateListing,
+    Payment=Payment,
+    PaymentAutoAllocateInstance=PaymentAutoAllocateInstance,
+    PaymentBatch=PaymentBatch,
+    PaymentBatchAnchoredPayment=PaymentBatchAnchoredPayment,
+)

@@ -11,15 +11,25 @@ from .destiny_components_records_destiny_record_component import DestinyComponen
 
 class DestinyComponentsRecordsDestinyRecordsComponent(UniversalBaseModel):
     record_categories_root_node_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="recordCategoriesRootNodeHash")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="recordCategoriesRootNodeHash"),
+        pydantic.Field(
+            alias="recordCategoriesRootNodeHash",
+            description="The hash for the root presentation node definition of Triumph categories.",
+        ),
+    ] = None
     """
     The hash for the root presentation node definition of Triumph categories.
     """
 
     record_seals_root_node_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="recordSealsRootNodeHash")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="recordSealsRootNodeHash"),
+        pydantic.Field(
+            alias="recordSealsRootNodeHash",
+            description="The hash for the root presentation node definition of Triumph Seals.",
+        ),
+    ] = None
     """
     The hash for the root presentation node definition of Triumph Seals.
     """

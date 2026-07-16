@@ -17,9 +17,11 @@ class PostPortfolioAnalysisReturnRequestAssets(UniversalBaseModel):
     The number of assets
     """
 
-    assets_returns: typing_extensions.Annotated[typing.List[float], FieldMetadata(alias="assetsReturns")] = (
-        pydantic.Field()
-    )
+    assets_returns: typing_extensions.Annotated[
+        typing.List[float],
+        FieldMetadata(alias="assetsReturns"),
+        pydantic.Field(alias="assetsReturns", description="assetsReturns[i] is the arithmetic return of asset i"),
+    ]
     """
     assetsReturns[i] is the arithmetic return of asset i
     """

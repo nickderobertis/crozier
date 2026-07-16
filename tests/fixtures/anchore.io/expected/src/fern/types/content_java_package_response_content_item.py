@@ -15,14 +15,20 @@ class ContentJavaPackageResponseContentItem(UniversalBaseModel):
     """
 
     implementation_version: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="implementation-version")
+        typing.Optional[str],
+        FieldMetadata(alias="implementation-version"),
+        pydantic.Field(alias="implementation-version"),
     ] = None
     location: typing.Optional[str] = None
-    maven_version: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="maven-version")] = None
+    maven_version: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="maven-version"), pydantic.Field(alias="maven-version")
+    ] = None
     origin: typing.Optional[str] = None
     package: typing.Optional[str] = None
     specification_version: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="specification-version")
+        typing.Optional[str],
+        FieldMetadata(alias="specification-version"),
+        pydantic.Field(alias="specification-version"),
     ] = None
     type: typing.Optional[str] = None
 

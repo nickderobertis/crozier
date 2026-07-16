@@ -2,4 +2,7 @@
 
 import typing
 
-AppPkgArtifactInfo = typing.Optional[typing.Any]
+AppPkgArtifactInfo = typing.Any
+"""
+Additional information of application package artifacts that are not application software images. Type is TBD
+"""

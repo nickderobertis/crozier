@@ -32,23 +32,32 @@ class ObReadProduct2DataProductItemOtherProductTypeOtherFeesChargesItemFeeCharge
     """
 
     application_frequency: typing_extensions.Annotated[
-        ObFeeFrequency1Code2, FieldMetadata(alias="ApplicationFrequency")
+        ObFeeFrequency1Code2, FieldMetadata(alias="ApplicationFrequency"), pydantic.Field(alias="ApplicationFrequency")
     ]
     calculation_frequency: typing_extensions.Annotated[
-        typing.Optional[ObFeeFrequency1Code3], FieldMetadata(alias="CalculationFrequency")
+        typing.Optional[ObFeeFrequency1Code3],
+        FieldMetadata(alias="CalculationFrequency"),
+        pydantic.Field(alias="CalculationFrequency"),
     ] = None
-    fee_amount: typing_extensions.Annotated[typing.Optional[ObAmount13], FieldMetadata(alias="FeeAmount")] = None
+    fee_amount: typing_extensions.Annotated[
+        typing.Optional[ObAmount13], FieldMetadata(alias="FeeAmount"), pydantic.Field(alias="FeeAmount")
+    ] = None
     fee_applicable_range: typing_extensions.Annotated[
         typing.Optional[
             ObReadProduct2DataProductItemOtherProductTypeOtherFeesChargesItemFeeChargeDetailItemFeeApplicableRange
         ],
         FieldMetadata(alias="FeeApplicableRange"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="FeeApplicableRange", description="Range or amounts or rates for which the fee/charge applies"
+        ),
+    ] = None
     """
     Range or amounts or rates for which the fee/charge applies
     """
 
-    fee_category: typing_extensions.Annotated[ObFeeCategory1Code, FieldMetadata(alias="FeeCategory")]
+    fee_category: typing_extensions.Annotated[
+        ObFeeCategory1Code, FieldMetadata(alias="FeeCategory"), pydantic.Field(alias="FeeCategory")
+    ]
     fee_charge_cap: typing_extensions.Annotated[
         typing.Optional[
             typing.List[
@@ -56,34 +65,57 @@ class ObReadProduct2DataProductItemOtherProductTypeOtherFeesChargesItemFeeCharge
             ]
         ],
         FieldMetadata(alias="FeeChargeCap"),
+        pydantic.Field(alias="FeeChargeCap"),
     ] = None
-    fee_rate: typing_extensions.Annotated[typing.Optional[ObRate11], FieldMetadata(alias="FeeRate")] = None
+    fee_rate: typing_extensions.Annotated[
+        typing.Optional[ObRate11], FieldMetadata(alias="FeeRate"), pydantic.Field(alias="FeeRate")
+    ] = None
     fee_rate_type: typing_extensions.Annotated[
-        typing.Optional[ObInterestRateType1Code1], FieldMetadata(alias="FeeRateType")
+        typing.Optional[ObInterestRateType1Code1],
+        FieldMetadata(alias="FeeRateType"),
+        pydantic.Field(alias="FeeRateType"),
     ] = None
-    fee_type: typing_extensions.Annotated[ObFeeType1Code, FieldMetadata(alias="FeeType")]
+    fee_type: typing_extensions.Annotated[
+        ObFeeType1Code, FieldMetadata(alias="FeeType"), pydantic.Field(alias="FeeType")
+    ]
     negotiable_indicator: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="NegotiableIndicator")
-    ] = pydantic.Field(default=None)
+        typing.Optional[bool],
+        FieldMetadata(alias="NegotiableIndicator"),
+        pydantic.Field(
+            alias="NegotiableIndicator", description="Fee/charge which is usually negotiable rather than a fixed amount"
+        ),
+    ] = None
     """
     Fee/charge which is usually negotiable rather than a fixed amount
     """
 
-    notes: typing_extensions.Annotated[typing.Optional[typing.List[str]], FieldMetadata(alias="Notes")] = None
+    notes: typing_extensions.Annotated[
+        typing.Optional[typing.List[str]], FieldMetadata(alias="Notes"), pydantic.Field(alias="Notes")
+    ] = None
     other_application_frequency: typing_extensions.Annotated[
-        typing.Optional[ObOtherCodeType16], FieldMetadata(alias="OtherApplicationFrequency")
+        typing.Optional[ObOtherCodeType16],
+        FieldMetadata(alias="OtherApplicationFrequency"),
+        pydantic.Field(alias="OtherApplicationFrequency"),
     ] = None
     other_calculation_frequency: typing_extensions.Annotated[
-        typing.Optional[ObOtherCodeType17], FieldMetadata(alias="OtherCalculationFrequency")
+        typing.Optional[ObOtherCodeType17],
+        FieldMetadata(alias="OtherCalculationFrequency"),
+        pydantic.Field(alias="OtherCalculationFrequency"),
     ] = None
     other_fee_category_type: typing_extensions.Annotated[
-        typing.Optional[ObOtherCodeType10], FieldMetadata(alias="OtherFeeCategoryType")
+        typing.Optional[ObOtherCodeType10],
+        FieldMetadata(alias="OtherFeeCategoryType"),
+        pydantic.Field(alias="OtherFeeCategoryType"),
     ] = None
     other_fee_rate_type: typing_extensions.Annotated[
-        typing.Optional[ObOtherCodeType18], FieldMetadata(alias="OtherFeeRateType")
+        typing.Optional[ObOtherCodeType18],
+        FieldMetadata(alias="OtherFeeRateType"),
+        pydantic.Field(alias="OtherFeeRateType"),
     ] = None
     other_fee_type: typing_extensions.Annotated[
-        typing.Optional[ObOtherFeeChargeDetailType], FieldMetadata(alias="OtherFeeType")
+        typing.Optional[ObOtherFeeChargeDetailType],
+        FieldMetadata(alias="OtherFeeType"),
+        pydantic.Field(alias="OtherFeeType"),
     ] = None
 
     if IS_PYDANTIC_V2:

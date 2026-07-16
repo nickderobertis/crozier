@@ -17,12 +17,12 @@ class WritableIpAddress(UniversalBaseModel):
     IPv4 or IPv6 address (with mask)
     """
 
-    assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = None
     assigned_object_id: typing.Optional[int] = None
     assigned_object_type: typing.Optional[str] = None
     comments: typing.Optional[str] = None
     created: typing.Optional[dt.datetime] = None
-    custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = None
     description: typing.Optional[str] = None
     display: typing.Optional[str] = None
     dns_name: typing.Optional[str] = pydantic.Field(default=None)

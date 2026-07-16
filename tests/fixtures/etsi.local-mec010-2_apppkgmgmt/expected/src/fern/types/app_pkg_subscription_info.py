@@ -17,10 +17,16 @@ class AppPkgSubscriptionInfo(UniversalBaseModel):
     'The data type represents a subscription to notification of application package management for the onboarding, or operational state change of application package'
     """
 
-    links: typing_extensions.Annotated[AppPkgSubscriptionInfoLinks, FieldMetadata(alias="_links")]
-    callback_uri: typing_extensions.Annotated[CallbackUri, FieldMetadata(alias="callbackUri")]
+    links: typing_extensions.Annotated[
+        AppPkgSubscriptionInfoLinks, FieldMetadata(alias="_links"), pydantic.Field(alias="_links")
+    ]
+    callback_uri: typing_extensions.Annotated[
+        CallbackUri, FieldMetadata(alias="callbackUri"), pydantic.Field(alias="callbackUri")
+    ]
     id: AppPkgSubscriptionInfoId
-    subscription_type: typing_extensions.Annotated[AppPkgSubscriptionType, FieldMetadata(alias="subscriptionType")]
+    subscription_type: typing_extensions.Annotated[
+        AppPkgSubscriptionType, FieldMetadata(alias="subscriptionType"), pydantic.Field(alias="subscriptionType")
+    ]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

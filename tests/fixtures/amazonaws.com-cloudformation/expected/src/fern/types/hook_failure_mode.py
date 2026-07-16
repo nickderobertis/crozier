@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class HookFailureMode(str, enum.Enum):
+class HookFailureMode(enum.StrEnum):
     FAIL = "FAIL"
     WARN = "WARN"
 

@@ -12,21 +12,35 @@ from .o_auth_config_specification import OAuthConfigSpecification
 
 class AdvancedAuth(UniversalBaseModel):
     auth_flow_type: typing_extensions.Annotated[
-        typing.Optional[AdvancedAuthAuthFlowType], FieldMetadata(alias="authFlowType")
+        typing.Optional[AdvancedAuthAuthFlowType],
+        FieldMetadata(alias="authFlowType"),
+        pydantic.Field(alias="authFlowType"),
     ] = None
     oauth_config_specification: typing_extensions.Annotated[
-        typing.Optional[OAuthConfigSpecification], FieldMetadata(alias="oauthConfigSpecification")
+        typing.Optional[OAuthConfigSpecification],
+        FieldMetadata(alias="oauthConfigSpecification"),
+        pydantic.Field(alias="oauthConfigSpecification"),
     ] = None
     predicate_key: typing_extensions.Annotated[
-        typing.Optional[typing.List[str]], FieldMetadata(alias="predicateKey")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[str]],
+        FieldMetadata(alias="predicateKey"),
+        pydantic.Field(
+            alias="predicateKey",
+            description="Json Path to a field in the connectorSpecification that should exist for the advanced auth to be applicable.",
+        ),
+    ] = None
     """
     Json Path to a field in the connectorSpecification that should exist for the advanced auth to be applicable.
     """
 
-    predicate_value: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="predicateValue")] = (
-        pydantic.Field(default=None)
-    )
+    predicate_value: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="predicateValue"),
+        pydantic.Field(
+            alias="predicateValue",
+            description="Value of the predicate_key fields for the advanced auth to be applicable.",
+        ),
+    ] = None
     """
     Value of the predicate_key fields for the advanced auth to be applicable.
     """

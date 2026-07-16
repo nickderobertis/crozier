@@ -2,4 +2,4 @@
 
 import typing
 
-SchedulePaymentDelete = typing.Dict[str, typing.Optional[typing.Any]]
+SchedulePaymentDelete = typing.Dict[str, typing.Any]

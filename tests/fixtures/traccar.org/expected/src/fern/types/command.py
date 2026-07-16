@@ -12,7 +12,9 @@ from .command_attributes import CommandAttributes
 class Command(UniversalBaseModel):
     attributes: typing.Optional[CommandAttributes] = None
     description: typing.Optional[str] = None
-    device_id: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="deviceId")] = None
+    device_id: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="deviceId"), pydantic.Field(alias="deviceId")
+    ] = None
     id: typing.Optional[int] = None
     type: typing.Optional[str] = None
 

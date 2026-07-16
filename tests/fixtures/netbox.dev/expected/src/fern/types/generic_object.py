@@ -7,7 +7,7 @@ from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 
 
 class GenericObject(UniversalBaseModel):
-    object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    object: typing.Optional[typing.Dict[str, typing.Any]] = None
     object_id: int
     object_type: str
 

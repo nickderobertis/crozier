@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class UsageState(str, enum.Enum):
+class UsageState(enum.StrEnum):
     """
     Usage state of the onboarded instance of the application package
     """

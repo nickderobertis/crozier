@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class WritableConsoleServerPortType(str, enum.Enum):
+class WritableConsoleServerPortType(enum.StrEnum):
     """
     Physical port type
     """

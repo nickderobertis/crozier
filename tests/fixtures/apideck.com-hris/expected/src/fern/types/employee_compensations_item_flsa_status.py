@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class EmployeeCompensationsItemFlsaStatus(str, enum.Enum):
+class EmployeeCompensationsItemFlsaStatus(enum.StrEnum):
     """
     The FLSA status for this compensation.
     """

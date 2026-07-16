@@ -10,13 +10,17 @@ from ..core.serialization import FieldMetadata
 
 
 class ForumPollResult(UniversalBaseModel):
-    answer_slot: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="answerSlot")] = None
-    answer_text: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="answerText")] = None
-    last_vote_date: typing_extensions.Annotated[typing.Optional[dt.datetime], FieldMetadata(alias="lastVoteDate")] = (
-        None
-    )
+    answer_slot: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="answerSlot"), pydantic.Field(alias="answerSlot")
+    ] = None
+    answer_text: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="answerText"), pydantic.Field(alias="answerText")
+    ] = None
+    last_vote_date: typing_extensions.Annotated[
+        typing.Optional[dt.datetime], FieldMetadata(alias="lastVoteDate"), pydantic.Field(alias="lastVoteDate")
+    ] = None
     requesting_user_voted: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="requestingUserVoted")
+        typing.Optional[bool], FieldMetadata(alias="requestingUserVoted"), pydantic.Field(alias="requestingUserVoted")
     ] = None
     votes: typing.Optional[int] = None
 

@@ -10,15 +10,25 @@ from ...core.serialization import FieldMetadata
 
 class PostAssetsCorrelationMatrixBoundsResponse(UniversalBaseModel):
     assets_correlation_matrix_lower_bounds: typing_extensions.Annotated[
-        typing.List[typing.List[float]], FieldMetadata(alias="assetsCorrelationMatrixLowerBounds")
-    ] = pydantic.Field()
+        typing.List[typing.List[float]],
+        FieldMetadata(alias="assetsCorrelationMatrixLowerBounds"),
+        pydantic.Field(
+            alias="assetsCorrelationMatrixLowerBounds",
+            description="assetsCorrelationMatrixLowerBounds[i][j] is the lower bound of the correlation between the asset i and the asset j",
+        ),
+    ]
     """
     assetsCorrelationMatrixLowerBounds[i][j] is the lower bound of the correlation between the asset i and the asset j
     """
 
     assets_correlation_matrix_upper_bounds: typing_extensions.Annotated[
-        typing.List[typing.List[float]], FieldMetadata(alias="assetsCorrelationMatrixUpperBounds")
-    ] = pydantic.Field()
+        typing.List[typing.List[float]],
+        FieldMetadata(alias="assetsCorrelationMatrixUpperBounds"),
+        pydantic.Field(
+            alias="assetsCorrelationMatrixUpperBounds",
+            description="assetsCorrelationMatrixUpperBounds[i][j] is the upper bound of the correlation between the asset i and the asset j",
+        ),
+    ]
     """
     assetsCorrelationMatrixUpperBounds[i][j] is the upper bound of the correlation between the asset i and the asset j
     """

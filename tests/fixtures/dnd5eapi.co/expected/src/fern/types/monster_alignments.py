@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class MonsterAlignments(str, enum.Enum):
+class MonsterAlignments(enum.StrEnum):
     """
     A creature's general moral and personal attitudes.
     """

@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -21,6 +22,7 @@ from ..types.import_package import ImportPackage
 from ..types.import_package_relationship import ImportPackageRelationship
 from ..types.import_schema import ImportSchema
 from ..types.import_source import ImportSource
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -61,9 +63,9 @@ class RawImportsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -71,6 +73,10 @@ class RawImportsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_operation(
@@ -106,9 +112,9 @@ class RawImportsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -116,6 +122,10 @@ class RawImportsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_operation(
@@ -135,7 +145,7 @@ class RawImportsClient:
             success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"imports/images/{jsonable_encoder(operation_id)}",
+            f"imports/images/{encode_path_param(operation_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -153,9 +163,9 @@ class RawImportsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -163,6 +173,10 @@ class RawImportsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def invalidate_operation(
@@ -182,7 +196,7 @@ class RawImportsClient:
             success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"imports/images/{jsonable_encoder(operation_id)}",
+            f"imports/images/{encode_path_param(operation_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -200,9 +214,9 @@ class RawImportsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -210,6 +224,10 @@ class RawImportsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_import_dockerfiles(
@@ -229,7 +247,7 @@ class RawImportsClient:
             success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"imports/images/{jsonable_encoder(operation_id)}/dockerfile",
+            f"imports/images/{encode_path_param(operation_id)}/dockerfile",
             method="GET",
             request_options=request_options,
         )
@@ -247,9 +265,9 @@ class RawImportsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -257,6 +275,10 @@ class RawImportsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def import_image_dockerfile(
@@ -276,7 +298,7 @@ class RawImportsClient:
             success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"imports/images/{jsonable_encoder(operation_id)}/dockerfile",
+            f"imports/images/{encode_path_param(operation_id)}/dockerfile",
             method="POST",
             request_options=request_options,
         )
@@ -294,9 +316,9 @@ class RawImportsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -304,6 +326,10 @@ class RawImportsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_import_image_configs(
@@ -323,7 +349,7 @@ class RawImportsClient:
             success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"imports/images/{jsonable_encoder(operation_id)}/image_config",
+            f"imports/images/{encode_path_param(operation_id)}/image_config",
             method="GET",
             request_options=request_options,
         )
@@ -341,9 +367,9 @@ class RawImportsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -351,13 +377,17 @@ class RawImportsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def import_image_config(
         self,
         operation_id: str,
         *,
-        request: typing.Dict[str, typing.Optional[typing.Any]],
+        request: typing.Dict[str, typing.Any],
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[ImageImportContentResponse]:
         """
@@ -365,7 +395,7 @@ class RawImportsClient:
         ----------
         operation_id : str
 
-        request : typing.Dict[str, typing.Optional[typing.Any]]
+        request : typing.Dict[str, typing.Any]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -376,7 +406,7 @@ class RawImportsClient:
             success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"imports/images/{jsonable_encoder(operation_id)}/image_config",
+            f"imports/images/{encode_path_param(operation_id)}/image_config",
             method="POST",
             json=request,
             headers={
@@ -399,9 +429,9 @@ class RawImportsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -409,6 +439,10 @@ class RawImportsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_import_image_manifests(
@@ -428,7 +462,7 @@ class RawImportsClient:
             success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"imports/images/{jsonable_encoder(operation_id)}/manifest",
+            f"imports/images/{encode_path_param(operation_id)}/manifest",
             method="GET",
             request_options=request_options,
         )
@@ -446,9 +480,9 @@ class RawImportsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -456,13 +490,17 @@ class RawImportsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def import_image_manifest(
         self,
         operation_id: str,
         *,
-        request: typing.Dict[str, typing.Optional[typing.Any]],
+        request: typing.Dict[str, typing.Any],
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[ImageImportContentResponse]:
         """
@@ -470,7 +508,7 @@ class RawImportsClient:
         ----------
         operation_id : str
 
-        request : typing.Dict[str, typing.Optional[typing.Any]]
+        request : typing.Dict[str, typing.Any]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -481,7 +519,7 @@ class RawImportsClient:
             success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"imports/images/{jsonable_encoder(operation_id)}/manifest",
+            f"imports/images/{encode_path_param(operation_id)}/manifest",
             method="POST",
             json=request,
             headers={
@@ -504,9 +542,9 @@ class RawImportsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -514,6 +552,10 @@ class RawImportsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_import_packages(
@@ -533,7 +575,7 @@ class RawImportsClient:
             success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"imports/images/{jsonable_encoder(operation_id)}/packages",
+            f"imports/images/{encode_path_param(operation_id)}/packages",
             method="GET",
             request_options=request_options,
         )
@@ -551,9 +593,9 @@ class RawImportsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -561,6 +603,10 @@ class RawImportsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def import_image_packages(
@@ -601,7 +647,7 @@ class RawImportsClient:
             success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"imports/images/{jsonable_encoder(operation_id)}/packages",
+            f"imports/images/{encode_path_param(operation_id)}/packages",
             method="POST",
             json={
                 "artifactRelationships": convert_and_respect_annotation_metadata(
@@ -645,9 +691,9 @@ class RawImportsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -655,6 +701,10 @@ class RawImportsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_import_parent_manifests(
@@ -674,7 +724,7 @@ class RawImportsClient:
             success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"imports/images/{jsonable_encoder(operation_id)}/parent_manifest",
+            f"imports/images/{encode_path_param(operation_id)}/parent_manifest",
             method="GET",
             request_options=request_options,
         )
@@ -692,9 +742,9 @@ class RawImportsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -702,13 +752,17 @@ class RawImportsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def import_image_parent_manifest(
         self,
         operation_id: str,
         *,
-        request: typing.Dict[str, typing.Optional[typing.Any]],
+        request: typing.Dict[str, typing.Any],
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[ImageImportContentResponse]:
         """
@@ -716,7 +770,7 @@ class RawImportsClient:
         ----------
         operation_id : str
 
-        request : typing.Dict[str, typing.Optional[typing.Any]]
+        request : typing.Dict[str, typing.Any]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -727,7 +781,7 @@ class RawImportsClient:
             success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"imports/images/{jsonable_encoder(operation_id)}/parent_manifest",
+            f"imports/images/{encode_path_param(operation_id)}/parent_manifest",
             method="POST",
             json=request,
             headers={
@@ -750,9 +804,9 @@ class RawImportsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -760,6 +814,10 @@ class RawImportsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -800,9 +858,9 @@ class AsyncRawImportsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -810,6 +868,10 @@ class AsyncRawImportsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_operation(
@@ -845,9 +907,9 @@ class AsyncRawImportsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -855,6 +917,10 @@ class AsyncRawImportsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_operation(
@@ -874,7 +940,7 @@ class AsyncRawImportsClient:
             success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"imports/images/{jsonable_encoder(operation_id)}",
+            f"imports/images/{encode_path_param(operation_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -892,9 +958,9 @@ class AsyncRawImportsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -902,6 +968,10 @@ class AsyncRawImportsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def invalidate_operation(
@@ -921,7 +991,7 @@ class AsyncRawImportsClient:
             success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"imports/images/{jsonable_encoder(operation_id)}",
+            f"imports/images/{encode_path_param(operation_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -939,9 +1009,9 @@ class AsyncRawImportsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -949,6 +1019,10 @@ class AsyncRawImportsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_import_dockerfiles(
@@ -968,7 +1042,7 @@ class AsyncRawImportsClient:
             success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"imports/images/{jsonable_encoder(operation_id)}/dockerfile",
+            f"imports/images/{encode_path_param(operation_id)}/dockerfile",
             method="GET",
             request_options=request_options,
         )
@@ -986,9 +1060,9 @@ class AsyncRawImportsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -996,6 +1070,10 @@ class AsyncRawImportsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def import_image_dockerfile(
@@ -1015,7 +1093,7 @@ class AsyncRawImportsClient:
             success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"imports/images/{jsonable_encoder(operation_id)}/dockerfile",
+            f"imports/images/{encode_path_param(operation_id)}/dockerfile",
             method="POST",
             request_options=request_options,
         )
@@ -1033,9 +1111,9 @@ class AsyncRawImportsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1043,6 +1121,10 @@ class AsyncRawImportsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_import_image_configs(
@@ -1062,7 +1144,7 @@ class AsyncRawImportsClient:
             success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"imports/images/{jsonable_encoder(operation_id)}/image_config",
+            f"imports/images/{encode_path_param(operation_id)}/image_config",
             method="GET",
             request_options=request_options,
         )
@@ -1080,9 +1162,9 @@ class AsyncRawImportsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1090,13 +1172,17 @@ class AsyncRawImportsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def import_image_config(
         self,
         operation_id: str,
         *,
-        request: typing.Dict[str, typing.Optional[typing.Any]],
+        request: typing.Dict[str, typing.Any],
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[ImageImportContentResponse]:
         """
@@ -1104,7 +1190,7 @@ class AsyncRawImportsClient:
         ----------
         operation_id : str
 
-        request : typing.Dict[str, typing.Optional[typing.Any]]
+        request : typing.Dict[str, typing.Any]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -1115,7 +1201,7 @@ class AsyncRawImportsClient:
             success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"imports/images/{jsonable_encoder(operation_id)}/image_config",
+            f"imports/images/{encode_path_param(operation_id)}/image_config",
             method="POST",
             json=request,
             headers={
@@ -1138,9 +1224,9 @@ class AsyncRawImportsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1148,6 +1234,10 @@ class AsyncRawImportsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_import_image_manifests(
@@ -1167,7 +1257,7 @@ class AsyncRawImportsClient:
             success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"imports/images/{jsonable_encoder(operation_id)}/manifest",
+            f"imports/images/{encode_path_param(operation_id)}/manifest",
             method="GET",
             request_options=request_options,
         )
@@ -1185,9 +1275,9 @@ class AsyncRawImportsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1195,13 +1285,17 @@ class AsyncRawImportsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def import_image_manifest(
         self,
         operation_id: str,
         *,
-        request: typing.Dict[str, typing.Optional[typing.Any]],
+        request: typing.Dict[str, typing.Any],
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[ImageImportContentResponse]:
         """
@@ -1209,7 +1303,7 @@ class AsyncRawImportsClient:
         ----------
         operation_id : str
 
-        request : typing.Dict[str, typing.Optional[typing.Any]]
+        request : typing.Dict[str, typing.Any]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -1220,7 +1314,7 @@ class AsyncRawImportsClient:
             success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"imports/images/{jsonable_encoder(operation_id)}/manifest",
+            f"imports/images/{encode_path_param(operation_id)}/manifest",
             method="POST",
             json=request,
             headers={
@@ -1243,9 +1337,9 @@ class AsyncRawImportsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1253,6 +1347,10 @@ class AsyncRawImportsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_import_packages(
@@ -1272,7 +1370,7 @@ class AsyncRawImportsClient:
             success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"imports/images/{jsonable_encoder(operation_id)}/packages",
+            f"imports/images/{encode_path_param(operation_id)}/packages",
             method="GET",
             request_options=request_options,
         )
@@ -1290,9 +1388,9 @@ class AsyncRawImportsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1300,6 +1398,10 @@ class AsyncRawImportsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def import_image_packages(
@@ -1340,7 +1442,7 @@ class AsyncRawImportsClient:
             success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"imports/images/{jsonable_encoder(operation_id)}/packages",
+            f"imports/images/{encode_path_param(operation_id)}/packages",
             method="POST",
             json={
                 "artifactRelationships": convert_and_respect_annotation_metadata(
@@ -1384,9 +1486,9 @@ class AsyncRawImportsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1394,6 +1496,10 @@ class AsyncRawImportsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_import_parent_manifests(
@@ -1413,7 +1519,7 @@ class AsyncRawImportsClient:
             success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"imports/images/{jsonable_encoder(operation_id)}/parent_manifest",
+            f"imports/images/{encode_path_param(operation_id)}/parent_manifest",
             method="GET",
             request_options=request_options,
         )
@@ -1431,9 +1537,9 @@ class AsyncRawImportsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1441,13 +1547,17 @@ class AsyncRawImportsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def import_image_parent_manifest(
         self,
         operation_id: str,
         *,
-        request: typing.Dict[str, typing.Optional[typing.Any]],
+        request: typing.Dict[str, typing.Any],
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[ImageImportContentResponse]:
         """
@@ -1455,7 +1565,7 @@ class AsyncRawImportsClient:
         ----------
         operation_id : str
 
-        request : typing.Dict[str, typing.Optional[typing.Any]]
+        request : typing.Dict[str, typing.Any]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -1466,7 +1576,7 @@ class AsyncRawImportsClient:
             success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"imports/images/{jsonable_encoder(operation_id)}/parent_manifest",
+            f"imports/images/{encode_path_param(operation_id)}/parent_manifest",
             method="POST",
             json=request,
             headers={
@@ -1489,9 +1599,9 @@ class AsyncRawImportsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1499,4 +1609,8 @@ class AsyncRawImportsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

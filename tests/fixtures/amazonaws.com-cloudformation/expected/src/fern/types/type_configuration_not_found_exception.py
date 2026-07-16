@@ -2,4 +2,4 @@
 
 import typing
 
-TypeConfigurationNotFoundException = typing.Optional[typing.Any]
+TypeConfigurationNotFoundException = typing.Any

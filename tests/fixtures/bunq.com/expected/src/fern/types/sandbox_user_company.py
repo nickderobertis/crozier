@@ -2,4 +2,4 @@
 
 import typing
 
-SandboxUserCompany = typing.Dict[str, typing.Optional[typing.Any]]
+SandboxUserCompany = typing.Dict[str, typing.Any]

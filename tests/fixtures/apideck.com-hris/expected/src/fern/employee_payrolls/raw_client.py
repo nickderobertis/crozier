@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -23,6 +24,7 @@ from ..types.payment_required_response import PaymentRequiredResponse
 from ..types.payrolls_filter import PayrollsFilter
 from ..types.unauthorized_response import UnauthorizedResponse
 from ..types.unprocessable_response import UnprocessableResponse
+from pydantic import ValidationError
 
 
 class RawEmployeePayrollsClient:
@@ -64,7 +66,7 @@ class RawEmployeePayrollsClient:
             EmployeePayrolls
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"hris/payrolls/employees/{jsonable_encoder(employee_id)}",
+            f"hris/payrolls/employees/{encode_path_param(employee_id)}",
             method="GET",
             params={
                 "raw": raw,
@@ -143,6 +145,10 @@ class RawEmployeePayrollsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def one(
@@ -180,7 +186,7 @@ class RawEmployeePayrollsClient:
             Payrolls
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"hris/payrolls/employees/{jsonable_encoder(employee_id)}/payrolls/{jsonable_encoder(payroll_id)}",
+            f"hris/payrolls/employees/{encode_path_param(employee_id)}/payrolls/{encode_path_param(payroll_id)}",
             method="GET",
             params={
                 "raw": raw,
@@ -256,6 +262,10 @@ class RawEmployeePayrollsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -298,7 +308,7 @@ class AsyncRawEmployeePayrollsClient:
             EmployeePayrolls
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"hris/payrolls/employees/{jsonable_encoder(employee_id)}",
+            f"hris/payrolls/employees/{encode_path_param(employee_id)}",
             method="GET",
             params={
                 "raw": raw,
@@ -377,6 +387,10 @@ class AsyncRawEmployeePayrollsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def one(
@@ -414,7 +428,7 @@ class AsyncRawEmployeePayrollsClient:
             Payrolls
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"hris/payrolls/employees/{jsonable_encoder(employee_id)}/payrolls/{jsonable_encoder(payroll_id)}",
+            f"hris/payrolls/employees/{encode_path_param(employee_id)}/payrolls/{encode_path_param(payroll_id)}",
             method="GET",
             params={
                 "raw": raw,
@@ -490,4 +504,8 @@ class AsyncRawEmployeePayrollsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

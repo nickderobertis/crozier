@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class NamespaceDefinitionType(str, enum.Enum):
+class NamespaceDefinitionType(enum.StrEnum):
     """
     Method used for computing final namespace in destination
     """

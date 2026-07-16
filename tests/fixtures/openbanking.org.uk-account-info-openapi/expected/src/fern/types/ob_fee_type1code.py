@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObFeeType1Code(str, enum.Enum):
+class ObFeeType1Code(enum.StrEnum):
     """
     Fee/Charge Type
     """

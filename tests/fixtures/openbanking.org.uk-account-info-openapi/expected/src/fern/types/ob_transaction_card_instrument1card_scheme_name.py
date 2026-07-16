@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObTransactionCardInstrument1CardSchemeName(str, enum.Enum):
+class ObTransactionCardInstrument1CardSchemeName(enum.StrEnum):
     """
     Name of the card scheme.
     """

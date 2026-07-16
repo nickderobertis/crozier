@@ -12,7 +12,7 @@ from .destiny_components_metrics_destiny_metric_component import DestinyComponen
 class DestinyComponentsMetricsDestinyMetricsComponent(UniversalBaseModel):
     metrics: typing.Optional[typing.Dict[str, DestinyComponentsMetricsDestinyMetricComponent]] = None
     metrics_root_node_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="metricsRootNodeHash")
+        typing.Optional[int], FieldMetadata(alias="metricsRootNodeHash"), pydantic.Field(alias="metricsRootNodeHash")
     ] = None
 
     if IS_PYDANTIC_V2:

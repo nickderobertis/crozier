@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class LoyaltyRewardStatus(str, enum.Enum):
+class LoyaltyRewardStatus(enum.StrEnum):
     """
     The status of the loyalty reward.
     """

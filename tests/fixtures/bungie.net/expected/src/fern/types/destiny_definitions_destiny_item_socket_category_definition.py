@@ -14,15 +14,25 @@ class DestinyDefinitionsDestinyItemSocketCategoryDefinition(UniversalBaseModel):
     """
 
     socket_category_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="socketCategoryHash")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="socketCategoryHash"),
+        pydantic.Field(
+            alias="socketCategoryHash",
+            description="The hash for the Socket Category: a quick way to go get the header display information for the category. Use it to look up DestinySocketCategoryDefinition info.",
+        ),
+    ] = None
     """
     The hash for the Socket Category: a quick way to go get the header display information for the category. Use it to look up DestinySocketCategoryDefinition info.
     """
 
     socket_indexes: typing_extensions.Annotated[
-        typing.Optional[typing.List[int]], FieldMetadata(alias="socketIndexes")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[int]],
+        FieldMetadata(alias="socketIndexes"),
+        pydantic.Field(
+            alias="socketIndexes",
+            description='Use these indexes to look up the sockets in the "sockets.socketEntries" property on the item definition. These are the indexes under the category, in game-rendered order.',
+        ),
+    ] = None
     """
     Use these indexes to look up the sockets in the "sockets.socketEntries" property on the item definition. These are the indexes under the category, in game-rendered order.
     """

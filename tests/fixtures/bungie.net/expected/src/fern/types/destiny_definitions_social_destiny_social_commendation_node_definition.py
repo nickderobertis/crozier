@@ -14,15 +14,24 @@ from .destiny_misc_destiny_color import DestinyMiscDestinyColor
 
 class DestinyDefinitionsSocialDestinySocialCommendationNodeDefinition(UniversalBaseModel):
     child_commendation_hashes: typing_extensions.Annotated[
-        typing.Optional[typing.List[int]], FieldMetadata(alias="childCommendationHashes")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[int]],
+        FieldMetadata(alias="childCommendationHashes"),
+        pydantic.Field(
+            alias="childCommendationHashes", description="A list of hashes that map to child commendations."
+        ),
+    ] = None
     """
     A list of hashes that map to child commendations.
     """
 
     child_commendation_node_hashes: typing_extensions.Annotated[
-        typing.Optional[typing.List[int]], FieldMetadata(alias="childCommendationNodeHashes")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[int]],
+        FieldMetadata(alias="childCommendationNodeHashes"),
+        pydantic.Field(
+            alias="childCommendationNodeHashes",
+            description="A list of hashes that map to child commendation nodes. Only the root commendations node is expected to have child nodes.",
+        ),
+    ] = None
     """
     A list of hashes that map to child commendation nodes. Only the root commendations node is expected to have child nodes.
     """
@@ -35,6 +44,7 @@ class DestinyDefinitionsSocialDestinySocialCommendationNodeDefinition(UniversalB
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
+        pydantic.Field(alias="displayProperties"),
     ] = None
     hash: typing.Optional[int] = pydantic.Field(default=None)
     """
@@ -48,7 +58,9 @@ class DestinyDefinitionsSocialDestinySocialCommendationNodeDefinition(UniversalB
     """
 
     parent_commendation_node_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="parentCommendationNodeHash")
+        typing.Optional[int],
+        FieldMetadata(alias="parentCommendationNodeHash"),
+        pydantic.Field(alias="parentCommendationNodeHash"),
     ] = None
     redacted: typing.Optional[bool] = pydantic.Field(default=None)
     """

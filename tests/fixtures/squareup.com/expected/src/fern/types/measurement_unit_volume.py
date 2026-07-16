@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class MeasurementUnitVolume(str, enum.Enum):
+class MeasurementUnitVolume(enum.StrEnum):
     """
     The unit of volume used to measure a quantity.
     """

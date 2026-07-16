@@ -18,6 +18,7 @@ class DestinyDefinitionsGuardianRanksDestinyGuardianRankConstantsDefinition(Univ
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
+        pydantic.Field(alias="displayProperties"),
     ] = None
     hash: typing.Optional[int] = pydantic.Field(default=None)
     """
@@ -28,19 +29,24 @@ class DestinyDefinitionsGuardianRanksDestinyGuardianRankConstantsDefinition(Univ
     icon_backgrounds: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsGuardianRanksDestinyGuardianRankIconBackgroundsDefinition],
         FieldMetadata(alias="iconBackgrounds"),
+        pydantic.Field(alias="iconBackgrounds"),
     ] = None
     index: typing.Optional[int] = pydantic.Field(default=None)
     """
     The index of the entity as it was found in the investment tables.
     """
 
-    rank_count: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="rankCount")] = None
+    rank_count: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="rankCount"), pydantic.Field(alias="rankCount")
+    ] = None
     redacted: typing.Optional[bool] = pydantic.Field(default=None)
     """
     If this is true, then there is an entity with this identifier/type combination, but BNet is not yet allowed to show it. Sorry!
     """
 
-    root_node_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="rootNodeHash")] = None
+    root_node_hash: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="rootNodeHash"), pydantic.Field(alias="rootNodeHash")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

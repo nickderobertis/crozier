@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class DagRunRunType(str, enum.Enum):
+class DagRunRunType(enum.StrEnum):
     BACKFILL = "backfill"
     MANUAL = "manual"
     SCHEDULED = "scheduled"

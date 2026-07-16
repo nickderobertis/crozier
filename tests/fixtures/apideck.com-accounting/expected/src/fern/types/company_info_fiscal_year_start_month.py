@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class CompanyInfoFiscalYearStartMonth(str, enum.Enum):
+class CompanyInfoFiscalYearStartMonth(enum.StrEnum):
     """
     The start month of fiscal year.
     """

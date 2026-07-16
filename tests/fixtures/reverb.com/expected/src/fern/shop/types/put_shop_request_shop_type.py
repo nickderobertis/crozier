@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PutShopRequestShopType(str, enum.Enum):
+class PutShopRequestShopType(enum.StrEnum):
     INDIVIDUAL = "individual"
     BUSINESS = "business"
 

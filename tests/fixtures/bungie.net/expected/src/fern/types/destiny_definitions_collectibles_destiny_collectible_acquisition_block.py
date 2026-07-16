@@ -10,10 +10,14 @@ from ..core.serialization import FieldMetadata
 
 class DestinyDefinitionsCollectiblesDestinyCollectibleAcquisitionBlock(UniversalBaseModel):
     acquire_material_requirement_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="acquireMaterialRequirementHash")
+        typing.Optional[int],
+        FieldMetadata(alias="acquireMaterialRequirementHash"),
+        pydantic.Field(alias="acquireMaterialRequirementHash"),
     ] = None
     acquire_timestamp_unlock_value_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="acquireTimestampUnlockValueHash")
+        typing.Optional[int],
+        FieldMetadata(alias="acquireTimestampUnlockValueHash"),
+        pydantic.Field(alias="acquireTimestampUnlockValueHash"),
     ] = None
 
     if IS_PYDANTIC_V2:

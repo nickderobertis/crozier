@@ -14,23 +14,35 @@ class DestinyPerksDestinyPerkReference(UniversalBaseModel):
     Perks apply a variety of effects to a character, and are generally either intrinsic to the item or provided in activated talent nodes or sockets.
     """
 
-    icon_path: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="iconPath")] = pydantic.Field(
-        default=None
-    )
+    icon_path: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="iconPath"),
+        pydantic.Field(alias="iconPath", description="The icon for the perk."),
+    ] = None
     """
     The icon for the perk.
     """
 
-    is_active: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="isActive")] = pydantic.Field(
-        default=None
-    )
+    is_active: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="isActive"),
+        pydantic.Field(
+            alias="isActive",
+            description="Whether this perk is currently active. (We may return perks that you have not actually activated yet: these represent perks that you should show in the item's tooltip, but that the user has not yet activated.)",
+        ),
+    ] = None
     """
     Whether this perk is currently active. (We may return perks that you have not actually activated yet: these represent perks that you should show in the item's tooltip, but that the user has not yet activated.)
     """
 
-    perk_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="perkHash")] = pydantic.Field(
-        default=None
-    )
+    perk_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="perkHash"),
+        pydantic.Field(
+            alias="perkHash",
+            description="The hash identifier for the perk, which can be used to look up DestinySandboxPerkDefinition if it exists. Be warned, perks frequently do not have user-viewable information. You should examine whether you actually found a name/description in the perk's definition before you show it to the user.",
+        ),
+    ] = None
     """
     The hash identifier for the perk, which can be used to look up DestinySandboxPerkDefinition if it exists. Be warned, perks frequently do not have user-viewable information. You should examine whether you actually found a name/description in the perk's definition before you show it to the user.
     """

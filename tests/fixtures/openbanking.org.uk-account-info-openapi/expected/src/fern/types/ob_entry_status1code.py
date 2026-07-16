@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObEntryStatus1Code(str, enum.Enum):
+class ObEntryStatus1Code(enum.StrEnum):
     """
     Status of a transaction entry on the books of the account servicer.
     """

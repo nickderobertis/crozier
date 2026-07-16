@@ -10,9 +10,14 @@ from .destiny_quests_destiny_objective_progress import DestinyQuestsDestinyObjec
 
 
 class DestinyComponentsPresentationDestinyPresentationNodeComponent(UniversalBaseModel):
-    completion_value: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="completionValue")] = (
-        pydantic.Field(default=None)
-    )
+    completion_value: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="completionValue"),
+        pydantic.Field(
+            alias="completionValue",
+            description="The value at which the presentation node is considered to be completed.",
+        ),
+    ] = None
     """
     The value at which the presentation node is considered to be completed.
     """
@@ -22,16 +27,26 @@ class DestinyComponentsPresentationDestinyPresentationNodeComponent(UniversalBas
     An optional property: presentation nodes MAY have objectives, which can be used to infer more human readable data about the progress. However, progressValue and completionValue ought to be considered the canonical values for progress on Progression Nodes.
     """
 
-    progress_value: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="progressValue")] = (
-        pydantic.Field(default=None)
-    )
+    progress_value: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="progressValue"),
+        pydantic.Field(
+            alias="progressValue",
+            description="How much of the presentation node is considered to be completed so far by the given character/profile.",
+        ),
+    ] = None
     """
     How much of the presentation node is considered to be completed so far by the given character/profile.
     """
 
     record_category_score: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="recordCategoryScore")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="recordCategoryScore"),
+        pydantic.Field(
+            alias="recordCategoryScore",
+            description="If available, this is the current score for the record category that this node represents.",
+        ),
+    ] = None
     """
     If available, this is the current score for the record category that this node represents.
     """

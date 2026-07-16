@@ -16,9 +16,13 @@ class Transform(UniversalBaseModel):
     Strategy where signature and field values are verified, trasnformed and then token si re-signed
     """
 
-    algo_settings: typing_extensions.Annotated[TransformAlgoSettings, FieldMetadata(alias="algoSettings")]
+    algo_settings: typing_extensions.Annotated[
+        TransformAlgoSettings, FieldMetadata(alias="algoSettings"), pydantic.Field(alias="algoSettings")
+    ]
     transform_settings: typing_extensions.Annotated[
-        typing.Optional[TransformSettings], FieldMetadata(alias="transformSettings")
+        typing.Optional[TransformSettings],
+        FieldMetadata(alias="transformSettings"),
+        pydantic.Field(alias="transformSettings"),
     ] = None
     type: str = pydantic.Field()
     """
@@ -26,7 +30,7 @@ class Transform(UniversalBaseModel):
     """
 
     verification_settings: typing_extensions.Annotated[
-        VerificationSettings, FieldMetadata(alias="verificationSettings")
+        VerificationSettings, FieldMetadata(alias="verificationSettings"), pydantic.Field(alias="verificationSettings")
     ]
 
     if IS_PYDANTIC_V2:

@@ -2,4 +2,4 @@
 
 import typing
 
-ServerError = typing.Dict[str, typing.Optional[typing.Any]]
+ServerError = typing.Dict[str, typing.Any]

@@ -6,13 +6,15 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from .types.admin_list_badges_response import AdminListBadgesResponse
 from .types.create_badge_response import CreateBadgeResponse
 from .types.list_user_badges_response import ListUserBadgesResponse
 from .types.update_badge_response import UpdateBadgeResponse
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -54,6 +56,10 @@ class RawBadgesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_badge(
@@ -103,6 +109,10 @@ class RawBadgesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_badge(
@@ -129,7 +139,7 @@ class RawBadgesClient:
             success response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"admin/badges/{jsonable_encoder(id)}.json",
+            f"admin/badges/{encode_path_param(id)}.json",
             method="PUT",
             json={
                 "badge_type_id": badge_type_id,
@@ -154,6 +164,10 @@ class RawBadgesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_badge(self, id: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -170,7 +184,7 @@ class RawBadgesClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"admin/badges/{jsonable_encoder(id)}.json",
+            f"admin/badges/{encode_path_param(id)}.json",
             method="DELETE",
             request_options=request_options,
         )
@@ -180,6 +194,10 @@ class RawBadgesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_user_badges(
@@ -199,7 +217,7 @@ class RawBadgesClient:
             success response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user-badges/{jsonable_encoder(username)}.json",
+            f"user-badges/{encode_path_param(username)}.json",
             method="GET",
             request_options=request_options,
         )
@@ -216,6 +234,10 @@ class RawBadgesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -255,6 +277,10 @@ class AsyncRawBadgesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_badge(
@@ -304,6 +330,10 @@ class AsyncRawBadgesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_badge(
@@ -330,7 +360,7 @@ class AsyncRawBadgesClient:
             success response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"admin/badges/{jsonable_encoder(id)}.json",
+            f"admin/badges/{encode_path_param(id)}.json",
             method="PUT",
             json={
                 "badge_type_id": badge_type_id,
@@ -355,6 +385,10 @@ class AsyncRawBadgesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_badge(
@@ -373,7 +407,7 @@ class AsyncRawBadgesClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"admin/badges/{jsonable_encoder(id)}.json",
+            f"admin/badges/{encode_path_param(id)}.json",
             method="DELETE",
             request_options=request_options,
         )
@@ -383,6 +417,10 @@ class AsyncRawBadgesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_user_badges(
@@ -402,7 +440,7 @@ class AsyncRawBadgesClient:
             success response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user-badges/{jsonable_encoder(username)}.json",
+            f"user-badges/{encode_path_param(username)}.json",
             method="GET",
             request_options=request_options,
         )
@@ -419,4 +457,8 @@ class AsyncRawBadgesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

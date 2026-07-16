@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -22,6 +23,7 @@ from ..types.list_payments_response import ListPaymentsResponse
 from ..types.money import Money
 from ..types.payment import Payment
 from ..types.update_payment_response import UpdatePaymentResponse
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -134,6 +136,10 @@ class RawPaymentsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_payment(
@@ -352,6 +358,10 @@ class RawPaymentsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cancel_payment_by_idempotency_key(
@@ -408,6 +418,10 @@ class RawPaymentsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_payment(
@@ -430,7 +444,7 @@ class RawPaymentsClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/payments/{jsonable_encoder(payment_id)}",
+            f"v2/payments/{encode_path_param(payment_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -447,6 +461,10 @@ class RawPaymentsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_payment(
@@ -485,7 +503,7 @@ class RawPaymentsClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/payments/{jsonable_encoder(payment_id)}",
+            f"v2/payments/{encode_path_param(payment_id)}",
             method="PUT",
             json={
                 "idempotency_key": idempotency_key,
@@ -512,6 +530,10 @@ class RawPaymentsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cancel_payment(
@@ -535,7 +557,7 @@ class RawPaymentsClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/payments/{jsonable_encoder(payment_id)}/cancel",
+            f"v2/payments/{encode_path_param(payment_id)}/cancel",
             method="POST",
             request_options=request_options,
         )
@@ -552,6 +574,10 @@ class RawPaymentsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def complete_payment(
@@ -577,7 +603,7 @@ class RawPaymentsClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/payments/{jsonable_encoder(payment_id)}/complete",
+            f"v2/payments/{encode_path_param(payment_id)}/complete",
             method="POST",
             request_options=request_options,
         )
@@ -594,6 +620,10 @@ class RawPaymentsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -704,6 +734,10 @@ class AsyncRawPaymentsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_payment(
@@ -922,6 +956,10 @@ class AsyncRawPaymentsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cancel_payment_by_idempotency_key(
@@ -978,6 +1016,10 @@ class AsyncRawPaymentsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_payment(
@@ -1000,7 +1042,7 @@ class AsyncRawPaymentsClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/payments/{jsonable_encoder(payment_id)}",
+            f"v2/payments/{encode_path_param(payment_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -1017,6 +1059,10 @@ class AsyncRawPaymentsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_payment(
@@ -1055,7 +1101,7 @@ class AsyncRawPaymentsClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/payments/{jsonable_encoder(payment_id)}",
+            f"v2/payments/{encode_path_param(payment_id)}",
             method="PUT",
             json={
                 "idempotency_key": idempotency_key,
@@ -1082,6 +1128,10 @@ class AsyncRawPaymentsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cancel_payment(
@@ -1105,7 +1155,7 @@ class AsyncRawPaymentsClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/payments/{jsonable_encoder(payment_id)}/cancel",
+            f"v2/payments/{encode_path_param(payment_id)}/cancel",
             method="POST",
             request_options=request_options,
         )
@@ -1122,6 +1172,10 @@ class AsyncRawPaymentsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def complete_payment(
@@ -1147,7 +1201,7 @@ class AsyncRawPaymentsClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/payments/{jsonable_encoder(payment_id)}/complete",
+            f"v2/payments/{encode_path_param(payment_id)}/complete",
             method="POST",
             request_options=request_options,
         )
@@ -1164,4 +1218,8 @@ class AsyncRawPaymentsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

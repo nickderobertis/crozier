@@ -9,9 +9,13 @@ from ...core.serialization import FieldMetadata
 
 
 class PostPortfolioAnalysisReturnsAverageRequestPortfoliosItem(UniversalBaseModel):
-    portfolio_values: typing_extensions.Annotated[typing.List[float], FieldMetadata(alias="portfolioValues")] = (
-        pydantic.Field()
-    )
+    portfolio_values: typing_extensions.Annotated[
+        typing.List[float],
+        FieldMetadata(alias="portfolioValues"),
+        pydantic.Field(
+            alias="portfolioValues", description="portfolioValues[t] is the value of the portfolio at the time t"
+        ),
+    ]
     """
     portfolioValues[t] is the value of the portfolio at the time t
     """

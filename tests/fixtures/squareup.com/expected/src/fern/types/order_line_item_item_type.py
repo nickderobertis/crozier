@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class OrderLineItemItemType(str, enum.Enum):
+class OrderLineItemItemType(enum.StrEnum):
     """
     Represents the line item type.
     """

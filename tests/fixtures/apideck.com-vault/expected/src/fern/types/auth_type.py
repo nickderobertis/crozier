@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class AuthType(str, enum.Enum):
+class AuthType(enum.StrEnum):
     """
     Type of authorization used by the connector
     """

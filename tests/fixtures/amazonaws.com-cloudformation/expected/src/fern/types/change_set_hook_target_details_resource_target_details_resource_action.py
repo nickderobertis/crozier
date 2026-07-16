@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ChangeSetHookTargetDetailsResourceTargetDetailsResourceAction(str, enum.Enum):
+class ChangeSetHookTargetDetailsResourceTargetDetailsResourceAction(enum.StrEnum):
     """
     Specifies the action of the resource.
     """

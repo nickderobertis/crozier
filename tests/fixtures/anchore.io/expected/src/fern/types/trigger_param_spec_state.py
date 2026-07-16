@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class TriggerParamSpecState(str, enum.Enum):
+class TriggerParamSpecState(enum.StrEnum):
     """
     State of the trigger parameter
     """

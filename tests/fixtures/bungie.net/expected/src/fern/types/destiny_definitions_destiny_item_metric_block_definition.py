@@ -14,8 +14,13 @@ class DestinyDefinitionsDestinyItemMetricBlockDefinition(UniversalBaseModel):
     """
 
     available_metric_category_node_hashes: typing_extensions.Annotated[
-        typing.Optional[typing.List[int]], FieldMetadata(alias="availableMetricCategoryNodeHashes")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[int]],
+        FieldMetadata(alias="availableMetricCategoryNodeHashes"),
+        pydantic.Field(
+            alias="availableMetricCategoryNodeHashes",
+            description="Hash identifiers for any DestinyPresentationNodeDefinition entry that can be used to list available metrics. Any metric listed directly below these nodes, or in any of these nodes' children will be made available for selection.",
+        ),
+    ] = None
     """
     Hash identifiers for any DestinyPresentationNodeDefinition entry that can be used to list available metrics. Any metric listed directly below these nodes, or in any of these nodes' children will be made available for selection.
     """

@@ -28,7 +28,7 @@ class ExecuteClient:
         """
         return self._raw_client
 
-    def get_proxy(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.Optional[typing.Any]:
+    def get_proxy(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.Any:
         """
         Proxies a downstream GET request to a service and injects the necessary credentials into a request stored in Vault. This allows you to have an additional security layer and logging without needing to rely on Unify for normalization.
         **Note**: Vault will proxy all data to the downstream URL and method/verb in the headers.
@@ -40,7 +40,7 @@ class ExecuteClient:
 
         Returns
         -------
-        typing.Optional[typing.Any]
+        typing.Any
             Ok
 
         Examples
@@ -62,7 +62,7 @@ class ExecuteClient:
 
     def post_proxy(
         self, *, request: PostProxyRequestBody, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Optional[typing.Any]:
+    ) -> typing.Any:
         """
         Proxies a downstream POST request to a service and injects the necessary credentials into a request stored in Vault. This allows you to have an additional security layer and logging without needing to rely on Unify for normalization.
         **Note**: Vault will proxy all data to the downstream URL and method/verb in the headers.
@@ -76,7 +76,7 @@ class ExecuteClient:
 
         Returns
         -------
-        typing.Optional[typing.Any]
+        typing.Any
             Ok
 
         Examples
@@ -102,7 +102,7 @@ class ExecuteClient:
 
     def put_proxy(
         self, *, request: PutProxyRequestBody, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Optional[typing.Any]:
+    ) -> typing.Any:
         """
         Proxies a downstream PUT request to a service and injects the necessary credentials into a request stored in Vault. This allows you to have an additional security layer and logging without needing to rely on Unify for normalization.
         **Note**: Vault will proxy all data to the downstream URL and method/verb in the headers.
@@ -116,7 +116,7 @@ class ExecuteClient:
 
         Returns
         -------
-        typing.Optional[typing.Any]
+        typing.Any
             Ok
 
         Examples
@@ -140,7 +140,7 @@ class ExecuteClient:
         _response = self._raw_client.put_proxy(request=request, request_options=request_options)
         return _response.data
 
-    def delete_proxy(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.Optional[typing.Any]:
+    def delete_proxy(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.Any:
         """
         Proxies a downstream DELETE request to a service and injects the necessary credentials into a request stored in Vault. This allows you to have an additional security layer and logging without needing to rely on Unify for normalization.
         **Note**: Vault will proxy all data to the downstream URL and method/verb in the headers.
@@ -152,7 +152,7 @@ class ExecuteClient:
 
         Returns
         -------
-        typing.Optional[typing.Any]
+        typing.Any
             Ok
 
         Examples
@@ -174,7 +174,7 @@ class ExecuteClient:
 
     def patch_proxy(
         self, *, request: PatchProxyRequestBody, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Optional[typing.Any]:
+    ) -> typing.Any:
         """
         Proxies a downstream PATCH request to a service and injects the necessary credentials into a request stored in Vault. This allows you to have an additional security layer and logging without needing to rely on Unify for normalization.
         **Note**: Vault will proxy all data to the downstream URL and method/verb in the headers.
@@ -188,7 +188,7 @@ class ExecuteClient:
 
         Returns
         -------
-        typing.Optional[typing.Any]
+        typing.Any
             Ok
 
         Examples
@@ -228,9 +228,7 @@ class AsyncExecuteClient:
         """
         return self._raw_client
 
-    async def get_proxy(
-        self, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Optional[typing.Any]:
+    async def get_proxy(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.Any:
         """
         Proxies a downstream GET request to a service and injects the necessary credentials into a request stored in Vault. This allows you to have an additional security layer and logging without needing to rely on Unify for normalization.
         **Note**: Vault will proxy all data to the downstream URL and method/verb in the headers.
@@ -242,7 +240,7 @@ class AsyncExecuteClient:
 
         Returns
         -------
-        typing.Optional[typing.Any]
+        typing.Any
             Ok
 
         Examples
@@ -272,7 +270,7 @@ class AsyncExecuteClient:
 
     async def post_proxy(
         self, *, request: PostProxyRequestBody, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Optional[typing.Any]:
+    ) -> typing.Any:
         """
         Proxies a downstream POST request to a service and injects the necessary credentials into a request stored in Vault. This allows you to have an additional security layer and logging without needing to rely on Unify for normalization.
         **Note**: Vault will proxy all data to the downstream URL and method/verb in the headers.
@@ -286,7 +284,7 @@ class AsyncExecuteClient:
 
         Returns
         -------
-        typing.Optional[typing.Any]
+        typing.Any
             Ok
 
         Examples
@@ -320,7 +318,7 @@ class AsyncExecuteClient:
 
     async def put_proxy(
         self, *, request: PutProxyRequestBody, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Optional[typing.Any]:
+    ) -> typing.Any:
         """
         Proxies a downstream PUT request to a service and injects the necessary credentials into a request stored in Vault. This allows you to have an additional security layer and logging without needing to rely on Unify for normalization.
         **Note**: Vault will proxy all data to the downstream URL and method/verb in the headers.
@@ -334,7 +332,7 @@ class AsyncExecuteClient:
 
         Returns
         -------
-        typing.Optional[typing.Any]
+        typing.Any
             Ok
 
         Examples
@@ -366,9 +364,7 @@ class AsyncExecuteClient:
         _response = await self._raw_client.put_proxy(request=request, request_options=request_options)
         return _response.data
 
-    async def delete_proxy(
-        self, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Optional[typing.Any]:
+    async def delete_proxy(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.Any:
         """
         Proxies a downstream DELETE request to a service and injects the necessary credentials into a request stored in Vault. This allows you to have an additional security layer and logging without needing to rely on Unify for normalization.
         **Note**: Vault will proxy all data to the downstream URL and method/verb in the headers.
@@ -380,7 +376,7 @@ class AsyncExecuteClient:
 
         Returns
         -------
-        typing.Optional[typing.Any]
+        typing.Any
             Ok
 
         Examples
@@ -410,7 +406,7 @@ class AsyncExecuteClient:
 
     async def patch_proxy(
         self, *, request: PatchProxyRequestBody, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Optional[typing.Any]:
+    ) -> typing.Any:
         """
         Proxies a downstream PATCH request to a service and injects the necessary credentials into a request stored in Vault. This allows you to have an additional security layer and logging without needing to rely on Unify for normalization.
         **Note**: Vault will proxy all data to the downstream URL and method/verb in the headers.
@@ -424,7 +420,7 @@ class AsyncExecuteClient:
 
         Returns
         -------
-        typing.Optional[typing.Any]
+        typing.Any
             Ok
 
         Examples

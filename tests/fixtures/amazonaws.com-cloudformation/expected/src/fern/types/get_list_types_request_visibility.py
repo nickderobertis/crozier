@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GetListTypesRequestVisibility(str, enum.Enum):
+class GetListTypesRequestVisibility(enum.StrEnum):
     PUBLIC = "PUBLIC"
     PRIVATE = "PRIVATE"
 

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class NonBreakingChangesPreference(str, enum.Enum):
+class NonBreakingChangesPreference(enum.StrEnum):
     IGNORE = "ignore"
     DISABLE = "disable"
 

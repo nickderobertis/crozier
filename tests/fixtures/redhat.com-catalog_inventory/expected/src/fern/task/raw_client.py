@@ -7,7 +7,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
@@ -18,6 +19,7 @@ from ..types.task_state import TaskState
 from ..types.task_status import TaskStatus
 from ..types.tasks_collection import TasksCollection
 from ..types.uuid_ import Uuid
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -32,8 +34,8 @@ class RawTaskClient:
         *,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        filter: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
-        sort_by: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
+        filter: typing.Optional[typing.Dict[str, typing.Any]] = None,
+        sort_by: typing.Optional[typing.Dict[str, typing.Any]] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[TasksCollection]:
         """
@@ -47,10 +49,10 @@ class RawTaskClient:
         offset : typing.Optional[int]
             The number of items to skip before starting to collect the result set.
 
-        filter : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        filter : typing.Optional[typing.Dict[str, typing.Any]]
             Filter for querying collections.
 
-        sort_by : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        sort_by : typing.Optional[typing.Dict[str, typing.Any]]
             The list of attribute and order to sort the result set by.
 
         request_options : typing.Optional[RequestOptions]
@@ -85,6 +87,10 @@ class RawTaskClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def show_task(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[Task]:
@@ -105,7 +111,7 @@ class RawTaskClient:
             Task info
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"tasks/{jsonable_encoder(id)}",
+            f"tasks/{encode_path_param(id)}",
             method="GET",
             request_options=request_options,
         )
@@ -123,9 +129,9 @@ class RawTaskClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -133,6 +139,10 @@ class RawTaskClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_task(
@@ -145,10 +155,10 @@ class RawTaskClient:
         controller_message_id: typing.Optional[str] = OMIT,
         created_at: typing.Optional[dt.datetime] = OMIT,
         id: typing.Optional[Uuid] = OMIT,
-        input: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        input: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         message: typing.Optional[str] = OMIT,
         name: typing.Optional[str] = OMIT,
-        output: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        output: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         owner: typing.Optional[str] = OMIT,
         source_id: typing.Optional[Id] = OMIT,
         state: typing.Optional[TaskState] = OMIT,
@@ -179,13 +189,13 @@ class RawTaskClient:
 
         id : typing.Optional[Uuid]
 
-        input : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        input : typing.Optional[typing.Dict[str, typing.Any]]
 
         message : typing.Optional[str]
 
         name : typing.Optional[str]
 
-        output : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        output : typing.Optional[typing.Dict[str, typing.Any]]
 
         owner : typing.Optional[str]
 
@@ -211,7 +221,7 @@ class RawTaskClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"tasks/{jsonable_encoder(id_)}",
+            f"tasks/{encode_path_param(id_)}",
             method="PATCH",
             json={
                 "archived_at": archived_at,
@@ -246,9 +256,9 @@ class RawTaskClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -257,9 +267,9 @@ class RawTaskClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -267,6 +277,10 @@ class RawTaskClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -279,8 +293,8 @@ class AsyncRawTaskClient:
         *,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        filter: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
-        sort_by: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None,
+        filter: typing.Optional[typing.Dict[str, typing.Any]] = None,
+        sort_by: typing.Optional[typing.Dict[str, typing.Any]] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[TasksCollection]:
         """
@@ -294,10 +308,10 @@ class AsyncRawTaskClient:
         offset : typing.Optional[int]
             The number of items to skip before starting to collect the result set.
 
-        filter : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        filter : typing.Optional[typing.Dict[str, typing.Any]]
             Filter for querying collections.
 
-        sort_by : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        sort_by : typing.Optional[typing.Dict[str, typing.Any]]
             The list of attribute and order to sort the result set by.
 
         request_options : typing.Optional[RequestOptions]
@@ -332,6 +346,10 @@ class AsyncRawTaskClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def show_task(
@@ -354,7 +372,7 @@ class AsyncRawTaskClient:
             Task info
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"tasks/{jsonable_encoder(id)}",
+            f"tasks/{encode_path_param(id)}",
             method="GET",
             request_options=request_options,
         )
@@ -372,9 +390,9 @@ class AsyncRawTaskClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -382,6 +400,10 @@ class AsyncRawTaskClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_task(
@@ -394,10 +416,10 @@ class AsyncRawTaskClient:
         controller_message_id: typing.Optional[str] = OMIT,
         created_at: typing.Optional[dt.datetime] = OMIT,
         id: typing.Optional[Uuid] = OMIT,
-        input: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        input: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         message: typing.Optional[str] = OMIT,
         name: typing.Optional[str] = OMIT,
-        output: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        output: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         owner: typing.Optional[str] = OMIT,
         source_id: typing.Optional[Id] = OMIT,
         state: typing.Optional[TaskState] = OMIT,
@@ -428,13 +450,13 @@ class AsyncRawTaskClient:
 
         id : typing.Optional[Uuid]
 
-        input : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        input : typing.Optional[typing.Dict[str, typing.Any]]
 
         message : typing.Optional[str]
 
         name : typing.Optional[str]
 
-        output : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        output : typing.Optional[typing.Dict[str, typing.Any]]
 
         owner : typing.Optional[str]
 
@@ -460,7 +482,7 @@ class AsyncRawTaskClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"tasks/{jsonable_encoder(id_)}",
+            f"tasks/{encode_path_param(id_)}",
             method="PATCH",
             json={
                 "archived_at": archived_at,
@@ -495,9 +517,9 @@ class AsyncRawTaskClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -506,9 +528,9 @@ class AsyncRawTaskClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -516,4 +538,8 @@ class AsyncRawTaskClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

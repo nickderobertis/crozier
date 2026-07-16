@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class MonsterSpecialAbilitiesItemUsageType(str, enum.Enum):
+class MonsterSpecialAbilitiesItemUsageType(enum.StrEnum):
     AT_WILL = "at will"
     PER_DAY = "per day"
     RECHARGE_AFTER_REST = "recharge after rest"

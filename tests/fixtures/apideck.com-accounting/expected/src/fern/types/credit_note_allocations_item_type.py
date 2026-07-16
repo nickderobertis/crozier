@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class CreditNoteAllocationsItemType(str, enum.Enum):
+class CreditNoteAllocationsItemType(enum.StrEnum):
     """
     Type of entity this payment should be attributed to.
     """

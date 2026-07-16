@@ -14,17 +14,25 @@ from .workspace_id import WorkspaceId
 
 class DestinationSearch(UniversalBaseModel):
     connection_configuration: typing_extensions.Annotated[
-        typing.Optional[DestinationConfiguration], FieldMetadata(alias="connectionConfiguration")
+        typing.Optional[DestinationConfiguration],
+        FieldMetadata(alias="connectionConfiguration"),
+        pydantic.Field(alias="connectionConfiguration"),
     ] = None
     destination_definition_id: typing_extensions.Annotated[
-        typing.Optional[DestinationDefinitionId], FieldMetadata(alias="destinationDefinitionId")
+        typing.Optional[DestinationDefinitionId],
+        FieldMetadata(alias="destinationDefinitionId"),
+        pydantic.Field(alias="destinationDefinitionId"),
     ] = None
     destination_id: typing_extensions.Annotated[
-        typing.Optional[DestinationId], FieldMetadata(alias="destinationId")
+        typing.Optional[DestinationId], FieldMetadata(alias="destinationId"), pydantic.Field(alias="destinationId")
     ] = None
-    destination_name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="destinationName")] = None
+    destination_name: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="destinationName"), pydantic.Field(alias="destinationName")
+    ] = None
     name: typing.Optional[str] = None
-    workspace_id: typing_extensions.Annotated[typing.Optional[WorkspaceId], FieldMetadata(alias="workspaceId")] = None
+    workspace_id: typing_extensions.Annotated[
+        typing.Optional[WorkspaceId], FieldMetadata(alias="workspaceId"), pydantic.Field(alias="workspaceId")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

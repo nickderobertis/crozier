@@ -10,9 +10,11 @@ from .destiny_historical_stats_destiny_historical_stats_value import DestinyHist
 
 
 class DestinyHistoricalStatsDestinyAggregateActivityStats(UniversalBaseModel):
-    activity_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="activityHash")] = (
-        pydantic.Field(default=None)
-    )
+    activity_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="activityHash"),
+        pydantic.Field(alias="activityHash", description="Hash ID that can be looked up in the DestinyActivityTable."),
+    ] = None
     """
     Hash ID that can be looked up in the DestinyActivityTable.
     """

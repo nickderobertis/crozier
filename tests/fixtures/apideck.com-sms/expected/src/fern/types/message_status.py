@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class MessageStatus(str, enum.Enum):
+class MessageStatus(enum.StrEnum):
     """
     Status of the delivery of the message.
     """

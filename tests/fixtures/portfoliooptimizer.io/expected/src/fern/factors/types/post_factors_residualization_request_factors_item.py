@@ -9,9 +9,14 @@ from ...core.serialization import FieldMetadata
 
 
 class PostFactorsResidualizationRequestFactorsItem(UniversalBaseModel):
-    factor_returns: typing_extensions.Annotated[typing.List[float], FieldMetadata(alias="factorReturns")] = (
-        pydantic.Field()
-    )
+    factor_returns: typing_extensions.Annotated[
+        typing.List[float],
+        FieldMetadata(alias="factorReturns"),
+        pydantic.Field(
+            alias="factorReturns",
+            description="factorReturns[t] is the return of the factor at the time t; all the factorReturns arrays must have the same length",
+        ),
+    ]
     """
     factorReturns[t] is the return of the factor at the time t; all the factorReturns arrays must have the same length
     """

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class StreamTransformTransformType(str, enum.Enum):
+class StreamTransformTransformType(enum.StrEnum):
     ADD_STREAM = "add_stream"
     REMOVE_STREAM = "remove_stream"
     UPDATE_STREAM = "update_stream"

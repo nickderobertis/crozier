@@ -9,7 +9,7 @@ from .get_user_external_id_response_user import GetUserExternalIdResponseUser
 
 class GetUserExternalIdResponse(UniversalBaseModel):
     user: GetUserExternalIdResponseUser
-    user_badges: typing.List[typing.Optional[typing.Any]]
+    user_badges: typing.List[typing.Any]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

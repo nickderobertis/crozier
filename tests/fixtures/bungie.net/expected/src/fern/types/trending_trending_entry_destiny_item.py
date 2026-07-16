@@ -9,7 +9,9 @@ from ..core.serialization import FieldMetadata
 
 
 class TrendingTrendingEntryDestinyItem(UniversalBaseModel):
-    item_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="itemHash")] = None
+    item_hash: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="itemHash"), pydantic.Field(alias="itemHash")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

@@ -13,12 +13,17 @@ class DestinyDefinitionsDestinyVendorCategoryOverlayDefinition(UniversalBaseMode
     The details of an overlay prompt to show to a user. They are all fairly self-explanatory localized strings that can be shown.
     """
 
-    choice_description: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="choiceDescription")] = (
-        None
-    )
-    currency_item_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="currencyItemHash")] = (
-        pydantic.Field(default=None)
-    )
+    choice_description: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="choiceDescription"), pydantic.Field(alias="choiceDescription")
+    ] = None
+    currency_item_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="currencyItemHash"),
+        pydantic.Field(
+            alias="currencyItemHash",
+            description="If this overlay has a currency item that it features, this is said featured item.",
+        ),
+    ] = None
     """
     If this overlay has a currency item that it features, this is said featured item.
     """

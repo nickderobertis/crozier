@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class MeasurementUnitGeneric(str, enum.Enum):
+class MeasurementUnitGeneric(enum.StrEnum):
     """ """
 
     UNIT = "UNIT"

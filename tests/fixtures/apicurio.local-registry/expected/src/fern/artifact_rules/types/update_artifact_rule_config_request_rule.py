@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class UpdateArtifactRuleConfigRequestRule(str, enum.Enum):
+class UpdateArtifactRuleConfigRequestRule(enum.StrEnum):
     VALIDITY = "VALIDITY"
     COMPATIBILITY = "COMPATIBILITY"
 

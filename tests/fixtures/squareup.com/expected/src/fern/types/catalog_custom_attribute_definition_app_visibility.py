@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class CatalogCustomAttributeDefinitionAppVisibility(str, enum.Enum):
+class CatalogCustomAttributeDefinitionAppVisibility(enum.StrEnum):
     """
     Defines the visibility of a custom attribute to applications other than their
     creating application.

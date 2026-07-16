@@ -9,9 +9,14 @@ from ..core.serialization import FieldMetadata
 
 
 class RegisterTypeOutput(UniversalBaseModel):
-    registration_token: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="RegistrationToken")] = (
-        pydantic.Field(default=None)
-    )
+    registration_token: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="RegistrationToken"),
+        pydantic.Field(
+            alias="RegistrationToken",
+            description="<p>The identifier for this registration request.</p> <p>Use this registration token when calling <code> <a>DescribeTypeRegistration</a> </code>, which returns information about the status and IDs of the extension registration.</p>",
+        ),
+    ] = None
     """
     <p>The identifier for this registration request.</p> <p>Use this registration token when calling <code> <a>DescribeTypeRegistration</a> </code>, which returns information about the status and IDs of the extension registration.</p>
     """

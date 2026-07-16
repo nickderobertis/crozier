@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PostAssetsReturnsSimulationBootstrapRequestBootstrapMethod(str, enum.Enum):
+class PostAssetsReturnsSimulationBootstrapRequestBootstrapMethod(enum.StrEnum):
     """
     The bootstrap method to use
     """

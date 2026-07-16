@@ -9,16 +9,26 @@ from ...core.serialization import FieldMetadata
 
 
 class PostPortfolioConstructionInvestableResponse(UniversalBaseModel):
-    assets_positions: typing_extensions.Annotated[typing.List[float], FieldMetadata(alias="assetsPositions")] = (
-        pydantic.Field()
-    )
+    assets_positions: typing_extensions.Annotated[
+        typing.List[float],
+        FieldMetadata(alias="assetsPositions"),
+        pydantic.Field(
+            alias="assetsPositions",
+            description="assetsPositions[i] is the number of shares of the asset i in the portfolio",
+        ),
+    ]
     """
     assetsPositions[i] is the number of shares of the asset i in the portfolio
     """
 
-    assets_weights: typing_extensions.Annotated[typing.List[float], FieldMetadata(alias="assetsWeights")] = (
-        pydantic.Field()
-    )
+    assets_weights: typing_extensions.Annotated[
+        typing.List[float],
+        FieldMetadata(alias="assetsWeights"),
+        pydantic.Field(
+            alias="assetsWeights",
+            description="assetsWeights[i] is the weight of the asset i in the portfolio, in percentage",
+        ),
+    ]
     """
     assetsWeights[i] is the weight of the asset i in the portfolio, in percentage
     """

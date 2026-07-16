@@ -10,15 +10,25 @@ from ...core.serialization import FieldMetadata
 
 class PostPortfolioAnalysisContributionsReturnResponsePortfoliosItem(UniversalBaseModel):
     assets_groups_return_contributions: typing_extensions.Annotated[
-        typing.Optional[typing.List[float]], FieldMetadata(alias="assetsGroupsReturnContributions")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[float]],
+        FieldMetadata(alias="assetsGroupsReturnContributions"),
+        pydantic.Field(
+            alias="assetsGroupsReturnContributions",
+            description="assetsGroupsReturnContributions[k] is the return contribution of the group of assets k to the return of the portfolio",
+        ),
+    ] = None
     """
     assetsGroupsReturnContributions[k] is the return contribution of the group of assets k to the return of the portfolio
     """
 
     assets_return_contributions: typing_extensions.Annotated[
-        typing.List[float], FieldMetadata(alias="assetsReturnContributions")
-    ] = pydantic.Field()
+        typing.List[float],
+        FieldMetadata(alias="assetsReturnContributions"),
+        pydantic.Field(
+            alias="assetsReturnContributions",
+            description="assetsReturnContributions[i] is the return contribution of the asset i to the return of the portfolio",
+        ),
+    ]
     """
     assetsReturnContributions[i] is the return contribution of the asset i to the return of the portfolio
     """

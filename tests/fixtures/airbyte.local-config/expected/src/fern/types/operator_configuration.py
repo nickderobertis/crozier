@@ -15,7 +15,9 @@ from .operator_webhook import OperatorWebhook
 class OperatorConfiguration(UniversalBaseModel):
     dbt: typing.Optional[OperatorDbt] = None
     normalization: typing.Optional[OperatorNormalization] = None
-    operator_type: typing_extensions.Annotated[OperatorType, FieldMetadata(alias="operatorType")]
+    operator_type: typing_extensions.Annotated[
+        OperatorType, FieldMetadata(alias="operatorType"), pydantic.Field(alias="operatorType")
+    ]
     webhook: typing.Optional[OperatorWebhook] = None
 
     if IS_PYDANTIC_V2:

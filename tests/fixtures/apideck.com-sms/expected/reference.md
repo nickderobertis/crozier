@@ -1,6 +1,6 @@
 # Reference
 ## Messages
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">all_</a>(...)</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py">all</a>(...) -> GetMessagesResponse</code></summary>
 <dl>
 <dd>
 
@@ -28,13 +28,15 @@ List Messages
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.messages.all_(
     fields="id,updated_at",
 )
@@ -97,7 +99,7 @@ client.messages.all_(
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">add</a>(...)</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py">add</a>(...) -> CreateMessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -125,13 +127,15 @@ Create Message
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.messages.add(
     body="Hi! How are you doing?",
     from_="+15017122661",
@@ -152,23 +156,7 @@ client.messages.add(
 <dl>
 <dd>
 
-**body:** `str` — The message text.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**from_:** `str` — The phone number that initiated the message.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**to:** `str` — The phone number that received the message.
+**request:** `Message` 
     
 </dd>
 </dl>
@@ -177,150 +165,6 @@ client.messages.add(
 <dd>
 
 **raw:** `typing.Optional[bool]` — Include raw response. Mostly used for debugging purposes
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_at:** `typing.Optional[dt.datetime]` — The date and time when the object was created.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_by:** `typing.Optional[str]` — The user who created the object.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**direction:** `typing.Optional[MessageDirection]` — The direction of the message.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**error:** `typing.Optional[MessageError]` — The error returned if your message status is failed or undelivered.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[str]` — A unique identifier for an object.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**messaging_service_id:** `typing.Optional[str]` — The ID of the Messaging Service used with the message. In case of Plivo this links to the Powerpack ID.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**number_of_media_files:** `typing.Optional[int]` — The number of media files associated with the message.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**number_of_units:** `typing.Optional[int]` — The number of units that make up the complete message. Messages can be split up due to the constraints of the message size.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**price:** `typing.Optional[MessagePrice]` — Price of the message.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**reference:** `typing.Optional[str]` — A client reference.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**scheduled_at:** `typing.Optional[dt.datetime]` — The scheduled date and time of the message.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**sent_at:** `typing.Optional[dt.datetime]` — The date and time that the message was sent
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[MessageStatus]` — Status of the delivery of the message.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**subject:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**type:** `typing.Optional[MessageType]` — Set to sms for SMS messages and mms for MMS messages.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_at:** `typing.Optional[dt.datetime]` — The date and time when the object was last updated.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_by:** `typing.Optional[str]` — The user who last updated the object.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**webhook_url:** `typing.Optional[str]` — Define a webhook to receive delivery notifications.
     
 </dd>
 </dl>
@@ -340,7 +184,7 @@ client.messages.add(
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">one</a>(...)</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py">one</a>(...) -> GetMessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -368,13 +212,15 @@ Get Message
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.messages.one(
     id="id",
     fields="id,updated_at",
@@ -430,7 +276,7 @@ client.messages.one(
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py">delete</a>(...) -> DeleteMessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -458,13 +304,15 @@ Delete Message
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.messages.delete(
     id="id",
 )
@@ -511,7 +359,7 @@ client.messages.delete(
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">update</a>(...)</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py">update</a>(...) -> UpdateMessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -539,13 +387,15 @@ Update Message
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    apideck_consumer_id="YOUR_APIDECK_CONSUMER_ID",
-    apideck_app_id="YOUR_APIDECK_APP_ID",
-    apideck_service_id="YOUR_APIDECK_SERVICE_ID",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    apideck_consumer_id="<x-apideck-consumer-id>",
+    apideck_app_id="<x-apideck-app-id>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.messages.update(
     id_="id",
     body="Hi! How are you doing?",
@@ -567,7 +417,7 @@ client.messages.update(
 <dl>
 <dd>
 
-**id_:** `str` — ID of the record you are acting upon.
+**id:** `str` — ID of the record you are acting upon.
     
 </dd>
 </dl>
@@ -575,23 +425,7 @@ client.messages.update(
 <dl>
 <dd>
 
-**body:** `str` — The message text.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**from_:** `str` — The phone number that initiated the message.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**to:** `str` — The phone number that received the message.
+**request:** `Message` 
     
 </dd>
 </dl>
@@ -600,150 +434,6 @@ client.messages.update(
 <dd>
 
 **raw:** `typing.Optional[bool]` — Include raw response. Mostly used for debugging purposes
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_at:** `typing.Optional[dt.datetime]` — The date and time when the object was created.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_by:** `typing.Optional[str]` — The user who created the object.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**direction:** `typing.Optional[MessageDirection]` — The direction of the message.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**error:** `typing.Optional[MessageError]` — The error returned if your message status is failed or undelivered.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[str]` — A unique identifier for an object.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**messaging_service_id:** `typing.Optional[str]` — The ID of the Messaging Service used with the message. In case of Plivo this links to the Powerpack ID.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**number_of_media_files:** `typing.Optional[int]` — The number of media files associated with the message.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**number_of_units:** `typing.Optional[int]` — The number of units that make up the complete message. Messages can be split up due to the constraints of the message size.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**price:** `typing.Optional[MessagePrice]` — Price of the message.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**reference:** `typing.Optional[str]` — A client reference.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**scheduled_at:** `typing.Optional[dt.datetime]` — The scheduled date and time of the message.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**sent_at:** `typing.Optional[dt.datetime]` — The date and time that the message was sent
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[MessageStatus]` — Status of the delivery of the message.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**subject:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**type:** `typing.Optional[MessageType]` — Set to sms for SMS messages and mms for MMS messages.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_at:** `typing.Optional[dt.datetime]` — The date and time when the object was last updated.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**updated_by:** `typing.Optional[str]` — The user who last updated the object.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**webhook_url:** `typing.Optional[str]` — Define a webhook to receive delivery notifications.
     
 </dd>
 </dl>

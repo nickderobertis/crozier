@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "twilio.com-twilio_voice_v1",
+  "corpus_spec_ref": "1.42.0",
+  "corpus_spec_url": "https://api.apis.guru/v2/specs/twilio.com/twilio_voice_v1/1.42.0/openapi.json"
+}

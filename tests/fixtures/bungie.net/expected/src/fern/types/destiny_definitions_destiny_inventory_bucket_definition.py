@@ -18,9 +18,14 @@ class DestinyDefinitionsDestinyInventoryBucketDefinition(UniversalBaseModel):
     You cannot transfer an item to a bucket that is not its Default without going through a Vendor's "accepted items" (DestinyVendorDefinition.acceptedItems). This is how transfer functionality like the Vault is implemented, as a feature of a Vendor. See the vendor's acceptedItems property for more details.
     """
 
-    bucket_order: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="bucketOrder")] = (
-        pydantic.Field(default=None)
-    )
+    bucket_order: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="bucketOrder"),
+        pydantic.Field(
+            alias="bucketOrder",
+            description="Use this property to provide a quick-and-dirty recommended ordering for buckets in the UI. Most UIs will likely want to forsake this for something more custom and manual.",
+        ),
+    ] = None
     """
     Use this property to provide a quick-and-dirty recommended ordering for buckets in the UI. Most UIs will likely want to forsake this for something more custom and manual.
     """
@@ -33,6 +38,7 @@ class DestinyDefinitionsDestinyInventoryBucketDefinition(UniversalBaseModel):
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
+        pydantic.Field(alias="displayProperties"),
     ] = None
     enabled: typing.Optional[bool] = pydantic.Field(default=None)
     """
@@ -45,8 +51,13 @@ class DestinyDefinitionsDestinyInventoryBucketDefinition(UniversalBaseModel):
     """
 
     has_transfer_destination: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="hasTransferDestination")
-    ] = pydantic.Field(default=None)
+        typing.Optional[bool],
+        FieldMetadata(alias="hasTransferDestination"),
+        pydantic.Field(
+            alias="hasTransferDestination",
+            description="If TRUE, there is at least one Vendor that can transfer items to/from this bucket. See the DestinyVendorDefinition's acceptedItems property for more information on how transferring works.",
+        ),
+    ] = None
     """
     If TRUE, there is at least one Vendor that can transfer items to/from this bucket. See the DestinyVendorDefinition's acceptedItems property for more information on how transferring works.
     """
@@ -62,9 +73,14 @@ class DestinyDefinitionsDestinyInventoryBucketDefinition(UniversalBaseModel):
     The index of the entity as it was found in the investment tables.
     """
 
-    item_count: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="itemCount")] = pydantic.Field(
-        default=None
-    )
+    item_count: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="itemCount"),
+        pydantic.Field(
+            alias="itemCount",
+            description='The maximum # of item "slots" in a bucket. A slot is a given combination of item + quantity.\r\nFor instance, a Weapon will always take up a single slot, and always have a quantity of 1. But a material could take up only a single slot with hundreds of quantity.',
+        ),
+    ] = None
     """
     The maximum # of item "slots" in a bucket. A slot is a given combination of item + quantity.
     For instance, a Weapon will always take up a single slot, and always have a quantity of 1. But a material could take up only a single slot with hundreds of quantity.

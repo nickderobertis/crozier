@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class VoiceV1ByocTrunkStatusCallbackMethod(str, enum.Enum):
+class VoiceV1ByocTrunkStatusCallbackMethod(enum.StrEnum):
     """
     The HTTP method we use to call `status_callback_url`. Either `GET` or `POST`.
     """

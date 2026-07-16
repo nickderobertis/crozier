@@ -8,7 +8,8 @@ from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.datetime_utils import serialize_datetime
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from .types.destiny2awa_get_action_token_response import Destiny2AwaGetActionTokenResponse
@@ -58,6 +59,7 @@ from .types.destiny2set_quest_tracked_state_response import Destiny2SetQuestTrac
 from .types.destiny2snapshot_loadout_response import Destiny2SnapshotLoadoutResponse
 from .types.destiny2transfer_item_response import Destiny2TransferItemResponse
 from .types.destiny2update_loadout_identifiers_response import Destiny2UpdateLoadoutIdentifiersResponse
+from pydantic import ValidationError
 
 
 class RawDestiny2Client:
@@ -98,6 +100,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def equipitems(
@@ -134,6 +140,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def insertsocketplug(
@@ -170,6 +180,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def insertsocketplugfree(
@@ -206,6 +220,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def pullfrompostmaster(
@@ -242,6 +260,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def setitemlockstate(
@@ -278,6 +300,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def setquesttrackedstate(
@@ -314,6 +340,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def transferitem(
@@ -350,6 +380,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def clearloadout(
@@ -386,6 +420,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def equiploadout(
@@ -422,6 +460,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def snapshotloadout(
@@ -458,6 +500,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def updateloadoutidentifiers(
@@ -494,6 +540,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def searchdestinyentities(
@@ -527,7 +577,7 @@ class RawDestiny2Client:
             The results of a search for Destiny content. This will be improved on over time, I've been doing some experimenting to see what might be useful.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Destiny2/Armory/Search/{jsonable_encoder(type)}/{jsonable_encoder(search_term)}/",
+            f"Destiny2/Armory/Search/{encode_path_param(type)}/{encode_path_param(search_term)}/",
             method="GET",
             params={
                 "page": page,
@@ -547,6 +597,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def awaprovideauthorizationresult(
@@ -583,6 +637,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def awagetactiontoken(
@@ -605,7 +663,7 @@ class RawDestiny2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Destiny2/Awa/GetActionToken/{jsonable_encoder(correlation_id)}/",
+            f"Destiny2/Awa/GetActionToken/{encode_path_param(correlation_id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -622,6 +680,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def awainitializerequest(
@@ -658,6 +720,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getclanbannersource(
@@ -694,6 +760,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getclanweeklyrewardstate(
@@ -716,7 +786,7 @@ class RawDestiny2Client:
             Represents a runtime instance of a user's milestone status. Live Milestone data should be combined with DestinyMilestoneDefinition data to show the user a picture of what is available for them to do in the game, and their status in regards to said "things to do." Consider it a big, wonky to-do list, or Advisors 3.0 for those who remember the Destiny 1 API.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Destiny2/Clan/{jsonable_encoder(group_id)}/WeeklyRewardState/",
+            f"Destiny2/Clan/{encode_path_param(group_id)}/WeeklyRewardState/",
             method="GET",
             request_options=request_options,
         )
@@ -733,6 +803,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getdestinymanifest(
@@ -769,6 +843,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getdestinyentitydefinition(
@@ -794,7 +872,7 @@ class RawDestiny2Client:
             Provides common properties for destiny definitions.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Destiny2/Manifest/{jsonable_encoder(entity_type)}/{jsonable_encoder(hash_identifier)}/",
+            f"Destiny2/Manifest/{encode_path_param(entity_type)}/{encode_path_param(hash_identifier)}/",
             method="GET",
             request_options=request_options,
         )
@@ -811,6 +889,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getpublicmilestones(
@@ -847,6 +929,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getpublicmilestonecontent(
@@ -869,7 +955,7 @@ class RawDestiny2Client:
             Represents localized, extended content related to Milestones. This is intentionally returned by a separate endpoint and not with Character-level Milestone data because we do not put localized data into standard Destiny responses, both for brevity of response and for caching purposes. If you really need this data, hit the Milestone Content endpoint.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Destiny2/Milestones/{jsonable_encoder(milestone_hash)}/Content/",
+            f"Destiny2/Milestones/{encode_path_param(milestone_hash)}/Content/",
             method="GET",
             request_options=request_options,
         )
@@ -886,6 +972,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def searchdestinyplayerbybungiename(
@@ -908,7 +998,7 @@ class RawDestiny2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Destiny2/SearchDestinyPlayerByBungieName/{jsonable_encoder(membership_type)}/",
+            f"Destiny2/SearchDestinyPlayerByBungieName/{encode_path_param(membership_type)}/",
             method="POST",
             request_options=request_options,
         )
@@ -925,6 +1015,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getclanaggregatestats(
@@ -954,7 +1048,7 @@ class RawDestiny2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Destiny2/Stats/AggregateClanStats/{jsonable_encoder(group_id)}/",
+            f"Destiny2/Stats/AggregateClanStats/{encode_path_param(group_id)}/",
             method="GET",
             params={
                 "modes": modes,
@@ -974,6 +1068,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def gethistoricalstatsdefinition(
@@ -1010,6 +1108,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getclanleaderboards(
@@ -1047,7 +1149,7 @@ class RawDestiny2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Destiny2/Stats/Leaderboards/Clans/{jsonable_encoder(group_id)}/",
+            f"Destiny2/Stats/Leaderboards/Clans/{encode_path_param(group_id)}/",
             method="GET",
             params={
                 "maxtop": maxtop,
@@ -1069,6 +1171,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getleaderboardsforcharacter(
@@ -1114,7 +1220,7 @@ class RawDestiny2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Destiny2/Stats/Leaderboards/{jsonable_encoder(membership_type)}/{jsonable_encoder(destiny_membership_id)}/{jsonable_encoder(character_id)}/",
+            f"Destiny2/Stats/Leaderboards/{encode_path_param(membership_type)}/{encode_path_param(destiny_membership_id)}/{encode_path_param(character_id)}/",
             method="GET",
             params={
                 "maxtop": maxtop,
@@ -1136,6 +1242,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getpostgamecarnagereport(
@@ -1158,7 +1268,7 @@ class RawDestiny2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Destiny2/Stats/PostGameCarnageReport/{jsonable_encoder(activity_id)}/",
+            f"Destiny2/Stats/PostGameCarnageReport/{encode_path_param(activity_id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -1175,6 +1285,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def reportoffensivepostgamecarnagereportplayer(
@@ -1197,7 +1311,7 @@ class RawDestiny2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Destiny2/Stats/PostGameCarnageReport/{jsonable_encoder(activity_id)}/Report/",
+            f"Destiny2/Stats/PostGameCarnageReport/{encode_path_param(activity_id)}/Report/",
             method="POST",
             request_options=request_options,
         )
@@ -1214,6 +1328,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getpublicvendors(
@@ -1244,7 +1362,9 @@ class RawDestiny2Client:
             "Destiny2/Vendors/",
             method="GET",
             params={
-                "components": components,
+                "components": ",".join(map(str, components))
+                if isinstance(components, (list, tuple, set))
+                else components,
             },
             request_options=request_options,
         )
@@ -1261,6 +1381,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def gethistoricalstats(
@@ -1314,13 +1438,13 @@ class RawDestiny2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Destiny2/{jsonable_encoder(membership_type)}/Account/{jsonable_encoder(destiny_membership_id)}/Character/{jsonable_encoder(character_id)}/Stats/",
+            f"Destiny2/{encode_path_param(membership_type)}/Account/{encode_path_param(destiny_membership_id)}/Character/{encode_path_param(character_id)}/Stats/",
             method="GET",
             params={
                 "dayend": serialize_datetime(dayend) if dayend is not None else None,
                 "daystart": serialize_datetime(daystart) if daystart is not None else None,
-                "groups": groups,
-                "modes": modes,
+                "groups": ",".join(map(str, groups)) if isinstance(groups, (list, tuple, set)) else groups,
+                "modes": ",".join(map(str, modes)) if isinstance(modes, (list, tuple, set)) else modes,
                 "periodType": period_type,
             },
             request_options=request_options,
@@ -1338,6 +1462,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getactivityhistory(
@@ -1383,7 +1511,7 @@ class RawDestiny2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Destiny2/{jsonable_encoder(membership_type)}/Account/{jsonable_encoder(destiny_membership_id)}/Character/{jsonable_encoder(character_id)}/Stats/Activities/",
+            f"Destiny2/{encode_path_param(membership_type)}/Account/{encode_path_param(destiny_membership_id)}/Character/{encode_path_param(character_id)}/Stats/Activities/",
             method="GET",
             params={
                 "count": count,
@@ -1405,6 +1533,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getdestinyaggregateactivitystats(
@@ -1438,7 +1570,7 @@ class RawDestiny2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Destiny2/{jsonable_encoder(membership_type)}/Account/{jsonable_encoder(destiny_membership_id)}/Character/{jsonable_encoder(character_id)}/Stats/AggregateActivityStats/",
+            f"Destiny2/{encode_path_param(membership_type)}/Account/{encode_path_param(destiny_membership_id)}/Character/{encode_path_param(character_id)}/Stats/AggregateActivityStats/",
             method="GET",
             request_options=request_options,
         )
@@ -1455,6 +1587,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getuniqueweaponhistory(
@@ -1488,7 +1624,7 @@ class RawDestiny2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Destiny2/{jsonable_encoder(membership_type)}/Account/{jsonable_encoder(destiny_membership_id)}/Character/{jsonable_encoder(character_id)}/Stats/UniqueWeapons/",
+            f"Destiny2/{encode_path_param(membership_type)}/Account/{encode_path_param(destiny_membership_id)}/Character/{encode_path_param(character_id)}/Stats/UniqueWeapons/",
             method="GET",
             request_options=request_options,
         )
@@ -1505,6 +1641,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def gethistoricalstatsforaccount(
@@ -1538,10 +1678,10 @@ class RawDestiny2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Destiny2/{jsonable_encoder(membership_type)}/Account/{jsonable_encoder(destiny_membership_id)}/Stats/",
+            f"Destiny2/{encode_path_param(membership_type)}/Account/{encode_path_param(destiny_membership_id)}/Stats/",
             method="GET",
             params={
-                "groups": groups,
+                "groups": ",".join(map(str, groups)) if isinstance(groups, (list, tuple, set)) else groups,
             },
             request_options=request_options,
         )
@@ -1558,6 +1698,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getleaderboards(
@@ -1599,7 +1743,7 @@ class RawDestiny2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Destiny2/{jsonable_encoder(membership_type)}/Account/{jsonable_encoder(destiny_membership_id)}/Stats/Leaderboards/",
+            f"Destiny2/{encode_path_param(membership_type)}/Account/{encode_path_param(destiny_membership_id)}/Stats/Leaderboards/",
             method="GET",
             params={
                 "maxtop": maxtop,
@@ -1621,6 +1765,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getprofile(
@@ -1654,10 +1802,12 @@ class RawDestiny2Client:
             The response for GetDestinyProfile, with components for character and item-level data.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Destiny2/{jsonable_encoder(membership_type)}/Profile/{jsonable_encoder(destiny_membership_id)}/",
+            f"Destiny2/{encode_path_param(membership_type)}/Profile/{encode_path_param(destiny_membership_id)}/",
             method="GET",
             params={
-                "components": components,
+                "components": ",".join(map(str, components))
+                if isinstance(components, (list, tuple, set))
+                else components,
             },
             request_options=request_options,
         )
@@ -1674,6 +1824,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getcharacter(
@@ -1711,10 +1865,12 @@ class RawDestiny2Client:
             The response contract for GetDestinyCharacter, with components that can be returned for character and item-level data.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Destiny2/{jsonable_encoder(membership_type)}/Profile/{jsonable_encoder(destiny_membership_id)}/Character/{jsonable_encoder(character_id)}/",
+            f"Destiny2/{encode_path_param(membership_type)}/Profile/{encode_path_param(destiny_membership_id)}/Character/{encode_path_param(character_id)}/",
             method="GET",
             params={
-                "components": components,
+                "components": ",".join(map(str, components))
+                if isinstance(components, (list, tuple, set))
+                else components,
             },
             request_options=request_options,
         )
@@ -1731,6 +1887,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getcollectiblenodedetails(
@@ -1772,10 +1932,12 @@ class RawDestiny2Client:
             Returns the detailed information about a Collectible Presentation Node and any Collectibles that are direct descendants.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Destiny2/{jsonable_encoder(membership_type)}/Profile/{jsonable_encoder(destiny_membership_id)}/Character/{jsonable_encoder(character_id)}/Collectibles/{jsonable_encoder(collectible_presentation_node_hash)}/",
+            f"Destiny2/{encode_path_param(membership_type)}/Profile/{encode_path_param(destiny_membership_id)}/Character/{encode_path_param(character_id)}/Collectibles/{encode_path_param(collectible_presentation_node_hash)}/",
             method="GET",
             params={
-                "components": components,
+                "components": ",".join(map(str, components))
+                if isinstance(components, (list, tuple, set))
+                else components,
             },
             request_options=request_options,
         )
@@ -1792,6 +1954,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getvendors(
@@ -1833,10 +1999,12 @@ class RawDestiny2Client:
             A response containing all of the components for all requested vendors.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Destiny2/{jsonable_encoder(membership_type)}/Profile/{jsonable_encoder(destiny_membership_id)}/Character/{jsonable_encoder(character_id)}/Vendors/",
+            f"Destiny2/{encode_path_param(membership_type)}/Profile/{encode_path_param(destiny_membership_id)}/Character/{encode_path_param(character_id)}/Vendors/",
             method="GET",
             params={
-                "components": components,
+                "components": ",".join(map(str, components))
+                if isinstance(components, (list, tuple, set))
+                else components,
                 "filter": filter,
             },
             request_options=request_options,
@@ -1854,6 +2022,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getvendor(
@@ -1895,10 +2067,12 @@ class RawDestiny2Client:
             A response containing all of the components for a vendor.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Destiny2/{jsonable_encoder(membership_type)}/Profile/{jsonable_encoder(destiny_membership_id)}/Character/{jsonable_encoder(character_id)}/Vendors/{jsonable_encoder(vendor_hash)}/",
+            f"Destiny2/{encode_path_param(membership_type)}/Profile/{encode_path_param(destiny_membership_id)}/Character/{encode_path_param(character_id)}/Vendors/{encode_path_param(vendor_hash)}/",
             method="GET",
             params={
-                "components": components,
+                "components": ",".join(map(str, components))
+                if isinstance(components, (list, tuple, set))
+                else components,
             },
             request_options=request_options,
         )
@@ -1915,6 +2089,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getitem(
@@ -1952,10 +2130,12 @@ class RawDestiny2Client:
             The response object for retrieving an individual instanced item. None of these components are relevant for an item that doesn't have an "itemInstanceId": for those, get your information from the DestinyInventoryDefinition.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Destiny2/{jsonable_encoder(membership_type)}/Profile/{jsonable_encoder(destiny_membership_id)}/Item/{jsonable_encoder(item_instance_id)}/",
+            f"Destiny2/{encode_path_param(membership_type)}/Profile/{encode_path_param(destiny_membership_id)}/Item/{encode_path_param(item_instance_id)}/",
             method="GET",
             params={
-                "components": components,
+                "components": ",".join(map(str, components))
+                if isinstance(components, (list, tuple, set))
+                else components,
             },
             request_options=request_options,
         )
@@ -1972,6 +2152,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def getlinkedprofiles(
@@ -2006,7 +2190,7 @@ class RawDestiny2Client:
             This contract returns a minimal amount of data about Destiny Accounts that are linked through your Bungie.Net account. We will not return accounts in this response whose
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Destiny2/{jsonable_encoder(membership_type)}/Profile/{jsonable_encoder(membership_id)}/LinkedProfiles/",
+            f"Destiny2/{encode_path_param(membership_type)}/Profile/{encode_path_param(membership_id)}/LinkedProfiles/",
             method="GET",
             params={
                 "getAllMemberships": get_all_memberships,
@@ -2026,6 +2210,10 @@ class RawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -2067,6 +2255,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def equipitems(
@@ -2103,6 +2295,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def insertsocketplug(
@@ -2139,6 +2335,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def insertsocketplugfree(
@@ -2175,6 +2375,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def pullfrompostmaster(
@@ -2211,6 +2415,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def setitemlockstate(
@@ -2247,6 +2455,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def setquesttrackedstate(
@@ -2283,6 +2495,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def transferitem(
@@ -2319,6 +2535,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def clearloadout(
@@ -2355,6 +2575,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def equiploadout(
@@ -2391,6 +2615,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def snapshotloadout(
@@ -2427,6 +2655,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def updateloadoutidentifiers(
@@ -2463,6 +2695,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def searchdestinyentities(
@@ -2496,7 +2732,7 @@ class AsyncRawDestiny2Client:
             The results of a search for Destiny content. This will be improved on over time, I've been doing some experimenting to see what might be useful.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Destiny2/Armory/Search/{jsonable_encoder(type)}/{jsonable_encoder(search_term)}/",
+            f"Destiny2/Armory/Search/{encode_path_param(type)}/{encode_path_param(search_term)}/",
             method="GET",
             params={
                 "page": page,
@@ -2516,6 +2752,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def awaprovideauthorizationresult(
@@ -2552,6 +2792,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def awagetactiontoken(
@@ -2574,7 +2818,7 @@ class AsyncRawDestiny2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Destiny2/Awa/GetActionToken/{jsonable_encoder(correlation_id)}/",
+            f"Destiny2/Awa/GetActionToken/{encode_path_param(correlation_id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -2591,6 +2835,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def awainitializerequest(
@@ -2627,6 +2875,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getclanbannersource(
@@ -2663,6 +2915,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getclanweeklyrewardstate(
@@ -2685,7 +2941,7 @@ class AsyncRawDestiny2Client:
             Represents a runtime instance of a user's milestone status. Live Milestone data should be combined with DestinyMilestoneDefinition data to show the user a picture of what is available for them to do in the game, and their status in regards to said "things to do." Consider it a big, wonky to-do list, or Advisors 3.0 for those who remember the Destiny 1 API.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Destiny2/Clan/{jsonable_encoder(group_id)}/WeeklyRewardState/",
+            f"Destiny2/Clan/{encode_path_param(group_id)}/WeeklyRewardState/",
             method="GET",
             request_options=request_options,
         )
@@ -2702,6 +2958,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getdestinymanifest(
@@ -2738,6 +2998,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getdestinyentitydefinition(
@@ -2763,7 +3027,7 @@ class AsyncRawDestiny2Client:
             Provides common properties for destiny definitions.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Destiny2/Manifest/{jsonable_encoder(entity_type)}/{jsonable_encoder(hash_identifier)}/",
+            f"Destiny2/Manifest/{encode_path_param(entity_type)}/{encode_path_param(hash_identifier)}/",
             method="GET",
             request_options=request_options,
         )
@@ -2780,6 +3044,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getpublicmilestones(
@@ -2816,6 +3084,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getpublicmilestonecontent(
@@ -2838,7 +3110,7 @@ class AsyncRawDestiny2Client:
             Represents localized, extended content related to Milestones. This is intentionally returned by a separate endpoint and not with Character-level Milestone data because we do not put localized data into standard Destiny responses, both for brevity of response and for caching purposes. If you really need this data, hit the Milestone Content endpoint.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Destiny2/Milestones/{jsonable_encoder(milestone_hash)}/Content/",
+            f"Destiny2/Milestones/{encode_path_param(milestone_hash)}/Content/",
             method="GET",
             request_options=request_options,
         )
@@ -2855,6 +3127,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def searchdestinyplayerbybungiename(
@@ -2877,7 +3153,7 @@ class AsyncRawDestiny2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Destiny2/SearchDestinyPlayerByBungieName/{jsonable_encoder(membership_type)}/",
+            f"Destiny2/SearchDestinyPlayerByBungieName/{encode_path_param(membership_type)}/",
             method="POST",
             request_options=request_options,
         )
@@ -2894,6 +3170,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getclanaggregatestats(
@@ -2923,7 +3203,7 @@ class AsyncRawDestiny2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Destiny2/Stats/AggregateClanStats/{jsonable_encoder(group_id)}/",
+            f"Destiny2/Stats/AggregateClanStats/{encode_path_param(group_id)}/",
             method="GET",
             params={
                 "modes": modes,
@@ -2943,6 +3223,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def gethistoricalstatsdefinition(
@@ -2979,6 +3263,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getclanleaderboards(
@@ -3016,7 +3304,7 @@ class AsyncRawDestiny2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Destiny2/Stats/Leaderboards/Clans/{jsonable_encoder(group_id)}/",
+            f"Destiny2/Stats/Leaderboards/Clans/{encode_path_param(group_id)}/",
             method="GET",
             params={
                 "maxtop": maxtop,
@@ -3038,6 +3326,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getleaderboardsforcharacter(
@@ -3083,7 +3375,7 @@ class AsyncRawDestiny2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Destiny2/Stats/Leaderboards/{jsonable_encoder(membership_type)}/{jsonable_encoder(destiny_membership_id)}/{jsonable_encoder(character_id)}/",
+            f"Destiny2/Stats/Leaderboards/{encode_path_param(membership_type)}/{encode_path_param(destiny_membership_id)}/{encode_path_param(character_id)}/",
             method="GET",
             params={
                 "maxtop": maxtop,
@@ -3105,6 +3397,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getpostgamecarnagereport(
@@ -3127,7 +3423,7 @@ class AsyncRawDestiny2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Destiny2/Stats/PostGameCarnageReport/{jsonable_encoder(activity_id)}/",
+            f"Destiny2/Stats/PostGameCarnageReport/{encode_path_param(activity_id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -3144,6 +3440,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def reportoffensivepostgamecarnagereportplayer(
@@ -3166,7 +3466,7 @@ class AsyncRawDestiny2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Destiny2/Stats/PostGameCarnageReport/{jsonable_encoder(activity_id)}/Report/",
+            f"Destiny2/Stats/PostGameCarnageReport/{encode_path_param(activity_id)}/Report/",
             method="POST",
             request_options=request_options,
         )
@@ -3183,6 +3483,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getpublicvendors(
@@ -3213,7 +3517,9 @@ class AsyncRawDestiny2Client:
             "Destiny2/Vendors/",
             method="GET",
             params={
-                "components": components,
+                "components": ",".join(map(str, components))
+                if isinstance(components, (list, tuple, set))
+                else components,
             },
             request_options=request_options,
         )
@@ -3230,6 +3536,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def gethistoricalstats(
@@ -3283,13 +3593,13 @@ class AsyncRawDestiny2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Destiny2/{jsonable_encoder(membership_type)}/Account/{jsonable_encoder(destiny_membership_id)}/Character/{jsonable_encoder(character_id)}/Stats/",
+            f"Destiny2/{encode_path_param(membership_type)}/Account/{encode_path_param(destiny_membership_id)}/Character/{encode_path_param(character_id)}/Stats/",
             method="GET",
             params={
                 "dayend": serialize_datetime(dayend) if dayend is not None else None,
                 "daystart": serialize_datetime(daystart) if daystart is not None else None,
-                "groups": groups,
-                "modes": modes,
+                "groups": ",".join(map(str, groups)) if isinstance(groups, (list, tuple, set)) else groups,
+                "modes": ",".join(map(str, modes)) if isinstance(modes, (list, tuple, set)) else modes,
                 "periodType": period_type,
             },
             request_options=request_options,
@@ -3307,6 +3617,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getactivityhistory(
@@ -3352,7 +3666,7 @@ class AsyncRawDestiny2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Destiny2/{jsonable_encoder(membership_type)}/Account/{jsonable_encoder(destiny_membership_id)}/Character/{jsonable_encoder(character_id)}/Stats/Activities/",
+            f"Destiny2/{encode_path_param(membership_type)}/Account/{encode_path_param(destiny_membership_id)}/Character/{encode_path_param(character_id)}/Stats/Activities/",
             method="GET",
             params={
                 "count": count,
@@ -3374,6 +3688,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getdestinyaggregateactivitystats(
@@ -3407,7 +3725,7 @@ class AsyncRawDestiny2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Destiny2/{jsonable_encoder(membership_type)}/Account/{jsonable_encoder(destiny_membership_id)}/Character/{jsonable_encoder(character_id)}/Stats/AggregateActivityStats/",
+            f"Destiny2/{encode_path_param(membership_type)}/Account/{encode_path_param(destiny_membership_id)}/Character/{encode_path_param(character_id)}/Stats/AggregateActivityStats/",
             method="GET",
             request_options=request_options,
         )
@@ -3424,6 +3742,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getuniqueweaponhistory(
@@ -3457,7 +3779,7 @@ class AsyncRawDestiny2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Destiny2/{jsonable_encoder(membership_type)}/Account/{jsonable_encoder(destiny_membership_id)}/Character/{jsonable_encoder(character_id)}/Stats/UniqueWeapons/",
+            f"Destiny2/{encode_path_param(membership_type)}/Account/{encode_path_param(destiny_membership_id)}/Character/{encode_path_param(character_id)}/Stats/UniqueWeapons/",
             method="GET",
             request_options=request_options,
         )
@@ -3474,6 +3796,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def gethistoricalstatsforaccount(
@@ -3507,10 +3833,10 @@ class AsyncRawDestiny2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Destiny2/{jsonable_encoder(membership_type)}/Account/{jsonable_encoder(destiny_membership_id)}/Stats/",
+            f"Destiny2/{encode_path_param(membership_type)}/Account/{encode_path_param(destiny_membership_id)}/Stats/",
             method="GET",
             params={
-                "groups": groups,
+                "groups": ",".join(map(str, groups)) if isinstance(groups, (list, tuple, set)) else groups,
             },
             request_options=request_options,
         )
@@ -3527,6 +3853,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getleaderboards(
@@ -3568,7 +3898,7 @@ class AsyncRawDestiny2Client:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Destiny2/{jsonable_encoder(membership_type)}/Account/{jsonable_encoder(destiny_membership_id)}/Stats/Leaderboards/",
+            f"Destiny2/{encode_path_param(membership_type)}/Account/{encode_path_param(destiny_membership_id)}/Stats/Leaderboards/",
             method="GET",
             params={
                 "maxtop": maxtop,
@@ -3590,6 +3920,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getprofile(
@@ -3623,10 +3957,12 @@ class AsyncRawDestiny2Client:
             The response for GetDestinyProfile, with components for character and item-level data.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Destiny2/{jsonable_encoder(membership_type)}/Profile/{jsonable_encoder(destiny_membership_id)}/",
+            f"Destiny2/{encode_path_param(membership_type)}/Profile/{encode_path_param(destiny_membership_id)}/",
             method="GET",
             params={
-                "components": components,
+                "components": ",".join(map(str, components))
+                if isinstance(components, (list, tuple, set))
+                else components,
             },
             request_options=request_options,
         )
@@ -3643,6 +3979,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getcharacter(
@@ -3680,10 +4020,12 @@ class AsyncRawDestiny2Client:
             The response contract for GetDestinyCharacter, with components that can be returned for character and item-level data.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Destiny2/{jsonable_encoder(membership_type)}/Profile/{jsonable_encoder(destiny_membership_id)}/Character/{jsonable_encoder(character_id)}/",
+            f"Destiny2/{encode_path_param(membership_type)}/Profile/{encode_path_param(destiny_membership_id)}/Character/{encode_path_param(character_id)}/",
             method="GET",
             params={
-                "components": components,
+                "components": ",".join(map(str, components))
+                if isinstance(components, (list, tuple, set))
+                else components,
             },
             request_options=request_options,
         )
@@ -3700,6 +4042,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getcollectiblenodedetails(
@@ -3741,10 +4087,12 @@ class AsyncRawDestiny2Client:
             Returns the detailed information about a Collectible Presentation Node and any Collectibles that are direct descendants.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Destiny2/{jsonable_encoder(membership_type)}/Profile/{jsonable_encoder(destiny_membership_id)}/Character/{jsonable_encoder(character_id)}/Collectibles/{jsonable_encoder(collectible_presentation_node_hash)}/",
+            f"Destiny2/{encode_path_param(membership_type)}/Profile/{encode_path_param(destiny_membership_id)}/Character/{encode_path_param(character_id)}/Collectibles/{encode_path_param(collectible_presentation_node_hash)}/",
             method="GET",
             params={
-                "components": components,
+                "components": ",".join(map(str, components))
+                if isinstance(components, (list, tuple, set))
+                else components,
             },
             request_options=request_options,
         )
@@ -3761,6 +4109,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getvendors(
@@ -3802,10 +4154,12 @@ class AsyncRawDestiny2Client:
             A response containing all of the components for all requested vendors.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Destiny2/{jsonable_encoder(membership_type)}/Profile/{jsonable_encoder(destiny_membership_id)}/Character/{jsonable_encoder(character_id)}/Vendors/",
+            f"Destiny2/{encode_path_param(membership_type)}/Profile/{encode_path_param(destiny_membership_id)}/Character/{encode_path_param(character_id)}/Vendors/",
             method="GET",
             params={
-                "components": components,
+                "components": ",".join(map(str, components))
+                if isinstance(components, (list, tuple, set))
+                else components,
                 "filter": filter,
             },
             request_options=request_options,
@@ -3823,6 +4177,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getvendor(
@@ -3864,10 +4222,12 @@ class AsyncRawDestiny2Client:
             A response containing all of the components for a vendor.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Destiny2/{jsonable_encoder(membership_type)}/Profile/{jsonable_encoder(destiny_membership_id)}/Character/{jsonable_encoder(character_id)}/Vendors/{jsonable_encoder(vendor_hash)}/",
+            f"Destiny2/{encode_path_param(membership_type)}/Profile/{encode_path_param(destiny_membership_id)}/Character/{encode_path_param(character_id)}/Vendors/{encode_path_param(vendor_hash)}/",
             method="GET",
             params={
-                "components": components,
+                "components": ",".join(map(str, components))
+                if isinstance(components, (list, tuple, set))
+                else components,
             },
             request_options=request_options,
         )
@@ -3884,6 +4244,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getitem(
@@ -3921,10 +4285,12 @@ class AsyncRawDestiny2Client:
             The response object for retrieving an individual instanced item. None of these components are relevant for an item that doesn't have an "itemInstanceId": for those, get your information from the DestinyInventoryDefinition.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Destiny2/{jsonable_encoder(membership_type)}/Profile/{jsonable_encoder(destiny_membership_id)}/Item/{jsonable_encoder(item_instance_id)}/",
+            f"Destiny2/{encode_path_param(membership_type)}/Profile/{encode_path_param(destiny_membership_id)}/Item/{encode_path_param(item_instance_id)}/",
             method="GET",
             params={
-                "components": components,
+                "components": ",".join(map(str, components))
+                if isinstance(components, (list, tuple, set))
+                else components,
             },
             request_options=request_options,
         )
@@ -3941,6 +4307,10 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def getlinkedprofiles(
@@ -3975,7 +4345,7 @@ class AsyncRawDestiny2Client:
             This contract returns a minimal amount of data about Destiny Accounts that are linked through your Bungie.Net account. We will not return accounts in this response whose
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Destiny2/{jsonable_encoder(membership_type)}/Profile/{jsonable_encoder(membership_id)}/LinkedProfiles/",
+            f"Destiny2/{encode_path_param(membership_type)}/Profile/{encode_path_param(membership_id)}/LinkedProfiles/",
             method="GET",
             params={
                 "getAllMemberships": get_all_memberships,
@@ -3995,4 +4365,8 @@ class AsyncRawDestiny2Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

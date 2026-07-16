@@ -13,7 +13,9 @@ class Secret(UniversalBaseModel):
     A Secret allows grouping informations on how to access a restricted resource such as a repsoitory URL. Secrets are typically used by ImpoortJobs.
     """
 
-    ca_cert_pem: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="caCertPem")] = None
+    ca_cert_pem: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="caCertPem"), pydantic.Field(alias="caCertPem")
+    ] = None
     description: str = pydantic.Field()
     """
     Description of this Secret
@@ -31,7 +33,9 @@ class Secret(UniversalBaseModel):
 
     password: typing.Optional[str] = None
     token: typing.Optional[str] = None
-    token_header: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="tokenHeader")] = None
+    token_header: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="tokenHeader"), pydantic.Field(alias="tokenHeader")
+    ] = None
     username: typing.Optional[str] = None
 
     if IS_PYDANTIC_V2:

@@ -10,8 +10,13 @@ from ...core.serialization import FieldMetadata
 
 class PostAssetsCorrelationMatrixInformativenessResponse(UniversalBaseModel):
     assets_correlation_matrix_informativeness: typing_extensions.Annotated[
-        float, FieldMetadata(alias="assetsCorrelationMatrixInformativeness")
-    ] = pydantic.Field()
+        float,
+        FieldMetadata(alias="assetsCorrelationMatrixInformativeness"),
+        pydantic.Field(
+            alias="assetsCorrelationMatrixInformativeness",
+            description="The informativeness of the asset correlation matrix",
+        ),
+    ]
     """
     The informativeness of the asset correlation matrix
     """

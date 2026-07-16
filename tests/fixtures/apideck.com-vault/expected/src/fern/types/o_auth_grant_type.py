@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class OAuthGrantType(str, enum.Enum):
+class OAuthGrantType(enum.StrEnum):
     """
     OAuth grant type used by the connector. More info: https://oauth.net/2/grant-types
     """

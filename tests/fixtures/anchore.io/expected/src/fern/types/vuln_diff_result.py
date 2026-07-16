@@ -11,9 +11,9 @@ class VulnDiffResult(UniversalBaseModel):
     The results of the comparing two vulnerability records during an update
     """
 
-    added: typing.Optional[typing.List[typing.Optional[typing.Any]]] = None
-    removed: typing.Optional[typing.List[typing.Optional[typing.Any]]] = None
-    updated: typing.Optional[typing.List[typing.Optional[typing.Any]]] = None
+    added: typing.Optional[typing.List[typing.Any]] = None
+    removed: typing.Optional[typing.List[typing.Any]] = None
+    updated: typing.Optional[typing.List[typing.Any]] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

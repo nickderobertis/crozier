@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class WritableWirelessLinkAuthType(str, enum.Enum):
+class WritableWirelessLinkAuthType(enum.StrEnum):
     OPEN = "open"
     WEP = "wep"
     WPA_PERSONAL = "wpa-personal"

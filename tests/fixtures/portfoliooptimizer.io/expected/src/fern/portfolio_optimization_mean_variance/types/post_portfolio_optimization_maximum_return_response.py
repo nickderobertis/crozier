@@ -9,9 +9,14 @@ from ...core.serialization import FieldMetadata
 
 
 class PostPortfolioOptimizationMaximumReturnResponse(UniversalBaseModel):
-    assets_weights: typing_extensions.Annotated[typing.List[float], FieldMetadata(alias="assetsWeights")] = (
-        pydantic.Field()
-    )
+    assets_weights: typing_extensions.Annotated[
+        typing.List[float],
+        FieldMetadata(alias="assetsWeights"),
+        pydantic.Field(
+            alias="assetsWeights",
+            description="assetsWeights[i] is the weight of the asset i in the portfolio, in percentage",
+        ),
+    ]
     """
     assetsWeights[i] is the weight of the asset i in the portfolio, in percentage
     """

@@ -1,6 +1,6 @@
 # Reference
 ## App
-<details><summary><code>client.app.<a href="src/fern/app/client.py">getapplicationapiusage</a>(...)</code></summary>
+<details><summary><code>client.app.<a href="src/fern/app/client.py">getapplicationapiusage</a>(...) -> AppGetApplicationApiUsageResponse</code></summary>
 <dl>
 <dd>
 
@@ -28,10 +28,13 @@ Get API usage by application for time frame specified. You can go as far back as
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.app.getapplicationapiusage(
     application_id=1,
 )
@@ -58,7 +61,7 @@ client.app.getapplicationapiusage(
 <dl>
 <dd>
 
-**end:** `typing.Optional[dt.datetime]` — End time for query. Goes to now if not specified.
+**end:** `typing.Optional[datetime.datetime]` — End time for query. Goes to now if not specified.
     
 </dd>
 </dl>
@@ -66,7 +69,7 @@ client.app.getapplicationapiusage(
 <dl>
 <dd>
 
-**start:** `typing.Optional[dt.datetime]` — Start time for query. Goes to 24 hours ago if not specified.
+**start:** `typing.Optional[datetime.datetime]` — Start time for query. Goes to 24 hours ago if not specified.
     
 </dd>
 </dl>
@@ -86,7 +89,7 @@ client.app.getapplicationapiusage(
 </dl>
 </details>
 
-<details><summary><code>client.app.<a href="src/fern/app/client.py">getbungieapplications</a>()</code></summary>
+<details><summary><code>client.app.<a href="src/fern/app/client.py">getbungieapplications</a>() -> AppGetBungieApplicationsResponse</code></summary>
 <dl>
 <dd>
 
@@ -114,10 +117,13 @@ Get list of applications created by Bungie.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.app.getbungieapplications()
 
 ```
@@ -147,7 +153,7 @@ client.app.getbungieapplications()
 </details>
 
 ## CommunityContent
-<details><summary><code>client.communitycontent.<a href="src/fern/communitycontent/client.py">getcommunitycontent</a>(...)</code></summary>
+<details><summary><code>client.communitycontent.<a href="src/fern/communitycontent/client.py">getcommunitycontent</a>(...) -> CommunityContentGetCommunityContentResponse</code></summary>
 <dl>
 <dd>
 
@@ -175,10 +181,13 @@ Returns community content.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.communitycontent.getcommunitycontent(
     sort=1,
     media_filter=1,
@@ -236,7 +245,7 @@ client.communitycontent.getcommunitycontent(
 </details>
 
 ## Content
-<details><summary><code>client.content.<a href="src/fern/content/client.py">getcontentbyid</a>(...)</code></summary>
+<details><summary><code>client.content.<a href="src/fern/content/client.py">getcontentbyid</a>(...) -> ContentGetContentByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -264,10 +273,13 @@ Returns a content item referenced by id
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.content.getcontentbyid(
     id=1000000,
     locale="locale",
@@ -323,7 +335,7 @@ client.content.getcontentbyid(
 </dl>
 </details>
 
-<details><summary><code>client.content.<a href="src/fern/content/client.py">getcontentbytagandtype</a>(...)</code></summary>
+<details><summary><code>client.content.<a href="src/fern/content/client.py">getcontentbytagandtype</a>(...) -> ContentGetContentByTagAndTypeResponse</code></summary>
 <dl>
 <dd>
 
@@ -351,10 +363,13 @@ Returns the newest item that matches a given tag and Content Type.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.content.getcontentbytagandtype(
     tag="tag",
     type="type",
@@ -419,7 +434,7 @@ client.content.getcontentbytagandtype(
 </dl>
 </details>
 
-<details><summary><code>client.content.<a href="src/fern/content/client.py">getcontenttype</a>(...)</code></summary>
+<details><summary><code>client.content.<a href="src/fern/content/client.py">getcontenttype</a>(...) -> ContentGetContentTypeResponse</code></summary>
 <dl>
 <dd>
 
@@ -447,10 +462,13 @@ Gets an object describing a particular variant of content.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.content.getcontenttype(
     type="type",
 )
@@ -489,7 +507,7 @@ client.content.getcontenttype(
 </dl>
 </details>
 
-<details><summary><code>client.content.<a href="src/fern/content/client.py">rssnewsarticles</a>(...)</code></summary>
+<details><summary><code>client.content.<a href="src/fern/content/client.py">rssnewsarticles</a>(...) -> ContentRssNewsArticlesResponse</code></summary>
 <dl>
 <dd>
 
@@ -517,10 +535,13 @@ Returns a JSON string response that is the RSS feed for news articles.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.content.rssnewsarticles(
     page_token="pageToken",
 )
@@ -575,7 +596,7 @@ client.content.rssnewsarticles(
 </dl>
 </details>
 
-<details><summary><code>client.content.<a href="src/fern/content/client.py">searchcontentwithtext</a>(...)</code></summary>
+<details><summary><code>client.content.<a href="src/fern/content/client.py">searchcontentwithtext</a>(...) -> ContentSearchContentWithTextResponse</code></summary>
 <dl>
 <dd>
 
@@ -603,10 +624,13 @@ Gets content based on querystring information passed in. Provides basic search a
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.content.searchcontentwithtext(
     locale="locale",
 )
@@ -693,7 +717,7 @@ client.content.searchcontentwithtext(
 </dl>
 </details>
 
-<details><summary><code>client.content.<a href="src/fern/content/client.py">searchcontentbytagandtype</a>(...)</code></summary>
+<details><summary><code>client.content.<a href="src/fern/content/client.py">searchcontentbytagandtype</a>(...) -> ContentSearchContentByTagAndTypeResponse</code></summary>
 <dl>
 <dd>
 
@@ -721,10 +745,13 @@ Searches for Content Items that match the given Tag and Content Type.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.content.searchcontentbytagandtype(
     tag="tag",
     type="type",
@@ -805,7 +832,7 @@ client.content.searchcontentbytagandtype(
 </dl>
 </details>
 
-<details><summary><code>client.content.<a href="src/fern/content/client.py">searchhelparticles</a>(...)</code></summary>
+<details><summary><code>client.content.<a href="src/fern/content/client.py">searchhelparticles</a>(...) -> ContentSearchHelpArticlesResponse</code></summary>
 <dl>
 <dd>
 
@@ -833,10 +860,13 @@ Search for Help Articles.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.content.searchhelparticles(
     searchtext="searchtext",
     size="size",
@@ -885,7 +915,7 @@ client.content.searchhelparticles(
 </details>
 
 ## Destiny2
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">equipitem</a>()</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">equipitem</a>() -> Destiny2EquipItemResponse</code></summary>
 <dl>
 <dd>
 
@@ -913,10 +943,13 @@ Equip an item. You must have a valid Destiny Account, and either be in a social 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.equipitem()
 
 ```
@@ -945,7 +978,7 @@ client.destiny2.equipitem()
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">equipitems</a>()</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">equipitems</a>() -> Destiny2EquipItemsResponse</code></summary>
 <dl>
 <dd>
 
@@ -973,10 +1006,13 @@ Equip a list of items by itemInstanceIds. You must have a valid Destiny Account,
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.equipitems()
 
 ```
@@ -1005,7 +1041,7 @@ client.destiny2.equipitems()
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">insertsocketplug</a>()</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">insertsocketplug</a>() -> Destiny2InsertSocketPlugResponse</code></summary>
 <dl>
 <dd>
 
@@ -1033,10 +1069,13 @@ Insert a plug into a socketed item. I know how it sounds, but I assure you it's 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.insertsocketplug()
 
 ```
@@ -1065,7 +1104,7 @@ client.destiny2.insertsocketplug()
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">insertsocketplugfree</a>()</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">insertsocketplugfree</a>() -> Destiny2InsertSocketPlugFreeResponse</code></summary>
 <dl>
 <dd>
 
@@ -1093,10 +1132,13 @@ Insert a 'free' plug into an item's socket. This does not require 'Advanced Writ
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.insertsocketplugfree()
 
 ```
@@ -1125,7 +1167,7 @@ client.destiny2.insertsocketplugfree()
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">pullfrompostmaster</a>()</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">pullfrompostmaster</a>() -> Destiny2PullFromPostmasterResponse</code></summary>
 <dl>
 <dd>
 
@@ -1153,10 +1195,13 @@ Extract an item from the Postmaster, with whatever implications that may entail.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.pullfrompostmaster()
 
 ```
@@ -1185,7 +1230,7 @@ client.destiny2.pullfrompostmaster()
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">setitemlockstate</a>()</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">setitemlockstate</a>() -> Destiny2SetItemLockStateResponse</code></summary>
 <dl>
 <dd>
 
@@ -1213,10 +1258,13 @@ Set the Lock State for an instanced item. You must have a valid Destiny Account.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.setitemlockstate()
 
 ```
@@ -1245,7 +1293,7 @@ client.destiny2.setitemlockstate()
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">setquesttrackedstate</a>()</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">setquesttrackedstate</a>() -> Destiny2SetQuestTrackedStateResponse</code></summary>
 <dl>
 <dd>
 
@@ -1273,10 +1321,13 @@ Set the Tracking State for an instanced item, if that item is a Quest or Bounty.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.setquesttrackedstate()
 
 ```
@@ -1305,7 +1356,7 @@ client.destiny2.setquesttrackedstate()
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">transferitem</a>()</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">transferitem</a>() -> Destiny2TransferItemResponse</code></summary>
 <dl>
 <dd>
 
@@ -1333,10 +1384,13 @@ Transfer an item to/from your vault. You must have a valid Destiny account. You 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.transferitem()
 
 ```
@@ -1365,7 +1419,7 @@ client.destiny2.transferitem()
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">clearloadout</a>()</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">clearloadout</a>() -> Destiny2ClearLoadoutResponse</code></summary>
 <dl>
 <dd>
 
@@ -1393,10 +1447,13 @@ Clear the identifiers and items of a loadout.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.clearloadout()
 
 ```
@@ -1425,7 +1482,7 @@ client.destiny2.clearloadout()
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">equiploadout</a>()</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">equiploadout</a>() -> Destiny2EquipLoadoutResponse</code></summary>
 <dl>
 <dd>
 
@@ -1453,10 +1510,13 @@ Equip a loadout. You must have a valid Destiny Account, and either be in a socia
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.equiploadout()
 
 ```
@@ -1485,7 +1545,7 @@ client.destiny2.equiploadout()
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">snapshotloadout</a>()</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">snapshotloadout</a>() -> Destiny2SnapshotLoadoutResponse</code></summary>
 <dl>
 <dd>
 
@@ -1513,10 +1573,13 @@ Snapshot a loadout with the currently equipped items.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.snapshotloadout()
 
 ```
@@ -1545,7 +1608,7 @@ client.destiny2.snapshotloadout()
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">updateloadoutidentifiers</a>()</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">updateloadoutidentifiers</a>() -> Destiny2UpdateLoadoutIdentifiersResponse</code></summary>
 <dl>
 <dd>
 
@@ -1573,10 +1636,13 @@ Update the color, icon, and name of a loadout.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.updateloadoutidentifiers()
 
 ```
@@ -1605,7 +1671,7 @@ client.destiny2.updateloadoutidentifiers()
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">searchdestinyentities</a>(...)</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">searchdestinyentities</a>(...) -> Destiny2SearchDestinyEntitiesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1633,10 +1699,13 @@ Gets a page list of Destiny items.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.searchdestinyentities(
     type="type",
     search_term="searchTerm",
@@ -1692,7 +1761,7 @@ client.destiny2.searchdestinyentities(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">awaprovideauthorizationresult</a>()</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">awaprovideauthorizationresult</a>() -> Destiny2AwaProvideAuthorizationResultResponse</code></summary>
 <dl>
 <dd>
 
@@ -1720,10 +1789,13 @@ Provide the result of the user interaction. Called by the Bungie Destiny App to 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.awaprovideauthorizationresult()
 
 ```
@@ -1752,7 +1824,7 @@ client.destiny2.awaprovideauthorizationresult()
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">awagetactiontoken</a>(...)</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">awagetactiontoken</a>(...) -> Destiny2AwaGetActionTokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -1780,10 +1852,13 @@ Returns the action token if user approves the request.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.awagetactiontoken(
     correlation_id="correlationId",
 )
@@ -1822,7 +1897,7 @@ client.destiny2.awagetactiontoken(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">awainitializerequest</a>()</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">awainitializerequest</a>() -> Destiny2AwaInitializeRequestResponse</code></summary>
 <dl>
 <dd>
 
@@ -1850,10 +1925,13 @@ Initialize a request to perform an advanced write action.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.awainitializerequest()
 
 ```
@@ -1882,7 +1960,7 @@ client.destiny2.awainitializerequest()
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getclanbannersource</a>()</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getclanbannersource</a>() -> Destiny2GetClanBannerSourceResponse</code></summary>
 <dl>
 <dd>
 
@@ -1910,10 +1988,13 @@ Returns the dictionary of values for the Clan Banner
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.getclanbannersource()
 
 ```
@@ -1942,7 +2023,7 @@ client.destiny2.getclanbannersource()
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getclanweeklyrewardstate</a>(...)</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getclanweeklyrewardstate</a>(...) -> Destiny2GetClanWeeklyRewardStateResponse</code></summary>
 <dl>
 <dd>
 
@@ -1970,10 +2051,13 @@ Returns information on the weekly clan rewards and if the clan has earned them o
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.getclanweeklyrewardstate(
     group_id=1000000,
 )
@@ -2012,7 +2096,7 @@ client.destiny2.getclanweeklyrewardstate(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getdestinymanifest</a>()</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getdestinymanifest</a>() -> Destiny2GetDestinyManifestResponse</code></summary>
 <dl>
 <dd>
 
@@ -2040,10 +2124,13 @@ Returns the current version of the manifest as a json object.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.getdestinymanifest()
 
 ```
@@ -2072,7 +2159,7 @@ client.destiny2.getdestinymanifest()
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getdestinyentitydefinition</a>(...)</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getdestinyentitydefinition</a>(...) -> Destiny2GetDestinyEntityDefinitionResponse</code></summary>
 <dl>
 <dd>
 
@@ -2100,10 +2187,13 @@ Returns the static definition of an entity of the given Type and hash identifier
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.getdestinyentitydefinition(
     entity_type="entityType",
     hash_identifier=1,
@@ -2151,7 +2241,7 @@ client.destiny2.getdestinyentitydefinition(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getpublicmilestones</a>()</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getpublicmilestones</a>() -> Destiny2GetPublicMilestonesResponse</code></summary>
 <dl>
 <dd>
 
@@ -2179,10 +2269,13 @@ Gets public information about currently available Milestones.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.getpublicmilestones()
 
 ```
@@ -2211,7 +2304,7 @@ client.destiny2.getpublicmilestones()
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getpublicmilestonecontent</a>(...)</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getpublicmilestonecontent</a>(...) -> Destiny2GetPublicMilestoneContentResponse</code></summary>
 <dl>
 <dd>
 
@@ -2239,10 +2332,13 @@ Gets custom localized content for the milestone of the given hash, if it exists.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.getpublicmilestonecontent(
     milestone_hash=1,
 )
@@ -2281,7 +2377,7 @@ client.destiny2.getpublicmilestonecontent(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">searchdestinyplayerbybungiename</a>(...)</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">searchdestinyplayerbybungiename</a>(...) -> Destiny2SearchDestinyPlayerByBungieNameResponse</code></summary>
 <dl>
 <dd>
 
@@ -2309,10 +2405,13 @@ Returns a list of Destiny memberships given a global Bungie Display Name. This m
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.searchdestinyplayerbybungiename(
     membership_type=1,
 )
@@ -2351,7 +2450,7 @@ client.destiny2.searchdestinyplayerbybungiename(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getclanaggregatestats</a>(...)</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getclanaggregatestats</a>(...) -> Destiny2GetClanAggregateStatsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2379,10 +2478,13 @@ Gets aggregated stats for a clan using the same categories as the clan leaderboa
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.getclanaggregatestats(
     group_id=1000000,
 )
@@ -2429,7 +2531,7 @@ client.destiny2.getclanaggregatestats(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">gethistoricalstatsdefinition</a>()</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">gethistoricalstatsdefinition</a>() -> Destiny2GetHistoricalStatsDefinitionResponse</code></summary>
 <dl>
 <dd>
 
@@ -2457,10 +2559,13 @@ Gets historical stats definitions.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.gethistoricalstatsdefinition()
 
 ```
@@ -2489,7 +2594,7 @@ client.destiny2.gethistoricalstatsdefinition()
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getclanleaderboards</a>(...)</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getclanleaderboards</a>(...) -> Destiny2GetClanLeaderboardsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2517,10 +2622,13 @@ Gets leaderboards with the signed in user's friends and the supplied destinyMemb
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.getclanleaderboards(
     group_id=1000000,
 )
@@ -2583,7 +2691,7 @@ client.destiny2.getclanleaderboards(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getleaderboardsforcharacter</a>(...)</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getleaderboardsforcharacter</a>(...) -> Destiny2GetLeaderboardsForCharacterResponse</code></summary>
 <dl>
 <dd>
 
@@ -2611,10 +2719,13 @@ Gets leaderboards with the signed in user's friends and the supplied destinyMemb
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.getleaderboardsforcharacter(
     membership_type=1,
     destiny_membership_id=1000000,
@@ -2695,7 +2806,7 @@ client.destiny2.getleaderboardsforcharacter(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getpostgamecarnagereport</a>(...)</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getpostgamecarnagereport</a>(...) -> Destiny2GetPostGameCarnageReportResponse</code></summary>
 <dl>
 <dd>
 
@@ -2723,10 +2834,13 @@ Gets the available post game carnage report for the activity ID.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.getpostgamecarnagereport(
     activity_id=1000000,
 )
@@ -2765,7 +2879,7 @@ client.destiny2.getpostgamecarnagereport(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">reportoffensivepostgamecarnagereportplayer</a>(...)</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">reportoffensivepostgamecarnagereportplayer</a>(...) -> Destiny2ReportOffensivePostGameCarnageReportPlayerResponse</code></summary>
 <dl>
 <dd>
 
@@ -2793,10 +2907,13 @@ Report a player that you met in an activity that was engaging in ToS-violating a
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.reportoffensivepostgamecarnagereportplayer(
     activity_id=1000000,
 )
@@ -2835,7 +2952,7 @@ client.destiny2.reportoffensivepostgamecarnagereportplayer(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getpublicvendors</a>(...)</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getpublicvendors</a>(...) -> Destiny2GetPublicVendorsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2863,10 +2980,13 @@ Get items available from vendors where the vendors have items for sale that are 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.getpublicvendors()
 
 ```
@@ -2903,7 +3023,7 @@ client.destiny2.getpublicvendors()
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">gethistoricalstats</a>(...)</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">gethistoricalstats</a>(...) -> Destiny2GetHistoricalStatsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2931,10 +3051,13 @@ Gets historical stats for indicated character.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.gethistoricalstats(
     membership_type=1,
     destiny_membership_id=1000000,
@@ -2979,7 +3102,7 @@ client.destiny2.gethistoricalstats(
 <dl>
 <dd>
 
-**dayend:** `typing.Optional[dt.datetime]` — Last day to return when daily stats are requested. Use the format YYYY-MM-DD. Currently, we cannot allow more than 31 days of daily data to be requested in a single request.
+**dayend:** `typing.Optional[datetime.datetime]` — Last day to return when daily stats are requested. Use the format YYYY-MM-DD. Currently, we cannot allow more than 31 days of daily data to be requested in a single request.
     
 </dd>
 </dl>
@@ -2987,7 +3110,7 @@ client.destiny2.gethistoricalstats(
 <dl>
 <dd>
 
-**daystart:** `typing.Optional[dt.datetime]` — First day to return when daily stats are requested. Use the format YYYY-MM-DD. Currently, we cannot allow more than 31 days of daily data to be requested in a single request.
+**daystart:** `typing.Optional[datetime.datetime]` — First day to return when daily stats are requested. Use the format YYYY-MM-DD. Currently, we cannot allow more than 31 days of daily data to be requested in a single request.
     
 </dd>
 </dl>
@@ -3031,7 +3154,7 @@ client.destiny2.gethistoricalstats(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getactivityhistory</a>(...)</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getactivityhistory</a>(...) -> Destiny2GetActivityHistoryResponse</code></summary>
 <dl>
 <dd>
 
@@ -3059,10 +3182,13 @@ Gets activity history stats for indicated character.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.getactivityhistory(
     membership_type=1,
     destiny_membership_id=1000000,
@@ -3143,7 +3269,7 @@ client.destiny2.getactivityhistory(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getdestinyaggregateactivitystats</a>(...)</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getdestinyaggregateactivitystats</a>(...) -> Destiny2GetDestinyAggregateActivityStatsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3171,10 +3297,13 @@ Gets all activities the character has participated in together with aggregate st
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.getdestinyaggregateactivitystats(
     membership_type=1,
     destiny_membership_id=1000000,
@@ -3231,7 +3360,7 @@ client.destiny2.getdestinyaggregateactivitystats(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getuniqueweaponhistory</a>(...)</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getuniqueweaponhistory</a>(...) -> Destiny2GetUniqueWeaponHistoryResponse</code></summary>
 <dl>
 <dd>
 
@@ -3259,10 +3388,13 @@ Gets details about unique weapon usage, including all exotic weapons.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.getuniqueweaponhistory(
     membership_type=1,
     destiny_membership_id=1000000,
@@ -3319,7 +3451,7 @@ client.destiny2.getuniqueweaponhistory(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">gethistoricalstatsforaccount</a>(...)</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">gethistoricalstatsforaccount</a>(...) -> Destiny2GetHistoricalStatsForAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -3347,10 +3479,13 @@ Gets aggregate historical stats organized around each character for a given acco
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.gethistoricalstatsforaccount(
     membership_type=1,
     destiny_membership_id=1000000,
@@ -3406,7 +3541,7 @@ client.destiny2.gethistoricalstatsforaccount(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getleaderboards</a>(...)</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getleaderboards</a>(...) -> Destiny2GetLeaderboardsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3434,10 +3569,13 @@ Gets leaderboards with the signed in user's friends and the supplied destinyMemb
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.getleaderboards(
     membership_type=1,
     destiny_membership_id=1000000,
@@ -3509,7 +3647,7 @@ client.destiny2.getleaderboards(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getprofile</a>(...)</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getprofile</a>(...) -> Destiny2GetProfileResponse</code></summary>
 <dl>
 <dd>
 
@@ -3537,10 +3675,13 @@ Returns Destiny Profile information for the supplied membership.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.getprofile(
     membership_type=1,
     destiny_membership_id=1000000,
@@ -3596,7 +3737,7 @@ client.destiny2.getprofile(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getcharacter</a>(...)</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getcharacter</a>(...) -> Destiny2GetCharacterResponse</code></summary>
 <dl>
 <dd>
 
@@ -3624,10 +3765,13 @@ Returns character information for the supplied character.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.getcharacter(
     membership_type=1,
     destiny_membership_id=1000000,
@@ -3692,7 +3836,7 @@ client.destiny2.getcharacter(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getcollectiblenodedetails</a>(...)</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getcollectiblenodedetails</a>(...) -> Destiny2GetCollectibleNodeDetailsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3720,10 +3864,13 @@ Given a Presentation Node that has Collectibles as direct descendants, this will
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.getcollectiblenodedetails(
     membership_type=1,
     destiny_membership_id=1000000,
@@ -3797,7 +3944,7 @@ client.destiny2.getcollectiblenodedetails(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getvendors</a>(...)</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getvendors</a>(...) -> Destiny2GetVendorsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3825,10 +3972,13 @@ Get currently available vendors from the list of vendors that can possibly have 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.getvendors(
     membership_type=1,
     destiny_membership_id=1000000,
@@ -3901,7 +4051,7 @@ client.destiny2.getvendors(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getvendor</a>(...)</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getvendor</a>(...) -> Destiny2GetVendorResponse</code></summary>
 <dl>
 <dd>
 
@@ -3929,10 +4079,13 @@ Get the details of a specific Vendor.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.getvendor(
     membership_type=1,
     destiny_membership_id=1000000,
@@ -4006,7 +4159,7 @@ client.destiny2.getvendor(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getitem</a>(...)</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getitem</a>(...) -> Destiny2GetItemResponse</code></summary>
 <dl>
 <dd>
 
@@ -4034,10 +4187,13 @@ Retrieve the details of an instanced Destiny Item. An instanced Destiny item is 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.getitem(
     membership_type=1,
     destiny_membership_id=1000000,
@@ -4102,7 +4258,7 @@ client.destiny2.getitem(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getlinkedprofiles</a>(...)</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getlinkedprofiles</a>(...) -> Destiny2GetLinkedProfilesResponse</code></summary>
 <dl>
 <dd>
 
@@ -4130,10 +4286,13 @@ Returns a summary information about all profiles linked to the requesting member
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.destiny2.getlinkedprofiles(
     membership_type=1,
     membership_id=1000000,
@@ -4190,7 +4349,7 @@ client.destiny2.getlinkedprofiles(
 </details>
 
 ## Fireteam
-<details><summary><code>client.fireteam.<a href="src/fern/fireteam/client.py">getactiveprivateclanfireteamcount</a>(...)</code></summary>
+<details><summary><code>client.fireteam.<a href="src/fern/fireteam/client.py">getactiveprivateclanfireteamcount</a>(...) -> FireteamGetActivePrivateClanFireteamCountResponse</code></summary>
 <dl>
 <dd>
 
@@ -4218,10 +4377,13 @@ Gets a count of all active non-public fireteams for the specified clan. Maximum 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.fireteam.getactiveprivateclanfireteamcount(
     group_id=1000000,
 )
@@ -4260,7 +4422,7 @@ client.fireteam.getactiveprivateclanfireteamcount(
 </dl>
 </details>
 
-<details><summary><code>client.fireteam.<a href="src/fern/fireteam/client.py">getavailableclanfireteams</a>(...)</code></summary>
+<details><summary><code>client.fireteam.<a href="src/fern/fireteam/client.py">getavailableclanfireteams</a>(...) -> FireteamGetAvailableClanFireteamsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4288,10 +4450,13 @@ Gets a listing of all of this clan's fireteams that are have available slots. Ca
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.fireteam.getavailableclanfireteams(
     group_id=1000000,
     platform=1,
@@ -4400,7 +4565,7 @@ client.fireteam.getavailableclanfireteams(
 </dl>
 </details>
 
-<details><summary><code>client.fireteam.<a href="src/fern/fireteam/client.py">getmyclanfireteams</a>(...)</code></summary>
+<details><summary><code>client.fireteam.<a href="src/fern/fireteam/client.py">getmyclanfireteams</a>(...) -> FireteamGetMyClanFireteamsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4428,10 +4593,13 @@ Gets a listing of all fireteams that caller is an applicant, a member, or an alt
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.fireteam.getmyclanfireteams(
     group_id=1000000,
     platform=1,
@@ -4513,7 +4681,7 @@ client.fireteam.getmyclanfireteams(
 </dl>
 </details>
 
-<details><summary><code>client.fireteam.<a href="src/fern/fireteam/client.py">getclanfireteam</a>(...)</code></summary>
+<details><summary><code>client.fireteam.<a href="src/fern/fireteam/client.py">getclanfireteam</a>(...) -> FireteamGetClanFireteamResponse</code></summary>
 <dl>
 <dd>
 
@@ -4541,10 +4709,13 @@ Gets a specific fireteam.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.fireteam.getclanfireteam(
     group_id=1000000,
     fireteam_id=1000000,
@@ -4592,7 +4763,7 @@ client.fireteam.getclanfireteam(
 </dl>
 </details>
 
-<details><summary><code>client.fireteam.<a href="src/fern/fireteam/client.py">searchpublicavailableclanfireteams</a>(...)</code></summary>
+<details><summary><code>client.fireteam.<a href="src/fern/fireteam/client.py">searchpublicavailableclanfireteams</a>(...) -> FireteamSearchPublicAvailableClanFireteamsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4620,10 +4791,13 @@ Gets a listing of all public fireteams starting now with open slots. Caller is n
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.fireteam.searchpublicavailableclanfireteams(
     platform=1,
     activity_type=1,
@@ -4715,7 +4889,7 @@ client.fireteam.searchpublicavailableclanfireteams(
 </details>
 
 ## Forum
-<details><summary><code>client.forum.<a href="src/fern/forum/client.py">getcoretopicspaged</a>(...)</code></summary>
+<details><summary><code>client.forum.<a href="src/fern/forum/client.py">getcoretopicspaged</a>(...) -> ForumGetCoreTopicsPagedResponse</code></summary>
 <dl>
 <dd>
 
@@ -4743,10 +4917,13 @@ Gets a listing of all topics marked as part of the core group.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.forum.getcoretopicspaged(
     page=1,
     sort=1,
@@ -4820,7 +4997,7 @@ client.forum.getcoretopicspaged(
 </dl>
 </details>
 
-<details><summary><code>client.forum.<a href="src/fern/forum/client.py">getforumtagsuggestions</a>(...)</code></summary>
+<details><summary><code>client.forum.<a href="src/fern/forum/client.py">getforumtagsuggestions</a>(...) -> ForumGetForumTagSuggestionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4848,10 +5025,13 @@ Gets tag suggestions based on partial text entry, matching them with other tags 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.forum.getforumtagsuggestions()
 
 ```
@@ -4888,7 +5068,7 @@ client.forum.getforumtagsuggestions()
 </dl>
 </details>
 
-<details><summary><code>client.forum.<a href="src/fern/forum/client.py">getpostandparent</a>(...)</code></summary>
+<details><summary><code>client.forum.<a href="src/fern/forum/client.py">getpostandparent</a>(...) -> ForumGetPostAndParentResponse</code></summary>
 <dl>
 <dd>
 
@@ -4916,10 +5096,13 @@ Returns the post specified and its immediate parent.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.forum.getpostandparent(
     child_post_id=1000000,
 )
@@ -4966,7 +5149,7 @@ client.forum.getpostandparent(
 </dl>
 </details>
 
-<details><summary><code>client.forum.<a href="src/fern/forum/client.py">getpostandparentawaitingapproval</a>(...)</code></summary>
+<details><summary><code>client.forum.<a href="src/fern/forum/client.py">getpostandparentawaitingapproval</a>(...) -> ForumGetPostAndParentAwaitingApprovalResponse</code></summary>
 <dl>
 <dd>
 
@@ -4994,10 +5177,13 @@ Returns the post specified and its immediate parent of posts that are awaiting a
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.forum.getpostandparentawaitingapproval(
     child_post_id=1000000,
 )
@@ -5044,7 +5230,7 @@ client.forum.getpostandparentawaitingapproval(
 </dl>
 </details>
 
-<details><summary><code>client.forum.<a href="src/fern/forum/client.py">getpoststhreadedpaged</a>(...)</code></summary>
+<details><summary><code>client.forum.<a href="src/fern/forum/client.py">getpoststhreadedpaged</a>(...) -> ForumGetPostsThreadedPagedResponse</code></summary>
 <dl>
 <dd>
 
@@ -5072,10 +5258,13 @@ Returns a thread of posts at the given parent, optionally returning replies to t
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.forum.getpoststhreadedpaged(
     parent_post_id=1000000,
     page=1,
@@ -5176,7 +5365,7 @@ client.forum.getpoststhreadedpaged(
 </dl>
 </details>
 
-<details><summary><code>client.forum.<a href="src/fern/forum/client.py">getpoststhreadedpagedfromchild</a>(...)</code></summary>
+<details><summary><code>client.forum.<a href="src/fern/forum/client.py">getpoststhreadedpagedfromchild</a>(...) -> ForumGetPostsThreadedPagedFromChildResponse</code></summary>
 <dl>
 <dd>
 
@@ -5204,10 +5393,13 @@ Returns a thread of posts starting at the topicId of the input childPostId, opti
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.forum.getpoststhreadedpagedfromchild(
     child_post_id=1000000,
     page=1,
@@ -5299,7 +5491,7 @@ client.forum.getpoststhreadedpagedfromchild(
 </dl>
 </details>
 
-<details><summary><code>client.forum.<a href="src/fern/forum/client.py">gettopicforcontent</a>(...)</code></summary>
+<details><summary><code>client.forum.<a href="src/fern/forum/client.py">gettopicforcontent</a>(...) -> ForumGetTopicForContentResponse</code></summary>
 <dl>
 <dd>
 
@@ -5327,10 +5519,13 @@ Gets the post Id for the given content item's comments, if it exists.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.forum.gettopicforcontent(
     content_id=1000000,
 )
@@ -5369,7 +5564,7 @@ client.forum.gettopicforcontent(
 </dl>
 </details>
 
-<details><summary><code>client.forum.<a href="src/fern/forum/client.py">gettopicspaged</a>(...)</code></summary>
+<details><summary><code>client.forum.<a href="src/fern/forum/client.py">gettopicspaged</a>(...) -> ForumGetTopicsPagedResponse</code></summary>
 <dl>
 <dd>
 
@@ -5397,10 +5592,13 @@ Get topics from any forum.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.forum.gettopicspaged(
     page=1,
     page_size=1,
@@ -5500,7 +5698,7 @@ client.forum.gettopicspaged(
 </dl>
 </details>
 
-<details><summary><code>client.forum.<a href="src/fern/forum/client.py">getpoll</a>(...)</code></summary>
+<details><summary><code>client.forum.<a href="src/fern/forum/client.py">getpoll</a>(...) -> ForumGetPollResponse</code></summary>
 <dl>
 <dd>
 
@@ -5528,10 +5726,13 @@ Gets the specified forum poll.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.forum.getpoll(
     topic_id=1000000,
 )
@@ -5570,7 +5771,7 @@ client.forum.getpoll(
 </dl>
 </details>
 
-<details><summary><code>client.forum.<a href="src/fern/forum/client.py">getrecruitmentthreadsummaries</a>()</code></summary>
+<details><summary><code>client.forum.<a href="src/fern/forum/client.py">getrecruitmentthreadsummaries</a>() -> ForumGetRecruitmentThreadSummariesResponse</code></summary>
 <dl>
 <dd>
 
@@ -5598,10 +5799,13 @@ Allows the caller to get a list of to 25 recruitment thread summary information 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.forum.getrecruitmentthreadsummaries()
 
 ```
@@ -5631,7 +5835,7 @@ client.forum.getrecruitmentthreadsummaries()
 </details>
 
 ## 
-<details><summary><code>client._.<a href="src/fern/_/client.py">getavailablelocales</a>()</code></summary>
+<details><summary><code>client._.<a href="src/fern/_/client.py">getavailablelocales</a>() -> GetAvailableLocalesResponse</code></summary>
 <dl>
 <dd>
 
@@ -5659,10 +5863,13 @@ List of available localization cultures
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client._.getavailablelocales()
 
 ```
@@ -5691,7 +5898,7 @@ client._.getavailablelocales()
 </dl>
 </details>
 
-<details><summary><code>client._.<a href="src/fern/_/client.py">getglobalalerts</a>(...)</code></summary>
+<details><summary><code>client._.<a href="src/fern/_/client.py">getglobalalerts</a>(...) -> GetGlobalAlertsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5719,10 +5926,13 @@ Gets any active global alert for display in the forum banners, help pages, etc. 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client._.getglobalalerts()
 
 ```
@@ -5759,7 +5969,7 @@ client._.getglobalalerts()
 </dl>
 </details>
 
-<details><summary><code>client._.<a href="src/fern/_/client.py">getcommonsettings</a>()</code></summary>
+<details><summary><code>client._.<a href="src/fern/_/client.py">getcommonsettings</a>() -> GetCommonSettingsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5787,10 +5997,13 @@ Get the common settings used by the Bungie.Net environment.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client._.getcommonsettings()
 
 ```
@@ -5819,7 +6032,7 @@ client._.getcommonsettings()
 </dl>
 </details>
 
-<details><summary><code>client._.<a href="src/fern/_/client.py">getusersystemoverrides</a>()</code></summary>
+<details><summary><code>client._.<a href="src/fern/_/client.py">getusersystemoverrides</a>() -> GetUserSystemOverridesResponse</code></summary>
 <dl>
 <dd>
 
@@ -5847,10 +6060,13 @@ Get the user-specific system overrides that should be respected alongside common
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client._.getusersystemoverrides()
 
 ```
@@ -5880,7 +6096,7 @@ client._.getusersystemoverrides()
 </details>
 
 ## GroupV2
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getavailableavatars</a>()</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getavailableavatars</a>() -> GroupV2GetAvailableAvatarsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5908,10 +6124,13 @@ Returns a list of all available group avatars for the signed-in user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.groupv2.getavailableavatars()
 
 ```
@@ -5940,7 +6159,7 @@ client.groupv2.getavailableavatars()
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getavailablethemes</a>()</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getavailablethemes</a>() -> GroupV2GetAvailableThemesResponse</code></summary>
 <dl>
 <dd>
 
@@ -5968,10 +6187,13 @@ Returns a list of all available group themes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.groupv2.getavailablethemes()
 
 ```
@@ -6000,7 +6222,7 @@ client.groupv2.getavailablethemes()
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getuserclaninvitesetting</a>(...)</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getuserclaninvitesetting</a>(...) -> GroupV2GetUserClanInviteSettingResponse</code></summary>
 <dl>
 <dd>
 
@@ -6028,10 +6250,13 @@ Gets the state of the user's clan invite preferences for a particular membership
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.groupv2.getuserclaninvitesetting(
     m_type=1,
 )
@@ -6070,7 +6295,7 @@ client.groupv2.getuserclaninvitesetting(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getgroupbyname</a>(...)</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getgroupbyname</a>(...) -> GroupV2GetGroupByNameResponse</code></summary>
 <dl>
 <dd>
 
@@ -6098,10 +6323,13 @@ Get information about a specific group with the given name and type.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.groupv2.getgroupbyname(
     group_name="groupName",
     group_type=1,
@@ -6149,7 +6377,7 @@ client.groupv2.getgroupbyname(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getgroupbynamev2</a>()</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getgroupbynamev2</a>() -> GroupV2GetGroupByNameV2Response</code></summary>
 <dl>
 <dd>
 
@@ -6177,10 +6405,13 @@ Get information about a specific group with the given name and type. The POST ve
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.groupv2.getgroupbynamev2()
 
 ```
@@ -6209,7 +6440,7 @@ client.groupv2.getgroupbynamev2()
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getrecommendedgroups</a>(...)</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getrecommendedgroups</a>(...) -> GroupV2GetRecommendedGroupsResponse</code></summary>
 <dl>
 <dd>
 
@@ -6237,10 +6468,13 @@ Gets groups recommended for you based on the groups to whom those you follow bel
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.groupv2.getrecommendedgroups(
     group_type=1,
     create_date_range=1,
@@ -6288,7 +6522,7 @@ client.groupv2.getrecommendedgroups(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">recovergroupforfounder</a>(...)</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">recovergroupforfounder</a>(...) -> GroupV2RecoverGroupForFounderResponse</code></summary>
 <dl>
 <dd>
 
@@ -6316,10 +6550,13 @@ Allows a founder to manually recover a group they can see in game but not on bun
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.groupv2.recovergroupforfounder(
     membership_type=1,
     membership_id=1000000,
@@ -6376,7 +6613,7 @@ client.groupv2.recovergroupforfounder(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">groupsearch</a>()</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">groupsearch</a>() -> GroupV2GroupSearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -6404,10 +6641,13 @@ Search for Groups.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.groupv2.groupsearch()
 
 ```
@@ -6436,7 +6676,7 @@ client.groupv2.groupsearch()
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getpotentialgroupsformember</a>(...)</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getpotentialgroupsformember</a>(...) -> GroupV2GetPotentialGroupsForMemberResponse</code></summary>
 <dl>
 <dd>
 
@@ -6464,10 +6704,13 @@ Get information about the groups that a given member has applied to or been invi
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.groupv2.getpotentialgroupsformember(
     membership_type=1,
     membership_id=1000000,
@@ -6533,7 +6776,7 @@ client.groupv2.getpotentialgroupsformember(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getgroupsformember</a>(...)</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getgroupsformember</a>(...) -> GroupV2GetGroupsForMemberResponse</code></summary>
 <dl>
 <dd>
 
@@ -6561,10 +6804,13 @@ Get information about the groups that a given member has joined.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.groupv2.getgroupsformember(
     membership_type=1,
     membership_id=1000000,
@@ -6630,7 +6876,7 @@ client.groupv2.getgroupsformember(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getgroup</a>(...)</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getgroup</a>(...) -> GroupV2GetGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -6658,10 +6904,13 @@ Get information about a specific group of the given ID.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.groupv2.getgroup(
     group_id=1000000,
 )
@@ -6700,7 +6949,7 @@ client.groupv2.getgroup(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">abdicatefoundership</a>(...)</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">abdicatefoundership</a>(...) -> GroupV2AbdicateFoundershipResponse</code></summary>
 <dl>
 <dd>
 
@@ -6728,10 +6977,13 @@ An administrative method to allow the founder of a group or clan to give up thei
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.groupv2.abdicatefoundership(
     group_id=1000000,
     membership_type=1,
@@ -6788,7 +7040,7 @@ client.groupv2.abdicatefoundership(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getadminsandfounderofgroup</a>(...)</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getadminsandfounderofgroup</a>(...) -> GroupV2GetAdminsAndFounderOfGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -6816,10 +7068,13 @@ Get the list of members in a given group who are of admin level or higher.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.groupv2.getadminsandfounderofgroup(
     group_id=1000000,
     currentpage=1,
@@ -6867,7 +7122,7 @@ client.groupv2.getadminsandfounderofgroup(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getbannedmembersofgroup</a>(...)</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getbannedmembersofgroup</a>(...) -> GroupV2GetBannedMembersOfGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -6895,10 +7150,13 @@ Get the list of banned members in a given group. Only accessible to group Admins
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.groupv2.getbannedmembersofgroup(
     group_id=1000000,
     currentpage=1,
@@ -6946,7 +7204,7 @@ client.groupv2.getbannedmembersofgroup(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">editgroup</a>(...)</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">editgroup</a>(...) -> GroupV2EditGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -6974,10 +7232,13 @@ Edit an existing group. You must have suitable permissions in the group to perfo
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.groupv2.editgroup(
     group_id=1000000,
 )
@@ -7016,7 +7277,7 @@ client.groupv2.editgroup(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">editclanbanner</a>(...)</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">editclanbanner</a>(...) -> GroupV2EditClanBannerResponse</code></summary>
 <dl>
 <dd>
 
@@ -7044,10 +7305,13 @@ Edit an existing group's clan banner. You must have suitable permissions in the 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.groupv2.editclanbanner(
     group_id=1000000,
 )
@@ -7086,7 +7350,7 @@ client.groupv2.editclanbanner(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">editfounderoptions</a>(...)</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">editfounderoptions</a>(...) -> GroupV2EditFounderOptionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -7114,10 +7378,13 @@ Edit group options only available to a founder. You must have suitable permissio
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.groupv2.editfounderoptions(
     group_id=1000000,
 )
@@ -7156,7 +7423,7 @@ client.groupv2.editfounderoptions(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getmembersofgroup</a>(...)</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getmembersofgroup</a>(...) -> GroupV2GetMembersOfGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -7184,10 +7451,13 @@ Get the list of members in a given group.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.groupv2.getmembersofgroup(
     group_id=1000000,
     currentpage=1,
@@ -7251,7 +7521,7 @@ client.groupv2.getmembersofgroup(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">approvepending</a>(...)</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">approvepending</a>(...) -> GroupV2ApprovePendingResponse</code></summary>
 <dl>
 <dd>
 
@@ -7279,10 +7549,13 @@ Approve the given membershipId to join the group/clan as long as they have appli
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.groupv2.approvepending(
     group_id=1000000,
     membership_type=1,
@@ -7339,7 +7612,7 @@ client.groupv2.approvepending(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">approveallpending</a>(...)</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">approveallpending</a>(...) -> GroupV2ApproveAllPendingResponse</code></summary>
 <dl>
 <dd>
 
@@ -7367,10 +7640,13 @@ Approve all of the pending users for the given group.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.groupv2.approveallpending(
     group_id=1000000,
 )
@@ -7409,7 +7685,7 @@ client.groupv2.approveallpending(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">approvependingforlist</a>(...)</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">approvependingforlist</a>(...) -> GroupV2ApprovePendingForListResponse</code></summary>
 <dl>
 <dd>
 
@@ -7437,10 +7713,13 @@ Approve all of the pending users for the given group.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.groupv2.approvependingforlist(
     group_id=1000000,
 )
@@ -7479,7 +7758,7 @@ client.groupv2.approvependingforlist(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">denyallpending</a>(...)</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">denyallpending</a>(...) -> GroupV2DenyAllPendingResponse</code></summary>
 <dl>
 <dd>
 
@@ -7507,10 +7786,13 @@ Deny all of the pending users for the given group.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.groupv2.denyallpending(
     group_id=1000000,
 )
@@ -7549,7 +7831,7 @@ client.groupv2.denyallpending(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">denypendingforlist</a>(...)</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">denypendingforlist</a>(...) -> GroupV2DenyPendingForListResponse</code></summary>
 <dl>
 <dd>
 
@@ -7577,10 +7859,13 @@ Deny all of the pending users for the given group that match the passed-in .
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.groupv2.denypendingforlist(
     group_id=1000000,
 )
@@ -7619,7 +7904,7 @@ client.groupv2.denypendingforlist(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">individualgroupinvite</a>(...)</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">individualgroupinvite</a>(...) -> GroupV2IndividualGroupInviteResponse</code></summary>
 <dl>
 <dd>
 
@@ -7647,10 +7932,13 @@ Invite a user to join this group.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.groupv2.individualgroupinvite(
     group_id=1000000,
     membership_type=1,
@@ -7707,7 +7995,7 @@ client.groupv2.individualgroupinvite(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">individualgroupinvitecancel</a>(...)</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">individualgroupinvitecancel</a>(...) -> GroupV2IndividualGroupInviteCancelResponse</code></summary>
 <dl>
 <dd>
 
@@ -7735,10 +8023,13 @@ Cancels a pending invitation to join a group.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.groupv2.individualgroupinvitecancel(
     group_id=1000000,
     membership_type=1,
@@ -7795,7 +8086,7 @@ client.groupv2.individualgroupinvitecancel(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getinvitedindividuals</a>(...)</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getinvitedindividuals</a>(...) -> GroupV2GetInvitedIndividualsResponse</code></summary>
 <dl>
 <dd>
 
@@ -7823,10 +8114,13 @@ Get the list of users who have been invited into the group.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.groupv2.getinvitedindividuals(
     group_id=1000000,
     currentpage=1,
@@ -7874,7 +8168,7 @@ client.groupv2.getinvitedindividuals(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getpendingmemberships</a>(...)</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getpendingmemberships</a>(...) -> GroupV2GetPendingMembershipsResponse</code></summary>
 <dl>
 <dd>
 
@@ -7902,10 +8196,13 @@ Get the list of users who are awaiting a decision on their application to join a
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.groupv2.getpendingmemberships(
     group_id=1000000,
     currentpage=1,
@@ -7953,7 +8250,7 @@ client.groupv2.getpendingmemberships(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">banmember</a>(...)</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">banmember</a>(...) -> GroupV2BanMemberResponse</code></summary>
 <dl>
 <dd>
 
@@ -7981,10 +8278,13 @@ Bans the requested member from the requested group for the specified period of t
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.groupv2.banmember(
     group_id=1000000,
     membership_type=1,
@@ -8041,7 +8341,7 @@ client.groupv2.banmember(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">kickmember</a>(...)</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">kickmember</a>(...) -> GroupV2KickMemberResponse</code></summary>
 <dl>
 <dd>
 
@@ -8069,10 +8369,13 @@ Kick a member from the given group, forcing them to reapply if they wish to re-j
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.groupv2.kickmember(
     group_id=1000000,
     membership_type=1,
@@ -8129,7 +8432,7 @@ client.groupv2.kickmember(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">editgroupmembership</a>(...)</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">editgroupmembership</a>(...) -> GroupV2EditGroupMembershipResponse</code></summary>
 <dl>
 <dd>
 
@@ -8157,10 +8460,13 @@ Edit the membership type of a given member. You must have suitable permissions i
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.groupv2.editgroupmembership(
     group_id=1000000,
     membership_type=1,
@@ -8226,7 +8532,7 @@ client.groupv2.editgroupmembership(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">unbanmember</a>(...)</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">unbanmember</a>(...) -> GroupV2UnbanMemberResponse</code></summary>
 <dl>
 <dd>
 
@@ -8254,10 +8560,13 @@ Unbans the requested member, allowing them to re-apply for membership.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.groupv2.unbanmember(
     group_id=1000000,
     membership_type=1,
@@ -8314,7 +8623,7 @@ client.groupv2.unbanmember(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getgroupoptionalconversations</a>(...)</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getgroupoptionalconversations</a>(...) -> GroupV2GetGroupOptionalConversationsResponse</code></summary>
 <dl>
 <dd>
 
@@ -8342,10 +8651,13 @@ Gets a list of available optional conversation channels and their settings.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.groupv2.getgroupoptionalconversations(
     group_id=1000000,
 )
@@ -8384,7 +8696,7 @@ client.groupv2.getgroupoptionalconversations(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">addoptionalconversation</a>(...)</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">addoptionalconversation</a>(...) -> GroupV2AddOptionalConversationResponse</code></summary>
 <dl>
 <dd>
 
@@ -8412,10 +8724,13 @@ Add a new optional conversation/chat channel. Requires admin permissions to the 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.groupv2.addoptionalconversation(
     group_id=1000000,
 )
@@ -8454,7 +8769,7 @@ client.groupv2.addoptionalconversation(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">editoptionalconversation</a>(...)</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">editoptionalconversation</a>(...) -> GroupV2EditOptionalConversationResponse</code></summary>
 <dl>
 <dd>
 
@@ -8482,10 +8797,13 @@ Edit the settings of an optional conversation/chat channel. Requires admin permi
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.groupv2.editoptionalconversation(
     group_id=1000000,
     conversation_id=1000000,
@@ -8534,7 +8852,7 @@ client.groupv2.editoptionalconversation(
 </details>
 
 ## Social
-<details><summary><code>client.social.<a href="src/fern/social/client.py">getfriendlist</a>()</code></summary>
+<details><summary><code>client.social.<a href="src/fern/social/client.py">getfriendlist</a>() -> SocialGetFriendListResponse</code></summary>
 <dl>
 <dd>
 
@@ -8562,10 +8880,13 @@ Returns your Bungie Friend list
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.social.getfriendlist()
 
 ```
@@ -8594,7 +8915,7 @@ client.social.getfriendlist()
 </dl>
 </details>
 
-<details><summary><code>client.social.<a href="src/fern/social/client.py">issuefriendrequest</a>(...)</code></summary>
+<details><summary><code>client.social.<a href="src/fern/social/client.py">issuefriendrequest</a>(...) -> SocialIssueFriendRequestResponse</code></summary>
 <dl>
 <dd>
 
@@ -8622,10 +8943,13 @@ Requests a friend relationship with the target user. Any of the target user's li
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.social.issuefriendrequest(
     membership_id="membershipId",
 )
@@ -8664,7 +8988,7 @@ client.social.issuefriendrequest(
 </dl>
 </details>
 
-<details><summary><code>client.social.<a href="src/fern/social/client.py">removefriend</a>(...)</code></summary>
+<details><summary><code>client.social.<a href="src/fern/social/client.py">removefriend</a>(...) -> SocialRemoveFriendResponse</code></summary>
 <dl>
 <dd>
 
@@ -8692,10 +9016,13 @@ Remove a friend relationship with the target user. The user must be on your frie
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.social.removefriend(
     membership_id="membershipId",
 )
@@ -8734,7 +9061,7 @@ client.social.removefriend(
 </dl>
 </details>
 
-<details><summary><code>client.social.<a href="src/fern/social/client.py">getfriendrequestlist</a>()</code></summary>
+<details><summary><code>client.social.<a href="src/fern/social/client.py">getfriendrequestlist</a>() -> SocialGetFriendRequestListResponse</code></summary>
 <dl>
 <dd>
 
@@ -8762,10 +9089,13 @@ Returns your friend request queue.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.social.getfriendrequestlist()
 
 ```
@@ -8794,7 +9124,7 @@ client.social.getfriendrequestlist()
 </dl>
 </details>
 
-<details><summary><code>client.social.<a href="src/fern/social/client.py">acceptfriendrequest</a>(...)</code></summary>
+<details><summary><code>client.social.<a href="src/fern/social/client.py">acceptfriendrequest</a>(...) -> SocialAcceptFriendRequestResponse</code></summary>
 <dl>
 <dd>
 
@@ -8822,10 +9152,13 @@ Accepts a friend relationship with the target user. The user must be on your inc
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.social.acceptfriendrequest(
     membership_id="membershipId",
 )
@@ -8864,7 +9197,7 @@ client.social.acceptfriendrequest(
 </dl>
 </details>
 
-<details><summary><code>client.social.<a href="src/fern/social/client.py">declinefriendrequest</a>(...)</code></summary>
+<details><summary><code>client.social.<a href="src/fern/social/client.py">declinefriendrequest</a>(...) -> SocialDeclineFriendRequestResponse</code></summary>
 <dl>
 <dd>
 
@@ -8892,10 +9225,13 @@ Declines a friend relationship with the target user. The user must be on your in
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.social.declinefriendrequest(
     membership_id="membershipId",
 )
@@ -8934,7 +9270,7 @@ client.social.declinefriendrequest(
 </dl>
 </details>
 
-<details><summary><code>client.social.<a href="src/fern/social/client.py">removefriendrequest</a>(...)</code></summary>
+<details><summary><code>client.social.<a href="src/fern/social/client.py">removefriendrequest</a>(...) -> SocialRemoveFriendRequestResponse</code></summary>
 <dl>
 <dd>
 
@@ -8962,10 +9298,13 @@ Remove a friend relationship with the target user. The user must be on your outg
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.social.removefriendrequest(
     membership_id="membershipId",
 )
@@ -9004,7 +9343,7 @@ client.social.removefriendrequest(
 </dl>
 </details>
 
-<details><summary><code>client.social.<a href="src/fern/social/client.py">getplatformfriendlist</a>(...)</code></summary>
+<details><summary><code>client.social.<a href="src/fern/social/client.py">getplatformfriendlist</a>(...) -> SocialGetPlatformFriendListResponse</code></summary>
 <dl>
 <dd>
 
@@ -9032,10 +9371,13 @@ Gets the platform friend of the requested type, with additional information if t
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.social.getplatformfriendlist(
     friend_platform=1,
     page="page",
@@ -9084,7 +9426,7 @@ client.social.getplatformfriendlist(
 </details>
 
 ## Tokens
-<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">applymissingpartnerofferswithoutclaim</a>(...)</code></summary>
+<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">applymissingpartnerofferswithoutclaim</a>(...) -> TokensApplyMissingPartnerOffersWithoutClaimResponse</code></summary>
 <dl>
 <dd>
 
@@ -9112,10 +9454,13 @@ Apply a partner offer to the targeted user. This endpoint does not claim a new o
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tokens.applymissingpartnerofferswithoutclaim(
     partner_application_id=1,
     target_bnet_membership_id=1000000,
@@ -9163,7 +9508,7 @@ client.tokens.applymissingpartnerofferswithoutclaim(
 </dl>
 </details>
 
-<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">claimpartneroffer</a>()</code></summary>
+<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">claimpartneroffer</a>() -> TokensClaimPartnerOfferResponse</code></summary>
 <dl>
 <dd>
 
@@ -9191,10 +9536,13 @@ Claim a partner offer as the authenticated user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tokens.claimpartneroffer()
 
 ```
@@ -9223,7 +9571,7 @@ client.tokens.claimpartneroffer()
 </dl>
 </details>
 
-<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">forcedropsrepair</a>()</code></summary>
+<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">forcedropsrepair</a>() -> TokensForceDropsRepairResponse</code></summary>
 <dl>
 <dd>
 
@@ -9251,10 +9599,13 @@ Twitch Drops self-repair function - scans twitch for drops not marked as fulfill
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tokens.forcedropsrepair()
 
 ```
@@ -9283,7 +9634,7 @@ client.tokens.forcedropsrepair()
 </dl>
 </details>
 
-<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">getpartnerofferskuhistory</a>(...)</code></summary>
+<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">getpartnerofferskuhistory</a>(...) -> TokensGetPartnerOfferSkuHistoryResponse</code></summary>
 <dl>
 <dd>
 
@@ -9311,10 +9662,13 @@ Returns the partner sku and offer history of the targeted user. Elevated permiss
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tokens.getpartnerofferskuhistory(
     partner_application_id=1,
     target_bnet_membership_id=1000000,
@@ -9362,7 +9716,7 @@ client.tokens.getpartnerofferskuhistory(
 </dl>
 </details>
 
-<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">getpartnerrewardhistory</a>(...)</code></summary>
+<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">getpartnerrewardhistory</a>(...) -> TokensGetPartnerRewardHistoryResponse</code></summary>
 <dl>
 <dd>
 
@@ -9390,10 +9744,13 @@ Returns the partner rewards history of the targeted user, both partner offers an
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tokens.getpartnerrewardhistory(
     target_bnet_membership_id=1000000,
     partner_application_id=1,
@@ -9441,7 +9798,7 @@ client.tokens.getpartnerrewardhistory(
 </dl>
 </details>
 
-<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">getbungierewardslist</a>()</code></summary>
+<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">getbungierewardslist</a>() -> TokensGetBungieRewardsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -9469,10 +9826,13 @@ Returns a list of the current bungie rewards
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tokens.getbungierewardslist()
 
 ```
@@ -9501,7 +9861,7 @@ client.tokens.getbungierewardslist()
 </dl>
 </details>
 
-<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">getbungierewardsforplatformuser</a>(...)</code></summary>
+<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">getbungierewardsforplatformuser</a>(...) -> TokensGetBungieRewardsForPlatformUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -9529,10 +9889,13 @@ Returns the bungie rewards for the targeted user when a platform membership Id a
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tokens.getbungierewardsforplatformuser(
     membership_id=1000000,
     membership_type=1,
@@ -9580,7 +9943,7 @@ client.tokens.getbungierewardsforplatformuser(
 </dl>
 </details>
 
-<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">getbungierewardsforuser</a>(...)</code></summary>
+<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">getbungierewardsforuser</a>(...) -> TokensGetBungieRewardsForUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -9608,10 +9971,13 @@ Returns the bungie rewards for the targeted user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tokens.getbungierewardsforuser(
     membership_id=1000000,
 )
@@ -9651,7 +10017,7 @@ client.tokens.getbungierewardsforuser(
 </details>
 
 ## Trending
-<details><summary><code>client.trending.<a href="src/fern/trending/client.py">gettrendingcategories</a>()</code></summary>
+<details><summary><code>client.trending.<a href="src/fern/trending/client.py">gettrendingcategories</a>() -> TrendingGetTrendingCategoriesResponse</code></summary>
 <dl>
 <dd>
 
@@ -9679,10 +10045,13 @@ Returns trending items for Bungie.net, collapsed into the first page of items pe
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.trending.gettrendingcategories()
 
 ```
@@ -9711,7 +10080,7 @@ client.trending.gettrendingcategories()
 </dl>
 </details>
 
-<details><summary><code>client.trending.<a href="src/fern/trending/client.py">gettrendingcategory</a>(...)</code></summary>
+<details><summary><code>client.trending.<a href="src/fern/trending/client.py">gettrendingcategory</a>(...) -> TrendingGetTrendingCategoryResponse</code></summary>
 <dl>
 <dd>
 
@@ -9739,10 +10108,13 @@ Returns paginated lists of trending items for a category.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.trending.gettrendingcategory(
     category_id="categoryId",
     page_number=1,
@@ -9790,7 +10162,7 @@ client.trending.gettrendingcategory(
 </dl>
 </details>
 
-<details><summary><code>client.trending.<a href="src/fern/trending/client.py">gettrendingentrydetail</a>(...)</code></summary>
+<details><summary><code>client.trending.<a href="src/fern/trending/client.py">gettrendingentrydetail</a>(...) -> TrendingGetTrendingEntryDetailResponse</code></summary>
 <dl>
 <dd>
 
@@ -9818,10 +10190,13 @@ Returns the detailed results for a specific trending entry. Note that trending e
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.trending.gettrendingentrydetail(
     trending_entry_type=1,
     identifier="identifier",
@@ -9870,7 +10245,7 @@ client.trending.gettrendingentrydetail(
 </details>
 
 ## User
-<details><summary><code>client.user.<a href="src/fern/user/client.py">getavailablethemes</a>()</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py">getavailablethemes</a>() -> UserGetAvailableThemesResponse</code></summary>
 <dl>
 <dd>
 
@@ -9898,10 +10273,13 @@ Returns a list of all available user themes.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.user.getavailablethemes()
 
 ```
@@ -9930,7 +10308,7 @@ client.user.getavailablethemes()
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">getbungienetuserbyid</a>(...)</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py">getbungienetuserbyid</a>(...) -> UserGetBungieNetUserByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -9958,10 +10336,13 @@ Loads a bungienet user by membership id.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.user.getbungienetuserbyid(
     id=1000000,
 )
@@ -10000,7 +10381,7 @@ client.user.getbungienetuserbyid(
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">getcredentialtypesfortargetaccount</a>(...)</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py">getcredentialtypesfortargetaccount</a>(...) -> UserGetCredentialTypesForTargetAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -10028,10 +10409,13 @@ Returns a list of credential types attached to the requested account
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.user.getcredentialtypesfortargetaccount(
     membership_id=1000000,
 )
@@ -10070,7 +10454,7 @@ client.user.getcredentialtypesfortargetaccount(
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">getmembershipfromhardlinkedcredential</a>(...)</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py">getmembershipfromhardlinkedcredential</a>(...) -> UserGetMembershipFromHardLinkedCredentialResponse</code></summary>
 <dl>
 <dd>
 
@@ -10098,10 +10482,13 @@ Gets any hard linked membership given a credential. Only works for credentials t
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.user.getmembershipfromhardlinkedcredential(
     cr_type=1,
     credential="credential",
@@ -10149,7 +10536,7 @@ client.user.getmembershipfromhardlinkedcredential(
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">getmembershipdatabyid</a>(...)</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py">getmembershipdatabyid</a>(...) -> UserGetMembershipDataByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -10177,10 +10564,13 @@ Returns a list of accounts associated with the supplied membership ID and member
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.user.getmembershipdatabyid(
     membership_id=1000000,
     membership_type=1,
@@ -10228,7 +10618,7 @@ client.user.getmembershipdatabyid(
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">getmembershipdataforcurrentuser</a>()</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py">getmembershipdataforcurrentuser</a>() -> UserGetMembershipDataForCurrentUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -10256,10 +10646,13 @@ Returns a list of accounts associated with signed in user. This is useful for OA
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.user.getmembershipdataforcurrentuser()
 
 ```
@@ -10288,7 +10681,7 @@ client.user.getmembershipdataforcurrentuser()
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">getsanitizedplatformdisplaynames</a>(...)</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py">getsanitizedplatformdisplaynames</a>(...) -> UserGetSanitizedPlatformDisplayNamesResponse</code></summary>
 <dl>
 <dd>
 
@@ -10316,10 +10709,13 @@ Gets a list of all display names linked to this membership id but sanitized (pro
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.user.getsanitizedplatformdisplaynames(
     membership_id=1000000,
 )
@@ -10358,7 +10754,7 @@ client.user.getsanitizedplatformdisplaynames(
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">searchbyglobalnamepost</a>(...)</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py">searchbyglobalnamepost</a>(...) -> UserSearchByGlobalNamePostResponse</code></summary>
 <dl>
 <dd>
 
@@ -10386,10 +10782,13 @@ Given the prefix of a global display name, returns all users who share that name
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.user.searchbyglobalnamepost(
     page=1,
 )
@@ -10428,7 +10827,7 @@ client.user.searchbyglobalnamepost(
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">searchbyglobalnameprefix</a>(...)</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py">searchbyglobalnameprefix</a>(...) -> UserSearchByGlobalNamePrefixResponse</code></summary>
 <dl>
 <dd>
 
@@ -10456,10 +10855,13 @@ client.user.searchbyglobalnamepost(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.user.searchbyglobalnameprefix(
     display_name_prefix="displayNamePrefix",
     page=1,

@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -14,6 +15,7 @@ from ..errors.bad_request_error import BadRequestError
 from ..types.card_credit_create import CardCreditCreate
 from ..types.card_pin_assignment import CardPinAssignment
 from ..types.pointer import Pointer
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -82,7 +84,7 @@ class RawCardCreditClient:
             With bunq it is possible to order credit cards that can then be connected with each one of the monetary accounts the user has access to (including connected accounts).
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/card-credit",
+            f"user/{encode_path_param(user_id)}/card-credit",
             method="POST",
             json={
                 "alias": convert_and_respect_annotation_metadata(object_=alias, annotation=Pointer, direction="write"),
@@ -117,9 +119,9 @@ class RawCardCreditClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -127,6 +129,10 @@ class RawCardCreditClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -193,7 +199,7 @@ class AsyncRawCardCreditClient:
             With bunq it is possible to order credit cards that can then be connected with each one of the monetary accounts the user has access to (including connected accounts).
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/card-credit",
+            f"user/{encode_path_param(user_id)}/card-credit",
             method="POST",
             json={
                 "alias": convert_and_respect_annotation_metadata(object_=alias, annotation=Pointer, direction="write"),
@@ -228,9 +234,9 @@ class AsyncRawCardCreditClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -238,4 +244,8 @@ class AsyncRawCardCreditClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

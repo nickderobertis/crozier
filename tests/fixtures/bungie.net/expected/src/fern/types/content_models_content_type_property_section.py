@@ -11,7 +11,9 @@ from ..core.serialization import FieldMetadata
 class ContentModelsContentTypePropertySection(UniversalBaseModel):
     collapsed: typing.Optional[bool] = None
     name: typing.Optional[str] = None
-    readable_name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="readableName")] = None
+    readable_name: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="readableName"), pydantic.Field(alias="readableName")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

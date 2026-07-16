@@ -19,16 +19,16 @@ from .virtual_machine_with_config_context_status import VirtualMachineWithConfig
 class VirtualMachineWithConfigContext(UniversalBaseModel):
     cluster: typing.Optional[NestedCluster] = None
     comments: typing.Optional[str] = None
-    config_context: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    config_context: typing.Optional[typing.Dict[str, typing.Any]] = None
     created: typing.Optional[dt.datetime] = None
-    custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = None
     description: typing.Optional[str] = None
     device: typing.Optional[NestedDevice] = None
     disk: typing.Optional[int] = None
     display: typing.Optional[str] = None
     id: typing.Optional[int] = None
     last_updated: typing.Optional[dt.datetime] = None
-    local_context_data: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    local_context_data: typing.Optional[typing.Dict[str, typing.Any]] = None
     memory: typing.Optional[int] = None
     name: str
     platform: typing.Optional[NestedPlatform] = None

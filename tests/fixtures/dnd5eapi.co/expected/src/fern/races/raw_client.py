@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..types.api_reference_list import ApiReferenceList
@@ -15,6 +16,7 @@ from .types.get_api_races_index_proficiencies_request_index import GetApiRacesIn
 from .types.get_api_races_index_request_index import GetApiRacesIndexRequestIndex
 from .types.get_api_races_index_subraces_request_index import GetApiRacesIndexSubracesRequestIndex
 from .types.get_api_races_index_traits_request_index import GetApiRacesIndexTraitsRequestIndex
+from pydantic import ValidationError
 
 
 class RawRacesClient:
@@ -41,7 +43,7 @@ class RawRacesClient:
             OK
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/races/{jsonable_encoder(index)}",
+            f"api/races/{encode_path_param(index)}",
             method="GET",
             request_options=request_options,
         )
@@ -58,6 +60,10 @@ class RawRacesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_proficiencies_available_for_a_race(
@@ -81,7 +87,7 @@ class RawRacesClient:
             List of proficiencies for the race.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/races/{jsonable_encoder(index)}/proficiencies",
+            f"api/races/{encode_path_param(index)}/proficiencies",
             method="GET",
             request_options=request_options,
         )
@@ -98,6 +104,10 @@ class RawRacesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_subraces_available_for_a_race(
@@ -118,7 +128,7 @@ class RawRacesClient:
             List of subraces for the race.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/races/{jsonable_encoder(index)}/subraces",
+            f"api/races/{encode_path_param(index)}/subraces",
             method="GET",
             request_options=request_options,
         )
@@ -135,6 +145,10 @@ class RawRacesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_traits_available_for_a_race(
@@ -155,7 +169,7 @@ class RawRacesClient:
             List of traits for the race.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/races/{jsonable_encoder(index)}/traits",
+            f"api/races/{encode_path_param(index)}/traits",
             method="GET",
             request_options=request_options,
         )
@@ -172,6 +186,10 @@ class RawRacesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -199,7 +217,7 @@ class AsyncRawRacesClient:
             OK
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/races/{jsonable_encoder(index)}",
+            f"api/races/{encode_path_param(index)}",
             method="GET",
             request_options=request_options,
         )
@@ -216,6 +234,10 @@ class AsyncRawRacesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_proficiencies_available_for_a_race(
@@ -239,7 +261,7 @@ class AsyncRawRacesClient:
             List of proficiencies for the race.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/races/{jsonable_encoder(index)}/proficiencies",
+            f"api/races/{encode_path_param(index)}/proficiencies",
             method="GET",
             request_options=request_options,
         )
@@ -256,6 +278,10 @@ class AsyncRawRacesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_subraces_available_for_a_race(
@@ -276,7 +302,7 @@ class AsyncRawRacesClient:
             List of subraces for the race.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/races/{jsonable_encoder(index)}/subraces",
+            f"api/races/{encode_path_param(index)}/subraces",
             method="GET",
             request_options=request_options,
         )
@@ -293,6 +319,10 @@ class AsyncRawRacesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_traits_available_for_a_race(
@@ -313,7 +343,7 @@ class AsyncRawRacesClient:
             List of traits for the race.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/races/{jsonable_encoder(index)}/traits",
+            f"api/races/{encode_path_param(index)}/traits",
             method="GET",
             request_options=request_options,
         )
@@ -330,4 +360,8 @@ class AsyncRawRacesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

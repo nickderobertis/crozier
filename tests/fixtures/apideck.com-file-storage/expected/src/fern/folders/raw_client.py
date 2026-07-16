@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
@@ -24,6 +25,7 @@ from ..types.payment_required_response import PaymentRequiredResponse
 from ..types.unauthorized_response import UnauthorizedResponse
 from ..types.unprocessable_response import UnprocessableResponse
 from ..types.update_folder_response import UpdateFolderResponse
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -161,6 +163,10 @@ class RawFoldersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def one(
@@ -194,7 +200,7 @@ class RawFoldersClient:
             Folders
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"file-storage/folders/{jsonable_encoder(id)}",
+            f"file-storage/folders/{encode_path_param(id)}",
             method="GET",
             params={
                 "raw": raw,
@@ -270,6 +276,10 @@ class RawFoldersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete(
@@ -295,7 +305,7 @@ class RawFoldersClient:
             Folders
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"file-storage/folders/{jsonable_encoder(id)}",
+            f"file-storage/folders/{encode_path_param(id)}",
             method="DELETE",
             params={
                 "raw": raw,
@@ -370,6 +380,10 @@ class RawFoldersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update(
@@ -410,7 +424,7 @@ class RawFoldersClient:
             Folders
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"file-storage/folders/{jsonable_encoder(id)}",
+            f"file-storage/folders/{encode_path_param(id)}",
             method="PATCH",
             params={
                 "raw": raw,
@@ -494,6 +508,10 @@ class RawFoldersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def copy(
@@ -534,7 +552,7 @@ class RawFoldersClient:
             Folders
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"file-storage/folders/{jsonable_encoder(id)}/copy",
+            f"file-storage/folders/{encode_path_param(id)}/copy",
             method="POST",
             params={
                 "raw": raw,
@@ -618,6 +636,10 @@ class RawFoldersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -753,6 +775,10 @@ class AsyncRawFoldersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def one(
@@ -786,7 +812,7 @@ class AsyncRawFoldersClient:
             Folders
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"file-storage/folders/{jsonable_encoder(id)}",
+            f"file-storage/folders/{encode_path_param(id)}",
             method="GET",
             params={
                 "raw": raw,
@@ -862,6 +888,10 @@ class AsyncRawFoldersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete(
@@ -887,7 +917,7 @@ class AsyncRawFoldersClient:
             Folders
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"file-storage/folders/{jsonable_encoder(id)}",
+            f"file-storage/folders/{encode_path_param(id)}",
             method="DELETE",
             params={
                 "raw": raw,
@@ -962,6 +992,10 @@ class AsyncRawFoldersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update(
@@ -1002,7 +1036,7 @@ class AsyncRawFoldersClient:
             Folders
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"file-storage/folders/{jsonable_encoder(id)}",
+            f"file-storage/folders/{encode_path_param(id)}",
             method="PATCH",
             params={
                 "raw": raw,
@@ -1086,6 +1120,10 @@ class AsyncRawFoldersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def copy(
@@ -1126,7 +1164,7 @@ class AsyncRawFoldersClient:
             Folders
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"file-storage/folders/{jsonable_encoder(id)}/copy",
+            f"file-storage/folders/{encode_path_param(id)}/copy",
             method="POST",
             params={
                 "raw": raw,
@@ -1210,4 +1248,8 @@ class AsyncRawFoldersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

@@ -11,7 +11,9 @@ from ..core.serialization import FieldMetadata
 class ContentContentRepresentation(UniversalBaseModel):
     name: typing.Optional[str] = None
     path: typing.Optional[str] = None
-    validation_string: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="validationString")] = None
+    validation_string: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="validationString"), pydantic.Field(alias="validationString")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

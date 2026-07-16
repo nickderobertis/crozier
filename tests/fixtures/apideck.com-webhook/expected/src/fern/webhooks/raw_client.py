@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -37,6 +38,7 @@ from ..types.webhook_event_type import WebhookEventType
 from .types.webhooks_execute_request_body import WebhooksExecuteRequestBody
 from .types.webhooks_resolve_request_body import WebhooksResolveRequestBody
 from .types.webhooks_short_execute_request_body import WebhooksShortExecuteRequestBody
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -163,6 +165,10 @@ class RawWebhooksClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def resolve(
@@ -199,7 +205,7 @@ class RawWebhooksClient:
             Resolve Webhook
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"webhook/w/{jsonable_encoder(id)}/{jsonable_encoder(service_id)}",
+            f"webhook/w/{encode_path_param(id)}/{encode_path_param(service_id)}",
             method="POST",
             params={
                 "e": e,
@@ -281,6 +287,10 @@ class RawWebhooksClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def all_(
@@ -393,6 +403,10 @@ class RawWebhooksClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def add(
@@ -518,6 +532,10 @@ class RawWebhooksClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def one(
@@ -543,7 +561,7 @@ class RawWebhooksClient:
             Webhooks
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"webhook/webhooks/{jsonable_encoder(id)}",
+            f"webhook/webhooks/{encode_path_param(id)}",
             method="GET",
             headers={
                 "x-apideck-app-id": str(apideck_app_id) if apideck_app_id is not None else None,
@@ -618,6 +636,10 @@ class RawWebhooksClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete(
@@ -643,7 +665,7 @@ class RawWebhooksClient:
             Webhooks
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"webhook/webhooks/{jsonable_encoder(id)}",
+            f"webhook/webhooks/{encode_path_param(id)}",
             method="DELETE",
             headers={
                 "x-apideck-app-id": str(apideck_app_id) if apideck_app_id is not None else None,
@@ -718,6 +740,10 @@ class RawWebhooksClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update(
@@ -760,7 +786,7 @@ class RawWebhooksClient:
             Webhooks
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"webhook/webhooks/{jsonable_encoder(id)}",
+            f"webhook/webhooks/{encode_path_param(id)}",
             method="PATCH",
             json={
                 "delivery_url": delivery_url,
@@ -843,6 +869,10 @@ class RawWebhooksClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def execute(
@@ -875,7 +905,7 @@ class RawWebhooksClient:
             Execute Webhook
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"webhook/webhooks/{jsonable_encoder(id)}/execute/{jsonable_encoder(service_id)}",
+            f"webhook/webhooks/{encode_path_param(id)}/execute/{encode_path_param(service_id)}",
             method="POST",
             json=convert_and_respect_annotation_metadata(
                 object_=request, annotation=WebhooksExecuteRequestBody, direction="write"
@@ -954,6 +984,10 @@ class RawWebhooksClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def short_execute(
@@ -994,7 +1028,7 @@ class RawWebhooksClient:
             Execute Webhook
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"webhook/webhooks/{jsonable_encoder(id)}/x/{jsonable_encoder(service_id)}",
+            f"webhook/webhooks/{encode_path_param(id)}/x/{encode_path_param(service_id)}",
             method="POST",
             params={
                 "l_id": l_id,
@@ -1077,6 +1111,10 @@ class RawWebhooksClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -1201,6 +1239,10 @@ class AsyncRawWebhooksClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def resolve(
@@ -1237,7 +1279,7 @@ class AsyncRawWebhooksClient:
             Resolve Webhook
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"webhook/w/{jsonable_encoder(id)}/{jsonable_encoder(service_id)}",
+            f"webhook/w/{encode_path_param(id)}/{encode_path_param(service_id)}",
             method="POST",
             params={
                 "e": e,
@@ -1319,6 +1361,10 @@ class AsyncRawWebhooksClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def all_(
@@ -1431,6 +1477,10 @@ class AsyncRawWebhooksClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def add(
@@ -1556,6 +1606,10 @@ class AsyncRawWebhooksClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def one(
@@ -1581,7 +1635,7 @@ class AsyncRawWebhooksClient:
             Webhooks
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"webhook/webhooks/{jsonable_encoder(id)}",
+            f"webhook/webhooks/{encode_path_param(id)}",
             method="GET",
             headers={
                 "x-apideck-app-id": str(apideck_app_id) if apideck_app_id is not None else None,
@@ -1656,6 +1710,10 @@ class AsyncRawWebhooksClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete(
@@ -1681,7 +1739,7 @@ class AsyncRawWebhooksClient:
             Webhooks
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"webhook/webhooks/{jsonable_encoder(id)}",
+            f"webhook/webhooks/{encode_path_param(id)}",
             method="DELETE",
             headers={
                 "x-apideck-app-id": str(apideck_app_id) if apideck_app_id is not None else None,
@@ -1756,6 +1814,10 @@ class AsyncRawWebhooksClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update(
@@ -1798,7 +1860,7 @@ class AsyncRawWebhooksClient:
             Webhooks
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"webhook/webhooks/{jsonable_encoder(id)}",
+            f"webhook/webhooks/{encode_path_param(id)}",
             method="PATCH",
             json={
                 "delivery_url": delivery_url,
@@ -1881,6 +1943,10 @@ class AsyncRawWebhooksClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def execute(
@@ -1913,7 +1979,7 @@ class AsyncRawWebhooksClient:
             Execute Webhook
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"webhook/webhooks/{jsonable_encoder(id)}/execute/{jsonable_encoder(service_id)}",
+            f"webhook/webhooks/{encode_path_param(id)}/execute/{encode_path_param(service_id)}",
             method="POST",
             json=convert_and_respect_annotation_metadata(
                 object_=request, annotation=WebhooksExecuteRequestBody, direction="write"
@@ -1992,6 +2058,10 @@ class AsyncRawWebhooksClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def short_execute(
@@ -2032,7 +2102,7 @@ class AsyncRawWebhooksClient:
             Execute Webhook
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"webhook/webhooks/{jsonable_encoder(id)}/x/{jsonable_encoder(service_id)}",
+            f"webhook/webhooks/{encode_path_param(id)}/x/{encode_path_param(service_id)}",
             method="POST",
             params={
                 "l_id": l_id,
@@ -2115,4 +2185,8 @@ class AsyncRawWebhooksClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

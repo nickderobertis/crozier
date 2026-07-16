@@ -15,31 +15,51 @@ class DestinyEntitiesItemsDestinyItemSocketState(UniversalBaseModel):
     """
 
     enable_fail_indexes: typing_extensions.Annotated[
-        typing.Optional[typing.List[int]], FieldMetadata(alias="enableFailIndexes")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[int]],
+        FieldMetadata(alias="enableFailIndexes"),
+        pydantic.Field(
+            alias="enableFailIndexes",
+            description="If a plug is inserted but not enabled, this will be populated with indexes into the plug item definition's plug.enabledRules property, so that you can show the reasons why it is not enabled.",
+        ),
+    ] = None
     """
     If a plug is inserted but not enabled, this will be populated with indexes into the plug item definition's plug.enabledRules property, so that you can show the reasons why it is not enabled.
     """
 
-    is_enabled: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="isEnabled")] = pydantic.Field(
-        default=None
-    )
+    is_enabled: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="isEnabled"),
+        pydantic.Field(
+            alias="isEnabled",
+            description="Even if a plug is inserted, it doesn't mean it's enabled.\r\nThis flag indicates whether the plug is active and providing its benefits.",
+        ),
+    ] = None
     """
     Even if a plug is inserted, it doesn't mean it's enabled.
     This flag indicates whether the plug is active and providing its benefits.
     """
 
-    is_visible: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="isVisible")] = pydantic.Field(
-        default=None
-    )
+    is_visible: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="isVisible"),
+        pydantic.Field(
+            alias="isVisible",
+            description="A plug may theoretically provide benefits but not be visible - for instance, some older items use a plug's damage type perk to modify their own damage type. These, though they are not visible, still affect the item. This field indicates that state.\r\nAn invisible plug, while it provides benefits if it is Enabled, cannot be directly modified by the user.",
+        ),
+    ] = None
     """
     A plug may theoretically provide benefits but not be visible - for instance, some older items use a plug's damage type perk to modify their own damage type. These, though they are not visible, still affect the item. This field indicates that state.
     An invisible plug, while it provides benefits if it is Enabled, cannot be directly modified by the user.
     """
 
-    plug_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="plugHash")] = pydantic.Field(
-        default=None
-    )
+    plug_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="plugHash"),
+        pydantic.Field(
+            alias="plugHash",
+            description="The currently active plug, if any.\r\nNote that, because all plugs are statically defined, its effect on stats and perks can be statically determined using the plug item's definition. The stats and perks can be taken at face value on the plug item as the stats and perks it will provide to the user/item.",
+        ),
+    ] = None
     """
     The currently active plug, if any.
     Note that, because all plugs are statically defined, its effect on stats and perks can be statically determined using the plug item's definition. The stats and perks can be taken at face value on the plug item as the stats and perks it will provide to the user/item.

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class InterfaceTemplatePoeTypeLabel(str, enum.Enum):
+class InterfaceTemplatePoeTypeLabel(enum.StrEnum):
     EIGHT_HUNDRED_TWO3AF_TYPE1 = "802.3af (Type 1)"
     EIGHT_HUNDRED_TWO3AT_TYPE2 = "802.3at (Type 2)"
     EIGHT_HUNDRED_TWO3AZ_TYPE2 = "802.3az (Type 2)"

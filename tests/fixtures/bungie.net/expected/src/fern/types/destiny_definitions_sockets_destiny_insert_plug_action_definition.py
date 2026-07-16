@@ -14,15 +14,25 @@ class DestinyDefinitionsSocketsDestinyInsertPlugActionDefinition(UniversalBaseMo
     """
 
     action_execute_seconds: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="actionExecuteSeconds")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="actionExecuteSeconds"),
+        pydantic.Field(
+            alias="actionExecuteSeconds",
+            description="How long it takes for the Plugging of the item to be completed once it is initiated, if you care.",
+        ),
+    ] = None
     """
     How long it takes for the Plugging of the item to be completed once it is initiated, if you care.
     """
 
-    action_type: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="actionType")] = pydantic.Field(
-        default=None
-    )
+    action_type: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="actionType"),
+        pydantic.Field(
+            alias="actionType",
+            description='The type of action being performed when you act on this Socket Type. The most common value is "insert plug", but there are others as well (for instance, a "Masterwork" socket may allow for Re-initialization, and an Infusion socket allows for items to be consumed to upgrade the item)',
+        ),
+    ] = None
     """
     The type of action being performed when you act on this Socket Type. The most common value is "insert plug", but there are others as well (for instance, a "Masterwork" socket may allow for Re-initialization, and an Infusion socket allows for items to be consumed to upgrade the item)
     """

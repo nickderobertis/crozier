@@ -10,9 +10,11 @@ from ..core.serialization import FieldMetadata
 
 class DestinyDefinitionsDestinyGearArtArrangementReference(UniversalBaseModel):
     art_arrangement_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="artArrangementHash")
+        typing.Optional[int], FieldMetadata(alias="artArrangementHash"), pydantic.Field(alias="artArrangementHash")
     ] = None
-    class_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="classHash")] = None
+    class_hash: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="classHash"), pydantic.Field(alias="classHash")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

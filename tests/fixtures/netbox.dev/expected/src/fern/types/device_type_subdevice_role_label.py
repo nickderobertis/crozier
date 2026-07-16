@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class DeviceTypeSubdeviceRoleLabel(str, enum.Enum):
+class DeviceTypeSubdeviceRoleLabel(enum.StrEnum):
     PARENT = "Parent"
     CHILD = "Child"
 

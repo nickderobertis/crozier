@@ -15,6 +15,7 @@ class DestinyDefinitionsMetricsDestinyMetricDefinition(UniversalBaseModel):
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
+        pydantic.Field(alias="displayProperties"),
     ] = None
     hash: typing.Optional[int] = pydantic.Field(default=None)
     """
@@ -28,17 +29,22 @@ class DestinyDefinitionsMetricsDestinyMetricDefinition(UniversalBaseModel):
     """
 
     lower_value_is_better: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="lowerValueIsBetter")
+        typing.Optional[bool], FieldMetadata(alias="lowerValueIsBetter"), pydantic.Field(alias="lowerValueIsBetter")
     ] = None
     parent_node_hashes: typing_extensions.Annotated[
-        typing.Optional[typing.List[int]], FieldMetadata(alias="parentNodeHashes")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[int]],
+        FieldMetadata(alias="parentNodeHashes"),
+        pydantic.Field(
+            alias="parentNodeHashes",
+            description="A quick reference to presentation nodes that have this node as a child. Presentation nodes can be parented under multiple parents.",
+        ),
+    ] = None
     """
     A quick reference to presentation nodes that have this node as a child. Presentation nodes can be parented under multiple parents.
     """
 
     presentation_node_type: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="presentationNodeType")
+        typing.Optional[int], FieldMetadata(alias="presentationNodeType"), pydantic.Field(alias="presentationNodeType")
     ] = None
     redacted: typing.Optional[bool] = pydantic.Field(default=None)
     """
@@ -46,12 +52,16 @@ class DestinyDefinitionsMetricsDestinyMetricDefinition(UniversalBaseModel):
     """
 
     tracking_objective_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="trackingObjectiveHash")
+        typing.Optional[int],
+        FieldMetadata(alias="trackingObjectiveHash"),
+        pydantic.Field(alias="trackingObjectiveHash"),
     ] = None
-    trait_hashes: typing_extensions.Annotated[typing.Optional[typing.List[int]], FieldMetadata(alias="traitHashes")] = (
-        None
-    )
-    trait_ids: typing_extensions.Annotated[typing.Optional[typing.List[str]], FieldMetadata(alias="traitIds")] = None
+    trait_hashes: typing_extensions.Annotated[
+        typing.Optional[typing.List[int]], FieldMetadata(alias="traitHashes"), pydantic.Field(alias="traitHashes")
+    ] = None
+    trait_ids: typing_extensions.Annotated[
+        typing.Optional[typing.List[str]], FieldMetadata(alias="traitIds"), pydantic.Field(alias="traitIds")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

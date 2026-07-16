@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class SetNotificationLevelRequestNotificationLevel(str, enum.Enum):
+class SetNotificationLevelRequestNotificationLevel(enum.StrEnum):
     ZERO = "0"
     ONE = "1"
     TWO = "2"

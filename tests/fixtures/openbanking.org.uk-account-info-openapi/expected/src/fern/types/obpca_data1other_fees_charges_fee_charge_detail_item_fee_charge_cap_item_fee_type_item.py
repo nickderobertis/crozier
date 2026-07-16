@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObpcaData1OtherFeesChargesFeeChargeDetailItemFeeChargeCapItemFeeTypeItem(str, enum.Enum):
+class ObpcaData1OtherFeesChargesFeeChargeDetailItemFeeChargeCapItemFeeTypeItem(enum.StrEnum):
     """
     Fee/charge type which is being capped
     """

@@ -2,4 +2,4 @@
 
 import typing
 
-ExportStatementPaymentContentListing = typing.Dict[str, typing.Optional[typing.Any]]
+ExportStatementPaymentContentListing = typing.Dict[str, typing.Any]

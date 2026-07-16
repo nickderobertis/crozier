@@ -10,7 +10,11 @@ from .bunq_id import BunqId
 
 
 class NoteAttachmentScheduleInstanceUpdate(UniversalBaseModel):
-    id: typing_extensions.Annotated[typing.Optional[BunqId], FieldMetadata(alias="Id")] = pydantic.Field(default=None)
+    id: typing_extensions.Annotated[
+        typing.Optional[BunqId],
+        FieldMetadata(alias="Id"),
+        pydantic.Field(alias="Id", description="The id of the created item"),
+    ] = None
     """
     The id of the created item
     """

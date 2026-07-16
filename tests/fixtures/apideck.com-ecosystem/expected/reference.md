@@ -1,6 +1,6 @@
 # Reference
 ## Ecosystem
-<details><summary><code>client.ecosystem.<a href="src/fern/ecosystem/client.py">ecosystems_one</a>(...)</code></summary>
+<details><summary><code>client.ecosystem.<a href="src/fern/ecosystem/client.py">ecosystems_one</a>(...) -> GetEcosystemResponse</code></summary>
 <dl>
 <dd>
 
@@ -28,8 +28,12 @@ Get ecosystem
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
+
 client.ecosystem.ecosystems_one(
     ecosystem_id="ecosystem_id",
 )
@@ -69,7 +73,7 @@ client.ecosystem.ecosystems_one(
 </details>
 
 ## Category
-<details><summary><code>client.category.<a href="src/fern/category/client.py">categories_all</a>(...)</code></summary>
+<details><summary><code>client.category.<a href="src/fern/category/client.py">categories_all</a>(...) -> GetCategoriesResponse</code></summary>
 <dl>
 <dd>
 
@@ -97,8 +101,12 @@ List categories
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
+
 client.category.categories_all(
     ecosystem_id="ecosystem_id",
 )
@@ -153,7 +161,7 @@ client.category.categories_all(
 </dl>
 </details>
 
-<details><summary><code>client.category.<a href="src/fern/category/client.py">categories_one</a>(...)</code></summary>
+<details><summary><code>client.category.<a href="src/fern/category/client.py">categories_one</a>(...) -> GetCategoryResponse</code></summary>
 <dl>
 <dd>
 
@@ -181,8 +189,12 @@ Get category
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
+
 client.category.categories_one(
     ecosystem_id="ecosystem_id",
     id="id",
@@ -230,7 +242,7 @@ client.category.categories_one(
 </dl>
 </details>
 
-<details><summary><code>client.category.<a href="src/fern/category/client.py">listings_all</a>(...)</code></summary>
+<details><summary><code>client.category.<a href="src/fern/category/client.py">listings_all</a>(...) -> GetListingsResponse</code></summary>
 <dl>
 <dd>
 
@@ -258,8 +270,12 @@ List category listings
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
+
 client.category.listings_all(
     ecosystem_id="ecosystem_id",
     id="id",
@@ -324,7 +340,7 @@ client.category.listings_all(
 </details>
 
 ## Collection
-<details><summary><code>client.collection.<a href="src/fern/collection/client.py">collections_all</a>(...)</code></summary>
+<details><summary><code>client.collection.<a href="src/fern/collection/client.py">collections_all</a>(...) -> GetCollectionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -352,8 +368,12 @@ List collections
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
+
 client.collection.collections_all(
     ecosystem_id="ecosystem_id",
 )
@@ -408,7 +428,7 @@ client.collection.collections_all(
 </dl>
 </details>
 
-<details><summary><code>client.collection.<a href="src/fern/collection/client.py">collections_one</a>(...)</code></summary>
+<details><summary><code>client.collection.<a href="src/fern/collection/client.py">collections_one</a>(...) -> GetCollectionResponse</code></summary>
 <dl>
 <dd>
 
@@ -436,8 +456,12 @@ Get collection
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
+
 client.collection.collections_one(
     ecosystem_id="ecosystem_id",
     id="id",
@@ -485,7 +509,7 @@ client.collection.collections_one(
 </dl>
 </details>
 
-<details><summary><code>client.collection.<a href="src/fern/collection/client.py">listings_all</a>(...)</code></summary>
+<details><summary><code>client.collection.<a href="src/fern/collection/client.py">listings_all</a>(...) -> GetListingsResponse</code></summary>
 <dl>
 <dd>
 
@@ -513,8 +537,12 @@ List collection listings
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
+
 client.collection.listings_all(
     ecosystem_id="ecosystem_id",
     id="id",
@@ -579,7 +607,7 @@ client.collection.listings_all(
 </details>
 
 ## Listing
-<details><summary><code>client.listing.<a href="src/fern/listing/client.py">listings_all</a>(...)</code></summary>
+<details><summary><code>client.listing.<a href="src/fern/listing/client.py">listings_all</a>(...) -> GetListingsResponse</code></summary>
 <dl>
 <dd>
 
@@ -607,8 +635,12 @@ List listings
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
+
 client.listing.listings_all(
     ecosystem_id="ecosystem_id",
 )
@@ -671,7 +703,7 @@ client.listing.listings_all(
 </dl>
 </details>
 
-<details><summary><code>client.listing.<a href="src/fern/listing/client.py">listings_one</a>(...)</code></summary>
+<details><summary><code>client.listing.<a href="src/fern/listing/client.py">listings_one</a>(...) -> GetListingResponse</code></summary>
 <dl>
 <dd>
 
@@ -699,8 +731,12 @@ Get listing
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
+
 client.listing.listings_one(
     ecosystem_id="ecosystem_id",
     id="id",
@@ -749,7 +785,7 @@ client.listing.listings_one(
 </details>
 
 ## Product
-<details><summary><code>client.product.<a href="src/fern/product/client.py">products_all</a>(...)</code></summary>
+<details><summary><code>client.product.<a href="src/fern/product/client.py">products_all</a>(...) -> GetProductsResponse</code></summary>
 <dl>
 <dd>
 
@@ -777,8 +813,12 @@ List products
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
+
 client.product.products_all(
     ecosystem_id="ecosystem_id",
 )
@@ -817,7 +857,7 @@ client.product.products_all(
 </dl>
 </details>
 
-<details><summary><code>client.product.<a href="src/fern/product/client.py">products_one</a>(...)</code></summary>
+<details><summary><code>client.product.<a href="src/fern/product/client.py">products_one</a>(...) -> GetProductResponse</code></summary>
 <dl>
 <dd>
 
@@ -845,8 +885,12 @@ Get product
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
+
 client.product.products_one(
     ecosystem_id="ecosystem_id",
     id="id",
@@ -894,7 +938,7 @@ client.product.products_one(
 </dl>
 </details>
 
-<details><summary><code>client.product.<a href="src/fern/product/client.py">listings_all</a>(...)</code></summary>
+<details><summary><code>client.product.<a href="src/fern/product/client.py">listings_all</a>(...) -> GetListingsResponse</code></summary>
 <dl>
 <dd>
 
@@ -922,8 +966,12 @@ List product listings
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
-client = FernApi()
+client = FernApi(
+    environment=FernApiEnvironment.PRODUCTION,
+)
+
 client.product.listings_all(
     ecosystem_id="ecosystem_id",
     id="id",

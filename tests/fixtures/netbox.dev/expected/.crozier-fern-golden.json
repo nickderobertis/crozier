@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "netbox.dev",
+  "corpus_spec_ref": "3.4",
+  "corpus_spec_url": "https://api.apis.guru/v2/specs/netbox.dev/3.4/openapi.json"
+}

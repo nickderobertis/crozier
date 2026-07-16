@@ -7,7 +7,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -149,6 +150,7 @@ from .types.dcim_site_groups_list_response import DcimSiteGroupsListResponse
 from .types.dcim_sites_list_response import DcimSitesListResponse
 from .types.dcim_virtual_chassis_list_response import DcimVirtualChassisListResponse
 from .types.dcim_virtual_device_contexts_list_response import DcimVirtualDeviceContextsListResponse
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -301,6 +303,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cable_terminations_create(
@@ -312,7 +318,7 @@ class RawDcimClient:
         termination_type: str,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
-        termination: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        termination: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[CableTermination]:
@@ -333,7 +339,7 @@ class RawDcimClient:
 
         id : typing.Optional[int]
 
-        termination : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        termination : typing.Optional[typing.Dict[str, typing.Any]]
 
         url : typing.Optional[str]
 
@@ -374,6 +380,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cable_terminations_bulk_update(
@@ -385,7 +395,7 @@ class RawDcimClient:
         termination_type: str,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
-        termination: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        termination: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[CableTermination]:
@@ -406,7 +416,7 @@ class RawDcimClient:
 
         id : typing.Optional[int]
 
-        termination : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        termination : typing.Optional[typing.Dict[str, typing.Any]]
 
         url : typing.Optional[str]
 
@@ -447,6 +457,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cable_terminations_bulk_delete(
@@ -475,6 +489,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cable_terminations_bulk_partial_update(
@@ -486,7 +504,7 @@ class RawDcimClient:
         termination_type: str,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
-        termination: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        termination: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[CableTermination]:
@@ -507,7 +525,7 @@ class RawDcimClient:
 
         id : typing.Optional[int]
 
-        termination : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        termination : typing.Optional[typing.Dict[str, typing.Any]]
 
         url : typing.Optional[str]
 
@@ -548,6 +566,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cable_terminations_read(
@@ -570,7 +592,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/cable-terminations/{jsonable_encoder(id)}/",
+            f"dcim/cable-terminations/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -587,6 +609,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cable_terminations_update(
@@ -599,7 +625,7 @@ class RawDcimClient:
         termination_type: str,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
-        termination: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        termination: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[CableTermination]:
@@ -623,7 +649,7 @@ class RawDcimClient:
 
         id : typing.Optional[int]
 
-        termination : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        termination : typing.Optional[typing.Dict[str, typing.Any]]
 
         url : typing.Optional[str]
 
@@ -636,7 +662,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/cable-terminations/{jsonable_encoder(id_)}/",
+            f"dcim/cable-terminations/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "cable": cable,
@@ -667,6 +693,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cable_terminations_delete(
@@ -688,7 +718,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/cable-terminations/{jsonable_encoder(id)}/",
+            f"dcim/cable-terminations/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -698,6 +728,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cable_terminations_partial_update(
@@ -710,7 +744,7 @@ class RawDcimClient:
         termination_type: str,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
-        termination: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        termination: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[CableTermination]:
@@ -734,7 +768,7 @@ class RawDcimClient:
 
         id : typing.Optional[int]
 
-        termination : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        termination : typing.Optional[typing.Dict[str, typing.Any]]
 
         url : typing.Optional[str]
 
@@ -747,7 +781,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/cable-terminations/{jsonable_encoder(id_)}/",
+            f"dcim/cable-terminations/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "cable": cable,
@@ -778,6 +812,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cables_list(
@@ -1223,6 +1261,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cables_create(
@@ -1233,7 +1275,7 @@ class RawDcimClient:
         color: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -1263,7 +1305,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -1342,6 +1384,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cables_bulk_update(
@@ -1352,7 +1398,7 @@ class RawDcimClient:
         color: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -1382,7 +1428,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -1461,6 +1507,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cables_bulk_delete(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -1487,6 +1537,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cables_bulk_partial_update(
@@ -1497,7 +1551,7 @@ class RawDcimClient:
         color: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -1527,7 +1581,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -1606,6 +1660,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cables_read(self, id: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[Cable]:
@@ -1626,7 +1684,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/cables/{jsonable_encoder(id)}/",
+            f"dcim/cables/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -1643,6 +1701,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cables_update(
@@ -1654,7 +1716,7 @@ class RawDcimClient:
         color: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -1687,7 +1749,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -1722,7 +1784,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/cables/{jsonable_encoder(id_)}/",
+            f"dcim/cables/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "a_terminations": convert_and_respect_annotation_metadata(
@@ -1769,6 +1831,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cables_delete(self, id: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -1788,7 +1854,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/cables/{jsonable_encoder(id)}/",
+            f"dcim/cables/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -1798,6 +1864,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cables_partial_update(
@@ -1809,7 +1879,7 @@ class RawDcimClient:
         color: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -1842,7 +1912,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -1877,7 +1947,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/cables/{jsonable_encoder(id_)}/",
+            f"dcim/cables/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "a_terminations": convert_and_respect_annotation_metadata(
@@ -1924,6 +1994,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def connected_device_list(
@@ -1975,6 +2049,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def console_port_templates_list(
@@ -2210,6 +2288,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def console_port_templates_create(
@@ -2298,6 +2380,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def console_port_templates_bulk_update(
@@ -2386,6 +2472,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def console_port_templates_bulk_delete(
@@ -2414,6 +2504,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def console_port_templates_bulk_partial_update(
@@ -2502,6 +2596,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def console_port_templates_read(
@@ -2524,7 +2622,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/console-port-templates/{jsonable_encoder(id)}/",
+            f"dcim/console-port-templates/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -2541,6 +2639,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def console_port_templates_update(
@@ -2602,7 +2704,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/console-port-templates/{jsonable_encoder(id_)}/",
+            f"dcim/console-port-templates/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "created": created,
@@ -2636,6 +2738,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def console_port_templates_delete(
@@ -2657,7 +2763,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/console-port-templates/{jsonable_encoder(id)}/",
+            f"dcim/console-port-templates/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -2667,6 +2773,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def console_port_templates_partial_update(
@@ -2728,7 +2838,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/console-port-templates/{jsonable_encoder(id_)}/",
+            f"dcim/console-port-templates/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "created": created,
@@ -2762,6 +2872,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def console_ports_list(
@@ -3272,6 +3386,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def console_ports_create(
@@ -3286,7 +3404,7 @@ class RawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -3327,7 +3445,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -3417,6 +3535,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def console_ports_bulk_update(
@@ -3431,7 +3553,7 @@ class RawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -3472,7 +3594,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -3562,6 +3684,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def console_ports_bulk_delete(
@@ -3590,6 +3716,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def console_ports_bulk_partial_update(
@@ -3604,7 +3734,7 @@ class RawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -3645,7 +3775,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -3735,6 +3865,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def console_ports_read(
@@ -3757,7 +3891,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/console-ports/{jsonable_encoder(id)}/",
+            f"dcim/console-ports/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -3774,6 +3908,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def console_ports_update(
@@ -3789,7 +3927,7 @@ class RawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -3833,7 +3971,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -3876,7 +4014,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/console-ports/{jsonable_encoder(id_)}/",
+            f"dcim/console-ports/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "_occupied": occupied,
@@ -3926,6 +4064,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def console_ports_delete(
@@ -3947,7 +4089,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/console-ports/{jsonable_encoder(id)}/",
+            f"dcim/console-ports/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -3957,6 +4099,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def console_ports_partial_update(
@@ -3972,7 +4118,7 @@ class RawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -4016,7 +4162,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -4059,7 +4205,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/console-ports/{jsonable_encoder(id_)}/",
+            f"dcim/console-ports/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "_occupied": occupied,
@@ -4109,6 +4255,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def console_ports_trace(
@@ -4131,7 +4281,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/console-ports/{jsonable_encoder(id)}/trace/",
+            f"dcim/console-ports/{encode_path_param(id)}/trace/",
             method="GET",
             request_options=request_options,
         )
@@ -4148,6 +4298,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def console_server_port_templates_list(
@@ -4383,6 +4537,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def console_server_port_templates_create(
@@ -4471,6 +4629,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def console_server_port_templates_bulk_update(
@@ -4559,6 +4721,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def console_server_port_templates_bulk_delete(
@@ -4587,6 +4753,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def console_server_port_templates_bulk_partial_update(
@@ -4675,6 +4845,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def console_server_port_templates_read(
@@ -4697,7 +4871,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/console-server-port-templates/{jsonable_encoder(id)}/",
+            f"dcim/console-server-port-templates/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -4714,6 +4888,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def console_server_port_templates_update(
@@ -4775,7 +4953,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/console-server-port-templates/{jsonable_encoder(id_)}/",
+            f"dcim/console-server-port-templates/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "created": created,
@@ -4809,6 +4987,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def console_server_port_templates_delete(
@@ -4830,7 +5012,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/console-server-port-templates/{jsonable_encoder(id)}/",
+            f"dcim/console-server-port-templates/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -4840,6 +5022,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def console_server_port_templates_partial_update(
@@ -4901,7 +5087,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/console-server-port-templates/{jsonable_encoder(id_)}/",
+            f"dcim/console-server-port-templates/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "created": created,
@@ -4935,6 +5121,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def console_server_ports_list(
@@ -5445,6 +5635,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def console_server_ports_create(
@@ -5459,7 +5653,7 @@ class RawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -5500,7 +5694,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -5590,6 +5784,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def console_server_ports_bulk_update(
@@ -5604,7 +5802,7 @@ class RawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -5645,7 +5843,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -5735,6 +5933,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def console_server_ports_bulk_delete(
@@ -5763,6 +5965,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def console_server_ports_bulk_partial_update(
@@ -5777,7 +5983,7 @@ class RawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -5818,7 +6024,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -5908,6 +6114,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def console_server_ports_read(
@@ -5930,7 +6140,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/console-server-ports/{jsonable_encoder(id)}/",
+            f"dcim/console-server-ports/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -5947,6 +6157,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def console_server_ports_update(
@@ -5962,7 +6176,7 @@ class RawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -6006,7 +6220,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -6049,7 +6263,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/console-server-ports/{jsonable_encoder(id_)}/",
+            f"dcim/console-server-ports/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "_occupied": occupied,
@@ -6099,6 +6313,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def console_server_ports_delete(
@@ -6120,7 +6338,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/console-server-ports/{jsonable_encoder(id)}/",
+            f"dcim/console-server-ports/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -6130,6 +6348,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def console_server_ports_partial_update(
@@ -6145,7 +6367,7 @@ class RawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -6189,7 +6411,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -6232,7 +6454,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/console-server-ports/{jsonable_encoder(id_)}/",
+            f"dcim/console-server-ports/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "_occupied": occupied,
@@ -6282,6 +6504,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def console_server_ports_trace(
@@ -6304,7 +6530,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/console-server-ports/{jsonable_encoder(id)}/trace/",
+            f"dcim/console-server-ports/{encode_path_param(id)}/trace/",
             method="GET",
             request_options=request_options,
         )
@@ -6321,6 +6547,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def device_bay_templates_list(
@@ -6536,6 +6766,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def device_bay_templates_create(
@@ -6616,6 +6850,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def device_bay_templates_bulk_update(
@@ -6696,6 +6934,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def device_bay_templates_bulk_delete(
@@ -6724,6 +6966,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def device_bay_templates_bulk_partial_update(
@@ -6804,6 +7050,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def device_bay_templates_read(
@@ -6826,7 +7076,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/device-bay-templates/{jsonable_encoder(id)}/",
+            f"dcim/device-bay-templates/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -6843,6 +7093,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def device_bay_templates_update(
@@ -6898,7 +7152,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/device-bay-templates/{jsonable_encoder(id_)}/",
+            f"dcim/device-bay-templates/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "created": created,
@@ -6930,6 +7184,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def device_bay_templates_delete(
@@ -6951,7 +7209,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/device-bay-templates/{jsonable_encoder(id)}/",
+            f"dcim/device-bay-templates/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -6961,6 +7219,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def device_bay_templates_partial_update(
@@ -7016,7 +7278,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/device-bay-templates/{jsonable_encoder(id_)}/",
+            f"dcim/device-bay-templates/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "created": created,
@@ -7048,6 +7310,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def device_bays_list(
@@ -7513,6 +7779,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def device_bays_create(
@@ -7521,7 +7791,7 @@ class RawDcimClient:
         device: int,
         name: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -7543,7 +7813,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -7605,6 +7875,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def device_bays_bulk_update(
@@ -7613,7 +7887,7 @@ class RawDcimClient:
         device: int,
         name: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -7635,7 +7909,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -7697,6 +7971,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def device_bays_bulk_delete(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -7723,6 +8001,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def device_bays_bulk_partial_update(
@@ -7731,7 +8013,7 @@ class RawDcimClient:
         device: int,
         name: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -7753,7 +8035,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -7815,6 +8097,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def device_bays_read(
@@ -7837,7 +8123,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/device-bays/{jsonable_encoder(id)}/",
+            f"dcim/device-bays/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -7854,6 +8140,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def device_bays_update(
@@ -7863,7 +8153,7 @@ class RawDcimClient:
         device: int,
         name: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -7888,7 +8178,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -7916,7 +8206,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/device-bays/{jsonable_encoder(id_)}/",
+            f"dcim/device-bays/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "created": created,
@@ -7953,6 +8243,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def device_bays_delete(
@@ -7974,7 +8268,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/device-bays/{jsonable_encoder(id)}/",
+            f"dcim/device-bays/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -7984,6 +8278,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def device_bays_partial_update(
@@ -7993,7 +8291,7 @@ class RawDcimClient:
         device: int,
         name: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -8018,7 +8316,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -8046,7 +8344,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/device-bays/{jsonable_encoder(id_)}/",
+            f"dcim/device-bays/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "created": created,
@@ -8083,6 +8381,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def device_roles_list(
@@ -8468,6 +8770,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def device_roles_create(
@@ -8477,7 +8783,7 @@ class RawDcimClient:
         slug: str,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -8502,7 +8808,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -8568,6 +8874,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def device_roles_bulk_update(
@@ -8577,7 +8887,7 @@ class RawDcimClient:
         slug: str,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -8602,7 +8912,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -8668,6 +8978,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def device_roles_bulk_delete(
@@ -8696,6 +9010,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def device_roles_bulk_partial_update(
@@ -8705,7 +9023,7 @@ class RawDcimClient:
         slug: str,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -8730,7 +9048,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -8796,6 +9114,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def device_roles_read(
@@ -8818,7 +9140,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/device-roles/{jsonable_encoder(id)}/",
+            f"dcim/device-roles/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -8835,6 +9157,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def device_roles_update(
@@ -8845,7 +9171,7 @@ class RawDcimClient:
         slug: str,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -8873,7 +9199,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -8903,7 +9229,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/device-roles/{jsonable_encoder(id_)}/",
+            f"dcim/device-roles/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "color": color,
@@ -8942,6 +9268,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def device_roles_delete(
@@ -8963,7 +9293,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/device-roles/{jsonable_encoder(id)}/",
+            f"dcim/device-roles/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -8973,6 +9303,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def device_roles_partial_update(
@@ -8983,7 +9317,7 @@ class RawDcimClient:
         slug: str,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -9011,7 +9345,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -9041,7 +9375,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/device-roles/{jsonable_encoder(id_)}/",
+            f"dcim/device-roles/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "color": color,
@@ -9080,6 +9414,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def device_types_list(
@@ -9575,6 +9913,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def device_types_create(
@@ -9586,7 +9928,7 @@ class RawDcimClient:
         airflow: typing.Optional[WritableDeviceTypeAirflow] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -9621,7 +9963,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -9709,6 +10051,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def device_types_bulk_update(
@@ -9720,7 +10066,7 @@ class RawDcimClient:
         airflow: typing.Optional[WritableDeviceTypeAirflow] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -9755,7 +10101,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -9843,6 +10189,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def device_types_bulk_delete(
@@ -9871,6 +10221,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def device_types_bulk_partial_update(
@@ -9882,7 +10236,7 @@ class RawDcimClient:
         airflow: typing.Optional[WritableDeviceTypeAirflow] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -9917,7 +10271,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -10005,6 +10359,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def device_types_read(
@@ -10027,7 +10385,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/device-types/{jsonable_encoder(id)}/",
+            f"dcim/device-types/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -10044,6 +10402,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def device_types_update(
@@ -10056,7 +10418,7 @@ class RawDcimClient:
         airflow: typing.Optional[WritableDeviceTypeAirflow] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -10094,7 +10456,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -10138,7 +10500,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/device-types/{jsonable_encoder(id_)}/",
+            f"dcim/device-types/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "airflow": airflow,
@@ -10185,6 +10547,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def device_types_delete(
@@ -10206,7 +10572,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/device-types/{jsonable_encoder(id)}/",
+            f"dcim/device-types/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -10216,6 +10582,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def device_types_partial_update(
@@ -10228,7 +10598,7 @@ class RawDcimClient:
         airflow: typing.Optional[WritableDeviceTypeAirflow] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -10266,7 +10636,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -10310,7 +10680,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/device-types/{jsonable_encoder(id_)}/",
+            f"dcim/device-types/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "airflow": airflow,
@@ -10357,6 +10727,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def devices_list(
@@ -11202,6 +11576,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def devices_create(
@@ -11214,15 +11592,15 @@ class RawDcimClient:
         asset_tag: typing.Optional[str] = OMIT,
         cluster: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
-        config_context: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        config_context: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         face: typing.Optional[WritableDeviceWithConfigContextFace] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        local_context_data: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        local_context_data: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         location: typing.Optional[int] = OMIT,
         name: typing.Optional[str] = OMIT,
         parent_device: typing.Optional[NestedDevice] = OMIT,
@@ -11262,11 +11640,11 @@ class RawDcimClient:
 
         comments : typing.Optional[str]
 
-        config_context : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        config_context : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -11278,7 +11656,7 @@ class RawDcimClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        local_context_data : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        local_context_data : typing.Optional[typing.Dict[str, typing.Any]]
 
         location : typing.Optional[int]
 
@@ -11380,6 +11758,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def devices_bulk_update(
@@ -11392,15 +11774,15 @@ class RawDcimClient:
         asset_tag: typing.Optional[str] = OMIT,
         cluster: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
-        config_context: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        config_context: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         face: typing.Optional[WritableDeviceWithConfigContextFace] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        local_context_data: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        local_context_data: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         location: typing.Optional[int] = OMIT,
         name: typing.Optional[str] = OMIT,
         parent_device: typing.Optional[NestedDevice] = OMIT,
@@ -11440,11 +11822,11 @@ class RawDcimClient:
 
         comments : typing.Optional[str]
 
-        config_context : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        config_context : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -11456,7 +11838,7 @@ class RawDcimClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        local_context_data : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        local_context_data : typing.Optional[typing.Dict[str, typing.Any]]
 
         location : typing.Optional[int]
 
@@ -11558,6 +11940,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def devices_bulk_delete(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -11584,6 +11970,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def devices_bulk_partial_update(
@@ -11596,15 +11986,15 @@ class RawDcimClient:
         asset_tag: typing.Optional[str] = OMIT,
         cluster: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
-        config_context: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        config_context: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         face: typing.Optional[WritableDeviceWithConfigContextFace] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        local_context_data: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        local_context_data: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         location: typing.Optional[int] = OMIT,
         name: typing.Optional[str] = OMIT,
         parent_device: typing.Optional[NestedDevice] = OMIT,
@@ -11644,11 +12034,11 @@ class RawDcimClient:
 
         comments : typing.Optional[str]
 
-        config_context : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        config_context : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -11660,7 +12050,7 @@ class RawDcimClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        local_context_data : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        local_context_data : typing.Optional[typing.Dict[str, typing.Any]]
 
         location : typing.Optional[int]
 
@@ -11762,6 +12152,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def devices_read(
@@ -11784,7 +12178,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/devices/{jsonable_encoder(id)}/",
+            f"dcim/devices/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -11801,6 +12195,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def devices_update(
@@ -11814,15 +12212,15 @@ class RawDcimClient:
         asset_tag: typing.Optional[str] = OMIT,
         cluster: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
-        config_context: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        config_context: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         face: typing.Optional[WritableDeviceWithConfigContextFace] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        local_context_data: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        local_context_data: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         location: typing.Optional[int] = OMIT,
         name: typing.Optional[str] = OMIT,
         parent_device: typing.Optional[NestedDevice] = OMIT,
@@ -11865,11 +12263,11 @@ class RawDcimClient:
 
         comments : typing.Optional[str]
 
-        config_context : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        config_context : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -11881,7 +12279,7 @@ class RawDcimClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        local_context_data : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        local_context_data : typing.Optional[typing.Dict[str, typing.Any]]
 
         location : typing.Optional[int]
 
@@ -11926,7 +12324,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/devices/{jsonable_encoder(id_)}/",
+            f"dcim/devices/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "airflow": airflow,
@@ -11986,6 +12384,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def devices_delete(self, id: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -12005,7 +12407,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/devices/{jsonable_encoder(id)}/",
+            f"dcim/devices/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -12015,6 +12417,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def devices_partial_update(
@@ -12028,15 +12434,15 @@ class RawDcimClient:
         asset_tag: typing.Optional[str] = OMIT,
         cluster: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
-        config_context: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        config_context: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         face: typing.Optional[WritableDeviceWithConfigContextFace] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        local_context_data: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        local_context_data: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         location: typing.Optional[int] = OMIT,
         name: typing.Optional[str] = OMIT,
         parent_device: typing.Optional[NestedDevice] = OMIT,
@@ -12079,11 +12485,11 @@ class RawDcimClient:
 
         comments : typing.Optional[str]
 
-        config_context : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        config_context : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -12095,7 +12501,7 @@ class RawDcimClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        local_context_data : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        local_context_data : typing.Optional[typing.Dict[str, typing.Any]]
 
         location : typing.Optional[int]
 
@@ -12140,7 +12546,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/devices/{jsonable_encoder(id_)}/",
+            f"dcim/devices/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "airflow": airflow,
@@ -12200,6 +12606,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def devices_napalm(
@@ -12224,7 +12634,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/devices/{jsonable_encoder(id)}/napalm/",
+            f"dcim/devices/{encode_path_param(id)}/napalm/",
             method="GET",
             params={
                 "method": method,
@@ -12244,6 +12654,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def front_port_templates_list(
@@ -12534,6 +12948,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def front_port_templates_create(
@@ -12634,6 +13052,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def front_port_templates_bulk_update(
@@ -12734,6 +13156,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def front_port_templates_bulk_delete(
@@ -12762,6 +13188,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def front_port_templates_bulk_partial_update(
@@ -12862,6 +13292,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def front_port_templates_read(
@@ -12884,7 +13318,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/front-port-templates/{jsonable_encoder(id)}/",
+            f"dcim/front-port-templates/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -12901,6 +13335,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def front_port_templates_update(
@@ -12971,7 +13409,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/front-port-templates/{jsonable_encoder(id_)}/",
+            f"dcim/front-port-templates/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "color": color,
@@ -13008,6 +13446,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def front_port_templates_delete(
@@ -13029,7 +13471,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/front-port-templates/{jsonable_encoder(id)}/",
+            f"dcim/front-port-templates/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -13039,6 +13481,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def front_port_templates_partial_update(
@@ -13109,7 +13555,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/front-port-templates/{jsonable_encoder(id_)}/",
+            f"dcim/front-port-templates/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "color": color,
@@ -13146,6 +13592,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def front_ports_list(
@@ -13706,6 +14156,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def front_ports_create(
@@ -13720,7 +14174,7 @@ class RawDcimClient:
         cable_end: typing.Optional[str] = OMIT,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -13758,7 +14212,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -13843,6 +14297,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def front_ports_bulk_update(
@@ -13857,7 +14315,7 @@ class RawDcimClient:
         cable_end: typing.Optional[str] = OMIT,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -13895,7 +14353,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -13980,6 +14438,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def front_ports_bulk_delete(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -14006,6 +14468,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def front_ports_bulk_partial_update(
@@ -14020,7 +14486,7 @@ class RawDcimClient:
         cable_end: typing.Optional[str] = OMIT,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -14058,7 +14524,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -14143,6 +14609,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def front_ports_read(
@@ -14165,7 +14635,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/front-ports/{jsonable_encoder(id)}/",
+            f"dcim/front-ports/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -14182,6 +14652,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def front_ports_update(
@@ -14197,7 +14671,7 @@ class RawDcimClient:
         cable_end: typing.Optional[str] = OMIT,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -14238,7 +14712,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -14277,7 +14751,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/front-ports/{jsonable_encoder(id_)}/",
+            f"dcim/front-ports/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "_occupied": occupied,
@@ -14326,6 +14800,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def front_ports_delete(
@@ -14347,7 +14825,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/front-ports/{jsonable_encoder(id)}/",
+            f"dcim/front-ports/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -14357,6 +14835,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def front_ports_partial_update(
@@ -14372,7 +14854,7 @@ class RawDcimClient:
         cable_end: typing.Optional[str] = OMIT,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -14413,7 +14895,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -14452,7 +14934,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/front-ports/{jsonable_encoder(id_)}/",
+            f"dcim/front-ports/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "_occupied": occupied,
@@ -14501,6 +14983,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def front_ports_paths(
@@ -14523,7 +15009,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/front-ports/{jsonable_encoder(id)}/paths/",
+            f"dcim/front-ports/{encode_path_param(id)}/paths/",
             method="GET",
             request_options=request_options,
         )
@@ -14540,6 +15026,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def interface_templates_list(
@@ -14800,6 +15290,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def interface_templates_create(
@@ -14900,6 +15394,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def interface_templates_bulk_update(
@@ -15000,6 +15498,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def interface_templates_bulk_delete(
@@ -15028,6 +15530,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def interface_templates_bulk_partial_update(
@@ -15128,6 +15634,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def interface_templates_read(
@@ -15150,7 +15660,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/interface-templates/{jsonable_encoder(id)}/",
+            f"dcim/interface-templates/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -15167,6 +15677,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def interface_templates_update(
@@ -15237,7 +15751,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/interface-templates/{jsonable_encoder(id_)}/",
+            f"dcim/interface-templates/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "created": created,
@@ -15274,6 +15788,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def interface_templates_delete(
@@ -15295,7 +15813,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/interface-templates/{jsonable_encoder(id)}/",
+            f"dcim/interface-templates/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -15305,6 +15823,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def interface_templates_partial_update(
@@ -15375,7 +15897,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/interface-templates/{jsonable_encoder(id_)}/",
+            f"dcim/interface-templates/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "created": created,
@@ -15412,6 +15934,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def interfaces_list(
@@ -16347,6 +16873,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def interfaces_create(
@@ -16366,7 +16896,7 @@ class RawDcimClient:
         count_fhrp_groups: typing.Optional[int] = OMIT,
         count_ipaddresses: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         duplex: typing.Optional[WritableInterfaceDuplex] = OMIT,
@@ -16438,7 +16968,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -16596,6 +17126,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def interfaces_bulk_update(
@@ -16615,7 +17149,7 @@ class RawDcimClient:
         count_fhrp_groups: typing.Optional[int] = OMIT,
         count_ipaddresses: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         duplex: typing.Optional[WritableInterfaceDuplex] = OMIT,
@@ -16687,7 +17221,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -16845,6 +17379,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def interfaces_bulk_delete(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -16871,6 +17409,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def interfaces_bulk_partial_update(
@@ -16890,7 +17432,7 @@ class RawDcimClient:
         count_fhrp_groups: typing.Optional[int] = OMIT,
         count_ipaddresses: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         duplex: typing.Optional[WritableInterfaceDuplex] = OMIT,
@@ -16962,7 +17504,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -17120,6 +17662,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def interfaces_read(
@@ -17142,7 +17688,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/interfaces/{jsonable_encoder(id)}/",
+            f"dcim/interfaces/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -17159,6 +17705,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def interfaces_update(
@@ -17179,7 +17729,7 @@ class RawDcimClient:
         count_fhrp_groups: typing.Optional[int] = OMIT,
         count_ipaddresses: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         duplex: typing.Optional[WritableInterfaceDuplex] = OMIT,
@@ -17254,7 +17804,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -17339,7 +17889,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/interfaces/{jsonable_encoder(id_)}/",
+            f"dcim/interfaces/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "_occupied": occupied,
@@ -17415,6 +17965,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def interfaces_delete(
@@ -17436,7 +17990,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/interfaces/{jsonable_encoder(id)}/",
+            f"dcim/interfaces/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -17446,6 +18000,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def interfaces_partial_update(
@@ -17466,7 +18024,7 @@ class RawDcimClient:
         count_fhrp_groups: typing.Optional[int] = OMIT,
         count_ipaddresses: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         duplex: typing.Optional[WritableInterfaceDuplex] = OMIT,
@@ -17541,7 +18099,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -17626,7 +18184,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/interfaces/{jsonable_encoder(id_)}/",
+            f"dcim/interfaces/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "_occupied": occupied,
@@ -17702,6 +18260,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def interfaces_trace(
@@ -17724,7 +18286,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/interfaces/{jsonable_encoder(id)}/trace/",
+            f"dcim/interfaces/{encode_path_param(id)}/trace/",
             method="GET",
             request_options=request_options,
         )
@@ -17741,6 +18303,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def inventory_item_roles_list(
@@ -18066,6 +18632,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def inventory_item_roles_create(
@@ -18075,7 +18645,7 @@ class RawDcimClient:
         slug: str,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -18098,7 +18668,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -18157,6 +18727,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def inventory_item_roles_bulk_update(
@@ -18166,7 +18740,7 @@ class RawDcimClient:
         slug: str,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -18189,7 +18763,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -18248,6 +18822,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def inventory_item_roles_bulk_delete(
@@ -18276,6 +18854,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def inventory_item_roles_bulk_partial_update(
@@ -18285,7 +18867,7 @@ class RawDcimClient:
         slug: str,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -18308,7 +18890,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -18367,6 +18949,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def inventory_item_roles_read(
@@ -18389,7 +18975,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/inventory-item-roles/{jsonable_encoder(id)}/",
+            f"dcim/inventory-item-roles/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -18406,6 +18992,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def inventory_item_roles_update(
@@ -18416,7 +19006,7 @@ class RawDcimClient:
         slug: str,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -18442,7 +19032,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -18467,7 +19057,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/inventory-item-roles/{jsonable_encoder(id_)}/",
+            f"dcim/inventory-item-roles/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "color": color,
@@ -18504,6 +19094,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def inventory_item_roles_delete(
@@ -18525,7 +19119,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/inventory-item-roles/{jsonable_encoder(id)}/",
+            f"dcim/inventory-item-roles/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -18535,6 +19129,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def inventory_item_roles_partial_update(
@@ -18545,7 +19143,7 @@ class RawDcimClient:
         slug: str,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -18571,7 +19169,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -18596,7 +19194,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/inventory-item-roles/{jsonable_encoder(id_)}/",
+            f"dcim/inventory-item-roles/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "color": color,
@@ -18633,6 +19231,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def inventory_item_templates_list(
@@ -19048,6 +19650,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def inventory_item_templates_create(
@@ -19056,7 +19662,7 @@ class RawDcimClient:
         device_type: int,
         name: str,
         depth: typing.Optional[int] = OMIT,
-        component: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        component: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         component_id: typing.Optional[int] = OMIT,
         component_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
@@ -19085,7 +19691,7 @@ class RawDcimClient:
 
         depth : typing.Optional[int]
 
-        component : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        component : typing.Optional[typing.Dict[str, typing.Any]]
 
         component_id : typing.Optional[int]
 
@@ -19161,6 +19767,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def inventory_item_templates_bulk_update(
@@ -19169,7 +19779,7 @@ class RawDcimClient:
         device_type: int,
         name: str,
         depth: typing.Optional[int] = OMIT,
-        component: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        component: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         component_id: typing.Optional[int] = OMIT,
         component_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
@@ -19198,7 +19808,7 @@ class RawDcimClient:
 
         depth : typing.Optional[int]
 
-        component : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        component : typing.Optional[typing.Dict[str, typing.Any]]
 
         component_id : typing.Optional[int]
 
@@ -19274,6 +19884,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def inventory_item_templates_bulk_delete(
@@ -19302,6 +19916,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def inventory_item_templates_bulk_partial_update(
@@ -19310,7 +19928,7 @@ class RawDcimClient:
         device_type: int,
         name: str,
         depth: typing.Optional[int] = OMIT,
-        component: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        component: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         component_id: typing.Optional[int] = OMIT,
         component_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
@@ -19339,7 +19957,7 @@ class RawDcimClient:
 
         depth : typing.Optional[int]
 
-        component : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        component : typing.Optional[typing.Dict[str, typing.Any]]
 
         component_id : typing.Optional[int]
 
@@ -19415,6 +20033,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def inventory_item_templates_read(
@@ -19437,7 +20059,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/inventory-item-templates/{jsonable_encoder(id)}/",
+            f"dcim/inventory-item-templates/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -19454,6 +20076,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def inventory_item_templates_update(
@@ -19463,7 +20089,7 @@ class RawDcimClient:
         device_type: int,
         name: str,
         depth: typing.Optional[int] = OMIT,
-        component: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        component: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         component_id: typing.Optional[int] = OMIT,
         component_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
@@ -19495,7 +20121,7 @@ class RawDcimClient:
 
         depth : typing.Optional[int]
 
-        component : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        component : typing.Optional[typing.Dict[str, typing.Any]]
 
         component_id : typing.Optional[int]
 
@@ -19534,7 +20160,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/inventory-item-templates/{jsonable_encoder(id_)}/",
+            f"dcim/inventory-item-templates/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "_depth": depth,
@@ -19574,6 +20200,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def inventory_item_templates_delete(
@@ -19595,7 +20225,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/inventory-item-templates/{jsonable_encoder(id)}/",
+            f"dcim/inventory-item-templates/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -19605,6 +20235,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def inventory_item_templates_partial_update(
@@ -19614,7 +20248,7 @@ class RawDcimClient:
         device_type: int,
         name: str,
         depth: typing.Optional[int] = OMIT,
-        component: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        component: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         component_id: typing.Optional[int] = OMIT,
         component_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
@@ -19646,7 +20280,7 @@ class RawDcimClient:
 
         depth : typing.Optional[int]
 
-        component : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        component : typing.Optional[typing.Dict[str, typing.Any]]
 
         component_id : typing.Optional[int]
 
@@ -19685,7 +20319,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/inventory-item-templates/{jsonable_encoder(id_)}/",
+            f"dcim/inventory-item-templates/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "_depth": depth,
@@ -19725,6 +20359,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def inventory_items_list(
@@ -20395,6 +21033,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def inventory_items_create(
@@ -20404,11 +21046,11 @@ class RawDcimClient:
         name: str,
         depth: typing.Optional[int] = OMIT,
         asset_tag: typing.Optional[str] = OMIT,
-        component: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        component: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         component_id: typing.Optional[int] = OMIT,
         component_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         discovered: typing.Optional[bool] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -20438,7 +21080,7 @@ class RawDcimClient:
         asset_tag : typing.Optional[str]
             A unique tag used to identify this item
 
-        component : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        component : typing.Optional[typing.Dict[str, typing.Any]]
 
         component_id : typing.Optional[int]
 
@@ -20446,7 +21088,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -20530,6 +21172,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def inventory_items_bulk_update(
@@ -20539,11 +21185,11 @@ class RawDcimClient:
         name: str,
         depth: typing.Optional[int] = OMIT,
         asset_tag: typing.Optional[str] = OMIT,
-        component: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        component: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         component_id: typing.Optional[int] = OMIT,
         component_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         discovered: typing.Optional[bool] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -20573,7 +21219,7 @@ class RawDcimClient:
         asset_tag : typing.Optional[str]
             A unique tag used to identify this item
 
-        component : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        component : typing.Optional[typing.Dict[str, typing.Any]]
 
         component_id : typing.Optional[int]
 
@@ -20581,7 +21227,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -20665,6 +21311,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def inventory_items_bulk_delete(
@@ -20693,6 +21343,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def inventory_items_bulk_partial_update(
@@ -20702,11 +21356,11 @@ class RawDcimClient:
         name: str,
         depth: typing.Optional[int] = OMIT,
         asset_tag: typing.Optional[str] = OMIT,
-        component: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        component: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         component_id: typing.Optional[int] = OMIT,
         component_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         discovered: typing.Optional[bool] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -20736,7 +21390,7 @@ class RawDcimClient:
         asset_tag : typing.Optional[str]
             A unique tag used to identify this item
 
-        component : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        component : typing.Optional[typing.Dict[str, typing.Any]]
 
         component_id : typing.Optional[int]
 
@@ -20744,7 +21398,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -20828,6 +21482,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def inventory_items_read(
@@ -20850,7 +21508,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/inventory-items/{jsonable_encoder(id)}/",
+            f"dcim/inventory-items/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -20867,6 +21525,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def inventory_items_update(
@@ -20877,11 +21539,11 @@ class RawDcimClient:
         name: str,
         depth: typing.Optional[int] = OMIT,
         asset_tag: typing.Optional[str] = OMIT,
-        component: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        component: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         component_id: typing.Optional[int] = OMIT,
         component_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         discovered: typing.Optional[bool] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -20914,7 +21576,7 @@ class RawDcimClient:
         asset_tag : typing.Optional[str]
             A unique tag used to identify this item
 
-        component : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        component : typing.Optional[typing.Dict[str, typing.Any]]
 
         component_id : typing.Optional[int]
 
@@ -20922,7 +21584,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -20962,7 +21624,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/inventory-items/{jsonable_encoder(id_)}/",
+            f"dcim/inventory-items/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "_depth": depth,
@@ -21009,6 +21671,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def inventory_items_delete(
@@ -21030,7 +21696,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/inventory-items/{jsonable_encoder(id)}/",
+            f"dcim/inventory-items/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -21040,6 +21706,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def inventory_items_partial_update(
@@ -21050,11 +21720,11 @@ class RawDcimClient:
         name: str,
         depth: typing.Optional[int] = OMIT,
         asset_tag: typing.Optional[str] = OMIT,
-        component: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        component: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         component_id: typing.Optional[int] = OMIT,
         component_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         discovered: typing.Optional[bool] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -21087,7 +21757,7 @@ class RawDcimClient:
         asset_tag : typing.Optional[str]
             A unique tag used to identify this item
 
-        component : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        component : typing.Optional[typing.Dict[str, typing.Any]]
 
         component_id : typing.Optional[int]
 
@@ -21095,7 +21765,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -21135,7 +21805,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/inventory-items/{jsonable_encoder(id_)}/",
+            f"dcim/inventory-items/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "_depth": depth,
@@ -21182,6 +21852,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def locations_list(
@@ -21667,6 +22341,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def locations_create(
@@ -21677,7 +22355,7 @@ class RawDcimClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -21706,7 +22384,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -21778,6 +22456,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def locations_bulk_update(
@@ -21788,7 +22470,7 @@ class RawDcimClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -21817,7 +22499,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -21889,6 +22571,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def locations_bulk_delete(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -21915,6 +22601,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def locations_bulk_partial_update(
@@ -21925,7 +22615,7 @@ class RawDcimClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -21954,7 +22644,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -22026,6 +22716,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def locations_read(
@@ -22048,7 +22742,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/locations/{jsonable_encoder(id)}/",
+            f"dcim/locations/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -22065,6 +22759,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def locations_update(
@@ -22076,7 +22774,7 @@ class RawDcimClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -22108,7 +22806,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -22141,7 +22839,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/locations/{jsonable_encoder(id_)}/",
+            f"dcim/locations/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "_depth": depth,
@@ -22183,6 +22881,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def locations_delete(
@@ -22204,7 +22906,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/locations/{jsonable_encoder(id)}/",
+            f"dcim/locations/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -22214,6 +22916,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def locations_partial_update(
@@ -22225,7 +22931,7 @@ class RawDcimClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -22257,7 +22963,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -22290,7 +22996,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/locations/{jsonable_encoder(id_)}/",
+            f"dcim/locations/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "_depth": depth,
@@ -22332,6 +23038,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def manufacturers_list(
@@ -22687,6 +23397,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def manufacturers_create(
@@ -22695,7 +23409,7 @@ class RawDcimClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         devicetype_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -22718,7 +23432,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -22782,6 +23496,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def manufacturers_bulk_update(
@@ -22790,7 +23508,7 @@ class RawDcimClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         devicetype_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -22813,7 +23531,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -22877,6 +23595,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def manufacturers_bulk_delete(
@@ -22905,6 +23627,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def manufacturers_bulk_partial_update(
@@ -22913,7 +23639,7 @@ class RawDcimClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         devicetype_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -22936,7 +23662,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -23000,6 +23726,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def manufacturers_read(
@@ -23022,7 +23752,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/manufacturers/{jsonable_encoder(id)}/",
+            f"dcim/manufacturers/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -23039,6 +23769,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def manufacturers_update(
@@ -23048,7 +23782,7 @@ class RawDcimClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         devicetype_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -23074,7 +23808,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -23103,7 +23837,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/manufacturers/{jsonable_encoder(id_)}/",
+            f"dcim/manufacturers/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "created": created,
@@ -23141,6 +23875,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def manufacturers_delete(
@@ -23162,7 +23900,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/manufacturers/{jsonable_encoder(id)}/",
+            f"dcim/manufacturers/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -23172,6 +23910,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def manufacturers_partial_update(
@@ -23181,7 +23923,7 @@ class RawDcimClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         devicetype_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -23207,7 +23949,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -23236,7 +23978,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/manufacturers/{jsonable_encoder(id_)}/",
+            f"dcim/manufacturers/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "created": created,
@@ -23274,6 +24016,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def module_bay_templates_list(
@@ -23489,6 +24235,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def module_bay_templates_create(
@@ -23574,6 +24324,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def module_bay_templates_bulk_update(
@@ -23659,6 +24413,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def module_bay_templates_bulk_delete(
@@ -23687,6 +24445,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def module_bay_templates_bulk_partial_update(
@@ -23772,6 +24534,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def module_bay_templates_read(
@@ -23794,7 +24560,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/module-bay-templates/{jsonable_encoder(id)}/",
+            f"dcim/module-bay-templates/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -23811,6 +24577,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def module_bay_templates_update(
@@ -23870,7 +24640,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/module-bay-templates/{jsonable_encoder(id_)}/",
+            f"dcim/module-bay-templates/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "created": created,
@@ -23903,6 +24673,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def module_bay_templates_delete(
@@ -23924,7 +24698,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/module-bay-templates/{jsonable_encoder(id)}/",
+            f"dcim/module-bay-templates/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -23934,6 +24708,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def module_bay_templates_partial_update(
@@ -23993,7 +24771,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/module-bay-templates/{jsonable_encoder(id_)}/",
+            f"dcim/module-bay-templates/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "created": created,
@@ -24026,6 +24804,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def module_bays_list(
@@ -24491,6 +25273,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def module_bays_create(
@@ -24500,7 +25286,7 @@ class RawDcimClient:
         installed_module: int,
         name: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -24524,7 +25310,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -24588,6 +25374,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def module_bays_bulk_update(
@@ -24597,7 +25387,7 @@ class RawDcimClient:
         installed_module: int,
         name: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -24621,7 +25411,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -24685,6 +25475,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def module_bays_bulk_delete(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -24711,6 +25505,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def module_bays_bulk_partial_update(
@@ -24720,7 +25518,7 @@ class RawDcimClient:
         installed_module: int,
         name: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -24744,7 +25542,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -24808,6 +25606,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def module_bays_read(
@@ -24830,7 +25632,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/module-bays/{jsonable_encoder(id)}/",
+            f"dcim/module-bays/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -24847,6 +25649,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def module_bays_update(
@@ -24857,7 +25663,7 @@ class RawDcimClient:
         installed_module: int,
         name: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -24884,7 +25690,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -24913,7 +25719,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/module-bays/{jsonable_encoder(id_)}/",
+            f"dcim/module-bays/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "created": created,
@@ -24951,6 +25757,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def module_bays_delete(
@@ -24972,7 +25782,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/module-bays/{jsonable_encoder(id)}/",
+            f"dcim/module-bays/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -24982,6 +25792,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def module_bays_partial_update(
@@ -24992,7 +25806,7 @@ class RawDcimClient:
         installed_module: int,
         name: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -25019,7 +25833,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -25048,7 +25862,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/module-bays/{jsonable_encoder(id_)}/",
+            f"dcim/module-bays/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "created": created,
@@ -25086,6 +25900,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def module_types_list(
@@ -25446,6 +26264,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def module_types_create(
@@ -25455,7 +26277,7 @@ class RawDcimClient:
         model: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -25480,7 +26302,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -25546,6 +26368,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def module_types_bulk_update(
@@ -25555,7 +26381,7 @@ class RawDcimClient:
         model: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -25580,7 +26406,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -25646,6 +26472,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def module_types_bulk_delete(
@@ -25674,6 +26504,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def module_types_bulk_partial_update(
@@ -25683,7 +26517,7 @@ class RawDcimClient:
         model: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -25708,7 +26542,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -25774,6 +26608,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def module_types_read(
@@ -25796,7 +26634,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/module-types/{jsonable_encoder(id)}/",
+            f"dcim/module-types/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -25813,6 +26651,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def module_types_update(
@@ -25823,7 +26665,7 @@ class RawDcimClient:
         model: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -25851,7 +26693,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -25881,7 +26723,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/module-types/{jsonable_encoder(id_)}/",
+            f"dcim/module-types/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "comments": comments,
@@ -25920,6 +26762,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def module_types_delete(
@@ -25941,7 +26787,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/module-types/{jsonable_encoder(id)}/",
+            f"dcim/module-types/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -25951,6 +26797,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def module_types_partial_update(
@@ -25961,7 +26811,7 @@ class RawDcimClient:
         model: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -25989,7 +26839,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -26019,7 +26869,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/module-types/{jsonable_encoder(id_)}/",
+            f"dcim/module-types/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "comments": comments,
@@ -26058,6 +26908,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def modules_list(
@@ -26398,6 +27252,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def modules_create(
@@ -26409,7 +27267,7 @@ class RawDcimClient:
         asset_tag: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -26438,7 +27296,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -26502,6 +27360,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def modules_bulk_update(
@@ -26513,7 +27375,7 @@ class RawDcimClient:
         asset_tag: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -26542,7 +27404,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -26606,6 +27468,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def modules_bulk_delete(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -26632,6 +27498,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def modules_bulk_partial_update(
@@ -26643,7 +27513,7 @@ class RawDcimClient:
         asset_tag: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -26672,7 +27542,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -26736,6 +27606,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def modules_read(self, id: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[Module]:
@@ -26756,7 +27630,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/modules/{jsonable_encoder(id)}/",
+            f"dcim/modules/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -26773,6 +27647,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def modules_update(
@@ -26785,7 +27663,7 @@ class RawDcimClient:
         asset_tag: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -26817,7 +27695,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -26844,7 +27722,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/modules/{jsonable_encoder(id_)}/",
+            f"dcim/modules/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "asset_tag": asset_tag,
@@ -26884,6 +27762,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def modules_delete(self, id: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -26903,7 +27785,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/modules/{jsonable_encoder(id)}/",
+            f"dcim/modules/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -26913,6 +27795,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def modules_partial_update(
@@ -26925,7 +27811,7 @@ class RawDcimClient:
         asset_tag: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -26957,7 +27843,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -26984,7 +27870,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/modules/{jsonable_encoder(id_)}/",
+            f"dcim/modules/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "asset_tag": asset_tag,
@@ -27024,6 +27910,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def platforms_list(
@@ -27424,6 +28314,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def platforms_create(
@@ -27432,14 +28326,14 @@ class RawDcimClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         manufacturer: typing.Optional[int] = OMIT,
-        napalm_args: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        napalm_args: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         napalm_driver: typing.Optional[str] = OMIT,
         tags: typing.Optional[typing.Sequence[NestedTag]] = OMIT,
         url: typing.Optional[str] = OMIT,
@@ -27457,7 +28351,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -27472,7 +28366,7 @@ class RawDcimClient:
         manufacturer : typing.Optional[int]
             Optionally limit this platform to devices of a certain manufacturer
 
-        napalm_args : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        napalm_args : typing.Optional[typing.Dict[str, typing.Any]]
             Additional arguments to pass when initiating the NAPALM driver (JSON format)
 
         napalm_driver : typing.Optional[str]
@@ -27530,6 +28424,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def platforms_bulk_update(
@@ -27538,14 +28436,14 @@ class RawDcimClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         manufacturer: typing.Optional[int] = OMIT,
-        napalm_args: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        napalm_args: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         napalm_driver: typing.Optional[str] = OMIT,
         tags: typing.Optional[typing.Sequence[NestedTag]] = OMIT,
         url: typing.Optional[str] = OMIT,
@@ -27563,7 +28461,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -27578,7 +28476,7 @@ class RawDcimClient:
         manufacturer : typing.Optional[int]
             Optionally limit this platform to devices of a certain manufacturer
 
-        napalm_args : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        napalm_args : typing.Optional[typing.Dict[str, typing.Any]]
             Additional arguments to pass when initiating the NAPALM driver (JSON format)
 
         napalm_driver : typing.Optional[str]
@@ -27636,6 +28534,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def platforms_bulk_delete(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -27662,6 +28564,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def platforms_bulk_partial_update(
@@ -27670,14 +28576,14 @@ class RawDcimClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         manufacturer: typing.Optional[int] = OMIT,
-        napalm_args: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        napalm_args: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         napalm_driver: typing.Optional[str] = OMIT,
         tags: typing.Optional[typing.Sequence[NestedTag]] = OMIT,
         url: typing.Optional[str] = OMIT,
@@ -27695,7 +28601,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -27710,7 +28616,7 @@ class RawDcimClient:
         manufacturer : typing.Optional[int]
             Optionally limit this platform to devices of a certain manufacturer
 
-        napalm_args : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        napalm_args : typing.Optional[typing.Dict[str, typing.Any]]
             Additional arguments to pass when initiating the NAPALM driver (JSON format)
 
         napalm_driver : typing.Optional[str]
@@ -27768,6 +28674,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def platforms_read(
@@ -27790,7 +28700,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/platforms/{jsonable_encoder(id)}/",
+            f"dcim/platforms/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -27807,6 +28717,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def platforms_update(
@@ -27816,14 +28730,14 @@ class RawDcimClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         manufacturer: typing.Optional[int] = OMIT,
-        napalm_args: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        napalm_args: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         napalm_driver: typing.Optional[str] = OMIT,
         tags: typing.Optional[typing.Sequence[NestedTag]] = OMIT,
         url: typing.Optional[str] = OMIT,
@@ -27844,7 +28758,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -27859,7 +28773,7 @@ class RawDcimClient:
         manufacturer : typing.Optional[int]
             Optionally limit this platform to devices of a certain manufacturer
 
-        napalm_args : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        napalm_args : typing.Optional[typing.Dict[str, typing.Any]]
             Additional arguments to pass when initiating the NAPALM driver (JSON format)
 
         napalm_driver : typing.Optional[str]
@@ -27880,7 +28794,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/platforms/{jsonable_encoder(id_)}/",
+            f"dcim/platforms/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "created": created,
@@ -27920,6 +28834,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def platforms_delete(
@@ -27941,7 +28859,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/platforms/{jsonable_encoder(id)}/",
+            f"dcim/platforms/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -27951,6 +28869,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def platforms_partial_update(
@@ -27960,14 +28882,14 @@ class RawDcimClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         manufacturer: typing.Optional[int] = OMIT,
-        napalm_args: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        napalm_args: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         napalm_driver: typing.Optional[str] = OMIT,
         tags: typing.Optional[typing.Sequence[NestedTag]] = OMIT,
         url: typing.Optional[str] = OMIT,
@@ -27988,7 +28910,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -28003,7 +28925,7 @@ class RawDcimClient:
         manufacturer : typing.Optional[int]
             Optionally limit this platform to devices of a certain manufacturer
 
-        napalm_args : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        napalm_args : typing.Optional[typing.Dict[str, typing.Any]]
             Additional arguments to pass when initiating the NAPALM driver (JSON format)
 
         napalm_driver : typing.Optional[str]
@@ -28024,7 +28946,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/platforms/{jsonable_encoder(id_)}/",
+            f"dcim/platforms/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "created": created,
@@ -28064,6 +28986,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_feeds_list(
@@ -28514,6 +29440,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_feeds_create(
@@ -28530,7 +29460,7 @@ class RawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -28578,7 +29508,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -28677,6 +29607,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_feeds_bulk_update(
@@ -28693,7 +29627,7 @@ class RawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -28741,7 +29675,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -28840,6 +29774,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_feeds_bulk_delete(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -28866,6 +29804,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_feeds_bulk_partial_update(
@@ -28882,7 +29824,7 @@ class RawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -28930,7 +29872,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -29029,6 +29971,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_feeds_read(
@@ -29051,7 +29997,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/power-feeds/{jsonable_encoder(id)}/",
+            f"dcim/power-feeds/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -29068,6 +30014,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_feeds_update(
@@ -29085,7 +30035,7 @@ class RawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -29136,7 +30086,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -29183,7 +30133,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/power-feeds/{jsonable_encoder(id_)}/",
+            f"dcim/power-feeds/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "_occupied": occupied,
@@ -29238,6 +30188,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_feeds_delete(
@@ -29259,7 +30213,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/power-feeds/{jsonable_encoder(id)}/",
+            f"dcim/power-feeds/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -29269,6 +30223,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_feeds_partial_update(
@@ -29286,7 +30244,7 @@ class RawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -29337,7 +30295,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -29384,7 +30342,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/power-feeds/{jsonable_encoder(id_)}/",
+            f"dcim/power-feeds/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "_occupied": occupied,
@@ -29439,6 +30397,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_feeds_trace(
@@ -29461,7 +30423,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/power-feeds/{jsonable_encoder(id)}/trace/",
+            f"dcim/power-feeds/{encode_path_param(id)}/trace/",
             method="GET",
             request_options=request_options,
         )
@@ -29478,6 +30440,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_outlet_templates_list(
@@ -29723,6 +30689,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_outlet_templates_create(
@@ -29820,6 +30790,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_outlet_templates_bulk_update(
@@ -29917,6 +30891,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_outlet_templates_bulk_delete(
@@ -29945,6 +30923,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_outlet_templates_bulk_partial_update(
@@ -30042,6 +31024,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_outlet_templates_read(
@@ -30064,7 +31050,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/power-outlet-templates/{jsonable_encoder(id)}/",
+            f"dcim/power-outlet-templates/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -30081,6 +31067,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_outlet_templates_update(
@@ -30149,7 +31139,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/power-outlet-templates/{jsonable_encoder(id_)}/",
+            f"dcim/power-outlet-templates/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "created": created,
@@ -30185,6 +31175,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_outlet_templates_delete(
@@ -30206,7 +31200,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/power-outlet-templates/{jsonable_encoder(id)}/",
+            f"dcim/power-outlet-templates/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -30216,6 +31210,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_outlet_templates_partial_update(
@@ -30284,7 +31282,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/power-outlet-templates/{jsonable_encoder(id_)}/",
+            f"dcim/power-outlet-templates/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "created": created,
@@ -30320,6 +31318,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_outlets_list(
@@ -30840,6 +31842,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_outlets_create(
@@ -30854,7 +31860,7 @@ class RawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         feed_leg: typing.Optional[WritablePowerOutletFeedLeg] = OMIT,
@@ -30896,7 +31902,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -30989,6 +31995,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_outlets_bulk_update(
@@ -31003,7 +32013,7 @@ class RawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         feed_leg: typing.Optional[WritablePowerOutletFeedLeg] = OMIT,
@@ -31045,7 +32055,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -31138,6 +32148,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_outlets_bulk_delete(
@@ -31166,6 +32180,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_outlets_bulk_partial_update(
@@ -31180,7 +32198,7 @@ class RawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         feed_leg: typing.Optional[WritablePowerOutletFeedLeg] = OMIT,
@@ -31222,7 +32240,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -31315,6 +32333,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_outlets_read(
@@ -31337,7 +32359,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/power-outlets/{jsonable_encoder(id)}/",
+            f"dcim/power-outlets/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -31354,6 +32376,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_outlets_update(
@@ -31369,7 +32395,7 @@ class RawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         feed_leg: typing.Optional[WritablePowerOutletFeedLeg] = OMIT,
@@ -31414,7 +32440,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -31459,7 +32485,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/power-outlets/{jsonable_encoder(id_)}/",
+            f"dcim/power-outlets/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "_occupied": occupied,
@@ -31510,6 +32536,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_outlets_delete(
@@ -31531,7 +32561,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/power-outlets/{jsonable_encoder(id)}/",
+            f"dcim/power-outlets/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -31541,6 +32571,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_outlets_partial_update(
@@ -31556,7 +32590,7 @@ class RawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         feed_leg: typing.Optional[WritablePowerOutletFeedLeg] = OMIT,
@@ -31601,7 +32635,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -31646,7 +32680,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/power-outlets/{jsonable_encoder(id_)}/",
+            f"dcim/power-outlets/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "_occupied": occupied,
@@ -31697,6 +32731,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_outlets_trace(
@@ -31719,7 +32757,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/power-outlets/{jsonable_encoder(id)}/trace/",
+            f"dcim/power-outlets/{encode_path_param(id)}/trace/",
             method="GET",
             request_options=request_options,
         )
@@ -31736,6 +32774,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_panels_list(
@@ -32051,6 +33093,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_panels_create(
@@ -32060,7 +33106,7 @@ class RawDcimClient:
         site: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -32084,7 +33130,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -32146,6 +33192,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_panels_bulk_update(
@@ -32155,7 +33205,7 @@ class RawDcimClient:
         site: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -32179,7 +33229,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -32241,6 +33291,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_panels_bulk_delete(
@@ -32269,6 +33323,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_panels_bulk_partial_update(
@@ -32278,7 +33336,7 @@ class RawDcimClient:
         site: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -32302,7 +33360,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -32364,6 +33422,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_panels_read(
@@ -32386,7 +33448,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/power-panels/{jsonable_encoder(id)}/",
+            f"dcim/power-panels/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -32403,6 +33465,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_panels_update(
@@ -32413,7 +33479,7 @@ class RawDcimClient:
         site: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -32440,7 +33506,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -32467,7 +33533,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/power-panels/{jsonable_encoder(id_)}/",
+            f"dcim/power-panels/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "comments": comments,
@@ -32505,6 +33571,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_panels_delete(
@@ -32526,7 +33596,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/power-panels/{jsonable_encoder(id)}/",
+            f"dcim/power-panels/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -32536,6 +33606,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_panels_partial_update(
@@ -32546,7 +33620,7 @@ class RawDcimClient:
         site: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -32573,7 +33647,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -32600,7 +33674,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/power-panels/{jsonable_encoder(id_)}/",
+            f"dcim/power-panels/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "comments": comments,
@@ -32638,6 +33712,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_port_templates_list(
@@ -32933,6 +34011,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_port_templates_create(
@@ -33031,6 +34113,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_port_templates_bulk_update(
@@ -33129,6 +34215,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_port_templates_bulk_delete(
@@ -33157,6 +34247,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_port_templates_bulk_partial_update(
@@ -33255,6 +34349,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_port_templates_read(
@@ -33277,7 +34375,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/power-port-templates/{jsonable_encoder(id)}/",
+            f"dcim/power-port-templates/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -33294,6 +34392,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_port_templates_update(
@@ -33363,7 +34465,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/power-port-templates/{jsonable_encoder(id_)}/",
+            f"dcim/power-port-templates/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "allocated_draw": allocated_draw,
@@ -33399,6 +34501,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_port_templates_delete(
@@ -33420,7 +34526,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/power-port-templates/{jsonable_encoder(id)}/",
+            f"dcim/power-port-templates/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -33430,6 +34536,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_port_templates_partial_update(
@@ -33499,7 +34609,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/power-port-templates/{jsonable_encoder(id_)}/",
+            f"dcim/power-port-templates/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "allocated_draw": allocated_draw,
@@ -33535,6 +34645,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_ports_list(
@@ -34105,6 +35219,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_ports_create(
@@ -34120,7 +35238,7 @@ class RawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -34164,7 +35282,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -34255,6 +35373,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_ports_bulk_update(
@@ -34270,7 +35392,7 @@ class RawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -34314,7 +35436,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -34405,6 +35527,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_ports_bulk_delete(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -34431,6 +35557,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_ports_bulk_partial_update(
@@ -34446,7 +35576,7 @@ class RawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -34490,7 +35620,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -34581,6 +35711,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_ports_read(
@@ -34603,7 +35737,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/power-ports/{jsonable_encoder(id)}/",
+            f"dcim/power-ports/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -34620,6 +35754,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_ports_update(
@@ -34636,7 +35774,7 @@ class RawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -34683,7 +35821,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -34726,7 +35864,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/power-ports/{jsonable_encoder(id_)}/",
+            f"dcim/power-ports/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "_occupied": occupied,
@@ -34777,6 +35915,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_ports_delete(
@@ -34798,7 +35940,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/power-ports/{jsonable_encoder(id)}/",
+            f"dcim/power-ports/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -34808,6 +35950,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_ports_partial_update(
@@ -34824,7 +35970,7 @@ class RawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -34871,7 +36017,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -34914,7 +36060,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/power-ports/{jsonable_encoder(id_)}/",
+            f"dcim/power-ports/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "_occupied": occupied,
@@ -34965,6 +36111,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def power_ports_trace(
@@ -34987,7 +36137,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/power-ports/{jsonable_encoder(id)}/trace/",
+            f"dcim/power-ports/{encode_path_param(id)}/trace/",
             method="GET",
             request_options=request_options,
         )
@@ -35004,6 +36154,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rack_reservations_list(
@@ -35369,6 +36523,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rack_reservations_create(
@@ -35380,7 +36538,7 @@ class RawDcimClient:
         user: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
@@ -35406,7 +36564,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -35464,6 +36622,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rack_reservations_bulk_update(
@@ -35475,7 +36637,7 @@ class RawDcimClient:
         user: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
@@ -35501,7 +36663,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -35559,6 +36721,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rack_reservations_bulk_delete(
@@ -35587,6 +36753,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rack_reservations_bulk_partial_update(
@@ -35598,7 +36768,7 @@ class RawDcimClient:
         user: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
@@ -35624,7 +36794,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -35682,6 +36852,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rack_reservations_read(
@@ -35704,7 +36878,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/rack-reservations/{jsonable_encoder(id)}/",
+            f"dcim/rack-reservations/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -35721,6 +36895,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rack_reservations_update(
@@ -35733,7 +36911,7 @@ class RawDcimClient:
         user: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
@@ -35762,7 +36940,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -35785,7 +36963,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/rack-reservations/{jsonable_encoder(id_)}/",
+            f"dcim/rack-reservations/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "comments": comments,
@@ -35823,6 +37001,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rack_reservations_delete(
@@ -35844,7 +37026,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/rack-reservations/{jsonable_encoder(id)}/",
+            f"dcim/rack-reservations/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -35854,6 +37036,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rack_reservations_partial_update(
@@ -35866,7 +37052,7 @@ class RawDcimClient:
         user: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
@@ -35895,7 +37081,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -35918,7 +37104,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/rack-reservations/{jsonable_encoder(id_)}/",
+            f"dcim/rack-reservations/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "comments": comments,
@@ -35956,6 +37142,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rack_roles_list(
@@ -36336,6 +37526,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rack_roles_create(
@@ -36345,7 +37539,7 @@ class RawDcimClient:
         slug: str,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -36368,7 +37562,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -36427,6 +37621,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rack_roles_bulk_update(
@@ -36436,7 +37634,7 @@ class RawDcimClient:
         slug: str,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -36459,7 +37657,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -36518,6 +37716,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rack_roles_bulk_delete(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -36544,6 +37746,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rack_roles_bulk_partial_update(
@@ -36553,7 +37759,7 @@ class RawDcimClient:
         slug: str,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -36576,7 +37782,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -36635,6 +37841,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rack_roles_read(
@@ -36657,7 +37867,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/rack-roles/{jsonable_encoder(id)}/",
+            f"dcim/rack-roles/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -36674,6 +37884,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rack_roles_update(
@@ -36684,7 +37898,7 @@ class RawDcimClient:
         slug: str,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -36710,7 +37924,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -36735,7 +37949,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/rack-roles/{jsonable_encoder(id_)}/",
+            f"dcim/rack-roles/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "color": color,
@@ -36772,6 +37986,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rack_roles_delete(
@@ -36793,7 +38011,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/rack-roles/{jsonable_encoder(id)}/",
+            f"dcim/rack-roles/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -36803,6 +38021,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rack_roles_partial_update(
@@ -36813,7 +38035,7 @@ class RawDcimClient:
         slug: str,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -36839,7 +38061,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -36864,7 +38086,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/rack-roles/{jsonable_encoder(id_)}/",
+            f"dcim/rack-roles/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "color": color,
@@ -36901,6 +38123,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def racks_list(
@@ -37686,6 +38912,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def racks_create(
@@ -37696,7 +38926,7 @@ class RawDcimClient:
         asset_tag: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         desc_units: typing.Optional[bool] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
@@ -37740,7 +38970,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         desc_units : typing.Optional[bool]
             Units are numbered top-to-bottom
@@ -37862,6 +39092,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def racks_bulk_update(
@@ -37872,7 +39106,7 @@ class RawDcimClient:
         asset_tag: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         desc_units: typing.Optional[bool] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
@@ -37916,7 +39150,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         desc_units : typing.Optional[bool]
             Units are numbered top-to-bottom
@@ -38038,6 +39272,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def racks_bulk_delete(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -38064,6 +39302,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def racks_bulk_partial_update(
@@ -38074,7 +39316,7 @@ class RawDcimClient:
         asset_tag: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         desc_units: typing.Optional[bool] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
@@ -38118,7 +39360,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         desc_units : typing.Optional[bool]
             Units are numbered top-to-bottom
@@ -38240,6 +39482,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def racks_read(self, id: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[Rack]:
@@ -38260,7 +39506,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/racks/{jsonable_encoder(id)}/",
+            f"dcim/racks/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -38277,6 +39523,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def racks_update(
@@ -38288,7 +39538,7 @@ class RawDcimClient:
         asset_tag: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         desc_units: typing.Optional[bool] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
@@ -38335,7 +39585,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         desc_units : typing.Optional[bool]
             Units are numbered top-to-bottom
@@ -38404,7 +39654,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/racks/{jsonable_encoder(id_)}/",
+            f"dcim/racks/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "asset_tag": asset_tag,
@@ -38460,6 +39710,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def racks_delete(self, id: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -38479,7 +39733,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/racks/{jsonable_encoder(id)}/",
+            f"dcim/racks/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -38489,6 +39743,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def racks_partial_update(
@@ -38500,7 +39758,7 @@ class RawDcimClient:
         asset_tag: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         desc_units: typing.Optional[bool] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
@@ -38547,7 +39805,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         desc_units : typing.Optional[bool]
             Units are numbered top-to-bottom
@@ -38616,7 +39874,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/racks/{jsonable_encoder(id_)}/",
+            f"dcim/racks/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "asset_tag": asset_tag,
@@ -38672,6 +39930,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def racks_elevation(
@@ -38727,7 +39989,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/racks/{jsonable_encoder(id)}/elevation/",
+            f"dcim/racks/{encode_path_param(id)}/elevation/",
             method="GET",
             params={
                 "q": q,
@@ -38756,6 +40018,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rear_port_templates_list(
@@ -39076,6 +40342,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rear_port_templates_create(
@@ -39172,6 +40442,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rear_port_templates_bulk_update(
@@ -39268,6 +40542,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rear_port_templates_bulk_delete(
@@ -39296,6 +40574,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rear_port_templates_bulk_partial_update(
@@ -39392,6 +40674,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rear_port_templates_read(
@@ -39414,7 +40700,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/rear-port-templates/{jsonable_encoder(id)}/",
+            f"dcim/rear-port-templates/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -39431,6 +40717,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rear_port_templates_update(
@@ -39498,7 +40788,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/rear-port-templates/{jsonable_encoder(id_)}/",
+            f"dcim/rear-port-templates/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "color": color,
@@ -39534,6 +40824,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rear_port_templates_delete(
@@ -39555,7 +40849,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/rear-port-templates/{jsonable_encoder(id)}/",
+            f"dcim/rear-port-templates/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -39565,6 +40859,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rear_port_templates_partial_update(
@@ -39632,7 +40930,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/rear-port-templates/{jsonable_encoder(id_)}/",
+            f"dcim/rear-port-templates/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "color": color,
@@ -39668,6 +40966,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rear_ports_list(
@@ -40258,6 +41560,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rear_ports_create(
@@ -40271,7 +41577,7 @@ class RawDcimClient:
         cable_end: typing.Optional[str] = OMIT,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -40307,7 +41613,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -40391,6 +41697,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rear_ports_bulk_update(
@@ -40404,7 +41714,7 @@ class RawDcimClient:
         cable_end: typing.Optional[str] = OMIT,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -40440,7 +41750,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -40524,6 +41834,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rear_ports_bulk_delete(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -40550,6 +41864,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rear_ports_bulk_partial_update(
@@ -40563,7 +41881,7 @@ class RawDcimClient:
         cable_end: typing.Optional[str] = OMIT,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -40599,7 +41917,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -40683,6 +42001,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rear_ports_read(
@@ -40705,7 +42027,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/rear-ports/{jsonable_encoder(id)}/",
+            f"dcim/rear-ports/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -40722,6 +42044,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rear_ports_update(
@@ -40736,7 +42062,7 @@ class RawDcimClient:
         cable_end: typing.Optional[str] = OMIT,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -40775,7 +42101,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -40814,7 +42140,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/rear-ports/{jsonable_encoder(id_)}/",
+            f"dcim/rear-ports/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "_occupied": occupied,
@@ -40862,6 +42188,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rear_ports_delete(
@@ -40883,7 +42213,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/rear-ports/{jsonable_encoder(id)}/",
+            f"dcim/rear-ports/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -40893,6 +42223,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rear_ports_partial_update(
@@ -40907,7 +42241,7 @@ class RawDcimClient:
         cable_end: typing.Optional[str] = OMIT,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -40946,7 +42280,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -40985,7 +42319,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/rear-ports/{jsonable_encoder(id_)}/",
+            f"dcim/rear-ports/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "_occupied": occupied,
@@ -41033,6 +42367,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rear_ports_paths(
@@ -41055,7 +42393,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/rear-ports/{jsonable_encoder(id)}/paths/",
+            f"dcim/rear-ports/{encode_path_param(id)}/paths/",
             method="GET",
             request_options=request_options,
         )
@@ -41072,6 +42410,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def regions_list(
@@ -41447,6 +42789,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def regions_create(
@@ -41456,7 +42802,7 @@ class RawDcimClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -41480,7 +42826,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -41542,6 +42888,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def regions_bulk_update(
@@ -41551,7 +42901,7 @@ class RawDcimClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -41575,7 +42925,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -41637,6 +42987,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def regions_bulk_delete(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -41663,6 +43017,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def regions_bulk_partial_update(
@@ -41672,7 +43030,7 @@ class RawDcimClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -41696,7 +43054,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -41758,6 +43116,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def regions_read(self, id: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[Region]:
@@ -41778,7 +43140,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/regions/{jsonable_encoder(id)}/",
+            f"dcim/regions/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -41795,6 +43157,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def regions_update(
@@ -41805,7 +43171,7 @@ class RawDcimClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -41832,7 +43198,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -41859,7 +43225,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/regions/{jsonable_encoder(id_)}/",
+            f"dcim/regions/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "_depth": depth,
@@ -41897,6 +43263,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def regions_delete(self, id: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -41916,7 +43286,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/regions/{jsonable_encoder(id)}/",
+            f"dcim/regions/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -41926,6 +43296,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def regions_partial_update(
@@ -41936,7 +43310,7 @@ class RawDcimClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -41963,7 +43337,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -41990,7 +43364,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/regions/{jsonable_encoder(id_)}/",
+            f"dcim/regions/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "_depth": depth,
@@ -42028,6 +43402,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def site_groups_list(
@@ -42403,6 +43781,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def site_groups_create(
@@ -42412,7 +43794,7 @@ class RawDcimClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -42436,7 +43818,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -42498,6 +43880,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def site_groups_bulk_update(
@@ -42507,7 +43893,7 @@ class RawDcimClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -42531,7 +43917,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -42593,6 +43979,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def site_groups_bulk_delete(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -42619,6 +44009,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def site_groups_bulk_partial_update(
@@ -42628,7 +44022,7 @@ class RawDcimClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -42652,7 +44046,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -42714,6 +44108,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def site_groups_read(
@@ -42736,7 +44134,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/site-groups/{jsonable_encoder(id)}/",
+            f"dcim/site-groups/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -42753,6 +44151,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def site_groups_update(
@@ -42763,7 +44165,7 @@ class RawDcimClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -42790,7 +44192,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -42817,7 +44219,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/site-groups/{jsonable_encoder(id_)}/",
+            f"dcim/site-groups/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "_depth": depth,
@@ -42855,6 +44257,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def site_groups_delete(
@@ -42876,7 +44282,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/site-groups/{jsonable_encoder(id)}/",
+            f"dcim/site-groups/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -42886,6 +44292,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def site_groups_partial_update(
@@ -42896,7 +44306,7 @@ class RawDcimClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -42923,7 +44333,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -42950,7 +44360,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/site-groups/{jsonable_encoder(id_)}/",
+            f"dcim/site-groups/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "_depth": depth,
@@ -42988,6 +44398,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def sites_list(
@@ -43568,6 +44982,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def sites_create(
@@ -43579,7 +44997,7 @@ class RawDcimClient:
         circuit_count: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -43620,7 +45038,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -43726,6 +45144,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def sites_bulk_update(
@@ -43737,7 +45159,7 @@ class RawDcimClient:
         circuit_count: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -43778,7 +45200,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -43884,6 +45306,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def sites_bulk_delete(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -43910,6 +45336,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def sites_bulk_partial_update(
@@ -43921,7 +45351,7 @@ class RawDcimClient:
         circuit_count: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -43962,7 +45392,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -44068,6 +45498,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def sites_read(self, id: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[Site]:
@@ -44088,7 +45522,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/sites/{jsonable_encoder(id)}/",
+            f"dcim/sites/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -44105,6 +45539,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def sites_update(
@@ -44117,7 +45555,7 @@ class RawDcimClient:
         circuit_count: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -44161,7 +45599,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -44217,7 +45655,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/sites/{jsonable_encoder(id_)}/",
+            f"dcim/sites/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "asns": asns,
@@ -44270,6 +45708,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def sites_delete(self, id: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -44289,7 +45731,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/sites/{jsonable_encoder(id)}/",
+            f"dcim/sites/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -44299,6 +45741,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def sites_partial_update(
@@ -44311,7 +45757,7 @@ class RawDcimClient:
         circuit_count: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -44355,7 +45801,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -44411,7 +45857,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/sites/{jsonable_encoder(id_)}/",
+            f"dcim/sites/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "asns": asns,
@@ -44464,6 +45910,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def virtual_chassis_list(
@@ -44834,6 +46284,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def virtual_chassis_create(
@@ -44842,7 +46296,7 @@ class RawDcimClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         domain: typing.Optional[str] = OMIT,
@@ -44865,7 +46319,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -44929,6 +46383,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def virtual_chassis_bulk_update(
@@ -44937,7 +46395,7 @@ class RawDcimClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         domain: typing.Optional[str] = OMIT,
@@ -44960,7 +46418,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -45024,6 +46482,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def virtual_chassis_bulk_delete(
@@ -45052,6 +46514,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def virtual_chassis_bulk_partial_update(
@@ -45060,7 +46526,7 @@ class RawDcimClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         domain: typing.Optional[str] = OMIT,
@@ -45083,7 +46549,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -45147,6 +46613,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def virtual_chassis_read(
@@ -45169,7 +46639,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/virtual-chassis/{jsonable_encoder(id)}/",
+            f"dcim/virtual-chassis/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -45186,6 +46656,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def virtual_chassis_update(
@@ -45195,7 +46669,7 @@ class RawDcimClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         domain: typing.Optional[str] = OMIT,
@@ -45221,7 +46695,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -45250,7 +46724,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/virtual-chassis/{jsonable_encoder(id_)}/",
+            f"dcim/virtual-chassis/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "comments": comments,
@@ -45288,6 +46762,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def virtual_chassis_delete(
@@ -45309,7 +46787,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/virtual-chassis/{jsonable_encoder(id)}/",
+            f"dcim/virtual-chassis/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -45319,6 +46797,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def virtual_chassis_partial_update(
@@ -45328,7 +46810,7 @@ class RawDcimClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         domain: typing.Optional[str] = OMIT,
@@ -45354,7 +46836,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -45383,7 +46865,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/virtual-chassis/{jsonable_encoder(id_)}/",
+            f"dcim/virtual-chassis/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "comments": comments,
@@ -45421,6 +46903,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def virtual_device_contexts_list(
@@ -45711,6 +47197,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def virtual_device_contexts_create(
@@ -45720,7 +47210,7 @@ class RawDcimClient:
         status: WritableVirtualDeviceContextStatus,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -45749,7 +47239,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -45827,6 +47317,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def virtual_device_contexts_bulk_update(
@@ -45836,7 +47330,7 @@ class RawDcimClient:
         status: WritableVirtualDeviceContextStatus,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -45865,7 +47359,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -45943,6 +47437,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def virtual_device_contexts_bulk_delete(
@@ -45971,6 +47469,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def virtual_device_contexts_bulk_partial_update(
@@ -45980,7 +47482,7 @@ class RawDcimClient:
         status: WritableVirtualDeviceContextStatus,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -46009,7 +47511,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -46087,6 +47589,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def virtual_device_contexts_read(
@@ -46109,7 +47615,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/virtual-device-contexts/{jsonable_encoder(id)}/",
+            f"dcim/virtual-device-contexts/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -46126,6 +47632,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def virtual_device_contexts_update(
@@ -46136,7 +47646,7 @@ class RawDcimClient:
         status: WritableVirtualDeviceContextStatus,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -46168,7 +47678,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -46206,7 +47716,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/virtual-device-contexts/{jsonable_encoder(id_)}/",
+            f"dcim/virtual-device-contexts/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "comments": comments,
@@ -46249,6 +47759,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def virtual_device_contexts_delete(
@@ -46270,7 +47784,7 @@ class RawDcimClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/virtual-device-contexts/{jsonable_encoder(id)}/",
+            f"dcim/virtual-device-contexts/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -46280,6 +47794,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def virtual_device_contexts_partial_update(
@@ -46290,7 +47808,7 @@ class RawDcimClient:
         status: WritableVirtualDeviceContextStatus,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -46322,7 +47840,7 @@ class RawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -46360,7 +47878,7 @@ class RawDcimClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dcim/virtual-device-contexts/{jsonable_encoder(id_)}/",
+            f"dcim/virtual-device-contexts/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "comments": comments,
@@ -46403,6 +47921,10 @@ class RawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -46553,6 +48075,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cable_terminations_create(
@@ -46564,7 +48090,7 @@ class AsyncRawDcimClient:
         termination_type: str,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
-        termination: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        termination: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[CableTermination]:
@@ -46585,7 +48111,7 @@ class AsyncRawDcimClient:
 
         id : typing.Optional[int]
 
-        termination : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        termination : typing.Optional[typing.Dict[str, typing.Any]]
 
         url : typing.Optional[str]
 
@@ -46626,6 +48152,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cable_terminations_bulk_update(
@@ -46637,7 +48167,7 @@ class AsyncRawDcimClient:
         termination_type: str,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
-        termination: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        termination: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[CableTermination]:
@@ -46658,7 +48188,7 @@ class AsyncRawDcimClient:
 
         id : typing.Optional[int]
 
-        termination : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        termination : typing.Optional[typing.Dict[str, typing.Any]]
 
         url : typing.Optional[str]
 
@@ -46699,6 +48229,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cable_terminations_bulk_delete(
@@ -46727,6 +48261,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cable_terminations_bulk_partial_update(
@@ -46738,7 +48276,7 @@ class AsyncRawDcimClient:
         termination_type: str,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
-        termination: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        termination: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[CableTermination]:
@@ -46759,7 +48297,7 @@ class AsyncRawDcimClient:
 
         id : typing.Optional[int]
 
-        termination : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        termination : typing.Optional[typing.Dict[str, typing.Any]]
 
         url : typing.Optional[str]
 
@@ -46800,6 +48338,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cable_terminations_read(
@@ -46822,7 +48364,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/cable-terminations/{jsonable_encoder(id)}/",
+            f"dcim/cable-terminations/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -46839,6 +48381,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cable_terminations_update(
@@ -46851,7 +48397,7 @@ class AsyncRawDcimClient:
         termination_type: str,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
-        termination: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        termination: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[CableTermination]:
@@ -46875,7 +48421,7 @@ class AsyncRawDcimClient:
 
         id : typing.Optional[int]
 
-        termination : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        termination : typing.Optional[typing.Dict[str, typing.Any]]
 
         url : typing.Optional[str]
 
@@ -46888,7 +48434,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/cable-terminations/{jsonable_encoder(id_)}/",
+            f"dcim/cable-terminations/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "cable": cable,
@@ -46919,6 +48465,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cable_terminations_delete(
@@ -46940,7 +48490,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/cable-terminations/{jsonable_encoder(id)}/",
+            f"dcim/cable-terminations/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -46950,6 +48500,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cable_terminations_partial_update(
@@ -46962,7 +48516,7 @@ class AsyncRawDcimClient:
         termination_type: str,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
-        termination: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        termination: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[CableTermination]:
@@ -46986,7 +48540,7 @@ class AsyncRawDcimClient:
 
         id : typing.Optional[int]
 
-        termination : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        termination : typing.Optional[typing.Dict[str, typing.Any]]
 
         url : typing.Optional[str]
 
@@ -46999,7 +48553,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/cable-terminations/{jsonable_encoder(id_)}/",
+            f"dcim/cable-terminations/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "cable": cable,
@@ -47030,6 +48584,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cables_list(
@@ -47475,6 +49033,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cables_create(
@@ -47485,7 +49047,7 @@ class AsyncRawDcimClient:
         color: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -47515,7 +49077,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -47594,6 +49156,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cables_bulk_update(
@@ -47604,7 +49170,7 @@ class AsyncRawDcimClient:
         color: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -47634,7 +49200,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -47713,6 +49279,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cables_bulk_delete(
@@ -47741,6 +49311,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cables_bulk_partial_update(
@@ -47751,7 +49325,7 @@ class AsyncRawDcimClient:
         color: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -47781,7 +49355,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -47860,6 +49434,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cables_read(
@@ -47882,7 +49460,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/cables/{jsonable_encoder(id)}/",
+            f"dcim/cables/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -47899,6 +49477,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cables_update(
@@ -47910,7 +49492,7 @@ class AsyncRawDcimClient:
         color: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -47943,7 +49525,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -47978,7 +49560,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/cables/{jsonable_encoder(id_)}/",
+            f"dcim/cables/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "a_terminations": convert_and_respect_annotation_metadata(
@@ -48025,6 +49607,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cables_delete(
@@ -48046,7 +49632,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/cables/{jsonable_encoder(id)}/",
+            f"dcim/cables/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -48056,6 +49642,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cables_partial_update(
@@ -48067,7 +49657,7 @@ class AsyncRawDcimClient:
         color: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -48100,7 +49690,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -48135,7 +49725,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/cables/{jsonable_encoder(id_)}/",
+            f"dcim/cables/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "a_terminations": convert_and_respect_annotation_metadata(
@@ -48182,6 +49772,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def connected_device_list(
@@ -48233,6 +49827,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def console_port_templates_list(
@@ -48468,6 +50066,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def console_port_templates_create(
@@ -48556,6 +50158,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def console_port_templates_bulk_update(
@@ -48644,6 +50250,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def console_port_templates_bulk_delete(
@@ -48672,6 +50282,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def console_port_templates_bulk_partial_update(
@@ -48760,6 +50374,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def console_port_templates_read(
@@ -48782,7 +50400,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/console-port-templates/{jsonable_encoder(id)}/",
+            f"dcim/console-port-templates/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -48799,6 +50417,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def console_port_templates_update(
@@ -48860,7 +50482,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/console-port-templates/{jsonable_encoder(id_)}/",
+            f"dcim/console-port-templates/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "created": created,
@@ -48894,6 +50516,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def console_port_templates_delete(
@@ -48915,7 +50541,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/console-port-templates/{jsonable_encoder(id)}/",
+            f"dcim/console-port-templates/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -48925,6 +50551,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def console_port_templates_partial_update(
@@ -48986,7 +50616,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/console-port-templates/{jsonable_encoder(id_)}/",
+            f"dcim/console-port-templates/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "created": created,
@@ -49020,6 +50650,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def console_ports_list(
@@ -49530,6 +51164,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def console_ports_create(
@@ -49544,7 +51182,7 @@ class AsyncRawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -49585,7 +51223,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -49675,6 +51313,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def console_ports_bulk_update(
@@ -49689,7 +51331,7 @@ class AsyncRawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -49730,7 +51372,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -49820,6 +51462,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def console_ports_bulk_delete(
@@ -49848,6 +51494,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def console_ports_bulk_partial_update(
@@ -49862,7 +51512,7 @@ class AsyncRawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -49903,7 +51553,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -49993,6 +51643,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def console_ports_read(
@@ -50015,7 +51669,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/console-ports/{jsonable_encoder(id)}/",
+            f"dcim/console-ports/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -50032,6 +51686,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def console_ports_update(
@@ -50047,7 +51705,7 @@ class AsyncRawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -50091,7 +51749,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -50134,7 +51792,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/console-ports/{jsonable_encoder(id_)}/",
+            f"dcim/console-ports/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "_occupied": occupied,
@@ -50184,6 +51842,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def console_ports_delete(
@@ -50205,7 +51867,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/console-ports/{jsonable_encoder(id)}/",
+            f"dcim/console-ports/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -50215,6 +51877,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def console_ports_partial_update(
@@ -50230,7 +51896,7 @@ class AsyncRawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -50274,7 +51940,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -50317,7 +51983,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/console-ports/{jsonable_encoder(id_)}/",
+            f"dcim/console-ports/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "_occupied": occupied,
@@ -50367,6 +52033,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def console_ports_trace(
@@ -50389,7 +52059,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/console-ports/{jsonable_encoder(id)}/trace/",
+            f"dcim/console-ports/{encode_path_param(id)}/trace/",
             method="GET",
             request_options=request_options,
         )
@@ -50406,6 +52076,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def console_server_port_templates_list(
@@ -50641,6 +52315,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def console_server_port_templates_create(
@@ -50729,6 +52407,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def console_server_port_templates_bulk_update(
@@ -50817,6 +52499,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def console_server_port_templates_bulk_delete(
@@ -50845,6 +52531,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def console_server_port_templates_bulk_partial_update(
@@ -50933,6 +52623,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def console_server_port_templates_read(
@@ -50955,7 +52649,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/console-server-port-templates/{jsonable_encoder(id)}/",
+            f"dcim/console-server-port-templates/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -50972,6 +52666,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def console_server_port_templates_update(
@@ -51033,7 +52731,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/console-server-port-templates/{jsonable_encoder(id_)}/",
+            f"dcim/console-server-port-templates/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "created": created,
@@ -51067,6 +52765,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def console_server_port_templates_delete(
@@ -51088,7 +52790,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/console-server-port-templates/{jsonable_encoder(id)}/",
+            f"dcim/console-server-port-templates/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -51098,6 +52800,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def console_server_port_templates_partial_update(
@@ -51159,7 +52865,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/console-server-port-templates/{jsonable_encoder(id_)}/",
+            f"dcim/console-server-port-templates/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "created": created,
@@ -51193,6 +52899,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def console_server_ports_list(
@@ -51703,6 +53413,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def console_server_ports_create(
@@ -51717,7 +53431,7 @@ class AsyncRawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -51758,7 +53472,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -51848,6 +53562,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def console_server_ports_bulk_update(
@@ -51862,7 +53580,7 @@ class AsyncRawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -51903,7 +53621,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -51993,6 +53711,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def console_server_ports_bulk_delete(
@@ -52021,6 +53743,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def console_server_ports_bulk_partial_update(
@@ -52035,7 +53761,7 @@ class AsyncRawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -52076,7 +53802,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -52166,6 +53892,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def console_server_ports_read(
@@ -52188,7 +53918,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/console-server-ports/{jsonable_encoder(id)}/",
+            f"dcim/console-server-ports/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -52205,6 +53935,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def console_server_ports_update(
@@ -52220,7 +53954,7 @@ class AsyncRawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -52264,7 +53998,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -52307,7 +54041,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/console-server-ports/{jsonable_encoder(id_)}/",
+            f"dcim/console-server-ports/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "_occupied": occupied,
@@ -52357,6 +54091,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def console_server_ports_delete(
@@ -52378,7 +54116,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/console-server-ports/{jsonable_encoder(id)}/",
+            f"dcim/console-server-ports/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -52388,6 +54126,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def console_server_ports_partial_update(
@@ -52403,7 +54145,7 @@ class AsyncRawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -52447,7 +54189,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -52490,7 +54232,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/console-server-ports/{jsonable_encoder(id_)}/",
+            f"dcim/console-server-ports/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "_occupied": occupied,
@@ -52540,6 +54282,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def console_server_ports_trace(
@@ -52562,7 +54308,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/console-server-ports/{jsonable_encoder(id)}/trace/",
+            f"dcim/console-server-ports/{encode_path_param(id)}/trace/",
             method="GET",
             request_options=request_options,
         )
@@ -52579,6 +54325,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def device_bay_templates_list(
@@ -52794,6 +54544,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def device_bay_templates_create(
@@ -52874,6 +54628,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def device_bay_templates_bulk_update(
@@ -52954,6 +54712,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def device_bay_templates_bulk_delete(
@@ -52982,6 +54744,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def device_bay_templates_bulk_partial_update(
@@ -53062,6 +54828,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def device_bay_templates_read(
@@ -53084,7 +54854,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/device-bay-templates/{jsonable_encoder(id)}/",
+            f"dcim/device-bay-templates/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -53101,6 +54871,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def device_bay_templates_update(
@@ -53156,7 +54930,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/device-bay-templates/{jsonable_encoder(id_)}/",
+            f"dcim/device-bay-templates/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "created": created,
@@ -53188,6 +54962,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def device_bay_templates_delete(
@@ -53209,7 +54987,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/device-bay-templates/{jsonable_encoder(id)}/",
+            f"dcim/device-bay-templates/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -53219,6 +54997,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def device_bay_templates_partial_update(
@@ -53274,7 +55056,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/device-bay-templates/{jsonable_encoder(id_)}/",
+            f"dcim/device-bay-templates/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "created": created,
@@ -53306,6 +55088,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def device_bays_list(
@@ -53771,6 +55557,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def device_bays_create(
@@ -53779,7 +55569,7 @@ class AsyncRawDcimClient:
         device: int,
         name: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -53801,7 +55591,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -53863,6 +55653,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def device_bays_bulk_update(
@@ -53871,7 +55665,7 @@ class AsyncRawDcimClient:
         device: int,
         name: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -53893,7 +55687,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -53955,6 +55749,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def device_bays_bulk_delete(
@@ -53983,6 +55781,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def device_bays_bulk_partial_update(
@@ -53991,7 +55793,7 @@ class AsyncRawDcimClient:
         device: int,
         name: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -54013,7 +55815,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -54075,6 +55877,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def device_bays_read(
@@ -54097,7 +55903,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/device-bays/{jsonable_encoder(id)}/",
+            f"dcim/device-bays/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -54114,6 +55920,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def device_bays_update(
@@ -54123,7 +55933,7 @@ class AsyncRawDcimClient:
         device: int,
         name: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -54148,7 +55958,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -54176,7 +55986,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/device-bays/{jsonable_encoder(id_)}/",
+            f"dcim/device-bays/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "created": created,
@@ -54213,6 +56023,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def device_bays_delete(
@@ -54234,7 +56048,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/device-bays/{jsonable_encoder(id)}/",
+            f"dcim/device-bays/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -54244,6 +56058,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def device_bays_partial_update(
@@ -54253,7 +56071,7 @@ class AsyncRawDcimClient:
         device: int,
         name: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -54278,7 +56096,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -54306,7 +56124,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/device-bays/{jsonable_encoder(id_)}/",
+            f"dcim/device-bays/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "created": created,
@@ -54343,6 +56161,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def device_roles_list(
@@ -54728,6 +56550,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def device_roles_create(
@@ -54737,7 +56563,7 @@ class AsyncRawDcimClient:
         slug: str,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -54762,7 +56588,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -54828,6 +56654,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def device_roles_bulk_update(
@@ -54837,7 +56667,7 @@ class AsyncRawDcimClient:
         slug: str,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -54862,7 +56692,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -54928,6 +56758,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def device_roles_bulk_delete(
@@ -54956,6 +56790,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def device_roles_bulk_partial_update(
@@ -54965,7 +56803,7 @@ class AsyncRawDcimClient:
         slug: str,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -54990,7 +56828,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -55056,6 +56894,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def device_roles_read(
@@ -55078,7 +56920,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/device-roles/{jsonable_encoder(id)}/",
+            f"dcim/device-roles/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -55095,6 +56937,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def device_roles_update(
@@ -55105,7 +56951,7 @@ class AsyncRawDcimClient:
         slug: str,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -55133,7 +56979,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -55163,7 +57009,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/device-roles/{jsonable_encoder(id_)}/",
+            f"dcim/device-roles/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "color": color,
@@ -55202,6 +57048,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def device_roles_delete(
@@ -55223,7 +57073,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/device-roles/{jsonable_encoder(id)}/",
+            f"dcim/device-roles/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -55233,6 +57083,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def device_roles_partial_update(
@@ -55243,7 +57097,7 @@ class AsyncRawDcimClient:
         slug: str,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -55271,7 +57125,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -55301,7 +57155,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/device-roles/{jsonable_encoder(id_)}/",
+            f"dcim/device-roles/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "color": color,
@@ -55340,6 +57194,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def device_types_list(
@@ -55835,6 +57693,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def device_types_create(
@@ -55846,7 +57708,7 @@ class AsyncRawDcimClient:
         airflow: typing.Optional[WritableDeviceTypeAirflow] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -55881,7 +57743,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -55969,6 +57831,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def device_types_bulk_update(
@@ -55980,7 +57846,7 @@ class AsyncRawDcimClient:
         airflow: typing.Optional[WritableDeviceTypeAirflow] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -56015,7 +57881,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -56103,6 +57969,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def device_types_bulk_delete(
@@ -56131,6 +58001,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def device_types_bulk_partial_update(
@@ -56142,7 +58016,7 @@ class AsyncRawDcimClient:
         airflow: typing.Optional[WritableDeviceTypeAirflow] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -56177,7 +58051,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -56265,6 +58139,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def device_types_read(
@@ -56287,7 +58165,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/device-types/{jsonable_encoder(id)}/",
+            f"dcim/device-types/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -56304,6 +58182,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def device_types_update(
@@ -56316,7 +58198,7 @@ class AsyncRawDcimClient:
         airflow: typing.Optional[WritableDeviceTypeAirflow] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -56354,7 +58236,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -56398,7 +58280,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/device-types/{jsonable_encoder(id_)}/",
+            f"dcim/device-types/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "airflow": airflow,
@@ -56445,6 +58327,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def device_types_delete(
@@ -56466,7 +58352,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/device-types/{jsonable_encoder(id)}/",
+            f"dcim/device-types/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -56476,6 +58362,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def device_types_partial_update(
@@ -56488,7 +58378,7 @@ class AsyncRawDcimClient:
         airflow: typing.Optional[WritableDeviceTypeAirflow] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -56526,7 +58416,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -56570,7 +58460,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/device-types/{jsonable_encoder(id_)}/",
+            f"dcim/device-types/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "airflow": airflow,
@@ -56617,6 +58507,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def devices_list(
@@ -57462,6 +59356,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def devices_create(
@@ -57474,15 +59372,15 @@ class AsyncRawDcimClient:
         asset_tag: typing.Optional[str] = OMIT,
         cluster: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
-        config_context: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        config_context: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         face: typing.Optional[WritableDeviceWithConfigContextFace] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        local_context_data: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        local_context_data: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         location: typing.Optional[int] = OMIT,
         name: typing.Optional[str] = OMIT,
         parent_device: typing.Optional[NestedDevice] = OMIT,
@@ -57522,11 +59420,11 @@ class AsyncRawDcimClient:
 
         comments : typing.Optional[str]
 
-        config_context : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        config_context : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -57538,7 +59436,7 @@ class AsyncRawDcimClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        local_context_data : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        local_context_data : typing.Optional[typing.Dict[str, typing.Any]]
 
         location : typing.Optional[int]
 
@@ -57640,6 +59538,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def devices_bulk_update(
@@ -57652,15 +59554,15 @@ class AsyncRawDcimClient:
         asset_tag: typing.Optional[str] = OMIT,
         cluster: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
-        config_context: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        config_context: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         face: typing.Optional[WritableDeviceWithConfigContextFace] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        local_context_data: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        local_context_data: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         location: typing.Optional[int] = OMIT,
         name: typing.Optional[str] = OMIT,
         parent_device: typing.Optional[NestedDevice] = OMIT,
@@ -57700,11 +59602,11 @@ class AsyncRawDcimClient:
 
         comments : typing.Optional[str]
 
-        config_context : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        config_context : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -57716,7 +59618,7 @@ class AsyncRawDcimClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        local_context_data : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        local_context_data : typing.Optional[typing.Dict[str, typing.Any]]
 
         location : typing.Optional[int]
 
@@ -57818,6 +59720,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def devices_bulk_delete(
@@ -57846,6 +59752,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def devices_bulk_partial_update(
@@ -57858,15 +59768,15 @@ class AsyncRawDcimClient:
         asset_tag: typing.Optional[str] = OMIT,
         cluster: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
-        config_context: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        config_context: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         face: typing.Optional[WritableDeviceWithConfigContextFace] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        local_context_data: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        local_context_data: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         location: typing.Optional[int] = OMIT,
         name: typing.Optional[str] = OMIT,
         parent_device: typing.Optional[NestedDevice] = OMIT,
@@ -57906,11 +59816,11 @@ class AsyncRawDcimClient:
 
         comments : typing.Optional[str]
 
-        config_context : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        config_context : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -57922,7 +59832,7 @@ class AsyncRawDcimClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        local_context_data : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        local_context_data : typing.Optional[typing.Dict[str, typing.Any]]
 
         location : typing.Optional[int]
 
@@ -58024,6 +59934,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def devices_read(
@@ -58046,7 +59960,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/devices/{jsonable_encoder(id)}/",
+            f"dcim/devices/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -58063,6 +59977,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def devices_update(
@@ -58076,15 +59994,15 @@ class AsyncRawDcimClient:
         asset_tag: typing.Optional[str] = OMIT,
         cluster: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
-        config_context: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        config_context: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         face: typing.Optional[WritableDeviceWithConfigContextFace] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        local_context_data: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        local_context_data: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         location: typing.Optional[int] = OMIT,
         name: typing.Optional[str] = OMIT,
         parent_device: typing.Optional[NestedDevice] = OMIT,
@@ -58127,11 +60045,11 @@ class AsyncRawDcimClient:
 
         comments : typing.Optional[str]
 
-        config_context : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        config_context : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -58143,7 +60061,7 @@ class AsyncRawDcimClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        local_context_data : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        local_context_data : typing.Optional[typing.Dict[str, typing.Any]]
 
         location : typing.Optional[int]
 
@@ -58188,7 +60106,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/devices/{jsonable_encoder(id_)}/",
+            f"dcim/devices/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "airflow": airflow,
@@ -58248,6 +60166,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def devices_delete(
@@ -58269,7 +60191,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/devices/{jsonable_encoder(id)}/",
+            f"dcim/devices/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -58279,6 +60201,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def devices_partial_update(
@@ -58292,15 +60218,15 @@ class AsyncRawDcimClient:
         asset_tag: typing.Optional[str] = OMIT,
         cluster: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
-        config_context: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        config_context: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         face: typing.Optional[WritableDeviceWithConfigContextFace] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        local_context_data: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        local_context_data: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         location: typing.Optional[int] = OMIT,
         name: typing.Optional[str] = OMIT,
         parent_device: typing.Optional[NestedDevice] = OMIT,
@@ -58343,11 +60269,11 @@ class AsyncRawDcimClient:
 
         comments : typing.Optional[str]
 
-        config_context : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        config_context : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -58359,7 +60285,7 @@ class AsyncRawDcimClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        local_context_data : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        local_context_data : typing.Optional[typing.Dict[str, typing.Any]]
 
         location : typing.Optional[int]
 
@@ -58404,7 +60330,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/devices/{jsonable_encoder(id_)}/",
+            f"dcim/devices/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "airflow": airflow,
@@ -58464,6 +60390,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def devices_napalm(
@@ -58488,7 +60418,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/devices/{jsonable_encoder(id)}/napalm/",
+            f"dcim/devices/{encode_path_param(id)}/napalm/",
             method="GET",
             params={
                 "method": method,
@@ -58508,6 +60438,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def front_port_templates_list(
@@ -58798,6 +60732,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def front_port_templates_create(
@@ -58898,6 +60836,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def front_port_templates_bulk_update(
@@ -58998,6 +60940,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def front_port_templates_bulk_delete(
@@ -59026,6 +60972,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def front_port_templates_bulk_partial_update(
@@ -59126,6 +61076,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def front_port_templates_read(
@@ -59148,7 +61102,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/front-port-templates/{jsonable_encoder(id)}/",
+            f"dcim/front-port-templates/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -59165,6 +61119,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def front_port_templates_update(
@@ -59235,7 +61193,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/front-port-templates/{jsonable_encoder(id_)}/",
+            f"dcim/front-port-templates/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "color": color,
@@ -59272,6 +61230,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def front_port_templates_delete(
@@ -59293,7 +61255,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/front-port-templates/{jsonable_encoder(id)}/",
+            f"dcim/front-port-templates/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -59303,6 +61265,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def front_port_templates_partial_update(
@@ -59373,7 +61339,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/front-port-templates/{jsonable_encoder(id_)}/",
+            f"dcim/front-port-templates/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "color": color,
@@ -59410,6 +61376,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def front_ports_list(
@@ -59970,6 +61940,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def front_ports_create(
@@ -59984,7 +61958,7 @@ class AsyncRawDcimClient:
         cable_end: typing.Optional[str] = OMIT,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -60022,7 +61996,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -60107,6 +62081,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def front_ports_bulk_update(
@@ -60121,7 +62099,7 @@ class AsyncRawDcimClient:
         cable_end: typing.Optional[str] = OMIT,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -60159,7 +62137,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -60244,6 +62222,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def front_ports_bulk_delete(
@@ -60272,6 +62254,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def front_ports_bulk_partial_update(
@@ -60286,7 +62272,7 @@ class AsyncRawDcimClient:
         cable_end: typing.Optional[str] = OMIT,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -60324,7 +62310,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -60409,6 +62395,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def front_ports_read(
@@ -60431,7 +62421,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/front-ports/{jsonable_encoder(id)}/",
+            f"dcim/front-ports/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -60448,6 +62438,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def front_ports_update(
@@ -60463,7 +62457,7 @@ class AsyncRawDcimClient:
         cable_end: typing.Optional[str] = OMIT,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -60504,7 +62498,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -60543,7 +62537,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/front-ports/{jsonable_encoder(id_)}/",
+            f"dcim/front-ports/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "_occupied": occupied,
@@ -60592,6 +62586,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def front_ports_delete(
@@ -60613,7 +62611,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/front-ports/{jsonable_encoder(id)}/",
+            f"dcim/front-ports/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -60623,6 +62621,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def front_ports_partial_update(
@@ -60638,7 +62640,7 @@ class AsyncRawDcimClient:
         cable_end: typing.Optional[str] = OMIT,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -60679,7 +62681,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -60718,7 +62720,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/front-ports/{jsonable_encoder(id_)}/",
+            f"dcim/front-ports/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "_occupied": occupied,
@@ -60767,6 +62769,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def front_ports_paths(
@@ -60789,7 +62795,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/front-ports/{jsonable_encoder(id)}/paths/",
+            f"dcim/front-ports/{encode_path_param(id)}/paths/",
             method="GET",
             request_options=request_options,
         )
@@ -60806,6 +62812,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def interface_templates_list(
@@ -61066,6 +63076,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def interface_templates_create(
@@ -61166,6 +63180,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def interface_templates_bulk_update(
@@ -61266,6 +63284,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def interface_templates_bulk_delete(
@@ -61294,6 +63316,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def interface_templates_bulk_partial_update(
@@ -61394,6 +63420,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def interface_templates_read(
@@ -61416,7 +63446,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/interface-templates/{jsonable_encoder(id)}/",
+            f"dcim/interface-templates/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -61433,6 +63463,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def interface_templates_update(
@@ -61503,7 +63537,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/interface-templates/{jsonable_encoder(id_)}/",
+            f"dcim/interface-templates/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "created": created,
@@ -61540,6 +63574,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def interface_templates_delete(
@@ -61561,7 +63599,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/interface-templates/{jsonable_encoder(id)}/",
+            f"dcim/interface-templates/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -61571,6 +63609,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def interface_templates_partial_update(
@@ -61641,7 +63683,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/interface-templates/{jsonable_encoder(id_)}/",
+            f"dcim/interface-templates/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "created": created,
@@ -61678,6 +63720,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def interfaces_list(
@@ -62613,6 +64659,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def interfaces_create(
@@ -62632,7 +64682,7 @@ class AsyncRawDcimClient:
         count_fhrp_groups: typing.Optional[int] = OMIT,
         count_ipaddresses: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         duplex: typing.Optional[WritableInterfaceDuplex] = OMIT,
@@ -62704,7 +64754,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -62862,6 +64912,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def interfaces_bulk_update(
@@ -62881,7 +64935,7 @@ class AsyncRawDcimClient:
         count_fhrp_groups: typing.Optional[int] = OMIT,
         count_ipaddresses: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         duplex: typing.Optional[WritableInterfaceDuplex] = OMIT,
@@ -62953,7 +65007,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -63111,6 +65165,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def interfaces_bulk_delete(
@@ -63139,6 +65197,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def interfaces_bulk_partial_update(
@@ -63158,7 +65220,7 @@ class AsyncRawDcimClient:
         count_fhrp_groups: typing.Optional[int] = OMIT,
         count_ipaddresses: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         duplex: typing.Optional[WritableInterfaceDuplex] = OMIT,
@@ -63230,7 +65292,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -63388,6 +65450,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def interfaces_read(
@@ -63410,7 +65476,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/interfaces/{jsonable_encoder(id)}/",
+            f"dcim/interfaces/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -63427,6 +65493,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def interfaces_update(
@@ -63447,7 +65517,7 @@ class AsyncRawDcimClient:
         count_fhrp_groups: typing.Optional[int] = OMIT,
         count_ipaddresses: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         duplex: typing.Optional[WritableInterfaceDuplex] = OMIT,
@@ -63522,7 +65592,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -63607,7 +65677,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/interfaces/{jsonable_encoder(id_)}/",
+            f"dcim/interfaces/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "_occupied": occupied,
@@ -63683,6 +65753,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def interfaces_delete(
@@ -63704,7 +65778,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/interfaces/{jsonable_encoder(id)}/",
+            f"dcim/interfaces/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -63714,6 +65788,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def interfaces_partial_update(
@@ -63734,7 +65812,7 @@ class AsyncRawDcimClient:
         count_fhrp_groups: typing.Optional[int] = OMIT,
         count_ipaddresses: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         duplex: typing.Optional[WritableInterfaceDuplex] = OMIT,
@@ -63809,7 +65887,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -63894,7 +65972,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/interfaces/{jsonable_encoder(id_)}/",
+            f"dcim/interfaces/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "_occupied": occupied,
@@ -63970,6 +66048,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def interfaces_trace(
@@ -63992,7 +66074,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/interfaces/{jsonable_encoder(id)}/trace/",
+            f"dcim/interfaces/{encode_path_param(id)}/trace/",
             method="GET",
             request_options=request_options,
         )
@@ -64009,6 +66091,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def inventory_item_roles_list(
@@ -64334,6 +66420,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def inventory_item_roles_create(
@@ -64343,7 +66433,7 @@ class AsyncRawDcimClient:
         slug: str,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -64366,7 +66456,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -64425,6 +66515,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def inventory_item_roles_bulk_update(
@@ -64434,7 +66528,7 @@ class AsyncRawDcimClient:
         slug: str,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -64457,7 +66551,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -64516,6 +66610,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def inventory_item_roles_bulk_delete(
@@ -64544,6 +66642,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def inventory_item_roles_bulk_partial_update(
@@ -64553,7 +66655,7 @@ class AsyncRawDcimClient:
         slug: str,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -64576,7 +66678,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -64635,6 +66737,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def inventory_item_roles_read(
@@ -64657,7 +66763,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/inventory-item-roles/{jsonable_encoder(id)}/",
+            f"dcim/inventory-item-roles/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -64674,6 +66780,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def inventory_item_roles_update(
@@ -64684,7 +66794,7 @@ class AsyncRawDcimClient:
         slug: str,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -64710,7 +66820,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -64735,7 +66845,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/inventory-item-roles/{jsonable_encoder(id_)}/",
+            f"dcim/inventory-item-roles/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "color": color,
@@ -64772,6 +66882,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def inventory_item_roles_delete(
@@ -64793,7 +66907,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/inventory-item-roles/{jsonable_encoder(id)}/",
+            f"dcim/inventory-item-roles/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -64803,6 +66917,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def inventory_item_roles_partial_update(
@@ -64813,7 +66931,7 @@ class AsyncRawDcimClient:
         slug: str,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -64839,7 +66957,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -64864,7 +66982,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/inventory-item-roles/{jsonable_encoder(id_)}/",
+            f"dcim/inventory-item-roles/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "color": color,
@@ -64901,6 +67019,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def inventory_item_templates_list(
@@ -65316,6 +67438,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def inventory_item_templates_create(
@@ -65324,7 +67450,7 @@ class AsyncRawDcimClient:
         device_type: int,
         name: str,
         depth: typing.Optional[int] = OMIT,
-        component: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        component: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         component_id: typing.Optional[int] = OMIT,
         component_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
@@ -65353,7 +67479,7 @@ class AsyncRawDcimClient:
 
         depth : typing.Optional[int]
 
-        component : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        component : typing.Optional[typing.Dict[str, typing.Any]]
 
         component_id : typing.Optional[int]
 
@@ -65429,6 +67555,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def inventory_item_templates_bulk_update(
@@ -65437,7 +67567,7 @@ class AsyncRawDcimClient:
         device_type: int,
         name: str,
         depth: typing.Optional[int] = OMIT,
-        component: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        component: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         component_id: typing.Optional[int] = OMIT,
         component_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
@@ -65466,7 +67596,7 @@ class AsyncRawDcimClient:
 
         depth : typing.Optional[int]
 
-        component : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        component : typing.Optional[typing.Dict[str, typing.Any]]
 
         component_id : typing.Optional[int]
 
@@ -65542,6 +67672,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def inventory_item_templates_bulk_delete(
@@ -65570,6 +67704,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def inventory_item_templates_bulk_partial_update(
@@ -65578,7 +67716,7 @@ class AsyncRawDcimClient:
         device_type: int,
         name: str,
         depth: typing.Optional[int] = OMIT,
-        component: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        component: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         component_id: typing.Optional[int] = OMIT,
         component_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
@@ -65607,7 +67745,7 @@ class AsyncRawDcimClient:
 
         depth : typing.Optional[int]
 
-        component : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        component : typing.Optional[typing.Dict[str, typing.Any]]
 
         component_id : typing.Optional[int]
 
@@ -65683,6 +67821,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def inventory_item_templates_read(
@@ -65705,7 +67847,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/inventory-item-templates/{jsonable_encoder(id)}/",
+            f"dcim/inventory-item-templates/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -65722,6 +67864,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def inventory_item_templates_update(
@@ -65731,7 +67877,7 @@ class AsyncRawDcimClient:
         device_type: int,
         name: str,
         depth: typing.Optional[int] = OMIT,
-        component: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        component: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         component_id: typing.Optional[int] = OMIT,
         component_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
@@ -65763,7 +67909,7 @@ class AsyncRawDcimClient:
 
         depth : typing.Optional[int]
 
-        component : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        component : typing.Optional[typing.Dict[str, typing.Any]]
 
         component_id : typing.Optional[int]
 
@@ -65802,7 +67948,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/inventory-item-templates/{jsonable_encoder(id_)}/",
+            f"dcim/inventory-item-templates/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "_depth": depth,
@@ -65842,6 +67988,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def inventory_item_templates_delete(
@@ -65863,7 +68013,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/inventory-item-templates/{jsonable_encoder(id)}/",
+            f"dcim/inventory-item-templates/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -65873,6 +68023,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def inventory_item_templates_partial_update(
@@ -65882,7 +68036,7 @@ class AsyncRawDcimClient:
         device_type: int,
         name: str,
         depth: typing.Optional[int] = OMIT,
-        component: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        component: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         component_id: typing.Optional[int] = OMIT,
         component_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
@@ -65914,7 +68068,7 @@ class AsyncRawDcimClient:
 
         depth : typing.Optional[int]
 
-        component : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        component : typing.Optional[typing.Dict[str, typing.Any]]
 
         component_id : typing.Optional[int]
 
@@ -65953,7 +68107,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/inventory-item-templates/{jsonable_encoder(id_)}/",
+            f"dcim/inventory-item-templates/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "_depth": depth,
@@ -65993,6 +68147,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def inventory_items_list(
@@ -66663,6 +68821,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def inventory_items_create(
@@ -66672,11 +68834,11 @@ class AsyncRawDcimClient:
         name: str,
         depth: typing.Optional[int] = OMIT,
         asset_tag: typing.Optional[str] = OMIT,
-        component: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        component: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         component_id: typing.Optional[int] = OMIT,
         component_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         discovered: typing.Optional[bool] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -66706,7 +68868,7 @@ class AsyncRawDcimClient:
         asset_tag : typing.Optional[str]
             A unique tag used to identify this item
 
-        component : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        component : typing.Optional[typing.Dict[str, typing.Any]]
 
         component_id : typing.Optional[int]
 
@@ -66714,7 +68876,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -66798,6 +68960,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def inventory_items_bulk_update(
@@ -66807,11 +68973,11 @@ class AsyncRawDcimClient:
         name: str,
         depth: typing.Optional[int] = OMIT,
         asset_tag: typing.Optional[str] = OMIT,
-        component: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        component: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         component_id: typing.Optional[int] = OMIT,
         component_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         discovered: typing.Optional[bool] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -66841,7 +69007,7 @@ class AsyncRawDcimClient:
         asset_tag : typing.Optional[str]
             A unique tag used to identify this item
 
-        component : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        component : typing.Optional[typing.Dict[str, typing.Any]]
 
         component_id : typing.Optional[int]
 
@@ -66849,7 +69015,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -66933,6 +69099,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def inventory_items_bulk_delete(
@@ -66961,6 +69131,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def inventory_items_bulk_partial_update(
@@ -66970,11 +69144,11 @@ class AsyncRawDcimClient:
         name: str,
         depth: typing.Optional[int] = OMIT,
         asset_tag: typing.Optional[str] = OMIT,
-        component: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        component: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         component_id: typing.Optional[int] = OMIT,
         component_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         discovered: typing.Optional[bool] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -67004,7 +69178,7 @@ class AsyncRawDcimClient:
         asset_tag : typing.Optional[str]
             A unique tag used to identify this item
 
-        component : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        component : typing.Optional[typing.Dict[str, typing.Any]]
 
         component_id : typing.Optional[int]
 
@@ -67012,7 +69186,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -67096,6 +69270,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def inventory_items_read(
@@ -67118,7 +69296,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/inventory-items/{jsonable_encoder(id)}/",
+            f"dcim/inventory-items/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -67135,6 +69313,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def inventory_items_update(
@@ -67145,11 +69327,11 @@ class AsyncRawDcimClient:
         name: str,
         depth: typing.Optional[int] = OMIT,
         asset_tag: typing.Optional[str] = OMIT,
-        component: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        component: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         component_id: typing.Optional[int] = OMIT,
         component_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         discovered: typing.Optional[bool] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -67182,7 +69364,7 @@ class AsyncRawDcimClient:
         asset_tag : typing.Optional[str]
             A unique tag used to identify this item
 
-        component : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        component : typing.Optional[typing.Dict[str, typing.Any]]
 
         component_id : typing.Optional[int]
 
@@ -67190,7 +69372,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -67230,7 +69412,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/inventory-items/{jsonable_encoder(id_)}/",
+            f"dcim/inventory-items/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "_depth": depth,
@@ -67277,6 +69459,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def inventory_items_delete(
@@ -67298,7 +69484,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/inventory-items/{jsonable_encoder(id)}/",
+            f"dcim/inventory-items/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -67308,6 +69494,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def inventory_items_partial_update(
@@ -67318,11 +69508,11 @@ class AsyncRawDcimClient:
         name: str,
         depth: typing.Optional[int] = OMIT,
         asset_tag: typing.Optional[str] = OMIT,
-        component: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        component: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         component_id: typing.Optional[int] = OMIT,
         component_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         discovered: typing.Optional[bool] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -67355,7 +69545,7 @@ class AsyncRawDcimClient:
         asset_tag : typing.Optional[str]
             A unique tag used to identify this item
 
-        component : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        component : typing.Optional[typing.Dict[str, typing.Any]]
 
         component_id : typing.Optional[int]
 
@@ -67363,7 +69553,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -67403,7 +69593,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/inventory-items/{jsonable_encoder(id_)}/",
+            f"dcim/inventory-items/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "_depth": depth,
@@ -67450,6 +69640,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def locations_list(
@@ -67935,6 +70129,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def locations_create(
@@ -67945,7 +70143,7 @@ class AsyncRawDcimClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -67974,7 +70172,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -68046,6 +70244,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def locations_bulk_update(
@@ -68056,7 +70258,7 @@ class AsyncRawDcimClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -68085,7 +70287,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -68157,6 +70359,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def locations_bulk_delete(
@@ -68185,6 +70391,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def locations_bulk_partial_update(
@@ -68195,7 +70405,7 @@ class AsyncRawDcimClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -68224,7 +70434,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -68296,6 +70506,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def locations_read(
@@ -68318,7 +70532,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/locations/{jsonable_encoder(id)}/",
+            f"dcim/locations/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -68335,6 +70549,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def locations_update(
@@ -68346,7 +70564,7 @@ class AsyncRawDcimClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -68378,7 +70596,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -68411,7 +70629,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/locations/{jsonable_encoder(id_)}/",
+            f"dcim/locations/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "_depth": depth,
@@ -68453,6 +70671,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def locations_delete(
@@ -68474,7 +70696,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/locations/{jsonable_encoder(id)}/",
+            f"dcim/locations/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -68484,6 +70706,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def locations_partial_update(
@@ -68495,7 +70721,7 @@ class AsyncRawDcimClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -68527,7 +70753,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -68560,7 +70786,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/locations/{jsonable_encoder(id_)}/",
+            f"dcim/locations/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "_depth": depth,
@@ -68602,6 +70828,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def manufacturers_list(
@@ -68957,6 +71187,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def manufacturers_create(
@@ -68965,7 +71199,7 @@ class AsyncRawDcimClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         devicetype_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -68988,7 +71222,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -69052,6 +71286,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def manufacturers_bulk_update(
@@ -69060,7 +71298,7 @@ class AsyncRawDcimClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         devicetype_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -69083,7 +71321,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -69147,6 +71385,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def manufacturers_bulk_delete(
@@ -69175,6 +71417,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def manufacturers_bulk_partial_update(
@@ -69183,7 +71429,7 @@ class AsyncRawDcimClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         devicetype_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -69206,7 +71452,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -69270,6 +71516,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def manufacturers_read(
@@ -69292,7 +71542,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/manufacturers/{jsonable_encoder(id)}/",
+            f"dcim/manufacturers/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -69309,6 +71559,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def manufacturers_update(
@@ -69318,7 +71572,7 @@ class AsyncRawDcimClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         devicetype_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -69344,7 +71598,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -69373,7 +71627,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/manufacturers/{jsonable_encoder(id_)}/",
+            f"dcim/manufacturers/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "created": created,
@@ -69411,6 +71665,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def manufacturers_delete(
@@ -69432,7 +71690,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/manufacturers/{jsonable_encoder(id)}/",
+            f"dcim/manufacturers/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -69442,6 +71700,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def manufacturers_partial_update(
@@ -69451,7 +71713,7 @@ class AsyncRawDcimClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         devicetype_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -69477,7 +71739,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -69506,7 +71768,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/manufacturers/{jsonable_encoder(id_)}/",
+            f"dcim/manufacturers/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "created": created,
@@ -69544,6 +71806,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def module_bay_templates_list(
@@ -69759,6 +72025,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def module_bay_templates_create(
@@ -69844,6 +72114,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def module_bay_templates_bulk_update(
@@ -69929,6 +72203,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def module_bay_templates_bulk_delete(
@@ -69957,6 +72235,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def module_bay_templates_bulk_partial_update(
@@ -70042,6 +72324,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def module_bay_templates_read(
@@ -70064,7 +72350,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/module-bay-templates/{jsonable_encoder(id)}/",
+            f"dcim/module-bay-templates/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -70081,6 +72367,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def module_bay_templates_update(
@@ -70140,7 +72430,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/module-bay-templates/{jsonable_encoder(id_)}/",
+            f"dcim/module-bay-templates/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "created": created,
@@ -70173,6 +72463,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def module_bay_templates_delete(
@@ -70194,7 +72488,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/module-bay-templates/{jsonable_encoder(id)}/",
+            f"dcim/module-bay-templates/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -70204,6 +72498,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def module_bay_templates_partial_update(
@@ -70263,7 +72561,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/module-bay-templates/{jsonable_encoder(id_)}/",
+            f"dcim/module-bay-templates/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "created": created,
@@ -70296,6 +72594,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def module_bays_list(
@@ -70761,6 +73063,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def module_bays_create(
@@ -70770,7 +73076,7 @@ class AsyncRawDcimClient:
         installed_module: int,
         name: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -70794,7 +73100,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -70858,6 +73164,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def module_bays_bulk_update(
@@ -70867,7 +73177,7 @@ class AsyncRawDcimClient:
         installed_module: int,
         name: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -70891,7 +73201,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -70955,6 +73265,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def module_bays_bulk_delete(
@@ -70983,6 +73297,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def module_bays_bulk_partial_update(
@@ -70992,7 +73310,7 @@ class AsyncRawDcimClient:
         installed_module: int,
         name: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -71016,7 +73334,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -71080,6 +73398,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def module_bays_read(
@@ -71102,7 +73424,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/module-bays/{jsonable_encoder(id)}/",
+            f"dcim/module-bays/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -71119,6 +73441,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def module_bays_update(
@@ -71129,7 +73455,7 @@ class AsyncRawDcimClient:
         installed_module: int,
         name: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -71156,7 +73482,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -71185,7 +73511,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/module-bays/{jsonable_encoder(id_)}/",
+            f"dcim/module-bays/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "created": created,
@@ -71223,6 +73549,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def module_bays_delete(
@@ -71244,7 +73574,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/module-bays/{jsonable_encoder(id)}/",
+            f"dcim/module-bays/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -71254,6 +73584,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def module_bays_partial_update(
@@ -71264,7 +73598,7 @@ class AsyncRawDcimClient:
         installed_module: int,
         name: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -71291,7 +73625,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -71320,7 +73654,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/module-bays/{jsonable_encoder(id_)}/",
+            f"dcim/module-bays/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "created": created,
@@ -71358,6 +73692,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def module_types_list(
@@ -71718,6 +74056,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def module_types_create(
@@ -71727,7 +74069,7 @@ class AsyncRawDcimClient:
         model: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -71752,7 +74094,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -71818,6 +74160,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def module_types_bulk_update(
@@ -71827,7 +74173,7 @@ class AsyncRawDcimClient:
         model: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -71852,7 +74198,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -71918,6 +74264,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def module_types_bulk_delete(
@@ -71946,6 +74296,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def module_types_bulk_partial_update(
@@ -71955,7 +74309,7 @@ class AsyncRawDcimClient:
         model: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -71980,7 +74334,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -72046,6 +74400,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def module_types_read(
@@ -72068,7 +74426,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/module-types/{jsonable_encoder(id)}/",
+            f"dcim/module-types/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -72085,6 +74443,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def module_types_update(
@@ -72095,7 +74457,7 @@ class AsyncRawDcimClient:
         model: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -72123,7 +74485,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -72153,7 +74515,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/module-types/{jsonable_encoder(id_)}/",
+            f"dcim/module-types/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "comments": comments,
@@ -72192,6 +74554,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def module_types_delete(
@@ -72213,7 +74579,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/module-types/{jsonable_encoder(id)}/",
+            f"dcim/module-types/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -72223,6 +74589,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def module_types_partial_update(
@@ -72233,7 +74603,7 @@ class AsyncRawDcimClient:
         model: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -72261,7 +74631,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -72291,7 +74661,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/module-types/{jsonable_encoder(id_)}/",
+            f"dcim/module-types/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "comments": comments,
@@ -72330,6 +74700,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def modules_list(
@@ -72670,6 +75044,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def modules_create(
@@ -72681,7 +75059,7 @@ class AsyncRawDcimClient:
         asset_tag: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -72710,7 +75088,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -72774,6 +75152,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def modules_bulk_update(
@@ -72785,7 +75167,7 @@ class AsyncRawDcimClient:
         asset_tag: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -72814,7 +75196,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -72878,6 +75260,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def modules_bulk_delete(
@@ -72906,6 +75292,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def modules_bulk_partial_update(
@@ -72917,7 +75307,7 @@ class AsyncRawDcimClient:
         asset_tag: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -72946,7 +75336,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -73010,6 +75400,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def modules_read(
@@ -73032,7 +75426,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/modules/{jsonable_encoder(id)}/",
+            f"dcim/modules/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -73049,6 +75443,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def modules_update(
@@ -73061,7 +75459,7 @@ class AsyncRawDcimClient:
         asset_tag: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -73093,7 +75491,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -73120,7 +75518,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/modules/{jsonable_encoder(id_)}/",
+            f"dcim/modules/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "asset_tag": asset_tag,
@@ -73160,6 +75558,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def modules_delete(
@@ -73181,7 +75583,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/modules/{jsonable_encoder(id)}/",
+            f"dcim/modules/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -73191,6 +75593,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def modules_partial_update(
@@ -73203,7 +75609,7 @@ class AsyncRawDcimClient:
         asset_tag: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -73235,7 +75641,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -73262,7 +75668,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/modules/{jsonable_encoder(id_)}/",
+            f"dcim/modules/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "asset_tag": asset_tag,
@@ -73302,6 +75708,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def platforms_list(
@@ -73702,6 +76112,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def platforms_create(
@@ -73710,14 +76124,14 @@ class AsyncRawDcimClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         manufacturer: typing.Optional[int] = OMIT,
-        napalm_args: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        napalm_args: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         napalm_driver: typing.Optional[str] = OMIT,
         tags: typing.Optional[typing.Sequence[NestedTag]] = OMIT,
         url: typing.Optional[str] = OMIT,
@@ -73735,7 +76149,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -73750,7 +76164,7 @@ class AsyncRawDcimClient:
         manufacturer : typing.Optional[int]
             Optionally limit this platform to devices of a certain manufacturer
 
-        napalm_args : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        napalm_args : typing.Optional[typing.Dict[str, typing.Any]]
             Additional arguments to pass when initiating the NAPALM driver (JSON format)
 
         napalm_driver : typing.Optional[str]
@@ -73808,6 +76222,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def platforms_bulk_update(
@@ -73816,14 +76234,14 @@ class AsyncRawDcimClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         manufacturer: typing.Optional[int] = OMIT,
-        napalm_args: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        napalm_args: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         napalm_driver: typing.Optional[str] = OMIT,
         tags: typing.Optional[typing.Sequence[NestedTag]] = OMIT,
         url: typing.Optional[str] = OMIT,
@@ -73841,7 +76259,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -73856,7 +76274,7 @@ class AsyncRawDcimClient:
         manufacturer : typing.Optional[int]
             Optionally limit this platform to devices of a certain manufacturer
 
-        napalm_args : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        napalm_args : typing.Optional[typing.Dict[str, typing.Any]]
             Additional arguments to pass when initiating the NAPALM driver (JSON format)
 
         napalm_driver : typing.Optional[str]
@@ -73914,6 +76332,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def platforms_bulk_delete(
@@ -73942,6 +76364,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def platforms_bulk_partial_update(
@@ -73950,14 +76376,14 @@ class AsyncRawDcimClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         manufacturer: typing.Optional[int] = OMIT,
-        napalm_args: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        napalm_args: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         napalm_driver: typing.Optional[str] = OMIT,
         tags: typing.Optional[typing.Sequence[NestedTag]] = OMIT,
         url: typing.Optional[str] = OMIT,
@@ -73975,7 +76401,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -73990,7 +76416,7 @@ class AsyncRawDcimClient:
         manufacturer : typing.Optional[int]
             Optionally limit this platform to devices of a certain manufacturer
 
-        napalm_args : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        napalm_args : typing.Optional[typing.Dict[str, typing.Any]]
             Additional arguments to pass when initiating the NAPALM driver (JSON format)
 
         napalm_driver : typing.Optional[str]
@@ -74048,6 +76474,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def platforms_read(
@@ -74070,7 +76500,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/platforms/{jsonable_encoder(id)}/",
+            f"dcim/platforms/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -74087,6 +76517,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def platforms_update(
@@ -74096,14 +76530,14 @@ class AsyncRawDcimClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         manufacturer: typing.Optional[int] = OMIT,
-        napalm_args: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        napalm_args: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         napalm_driver: typing.Optional[str] = OMIT,
         tags: typing.Optional[typing.Sequence[NestedTag]] = OMIT,
         url: typing.Optional[str] = OMIT,
@@ -74124,7 +76558,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -74139,7 +76573,7 @@ class AsyncRawDcimClient:
         manufacturer : typing.Optional[int]
             Optionally limit this platform to devices of a certain manufacturer
 
-        napalm_args : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        napalm_args : typing.Optional[typing.Dict[str, typing.Any]]
             Additional arguments to pass when initiating the NAPALM driver (JSON format)
 
         napalm_driver : typing.Optional[str]
@@ -74160,7 +76594,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/platforms/{jsonable_encoder(id_)}/",
+            f"dcim/platforms/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "created": created,
@@ -74200,6 +76634,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def platforms_delete(
@@ -74221,7 +76659,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/platforms/{jsonable_encoder(id)}/",
+            f"dcim/platforms/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -74231,6 +76669,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def platforms_partial_update(
@@ -74240,14 +76682,14 @@ class AsyncRawDcimClient:
         name: str,
         slug: str,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
         manufacturer: typing.Optional[int] = OMIT,
-        napalm_args: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        napalm_args: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         napalm_driver: typing.Optional[str] = OMIT,
         tags: typing.Optional[typing.Sequence[NestedTag]] = OMIT,
         url: typing.Optional[str] = OMIT,
@@ -74268,7 +76710,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -74283,7 +76725,7 @@ class AsyncRawDcimClient:
         manufacturer : typing.Optional[int]
             Optionally limit this platform to devices of a certain manufacturer
 
-        napalm_args : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        napalm_args : typing.Optional[typing.Dict[str, typing.Any]]
             Additional arguments to pass when initiating the NAPALM driver (JSON format)
 
         napalm_driver : typing.Optional[str]
@@ -74304,7 +76746,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/platforms/{jsonable_encoder(id_)}/",
+            f"dcim/platforms/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "created": created,
@@ -74344,6 +76786,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_feeds_list(
@@ -74794,6 +77240,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_feeds_create(
@@ -74810,7 +77260,7 @@ class AsyncRawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -74858,7 +77308,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -74957,6 +77407,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_feeds_bulk_update(
@@ -74973,7 +77427,7 @@ class AsyncRawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -75021,7 +77475,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -75120,6 +77574,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_feeds_bulk_delete(
@@ -75148,6 +77606,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_feeds_bulk_partial_update(
@@ -75164,7 +77626,7 @@ class AsyncRawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -75212,7 +77674,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -75311,6 +77773,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_feeds_read(
@@ -75333,7 +77799,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/power-feeds/{jsonable_encoder(id)}/",
+            f"dcim/power-feeds/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -75350,6 +77816,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_feeds_update(
@@ -75367,7 +77837,7 @@ class AsyncRawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -75418,7 +77888,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -75465,7 +77935,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/power-feeds/{jsonable_encoder(id_)}/",
+            f"dcim/power-feeds/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "_occupied": occupied,
@@ -75520,6 +77990,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_feeds_delete(
@@ -75541,7 +78015,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/power-feeds/{jsonable_encoder(id)}/",
+            f"dcim/power-feeds/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -75551,6 +78025,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_feeds_partial_update(
@@ -75568,7 +78046,7 @@ class AsyncRawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -75619,7 +78097,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -75666,7 +78144,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/power-feeds/{jsonable_encoder(id_)}/",
+            f"dcim/power-feeds/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "_occupied": occupied,
@@ -75721,6 +78199,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_feeds_trace(
@@ -75743,7 +78225,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/power-feeds/{jsonable_encoder(id)}/trace/",
+            f"dcim/power-feeds/{encode_path_param(id)}/trace/",
             method="GET",
             request_options=request_options,
         )
@@ -75760,6 +78242,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_outlet_templates_list(
@@ -76005,6 +78491,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_outlet_templates_create(
@@ -76102,6 +78592,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_outlet_templates_bulk_update(
@@ -76199,6 +78693,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_outlet_templates_bulk_delete(
@@ -76227,6 +78725,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_outlet_templates_bulk_partial_update(
@@ -76324,6 +78826,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_outlet_templates_read(
@@ -76346,7 +78852,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/power-outlet-templates/{jsonable_encoder(id)}/",
+            f"dcim/power-outlet-templates/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -76363,6 +78869,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_outlet_templates_update(
@@ -76431,7 +78941,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/power-outlet-templates/{jsonable_encoder(id_)}/",
+            f"dcim/power-outlet-templates/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "created": created,
@@ -76467,6 +78977,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_outlet_templates_delete(
@@ -76488,7 +79002,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/power-outlet-templates/{jsonable_encoder(id)}/",
+            f"dcim/power-outlet-templates/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -76498,6 +79012,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_outlet_templates_partial_update(
@@ -76566,7 +79084,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/power-outlet-templates/{jsonable_encoder(id_)}/",
+            f"dcim/power-outlet-templates/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "created": created,
@@ -76602,6 +79120,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_outlets_list(
@@ -77122,6 +79644,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_outlets_create(
@@ -77136,7 +79662,7 @@ class AsyncRawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         feed_leg: typing.Optional[WritablePowerOutletFeedLeg] = OMIT,
@@ -77178,7 +79704,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -77271,6 +79797,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_outlets_bulk_update(
@@ -77285,7 +79815,7 @@ class AsyncRawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         feed_leg: typing.Optional[WritablePowerOutletFeedLeg] = OMIT,
@@ -77327,7 +79857,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -77420,6 +79950,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_outlets_bulk_delete(
@@ -77448,6 +79982,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_outlets_bulk_partial_update(
@@ -77462,7 +80000,7 @@ class AsyncRawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         feed_leg: typing.Optional[WritablePowerOutletFeedLeg] = OMIT,
@@ -77504,7 +80042,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -77597,6 +80135,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_outlets_read(
@@ -77619,7 +80161,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/power-outlets/{jsonable_encoder(id)}/",
+            f"dcim/power-outlets/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -77636,6 +80178,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_outlets_update(
@@ -77651,7 +80197,7 @@ class AsyncRawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         feed_leg: typing.Optional[WritablePowerOutletFeedLeg] = OMIT,
@@ -77696,7 +80242,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -77741,7 +80287,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/power-outlets/{jsonable_encoder(id_)}/",
+            f"dcim/power-outlets/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "_occupied": occupied,
@@ -77792,6 +80338,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_outlets_delete(
@@ -77813,7 +80363,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/power-outlets/{jsonable_encoder(id)}/",
+            f"dcim/power-outlets/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -77823,6 +80373,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_outlets_partial_update(
@@ -77838,7 +80392,7 @@ class AsyncRawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         feed_leg: typing.Optional[WritablePowerOutletFeedLeg] = OMIT,
@@ -77883,7 +80437,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -77928,7 +80482,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/power-outlets/{jsonable_encoder(id_)}/",
+            f"dcim/power-outlets/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "_occupied": occupied,
@@ -77979,6 +80533,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_outlets_trace(
@@ -78001,7 +80559,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/power-outlets/{jsonable_encoder(id)}/trace/",
+            f"dcim/power-outlets/{encode_path_param(id)}/trace/",
             method="GET",
             request_options=request_options,
         )
@@ -78018,6 +80576,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_panels_list(
@@ -78333,6 +80895,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_panels_create(
@@ -78342,7 +80908,7 @@ class AsyncRawDcimClient:
         site: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -78366,7 +80932,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -78428,6 +80994,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_panels_bulk_update(
@@ -78437,7 +81007,7 @@ class AsyncRawDcimClient:
         site: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -78461,7 +81031,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -78523,6 +81093,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_panels_bulk_delete(
@@ -78551,6 +81125,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_panels_bulk_partial_update(
@@ -78560,7 +81138,7 @@ class AsyncRawDcimClient:
         site: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -78584,7 +81162,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -78646,6 +81224,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_panels_read(
@@ -78668,7 +81250,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/power-panels/{jsonable_encoder(id)}/",
+            f"dcim/power-panels/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -78685,6 +81267,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_panels_update(
@@ -78695,7 +81281,7 @@ class AsyncRawDcimClient:
         site: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -78722,7 +81308,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -78749,7 +81335,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/power-panels/{jsonable_encoder(id_)}/",
+            f"dcim/power-panels/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "comments": comments,
@@ -78787,6 +81373,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_panels_delete(
@@ -78808,7 +81398,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/power-panels/{jsonable_encoder(id)}/",
+            f"dcim/power-panels/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -78818,6 +81408,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_panels_partial_update(
@@ -78828,7 +81422,7 @@ class AsyncRawDcimClient:
         site: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -78855,7 +81449,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -78882,7 +81476,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/power-panels/{jsonable_encoder(id_)}/",
+            f"dcim/power-panels/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "comments": comments,
@@ -78920,6 +81514,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_port_templates_list(
@@ -79215,6 +81813,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_port_templates_create(
@@ -79313,6 +81915,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_port_templates_bulk_update(
@@ -79411,6 +82017,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_port_templates_bulk_delete(
@@ -79439,6 +82049,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_port_templates_bulk_partial_update(
@@ -79537,6 +82151,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_port_templates_read(
@@ -79559,7 +82177,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/power-port-templates/{jsonable_encoder(id)}/",
+            f"dcim/power-port-templates/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -79576,6 +82194,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_port_templates_update(
@@ -79645,7 +82267,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/power-port-templates/{jsonable_encoder(id_)}/",
+            f"dcim/power-port-templates/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "allocated_draw": allocated_draw,
@@ -79681,6 +82303,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_port_templates_delete(
@@ -79702,7 +82328,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/power-port-templates/{jsonable_encoder(id)}/",
+            f"dcim/power-port-templates/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -79712,6 +82338,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_port_templates_partial_update(
@@ -79781,7 +82411,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/power-port-templates/{jsonable_encoder(id_)}/",
+            f"dcim/power-port-templates/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "allocated_draw": allocated_draw,
@@ -79817,6 +82447,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_ports_list(
@@ -80387,6 +83021,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_ports_create(
@@ -80402,7 +83040,7 @@ class AsyncRawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -80446,7 +83084,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -80537,6 +83175,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_ports_bulk_update(
@@ -80552,7 +83194,7 @@ class AsyncRawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -80596,7 +83238,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -80687,6 +83329,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_ports_bulk_delete(
@@ -80715,6 +83361,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_ports_bulk_partial_update(
@@ -80730,7 +83380,7 @@ class AsyncRawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -80774,7 +83424,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -80865,6 +83515,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_ports_read(
@@ -80887,7 +83541,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/power-ports/{jsonable_encoder(id)}/",
+            f"dcim/power-ports/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -80904,6 +83558,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_ports_update(
@@ -80920,7 +83578,7 @@ class AsyncRawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -80967,7 +83625,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -81010,7 +83668,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/power-ports/{jsonable_encoder(id_)}/",
+            f"dcim/power-ports/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "_occupied": occupied,
@@ -81061,6 +83719,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_ports_delete(
@@ -81082,7 +83744,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/power-ports/{jsonable_encoder(id)}/",
+            f"dcim/power-ports/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -81092,6 +83754,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_ports_partial_update(
@@ -81108,7 +83774,7 @@ class AsyncRawDcimClient:
         connected_endpoints_reachable: typing.Optional[bool] = OMIT,
         connected_endpoints_type: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -81155,7 +83821,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -81198,7 +83864,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/power-ports/{jsonable_encoder(id_)}/",
+            f"dcim/power-ports/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "_occupied": occupied,
@@ -81249,6 +83915,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def power_ports_trace(
@@ -81271,7 +83941,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/power-ports/{jsonable_encoder(id)}/trace/",
+            f"dcim/power-ports/{encode_path_param(id)}/trace/",
             method="GET",
             request_options=request_options,
         )
@@ -81288,6 +83958,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rack_reservations_list(
@@ -81653,6 +84327,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rack_reservations_create(
@@ -81664,7 +84342,7 @@ class AsyncRawDcimClient:
         user: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
@@ -81690,7 +84368,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -81748,6 +84426,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rack_reservations_bulk_update(
@@ -81759,7 +84441,7 @@ class AsyncRawDcimClient:
         user: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
@@ -81785,7 +84467,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -81843,6 +84525,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rack_reservations_bulk_delete(
@@ -81871,6 +84557,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rack_reservations_bulk_partial_update(
@@ -81882,7 +84572,7 @@ class AsyncRawDcimClient:
         user: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
@@ -81908,7 +84598,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -81966,6 +84656,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rack_reservations_read(
@@ -81988,7 +84682,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/rack-reservations/{jsonable_encoder(id)}/",
+            f"dcim/rack-reservations/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -82005,6 +84699,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rack_reservations_update(
@@ -82017,7 +84715,7 @@ class AsyncRawDcimClient:
         user: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
@@ -82046,7 +84744,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -82069,7 +84767,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/rack-reservations/{jsonable_encoder(id_)}/",
+            f"dcim/rack-reservations/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "comments": comments,
@@ -82107,6 +84805,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rack_reservations_delete(
@@ -82128,7 +84830,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/rack-reservations/{jsonable_encoder(id)}/",
+            f"dcim/rack-reservations/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -82138,6 +84840,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rack_reservations_partial_update(
@@ -82150,7 +84856,7 @@ class AsyncRawDcimClient:
         user: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
@@ -82179,7 +84885,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         display : typing.Optional[str]
 
@@ -82202,7 +84908,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/rack-reservations/{jsonable_encoder(id_)}/",
+            f"dcim/rack-reservations/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "comments": comments,
@@ -82240,6 +84946,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rack_roles_list(
@@ -82620,6 +85330,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rack_roles_create(
@@ -82629,7 +85343,7 @@ class AsyncRawDcimClient:
         slug: str,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -82652,7 +85366,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -82711,6 +85425,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rack_roles_bulk_update(
@@ -82720,7 +85438,7 @@ class AsyncRawDcimClient:
         slug: str,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -82743,7 +85461,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -82802,6 +85520,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rack_roles_bulk_delete(
@@ -82830,6 +85552,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rack_roles_bulk_partial_update(
@@ -82839,7 +85565,7 @@ class AsyncRawDcimClient:
         slug: str,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -82862,7 +85588,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -82921,6 +85647,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rack_roles_read(
@@ -82943,7 +85673,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/rack-roles/{jsonable_encoder(id)}/",
+            f"dcim/rack-roles/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -82960,6 +85690,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rack_roles_update(
@@ -82970,7 +85704,7 @@ class AsyncRawDcimClient:
         slug: str,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -82996,7 +85730,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -83021,7 +85755,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/rack-roles/{jsonable_encoder(id_)}/",
+            f"dcim/rack-roles/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "color": color,
@@ -83058,6 +85792,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rack_roles_delete(
@@ -83079,7 +85817,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/rack-roles/{jsonable_encoder(id)}/",
+            f"dcim/rack-roles/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -83089,6 +85827,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rack_roles_partial_update(
@@ -83099,7 +85841,7 @@ class AsyncRawDcimClient:
         slug: str,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -83125,7 +85867,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -83150,7 +85892,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/rack-roles/{jsonable_encoder(id_)}/",
+            f"dcim/rack-roles/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "color": color,
@@ -83187,6 +85929,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def racks_list(
@@ -83972,6 +86718,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def racks_create(
@@ -83982,7 +86732,7 @@ class AsyncRawDcimClient:
         asset_tag: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         desc_units: typing.Optional[bool] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
@@ -84026,7 +86776,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         desc_units : typing.Optional[bool]
             Units are numbered top-to-bottom
@@ -84148,6 +86898,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def racks_bulk_update(
@@ -84158,7 +86912,7 @@ class AsyncRawDcimClient:
         asset_tag: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         desc_units: typing.Optional[bool] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
@@ -84202,7 +86956,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         desc_units : typing.Optional[bool]
             Units are numbered top-to-bottom
@@ -84324,6 +87078,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def racks_bulk_delete(
@@ -84352,6 +87110,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def racks_bulk_partial_update(
@@ -84362,7 +87124,7 @@ class AsyncRawDcimClient:
         asset_tag: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         desc_units: typing.Optional[bool] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
@@ -84406,7 +87168,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         desc_units : typing.Optional[bool]
             Units are numbered top-to-bottom
@@ -84528,6 +87290,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def racks_read(
@@ -84550,7 +87316,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/racks/{jsonable_encoder(id)}/",
+            f"dcim/racks/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -84567,6 +87333,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def racks_update(
@@ -84578,7 +87348,7 @@ class AsyncRawDcimClient:
         asset_tag: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         desc_units: typing.Optional[bool] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
@@ -84625,7 +87395,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         desc_units : typing.Optional[bool]
             Units are numbered top-to-bottom
@@ -84694,7 +87464,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/racks/{jsonable_encoder(id_)}/",
+            f"dcim/racks/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "asset_tag": asset_tag,
@@ -84750,6 +87520,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def racks_delete(
@@ -84771,7 +87545,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/racks/{jsonable_encoder(id)}/",
+            f"dcim/racks/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -84781,6 +87555,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def racks_partial_update(
@@ -84792,7 +87570,7 @@ class AsyncRawDcimClient:
         asset_tag: typing.Optional[str] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         desc_units: typing.Optional[bool] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
@@ -84839,7 +87617,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         desc_units : typing.Optional[bool]
             Units are numbered top-to-bottom
@@ -84908,7 +87686,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/racks/{jsonable_encoder(id_)}/",
+            f"dcim/racks/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "asset_tag": asset_tag,
@@ -84964,6 +87742,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def racks_elevation(
@@ -85019,7 +87801,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/racks/{jsonable_encoder(id)}/elevation/",
+            f"dcim/racks/{encode_path_param(id)}/elevation/",
             method="GET",
             params={
                 "q": q,
@@ -85048,6 +87830,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rear_port_templates_list(
@@ -85368,6 +88154,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rear_port_templates_create(
@@ -85464,6 +88254,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rear_port_templates_bulk_update(
@@ -85560,6 +88354,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rear_port_templates_bulk_delete(
@@ -85588,6 +88386,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rear_port_templates_bulk_partial_update(
@@ -85684,6 +88486,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rear_port_templates_read(
@@ -85706,7 +88512,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/rear-port-templates/{jsonable_encoder(id)}/",
+            f"dcim/rear-port-templates/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -85723,6 +88529,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rear_port_templates_update(
@@ -85790,7 +88600,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/rear-port-templates/{jsonable_encoder(id_)}/",
+            f"dcim/rear-port-templates/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "color": color,
@@ -85826,6 +88636,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rear_port_templates_delete(
@@ -85847,7 +88661,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/rear-port-templates/{jsonable_encoder(id)}/",
+            f"dcim/rear-port-templates/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -85857,6 +88671,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rear_port_templates_partial_update(
@@ -85924,7 +88742,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/rear-port-templates/{jsonable_encoder(id_)}/",
+            f"dcim/rear-port-templates/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "color": color,
@@ -85960,6 +88778,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rear_ports_list(
@@ -86550,6 +89372,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rear_ports_create(
@@ -86563,7 +89389,7 @@ class AsyncRawDcimClient:
         cable_end: typing.Optional[str] = OMIT,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -86599,7 +89425,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -86683,6 +89509,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rear_ports_bulk_update(
@@ -86696,7 +89526,7 @@ class AsyncRawDcimClient:
         cable_end: typing.Optional[str] = OMIT,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -86732,7 +89562,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -86816,6 +89646,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rear_ports_bulk_delete(
@@ -86844,6 +89678,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rear_ports_bulk_partial_update(
@@ -86857,7 +89695,7 @@ class AsyncRawDcimClient:
         cable_end: typing.Optional[str] = OMIT,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -86893,7 +89731,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -86977,6 +89815,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rear_ports_read(
@@ -86999,7 +89841,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/rear-ports/{jsonable_encoder(id)}/",
+            f"dcim/rear-ports/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -87016,6 +89858,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rear_ports_update(
@@ -87030,7 +89876,7 @@ class AsyncRawDcimClient:
         cable_end: typing.Optional[str] = OMIT,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -87069,7 +89915,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -87108,7 +89954,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/rear-ports/{jsonable_encoder(id_)}/",
+            f"dcim/rear-ports/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "_occupied": occupied,
@@ -87156,6 +90002,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rear_ports_delete(
@@ -87177,7 +90027,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/rear-ports/{jsonable_encoder(id)}/",
+            f"dcim/rear-ports/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -87187,6 +90037,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rear_ports_partial_update(
@@ -87201,7 +90055,7 @@ class AsyncRawDcimClient:
         cable_end: typing.Optional[str] = OMIT,
         color: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -87240,7 +90094,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -87279,7 +90133,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/rear-ports/{jsonable_encoder(id_)}/",
+            f"dcim/rear-ports/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "_occupied": occupied,
@@ -87327,6 +90181,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rear_ports_paths(
@@ -87349,7 +90207,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/rear-ports/{jsonable_encoder(id)}/paths/",
+            f"dcim/rear-ports/{encode_path_param(id)}/paths/",
             method="GET",
             request_options=request_options,
         )
@@ -87366,6 +90224,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def regions_list(
@@ -87741,6 +90603,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def regions_create(
@@ -87750,7 +90616,7 @@ class AsyncRawDcimClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -87774,7 +90640,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -87836,6 +90702,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def regions_bulk_update(
@@ -87845,7 +90715,7 @@ class AsyncRawDcimClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -87869,7 +90739,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -87931,6 +90801,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def regions_bulk_delete(
@@ -87959,6 +90833,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def regions_bulk_partial_update(
@@ -87968,7 +90846,7 @@ class AsyncRawDcimClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -87992,7 +90870,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -88054,6 +90932,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def regions_read(
@@ -88076,7 +90958,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/regions/{jsonable_encoder(id)}/",
+            f"dcim/regions/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -88093,6 +90975,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def regions_update(
@@ -88103,7 +90989,7 @@ class AsyncRawDcimClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -88130,7 +91016,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -88157,7 +91043,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/regions/{jsonable_encoder(id_)}/",
+            f"dcim/regions/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "_depth": depth,
@@ -88195,6 +91081,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def regions_delete(
@@ -88216,7 +91106,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/regions/{jsonable_encoder(id)}/",
+            f"dcim/regions/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -88226,6 +91116,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def regions_partial_update(
@@ -88236,7 +91130,7 @@ class AsyncRawDcimClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -88263,7 +91157,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -88290,7 +91184,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/regions/{jsonable_encoder(id_)}/",
+            f"dcim/regions/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "_depth": depth,
@@ -88328,6 +91222,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def site_groups_list(
@@ -88703,6 +91601,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def site_groups_create(
@@ -88712,7 +91614,7 @@ class AsyncRawDcimClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -88736,7 +91638,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -88798,6 +91700,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def site_groups_bulk_update(
@@ -88807,7 +91713,7 @@ class AsyncRawDcimClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -88831,7 +91737,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -88893,6 +91799,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def site_groups_bulk_delete(
@@ -88921,6 +91831,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def site_groups_bulk_partial_update(
@@ -88930,7 +91844,7 @@ class AsyncRawDcimClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -88954,7 +91868,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -89016,6 +91930,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def site_groups_read(
@@ -89038,7 +91956,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/site-groups/{jsonable_encoder(id)}/",
+            f"dcim/site-groups/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -89055,6 +91973,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def site_groups_update(
@@ -89065,7 +91987,7 @@ class AsyncRawDcimClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -89092,7 +92014,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -89119,7 +92041,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/site-groups/{jsonable_encoder(id_)}/",
+            f"dcim/site-groups/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "_depth": depth,
@@ -89157,6 +92079,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def site_groups_delete(
@@ -89178,7 +92104,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/site-groups/{jsonable_encoder(id)}/",
+            f"dcim/site-groups/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -89188,6 +92114,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def site_groups_partial_update(
@@ -89198,7 +92128,7 @@ class AsyncRawDcimClient:
         slug: str,
         depth: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -89225,7 +92155,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -89252,7 +92182,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/site-groups/{jsonable_encoder(id_)}/",
+            f"dcim/site-groups/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "_depth": depth,
@@ -89290,6 +92220,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def sites_list(
@@ -89870,6 +92804,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def sites_create(
@@ -89881,7 +92819,7 @@ class AsyncRawDcimClient:
         circuit_count: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -89922,7 +92860,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -90028,6 +92966,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def sites_bulk_update(
@@ -90039,7 +92981,7 @@ class AsyncRawDcimClient:
         circuit_count: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -90080,7 +93022,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -90186,6 +93128,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def sites_bulk_delete(
@@ -90214,6 +93160,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def sites_bulk_partial_update(
@@ -90225,7 +93175,7 @@ class AsyncRawDcimClient:
         circuit_count: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -90266,7 +93216,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -90372,6 +93322,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def sites_read(
@@ -90394,7 +93348,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/sites/{jsonable_encoder(id)}/",
+            f"dcim/sites/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -90411,6 +93365,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def sites_update(
@@ -90423,7 +93381,7 @@ class AsyncRawDcimClient:
         circuit_count: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -90467,7 +93425,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -90523,7 +93481,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/sites/{jsonable_encoder(id_)}/",
+            f"dcim/sites/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "asns": asns,
@@ -90576,6 +93534,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def sites_delete(
@@ -90597,7 +93559,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/sites/{jsonable_encoder(id)}/",
+            f"dcim/sites/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -90607,6 +93569,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def sites_partial_update(
@@ -90619,7 +93585,7 @@ class AsyncRawDcimClient:
         circuit_count: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -90663,7 +93629,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -90719,7 +93685,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/sites/{jsonable_encoder(id_)}/",
+            f"dcim/sites/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "asns": asns,
@@ -90772,6 +93738,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def virtual_chassis_list(
@@ -91142,6 +94112,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def virtual_chassis_create(
@@ -91150,7 +94124,7 @@ class AsyncRawDcimClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         domain: typing.Optional[str] = OMIT,
@@ -91173,7 +94147,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -91237,6 +94211,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def virtual_chassis_bulk_update(
@@ -91245,7 +94223,7 @@ class AsyncRawDcimClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         domain: typing.Optional[str] = OMIT,
@@ -91268,7 +94246,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -91332,6 +94310,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def virtual_chassis_bulk_delete(
@@ -91360,6 +94342,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def virtual_chassis_bulk_partial_update(
@@ -91368,7 +94354,7 @@ class AsyncRawDcimClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         domain: typing.Optional[str] = OMIT,
@@ -91391,7 +94377,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -91455,6 +94441,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def virtual_chassis_read(
@@ -91477,7 +94467,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/virtual-chassis/{jsonable_encoder(id)}/",
+            f"dcim/virtual-chassis/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -91494,6 +94484,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def virtual_chassis_update(
@@ -91503,7 +94497,7 @@ class AsyncRawDcimClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         domain: typing.Optional[str] = OMIT,
@@ -91529,7 +94523,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -91558,7 +94552,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/virtual-chassis/{jsonable_encoder(id_)}/",
+            f"dcim/virtual-chassis/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "comments": comments,
@@ -91596,6 +94590,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def virtual_chassis_delete(
@@ -91617,7 +94615,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/virtual-chassis/{jsonable_encoder(id)}/",
+            f"dcim/virtual-chassis/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -91627,6 +94625,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def virtual_chassis_partial_update(
@@ -91636,7 +94638,7 @@ class AsyncRawDcimClient:
         name: str,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         domain: typing.Optional[str] = OMIT,
@@ -91662,7 +94664,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -91691,7 +94693,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/virtual-chassis/{jsonable_encoder(id_)}/",
+            f"dcim/virtual-chassis/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "comments": comments,
@@ -91729,6 +94731,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def virtual_device_contexts_list(
@@ -92019,6 +95025,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def virtual_device_contexts_create(
@@ -92028,7 +95038,7 @@ class AsyncRawDcimClient:
         status: WritableVirtualDeviceContextStatus,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -92057,7 +95067,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -92135,6 +95145,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def virtual_device_contexts_bulk_update(
@@ -92144,7 +95158,7 @@ class AsyncRawDcimClient:
         status: WritableVirtualDeviceContextStatus,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -92173,7 +95187,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -92251,6 +95265,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def virtual_device_contexts_bulk_delete(
@@ -92279,6 +95297,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def virtual_device_contexts_bulk_partial_update(
@@ -92288,7 +95310,7 @@ class AsyncRawDcimClient:
         status: WritableVirtualDeviceContextStatus,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -92317,7 +95339,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -92395,6 +95417,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def virtual_device_contexts_read(
@@ -92417,7 +95443,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/virtual-device-contexts/{jsonable_encoder(id)}/",
+            f"dcim/virtual-device-contexts/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -92434,6 +95460,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def virtual_device_contexts_update(
@@ -92444,7 +95474,7 @@ class AsyncRawDcimClient:
         status: WritableVirtualDeviceContextStatus,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -92476,7 +95506,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -92514,7 +95544,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/virtual-device-contexts/{jsonable_encoder(id_)}/",
+            f"dcim/virtual-device-contexts/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "comments": comments,
@@ -92557,6 +95587,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def virtual_device_contexts_delete(
@@ -92578,7 +95612,7 @@ class AsyncRawDcimClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/virtual-device-contexts/{jsonable_encoder(id)}/",
+            f"dcim/virtual-device-contexts/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -92588,6 +95622,10 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def virtual_device_contexts_partial_update(
@@ -92598,7 +95636,7 @@ class AsyncRawDcimClient:
         status: WritableVirtualDeviceContextStatus,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -92630,7 +95668,7 @@ class AsyncRawDcimClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -92668,7 +95706,7 @@ class AsyncRawDcimClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dcim/virtual-device-contexts/{jsonable_encoder(id_)}/",
+            f"dcim/virtual-device-contexts/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "comments": comments,
@@ -92711,4 +95749,8 @@ class AsyncRawDcimClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

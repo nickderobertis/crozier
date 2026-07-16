@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class VaultEventType(str, enum.Enum):
+class VaultEventType(enum.StrEnum):
     ALL = "*"
     VAULT_CONNECTION_CREATED = "vault.connection.created"
     VAULT_CONNECTION_UPDATED = "vault.connection.updated"

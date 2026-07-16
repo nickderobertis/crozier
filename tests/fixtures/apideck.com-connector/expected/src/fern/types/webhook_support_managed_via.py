@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class WebhookSupportManagedVia(str, enum.Enum):
+class WebhookSupportManagedVia(enum.StrEnum):
     """
     How the subscription is managed in the downstream.
     """

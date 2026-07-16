@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
@@ -14,6 +15,7 @@ from ..types.export_statement_card_pdf_create import ExportStatementCardPdfCreat
 from ..types.export_statement_card_pdf_delete import ExportStatementCardPdfDelete
 from ..types.export_statement_card_pdf_listing import ExportStatementCardPdfListing
 from ..types.export_statement_card_pdf_read import ExportStatementCardPdfRead
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -46,7 +48,7 @@ class RawExportStatementCardPdfClient:
             Used to serialize ExportStatementCardPdf
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/card/{jsonable_encoder(card_id)}/export-statement-card-pdf",
+            f"user/{encode_path_param(user_id)}/card/{encode_path_param(card_id)}/export-statement-card-pdf",
             method="GET",
             request_options=request_options,
         )
@@ -64,9 +66,9 @@ class RawExportStatementCardPdfClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -74,6 +76,10 @@ class RawExportStatementCardPdfClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_export_statement_card_pdf_for_user_card(
@@ -111,7 +117,7 @@ class RawExportStatementCardPdfClient:
             Used to serialize ExportStatementCardPdf
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/card/{jsonable_encoder(card_id)}/export-statement-card-pdf",
+            f"user/{encode_path_param(user_id)}/card/{encode_path_param(card_id)}/export-statement-card-pdf",
             method="POST",
             json={
                 "date_end": date_end,
@@ -137,9 +143,9 @@ class RawExportStatementCardPdfClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -147,6 +153,10 @@ class RawExportStatementCardPdfClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def read_export_statement_card_pdf_for_user_card(
@@ -175,7 +185,7 @@ class RawExportStatementCardPdfClient:
             Used to serialize ExportStatementCardPdf
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/card/{jsonable_encoder(card_id)}/export-statement-card-pdf/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/card/{encode_path_param(card_id)}/export-statement-card-pdf/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -193,9 +203,9 @@ class RawExportStatementCardPdfClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -203,6 +213,10 @@ class RawExportStatementCardPdfClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_export_statement_card_pdf_for_user_card(
@@ -231,7 +245,7 @@ class RawExportStatementCardPdfClient:
             Used to serialize ExportStatementCardPdf
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/card/{jsonable_encoder(card_id)}/export-statement-card-pdf/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/card/{encode_path_param(card_id)}/export-statement-card-pdf/{encode_path_param(item_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -249,9 +263,9 @@ class RawExportStatementCardPdfClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -259,6 +273,10 @@ class RawExportStatementCardPdfClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -289,7 +307,7 @@ class AsyncRawExportStatementCardPdfClient:
             Used to serialize ExportStatementCardPdf
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/card/{jsonable_encoder(card_id)}/export-statement-card-pdf",
+            f"user/{encode_path_param(user_id)}/card/{encode_path_param(card_id)}/export-statement-card-pdf",
             method="GET",
             request_options=request_options,
         )
@@ -307,9 +325,9 @@ class AsyncRawExportStatementCardPdfClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -317,6 +335,10 @@ class AsyncRawExportStatementCardPdfClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_export_statement_card_pdf_for_user_card(
@@ -354,7 +376,7 @@ class AsyncRawExportStatementCardPdfClient:
             Used to serialize ExportStatementCardPdf
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/card/{jsonable_encoder(card_id)}/export-statement-card-pdf",
+            f"user/{encode_path_param(user_id)}/card/{encode_path_param(card_id)}/export-statement-card-pdf",
             method="POST",
             json={
                 "date_end": date_end,
@@ -380,9 +402,9 @@ class AsyncRawExportStatementCardPdfClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -390,6 +412,10 @@ class AsyncRawExportStatementCardPdfClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def read_export_statement_card_pdf_for_user_card(
@@ -418,7 +444,7 @@ class AsyncRawExportStatementCardPdfClient:
             Used to serialize ExportStatementCardPdf
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/card/{jsonable_encoder(card_id)}/export-statement-card-pdf/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/card/{encode_path_param(card_id)}/export-statement-card-pdf/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -436,9 +462,9 @@ class AsyncRawExportStatementCardPdfClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -446,6 +472,10 @@ class AsyncRawExportStatementCardPdfClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_export_statement_card_pdf_for_user_card(
@@ -474,7 +504,7 @@ class AsyncRawExportStatementCardPdfClient:
             Used to serialize ExportStatementCardPdf
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/card/{jsonable_encoder(card_id)}/export-statement-card-pdf/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/card/{encode_path_param(card_id)}/export-statement-card-pdf/{encode_path_param(item_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -492,9 +522,9 @@ class AsyncRawExportStatementCardPdfClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -502,4 +532,8 @@ class AsyncRawExportStatementCardPdfClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

@@ -2,4 +2,4 @@
 
 import typing
 
-Status = typing.Optional[typing.Any]
+Status = typing.Any

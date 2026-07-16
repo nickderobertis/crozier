@@ -15,14 +15,24 @@ class DestinyArtifactsDestinyArtifactProfileScoped(UniversalBaseModel):
     It can be combined with Character-scoped data for a full picture of what a character has available/has chosen, or just these settings can be used for overview information.
     """
 
-    artifact_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="artifactHash")] = None
-    point_progression: typing_extensions.Annotated[
-        typing.Optional[DestinyDestinyProgression], FieldMetadata(alias="pointProgression")
+    artifact_hash: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="artifactHash"), pydantic.Field(alias="artifactHash")
     ] = None
-    points_acquired: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="pointsAcquired")] = None
-    power_bonus: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="powerBonus")] = None
+    point_progression: typing_extensions.Annotated[
+        typing.Optional[DestinyDestinyProgression],
+        FieldMetadata(alias="pointProgression"),
+        pydantic.Field(alias="pointProgression"),
+    ] = None
+    points_acquired: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="pointsAcquired"), pydantic.Field(alias="pointsAcquired")
+    ] = None
+    power_bonus: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="powerBonus"), pydantic.Field(alias="powerBonus")
+    ] = None
     power_bonus_progression: typing_extensions.Annotated[
-        typing.Optional[DestinyDestinyProgression], FieldMetadata(alias="powerBonusProgression")
+        typing.Optional[DestinyDestinyProgression],
+        FieldMetadata(alias="powerBonusProgression"),
+        pydantic.Field(alias="powerBonusProgression"),
     ] = None
 
     if IS_PYDANTIC_V2:

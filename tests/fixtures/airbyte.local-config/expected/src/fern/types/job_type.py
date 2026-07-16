@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class JobType(str, enum.Enum):
+class JobType(enum.StrEnum):
     """
     enum that describes the different types of jobs that the platform runs.
     """

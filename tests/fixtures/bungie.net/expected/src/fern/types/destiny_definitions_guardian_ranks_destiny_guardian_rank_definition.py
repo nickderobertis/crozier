@@ -15,9 +15,10 @@ class DestinyDefinitionsGuardianRanksDestinyGuardianRankDefinition(UniversalBase
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
+        pydantic.Field(alias="displayProperties"),
     ] = None
     foreground_image_path: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="foregroundImagePath")
+        typing.Optional[str], FieldMetadata(alias="foregroundImagePath"), pydantic.Field(alias="foregroundImagePath")
     ] = None
     hash: typing.Optional[int] = pydantic.Field(default=None)
     """
@@ -30,16 +31,18 @@ class DestinyDefinitionsGuardianRanksDestinyGuardianRankDefinition(UniversalBase
     The index of the entity as it was found in the investment tables.
     """
 
-    overlay_image_path: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="overlayImagePath")] = (
-        None
-    )
+    overlay_image_path: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="overlayImagePath"), pydantic.Field(alias="overlayImagePath")
+    ] = None
     overlay_mask_image_path: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="overlayMaskImagePath")
+        typing.Optional[str], FieldMetadata(alias="overlayMaskImagePath"), pydantic.Field(alias="overlayMaskImagePath")
     ] = None
     presentation_node_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="presentationNodeHash")
+        typing.Optional[int], FieldMetadata(alias="presentationNodeHash"), pydantic.Field(alias="presentationNodeHash")
     ] = None
-    rank_number: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="rankNumber")] = None
+    rank_number: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="rankNumber"), pydantic.Field(alias="rankNumber")
+    ] = None
     redacted: typing.Optional[bool] = pydantic.Field(default=None)
     """
     If this is true, then there is an entity with this identifier/type combination, but BNet is not yet allowed to show it. Sorry!

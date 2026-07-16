@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
@@ -22,6 +23,7 @@ from ..types.rule_type import RuleType
 from .types.delete_artifact_rule_request_rule import DeleteArtifactRuleRequestRule
 from .types.get_artifact_rule_config_request_rule import GetArtifactRuleConfigRequestRule
 from .types.update_artifact_rule_config_request_rule import UpdateArtifactRuleConfigRequestRule
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -62,7 +64,7 @@ class RawArtifactRulesClient:
             Returns the names of the rules configured for the artifact.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/rules",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/rules",
             method="GET",
             request_options=request_options,
         )
@@ -101,6 +103,10 @@ class RawArtifactRulesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_artifact_rule(
@@ -142,7 +148,7 @@ class RawArtifactRulesClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/rules",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/rules",
             method="POST",
             json={
                 "config": config,
@@ -193,6 +199,10 @@ class RawArtifactRulesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_artifact_rules(
@@ -223,7 +233,7 @@ class RawArtifactRulesClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/rules",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/rules",
             method="DELETE",
             request_options=request_options,
         )
@@ -255,6 +265,10 @@ class RawArtifactRulesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_artifact_rule_config(
@@ -296,7 +310,7 @@ class RawArtifactRulesClient:
             Information about a rule.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/rules/{jsonable_encoder(rule)}",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/rules/{encode_path_param(rule)}",
             method="GET",
             request_options=request_options,
         )
@@ -335,6 +349,10 @@ class RawArtifactRulesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_artifact_rule_config(
@@ -383,7 +401,7 @@ class RawArtifactRulesClient:
             Rule configuration was updated.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/rules/{jsonable_encoder(rule)}",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/rules/{encode_path_param(rule)}",
             method="PUT",
             json={
                 "config": config,
@@ -430,6 +448,10 @@ class RawArtifactRulesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_artifact_rule(
@@ -472,7 +494,7 @@ class RawArtifactRulesClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/rules/{jsonable_encoder(rule)}",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/rules/{encode_path_param(rule)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -504,6 +526,10 @@ class RawArtifactRulesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def test_update_artifact(
@@ -554,7 +580,7 @@ class RawArtifactRulesClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/test",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/test",
             method="PUT",
             json=request,
             request_options=request_options,
@@ -578,9 +604,9 @@ class RawArtifactRulesClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -599,6 +625,10 @@ class RawArtifactRulesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -637,7 +667,7 @@ class AsyncRawArtifactRulesClient:
             Returns the names of the rules configured for the artifact.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/rules",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/rules",
             method="GET",
             request_options=request_options,
         )
@@ -676,6 +706,10 @@ class AsyncRawArtifactRulesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_artifact_rule(
@@ -717,7 +751,7 @@ class AsyncRawArtifactRulesClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/rules",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/rules",
             method="POST",
             json={
                 "config": config,
@@ -768,6 +802,10 @@ class AsyncRawArtifactRulesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_artifact_rules(
@@ -798,7 +836,7 @@ class AsyncRawArtifactRulesClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/rules",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/rules",
             method="DELETE",
             request_options=request_options,
         )
@@ -830,6 +868,10 @@ class AsyncRawArtifactRulesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_artifact_rule_config(
@@ -871,7 +913,7 @@ class AsyncRawArtifactRulesClient:
             Information about a rule.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/rules/{jsonable_encoder(rule)}",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/rules/{encode_path_param(rule)}",
             method="GET",
             request_options=request_options,
         )
@@ -910,6 +952,10 @@ class AsyncRawArtifactRulesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_artifact_rule_config(
@@ -958,7 +1004,7 @@ class AsyncRawArtifactRulesClient:
             Rule configuration was updated.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/rules/{jsonable_encoder(rule)}",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/rules/{encode_path_param(rule)}",
             method="PUT",
             json={
                 "config": config,
@@ -1005,6 +1051,10 @@ class AsyncRawArtifactRulesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_artifact_rule(
@@ -1047,7 +1097,7 @@ class AsyncRawArtifactRulesClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/rules/{jsonable_encoder(rule)}",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/rules/{encode_path_param(rule)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -1079,6 +1129,10 @@ class AsyncRawArtifactRulesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def test_update_artifact(
@@ -1129,7 +1183,7 @@ class AsyncRawArtifactRulesClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/test",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/test",
             method="PUT",
             json=request,
             request_options=request_options,
@@ -1153,9 +1207,9 @@ class AsyncRawArtifactRulesClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1174,4 +1228,8 @@ class AsyncRawArtifactRulesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

@@ -8,7 +8,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -30,6 +31,7 @@ from .types.get_image_vulnerability_types_by_image_id_response_item import (
 from .types.get_image_vulnerability_types_response_item import GetImageVulnerabilityTypesResponseItem
 from .types.list_images_request_analysis_status import ListImagesRequestAnalysisStatus
 from .types.list_images_request_image_status import ListImagesRequestImageStatus
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -105,9 +107,9 @@ class RawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -115,6 +117,10 @@ class RawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def add_image(
@@ -123,7 +129,7 @@ class RawImagesClient:
         force: typing.Optional[bool] = None,
         autosubscribe: typing.Optional[bool] = None,
         anchore_account: typing.Optional[str] = None,
-        annotations: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        annotations: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created_at: typing.Optional[dt.datetime] = OMIT,
         digest: typing.Optional[str] = OMIT,
         dockerfile: typing.Optional[str] = OMIT,
@@ -146,7 +152,7 @@ class RawImagesClient:
         anchore_account : typing.Optional[str]
             An account name to change the resource scope of the request to that account, if permissions allow (admin only)
 
-        annotations : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        annotations : typing.Optional[typing.Dict[str, typing.Any]]
             Annotations to be associated with the added image in key/value form
 
         created_at : typing.Optional[dt.datetime]
@@ -213,9 +219,9 @@ class RawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -223,6 +229,10 @@ class RawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_images_async(
@@ -257,7 +267,9 @@ class RawImagesClient:
             "images",
             method="DELETE",
             params={
-                "imageDigests": image_digests,
+                "imageDigests": ",".join(map(str, image_digests))
+                if isinstance(image_digests, (list, tuple, set))
+                else image_digests,
                 "force": force,
             },
             headers={
@@ -279,9 +291,9 @@ class RawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -289,6 +301,10 @@ class RawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_image_by_image_id(
@@ -315,7 +331,7 @@ class RawImagesClient:
             Image lookup success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"images/by_id/{jsonable_encoder(image_id)}",
+            f"images/by_id/{encode_path_param(image_id)}",
             method="GET",
             headers={
                 "x-anchore-account": str(anchore_account) if anchore_account is not None else None,
@@ -336,9 +352,9 @@ class RawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -346,6 +362,10 @@ class RawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_image_by_image_id(
@@ -375,7 +395,7 @@ class RawImagesClient:
             Image deletion success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"images/by_id/{jsonable_encoder(image_id)}",
+            f"images/by_id/{encode_path_param(image_id)}",
             method="DELETE",
             params={
                 "force": force,
@@ -399,9 +419,9 @@ class RawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -409,6 +429,10 @@ class RawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_image_policy_check_by_image_id(
@@ -449,7 +473,7 @@ class RawImagesClient:
             Policy evaluation success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"images/by_id/{jsonable_encoder(image_id)}/check",
+            f"images/by_id/{encode_path_param(image_id)}/check",
             method="GET",
             params={
                 "policyId": policy_id,
@@ -476,9 +500,9 @@ class RawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -486,6 +510,10 @@ class RawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_image_content_by_imageid(
@@ -512,7 +540,7 @@ class RawImagesClient:
             Content of specified type from the image
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"images/by_id/{jsonable_encoder(image_id)}/content",
+            f"images/by_id/{encode_path_param(image_id)}/content",
             method="GET",
             headers={
                 "x-anchore-account": str(anchore_account) if anchore_account is not None else None,
@@ -533,9 +561,9 @@ class RawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -543,6 +571,10 @@ class RawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_image_content_by_type_image_id_files(
@@ -569,7 +601,7 @@ class RawImagesClient:
             Content of specified type from the image
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"images/by_id/{jsonable_encoder(image_id)}/content/files",
+            f"images/by_id/{encode_path_param(image_id)}/content/files",
             method="GET",
             headers={
                 "x-anchore-account": str(anchore_account) if anchore_account is not None else None,
@@ -590,9 +622,9 @@ class RawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -600,6 +632,10 @@ class RawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_image_content_by_type_image_id_javapackage(
@@ -626,7 +662,7 @@ class RawImagesClient:
             Content of specified type from the image
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"images/by_id/{jsonable_encoder(image_id)}/content/java",
+            f"images/by_id/{encode_path_param(image_id)}/content/java",
             method="GET",
             headers={
                 "x-anchore-account": str(anchore_account) if anchore_account is not None else None,
@@ -647,9 +683,9 @@ class RawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -657,6 +693,10 @@ class RawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_image_content_by_type_image_id(
@@ -686,7 +726,7 @@ class RawImagesClient:
             Content of specified type from the image
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"images/by_id/{jsonable_encoder(image_id)}/content/{jsonable_encoder(ctype)}",
+            f"images/by_id/{encode_path_param(image_id)}/content/{encode_path_param(ctype)}",
             method="GET",
             headers={
                 "x-anchore-account": str(anchore_account) if anchore_account is not None else None,
@@ -707,9 +747,9 @@ class RawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -717,6 +757,10 @@ class RawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_image_vulnerability_types_by_image_id(
@@ -743,7 +787,7 @@ class RawImagesClient:
             Vulnerability listing for the image
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"images/by_id/{jsonable_encoder(image_id)}/vuln",
+            f"images/by_id/{encode_path_param(image_id)}/vuln",
             method="GET",
             headers={
                 "x-anchore-account": str(anchore_account) if anchore_account is not None else None,
@@ -764,9 +808,9 @@ class RawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -774,6 +818,10 @@ class RawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_image_vulnerabilities_by_type_image_id(
@@ -803,7 +851,7 @@ class RawImagesClient:
             Vulnerability listing for the image
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"images/by_id/{jsonable_encoder(image_id)}/vuln/{jsonable_encoder(vtype)}",
+            f"images/by_id/{encode_path_param(image_id)}/vuln/{encode_path_param(vtype)}",
             method="GET",
             headers={
                 "x-anchore-account": str(anchore_account) if anchore_account is not None else None,
@@ -824,9 +872,9 @@ class RawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -834,6 +882,10 @@ class RawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_image(
@@ -860,7 +912,7 @@ class RawImagesClient:
             Image lookup success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"images/{jsonable_encoder(image_digest)}",
+            f"images/{encode_path_param(image_digest)}",
             method="GET",
             headers={
                 "x-anchore-account": str(anchore_account) if anchore_account is not None else None,
@@ -881,9 +933,9 @@ class RawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -891,6 +943,10 @@ class RawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_image(
@@ -920,7 +976,7 @@ class RawImagesClient:
             Image deletion success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"images/{jsonable_encoder(image_digest)}",
+            f"images/{encode_path_param(image_digest)}",
             method="DELETE",
             params={
                 "force": force,
@@ -943,6 +999,10 @@ class RawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_image_policy_check(
@@ -986,7 +1046,7 @@ class RawImagesClient:
             Policy evaluation success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"images/{jsonable_encoder(image_digest)}/check",
+            f"images/{encode_path_param(image_digest)}/check",
             method="GET",
             params={
                 "policyId": policy_id,
@@ -1014,9 +1074,9 @@ class RawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1024,6 +1084,10 @@ class RawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_image_content(
@@ -1050,7 +1114,7 @@ class RawImagesClient:
             Content listing for the image
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"images/{jsonable_encoder(image_digest)}/content",
+            f"images/{encode_path_param(image_digest)}/content",
             method="GET",
             headers={
                 "x-anchore-account": str(anchore_account) if anchore_account is not None else None,
@@ -1071,9 +1135,9 @@ class RawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1081,6 +1145,10 @@ class RawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_image_content_by_type_files(
@@ -1107,7 +1175,7 @@ class RawImagesClient:
             Content of specified type from the image
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"images/{jsonable_encoder(image_digest)}/content/files",
+            f"images/{encode_path_param(image_digest)}/content/files",
             method="GET",
             headers={
                 "x-anchore-account": str(anchore_account) if anchore_account is not None else None,
@@ -1128,9 +1196,9 @@ class RawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1138,6 +1206,10 @@ class RawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_image_content_by_type_javapackage(
@@ -1164,7 +1236,7 @@ class RawImagesClient:
             Content of specified type from the image
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"images/{jsonable_encoder(image_digest)}/content/java",
+            f"images/{encode_path_param(image_digest)}/content/java",
             method="GET",
             headers={
                 "x-anchore-account": str(anchore_account) if anchore_account is not None else None,
@@ -1185,9 +1257,9 @@ class RawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1195,6 +1267,10 @@ class RawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_image_content_by_type_malware(
@@ -1221,7 +1297,7 @@ class RawImagesClient:
             Content of specified type from the image
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"images/{jsonable_encoder(image_digest)}/content/malware",
+            f"images/{encode_path_param(image_digest)}/content/malware",
             method="GET",
             headers={
                 "x-anchore-account": str(anchore_account) if anchore_account is not None else None,
@@ -1242,9 +1318,9 @@ class RawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1252,6 +1328,10 @@ class RawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_image_content_by_type(
@@ -1281,7 +1361,7 @@ class RawImagesClient:
             Content of specified type from the image
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"images/{jsonable_encoder(image_digest)}/content/{jsonable_encoder(ctype)}",
+            f"images/{encode_path_param(image_digest)}/content/{encode_path_param(ctype)}",
             method="GET",
             headers={
                 "x-anchore-account": str(anchore_account) if anchore_account is not None else None,
@@ -1302,9 +1382,9 @@ class RawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1312,6 +1392,10 @@ class RawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_image_metadata(
@@ -1338,7 +1422,7 @@ class RawImagesClient:
             Metadata listing for the image
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"images/{jsonable_encoder(image_digest)}/metadata",
+            f"images/{encode_path_param(image_digest)}/metadata",
             method="GET",
             headers={
                 "x-anchore-account": str(anchore_account) if anchore_account is not None else None,
@@ -1359,9 +1443,9 @@ class RawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1369,6 +1453,10 @@ class RawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_image_metadata_by_type(
@@ -1398,7 +1486,7 @@ class RawImagesClient:
             Metadata of specified type from the image
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"images/{jsonable_encoder(image_digest)}/metadata/{jsonable_encoder(mtype)}",
+            f"images/{encode_path_param(image_digest)}/metadata/{encode_path_param(mtype)}",
             method="GET",
             headers={
                 "x-anchore-account": str(anchore_account) if anchore_account is not None else None,
@@ -1419,9 +1507,9 @@ class RawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1429,6 +1517,10 @@ class RawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     @contextlib.contextmanager
@@ -1456,7 +1548,7 @@ class RawImagesClient:
             Image lookup success
         """
         with self._client_wrapper.httpx_client.stream(
-            f"images/{jsonable_encoder(image_digest)}/sboms/native",
+            f"images/{encode_path_param(image_digest)}/sboms/native",
             method="GET",
             headers={
                 "x-anchore-account": str(anchore_account) if anchore_account is not None else None,
@@ -1476,9 +1568,9 @@ class RawImagesClient:
                         raise InternalServerError(
                             headers=dict(_response.headers),
                             body=typing.cast(
-                                typing.Optional[typing.Any],
+                                typing.Any,
                                 parse_obj_as(
-                                    type_=typing.Optional[typing.Any],
+                                    type_=typing.Any,
                                     object_=_response.json(),
                                 ),
                             ),
@@ -1487,6 +1579,13 @@ class RawImagesClient:
                 except JSONDecodeError:
                     raise ApiError(
                         status_code=_response.status_code, headers=dict(_response.headers), body=_response.text
+                    )
+                except ValidationError as e:
+                    raise ParsingError(
+                        status_code=_response.status_code,
+                        headers=dict(_response.headers),
+                        body=_response.json(),
+                        cause=e,
                     )
                 raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
@@ -1516,7 +1615,7 @@ class RawImagesClient:
             Vulnerability listing for the image
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"images/{jsonable_encoder(image_digest)}/vuln",
+            f"images/{encode_path_param(image_digest)}/vuln",
             method="GET",
             headers={
                 "x-anchore-account": str(anchore_account) if anchore_account is not None else None,
@@ -1537,9 +1636,9 @@ class RawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1547,6 +1646,10 @@ class RawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_image_vulnerabilities_by_type(
@@ -1583,7 +1686,7 @@ class RawImagesClient:
             Vulnerability listing for the image
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"images/{jsonable_encoder(image_digest)}/vuln/{jsonable_encoder(vtype)}",
+            f"images/{encode_path_param(image_digest)}/vuln/{encode_path_param(vtype)}",
             method="GET",
             params={
                 "force_refresh": force_refresh,
@@ -1608,9 +1711,9 @@ class RawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1618,6 +1721,10 @@ class RawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -1691,9 +1798,9 @@ class AsyncRawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1701,6 +1808,10 @@ class AsyncRawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def add_image(
@@ -1709,7 +1820,7 @@ class AsyncRawImagesClient:
         force: typing.Optional[bool] = None,
         autosubscribe: typing.Optional[bool] = None,
         anchore_account: typing.Optional[str] = None,
-        annotations: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        annotations: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created_at: typing.Optional[dt.datetime] = OMIT,
         digest: typing.Optional[str] = OMIT,
         dockerfile: typing.Optional[str] = OMIT,
@@ -1732,7 +1843,7 @@ class AsyncRawImagesClient:
         anchore_account : typing.Optional[str]
             An account name to change the resource scope of the request to that account, if permissions allow (admin only)
 
-        annotations : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        annotations : typing.Optional[typing.Dict[str, typing.Any]]
             Annotations to be associated with the added image in key/value form
 
         created_at : typing.Optional[dt.datetime]
@@ -1799,9 +1910,9 @@ class AsyncRawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1809,6 +1920,10 @@ class AsyncRawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_images_async(
@@ -1843,7 +1958,9 @@ class AsyncRawImagesClient:
             "images",
             method="DELETE",
             params={
-                "imageDigests": image_digests,
+                "imageDigests": ",".join(map(str, image_digests))
+                if isinstance(image_digests, (list, tuple, set))
+                else image_digests,
                 "force": force,
             },
             headers={
@@ -1865,9 +1982,9 @@ class AsyncRawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1875,6 +1992,10 @@ class AsyncRawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_image_by_image_id(
@@ -1901,7 +2022,7 @@ class AsyncRawImagesClient:
             Image lookup success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"images/by_id/{jsonable_encoder(image_id)}",
+            f"images/by_id/{encode_path_param(image_id)}",
             method="GET",
             headers={
                 "x-anchore-account": str(anchore_account) if anchore_account is not None else None,
@@ -1922,9 +2043,9 @@ class AsyncRawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1932,6 +2053,10 @@ class AsyncRawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_image_by_image_id(
@@ -1961,7 +2086,7 @@ class AsyncRawImagesClient:
             Image deletion success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"images/by_id/{jsonable_encoder(image_id)}",
+            f"images/by_id/{encode_path_param(image_id)}",
             method="DELETE",
             params={
                 "force": force,
@@ -1985,9 +2110,9 @@ class AsyncRawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1995,6 +2120,10 @@ class AsyncRawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_image_policy_check_by_image_id(
@@ -2035,7 +2164,7 @@ class AsyncRawImagesClient:
             Policy evaluation success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"images/by_id/{jsonable_encoder(image_id)}/check",
+            f"images/by_id/{encode_path_param(image_id)}/check",
             method="GET",
             params={
                 "policyId": policy_id,
@@ -2062,9 +2191,9 @@ class AsyncRawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2072,6 +2201,10 @@ class AsyncRawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_image_content_by_imageid(
@@ -2098,7 +2231,7 @@ class AsyncRawImagesClient:
             Content of specified type from the image
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"images/by_id/{jsonable_encoder(image_id)}/content",
+            f"images/by_id/{encode_path_param(image_id)}/content",
             method="GET",
             headers={
                 "x-anchore-account": str(anchore_account) if anchore_account is not None else None,
@@ -2119,9 +2252,9 @@ class AsyncRawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2129,6 +2262,10 @@ class AsyncRawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_image_content_by_type_image_id_files(
@@ -2155,7 +2292,7 @@ class AsyncRawImagesClient:
             Content of specified type from the image
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"images/by_id/{jsonable_encoder(image_id)}/content/files",
+            f"images/by_id/{encode_path_param(image_id)}/content/files",
             method="GET",
             headers={
                 "x-anchore-account": str(anchore_account) if anchore_account is not None else None,
@@ -2176,9 +2313,9 @@ class AsyncRawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2186,6 +2323,10 @@ class AsyncRawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_image_content_by_type_image_id_javapackage(
@@ -2212,7 +2353,7 @@ class AsyncRawImagesClient:
             Content of specified type from the image
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"images/by_id/{jsonable_encoder(image_id)}/content/java",
+            f"images/by_id/{encode_path_param(image_id)}/content/java",
             method="GET",
             headers={
                 "x-anchore-account": str(anchore_account) if anchore_account is not None else None,
@@ -2233,9 +2374,9 @@ class AsyncRawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2243,6 +2384,10 @@ class AsyncRawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_image_content_by_type_image_id(
@@ -2272,7 +2417,7 @@ class AsyncRawImagesClient:
             Content of specified type from the image
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"images/by_id/{jsonable_encoder(image_id)}/content/{jsonable_encoder(ctype)}",
+            f"images/by_id/{encode_path_param(image_id)}/content/{encode_path_param(ctype)}",
             method="GET",
             headers={
                 "x-anchore-account": str(anchore_account) if anchore_account is not None else None,
@@ -2293,9 +2438,9 @@ class AsyncRawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2303,6 +2448,10 @@ class AsyncRawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_image_vulnerability_types_by_image_id(
@@ -2329,7 +2478,7 @@ class AsyncRawImagesClient:
             Vulnerability listing for the image
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"images/by_id/{jsonable_encoder(image_id)}/vuln",
+            f"images/by_id/{encode_path_param(image_id)}/vuln",
             method="GET",
             headers={
                 "x-anchore-account": str(anchore_account) if anchore_account is not None else None,
@@ -2350,9 +2499,9 @@ class AsyncRawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2360,6 +2509,10 @@ class AsyncRawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_image_vulnerabilities_by_type_image_id(
@@ -2389,7 +2542,7 @@ class AsyncRawImagesClient:
             Vulnerability listing for the image
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"images/by_id/{jsonable_encoder(image_id)}/vuln/{jsonable_encoder(vtype)}",
+            f"images/by_id/{encode_path_param(image_id)}/vuln/{encode_path_param(vtype)}",
             method="GET",
             headers={
                 "x-anchore-account": str(anchore_account) if anchore_account is not None else None,
@@ -2410,9 +2563,9 @@ class AsyncRawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2420,6 +2573,10 @@ class AsyncRawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_image(
@@ -2446,7 +2603,7 @@ class AsyncRawImagesClient:
             Image lookup success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"images/{jsonable_encoder(image_digest)}",
+            f"images/{encode_path_param(image_digest)}",
             method="GET",
             headers={
                 "x-anchore-account": str(anchore_account) if anchore_account is not None else None,
@@ -2467,9 +2624,9 @@ class AsyncRawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2477,6 +2634,10 @@ class AsyncRawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_image(
@@ -2506,7 +2667,7 @@ class AsyncRawImagesClient:
             Image deletion success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"images/{jsonable_encoder(image_digest)}",
+            f"images/{encode_path_param(image_digest)}",
             method="DELETE",
             params={
                 "force": force,
@@ -2529,6 +2690,10 @@ class AsyncRawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_image_policy_check(
@@ -2572,7 +2737,7 @@ class AsyncRawImagesClient:
             Policy evaluation success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"images/{jsonable_encoder(image_digest)}/check",
+            f"images/{encode_path_param(image_digest)}/check",
             method="GET",
             params={
                 "policyId": policy_id,
@@ -2600,9 +2765,9 @@ class AsyncRawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2610,6 +2775,10 @@ class AsyncRawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_image_content(
@@ -2636,7 +2805,7 @@ class AsyncRawImagesClient:
             Content listing for the image
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"images/{jsonable_encoder(image_digest)}/content",
+            f"images/{encode_path_param(image_digest)}/content",
             method="GET",
             headers={
                 "x-anchore-account": str(anchore_account) if anchore_account is not None else None,
@@ -2657,9 +2826,9 @@ class AsyncRawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2667,6 +2836,10 @@ class AsyncRawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_image_content_by_type_files(
@@ -2693,7 +2866,7 @@ class AsyncRawImagesClient:
             Content of specified type from the image
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"images/{jsonable_encoder(image_digest)}/content/files",
+            f"images/{encode_path_param(image_digest)}/content/files",
             method="GET",
             headers={
                 "x-anchore-account": str(anchore_account) if anchore_account is not None else None,
@@ -2714,9 +2887,9 @@ class AsyncRawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2724,6 +2897,10 @@ class AsyncRawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_image_content_by_type_javapackage(
@@ -2750,7 +2927,7 @@ class AsyncRawImagesClient:
             Content of specified type from the image
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"images/{jsonable_encoder(image_digest)}/content/java",
+            f"images/{encode_path_param(image_digest)}/content/java",
             method="GET",
             headers={
                 "x-anchore-account": str(anchore_account) if anchore_account is not None else None,
@@ -2771,9 +2948,9 @@ class AsyncRawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2781,6 +2958,10 @@ class AsyncRawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_image_content_by_type_malware(
@@ -2807,7 +2988,7 @@ class AsyncRawImagesClient:
             Content of specified type from the image
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"images/{jsonable_encoder(image_digest)}/content/malware",
+            f"images/{encode_path_param(image_digest)}/content/malware",
             method="GET",
             headers={
                 "x-anchore-account": str(anchore_account) if anchore_account is not None else None,
@@ -2828,9 +3009,9 @@ class AsyncRawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2838,6 +3019,10 @@ class AsyncRawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_image_content_by_type(
@@ -2867,7 +3052,7 @@ class AsyncRawImagesClient:
             Content of specified type from the image
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"images/{jsonable_encoder(image_digest)}/content/{jsonable_encoder(ctype)}",
+            f"images/{encode_path_param(image_digest)}/content/{encode_path_param(ctype)}",
             method="GET",
             headers={
                 "x-anchore-account": str(anchore_account) if anchore_account is not None else None,
@@ -2888,9 +3073,9 @@ class AsyncRawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2898,6 +3083,10 @@ class AsyncRawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_image_metadata(
@@ -2924,7 +3113,7 @@ class AsyncRawImagesClient:
             Metadata listing for the image
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"images/{jsonable_encoder(image_digest)}/metadata",
+            f"images/{encode_path_param(image_digest)}/metadata",
             method="GET",
             headers={
                 "x-anchore-account": str(anchore_account) if anchore_account is not None else None,
@@ -2945,9 +3134,9 @@ class AsyncRawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2955,6 +3144,10 @@ class AsyncRawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_image_metadata_by_type(
@@ -2984,7 +3177,7 @@ class AsyncRawImagesClient:
             Metadata of specified type from the image
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"images/{jsonable_encoder(image_digest)}/metadata/{jsonable_encoder(mtype)}",
+            f"images/{encode_path_param(image_digest)}/metadata/{encode_path_param(mtype)}",
             method="GET",
             headers={
                 "x-anchore-account": str(anchore_account) if anchore_account is not None else None,
@@ -3005,9 +3198,9 @@ class AsyncRawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3015,6 +3208,10 @@ class AsyncRawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     @contextlib.asynccontextmanager
@@ -3042,7 +3239,7 @@ class AsyncRawImagesClient:
             Image lookup success
         """
         async with self._client_wrapper.httpx_client.stream(
-            f"images/{jsonable_encoder(image_digest)}/sboms/native",
+            f"images/{encode_path_param(image_digest)}/sboms/native",
             method="GET",
             headers={
                 "x-anchore-account": str(anchore_account) if anchore_account is not None else None,
@@ -3063,9 +3260,9 @@ class AsyncRawImagesClient:
                         raise InternalServerError(
                             headers=dict(_response.headers),
                             body=typing.cast(
-                                typing.Optional[typing.Any],
+                                typing.Any,
                                 parse_obj_as(
-                                    type_=typing.Optional[typing.Any],
+                                    type_=typing.Any,
                                     object_=_response.json(),
                                 ),
                             ),
@@ -3074,6 +3271,13 @@ class AsyncRawImagesClient:
                 except JSONDecodeError:
                     raise ApiError(
                         status_code=_response.status_code, headers=dict(_response.headers), body=_response.text
+                    )
+                except ValidationError as e:
+                    raise ParsingError(
+                        status_code=_response.status_code,
+                        headers=dict(_response.headers),
+                        body=_response.json(),
+                        cause=e,
                     )
                 raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
@@ -3103,7 +3307,7 @@ class AsyncRawImagesClient:
             Vulnerability listing for the image
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"images/{jsonable_encoder(image_digest)}/vuln",
+            f"images/{encode_path_param(image_digest)}/vuln",
             method="GET",
             headers={
                 "x-anchore-account": str(anchore_account) if anchore_account is not None else None,
@@ -3124,9 +3328,9 @@ class AsyncRawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3134,6 +3338,10 @@ class AsyncRawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_image_vulnerabilities_by_type(
@@ -3170,7 +3378,7 @@ class AsyncRawImagesClient:
             Vulnerability listing for the image
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"images/{jsonable_encoder(image_digest)}/vuln/{jsonable_encoder(vtype)}",
+            f"images/{encode_path_param(image_digest)}/vuln/{encode_path_param(vtype)}",
             method="GET",
             params={
                 "force_refresh": force_refresh,
@@ -3195,9 +3403,9 @@ class AsyncRawImagesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -3205,4 +3413,8 @@ class AsyncRawImagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

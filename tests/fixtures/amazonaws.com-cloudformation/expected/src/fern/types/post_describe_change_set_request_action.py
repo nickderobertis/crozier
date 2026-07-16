@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PostDescribeChangeSetRequestAction(str, enum.Enum):
+class PostDescribeChangeSetRequestAction(enum.StrEnum):
     DESCRIBE_CHANGE_SET = "DescribeChangeSet"
 
     def visit(self, describe_change_set: typing.Callable[[], T_Result]) -> T_Result:

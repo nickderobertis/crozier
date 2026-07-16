@@ -9,9 +9,14 @@ from ...core.serialization import FieldMetadata
 
 
 class PostPortfolioAnalysisTrackingErrorRequestPortfoliosItem(UniversalBaseModel):
-    portfolio_returns: typing_extensions.Annotated[typing.List[float], FieldMetadata(alias="portfolioReturns")] = (
-        pydantic.Field()
-    )
+    portfolio_returns: typing_extensions.Annotated[
+        typing.List[float],
+        FieldMetadata(alias="portfolioReturns"),
+        pydantic.Field(
+            alias="portfolioReturns",
+            description="portfolioReturns[t] is the return of the portfolio at the time t, the portfolioReturns must have the same length as the benchmarkReturns array",
+        ),
+    ]
     """
     portfolioReturns[t] is the return of the portfolio at the time t, the portfolioReturns must have the same length as the benchmarkReturns array
     """

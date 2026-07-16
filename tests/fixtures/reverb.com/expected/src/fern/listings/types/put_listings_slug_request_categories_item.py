@@ -9,7 +9,11 @@ from ...core.serialization import FieldMetadata
 
 
 class PutListingsSlugRequestCategoriesItem(UniversalBaseModel):
-    uuid_: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="uuid")] = pydantic.Field(default=None)
+    uuid_: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="uuid"),
+        pydantic.Field(alias="uuid", description="UUID of the category for this listing."),
+    ] = None
     """
     UUID of the category for this listing.
     """

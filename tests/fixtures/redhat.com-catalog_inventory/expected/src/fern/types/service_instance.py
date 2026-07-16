@@ -12,7 +12,7 @@ class ServiceInstance(UniversalBaseModel):
     archived_at: typing.Optional[dt.datetime] = None
     created_at: typing.Optional[dt.datetime] = None
     external_url: typing.Optional[str] = None
-    extra: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = pydantic.Field(default=None)
+    extra: typing.Optional[typing.Dict[str, typing.Any]] = pydantic.Field(default=None)
     """
     Extra information about this object in JSON format
     """

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class CableLengthUnitLabel(str, enum.Enum):
+class CableLengthUnitLabel(enum.StrEnum):
     KILOMETERS = "Kilometers"
     METERS = "Meters"
     CENTIMETERS = "Centimeters"

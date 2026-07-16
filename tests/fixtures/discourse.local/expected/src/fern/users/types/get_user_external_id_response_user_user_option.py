@@ -29,19 +29,21 @@ class GetUserExternalIdResponseUserUserOption(UniversalBaseModel):
     external_links_in_new_tab: bool
     hide_profile_and_presence: bool
     homepage_id: typing.Optional[str] = None
-    include_tl0in_digests: typing_extensions.Annotated[bool, FieldMetadata(alias="include_tl0_in_digests")]
+    include_tl0in_digests: typing_extensions.Annotated[
+        bool, FieldMetadata(alias="include_tl0_in_digests"), pydantic.Field(alias="include_tl0_in_digests")
+    ]
     like_notification_frequency: int
     mailing_list_mode: bool
     mailing_list_mode_frequency: int
     new_topic_duration_minutes: int
     notification_level_when_replying: int
     oldest_search_log_date: typing.Optional[str] = None
-    seen_popups: typing.Optional[typing.List[typing.Optional[typing.Any]]] = None
+    seen_popups: typing.Optional[typing.List[typing.Any]] = None
     sidebar_list_destination: typing.Optional[str] = None
     skip_new_user_tips: bool
     text_size: str
     text_size_seq: int
-    theme_ids: typing.List[typing.Optional[typing.Any]]
+    theme_ids: typing.List[typing.Any]
     theme_key_seq: int
     timezone: typing.Optional[str] = None
     title_count_mode: str

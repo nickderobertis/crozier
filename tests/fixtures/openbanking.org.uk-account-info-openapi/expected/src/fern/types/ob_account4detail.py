@@ -23,19 +23,39 @@ class ObAccount4Detail(UniversalBaseModel):
     Unambiguous identification of the account to which credit and debit entries are made.
     """
 
-    account: typing_extensions.Annotated[typing.List[ObAccount4DetailAccountItem], FieldMetadata(alias="Account")]
-    account_id: typing_extensions.Annotated[AccountId, FieldMetadata(alias="AccountId")]
-    account_sub_type: typing_extensions.Annotated[ObExternalAccountSubType1Code, FieldMetadata(alias="AccountSubType")]
-    account_type: typing_extensions.Annotated[ObExternalAccountType1Code, FieldMetadata(alias="AccountType")]
-    currency: typing_extensions.Annotated[ActiveOrHistoricCurrencyCode0, FieldMetadata(alias="Currency")]
-    description: typing_extensions.Annotated[typing.Optional[Description0], FieldMetadata(alias="Description")] = None
-    nickname: typing_extensions.Annotated[typing.Optional[Nickname], FieldMetadata(alias="Nickname")] = None
-    servicer: typing_extensions.Annotated[
-        typing.Optional[ObBranchAndFinancialInstitutionIdentification50], FieldMetadata(alias="Servicer")
+    account: typing_extensions.Annotated[
+        typing.List[ObAccount4DetailAccountItem], FieldMetadata(alias="Account"), pydantic.Field(alias="Account")
+    ]
+    account_id: typing_extensions.Annotated[
+        AccountId, FieldMetadata(alias="AccountId"), pydantic.Field(alias="AccountId")
+    ]
+    account_sub_type: typing_extensions.Annotated[
+        ObExternalAccountSubType1Code, FieldMetadata(alias="AccountSubType"), pydantic.Field(alias="AccountSubType")
+    ]
+    account_type: typing_extensions.Annotated[
+        ObExternalAccountType1Code, FieldMetadata(alias="AccountType"), pydantic.Field(alias="AccountType")
+    ]
+    currency: typing_extensions.Annotated[
+        ActiveOrHistoricCurrencyCode0, FieldMetadata(alias="Currency"), pydantic.Field(alias="Currency")
+    ]
+    description: typing_extensions.Annotated[
+        typing.Optional[Description0], FieldMetadata(alias="Description"), pydantic.Field(alias="Description")
     ] = None
-    status: typing_extensions.Annotated[typing.Optional[ObAccountStatus1Code], FieldMetadata(alias="Status")] = None
+    nickname: typing_extensions.Annotated[
+        typing.Optional[Nickname], FieldMetadata(alias="Nickname"), pydantic.Field(alias="Nickname")
+    ] = None
+    servicer: typing_extensions.Annotated[
+        typing.Optional[ObBranchAndFinancialInstitutionIdentification50],
+        FieldMetadata(alias="Servicer"),
+        pydantic.Field(alias="Servicer"),
+    ] = None
+    status: typing_extensions.Annotated[
+        typing.Optional[ObAccountStatus1Code], FieldMetadata(alias="Status"), pydantic.Field(alias="Status")
+    ] = None
     status_update_date_time: typing_extensions.Annotated[
-        typing.Optional[StatusUpdateDateTime], FieldMetadata(alias="StatusUpdateDateTime")
+        typing.Optional[StatusUpdateDateTime],
+        FieldMetadata(alias="StatusUpdateDateTime"),
+        pydantic.Field(alias="StatusUpdateDateTime"),
     ] = None
 
     if IS_PYDANTIC_V2:

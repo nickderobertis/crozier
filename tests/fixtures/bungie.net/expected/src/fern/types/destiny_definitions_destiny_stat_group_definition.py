@@ -28,9 +28,14 @@ class DestinyDefinitionsDestinyStatGroupDefinition(UniversalBaseModel):
     The index of the entity as it was found in the investment tables.
     """
 
-    maximum_value: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="maximumValue")] = (
-        pydantic.Field(default=None)
-    )
+    maximum_value: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="maximumValue"),
+        pydantic.Field(
+            alias="maximumValue",
+            description="The maximum possible value that any stat in this group can be transformed into.\r\nThis is used by stats that *don't* have scaledStats entries below, but that still need to be displayed as a progress bar, in which case this is used as the upper bound for said progress bar. (the lower bound is always 0)",
+        ),
+    ] = None
     """
     The maximum possible value that any stat in this group can be transformed into.
     This is used by stats that *don't* have scaledStats entries below, but that still need to be displayed as a progress bar, in which case this is used as the upper bound for said progress bar. (the lower bound is always 0)
@@ -50,16 +55,26 @@ class DestinyDefinitionsDestinyStatGroupDefinition(UniversalBaseModel):
     """
 
     scaled_stats: typing_extensions.Annotated[
-        typing.Optional[typing.List[DestinyDefinitionsDestinyStatDisplayDefinition]], FieldMetadata(alias="scaledStats")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[DestinyDefinitionsDestinyStatDisplayDefinition]],
+        FieldMetadata(alias="scaledStats"),
+        pydantic.Field(
+            alias="scaledStats",
+            description='Any stat that requires scaling to be transformed from an "Investment" stat to a "Display" stat will have an entry in this list. For more information on what those types of stats mean and the transformation process, see DestinyStatDefinition.\r\nIn retrospect, I wouldn\'t mind if this was a dictionary keyed by the stat hash instead. But I\'m going to leave it be because [[After Apple Picking]].',
+        ),
+    ] = None
     """
     Any stat that requires scaling to be transformed from an "Investment" stat to a "Display" stat will have an entry in this list. For more information on what those types of stats mean and the transformation process, see DestinyStatDefinition.
     In retrospect, I wouldn't mind if this was a dictionary keyed by the stat hash instead. But I'm going to leave it be because [[After Apple Picking]].
     """
 
-    ui_position: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="uiPosition")] = pydantic.Field(
-        default=None
-    )
+    ui_position: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="uiPosition"),
+        pydantic.Field(
+            alias="uiPosition",
+            description="This apparently indicates the position of the stats in the UI? I've returned it in case anyone can use it, but it's not of any use to us on BNet. Something's being lost in translation with this value.",
+        ),
+    ] = None
     """
     This apparently indicates the position of the stats in the UI? I've returned it in case anyone can use it, but it's not of any use to us on BNet. Something's being lost in translation with this value.
     """

@@ -12,7 +12,9 @@ from .stream_state import StreamState
 
 class GlobalState(UniversalBaseModel):
     shared_state: typing.Optional[StateBlob] = None
-    stream_states: typing_extensions.Annotated[typing.List[StreamState], FieldMetadata(alias="streamStates")]
+    stream_states: typing_extensions.Annotated[
+        typing.List[StreamState], FieldMetadata(alias="streamStates"), pydantic.Field(alias="streamStates")
+    ]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

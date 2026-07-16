@@ -52,8 +52,13 @@ class DestinyEntitiesCharactersDestinyCharacterProgressionComponent(UniversalBas
     """
 
     seasonal_artifact: typing_extensions.Annotated[
-        typing.Optional[DestinyArtifactsDestinyArtifactCharacterScoped], FieldMetadata(alias="seasonalArtifact")
-    ] = pydantic.Field(default=None)
+        typing.Optional[DestinyArtifactsDestinyArtifactCharacterScoped],
+        FieldMetadata(alias="seasonalArtifact"),
+        pydantic.Field(
+            alias="seasonalArtifact",
+            description="Data related to your progress on the current season's artifact that can vary per character.",
+        ),
+    ] = None
     """
     Data related to your progress on the current season's artifact that can vary per character.
     """
@@ -61,7 +66,11 @@ class DestinyEntitiesCharactersDestinyCharacterProgressionComponent(UniversalBas
     uninstanced_item_objectives: typing_extensions.Annotated[
         typing.Optional[typing.Dict[str, typing.List[DestinyQuestsDestinyObjectiveProgress]]],
         FieldMetadata(alias="uninstancedItemObjectives"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="uninstancedItemObjectives",
+            description="Sometimes, you have items in your inventory that don't have instances, but still have Objective information. This provides you that objective information for uninstanced items. \r\nThis dictionary is keyed by the item's hash: which you can use to look up the name and description for the overall task(s) implied by the objective. The value is the list of objectives for this item, and their statuses.",
+        ),
+    ] = None
     """
     Sometimes, you have items in your inventory that don't have instances, but still have Objective information. This provides you that objective information for uninstanced items. 
     This dictionary is keyed by the item's hash: which you can use to look up the name and description for the overall task(s) implied by the objective. The value is the list of objectives for this item, and their statuses.
@@ -70,7 +79,11 @@ class DestinyEntitiesCharactersDestinyCharacterProgressionComponent(UniversalBas
     uninstanced_item_perks: typing_extensions.Annotated[
         typing.Optional[typing.Dict[str, DestinyEntitiesItemsDestinyItemPerksComponent]],
         FieldMetadata(alias="uninstancedItemPerks"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="uninstancedItemPerks",
+            description="Sometimes, you have items in your inventory that don't have instances, but still have perks (for example: Trials passage cards). This gives you the perk information for uninstanced items.\r\nThis dictionary is keyed by item hash, which you can use to look up the corresponding item definition. The value is the list of perks states for the item.",
+        ),
+    ] = None
     """
     Sometimes, you have items in your inventory that don't have instances, but still have perks (for example: Trials passage cards). This gives you the perk information for uninstanced items.
     This dictionary is keyed by item hash, which you can use to look up the corresponding item definition. The value is the list of perks states for the item.

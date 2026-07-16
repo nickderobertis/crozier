@@ -7,7 +7,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.internal_server_error import InternalServerError
@@ -18,6 +19,7 @@ from ..types.log_level import LogLevel
 from ..types.named_log_configuration import NamedLogConfiguration
 from ..types.role_mapping import RoleMapping
 from ..types.role_type import RoleType
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -76,6 +78,10 @@ class RawAdminClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_config_property(
@@ -103,7 +109,7 @@ class RawAdminClient:
             The configuration property value.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"admin/config/properties/{jsonable_encoder(property_name)}",
+            f"admin/config/properties/{encode_path_param(property_name)}",
             method="GET",
             request_options=request_options,
         )
@@ -142,6 +148,10 @@ class RawAdminClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_config_property(
@@ -170,7 +180,7 @@ class RawAdminClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"admin/config/properties/{jsonable_encoder(property_name)}",
+            f"admin/config/properties/{encode_path_param(property_name)}",
             method="PUT",
             json={
                 "value": value,
@@ -209,6 +219,10 @@ class RawAdminClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def reset_config_property(
@@ -237,7 +251,7 @@ class RawAdminClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"admin/config/properties/{jsonable_encoder(property_name)}",
+            f"admin/config/properties/{encode_path_param(property_name)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -269,6 +283,10 @@ class RawAdminClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     @contextlib.contextmanager
@@ -324,6 +342,13 @@ class RawAdminClient:
                     raise ApiError(
                         status_code=_response.status_code, headers=dict(_response.headers), body=_response.text
                     )
+                except ValidationError as e:
+                    raise ParsingError(
+                        status_code=_response.status_code,
+                        headers=dict(_response.headers),
+                        body=_response.json(),
+                        cause=e,
+                    )
                 raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
             yield _stream()
@@ -375,6 +400,10 @@ class RawAdminClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_log_configurations(
@@ -423,6 +452,10 @@ class RawAdminClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_log_configuration(
@@ -445,7 +478,7 @@ class RawAdminClient:
             The logger configuration for the named logger.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"admin/loggers/{jsonable_encoder(logger)}",
+            f"admin/loggers/{encode_path_param(logger)}",
             method="GET",
             request_options=request_options,
         )
@@ -473,6 +506,10 @@ class RawAdminClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def set_log_configuration(
@@ -498,7 +535,7 @@ class RawAdminClient:
             The new configuration for the given logger.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"admin/loggers/{jsonable_encoder(logger)}",
+            f"admin/loggers/{encode_path_param(logger)}",
             method="PUT",
             json={
                 "level": level,
@@ -533,6 +570,10 @@ class RawAdminClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def remove_log_configuration(
@@ -556,7 +597,7 @@ class RawAdminClient:
             default configuration is applied).
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"admin/loggers/{jsonable_encoder(logger)}",
+            f"admin/loggers/{encode_path_param(logger)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -584,6 +625,10 @@ class RawAdminClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_role_mappings(
@@ -635,6 +680,10 @@ class RawAdminClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_role_mapping(
@@ -698,6 +747,10 @@ class RawAdminClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_role_mapping(
@@ -725,7 +778,7 @@ class RawAdminClient:
             When successful, returns the details of a role mapping.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"admin/roleMappings/{jsonable_encoder(principal_id)}",
+            f"admin/roleMappings/{encode_path_param(principal_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -764,6 +817,10 @@ class RawAdminClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_role_mapping(
@@ -792,7 +849,7 @@ class RawAdminClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"admin/roleMappings/{jsonable_encoder(principal_id)}",
+            f"admin/roleMappings/{encode_path_param(principal_id)}",
             method="PUT",
             json={
                 "role": role,
@@ -831,6 +888,10 @@ class RawAdminClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_role_mapping(
@@ -857,7 +918,7 @@ class RawAdminClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"admin/roleMappings/{jsonable_encoder(principal_id)}",
+            f"admin/roleMappings/{encode_path_param(principal_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -889,6 +950,10 @@ class RawAdminClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -945,6 +1010,10 @@ class AsyncRawAdminClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_config_property(
@@ -972,7 +1041,7 @@ class AsyncRawAdminClient:
             The configuration property value.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"admin/config/properties/{jsonable_encoder(property_name)}",
+            f"admin/config/properties/{encode_path_param(property_name)}",
             method="GET",
             request_options=request_options,
         )
@@ -1011,6 +1080,10 @@ class AsyncRawAdminClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_config_property(
@@ -1039,7 +1112,7 @@ class AsyncRawAdminClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"admin/config/properties/{jsonable_encoder(property_name)}",
+            f"admin/config/properties/{encode_path_param(property_name)}",
             method="PUT",
             json={
                 "value": value,
@@ -1078,6 +1151,10 @@ class AsyncRawAdminClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def reset_config_property(
@@ -1106,7 +1183,7 @@ class AsyncRawAdminClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"admin/config/properties/{jsonable_encoder(property_name)}",
+            f"admin/config/properties/{encode_path_param(property_name)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -1138,6 +1215,10 @@ class AsyncRawAdminClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     @contextlib.asynccontextmanager
@@ -1194,6 +1275,13 @@ class AsyncRawAdminClient:
                     raise ApiError(
                         status_code=_response.status_code, headers=dict(_response.headers), body=_response.text
                     )
+                except ValidationError as e:
+                    raise ParsingError(
+                        status_code=_response.status_code,
+                        headers=dict(_response.headers),
+                        body=_response.json(),
+                        cause=e,
+                    )
                 raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
             yield await _stream()
@@ -1245,6 +1333,10 @@ class AsyncRawAdminClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_log_configurations(
@@ -1293,6 +1385,10 @@ class AsyncRawAdminClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_log_configuration(
@@ -1315,7 +1411,7 @@ class AsyncRawAdminClient:
             The logger configuration for the named logger.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"admin/loggers/{jsonable_encoder(logger)}",
+            f"admin/loggers/{encode_path_param(logger)}",
             method="GET",
             request_options=request_options,
         )
@@ -1343,6 +1439,10 @@ class AsyncRawAdminClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def set_log_configuration(
@@ -1368,7 +1468,7 @@ class AsyncRawAdminClient:
             The new configuration for the given logger.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"admin/loggers/{jsonable_encoder(logger)}",
+            f"admin/loggers/{encode_path_param(logger)}",
             method="PUT",
             json={
                 "level": level,
@@ -1403,6 +1503,10 @@ class AsyncRawAdminClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def remove_log_configuration(
@@ -1426,7 +1530,7 @@ class AsyncRawAdminClient:
             default configuration is applied).
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"admin/loggers/{jsonable_encoder(logger)}",
+            f"admin/loggers/{encode_path_param(logger)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -1454,6 +1558,10 @@ class AsyncRawAdminClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_role_mappings(
@@ -1505,6 +1613,10 @@ class AsyncRawAdminClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_role_mapping(
@@ -1568,6 +1680,10 @@ class AsyncRawAdminClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_role_mapping(
@@ -1595,7 +1711,7 @@ class AsyncRawAdminClient:
             When successful, returns the details of a role mapping.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"admin/roleMappings/{jsonable_encoder(principal_id)}",
+            f"admin/roleMappings/{encode_path_param(principal_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -1634,6 +1750,10 @@ class AsyncRawAdminClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_role_mapping(
@@ -1662,7 +1782,7 @@ class AsyncRawAdminClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"admin/roleMappings/{jsonable_encoder(principal_id)}",
+            f"admin/roleMappings/{encode_path_param(principal_id)}",
             method="PUT",
             json={
                 "role": role,
@@ -1701,6 +1821,10 @@ class AsyncRawAdminClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_role_mapping(
@@ -1727,7 +1851,7 @@ class AsyncRawAdminClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"admin/roleMappings/{jsonable_encoder(principal_id)}",
+            f"admin/roleMappings/{encode_path_param(principal_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -1759,4 +1883,8 @@ class AsyncRawAdminClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

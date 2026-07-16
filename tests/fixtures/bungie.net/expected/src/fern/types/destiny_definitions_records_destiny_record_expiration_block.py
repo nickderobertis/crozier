@@ -14,7 +14,9 @@ class DestinyDefinitionsRecordsDestinyRecordExpirationBlock(UniversalBaseModel):
     """
 
     description: typing.Optional[str] = None
-    has_expiration: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="hasExpiration")] = None
+    has_expiration: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="hasExpiration"), pydantic.Field(alias="hasExpiration")
+    ] = None
     icon: typing.Optional[str] = None
 
     if IS_PYDANTIC_V2:

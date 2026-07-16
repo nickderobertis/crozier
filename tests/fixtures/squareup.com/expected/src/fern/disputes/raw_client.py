@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..types.accept_dispute_response import AcceptDisputeResponse
@@ -17,6 +18,7 @@ from ..types.list_disputes_response import ListDisputesResponse
 from ..types.retrieve_dispute_evidence_response import RetrieveDisputeEvidenceResponse
 from ..types.retrieve_dispute_response import RetrieveDisputeResponse
 from ..types.submit_evidence_response import SubmitEvidenceResponse
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -84,6 +86,10 @@ class RawDisputesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def retrieve_dispute(
@@ -106,7 +112,7 @@ class RawDisputesClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/disputes/{jsonable_encoder(dispute_id)}",
+            f"v2/disputes/{encode_path_param(dispute_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -123,6 +129,10 @@ class RawDisputesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def accept_dispute(
@@ -149,7 +159,7 @@ class RawDisputesClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/disputes/{jsonable_encoder(dispute_id)}/accept",
+            f"v2/disputes/{encode_path_param(dispute_id)}/accept",
             method="POST",
             request_options=request_options,
         )
@@ -166,6 +176,10 @@ class RawDisputesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_dispute_evidence(
@@ -197,7 +211,7 @@ class RawDisputesClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/disputes/{jsonable_encoder(dispute_id)}/evidence",
+            f"v2/disputes/{encode_path_param(dispute_id)}/evidence",
             method="GET",
             params={
                 "cursor": cursor,
@@ -217,6 +231,10 @@ class RawDisputesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_dispute_evidence_text(
@@ -254,7 +272,7 @@ class RawDisputesClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/disputes/{jsonable_encoder(dispute_id)}/evidence-text",
+            f"v2/disputes/{encode_path_param(dispute_id)}/evidence-text",
             method="POST",
             json={
                 "evidence_text": evidence_text,
@@ -280,6 +298,10 @@ class RawDisputesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def retrieve_dispute_evidence(
@@ -308,7 +330,7 @@ class RawDisputesClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/disputes/{jsonable_encoder(dispute_id)}/evidence/{jsonable_encoder(evidence_id)}",
+            f"v2/disputes/{encode_path_param(dispute_id)}/evidence/{encode_path_param(evidence_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -325,6 +347,10 @@ class RawDisputesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_dispute_evidence(
@@ -353,7 +379,7 @@ class RawDisputesClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/disputes/{jsonable_encoder(dispute_id)}/evidence/{jsonable_encoder(evidence_id)}",
+            f"v2/disputes/{encode_path_param(dispute_id)}/evidence/{encode_path_param(evidence_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -370,6 +396,10 @@ class RawDisputesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def submit_evidence(
@@ -397,7 +427,7 @@ class RawDisputesClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/disputes/{jsonable_encoder(dispute_id)}/submit-evidence",
+            f"v2/disputes/{encode_path_param(dispute_id)}/submit-evidence",
             method="POST",
             request_options=request_options,
         )
@@ -414,6 +444,10 @@ class RawDisputesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -479,6 +513,10 @@ class AsyncRawDisputesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def retrieve_dispute(
@@ -501,7 +539,7 @@ class AsyncRawDisputesClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/disputes/{jsonable_encoder(dispute_id)}",
+            f"v2/disputes/{encode_path_param(dispute_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -518,6 +556,10 @@ class AsyncRawDisputesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def accept_dispute(
@@ -544,7 +586,7 @@ class AsyncRawDisputesClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/disputes/{jsonable_encoder(dispute_id)}/accept",
+            f"v2/disputes/{encode_path_param(dispute_id)}/accept",
             method="POST",
             request_options=request_options,
         )
@@ -561,6 +603,10 @@ class AsyncRawDisputesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_dispute_evidence(
@@ -592,7 +638,7 @@ class AsyncRawDisputesClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/disputes/{jsonable_encoder(dispute_id)}/evidence",
+            f"v2/disputes/{encode_path_param(dispute_id)}/evidence",
             method="GET",
             params={
                 "cursor": cursor,
@@ -612,6 +658,10 @@ class AsyncRawDisputesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_dispute_evidence_text(
@@ -649,7 +699,7 @@ class AsyncRawDisputesClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/disputes/{jsonable_encoder(dispute_id)}/evidence-text",
+            f"v2/disputes/{encode_path_param(dispute_id)}/evidence-text",
             method="POST",
             json={
                 "evidence_text": evidence_text,
@@ -675,6 +725,10 @@ class AsyncRawDisputesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def retrieve_dispute_evidence(
@@ -703,7 +757,7 @@ class AsyncRawDisputesClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/disputes/{jsonable_encoder(dispute_id)}/evidence/{jsonable_encoder(evidence_id)}",
+            f"v2/disputes/{encode_path_param(dispute_id)}/evidence/{encode_path_param(evidence_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -720,6 +774,10 @@ class AsyncRawDisputesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_dispute_evidence(
@@ -748,7 +806,7 @@ class AsyncRawDisputesClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/disputes/{jsonable_encoder(dispute_id)}/evidence/{jsonable_encoder(evidence_id)}",
+            f"v2/disputes/{encode_path_param(dispute_id)}/evidence/{encode_path_param(evidence_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -765,6 +823,10 @@ class AsyncRawDisputesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def submit_evidence(
@@ -792,7 +854,7 @@ class AsyncRawDisputesClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/disputes/{jsonable_encoder(dispute_id)}/submit-evidence",
+            f"v2/disputes/{encode_path_param(dispute_id)}/submit-evidence",
             method="POST",
             request_options=request_options,
         )
@@ -809,4 +871,8 @@ class AsyncRawDisputesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

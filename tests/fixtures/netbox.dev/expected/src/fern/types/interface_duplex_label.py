@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class InterfaceDuplexLabel(str, enum.Enum):
+class InterfaceDuplexLabel(enum.StrEnum):
     HALF = "Half"
     FULL = "Full"
     AUTO = "Auto"

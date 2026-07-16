@@ -15,7 +15,7 @@ class ServiceOffering(UniversalBaseModel):
     display_name: typing.Optional[str] = None
     distributor: typing.Optional[str] = None
     documentation_url: typing.Optional[str] = None
-    extra: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = pydantic.Field(default=None)
+    extra: typing.Optional[typing.Dict[str, typing.Any]] = pydantic.Field(default=None)
     """
     Extra information about this object in JSON format
     """

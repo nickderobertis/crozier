@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GetRecordHandlerProgressRequestAction(str, enum.Enum):
+class GetRecordHandlerProgressRequestAction(enum.StrEnum):
     RECORD_HANDLER_PROGRESS = "RecordHandlerProgress"
 
     def visit(self, record_handler_progress: typing.Callable[[], T_Result]) -> T_Result:

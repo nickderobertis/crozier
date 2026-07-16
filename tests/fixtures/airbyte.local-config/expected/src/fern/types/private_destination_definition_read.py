@@ -11,7 +11,9 @@ from .destination_definition_read import DestinationDefinitionRead
 
 class PrivateDestinationDefinitionRead(UniversalBaseModel):
     destination_definition: typing_extensions.Annotated[
-        DestinationDefinitionRead, FieldMetadata(alias="destinationDefinition")
+        DestinationDefinitionRead,
+        FieldMetadata(alias="destinationDefinition"),
+        pydantic.Field(alias="destinationDefinition"),
     ]
     granted: bool
 

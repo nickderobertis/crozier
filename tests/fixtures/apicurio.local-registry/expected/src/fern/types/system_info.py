@@ -12,7 +12,9 @@ from ..core.serialization import FieldMetadata
 class SystemInfo(UniversalBaseModel):
     """ """
 
-    built_on: typing_extensions.Annotated[typing.Optional[dt.datetime], FieldMetadata(alias="builtOn")] = None
+    built_on: typing_extensions.Annotated[
+        typing.Optional[dt.datetime], FieldMetadata(alias="builtOn"), pydantic.Field(alias="builtOn")
+    ] = None
     description: typing.Optional[str] = None
     name: typing.Optional[str] = None
     version: typing.Optional[str] = None

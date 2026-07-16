@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class TimeOffRequestsFilterTimeOffRequestStatus(str, enum.Enum):
+class TimeOffRequestsFilterTimeOffRequestStatus(enum.StrEnum):
     """
     Time off request status to filter on
     """

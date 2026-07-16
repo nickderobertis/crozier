@@ -15,44 +15,70 @@ from .content_models_tag_metadata_item import ContentModelsTagMetadataItem
 
 
 class ContentModelsContentTypeDescription(UniversalBaseModel):
-    allow_comments: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="allowComments")] = None
+    allow_comments: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="allowComments"), pydantic.Field(alias="allowComments")
+    ] = None
     auto_english_property_fallback: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="autoEnglishPropertyFallback")
+        typing.Optional[bool],
+        FieldMetadata(alias="autoEnglishPropertyFallback"),
+        pydantic.Field(alias="autoEnglishPropertyFallback"),
     ] = None
     bind_identifier_to_property: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="bindIdentifierToProperty")
+        typing.Optional[str],
+        FieldMetadata(alias="bindIdentifierToProperty"),
+        pydantic.Field(alias="bindIdentifierToProperty"),
     ] = None
-    bound_regex: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="boundRegex")] = None
-    bulk_uploadable: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="bulkUploadable")] = None
-    c_type: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="cType")] = None
+    bound_regex: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="boundRegex"), pydantic.Field(alias="boundRegex")
+    ] = None
+    bulk_uploadable: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="bulkUploadable"), pydantic.Field(alias="bulkUploadable")
+    ] = None
+    c_type: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="cType"), pydantic.Field(alias="cType")
+    ] = None
     content_description: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="contentDescription")
+        typing.Optional[str], FieldMetadata(alias="contentDescription"), pydantic.Field(alias="contentDescription")
     ] = None
     force_identifier_binding: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="forceIdentifierBinding")
+        typing.Optional[bool],
+        FieldMetadata(alias="forceIdentifierBinding"),
+        pydantic.Field(alias="forceIdentifierBinding"),
     ] = None
     name: typing.Optional[str] = None
-    preview_image: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="previewImage")] = None
+    preview_image: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="previewImage"), pydantic.Field(alias="previewImage")
+    ] = None
     previews: typing.Optional[typing.List[ContentModelsContentPreview]] = None
     priority: typing.Optional[int] = None
     properties: typing.Optional[typing.List["ContentModelsContentTypeProperty"]] = None
     property_sections: typing_extensions.Annotated[
-        typing.Optional[typing.List[ContentModelsContentTypePropertySection]], FieldMetadata(alias="propertySections")
+        typing.Optional[typing.List[ContentModelsContentTypePropertySection]],
+        FieldMetadata(alias="propertySections"),
+        pydantic.Field(alias="propertySections"),
     ] = None
     reminder: typing.Optional[str] = None
     show_in_content_editor: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="showInContentEditor")
+        typing.Optional[bool], FieldMetadata(alias="showInContentEditor"), pydantic.Field(alias="showInContentEditor")
     ] = None
-    suppress_cms_path: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="suppressCmsPath")] = None
+    suppress_cms_path: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="suppressCmsPath"), pydantic.Field(alias="suppressCmsPath")
+    ] = None
     tag_metadata: typing_extensions.Annotated[
-        typing.Optional[typing.List[ContentModelsTagMetadataDefinition]], FieldMetadata(alias="tagMetadata")
+        typing.Optional[typing.List[ContentModelsTagMetadataDefinition]],
+        FieldMetadata(alias="tagMetadata"),
+        pydantic.Field(alias="tagMetadata"),
     ] = None
     tag_metadata_items: typing_extensions.Annotated[
-        typing.Optional[typing.Dict[str, ContentModelsTagMetadataItem]], FieldMetadata(alias="tagMetadataItems")
+        typing.Optional[typing.Dict[str, ContentModelsTagMetadataItem]],
+        FieldMetadata(alias="tagMetadataItems"),
+        pydantic.Field(alias="tagMetadataItems"),
     ] = None
-    type_of: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="typeOf")] = None
+    type_of: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="typeOf"), pydantic.Field(alias="typeOf")
+    ] = None
     usage_examples: typing_extensions.Annotated[
-        typing.Optional[typing.List[str]], FieldMetadata(alias="usageExamples")
+        typing.Optional[typing.List[str]], FieldMetadata(alias="usageExamples"), pydantic.Field(alias="usageExamples")
     ] = None
 
     if IS_PYDANTIC_V2:
@@ -67,4 +93,6 @@ class ContentModelsContentTypeDescription(UniversalBaseModel):
 
 from .content_models_content_type_property import ContentModelsContentTypeProperty
 
-update_forward_refs(ContentModelsContentTypeDescription)
+update_forward_refs(
+    ContentModelsContentTypeDescription, ContentModelsContentTypeProperty=ContentModelsContentTypeProperty
+)

@@ -14,7 +14,9 @@ class ConnectionSchedule(UniversalBaseModel):
     if null, then no schedule is set.
     """
 
-    time_unit: typing_extensions.Annotated[ConnectionScheduleTimeUnit, FieldMetadata(alias="timeUnit")]
+    time_unit: typing_extensions.Annotated[
+        ConnectionScheduleTimeUnit, FieldMetadata(alias="timeUnit"), pydantic.Field(alias="timeUnit")
+    ]
     units: int
 
     if IS_PYDANTIC_V2:

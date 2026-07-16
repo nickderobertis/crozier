@@ -10,8 +10,13 @@ from ..core.serialization import FieldMetadata
 
 class DestinyDefinitionsPresentationDestinyPresentationNodeChildEntryBase(UniversalBaseModel):
     node_display_priority: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="nodeDisplayPriority")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="nodeDisplayPriority"),
+        pydantic.Field(
+            alias="nodeDisplayPriority",
+            description="Use this value to sort the presentation node children in ascending order.",
+        ),
+    ] = None
     """
     Use this value to sort the presentation node children in ascending order.
     """

@@ -26,18 +26,24 @@ class ImageDetail(UniversalBaseModel):
     Full docker-pullable tag string referencing the image
     """
 
-    image_digest: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="imageDigest")] = (
-        pydantic.Field(default=None)
-    )
+    image_digest: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="imageDigest"),
+        pydantic.Field(alias="imageDigest", description="The parent Anchore Image record to which this detail maps"),
+    ] = None
     """
     The parent Anchore Image record to which this detail maps
     """
 
-    image_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="imageId")] = None
+    image_id: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="imageId"), pydantic.Field(alias="imageId")
+    ] = None
     last_updated: typing.Optional[dt.datetime] = None
     registry: typing.Optional[str] = None
     repo: typing.Optional[str] = None
-    user_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="userId")] = None
+    user_id: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="userId"), pydantic.Field(alias="userId")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

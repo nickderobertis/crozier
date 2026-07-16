@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class SearchArtifactsByContentRequestOrderby(str, enum.Enum):
+class SearchArtifactsByContentRequestOrderby(enum.StrEnum):
     NAME = "name"
     CREATED_ON = "createdOn"
 

@@ -1,6 +1,6 @@
 # Reference
 ## account
-<details><summary><code>client.account.<a href="src/fern/account/client.py">get</a>()</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py">get</a>() -> User</code></summary>
 <dl>
 <dd>
 
@@ -28,12 +28,15 @@ Get currently logged in user data as JSON object.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.account.get()
 
 ```
@@ -62,7 +65,7 @@ client.account.get()
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">create</a>(...)</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py">create</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -90,12 +93,15 @@ Use this endpoint to allow a new user to register a new account in your project.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.account.create(
     email="email",
     password="password",
@@ -179,12 +185,15 @@ Delete a currently logged in user account. Behind the scene, the user record is 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.account.delete()
 
 ```
@@ -213,7 +222,7 @@ client.account.delete()
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">update_email</a>(...)</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py">update_email</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -242,12 +251,15 @@ This endpoint can also be used to convert an anonymous account to a normal one, 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.account.update_email(
     email="email",
     password="password",
@@ -295,7 +307,7 @@ client.account.update_email(
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">account_create_jwt</a>()</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py">account_create_jwt</a>() -> Jwt</code></summary>
 <dl>
 <dd>
 
@@ -323,12 +335,15 @@ Use this endpoint to create a JSON Web Token. You can use the resulting JWT to a
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.account.account_create_jwt()
 
 ```
@@ -357,7 +372,7 @@ client.account.account_create_jwt()
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">get_logs</a>()</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py">get_logs</a>() -> LogList</code></summary>
 <dl>
 <dd>
 
@@ -385,12 +400,15 @@ Get currently logged in user list of latest security activity logs. Each log ret
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.account.get_logs()
 
 ```
@@ -419,7 +437,7 @@ client.account.get_logs()
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">update_name</a>(...)</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py">update_name</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -447,12 +465,15 @@ Update currently logged in user account name.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.account.update_name(
     name="name",
 )
@@ -491,7 +512,7 @@ client.account.update_name(
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">update_password</a>(...)</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py">update_password</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -519,12 +540,15 @@ Update currently logged in user password. For validation, user is required to pa
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.account.update_password(
     password="password",
 )
@@ -571,7 +595,7 @@ client.account.update_password(
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">get_prefs</a>()</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py">get_prefs</a>() -> Preferences</code></summary>
 <dl>
 <dd>
 
@@ -599,12 +623,15 @@ Get currently logged in user preferences as a key-value object.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.account.get_prefs()
 
 ```
@@ -633,7 +660,7 @@ client.account.get_prefs()
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">update_prefs</a>(...)</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py">update_prefs</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -661,14 +688,19 @@ Update currently logged in user account preferences. You can pass only the speci
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.account.update_prefs(
-    prefs={"key": "value"},
+    prefs={
+        "key": "value"
+    },
 )
 
 ```
@@ -685,7 +717,7 @@ client.account.update_prefs(
 <dl>
 <dd>
 
-**prefs:** `typing.Dict[str, typing.Optional[typing.Any]]` — Prefs key-value JSON object.
+**prefs:** `typing.Dict[str, typing.Any]` — Prefs key-value JSON object.
     
 </dd>
 </dl>
@@ -705,7 +737,7 @@ client.account.update_prefs(
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">create_recovery</a>(...)</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py">create_recovery</a>(...) -> Token</code></summary>
 <dl>
 <dd>
 
@@ -733,12 +765,15 @@ Sends the user an email with a temporary secret key for password reset. When the
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.account.create_recovery(
     email="email",
     url="url",
@@ -786,7 +821,7 @@ client.account.create_recovery(
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">update_recovery</a>(...)</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py">update_recovery</a>(...) -> Token</code></summary>
 <dl>
 <dd>
 
@@ -816,12 +851,15 @@ Please note that in order to avoid a [Redirect Attack](https://github.com/OWASP/
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.account.update_recovery(
     password="password",
     password_again="passwordAgain",
@@ -887,7 +925,7 @@ client.account.update_recovery(
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">get_sessions</a>()</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py">get_sessions</a>() -> SessionList</code></summary>
 <dl>
 <dd>
 
@@ -915,12 +953,15 @@ Get currently logged in user list of active sessions across different devices.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.account.get_sessions()
 
 ```
@@ -949,7 +990,7 @@ client.account.get_sessions()
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">create_session</a>(...)</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py">create_session</a>(...) -> Session</code></summary>
 <dl>
 <dd>
 
@@ -977,12 +1018,15 @@ Allow the user to login into their account by providing a valid email and passwo
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.account.create_session(
     email="email",
     password="password",
@@ -1058,12 +1102,15 @@ Delete all sessions from the user account and remove any sessions cookies from t
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.account.delete_sessions()
 
 ```
@@ -1092,7 +1139,7 @@ client.account.delete_sessions()
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">create_anonymous_session</a>()</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py">create_anonymous_session</a>() -> Session</code></summary>
 <dl>
 <dd>
 
@@ -1120,12 +1167,15 @@ Use this endpoint to allow a new user to register an anonymous account in your p
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.account.create_anonymous_session()
 
 ```
@@ -1184,12 +1234,15 @@ If there is already an active session, the new session will be attached to the l
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.account.account_create_o_auth2session(
     provider="provider",
 )
@@ -1252,7 +1305,7 @@ client.account.account_create_o_auth2session(
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">get_session</a>(...)</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py">get_session</a>(...) -> Session</code></summary>
 <dl>
 <dd>
 
@@ -1280,12 +1333,15 @@ Use this endpoint to get a logged in user's session using a Session ID. Inputtin
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.account.get_session(
     session_id="sessionId",
 )
@@ -1352,12 +1408,15 @@ Use this endpoint to log out the currently logged in user from all their account
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.account.delete_session(
     session_id="sessionId",
 )
@@ -1396,7 +1455,7 @@ client.account.delete_session(
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">create_verification</a>(...)</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py">create_verification</a>(...) -> Token</code></summary>
 <dl>
 <dd>
 
@@ -1426,12 +1485,15 @@ Please note that in order to avoid a [Redirect Attack](https://github.com/OWASP/
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.account.create_verification(
     url="url",
 )
@@ -1470,7 +1532,7 @@ client.account.create_verification(
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">update_verification</a>(...)</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py">update_verification</a>(...) -> Token</code></summary>
 <dl>
 <dd>
 
@@ -1498,12 +1560,15 @@ Use this endpoint to complete the user email verification process. Use both the 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.account.update_verification(
     secret="secret",
     user_id="userId",
@@ -1580,12 +1645,15 @@ You can use this endpoint to show different browser icons to your users. The cod
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.avatars.get_browser(
     code="code",
 )
@@ -1676,12 +1744,15 @@ The credit card endpoint will return you the icon of the credit card provider yo
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.avatars.get_credit_card(
     code="code",
 )
@@ -1772,12 +1843,15 @@ Use this endpoint to fetch the favorite icon (AKA favicon) of any remote website
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.avatars.get_favicon(
     url="url",
 )
@@ -1844,12 +1918,15 @@ You can use this endpoint to show different country flags icons to your users. T
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.avatars.get_flag(
     code="code",
 )
@@ -1940,12 +2017,15 @@ Use this endpoint to fetch a remote image URL and crop it to any image size you 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.avatars.get_image(
     url="url",
 )
@@ -2030,12 +2110,15 @@ You can use the color and background params to change the avatar colors. By defa
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.avatars.get_initials()
 
 ```
@@ -2132,12 +2215,15 @@ Converts a given plain text to a QR code image. You can use the query parameters
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.avatars.avatars_get_qr(
     text="text",
 )
@@ -2201,7 +2287,7 @@ client.avatars.avatars_get_qr(
 </details>
 
 ## database
-<details><summary><code>client.database.<a href="src/fern/database/client.py">list_documents</a>(...)</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py">list_documents</a>(...) -> DocumentList</code></summary>
 <dl>
 <dd>
 
@@ -2229,12 +2315,15 @@ Get a list of all the user documents. You can use the query params to filter you
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.database.list_documents(
     collection_id="collectionId",
 )
@@ -2329,7 +2418,7 @@ client.database.list_documents(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">create_document</a>(...)</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py">create_document</a>(...) -> Document</code></summary>
 <dl>
 <dd>
 
@@ -2357,15 +2446,20 @@ Create a new Document. Before using this route, you should create a new collecti
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.database.create_document(
     collection_id="collectionId",
-    data={"key": "value"},
+    data={
+        "key": "value"
+    },
 )
 
 ```
@@ -2390,7 +2484,7 @@ client.database.create_document(
 <dl>
 <dd>
 
-**data:** `typing.Dict[str, typing.Optional[typing.Any]]` — Document data as JSON object.
+**data:** `typing.Dict[str, typing.Any]` — Document data as JSON object.
     
 </dd>
 </dl>
@@ -2422,7 +2516,7 @@ client.database.create_document(
 <dl>
 <dd>
 
-**read:** `typing.Optional[typing.Sequence[str]]` — An array of strings with read permissions. By default only the current user is granted with read permissions. [learn more about permissions](/docs/permissions) and get a full list of available permissions.
+**read:** `typing.Optional[typing.List[str]]` — An array of strings with read permissions. By default only the current user is granted with read permissions. [learn more about permissions](/docs/permissions) and get a full list of available permissions.
     
 </dd>
 </dl>
@@ -2430,7 +2524,7 @@ client.database.create_document(
 <dl>
 <dd>
 
-**write:** `typing.Optional[typing.Sequence[str]]` — An array of strings with write permissions. By default only the current user is granted with write permissions. [learn more about permissions](/docs/permissions) and get a full list of available permissions.
+**write:** `typing.Optional[typing.List[str]]` — An array of strings with write permissions. By default only the current user is granted with write permissions. [learn more about permissions](/docs/permissions) and get a full list of available permissions.
     
 </dd>
 </dl>
@@ -2450,7 +2544,7 @@ client.database.create_document(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">get_document</a>(...)</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py">get_document</a>(...) -> Document</code></summary>
 <dl>
 <dd>
 
@@ -2478,12 +2572,15 @@ Get a document by its unique ID. This endpoint response returns a JSON object wi
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.database.get_document(
     collection_id="collectionId",
     document_id="documentId",
@@ -2559,12 +2656,15 @@ Delete a document by its unique ID. This endpoint deletes only the parent docume
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.database.delete_document(
     collection_id="collectionId",
     document_id="documentId",
@@ -2612,7 +2712,7 @@ client.database.delete_document(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">update_document</a>(...)</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py">update_document</a>(...) -> Document</code></summary>
 <dl>
 <dd>
 
@@ -2640,16 +2740,21 @@ Update a document by its unique ID. Using the patch method you can pass only spe
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.database.update_document(
     collection_id="collectionId",
     document_id="documentId",
-    data={"key": "value"},
+    data={
+        "key": "value"
+    },
 )
 
 ```
@@ -2682,7 +2787,7 @@ client.database.update_document(
 <dl>
 <dd>
 
-**data:** `typing.Dict[str, typing.Optional[typing.Any]]` — Document data as JSON object.
+**data:** `typing.Dict[str, typing.Any]` — Document data as JSON object.
     
 </dd>
 </dl>
@@ -2690,7 +2795,7 @@ client.database.update_document(
 <dl>
 <dd>
 
-**read:** `typing.Optional[typing.Sequence[str]]` — An array of strings with read permissions. By default inherits the existing read permissions. [learn more about permissions](/docs/permissions) and get a full list of available permissions.
+**read:** `typing.Optional[typing.List[str]]` — An array of strings with read permissions. By default inherits the existing read permissions. [learn more about permissions](/docs/permissions) and get a full list of available permissions.
     
 </dd>
 </dl>
@@ -2698,7 +2803,7 @@ client.database.update_document(
 <dl>
 <dd>
 
-**write:** `typing.Optional[typing.Sequence[str]]` — An array of strings with write permissions. By default inherits the existing write permissions. [learn more about permissions](/docs/permissions) and get a full list of available permissions.
+**write:** `typing.Optional[typing.List[str]]` — An array of strings with write permissions. By default inherits the existing write permissions. [learn more about permissions](/docs/permissions) and get a full list of available permissions.
     
 </dd>
 </dl>
@@ -2719,7 +2824,7 @@ client.database.update_document(
 </details>
 
 ## functions
-<details><summary><code>client.functions.<a href="src/fern/functions/client.py">list_executions</a>(...)</code></summary>
+<details><summary><code>client.functions.<a href="src/fern/functions/client.py">list_executions</a>(...) -> ExecutionList</code></summary>
 <dl>
 <dd>
 
@@ -2747,12 +2852,15 @@ Get a list of all the current user function execution logs. You can use the quer
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.functions.list_executions(
     function_id="functionId",
 )
@@ -2823,7 +2931,7 @@ client.functions.list_executions(
 </dl>
 </details>
 
-<details><summary><code>client.functions.<a href="src/fern/functions/client.py">create_execution</a>(...)</code></summary>
+<details><summary><code>client.functions.<a href="src/fern/functions/client.py">create_execution</a>(...) -> Execution</code></summary>
 <dl>
 <dd>
 
@@ -2851,12 +2959,15 @@ Trigger a function execution. The returned object will return you the current ex
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.functions.create_execution(
     function_id="functionId",
 )
@@ -2903,7 +3014,7 @@ client.functions.create_execution(
 </dl>
 </details>
 
-<details><summary><code>client.functions.<a href="src/fern/functions/client.py">get_execution</a>(...)</code></summary>
+<details><summary><code>client.functions.<a href="src/fern/functions/client.py">get_execution</a>(...) -> Execution</code></summary>
 <dl>
 <dd>
 
@@ -2931,12 +3042,15 @@ Get a function execution log by its unique ID.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.functions.get_execution(
     function_id="functionId",
     execution_id="executionId",
@@ -2985,7 +3099,7 @@ client.functions.get_execution(
 </details>
 
 ## locale
-<details><summary><code>client.locale.<a href="src/fern/locale/client.py">get</a>()</code></summary>
+<details><summary><code>client.locale.<a href="src/fern/locale/client.py">get</a>() -> Locale</code></summary>
 <dl>
 <dd>
 
@@ -3015,12 +3129,15 @@ Get the current user location based on IP. Returns an object with user country c
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.locale.get()
 
 ```
@@ -3049,7 +3166,7 @@ client.locale.get()
 </dl>
 </details>
 
-<details><summary><code>client.locale.<a href="src/fern/locale/client.py">get_continents</a>()</code></summary>
+<details><summary><code>client.locale.<a href="src/fern/locale/client.py">get_continents</a>() -> ContinentList</code></summary>
 <dl>
 <dd>
 
@@ -3077,12 +3194,15 @@ List of all continents. You can use the locale header to get the data in a suppo
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.locale.get_continents()
 
 ```
@@ -3111,7 +3231,7 @@ client.locale.get_continents()
 </dl>
 </details>
 
-<details><summary><code>client.locale.<a href="src/fern/locale/client.py">get_countries</a>()</code></summary>
+<details><summary><code>client.locale.<a href="src/fern/locale/client.py">get_countries</a>() -> CountryList</code></summary>
 <dl>
 <dd>
 
@@ -3139,12 +3259,15 @@ List of all countries. You can use the locale header to get the data in a suppor
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.locale.get_countries()
 
 ```
@@ -3173,7 +3296,7 @@ client.locale.get_countries()
 </dl>
 </details>
 
-<details><summary><code>client.locale.<a href="src/fern/locale/client.py">locale_get_countries_eu</a>()</code></summary>
+<details><summary><code>client.locale.<a href="src/fern/locale/client.py">locale_get_countries_eu</a>() -> CountryList</code></summary>
 <dl>
 <dd>
 
@@ -3201,12 +3324,15 @@ List of all countries that are currently members of the EU. You can use the loca
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.locale.locale_get_countries_eu()
 
 ```
@@ -3235,7 +3361,7 @@ client.locale.locale_get_countries_eu()
 </dl>
 </details>
 
-<details><summary><code>client.locale.<a href="src/fern/locale/client.py">get_countries_phones</a>()</code></summary>
+<details><summary><code>client.locale.<a href="src/fern/locale/client.py">get_countries_phones</a>() -> PhoneList</code></summary>
 <dl>
 <dd>
 
@@ -3263,12 +3389,15 @@ List of all countries phone codes. You can use the locale header to get the data
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.locale.get_countries_phones()
 
 ```
@@ -3297,7 +3426,7 @@ client.locale.get_countries_phones()
 </dl>
 </details>
 
-<details><summary><code>client.locale.<a href="src/fern/locale/client.py">get_currencies</a>()</code></summary>
+<details><summary><code>client.locale.<a href="src/fern/locale/client.py">get_currencies</a>() -> CurrencyList</code></summary>
 <dl>
 <dd>
 
@@ -3325,12 +3454,15 @@ List of all currencies, including currency symbol, name, plural, and decimal dig
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.locale.get_currencies()
 
 ```
@@ -3359,7 +3491,7 @@ client.locale.get_currencies()
 </dl>
 </details>
 
-<details><summary><code>client.locale.<a href="src/fern/locale/client.py">get_languages</a>()</code></summary>
+<details><summary><code>client.locale.<a href="src/fern/locale/client.py">get_languages</a>() -> LanguageList</code></summary>
 <dl>
 <dd>
 
@@ -3387,12 +3519,15 @@ List of all languages classified by ISO 639-1 including 2-letter code, name in E
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.locale.get_languages()
 
 ```
@@ -3422,7 +3557,7 @@ client.locale.get_languages()
 </details>
 
 ## storage
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">list_files</a>(...)</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py">list_files</a>(...) -> FileList</code></summary>
 <dl>
 <dd>
 
@@ -3450,12 +3585,15 @@ Get a list of all the user files. You can use the query params to filter your re
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.storage.list_files()
 
 ```
@@ -3516,7 +3654,7 @@ client.storage.list_files()
 </dl>
 </details>
 
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">create_file</a>(...)</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py">create_file</a>(...) -> File</code></summary>
 <dl>
 <dd>
 
@@ -3544,12 +3682,15 @@ Create a new file. The user who creates the file will automatically be assigned 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.storage.create_file(
     file="file",
 )
@@ -3604,7 +3745,7 @@ client.storage.create_file(
 </dl>
 </details>
 
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">get_file</a>(...)</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py">get_file</a>(...) -> File</code></summary>
 <dl>
 <dd>
 
@@ -3632,12 +3773,15 @@ Get a file by its unique ID. This endpoint response returns a JSON object with t
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.storage.get_file(
     file_id="fileId",
 )
@@ -3676,7 +3820,7 @@ client.storage.get_file(
 </dl>
 </details>
 
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">update_file</a>(...)</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py">update_file</a>(...) -> File</code></summary>
 <dl>
 <dd>
 
@@ -3704,16 +3848,23 @@ Update a file by its unique ID. Only users with write permissions have access to
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.storage.update_file(
     file_id="fileId",
-    read=["read"],
-    write=["write"],
+    read=[
+        "read"
+    ],
+    write=[
+        "write"
+    ],
 )
 
 ```
@@ -3738,7 +3889,7 @@ client.storage.update_file(
 <dl>
 <dd>
 
-**read:** `typing.Sequence[str]` — An array of strings with read permissions. By default no user is granted with any read permissions. [learn more about permissions](/docs/permissions) and get a full list of available permissions.
+**read:** `typing.List[str]` — An array of strings with read permissions. By default no user is granted with any read permissions. [learn more about permissions](/docs/permissions) and get a full list of available permissions.
     
 </dd>
 </dl>
@@ -3746,7 +3897,7 @@ client.storage.update_file(
 <dl>
 <dd>
 
-**write:** `typing.Sequence[str]` — An array of strings with write permissions. By default no user is granted with any write permissions. [learn more about permissions](/docs/permissions) and get a full list of available permissions.
+**write:** `typing.List[str]` — An array of strings with write permissions. By default no user is granted with any write permissions. [learn more about permissions](/docs/permissions) and get a full list of available permissions.
     
 </dd>
 </dl>
@@ -3794,12 +3945,15 @@ Delete a file by its unique ID. Only users with write permissions have access to
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.storage.delete_file(
     file_id="fileId",
 )
@@ -3866,12 +4020,15 @@ Get a file content by its unique ID. The endpoint response return with a 'Conten
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.storage.get_file_download(
     file_id="fileId",
 )
@@ -3938,12 +4095,15 @@ Get a file preview image. Currently, this method supports preview for image file
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.storage.get_file_preview(
     file_id="fileId",
 )
@@ -4098,12 +4258,15 @@ Get a file content by its unique ID. This endpoint is similar to the download me
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.storage.get_file_view(
     file_id="fileId",
 )
@@ -4143,7 +4306,7 @@ client.storage.get_file_view(
 </details>
 
 ## teams
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">list</a>(...)</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py">list</a>(...) -> TeamList</code></summary>
 <dl>
 <dd>
 
@@ -4171,12 +4334,15 @@ Get a list of all the current user teams. You can use the query params to filter
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.teams.list()
 
 ```
@@ -4237,7 +4403,7 @@ client.teams.list()
 </dl>
 </details>
 
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">create</a>(...)</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py">create</a>(...) -> Team</code></summary>
 <dl>
 <dd>
 
@@ -4265,12 +4431,15 @@ Create a new team. The user who creates the team will automatically be assigned 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.teams.create(
     name="name",
 )
@@ -4297,7 +4466,7 @@ client.teams.create(
 <dl>
 <dd>
 
-**roles:** `typing.Optional[typing.Sequence[str]]` — Array of strings. Use this param to set the roles in the team for the user who created it. The default role is **owner**. A role can be any string. Learn more about [roles and permissions](/docs/permissions). Max length for each role is 32 chars.
+**roles:** `typing.Optional[typing.List[str]]` — Array of strings. Use this param to set the roles in the team for the user who created it. The default role is **owner**. A role can be any string. Learn more about [roles and permissions](/docs/permissions). Max length for each role is 32 chars.
     
 </dd>
 </dl>
@@ -4317,7 +4486,7 @@ client.teams.create(
 </dl>
 </details>
 
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">get</a>(...)</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py">get</a>(...) -> Team</code></summary>
 <dl>
 <dd>
 
@@ -4345,12 +4514,15 @@ Get a team by its unique ID. All team members have read access for this resource
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.teams.get(
     team_id="teamId",
 )
@@ -4389,7 +4561,7 @@ client.teams.get(
 </dl>
 </details>
 
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">update</a>(...)</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py">update</a>(...) -> Team</code></summary>
 <dl>
 <dd>
 
@@ -4417,12 +4589,15 @@ Update a team by its unique ID. Only team owners have write access for this reso
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.teams.update(
     team_id="teamId",
     name="name",
@@ -4498,12 +4673,15 @@ Delete a team by its unique ID. Only team owners have write access for this reso
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.teams.delete(
     team_id="teamId",
 )
@@ -4542,7 +4720,7 @@ client.teams.delete(
 </dl>
 </details>
 
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">get_memberships</a>(...)</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py">get_memberships</a>(...) -> MembershipList</code></summary>
 <dl>
 <dd>
 
@@ -4570,12 +4748,15 @@ Get a team members by the team unique ID. All team members have read access for 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.teams.get_memberships(
     team_id="teamId",
 )
@@ -4646,7 +4827,7 @@ client.teams.get_memberships(
 </dl>
 </details>
 
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">create_membership</a>(...)</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py">create_membership</a>(...) -> Membership</code></summary>
 <dl>
 <dd>
 
@@ -4678,16 +4859,21 @@ Please note that in order to avoid a [Redirect Attacks](https://github.com/OWASP
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.teams.create_membership(
     team_id="teamId",
     email="email",
-    roles=["roles"],
+    roles=[
+        "roles"
+    ],
     url="url",
 )
 
@@ -4721,7 +4907,7 @@ client.teams.create_membership(
 <dl>
 <dd>
 
-**roles:** `typing.Sequence[str]` — Array of strings. Use this param to set the user roles in the team. A role can be any string. Learn more about [roles and permissions](/docs/permissions). Max length for each role is 32 chars.
+**roles:** `typing.List[str]` — Array of strings. Use this param to set the user roles in the team. A role can be any string. Learn more about [roles and permissions](/docs/permissions). Max length for each role is 32 chars.
     
 </dd>
 </dl>
@@ -4785,12 +4971,15 @@ This endpoint allows a user to leave a team or for a team owner to delete the me
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.teams.delete_membership(
     team_id="teamId",
     membership_id="membershipId",
@@ -4838,7 +5027,7 @@ client.teams.delete_membership(
 </dl>
 </details>
 
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">update_membership_roles</a>(...)</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py">update_membership_roles</a>(...) -> Membership</code></summary>
 <dl>
 <dd>
 
@@ -4866,16 +5055,21 @@ client.teams.delete_membership(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.teams.update_membership_roles(
     team_id="teamId",
     membership_id="membershipId",
-    roles=["roles"],
+    roles=[
+        "roles"
+    ],
 )
 
 ```
@@ -4908,7 +5102,7 @@ client.teams.update_membership_roles(
 <dl>
 <dd>
 
-**roles:** `typing.Sequence[str]` — Array of strings. Use this param to set the user roles in the team. A role can be any string. Learn more about [roles and permissions](/docs/permissions). Max length for each role is 32 chars.
+**roles:** `typing.List[str]` — Array of strings. Use this param to set the user roles in the team. A role can be any string. Learn more about [roles and permissions](/docs/permissions). Max length for each role is 32 chars.
     
 </dd>
 </dl>
@@ -4928,7 +5122,7 @@ client.teams.update_membership_roles(
 </dl>
 </details>
 
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">update_membership_status</a>(...)</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py">update_membership_status</a>(...) -> Membership</code></summary>
 <dl>
 <dd>
 
@@ -4956,12 +5150,15 @@ Use this endpoint to allow a user to accept an invitation to join a team after b
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    appwrite_locale="YOUR_APPWRITE_LOCALE",
-    appwrite_project="YOUR_APPWRITE_PROJECT",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    appwrite_locale="<X-Appwrite-Locale>",
+    appwrite_project="<X-Appwrite-Project>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.teams.update_membership_status(
     team_id="teamId",
     membership_id="membershipId",

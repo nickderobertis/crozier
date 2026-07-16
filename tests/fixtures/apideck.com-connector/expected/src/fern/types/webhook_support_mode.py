@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class WebhookSupportMode(str, enum.Enum):
+class WebhookSupportMode(enum.StrEnum):
     """
     Mode of the webhook support.
     """

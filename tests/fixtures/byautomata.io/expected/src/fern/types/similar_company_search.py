@@ -10,7 +10,9 @@ from .snippet import Snippet
 
 
 class SimilarCompanySearch(UniversalBaseModel):
-    company_name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="companyName")] = None
+    company_name: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="companyName"), pydantic.Field(alias="companyName")
+    ] = None
     description: typing.Optional[str] = None
     employee: typing.Optional[str] = None
     industry: typing.Optional[str] = None

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class CompanyInfoStatus(str, enum.Enum):
+class CompanyInfoStatus(enum.StrEnum):
     """
     Based on the status some functionality is enabled or disabled.
     """

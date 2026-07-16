@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class CheckOperationReadStatus(str, enum.Enum):
+class CheckOperationReadStatus(enum.StrEnum):
     SUCCEEDED = "succeeded"
     FAILED = "failed"
 

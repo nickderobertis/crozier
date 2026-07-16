@@ -26,7 +26,7 @@ class SshClient:
 
     def protocol_ssh_get_args(
         self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Dict[str, typing.Optional[typing.Any]]:
+    ) -> typing.Dict[str, typing.Any]:
         """
         Agent's SSH configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
@@ -40,7 +40,7 @@ class SshClient:
 
         Returns
         -------
-        typing.Dict[str, typing.Optional[typing.Any]]
+        typing.Dict[str, typing.Any]
             successful operation
 
         Examples
@@ -449,7 +449,7 @@ class AsyncSshClient:
 
     async def protocol_ssh_get_args(
         self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Dict[str, typing.Optional[typing.Any]]:
+    ) -> typing.Dict[str, typing.Any]:
         """
         Agent's SSH configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
@@ -463,7 +463,7 @@ class AsyncSshClient:
 
         Returns
         -------
-        typing.Dict[str, typing.Optional[typing.Any]]
+        typing.Dict[str, typing.Any]
             successful operation
 
         Examples

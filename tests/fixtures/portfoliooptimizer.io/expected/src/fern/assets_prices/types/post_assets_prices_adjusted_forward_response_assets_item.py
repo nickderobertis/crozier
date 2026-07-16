@@ -15,7 +15,11 @@ class PostAssetsPricesAdjustedForwardResponseAssetsItem(UniversalBaseModel):
     asset_adjusted_prices: typing_extensions.Annotated[
         typing.List[PostAssetsPricesAdjustedForwardResponseAssetsItemAssetAdjustedPricesItem],
         FieldMetadata(alias="assetAdjustedPrices"),
-    ] = pydantic.Field()
+        pydantic.Field(
+            alias="assetAdjustedPrices",
+            description="assetAdjustedPrices[t] contains adjusted price information for the asset at the date t",
+        ),
+    ]
     """
     assetAdjustedPrices[t] contains adjusted price information for the asset at the date t
     """

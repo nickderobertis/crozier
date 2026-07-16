@@ -14,9 +14,9 @@ class LeaveLines(UniversalBaseModel):
     The leave type lines
     """
 
-    employee: typing_extensions.Annotated[typing.Optional[typing.List[LeaveLine]], FieldMetadata(alias="Employee")] = (
-        None
-    )
+    employee: typing_extensions.Annotated[
+        typing.Optional[typing.List[LeaveLine]], FieldMetadata(alias="Employee"), pydantic.Field(alias="Employee")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

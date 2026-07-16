@@ -13,7 +13,11 @@ class Certificate(UniversalBaseModel):
     A SSL/TLS X509 certificate
     """
 
-    auto_renew: typing_extensions.Annotated[str, FieldMetadata(alias="autoRenew")] = pydantic.Field()
+    auto_renew: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="autoRenew"),
+        pydantic.Field(alias="autoRenew", description="Allow Otoroshi to renew the certificate (if self signed)"),
+    ]
     """
     Allow Otoroshi to renew the certificate (if self signed)
     """
@@ -23,7 +27,11 @@ class Certificate(UniversalBaseModel):
     Certificate is a CA (read only)
     """
 
-    ca_ref: typing_extensions.Annotated[str, FieldMetadata(alias="caRef")] = pydantic.Field()
+    ca_ref: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="caRef"),
+        pydantic.Field(alias="caRef", description="Reference for a CA certificate in otoroshi"),
+    ]
     """
     Reference for a CA certificate in otoroshi
     """
@@ -38,7 +46,9 @@ class Certificate(UniversalBaseModel):
     Domain of the certificate (read only)
     """
 
-    from_: typing_extensions.Annotated[str, FieldMetadata(alias="from")] = pydantic.Field()
+    from_: typing_extensions.Annotated[
+        str, FieldMetadata(alias="from"), pydantic.Field(alias="from", description="Start date of validity")
+    ]
     """
     Start date of validity
     """
@@ -48,12 +58,20 @@ class Certificate(UniversalBaseModel):
     Id of the certificate
     """
 
-    private_key: typing_extensions.Annotated[str, FieldMetadata(alias="privateKey")] = pydantic.Field()
+    private_key: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="privateKey"),
+        pydantic.Field(alias="privateKey", description="PKCS8 private key in PEM format"),
+    ]
     """
     PKCS8 private key in PEM format
     """
 
-    self_signed: typing_extensions.Annotated[str, FieldMetadata(alias="selfSigned")] = pydantic.Field()
+    self_signed: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="selfSigned"),
+        pydantic.Field(alias="selfSigned", description="Certificate is self signed  read only)"),
+    ]
     """
     Certificate is self signed  read only)
     """

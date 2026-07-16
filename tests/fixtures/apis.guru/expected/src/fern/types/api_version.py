@@ -16,13 +16,15 @@ class ApiVersion(UniversalBaseModel):
     """
 
     external_docs: typing_extensions.Annotated[
-        typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]], FieldMetadata(alias="externalDocs")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.Dict[str, typing.Any]],
+        FieldMetadata(alias="externalDocs"),
+        pydantic.Field(alias="externalDocs", description="Copy of `externalDocs` section from OpenAPI definition"),
+    ] = None
     """
     Copy of `externalDocs` section from OpenAPI definition
     """
 
-    info: typing.Dict[str, typing.Optional[typing.Any]] = pydantic.Field()
+    info: typing.Dict[str, typing.Any] = pydantic.Field()
     """
     Copy of `info` section from OpenAPI definition
     """
@@ -32,17 +34,31 @@ class ApiVersion(UniversalBaseModel):
     Link to the individual API entry for this API
     """
 
-    openapi_ver: typing_extensions.Annotated[str, FieldMetadata(alias="openapiVer")] = pydantic.Field()
+    openapi_ver: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="openapiVer"),
+        pydantic.Field(
+            alias="openapiVer", description="The value of the `openapi` or `swagger` property of the source definition"
+        ),
+    ]
     """
     The value of the `openapi` or `swagger` property of the source definition
     """
 
-    swagger_url: typing_extensions.Annotated[str, FieldMetadata(alias="swaggerUrl")] = pydantic.Field()
+    swagger_url: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="swaggerUrl"),
+        pydantic.Field(alias="swaggerUrl", description="URL to OpenAPI definition in JSON format"),
+    ]
     """
     URL to OpenAPI definition in JSON format
     """
 
-    swagger_yaml_url: typing_extensions.Annotated[str, FieldMetadata(alias="swaggerYamlUrl")] = pydantic.Field()
+    swagger_yaml_url: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="swaggerYamlUrl"),
+        pydantic.Field(alias="swaggerYamlUrl", description="URL to OpenAPI definition in YAML format"),
+    ]
     """
     URL to OpenAPI definition in YAML format
     """

@@ -22,14 +22,23 @@ class DestinyDefinitionsDestinyStatOverrideDefinition(UniversalBaseModel):
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="displayProperties",
+            description="The display properties to show instead of the base DestinyStatDefinition display properties.",
+        ),
+    ] = None
     """
     The display properties to show instead of the base DestinyStatDefinition display properties.
     """
 
-    stat_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="statHash")] = pydantic.Field(
-        default=None
-    )
+    stat_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="statHash"),
+        pydantic.Field(
+            alias="statHash",
+            description="The hash identifier of the stat whose display properties are being overridden.",
+        ),
+    ] = None
     """
     The hash identifier of the stat whose display properties are being overridden.
     """

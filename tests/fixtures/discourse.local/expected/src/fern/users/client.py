@@ -537,7 +537,7 @@ class UsersClient:
         api_key: str,
         api_username: str,
         email: typing.Optional[str] = OMIT,
-        external_ids: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        external_ids: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         name: typing.Optional[str] = OMIT,
         password: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -553,7 +553,7 @@ class UsersClient:
 
         email : typing.Optional[str]
 
-        external_ids : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        external_ids : typing.Optional[typing.Dict[str, typing.Any]]
 
         name : typing.Optional[str]
 
@@ -798,7 +798,7 @@ class UsersClient:
         username: str,
         active: typing.Optional[bool] = OMIT,
         approved: typing.Optional[bool] = OMIT,
-        external_ids: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        external_ids: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         user_fields1: typing.Optional[bool] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> CreateUserResponse:
@@ -823,7 +823,7 @@ class UsersClient:
 
         approved : typing.Optional[bool]
 
-        external_ids : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        external_ids : typing.Optional[typing.Dict[str, typing.Any]]
 
         user_fields1 : typing.Optional[bool]
 
@@ -1500,7 +1500,7 @@ class AsyncUsersClient:
         api_key: str,
         api_username: str,
         email: typing.Optional[str] = OMIT,
-        external_ids: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        external_ids: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         name: typing.Optional[str] = OMIT,
         password: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -1516,7 +1516,7 @@ class AsyncUsersClient:
 
         email : typing.Optional[str]
 
-        external_ids : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        external_ids : typing.Optional[typing.Dict[str, typing.Any]]
 
         name : typing.Optional[str]
 
@@ -1817,7 +1817,7 @@ class AsyncUsersClient:
         username: str,
         active: typing.Optional[bool] = OMIT,
         approved: typing.Optional[bool] = OMIT,
-        external_ids: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        external_ids: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         user_fields1: typing.Optional[bool] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> CreateUserResponse:
@@ -1842,7 +1842,7 @@ class AsyncUsersClient:
 
         approved : typing.Optional[bool]
 
-        external_ids : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        external_ids : typing.Optional[typing.Dict[str, typing.Any]]
 
         user_fields1 : typing.Optional[bool]
 

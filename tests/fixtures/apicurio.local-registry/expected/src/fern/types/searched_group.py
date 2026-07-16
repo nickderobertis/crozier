@@ -15,12 +15,16 @@ class SearchedGroup(UniversalBaseModel):
     Models a single group from the result set returned when searching for groups.
     """
 
-    created_by: typing_extensions.Annotated[str, FieldMetadata(alias="createdBy")] = pydantic.Field()
+    created_by: typing_extensions.Annotated[
+        str, FieldMetadata(alias="createdBy"), pydantic.Field(alias="createdBy", description="")
+    ]
     """
     
     """
 
-    created_on: typing_extensions.Annotated[dt.datetime, FieldMetadata(alias="createdOn")] = pydantic.Field()
+    created_on: typing_extensions.Annotated[
+        dt.datetime, FieldMetadata(alias="createdOn"), pydantic.Field(alias="createdOn", description="")
+    ]
     """
     
     """
@@ -35,12 +39,16 @@ class SearchedGroup(UniversalBaseModel):
     
     """
 
-    modified_by: typing_extensions.Annotated[str, FieldMetadata(alias="modifiedBy")] = pydantic.Field()
+    modified_by: typing_extensions.Annotated[
+        str, FieldMetadata(alias="modifiedBy"), pydantic.Field(alias="modifiedBy", description="")
+    ]
     """
     
     """
 
-    modified_on: typing_extensions.Annotated[dt.datetime, FieldMetadata(alias="modifiedOn")] = pydantic.Field()
+    modified_on: typing_extensions.Annotated[
+        dt.datetime, FieldMetadata(alias="modifiedOn"), pydantic.Field(alias="modifiedOn", description="")
+    ]
     """
     
     """

@@ -11,8 +11,12 @@ from .workspace_id import WorkspaceId
 
 
 class ImportRequestBody(UniversalBaseModel):
-    resource_id: typing_extensions.Annotated[ResourceId, FieldMetadata(alias="resourceId")]
-    workspace_id: typing_extensions.Annotated[WorkspaceId, FieldMetadata(alias="workspaceId")]
+    resource_id: typing_extensions.Annotated[
+        ResourceId, FieldMetadata(alias="resourceId"), pydantic.Field(alias="resourceId")
+    ]
+    workspace_id: typing_extensions.Annotated[
+        WorkspaceId, FieldMetadata(alias="workspaceId"), pydantic.Field(alias="workspaceId")
+    ]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

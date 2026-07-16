@@ -13,19 +13,25 @@ class Document(UniversalBaseModel):
     Document
     """
 
-    collection: typing_extensions.Annotated[str, FieldMetadata(alias="$collection")] = pydantic.Field()
+    collection: typing_extensions.Annotated[
+        str, FieldMetadata(alias="$collection"), pydantic.Field(alias="$collection", description="Collection ID.")
+    ]
     """
     Collection ID.
     """
 
-    id: typing_extensions.Annotated[str, FieldMetadata(alias="$id")] = pydantic.Field()
+    id: typing_extensions.Annotated[
+        str, FieldMetadata(alias="$id"), pydantic.Field(alias="$id", description="Document ID.")
+    ]
     """
     Document ID.
     """
 
     permissions: typing_extensions.Annotated[
-        typing.Dict[str, typing.Optional[typing.Any]], FieldMetadata(alias="$permissions")
-    ] = pydantic.Field()
+        typing.Dict[str, typing.Any],
+        FieldMetadata(alias="$permissions"),
+        pydantic.Field(alias="$permissions", description="Document permissions."),
+    ]
     """
     Document permissions.
     """

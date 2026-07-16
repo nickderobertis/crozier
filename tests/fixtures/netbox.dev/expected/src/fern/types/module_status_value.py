@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ModuleStatusValue(str, enum.Enum):
+class ModuleStatusValue(enum.StrEnum):
     OFFLINE = "offline"
     ACTIVE = "active"
     PLANNED = "planned"

@@ -12,7 +12,7 @@ class AnalysisUpdateEval(UniversalBaseModel):
     """
 
     analysis_status: typing.Optional[str] = None
-    annotations: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    annotations: typing.Optional[typing.Dict[str, typing.Any]] = None
     image_digest: typing.Optional[str] = None
 
     if IS_PYDANTIC_V2:

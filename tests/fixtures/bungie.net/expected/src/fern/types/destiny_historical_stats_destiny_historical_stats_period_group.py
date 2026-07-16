@@ -15,8 +15,13 @@ from .destiny_historical_stats_destiny_historical_stats_value import DestinyHist
 
 class DestinyHistoricalStatsDestinyHistoricalStatsPeriodGroup(UniversalBaseModel):
     activity_details: typing_extensions.Annotated[
-        typing.Optional[DestinyHistoricalStatsDestinyHistoricalStatsActivity], FieldMetadata(alias="activityDetails")
-    ] = pydantic.Field(default=None)
+        typing.Optional[DestinyHistoricalStatsDestinyHistoricalStatsActivity],
+        FieldMetadata(alias="activityDetails"),
+        pydantic.Field(
+            alias="activityDetails",
+            description="If the period group is for a specific activity, this property will be set.",
+        ),
+    ] = None
     """
     If the period group is for a specific activity, this property will be set.
     """

@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -24,6 +25,7 @@ from .types.update_topic_status_request_enabled import UpdateTopicStatusRequestE
 from .types.update_topic_status_request_status import UpdateTopicStatusRequestStatus
 from .types.update_topic_status_response import UpdateTopicStatusResponse
 from .types.update_topic_timestamp_response import UpdateTopicTimestampResponse
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -90,6 +92,10 @@ class RawTopicsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_topic(
@@ -121,7 +127,7 @@ class RawTopicsClient:
             topic updated
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"t/-/{jsonable_encoder(id)}.json",
+            f"t/-/{encode_path_param(id)}.json",
             method="PUT",
             json={
                 "topic": convert_and_respect_annotation_metadata(
@@ -149,6 +155,10 @@ class RawTopicsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_topic_by_external_id(
@@ -167,7 +177,7 @@ class RawTopicsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"t/external_id/{jsonable_encoder(external_id)}.json",
+            f"t/external_id/{encode_path_param(external_id)}.json",
             method="GET",
             request_options=request_options,
         )
@@ -177,6 +187,10 @@ class RawTopicsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_topic(
@@ -200,7 +214,7 @@ class RawTopicsClient:
             specific posts
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"t/{jsonable_encoder(id)}.json",
+            f"t/{encode_path_param(id)}.json",
             method="GET",
             headers={
                 "Api-Key": str(api_key) if api_key is not None else None,
@@ -221,6 +235,10 @@ class RawTopicsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def remove_topic(
@@ -243,7 +261,7 @@ class RawTopicsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"t/{jsonable_encoder(id)}.json",
+            f"t/{encode_path_param(id)}.json",
             method="DELETE",
             headers={
                 "Api-Key": str(api_key) if api_key is not None else None,
@@ -257,6 +275,10 @@ class RawTopicsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def bookmark_topic(
@@ -279,7 +301,7 @@ class RawTopicsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"t/{jsonable_encoder(id)}/bookmark.json",
+            f"t/{encode_path_param(id)}/bookmark.json",
             method="PUT",
             headers={
                 "Api-Key": str(api_key) if api_key is not None else None,
@@ -293,6 +315,10 @@ class RawTopicsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_topic_timestamp(
@@ -324,7 +350,7 @@ class RawTopicsClient:
             topic updated
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"t/{jsonable_encoder(id)}/change-timestamp.json",
+            f"t/{encode_path_param(id)}/change-timestamp.json",
             method="PUT",
             json={
                 "timestamp": timestamp,
@@ -350,6 +376,10 @@ class RawTopicsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def invite_to_topic(
@@ -384,7 +414,7 @@ class RawTopicsClient:
             topic updated
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"t/{jsonable_encoder(id)}/invite.json",
+            f"t/{encode_path_param(id)}/invite.json",
             method="POST",
             json={
                 "email": email,
@@ -411,6 +441,10 @@ class RawTopicsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def set_notification_level(
@@ -442,7 +476,7 @@ class RawTopicsClient:
             topic updated
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"t/{jsonable_encoder(id)}/notifications.json",
+            f"t/{encode_path_param(id)}/notifications.json",
             method="POST",
             json={
                 "notification_level": notification_level,
@@ -468,6 +502,10 @@ class RawTopicsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_specific_posts_from_topic(
@@ -491,7 +529,7 @@ class RawTopicsClient:
             specific posts
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"t/{jsonable_encoder(id)}/posts.json",
+            f"t/{encode_path_param(id)}/posts.json",
             method="GET",
             headers={
                 "Api-Key": str(api_key) if api_key is not None else None,
@@ -512,6 +550,10 @@ class RawTopicsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_topic_status(
@@ -550,7 +592,7 @@ class RawTopicsClient:
             topic updated
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"t/{jsonable_encoder(id)}/status.json",
+            f"t/{encode_path_param(id)}/status.json",
             method="PUT",
             json={
                 "enabled": enabled,
@@ -578,6 +620,10 @@ class RawTopicsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_topic_timer(
@@ -618,7 +664,7 @@ class RawTopicsClient:
             topic updated
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"t/{jsonable_encoder(id)}/timer.json",
+            f"t/{encode_path_param(id)}/timer.json",
             method="POST",
             json={
                 "based_on_last_post": based_on_last_post,
@@ -647,6 +693,10 @@ class RawTopicsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_top_topics(
@@ -700,6 +750,10 @@ class RawTopicsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -764,6 +818,10 @@ class AsyncRawTopicsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_topic(
@@ -795,7 +853,7 @@ class AsyncRawTopicsClient:
             topic updated
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"t/-/{jsonable_encoder(id)}.json",
+            f"t/-/{encode_path_param(id)}.json",
             method="PUT",
             json={
                 "topic": convert_and_respect_annotation_metadata(
@@ -823,6 +881,10 @@ class AsyncRawTopicsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_topic_by_external_id(
@@ -841,7 +903,7 @@ class AsyncRawTopicsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"t/external_id/{jsonable_encoder(external_id)}.json",
+            f"t/external_id/{encode_path_param(external_id)}.json",
             method="GET",
             request_options=request_options,
         )
@@ -851,6 +913,10 @@ class AsyncRawTopicsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_topic(
@@ -874,7 +940,7 @@ class AsyncRawTopicsClient:
             specific posts
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"t/{jsonable_encoder(id)}.json",
+            f"t/{encode_path_param(id)}.json",
             method="GET",
             headers={
                 "Api-Key": str(api_key) if api_key is not None else None,
@@ -895,6 +961,10 @@ class AsyncRawTopicsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def remove_topic(
@@ -917,7 +987,7 @@ class AsyncRawTopicsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"t/{jsonable_encoder(id)}.json",
+            f"t/{encode_path_param(id)}.json",
             method="DELETE",
             headers={
                 "Api-Key": str(api_key) if api_key is not None else None,
@@ -931,6 +1001,10 @@ class AsyncRawTopicsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def bookmark_topic(
@@ -953,7 +1027,7 @@ class AsyncRawTopicsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"t/{jsonable_encoder(id)}/bookmark.json",
+            f"t/{encode_path_param(id)}/bookmark.json",
             method="PUT",
             headers={
                 "Api-Key": str(api_key) if api_key is not None else None,
@@ -967,6 +1041,10 @@ class AsyncRawTopicsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_topic_timestamp(
@@ -998,7 +1076,7 @@ class AsyncRawTopicsClient:
             topic updated
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"t/{jsonable_encoder(id)}/change-timestamp.json",
+            f"t/{encode_path_param(id)}/change-timestamp.json",
             method="PUT",
             json={
                 "timestamp": timestamp,
@@ -1024,6 +1102,10 @@ class AsyncRawTopicsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def invite_to_topic(
@@ -1058,7 +1140,7 @@ class AsyncRawTopicsClient:
             topic updated
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"t/{jsonable_encoder(id)}/invite.json",
+            f"t/{encode_path_param(id)}/invite.json",
             method="POST",
             json={
                 "email": email,
@@ -1085,6 +1167,10 @@ class AsyncRawTopicsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def set_notification_level(
@@ -1116,7 +1202,7 @@ class AsyncRawTopicsClient:
             topic updated
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"t/{jsonable_encoder(id)}/notifications.json",
+            f"t/{encode_path_param(id)}/notifications.json",
             method="POST",
             json={
                 "notification_level": notification_level,
@@ -1142,6 +1228,10 @@ class AsyncRawTopicsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_specific_posts_from_topic(
@@ -1165,7 +1255,7 @@ class AsyncRawTopicsClient:
             specific posts
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"t/{jsonable_encoder(id)}/posts.json",
+            f"t/{encode_path_param(id)}/posts.json",
             method="GET",
             headers={
                 "Api-Key": str(api_key) if api_key is not None else None,
@@ -1186,6 +1276,10 @@ class AsyncRawTopicsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_topic_status(
@@ -1224,7 +1318,7 @@ class AsyncRawTopicsClient:
             topic updated
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"t/{jsonable_encoder(id)}/status.json",
+            f"t/{encode_path_param(id)}/status.json",
             method="PUT",
             json={
                 "enabled": enabled,
@@ -1252,6 +1346,10 @@ class AsyncRawTopicsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_topic_timer(
@@ -1292,7 +1390,7 @@ class AsyncRawTopicsClient:
             topic updated
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"t/{jsonable_encoder(id)}/timer.json",
+            f"t/{encode_path_param(id)}/timer.json",
             method="POST",
             json={
                 "based_on_last_post": based_on_last_post,
@@ -1321,6 +1419,10 @@ class AsyncRawTopicsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_top_topics(
@@ -1374,4 +1476,8 @@ class AsyncRawTopicsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class RecordHandlerProgressInputCurrentOperationStatus(str, enum.Enum):
+class RecordHandlerProgressInputCurrentOperationStatus(enum.StrEnum):
     """
     Reserved for use by the <a href="https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/what-is-cloudformation-cli.html">CloudFormation CLI</a>.
     """

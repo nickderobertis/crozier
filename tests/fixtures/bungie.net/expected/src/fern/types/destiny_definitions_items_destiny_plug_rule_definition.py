@@ -14,9 +14,11 @@ class DestinyDefinitionsItemsDestinyPlugRuleDefinition(UniversalBaseModel):
     In practice, the live Destiny data will refer to these entries by index. You can then look up that index in the appropriate property (enabledRules or insertionRules) to get the localized string for the failure message if it failed.
     """
 
-    failure_message: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="failureMessage")] = (
-        pydantic.Field(default=None)
-    )
+    failure_message: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="failureMessage"),
+        pydantic.Field(alias="failureMessage", description="The localized string to show if this rule fails."),
+    ] = None
     """
     The localized string to show if this rule fails.
     """

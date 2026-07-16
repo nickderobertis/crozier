@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class BillLineItemType(str, enum.Enum):
+class BillLineItemType(enum.StrEnum):
     """
     Bill Line Item type
     """

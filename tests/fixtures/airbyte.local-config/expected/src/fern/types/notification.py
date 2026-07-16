@@ -13,13 +13,23 @@ from .slack_notification_configuration import SlackNotificationConfiguration
 
 class Notification(UniversalBaseModel):
     customerio_configuration: typing_extensions.Annotated[
-        typing.Optional[CustomerioNotificationConfiguration], FieldMetadata(alias="customerioConfiguration")
+        typing.Optional[CustomerioNotificationConfiguration],
+        FieldMetadata(alias="customerioConfiguration"),
+        pydantic.Field(alias="customerioConfiguration"),
     ] = None
-    notification_type: typing_extensions.Annotated[NotificationType, FieldMetadata(alias="notificationType")]
-    send_on_failure: typing_extensions.Annotated[bool, FieldMetadata(alias="sendOnFailure")]
-    send_on_success: typing_extensions.Annotated[bool, FieldMetadata(alias="sendOnSuccess")]
+    notification_type: typing_extensions.Annotated[
+        NotificationType, FieldMetadata(alias="notificationType"), pydantic.Field(alias="notificationType")
+    ]
+    send_on_failure: typing_extensions.Annotated[
+        bool, FieldMetadata(alias="sendOnFailure"), pydantic.Field(alias="sendOnFailure")
+    ]
+    send_on_success: typing_extensions.Annotated[
+        bool, FieldMetadata(alias="sendOnSuccess"), pydantic.Field(alias="sendOnSuccess")
+    ]
     slack_configuration: typing_extensions.Annotated[
-        typing.Optional[SlackNotificationConfiguration], FieldMetadata(alias="slackConfiguration")
+        typing.Optional[SlackNotificationConfiguration],
+        FieldMetadata(alias="slackConfiguration"),
+        pydantic.Field(alias="slackConfiguration"),
     ] = None
 
     if IS_PYDANTIC_V2:

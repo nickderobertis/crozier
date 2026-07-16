@@ -19,16 +19,26 @@ class DestinyDefinitionsDestinyProgressionRewardDefinition(UniversalBaseModel):
     The amount of experience to give to each of the mapped progressions.
     """
 
-    apply_throttles: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="applyThrottles")] = (
-        pydantic.Field(default=None)
-    )
+    apply_throttles: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="applyThrottles"),
+        pydantic.Field(
+            alias="applyThrottles",
+            description="If true, the game's internal mechanisms to throttle progression should be applied.",
+        ),
+    ] = None
     """
     If true, the game's internal mechanisms to throttle progression should be applied.
     """
 
     progression_mapping_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="progressionMappingHash")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="progressionMappingHash"),
+        pydantic.Field(
+            alias="progressionMappingHash",
+            description="The hash identifier of the DestinyProgressionMappingDefinition that contains the progressions for which experience should be applied.",
+        ),
+    ] = None
     """
     The hash identifier of the DestinyProgressionMappingDefinition that contains the progressions for which experience should be applied.
     """

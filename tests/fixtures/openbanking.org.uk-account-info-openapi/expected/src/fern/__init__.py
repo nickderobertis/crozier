@@ -551,6 +551,7 @@ if typing.TYPE_CHECKING:
         statements,
         transactions,
     )
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .account_access import ObReadConsent1Data, ObReadConsent1DataPermissionsItem
     from .client import AsyncFernApi, FernApi
     from .environment import FernApiEnvironment
@@ -570,6 +571,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "CreationDateTime": ".types",
     "DateTime": ".types",
     "DebtorReference": ".types",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "Description0": ".types",
     "Description1": ".types",
     "Description2": ".types",
@@ -1140,6 +1143,8 @@ __all__ = [
     "CreationDateTime",
     "DateTime",
     "DebtorReference",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
     "Description0",
     "Description1",
     "Description2",

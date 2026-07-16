@@ -81,5 +81,10 @@ class ConnectorResource(UniversalBaseModel):
 
 
 from .supported_property import SupportedProperty
+from .supported_property_child_properties_item import SupportedPropertyChildPropertiesItem
 
-update_forward_refs(ConnectorResource)
+update_forward_refs(
+    ConnectorResource,
+    SupportedProperty=SupportedProperty,
+    SupportedPropertyChildPropertiesItem=SupportedPropertyChildPropertiesItem,
+)

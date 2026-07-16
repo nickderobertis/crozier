@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PaymentFrequencyType(str, enum.Enum):
+class PaymentFrequencyType(enum.StrEnum):
     WEEKLY = "WEEKLY"
     MONTHLY = "MONTHLY"
     FORTNIGHTLY = "FORTNIGHTLY"

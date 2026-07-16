@@ -17,12 +17,14 @@ class ColorBase(UniversalBaseModel):
     hsl: typing.Optional[ColorBaseHsl] = None
     lab: typing.Optional[ColorBaseLab] = None
     luminance: typing.Optional[float] = None
-    luminance_wcag: typing_extensions.Annotated[typing.Optional[float], FieldMetadata(alias="luminanceWCAG")] = None
+    luminance_wcag: typing_extensions.Annotated[
+        typing.Optional[float], FieldMetadata(alias="luminanceWCAG"), pydantic.Field(alias="luminanceWCAG")
+    ] = None
     name: typing.Optional[str] = None
     rgb: typing.Optional[ColorBaseRgb] = None
-    swatch_img: typing_extensions.Annotated[typing.Optional[ColorBaseSwatchImg], FieldMetadata(alias="swatchImg")] = (
-        None
-    )
+    swatch_img: typing_extensions.Annotated[
+        typing.Optional[ColorBaseSwatchImg], FieldMetadata(alias="swatchImg"), pydantic.Field(alias="swatchImg")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

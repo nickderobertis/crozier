@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PostPortfolioOptimizationHierarchicalRiskParityRequestClusteringOrdering(str, enum.Enum):
+class PostPortfolioOptimizationHierarchicalRiskParityRequestClusteringOrdering(enum.StrEnum):
     """
     The order to impose on the hierarchical clustering tree leaves
     """

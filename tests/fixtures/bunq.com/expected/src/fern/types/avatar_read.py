@@ -15,7 +15,11 @@ class AvatarRead(UniversalBaseModel):
     The content type of the image.
     """
 
-    uuid_: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="uuid")] = pydantic.Field(default=None)
+    uuid_: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="uuid"),
+        pydantic.Field(alias="uuid", description="The UUID of the created avatar."),
+    ] = None
     """
     The UUID of the created avatar.
     """

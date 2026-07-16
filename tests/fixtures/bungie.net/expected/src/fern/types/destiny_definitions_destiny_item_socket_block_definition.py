@@ -28,7 +28,11 @@ class DestinyDefinitionsDestinyItemSocketBlockDefinition(UniversalBaseModel):
     intrinsic_sockets: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyDefinitionsDestinyItemIntrinsicSocketEntryDefinition]],
         FieldMetadata(alias="intrinsicSockets"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="intrinsicSockets",
+            description="Each intrinsic (or immutable/permanent) socket on an item is defined here, along with the plug that is permanently affixed to the socket.",
+        ),
+    ] = None
     """
     Each intrinsic (or immutable/permanent) socket on an item is defined here, along with the plug that is permanently affixed to the socket.
     """
@@ -36,7 +40,11 @@ class DestinyDefinitionsDestinyItemSocketBlockDefinition(UniversalBaseModel):
     socket_categories: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyDefinitionsDestinyItemSocketCategoryDefinition]],
         FieldMetadata(alias="socketCategories"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="socketCategories",
+            description='A convenience property, that refers to the sockets in the "sockets" property, pre-grouped by category and ordered in the manner that they should be grouped in the UI. You could form this yourself with the existing data, but why would you want to? Enjoy life man.',
+        ),
+    ] = None
     """
     A convenience property, that refers to the sockets in the "sockets" property, pre-grouped by category and ordered in the manner that they should be grouped in the UI. You could form this yourself with the existing data, but why would you want to? Enjoy life man.
     """
@@ -44,7 +52,11 @@ class DestinyDefinitionsDestinyItemSocketBlockDefinition(UniversalBaseModel):
     socket_entries: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyDefinitionsDestinyItemSocketEntryDefinition]],
         FieldMetadata(alias="socketEntries"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="socketEntries",
+            description="Each non-intrinsic (or mutable) socket on an item is defined here. Check inside for more info.",
+        ),
+    ] = None
     """
     Each non-intrinsic (or mutable) socket on an item is defined here. Check inside for more info.
     """

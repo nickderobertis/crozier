@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class TicketPriority(str, enum.Enum):
+class TicketPriority(enum.StrEnum):
     """
     Priority of the ticket
     """

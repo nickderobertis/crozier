@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class IssueTrackingEventType(str, enum.Enum):
+class IssueTrackingEventType(enum.StrEnum):
     ALL = "*"
     ISSUE_TRACKING_TICKET_CREATED = "issue-tracking.ticket.created"
     ISSUE_TRACKING_TICKET_UPDATED = "issue-tracking.ticket.updated"

@@ -26,5 +26,16 @@ class OptionChoice(UniversalBaseModel):
 
 
 from .choice import Choice
+from .option import Option
+from .option_items import OptionItems
+from .option_set import OptionSet
+from .option_set_options_array import OptionSetOptionsArray
 
-update_forward_refs(OptionChoice)
+update_forward_refs(
+    OptionChoice,
+    Choice=Choice,
+    Option=Option,
+    OptionItems=OptionItems,
+    OptionSet=OptionSet,
+    OptionSetOptionsArray=OptionSetOptionsArray,
+)

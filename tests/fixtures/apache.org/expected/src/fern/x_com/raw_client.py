@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.forbidden_error import ForbiddenError
@@ -15,6 +16,7 @@ from ..errors.unauthorized_error import UnauthorizedError
 from ..types.error import Error
 from ..types.x_com import XCom
 from ..types.x_com_collection import XComCollection
+from pydantic import ValidationError
 
 
 class RawXComClient:
@@ -60,7 +62,7 @@ class RawXComClient:
             Success.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id)}/dagRuns/{jsonable_encoder(dag_run_id)}/taskInstances/{jsonable_encoder(task_id)}/xcomEntries",
+            f"dags/{encode_path_param(dag_id)}/dagRuns/{encode_path_param(dag_run_id)}/taskInstances/{encode_path_param(task_id)}/xcomEntries",
             method="GET",
             params={
                 "limit": limit,
@@ -103,6 +105,10 @@ class RawXComClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_xcom_entry(
@@ -150,7 +156,7 @@ class RawXComClient:
             Success.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id)}/dagRuns/{jsonable_encoder(dag_run_id)}/taskInstances/{jsonable_encoder(task_id)}/xcomEntries/{jsonable_encoder(xcom_key)}",
+            f"dags/{encode_path_param(dag_id)}/dagRuns/{encode_path_param(dag_run_id)}/taskInstances/{encode_path_param(task_id)}/xcomEntries/{encode_path_param(xcom_key)}",
             method="GET",
             params={
                 "deserialize": deserialize,
@@ -203,6 +209,10 @@ class RawXComClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -249,7 +259,7 @@ class AsyncRawXComClient:
             Success.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id)}/dagRuns/{jsonable_encoder(dag_run_id)}/taskInstances/{jsonable_encoder(task_id)}/xcomEntries",
+            f"dags/{encode_path_param(dag_id)}/dagRuns/{encode_path_param(dag_run_id)}/taskInstances/{encode_path_param(task_id)}/xcomEntries",
             method="GET",
             params={
                 "limit": limit,
@@ -292,6 +302,10 @@ class AsyncRawXComClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_xcom_entry(
@@ -339,7 +353,7 @@ class AsyncRawXComClient:
             Success.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"dags/{jsonable_encoder(dag_id)}/dagRuns/{jsonable_encoder(dag_run_id)}/taskInstances/{jsonable_encoder(task_id)}/xcomEntries/{jsonable_encoder(xcom_key)}",
+            f"dags/{encode_path_param(dag_id)}/dagRuns/{encode_path_param(dag_run_id)}/taskInstances/{encode_path_param(task_id)}/xcomEntries/{encode_path_param(xcom_key)}",
             method="GET",
             params={
                 "deserialize": deserialize,
@@ -392,4 +406,8 @@ class AsyncRawXComClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

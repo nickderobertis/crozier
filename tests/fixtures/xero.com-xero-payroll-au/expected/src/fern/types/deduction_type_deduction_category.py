@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class DeductionTypeDeductionCategory(str, enum.Enum):
+class DeductionTypeDeductionCategory(enum.StrEnum):
     NONE = "NONE"
     UNIONFEES = "UNIONFEES"
     WORKPLACEGIVING = "WORKPLACEGIVING"

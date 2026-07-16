@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class SpellComponentsItem(str, enum.Enum):
+class SpellComponentsItem(enum.StrEnum):
     V = "V"
     S = "S"
     M = "M"

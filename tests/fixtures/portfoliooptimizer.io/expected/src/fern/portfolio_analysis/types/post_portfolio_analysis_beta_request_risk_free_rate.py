@@ -12,17 +12,24 @@ from .post_portfolio_analysis_beta_request_risk_free_rate_portfolios_item import
 
 
 class PostPortfolioAnalysisBetaRequestRiskFreeRate(UniversalBaseModel):
-    benchmark_returns: typing_extensions.Annotated[typing.List[float], FieldMetadata(alias="benchmarkReturns")] = (
-        pydantic.Field()
-    )
+    benchmark_returns: typing_extensions.Annotated[
+        typing.List[float],
+        FieldMetadata(alias="benchmarkReturns"),
+        pydantic.Field(
+            alias="benchmarkReturns",
+            description="benchmarkReturns[t] is the return of the benchmark at the time t; the benchmarkReturns array must have the same length as all the portfolioReturns arrays",
+        ),
+    ]
     """
     benchmarkReturns[t] is the return of the benchmark at the time t; the benchmarkReturns array must have the same length as all the portfolioReturns arrays
     """
 
     portfolios: typing.List[PostPortfolioAnalysisBetaRequestRiskFreeRatePortfoliosItem]
-    risk_free_rate: typing_extensions.Annotated[typing.Optional[float], FieldMetadata(alias="riskFreeRate")] = (
-        pydantic.Field(default=None)
-    )
+    risk_free_rate: typing_extensions.Annotated[
+        typing.Optional[float],
+        FieldMetadata(alias="riskFreeRate"),
+        pydantic.Field(alias="riskFreeRate", description="The risk free rate, assumed to be constant for any time t"),
+    ] = None
     """
     The risk free rate, assumed to be constant for any time t
     """

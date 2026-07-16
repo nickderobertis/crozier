@@ -10,7 +10,7 @@ from .nested_tag import NestedTag
 
 class VlanGroup(UniversalBaseModel):
     created: typing.Optional[dt.datetime] = None
-    custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = None
     description: typing.Optional[str] = None
     display: typing.Optional[str] = None
     id: typing.Optional[int] = None
@@ -26,7 +26,7 @@ class VlanGroup(UniversalBaseModel):
     """
 
     name: str
-    scope: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    scope: typing.Optional[typing.Dict[str, typing.Any]] = None
     scope_id: typing.Optional[int] = None
     scope_type: typing.Optional[str] = None
     slug: str

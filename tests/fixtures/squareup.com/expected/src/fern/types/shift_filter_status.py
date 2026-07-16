@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ShiftFilterStatus(str, enum.Enum):
+class ShiftFilterStatus(enum.StrEnum):
     """
     Specifies the `status` of `Shift` records to be returned.
     """

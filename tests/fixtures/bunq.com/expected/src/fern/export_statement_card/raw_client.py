@@ -6,12 +6,14 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
 from ..types.export_statement_card_listing import ExportStatementCardListing
 from ..types.export_statement_card_read import ExportStatementCardRead
+from pydantic import ValidationError
 
 
 class RawExportStatementCardClient:
@@ -41,7 +43,7 @@ class RawExportStatementCardClient:
             Used to create new and read existing card statement exports. Statement exports can be created in either CSV or PDF file format.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/card/{jsonable_encoder(card_id)}/export-statement-card",
+            f"user/{encode_path_param(user_id)}/card/{encode_path_param(card_id)}/export-statement-card",
             method="GET",
             request_options=request_options,
         )
@@ -59,9 +61,9 @@ class RawExportStatementCardClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -69,6 +71,10 @@ class RawExportStatementCardClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def read_export_statement_card_for_user_card(
@@ -97,7 +103,7 @@ class RawExportStatementCardClient:
             Used to create new and read existing card statement exports. Statement exports can be created in either CSV or PDF file format.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/card/{jsonable_encoder(card_id)}/export-statement-card/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/card/{encode_path_param(card_id)}/export-statement-card/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -115,9 +121,9 @@ class RawExportStatementCardClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -125,6 +131,10 @@ class RawExportStatementCardClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -155,7 +165,7 @@ class AsyncRawExportStatementCardClient:
             Used to create new and read existing card statement exports. Statement exports can be created in either CSV or PDF file format.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/card/{jsonable_encoder(card_id)}/export-statement-card",
+            f"user/{encode_path_param(user_id)}/card/{encode_path_param(card_id)}/export-statement-card",
             method="GET",
             request_options=request_options,
         )
@@ -173,9 +183,9 @@ class AsyncRawExportStatementCardClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -183,6 +193,10 @@ class AsyncRawExportStatementCardClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def read_export_statement_card_for_user_card(
@@ -211,7 +225,7 @@ class AsyncRawExportStatementCardClient:
             Used to create new and read existing card statement exports. Statement exports can be created in either CSV or PDF file format.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/card/{jsonable_encoder(card_id)}/export-statement-card/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/card/{encode_path_param(card_id)}/export-statement-card/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -229,9 +243,9 @@ class AsyncRawExportStatementCardClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -239,4 +253,8 @@ class AsyncRawExportStatementCardClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

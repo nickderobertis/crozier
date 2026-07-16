@@ -2,4 +2,4 @@
 
 import typing
 
-ExportRibDelete = typing.Dict[str, typing.Optional[typing.Any]]
+ExportRibDelete = typing.Dict[str, typing.Any]

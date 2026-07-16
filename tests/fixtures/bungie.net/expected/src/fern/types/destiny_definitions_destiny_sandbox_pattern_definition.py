@@ -25,22 +25,34 @@ class DestinyDefinitionsDestinySandboxPatternDefinition(UniversalBaseModel):
     """
 
     pattern_global_tag_id_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="patternGlobalTagIdHash")
+        typing.Optional[int],
+        FieldMetadata(alias="patternGlobalTagIdHash"),
+        pydantic.Field(alias="patternGlobalTagIdHash"),
     ] = None
-    pattern_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="patternHash")] = None
+    pattern_hash: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="patternHash"), pydantic.Field(alias="patternHash")
+    ] = None
     redacted: typing.Optional[bool] = pydantic.Field(default=None)
     """
     If this is true, then there is an entity with this identifier/type combination, but BNet is not yet allowed to show it. Sorry!
     """
 
     weapon_content_group_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="weaponContentGroupHash")
+        typing.Optional[int],
+        FieldMetadata(alias="weaponContentGroupHash"),
+        pydantic.Field(alias="weaponContentGroupHash"),
     ] = None
     weapon_translation_group_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="weaponTranslationGroupHash")
+        typing.Optional[int],
+        FieldMetadata(alias="weaponTranslationGroupHash"),
+        pydantic.Field(alias="weaponTranslationGroupHash"),
     ] = None
-    weapon_type: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="weaponType")] = None
-    weapon_type_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="weaponTypeHash")] = None
+    weapon_type: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="weaponType"), pydantic.Field(alias="weaponType")
+    ] = None
+    weapon_type_hash: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="weaponTypeHash"), pydantic.Field(alias="weaponTypeHash")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

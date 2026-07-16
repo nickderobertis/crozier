@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class HookStatus(str, enum.Enum):
+class HookStatus(enum.StrEnum):
     HOOK_IN_PROGRESS = "HOOK_IN_PROGRESS"
     HOOK_COMPLETE_SUCCEEDED = "HOOK_COMPLETE_SUCCEEDED"
     HOOK_COMPLETE_FAILED = "HOOK_COMPLETE_FAILED"

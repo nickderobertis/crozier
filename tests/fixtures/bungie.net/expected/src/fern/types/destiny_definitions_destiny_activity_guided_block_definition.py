@@ -14,22 +14,35 @@ class DestinyDefinitionsDestinyActivityGuidedBlockDefinition(UniversalBaseModel)
     """
 
     guided_disband_count: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="guidedDisbandCount")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="guidedDisbandCount"),
+        pydantic.Field(
+            alias="guidedDisbandCount",
+            description="If -1, the guided group cannot be disbanded. Otherwise, take the total # of players in the activity and subtract this number: that is the total # of votes needed for the guided group to disband.",
+        ),
+    ] = None
     """
     If -1, the guided group cannot be disbanded. Otherwise, take the total # of players in the activity and subtract this number: that is the total # of votes needed for the guided group to disband.
     """
 
     guided_max_lobby_size: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="guidedMaxLobbySize")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="guidedMaxLobbySize"),
+        pydantic.Field(
+            alias="guidedMaxLobbySize", description="The maximum amount of people that can be in the waiting lobby."
+        ),
+    ] = None
     """
     The maximum amount of people that can be in the waiting lobby.
     """
 
     guided_min_lobby_size: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="guidedMinLobbySize")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="guidedMinLobbySize"),
+        pydantic.Field(
+            alias="guidedMinLobbySize", description="The minimum amount of people that can be in the waiting lobby."
+        ),
+    ] = None
     """
     The minimum amount of people that can be in the waiting lobby.
     """

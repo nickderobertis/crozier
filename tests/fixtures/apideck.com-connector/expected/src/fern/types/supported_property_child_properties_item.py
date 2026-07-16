@@ -23,4 +23,4 @@ class SupportedPropertyChildPropertiesItem(UniversalBaseModel):
 
 from .supported_property import SupportedProperty
 
-update_forward_refs(SupportedPropertyChildPropertiesItem)
+update_forward_refs(SupportedPropertyChildPropertiesItem, SupportedProperty=SupportedProperty)

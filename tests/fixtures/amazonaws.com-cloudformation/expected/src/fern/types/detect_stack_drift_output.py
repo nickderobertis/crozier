@@ -9,9 +9,14 @@ from ..core.serialization import FieldMetadata
 
 
 class DetectStackDriftOutput(UniversalBaseModel):
-    stack_drift_detection_id: typing_extensions.Annotated[str, FieldMetadata(alias="StackDriftDetectionId")] = (
-        pydantic.Field()
-    )
+    stack_drift_detection_id: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="StackDriftDetectionId"),
+        pydantic.Field(
+            alias="StackDriftDetectionId",
+            description="<p>The ID of the drift detection results of this operation.</p> <p>CloudFormation generates new results, with a new drift detection ID, each time this operation is run. However, the number of drift results CloudFormation retains for any given stack, and for how long, may vary.</p>",
+        ),
+    ]
     """
     <p>The ID of the drift detection results of this operation.</p> <p>CloudFormation generates new results, with a new drift detection ID, each time this operation is run. However, the number of drift results CloudFormation retains for any given stack, and for how long, may vary.</p>
     """

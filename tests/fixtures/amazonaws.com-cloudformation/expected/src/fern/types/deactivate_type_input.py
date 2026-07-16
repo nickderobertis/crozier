@@ -10,21 +10,38 @@ from .deactivate_type_input_type import DeactivateTypeInputType
 
 
 class DeactivateTypeInput(UniversalBaseModel):
-    type_name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="TypeName")] = pydantic.Field(
-        default=None
-    )
+    type_name: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="TypeName"),
+        pydantic.Field(
+            alias="TypeName",
+            description="<p>The type name of the extension, in this account and region. If you specified a type name alias when enabling the extension, use the type name alias.</p> <p>Conditional: You must specify either <code>Arn</code>, or <code>TypeName</code> and <code>Type</code>.</p>",
+        ),
+    ] = None
     """
     <p>The type name of the extension, in this account and region. If you specified a type name alias when enabling the extension, use the type name alias.</p> <p>Conditional: You must specify either <code>Arn</code>, or <code>TypeName</code> and <code>Type</code>.</p>
     """
 
-    type: typing_extensions.Annotated[typing.Optional[DeactivateTypeInputType], FieldMetadata(alias="Type")] = (
-        pydantic.Field(default=None)
-    )
+    type: typing_extensions.Annotated[
+        typing.Optional[DeactivateTypeInputType],
+        FieldMetadata(alias="Type"),
+        pydantic.Field(
+            alias="Type",
+            description="<p>The extension type.</p> <p>Conditional: You must specify either <code>Arn</code>, or <code>TypeName</code> and <code>Type</code>.</p>",
+        ),
+    ] = None
     """
     <p>The extension type.</p> <p>Conditional: You must specify either <code>Arn</code>, or <code>TypeName</code> and <code>Type</code>.</p>
     """
 
-    arn: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="Arn")] = pydantic.Field(default=None)
+    arn: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="Arn"),
+        pydantic.Field(
+            alias="Arn",
+            description="<p>The Amazon Resource Name (ARN) for the extension, in this account and region.</p> <p>Conditional: You must specify either <code>Arn</code>, or <code>TypeName</code> and <code>Type</code>.</p>",
+        ),
+    ] = None
     """
     <p>The Amazon Resource Name (ARN) for the extension, in this account and region.</p> <p>Conditional: You must specify either <code>Arn</code>, or <code>TypeName</code> and <code>Type</code>.</p>
     """

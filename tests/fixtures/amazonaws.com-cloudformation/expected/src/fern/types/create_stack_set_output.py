@@ -9,9 +9,11 @@ from ..core.serialization import FieldMetadata
 
 
 class CreateStackSetOutput(UniversalBaseModel):
-    stack_set_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="StackSetId")] = pydantic.Field(
-        default=None
-    )
+    stack_set_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="StackSetId"),
+        pydantic.Field(alias="StackSetId", description="The ID of the stack set that you're creating."),
+    ] = None
     """
     The ID of the stack set that you're creating.
     """

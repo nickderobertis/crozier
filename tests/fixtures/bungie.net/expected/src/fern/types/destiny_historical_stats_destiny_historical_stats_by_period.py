@@ -16,18 +16,22 @@ class DestinyHistoricalStatsDestinyHistoricalStatsByPeriod(UniversalBaseModel):
     all_time: typing_extensions.Annotated[
         typing.Optional[typing.Dict[str, DestinyHistoricalStatsDestinyHistoricalStatsValue]],
         FieldMetadata(alias="allTime"),
+        pydantic.Field(alias="allTime"),
     ] = None
     all_time_tier1: typing_extensions.Annotated[
         typing.Optional[typing.Dict[str, DestinyHistoricalStatsDestinyHistoricalStatsValue]],
         FieldMetadata(alias="allTimeTier1"),
+        pydantic.Field(alias="allTimeTier1"),
     ] = None
     all_time_tier2: typing_extensions.Annotated[
         typing.Optional[typing.Dict[str, DestinyHistoricalStatsDestinyHistoricalStatsValue]],
         FieldMetadata(alias="allTimeTier2"),
+        pydantic.Field(alias="allTimeTier2"),
     ] = None
     all_time_tier3: typing_extensions.Annotated[
         typing.Optional[typing.Dict[str, DestinyHistoricalStatsDestinyHistoricalStatsValue]],
         FieldMetadata(alias="allTimeTier3"),
+        pydantic.Field(alias="allTimeTier3"),
     ] = None
     daily: typing.Optional[typing.List[DestinyHistoricalStatsDestinyHistoricalStatsPeriodGroup]] = None
     monthly: typing.Optional[typing.List[DestinyHistoricalStatsDestinyHistoricalStatsPeriodGroup]] = None

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PostAssetsCovarianceMatrixValidationResponseMessage(str, enum.Enum):
+class PostAssetsCovarianceMatrixValidationResponseMessage(enum.StrEnum):
     """
     Indicates whether the matrix is a valid covariance matrix
     """

@@ -13,10 +13,10 @@ class CreateInviteResponse(UniversalBaseModel):
     emailed: typing.Optional[bool] = None
     expired: typing.Optional[bool] = None
     expires_at: typing.Optional[str] = None
-    groups: typing.Optional[typing.List[typing.Optional[typing.Any]]] = None
+    groups: typing.Optional[typing.List[typing.Any]] = None
     id: typing.Optional[int] = None
     link: typing.Optional[str] = None
-    topics: typing.Optional[typing.List[typing.Optional[typing.Any]]] = None
+    topics: typing.Optional[typing.List[typing.Any]] = None
     updated_at: typing.Optional[str] = None
 
     if IS_PYDANTIC_V2:

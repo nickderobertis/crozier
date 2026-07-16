@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class UpdateAvatarRequestType(str, enum.Enum):
+class UpdateAvatarRequestType(enum.StrEnum):
     UPLOADED = "uploaded"
     CUSTOM = "custom"
     GRAVATAR = "gravatar"

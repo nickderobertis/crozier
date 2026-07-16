@@ -221,6 +221,7 @@ if typing.TYPE_CHECKING:
         web_backend,
         workspace,
     )
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .environment import FernApiEnvironment
     from .version import __version__
@@ -279,6 +280,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "DbMigrationReadList": ".types",
     "DbMigrationRequestBody": ".types",
     "DbMigrationState": ".types",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "DestinationAuthSpecification": ".types",
     "DestinationCloneConfiguration": ".types",
     "DestinationConfiguration": ".types",
@@ -521,6 +524,8 @@ __all__ = [
     "DbMigrationReadList",
     "DbMigrationRequestBody",
     "DbMigrationState",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
     "DestinationAuthSpecification",
     "DestinationCloneConfiguration",
     "DestinationConfiguration",

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObbcaData1OtherFeesChargesItemTariffType(str, enum.Enum):
+class ObbcaData1OtherFeesChargesItemTariffType(enum.StrEnum):
     """
     TariffType which defines the fee and charges.
     """

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GetApiDamageTypesIndexRequestIndex(str, enum.Enum):
+class GetApiDamageTypesIndexRequestIndex(enum.StrEnum):
     ACID = "acid"
     BLUDGEONING = "bludgeoning"
     COLD = "cold"

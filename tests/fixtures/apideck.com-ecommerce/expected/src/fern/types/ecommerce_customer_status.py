@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class EcommerceCustomerStatus(str, enum.Enum):
+class EcommerceCustomerStatus(enum.StrEnum):
     """
     The current status of the customer
     """

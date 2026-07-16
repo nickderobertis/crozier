@@ -15,28 +15,38 @@ from .super_line import SuperLine
 
 class OpeningBalances(UniversalBaseModel):
     deduction_lines: typing_extensions.Annotated[
-        typing.Optional[typing.List[DeductionLine]], FieldMetadata(alias="DeductionLines")
+        typing.Optional[typing.List[DeductionLine]],
+        FieldMetadata(alias="DeductionLines"),
+        pydantic.Field(alias="DeductionLines"),
     ] = None
     earnings_lines: typing_extensions.Annotated[
-        typing.Optional[typing.List[EarningsLine]], FieldMetadata(alias="EarningsLines")
+        typing.Optional[typing.List[EarningsLine]],
+        FieldMetadata(alias="EarningsLines"),
+        pydantic.Field(alias="EarningsLines"),
     ] = None
     leave_lines: typing_extensions.Annotated[
-        typing.Optional[typing.List[LeaveLine]], FieldMetadata(alias="LeaveLines")
+        typing.Optional[typing.List[LeaveLine]], FieldMetadata(alias="LeaveLines"), pydantic.Field(alias="LeaveLines")
     ] = None
     opening_balance_date: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="OpeningBalanceDate")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="OpeningBalanceDate"),
+        pydantic.Field(alias="OpeningBalanceDate", description="Opening Balance Date. (YYYY-MM-DD)"),
+    ] = None
     """
     Opening Balance Date. (YYYY-MM-DD)
     """
 
     reimbursement_lines: typing_extensions.Annotated[
-        typing.Optional[typing.List[ReimbursementLine]], FieldMetadata(alias="ReimbursementLines")
+        typing.Optional[typing.List[ReimbursementLine]],
+        FieldMetadata(alias="ReimbursementLines"),
+        pydantic.Field(alias="ReimbursementLines"),
     ] = None
     super_lines: typing_extensions.Annotated[
-        typing.Optional[typing.List[SuperLine]], FieldMetadata(alias="SuperLines")
+        typing.Optional[typing.List[SuperLine]], FieldMetadata(alias="SuperLines"), pydantic.Field(alias="SuperLines")
     ] = None
-    tax: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="Tax")] = pydantic.Field(default=None)
+    tax: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="Tax"), pydantic.Field(alias="Tax", description="Opening Balance tax")
+    ] = None
     """
     Opening Balance tax
     """

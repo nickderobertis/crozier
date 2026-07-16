@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class InterfaceRfRoleLabel(str, enum.Enum):
+class InterfaceRfRoleLabel(enum.StrEnum):
     ACCESS_POINT = "Access point"
     STATION = "Station"
 

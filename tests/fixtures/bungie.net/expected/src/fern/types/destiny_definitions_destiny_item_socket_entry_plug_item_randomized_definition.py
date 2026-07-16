@@ -15,17 +15,28 @@ class DestinyDefinitionsDestinyItemSocketEntryPlugItemRandomizedDefinition(Unive
     crafting_requirements: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsDestinyPlugItemCraftingRequirements],
         FieldMetadata(alias="craftingRequirements"),
+        pydantic.Field(alias="craftingRequirements"),
     ] = None
-    currently_can_roll: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="currentlyCanRoll")] = (
-        pydantic.Field(default=None)
-    )
+    currently_can_roll: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="currentlyCanRoll"),
+        pydantic.Field(
+            alias="currentlyCanRoll",
+            description="Indicates if the plug can be rolled on the current version of the item. For example, older versions of weapons may have plug rolls that are no longer possible on the current versions.",
+        ),
+    ] = None
     """
     Indicates if the plug can be rolled on the current version of the item. For example, older versions of weapons may have plug rolls that are no longer possible on the current versions.
     """
 
-    plug_item_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="plugItemHash")] = (
-        pydantic.Field(default=None)
-    )
+    plug_item_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="plugItemHash"),
+        pydantic.Field(
+            alias="plugItemHash",
+            description="The hash identifier of a DestinyInventoryItemDefinition representing the plug that can be inserted.",
+        ),
+    ] = None
     """
     The hash identifier of a DestinyInventoryItemDefinition representing the plug that can be inserted.
     """

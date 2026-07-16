@@ -9,12 +9,20 @@ from ..core.serialization import FieldMetadata
 
 
 class ContentModelsContentPreview(UniversalBaseModel):
-    item_in_set: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="itemInSet")] = None
+    item_in_set: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="itemInSet"), pydantic.Field(alias="itemInSet")
+    ] = None
     name: typing.Optional[str] = None
     path: typing.Optional[str] = None
-    set_nesting: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="setNesting")] = None
-    set_tag: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="setTag")] = None
-    use_set_id: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="useSetId")] = None
+    set_nesting: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="setNesting"), pydantic.Field(alias="setNesting")
+    ] = None
+    set_tag: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="setTag"), pydantic.Field(alias="setTag")
+    ] = None
+    use_set_id: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="useSetId"), pydantic.Field(alias="useSetId")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

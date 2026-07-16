@@ -2,4 +2,4 @@
 
 import typing
 
-InfoCode = typing.Optional[typing.Any]
+InfoCode = typing.Any

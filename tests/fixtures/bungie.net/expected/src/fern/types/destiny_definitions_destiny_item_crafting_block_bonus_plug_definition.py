@@ -9,8 +9,12 @@ from ..core.serialization import FieldMetadata
 
 
 class DestinyDefinitionsDestinyItemCraftingBlockBonusPlugDefinition(UniversalBaseModel):
-    plug_item_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="plugItemHash")] = None
-    socket_type_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="socketTypeHash")] = None
+    plug_item_hash: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="plugItemHash"), pydantic.Field(alias="plugItemHash")
+    ] = None
+    socket_type_hash: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="socketTypeHash"), pydantic.Field(alias="socketTypeHash")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

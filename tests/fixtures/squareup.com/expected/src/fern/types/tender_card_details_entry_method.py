@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class TenderCardDetailsEntryMethod(str, enum.Enum):
+class TenderCardDetailsEntryMethod(enum.StrEnum):
     """
     Indicates the method used to enter the card's details.
     """

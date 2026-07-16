@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "bungie.net",
+  "corpus_spec_ref": "2.18.0",
+  "corpus_spec_url": "https://api.apis.guru/v2/specs/bungie.net/2.18.0/openapi.json"
+}

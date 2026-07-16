@@ -19,16 +19,26 @@ class DestinyDefinitionsMilestonesDestinyMilestoneRewardCategoryDefinition(Unive
     The definition of a category of rewards, that contains many individual rewards.
     """
 
-    category_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="categoryHash")] = (
-        pydantic.Field(default=None)
-    )
+    category_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="categoryHash"),
+        pydantic.Field(
+            alias="categoryHash",
+            description="Identifies the reward category. Only guaranteed unique within this specific component!",
+        ),
+    ] = None
     """
     Identifies the reward category. Only guaranteed unique within this specific component!
     """
 
     category_identifier: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="categoryIdentifier")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="categoryIdentifier"),
+        pydantic.Field(
+            alias="categoryIdentifier",
+            description="The string identifier for the category, if you want to use it for some end. Guaranteed unique within the specific component.",
+        ),
+    ] = None
     """
     The string identifier for the category, if you want to use it for some end. Guaranteed unique within the specific component.
     """
@@ -36,7 +46,8 @@ class DestinyDefinitionsMilestonesDestinyMilestoneRewardCategoryDefinition(Unive
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(alias="displayProperties", description="Hopefully this is obvious by now."),
+    ] = None
     """
     Hopefully this is obvious by now.
     """
@@ -49,7 +60,11 @@ class DestinyDefinitionsMilestonesDestinyMilestoneRewardCategoryDefinition(Unive
     reward_entries: typing_extensions.Annotated[
         typing.Optional[typing.Dict[str, DestinyDefinitionsMilestonesDestinyMilestoneRewardEntryDefinition]],
         FieldMetadata(alias="rewardEntries"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="rewardEntries",
+            description="If this milestone can provide rewards, this will define the sets of rewards that can be earned, the conditions under which they can be acquired, internal data that we'll use at runtime to determine whether you've already earned or redeemed this set of rewards, and the category that this reward should be placed under.",
+        ),
+    ] = None
     """
     If this milestone can provide rewards, this will define the sets of rewards that can be earned, the conditions under which they can be acquired, internal data that we'll use at runtime to determine whether you've already earned or redeemed this set of rewards, and the category that this reward should be placed under.
     """

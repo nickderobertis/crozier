@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class TestRunnerType(str, enum.Enum):
+class TestRunnerType(enum.StrEnum):
     """
     Type of test strategy (different strategies are implemented by different runners)
     """

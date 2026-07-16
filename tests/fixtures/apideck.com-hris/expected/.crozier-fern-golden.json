@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "apideck.com-hris",
+  "corpus_spec_ref": "9.3.0",
+  "corpus_spec_url": "https://api.apis.guru/v2/specs/apideck.com/hris/9.3.0/openapi.json"
+}

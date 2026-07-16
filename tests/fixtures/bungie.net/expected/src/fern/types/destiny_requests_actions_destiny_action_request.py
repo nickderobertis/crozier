@@ -9,7 +9,9 @@ from ..core.serialization import FieldMetadata
 
 
 class DestinyRequestsActionsDestinyActionRequest(UniversalBaseModel):
-    membership_type: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="membershipType")] = None
+    membership_type: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="membershipType"), pydantic.Field(alias="membershipType")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

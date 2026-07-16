@@ -16,7 +16,9 @@ class GlobalJwtVerifier(UniversalBaseModel):
     A JWT verifier used by multiple service descriptor
     """
 
-    algo_settings: typing_extensions.Annotated[GlobalJwtVerifierAlgoSettings, FieldMetadata(alias="algoSettings")]
+    algo_settings: typing_extensions.Annotated[
+        GlobalJwtVerifierAlgoSettings, FieldMetadata(alias="algoSettings"), pydantic.Field(alias="algoSettings")
+    ]
     desc: str = pydantic.Field()
     """
     Verifier description

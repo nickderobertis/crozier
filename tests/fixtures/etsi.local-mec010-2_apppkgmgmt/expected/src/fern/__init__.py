@@ -90,6 +90,7 @@ if typing.TYPE_CHECKING:
         UnauthorizedError,
     )
     from . import app_pkgm, app_pkgm_notifications
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .app_pkgm_notifications import AppPkgNotificationOperationalState
     from .client import AsyncFernApi, FernApi
     from .environment import FernApiEnvironment
@@ -130,6 +131,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "ChangeAppInstanceStateOpConfig": ".types",
     "Checksum": ".types",
     "ConflictError": ".errors",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "DnsRuleDescriptor": ".types",
     "FeatureDependency": ".types",
     "FernApi": ".client",
@@ -241,6 +244,8 @@ __all__ = [
     "ChangeAppInstanceStateOpConfig",
     "Checksum",
     "ConflictError",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
     "DnsRuleDescriptor",
     "FeatureDependency",
     "FernApi",

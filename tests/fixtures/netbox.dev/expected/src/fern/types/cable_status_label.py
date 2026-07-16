@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class CableStatusLabel(str, enum.Enum):
+class CableStatusLabel(enum.StrEnum):
     CONNECTED = "Connected"
     PLANNED = "Planned"
     DECOMMISSIONING = "Decommissioning"

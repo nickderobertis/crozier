@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObpcaData1CreditInterestTierBandSetItemTierBandItemApplicationFrequency(str, enum.Enum):
+class ObpcaData1CreditInterestTierBandSetItemTierBandItemApplicationFrequency(enum.StrEnum):
     """
     How often is interest applied to the PCA for this tier/band i.e. how often the financial institution pays accumulated interest to the customer's PCA.
     """

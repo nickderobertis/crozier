@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ProvisioningType(str, enum.Enum):
+class ProvisioningType(enum.StrEnum):
     NON_PROVISIONABLE = "NON_PROVISIONABLE"
     IMMUTABLE = "IMMUTABLE"
     FULLY_MUTABLE = "FULLY_MUTABLE"

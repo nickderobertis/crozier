@@ -10,8 +10,13 @@ from ...core.serialization import FieldMetadata
 
 class PostAssetsCovarianceMatrixExponentiallyWeightedResponse(UniversalBaseModel):
     assets_covariance_matrix: typing_extensions.Annotated[
-        typing.List[typing.List[float]], FieldMetadata(alias="assetsCovarianceMatrix")
-    ] = pydantic.Field()
+        typing.List[typing.List[float]],
+        FieldMetadata(alias="assetsCovarianceMatrix"),
+        pydantic.Field(
+            alias="assetsCovarianceMatrix",
+            description="assetsCovarianceMatrix[i][j] is the sample covariance between the asset i returns and the asset j returns",
+        ),
+    ]
     """
     assetsCovarianceMatrix[i][j] is the sample covariance between the asset i returns and the asset j returns
     """

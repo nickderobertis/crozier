@@ -15,9 +15,11 @@ class DestinyDefinitionsDestinyVendorGroupDefinition(UniversalBaseModel):
     Using this will let you group your vendors in your UI in a similar manner to how we will do grouping in the Companion.
     """
 
-    category_name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="categoryName")] = (
-        pydantic.Field(default=None)
-    )
+    category_name: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="categoryName"),
+        pydantic.Field(alias="categoryName", description="For now, a group just has a name."),
+    ] = None
     """
     For now, a group just has a name.
     """

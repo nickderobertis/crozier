@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class TenderType(str, enum.Enum):
+class TenderType(enum.StrEnum):
     """
     Indicates a tender's type.
     """

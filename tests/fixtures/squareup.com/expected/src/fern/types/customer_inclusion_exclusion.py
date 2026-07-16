@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class CustomerInclusionExclusion(str, enum.Enum):
+class CustomerInclusionExclusion(enum.StrEnum):
     """
     Indicates whether customers should be included in, or excluded from,
     the result set when they match the filtering criteria.

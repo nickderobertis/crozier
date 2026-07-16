@@ -15,7 +15,7 @@ class JobDebugInfoRead(UniversalBaseModel):
     attempts: typing.List[AttemptInfoRead]
     job: JobDebugRead
     workflow_state: typing_extensions.Annotated[
-        typing.Optional[WorkflowStateRead], FieldMetadata(alias="workflowState")
+        typing.Optional[WorkflowStateRead], FieldMetadata(alias="workflowState"), pydantic.Field(alias="workflowState")
     ] = None
 
     if IS_PYDANTIC_V2:

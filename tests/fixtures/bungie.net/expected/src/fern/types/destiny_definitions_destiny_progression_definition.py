@@ -33,10 +33,16 @@ class DestinyDefinitionsDestinyProgressionDefinition(UniversalBaseModel):
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsDestinyProgressionDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
+        pydantic.Field(alias="displayProperties"),
     ] = None
-    faction_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="factionHash")] = (
-        pydantic.Field(default=None)
-    )
+    faction_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="factionHash"),
+        pydantic.Field(
+            alias="factionHash",
+            description="If the value exists, this is the hash identifier for the Faction that owns this Progression.\r\nThis is purely for convenience, if you're looking at a progression and want to know if and who it's related to in terms of Faction Reputation.",
+        ),
+    ] = None
     """
     If the value exists, this is the hash identifier for the Faction that owns this Progression.
     This is purely for convenience, if you're looking at a progression and want to know if and who it's related to in terms of Faction Reputation.
@@ -53,9 +59,14 @@ class DestinyDefinitionsDestinyProgressionDefinition(UniversalBaseModel):
     The index of the entity as it was found in the investment tables.
     """
 
-    rank_icon: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="rankIcon")] = pydantic.Field(
-        default=None
-    )
+    rank_icon: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="rankIcon"),
+        pydantic.Field(
+            alias="rankIcon",
+            description="For progressions that have it, this is the rank icon we use in the Companion, displayed above the progressions' rank value.",
+        ),
+    ] = None
     """
     For progressions that have it, this is the rank icon we use in the Companion, displayed above the progressions' rank value.
     """
@@ -65,9 +76,13 @@ class DestinyDefinitionsDestinyProgressionDefinition(UniversalBaseModel):
     If this is true, then there is an entity with this identifier/type combination, but BNet is not yet allowed to show it. Sorry!
     """
 
-    repeat_last_step: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="repeatLastStep")] = (
-        pydantic.Field(default=None)
-    )
+    repeat_last_step: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="repeatLastStep"),
+        pydantic.Field(
+            alias="repeatLastStep", description="If this is True, then the progression doesn't have a maximum level."
+        ),
+    ] = None
     """
     If this is True, then the progression doesn't have a maximum level.
     """
@@ -75,6 +90,7 @@ class DestinyDefinitionsDestinyProgressionDefinition(UniversalBaseModel):
     reward_items: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyDefinitionsDestinyProgressionRewardItemQuantity]],
         FieldMetadata(alias="rewardItems"),
+        pydantic.Field(alias="rewardItems"),
     ] = None
     scope: typing.Optional[int] = pydantic.Field(default=None)
     """

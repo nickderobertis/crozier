@@ -13,17 +13,29 @@ from .destiny_definitions_common_destiny_icon_sequence_definition import (
 
 class DestinyDefinitionsDestinyProgressionDisplayPropertiesDefinition(UniversalBaseModel):
     description: typing.Optional[str] = None
-    display_units_name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="displayUnitsName")] = (
-        pydantic.Field(default=None)
-    )
+    display_units_name: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="displayUnitsName"),
+        pydantic.Field(
+            alias="displayUnitsName",
+            description='When progressions show your "experience" gained, that bar has units (i.e. "Experience", "Bad Dudes Snuffed Out", whatever). This is the localized string for that unit of measurement.',
+        ),
+    ] = None
     """
     When progressions show your "experience" gained, that bar has units (i.e. "Experience", "Bad Dudes Snuffed Out", whatever). This is the localized string for that unit of measurement.
     """
 
-    has_icon: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="hasIcon")] = None
-    high_res_icon: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="highResIcon")] = (
-        pydantic.Field(default=None)
-    )
+    has_icon: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="hasIcon"), pydantic.Field(alias="hasIcon")
+    ] = None
+    high_res_icon: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="highResIcon"),
+        pydantic.Field(
+            alias="highResIcon",
+            description="If this item has a high-res icon (at least for now, many things won't), then the path to that icon will be here.",
+        ),
+    ] = None
     """
     If this item has a high-res icon (at least for now, many things won't), then the path to that icon will be here.
     """
@@ -38,6 +50,7 @@ class DestinyDefinitionsDestinyProgressionDisplayPropertiesDefinition(UniversalB
     icon_sequences: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyDefinitionsCommonDestinyIconSequenceDefinition]],
         FieldMetadata(alias="iconSequences"),
+        pydantic.Field(alias="iconSequences"),
     ] = None
     name: typing.Optional[str] = None
 

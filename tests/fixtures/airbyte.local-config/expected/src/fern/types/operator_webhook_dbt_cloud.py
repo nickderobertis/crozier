@@ -9,12 +9,20 @@ from ..core.serialization import FieldMetadata
 
 
 class OperatorWebhookDbtCloud(UniversalBaseModel):
-    account_id: typing_extensions.Annotated[int, FieldMetadata(alias="accountId")] = pydantic.Field()
+    account_id: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="accountId"),
+        pydantic.Field(alias="accountId", description="The account id associated with the job"),
+    ]
     """
     The account id associated with the job
     """
 
-    job_id: typing_extensions.Annotated[int, FieldMetadata(alias="jobId")] = pydantic.Field()
+    job_id: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="jobId"),
+        pydantic.Field(alias="jobId", description="The job id associated with the job"),
+    ]
     """
     The job id associated with the job
     """

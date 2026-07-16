@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObpcaData1OverdraftOverdraftTierBandSetItemOverdraftType(str, enum.Enum):
+class ObpcaData1OverdraftOverdraftTierBandSetItemOverdraftType(enum.StrEnum):
     """
     An overdraft can either be 'committed' which means that the facility cannot be withdrawn without reasonable notification before it's agreed end date, or 'on demand' which means that the financial institution can demand repayment at any point in time.
     """

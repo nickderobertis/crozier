@@ -18,29 +18,37 @@ class FeaturesConfig(UniversalBaseModel):
     """
 
     async_api: typing_extensions.Annotated[
-        typing.Optional[FeaturesConfigAsyncApi], FieldMetadata(alias="async-api")
-    ] = pydantic.Field(default=None)
+        typing.Optional[FeaturesConfigAsyncApi],
+        FieldMetadata(alias="async-api"),
+        pydantic.Field(alias="async-api", description="Asynchronous feature properties"),
+    ] = None
     """
     Asynchronous feature properties
     """
 
     microcks_hub: typing_extensions.Annotated[
-        typing.Optional[FeaturesConfigMicrocksHub], FieldMetadata(alias="microcks-hub")
-    ] = pydantic.Field(default=None)
+        typing.Optional[FeaturesConfigMicrocksHub],
+        FieldMetadata(alias="microcks-hub"),
+        pydantic.Field(alias="microcks-hub", description="Microcks Hub feature properties"),
+    ] = None
     """
     Microcks Hub feature properties
     """
 
     repository_filter: typing_extensions.Annotated[
-        typing.Optional[FeaturesConfigRepositoryFilter], FieldMetadata(alias="repository-filter")
-    ] = pydantic.Field(default=None)
+        typing.Optional[FeaturesConfigRepositoryFilter],
+        FieldMetadata(alias="repository-filter"),
+        pydantic.Field(alias="repository-filter", description="Repository filtering feature properties"),
+    ] = None
     """
     Repository filtering feature properties
     """
 
     repository_tenancy: typing_extensions.Annotated[
-        typing.Optional[FeaturesConfigRepositoryTenancy], FieldMetadata(alias="repository-tenancy")
-    ] = pydantic.Field(default=None)
+        typing.Optional[FeaturesConfigRepositoryTenancy],
+        FieldMetadata(alias="repository-tenancy"),
+        pydantic.Field(alias="repository-tenancy", description="Repository tenancy feature properties"),
+    ] = None
     """
     Repository tenancy feature properties
     """

@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
@@ -16,6 +17,7 @@ from ..types.master_card_identity_check_challenge_request_user_read import (
 from ..types.master_card_identity_check_challenge_request_user_update import (
     MasterCardIdentityCheckChallengeRequestUserUpdate,
 )
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -48,7 +50,7 @@ class RawChallengeRequestClient:
             Endpoint for apps to fetch a challenge request.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/challenge-request/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/challenge-request/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -66,9 +68,9 @@ class RawChallengeRequestClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -76,6 +78,10 @@ class RawChallengeRequestClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_challenge_request_for_user(
@@ -104,7 +110,7 @@ class RawChallengeRequestClient:
             Endpoint for apps to fetch a challenge request.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/challenge-request/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/challenge-request/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "status": status,
@@ -129,9 +135,9 @@ class RawChallengeRequestClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -139,6 +145,10 @@ class RawChallengeRequestClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -169,7 +179,7 @@ class AsyncRawChallengeRequestClient:
             Endpoint for apps to fetch a challenge request.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/challenge-request/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/challenge-request/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -187,9 +197,9 @@ class AsyncRawChallengeRequestClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -197,6 +207,10 @@ class AsyncRawChallengeRequestClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_challenge_request_for_user(
@@ -225,7 +239,7 @@ class AsyncRawChallengeRequestClient:
             Endpoint for apps to fetch a challenge request.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/challenge-request/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/challenge-request/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "status": status,
@@ -250,9 +264,9 @@ class AsyncRawChallengeRequestClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -260,4 +274,8 @@ class AsyncRawChallengeRequestClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

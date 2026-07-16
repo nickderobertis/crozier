@@ -13,24 +13,34 @@ class File(UniversalBaseModel):
     File
     """
 
-    id: typing_extensions.Annotated[str, FieldMetadata(alias="$id")] = pydantic.Field()
+    id: typing_extensions.Annotated[
+        str, FieldMetadata(alias="$id"), pydantic.Field(alias="$id", description="File ID.")
+    ]
     """
     File ID.
     """
 
     permissions: typing_extensions.Annotated[
-        typing.Dict[str, typing.Optional[typing.Any]], FieldMetadata(alias="$permissions")
-    ] = pydantic.Field()
+        typing.Dict[str, typing.Any],
+        FieldMetadata(alias="$permissions"),
+        pydantic.Field(alias="$permissions", description="File permissions."),
+    ]
     """
     File permissions.
     """
 
-    date_created: typing_extensions.Annotated[int, FieldMetadata(alias="dateCreated")] = pydantic.Field()
+    date_created: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="dateCreated"),
+        pydantic.Field(alias="dateCreated", description="File creation date in Unix timestamp."),
+    ]
     """
     File creation date in Unix timestamp.
     """
 
-    mime_type: typing_extensions.Annotated[str, FieldMetadata(alias="mimeType")] = pydantic.Field()
+    mime_type: typing_extensions.Annotated[
+        str, FieldMetadata(alias="mimeType"), pydantic.Field(alias="mimeType", description="File mime type.")
+    ]
     """
     File mime type.
     """
@@ -45,7 +55,11 @@ class File(UniversalBaseModel):
     File MD5 signature.
     """
 
-    size_original: typing_extensions.Annotated[int, FieldMetadata(alias="sizeOriginal")] = pydantic.Field()
+    size_original: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="sizeOriginal"),
+        pydantic.Field(alias="sizeOriginal", description="File original size in bytes."),
+    ]
     """
     File original size in bytes.
     """

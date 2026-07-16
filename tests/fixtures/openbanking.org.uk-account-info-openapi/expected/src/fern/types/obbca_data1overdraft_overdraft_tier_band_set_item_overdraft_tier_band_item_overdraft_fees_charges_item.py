@@ -26,7 +26,11 @@ class ObbcaData1OverdraftOverdraftTierBandSetItemOverdraftTierBandItemOverdraftF
             ]
         ],
         FieldMetadata(alias="OverdraftFeeChargeCap"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="OverdraftFeeChargeCap",
+            description="Details about any caps (maximum charges) that apply to a particular fee/charge. Capping can either be based on an amount (in gbp), an amount (in items) or a rate.",
+        ),
+    ] = None
     """
     Details about any caps (maximum charges) that apply to a particular fee/charge. Capping can either be based on an amount (in gbp), an amount (in items) or a rate.
     """
@@ -36,7 +40,8 @@ class ObbcaData1OverdraftOverdraftTierBandSetItemOverdraftTierBandItemOverdraftF
             ObbcaData1OverdraftOverdraftTierBandSetItemOverdraftTierBandItemOverdraftFeesChargesItemOverdraftFeeChargeDetailItem
         ],
         FieldMetadata(alias="OverdraftFeeChargeDetail"),
-    ] = pydantic.Field()
+        pydantic.Field(alias="OverdraftFeeChargeDetail", description="Details about the fees/charges"),
+    ]
     """
     Details about the fees/charges
     """

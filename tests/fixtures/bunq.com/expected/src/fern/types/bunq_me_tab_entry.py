@@ -47,7 +47,11 @@ class BunqMeTabEntry(UniversalBaseModel):
     The status of the bunq.me. Can be WAITING_FOR_PAYMENT, CANCELLED or EXPIRED.
     """
 
-    uuid_: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="uuid")] = pydantic.Field(default=None)
+    uuid_: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="uuid"),
+        pydantic.Field(alias="uuid", description="The uuid of the bunq.me."),
+    ] = None
     """
     The uuid of the bunq.me.
     """

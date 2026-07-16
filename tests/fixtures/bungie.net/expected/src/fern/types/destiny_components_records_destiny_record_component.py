@@ -10,23 +10,37 @@ from .destiny_quests_destiny_objective_progress import DestinyQuestsDestinyObjec
 
 
 class DestinyComponentsRecordsDestinyRecordComponent(UniversalBaseModel):
-    completed_count: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="completedCount")] = (
-        pydantic.Field(default=None)
-    )
+    completed_count: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="completedCount"),
+        pydantic.Field(
+            alias="completedCount",
+            description="If available, this is the number of times this record has been completed. For example, the number of times a seal title has been gilded.",
+        ),
+    ] = None
     """
     If available, this is the number of times this record has been completed. For example, the number of times a seal title has been gilded.
     """
 
     interval_objectives: typing_extensions.Annotated[
-        typing.Optional[typing.List[DestinyQuestsDestinyObjectiveProgress]], FieldMetadata(alias="intervalObjectives")
+        typing.Optional[typing.List[DestinyQuestsDestinyObjectiveProgress]],
+        FieldMetadata(alias="intervalObjectives"),
+        pydantic.Field(alias="intervalObjectives"),
     ] = None
     intervals_redeemed_count: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="intervalsRedeemedCount")
+        typing.Optional[int],
+        FieldMetadata(alias="intervalsRedeemedCount"),
+        pydantic.Field(alias="intervalsRedeemedCount"),
     ] = None
     objectives: typing.Optional[typing.List[DestinyQuestsDestinyObjectiveProgress]] = None
     reward_visibilty: typing_extensions.Annotated[
-        typing.Optional[typing.List[bool]], FieldMetadata(alias="rewardVisibilty")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[bool]],
+        FieldMetadata(alias="rewardVisibilty"),
+        pydantic.Field(
+            alias="rewardVisibilty",
+            description="If available, a list that describes which reward rewards should be shown (true) or hidden (false). This property is for regular record rewards, and not for interval objective rewards.",
+        ),
+    ] = None
     """
     If available, a list that describes which reward rewards should be shown (true) or hidden (false). This property is for regular record rewards, and not for interval objective rewards.
     """

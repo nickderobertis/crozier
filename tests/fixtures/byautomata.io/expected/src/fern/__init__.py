@@ -17,6 +17,7 @@ if typing.TYPE_CHECKING:
     )
     from .errors import BadRequestError, ForbiddenError, NotImplementedError
     from . import contentpro_search, contentpro_similar_text, search, similar
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .contentpro_search import GetContentproSearchResponse, GetContentproSearchResponseDataItem
     from .contentpro_similar_text import PostContentproSimilarTextResponse, PostContentproSimilarTextResponseDataItem
@@ -30,6 +31,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "BadRequestError": ".errors",
     "ContentProCompany": ".types",
     "ContentProSnippets": ".types",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "FernApi": ".client",
     "FernApiEnvironment": ".environment",
     "ForbiddenError": ".errors",
@@ -79,6 +82,8 @@ __all__ = [
     "BadRequestError",
     "ContentProCompany",
     "ContentProSnippets",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
     "FernApi",
     "FernApiEnvironment",
     "ForbiddenError",

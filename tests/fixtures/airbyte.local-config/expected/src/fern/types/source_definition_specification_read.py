@@ -14,18 +14,28 @@ from .synchronous_job_read import SynchronousJobRead
 
 
 class SourceDefinitionSpecificationRead(UniversalBaseModel):
-    advanced_auth: typing_extensions.Annotated[typing.Optional[AdvancedAuth], FieldMetadata(alias="advancedAuth")] = (
-        None
-    )
+    advanced_auth: typing_extensions.Annotated[
+        typing.Optional[AdvancedAuth], FieldMetadata(alias="advancedAuth"), pydantic.Field(alias="advancedAuth")
+    ] = None
     auth_specification: typing_extensions.Annotated[
-        typing.Optional[SourceAuthSpecification], FieldMetadata(alias="authSpecification")
+        typing.Optional[SourceAuthSpecification],
+        FieldMetadata(alias="authSpecification"),
+        pydantic.Field(alias="authSpecification"),
     ] = None
     connection_specification: typing_extensions.Annotated[
-        typing.Optional[SourceDefinitionSpecification], FieldMetadata(alias="connectionSpecification")
+        typing.Optional[SourceDefinitionSpecification],
+        FieldMetadata(alias="connectionSpecification"),
+        pydantic.Field(alias="connectionSpecification"),
     ] = None
-    documentation_url: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="documentationUrl")] = None
-    job_info: typing_extensions.Annotated[SynchronousJobRead, FieldMetadata(alias="jobInfo")]
-    source_definition_id: typing_extensions.Annotated[SourceDefinitionId, FieldMetadata(alias="sourceDefinitionId")]
+    documentation_url: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="documentationUrl"), pydantic.Field(alias="documentationUrl")
+    ] = None
+    job_info: typing_extensions.Annotated[
+        SynchronousJobRead, FieldMetadata(alias="jobInfo"), pydantic.Field(alias="jobInfo")
+    ]
+    source_definition_id: typing_extensions.Annotated[
+        SourceDefinitionId, FieldMetadata(alias="sourceDefinitionId"), pydantic.Field(alias="sourceDefinitionId")
+    ]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

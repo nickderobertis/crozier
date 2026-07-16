@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class InvoiceAutomaticPaymentSource(str, enum.Enum):
+class InvoiceAutomaticPaymentSource(enum.StrEnum):
     """
     Indicates the automatic payment method for an [invoice payment request](https://developer.squareup.com/reference/square_2021-08-18/objects/InvoicePaymentRequest).
     """

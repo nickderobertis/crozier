@@ -9,7 +9,9 @@ from ..core.serialization import FieldMetadata
 
 
 class AgentState(UniversalBaseModel):
-    agent_num: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="agentNum")] = None
+    agent_num: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="agentNum"), pydantic.Field(alias="agentNum")
+    ] = None
     state: typing.Optional[int] = None
 
     if IS_PYDANTIC_V2:

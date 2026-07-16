@@ -13,9 +13,11 @@ class DestinyDefinitionsDestinyItemVersionDefinition(UniversalBaseModel):
     The version definition currently just holds a reference to the power cap.
     """
 
-    power_cap_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="powerCapHash")] = (
-        pydantic.Field(default=None)
-    )
+    power_cap_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="powerCapHash"),
+        pydantic.Field(alias="powerCapHash", description="A reference to the power cap for this item version."),
+    ] = None
     """
     A reference to the power cap for this item version.
     """

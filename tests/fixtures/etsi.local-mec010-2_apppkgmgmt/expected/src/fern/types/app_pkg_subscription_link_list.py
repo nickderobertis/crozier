@@ -14,7 +14,9 @@ class AppPkgSubscriptionLinkList(UniversalBaseModel):
     'The data type represents a subscription link list of notification on application package management'
     """
 
-    links: typing_extensions.Annotated[AppPkgSubscriptionLinkListLinks, FieldMetadata(alias="_links")]
+    links: typing_extensions.Annotated[
+        AppPkgSubscriptionLinkListLinks, FieldMetadata(alias="_links"), pydantic.Field(alias="_links")
+    ]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class LocationStatusLabel(str, enum.Enum):
+class LocationStatusLabel(enum.StrEnum):
     PLANNED = "Planned"
     STAGING = "Staging"
     ACTIVE = "Active"

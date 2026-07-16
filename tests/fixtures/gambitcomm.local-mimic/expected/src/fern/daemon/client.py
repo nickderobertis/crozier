@@ -609,7 +609,7 @@ class DaemonClient:
 
     def mget_info(
         self, info_array: typing.Sequence[str], *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.List[typing.Dict[str, typing.Optional[typing.Any]]]:
+    ) -> typing.List[typing.Dict[str, typing.Any]]:
         """
         Get multiple sets of information about MIMIC, where infoArray is one of the parameters defined in the mimic get command.
 
@@ -623,7 +623,7 @@ class DaemonClient:
 
         Returns
         -------
-        typing.List[typing.Dict[str, typing.Optional[typing.Any]]]
+        typing.List[typing.Dict[str, typing.Any]]
             successful operation
 
         Examples
@@ -1999,7 +1999,7 @@ class AsyncDaemonClient:
 
     async def mget_info(
         self, info_array: typing.Sequence[str], *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.List[typing.Dict[str, typing.Optional[typing.Any]]]:
+    ) -> typing.List[typing.Dict[str, typing.Any]]:
         """
         Get multiple sets of information about MIMIC, where infoArray is one of the parameters defined in the mimic get command.
 
@@ -2013,7 +2013,7 @@ class AsyncDaemonClient:
 
         Returns
         -------
-        typing.List[typing.Dict[str, typing.Optional[typing.Any]]]
+        typing.List[typing.Dict[str, typing.Any]]
             successful operation
 
         Examples

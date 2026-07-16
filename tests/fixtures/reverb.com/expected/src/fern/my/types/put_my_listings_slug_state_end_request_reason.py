@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PutMyListingsSlugStateEndRequestReason(str, enum.Enum):
+class PutMyListingsSlugStateEndRequestReason(enum.StrEnum):
     """
     The reason this listing is being ended. Valid reasons: ["not_sold", "reverb_sale"].
     """

@@ -11,7 +11,9 @@ from .source_configuration import SourceConfiguration
 
 class SourceCloneConfiguration(UniversalBaseModel):
     connection_configuration: typing_extensions.Annotated[
-        typing.Optional[SourceConfiguration], FieldMetadata(alias="connectionConfiguration")
+        typing.Optional[SourceConfiguration],
+        FieldMetadata(alias="connectionConfiguration"),
+        pydantic.Field(alias="connectionConfiguration"),
     ] = None
     name: typing.Optional[str] = None
 

@@ -9,7 +9,9 @@ from ..core.serialization import FieldMetadata
 
 
 class ConfigProxy(UniversalBaseModel):
-    tcp_nodelay: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="TCP_NODELAY")] = None
+    tcp_nodelay: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="TCP_NODELAY"), pydantic.Field(alias="TCP_NODELAY")
+    ] = None
     client_to_server: typing.Optional[str] = None
     disconnect_delay: typing.Optional[int] = None
     max_connects: typing.Optional[int] = None

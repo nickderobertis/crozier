@@ -17,7 +17,7 @@ class ContactAssignment(UniversalBaseModel):
     display: typing.Optional[str] = None
     id: typing.Optional[int] = None
     last_updated: typing.Optional[dt.datetime] = None
-    object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    object: typing.Optional[typing.Dict[str, typing.Any]] = None
     object_id: int
     priority: typing.Optional[ContactAssignmentPriority] = None
     role: typing.Optional[NestedContactRole] = None

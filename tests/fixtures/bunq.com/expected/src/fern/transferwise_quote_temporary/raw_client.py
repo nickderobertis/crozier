@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -14,6 +15,7 @@ from ..errors.bad_request_error import BadRequestError
 from ..types.amount import Amount
 from ..types.transferwise_quote_temporary_create import TransferwiseQuoteTemporaryCreate
 from ..types.transferwise_quote_temporary_read import TransferwiseQuoteTemporaryRead
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -62,7 +64,7 @@ class RawTransferwiseQuoteTemporaryClient:
             Used to get temporary quotes from Transferwise. These cannot be used to initiate payments
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/transferwise-quote-temporary",
+            f"user/{encode_path_param(user_id)}/transferwise-quote-temporary",
             method="POST",
             json={
                 "amount_source": convert_and_respect_annotation_metadata(
@@ -94,9 +96,9 @@ class RawTransferwiseQuoteTemporaryClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -104,6 +106,10 @@ class RawTransferwiseQuoteTemporaryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def read_transferwise_quote_temporary_for_user(
@@ -129,7 +135,7 @@ class RawTransferwiseQuoteTemporaryClient:
             Used to get temporary quotes from Transferwise. These cannot be used to initiate payments
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/transferwise-quote-temporary/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/transferwise-quote-temporary/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -147,9 +153,9 @@ class RawTransferwiseQuoteTemporaryClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -157,6 +163,10 @@ class RawTransferwiseQuoteTemporaryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -203,7 +213,7 @@ class AsyncRawTransferwiseQuoteTemporaryClient:
             Used to get temporary quotes from Transferwise. These cannot be used to initiate payments
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/transferwise-quote-temporary",
+            f"user/{encode_path_param(user_id)}/transferwise-quote-temporary",
             method="POST",
             json={
                 "amount_source": convert_and_respect_annotation_metadata(
@@ -235,9 +245,9 @@ class AsyncRawTransferwiseQuoteTemporaryClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -245,6 +255,10 @@ class AsyncRawTransferwiseQuoteTemporaryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def read_transferwise_quote_temporary_for_user(
@@ -270,7 +284,7 @@ class AsyncRawTransferwiseQuoteTemporaryClient:
             Used to get temporary quotes from Transferwise. These cannot be used to initiate payments
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/transferwise-quote-temporary/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/transferwise-quote-temporary/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -288,9 +302,9 @@ class AsyncRawTransferwiseQuoteTemporaryClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -298,4 +312,8 @@ class AsyncRawTransferwiseQuoteTemporaryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

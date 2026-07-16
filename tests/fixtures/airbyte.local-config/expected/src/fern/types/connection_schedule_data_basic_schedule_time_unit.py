@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ConnectionScheduleDataBasicScheduleTimeUnit(str, enum.Enum):
+class ConnectionScheduleDataBasicScheduleTimeUnit(enum.StrEnum):
     MINUTES = "minutes"
     HOURS = "hours"
     DAYS = "days"

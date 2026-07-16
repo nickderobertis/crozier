@@ -16,7 +16,9 @@ class LocalJwtVerifier(UniversalBaseModel):
     A JWT verifier used only for the current service descriptor
     """
 
-    algo_settings: typing_extensions.Annotated[LocalJwtVerifierAlgoSettings, FieldMetadata(alias="algoSettings")]
+    algo_settings: typing_extensions.Annotated[
+        LocalJwtVerifierAlgoSettings, FieldMetadata(alias="algoSettings"), pydantic.Field(alias="algoSettings")
+    ]
     enabled: bool = pydantic.Field()
     """
     Is it enabled

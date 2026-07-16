@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class LoyaltyProgramStatus(str, enum.Enum):
+class LoyaltyProgramStatus(enum.StrEnum):
     """
     Indicates whether the program is currently active.
     """

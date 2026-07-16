@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ServiceTemplateProtocolLabel(str, enum.Enum):
+class ServiceTemplateProtocolLabel(enum.StrEnum):
     TCP = "TCP"
     UDP = "UDP"
     SCTP = "SCTP"

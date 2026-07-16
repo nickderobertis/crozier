@@ -25,14 +25,20 @@ class DestinyDefinitionsDestinyDamageTypeDefinition(UniversalBaseModel):
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(alias="displayProperties", description="The description of the damage type, icon etc..."),
+    ] = None
     """
     The description of the damage type, icon etc...
     """
 
-    enum_value: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="enumValue")] = pydantic.Field(
-        default=None
-    )
+    enum_value: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="enumValue"),
+        pydantic.Field(
+            alias="enumValue",
+            description="We have an enumeration for damage types for quick reference. This is the current definition's damage type enum value.",
+        ),
+    ] = None
     """
     We have an enumeration for damage types for quick reference. This is the current definition's damage type enum value.
     """
@@ -53,16 +59,25 @@ class DestinyDefinitionsDestinyDamageTypeDefinition(UniversalBaseModel):
     If this is true, then there is an entity with this identifier/type combination, but BNet is not yet allowed to show it. Sorry!
     """
 
-    show_icon: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="showIcon")] = pydantic.Field(
-        default=None
-    )
+    show_icon: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="showIcon"),
+        pydantic.Field(
+            alias="showIcon",
+            description="If TRUE, the game shows this damage type's icon. Otherwise, it doesn't. Whether you show it or not is up to you.",
+        ),
+    ] = None
     """
     If TRUE, the game shows this damage type's icon. Otherwise, it doesn't. Whether you show it or not is up to you.
     """
 
     transparent_icon_path: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="transparentIconPath")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="transparentIconPath"),
+        pydantic.Field(
+            alias="transparentIconPath", description="A variant of the icon that is transparent and colorless."
+        ),
+    ] = None
     """
     A variant of the icon that is transparent and colorless.
     """

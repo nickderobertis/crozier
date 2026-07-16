@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class WritablePrefixStatus(str, enum.Enum):
+class WritablePrefixStatus(enum.StrEnum):
     """
     Operational status of this prefix
     """

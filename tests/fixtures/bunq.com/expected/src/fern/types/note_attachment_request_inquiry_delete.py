@@ -2,4 +2,4 @@
 
 import typing
 
-NoteAttachmentRequestInquiryDelete = typing.Dict[str, typing.Optional[typing.Any]]
+NoteAttachmentRequestInquiryDelete = typing.Dict[str, typing.Any]

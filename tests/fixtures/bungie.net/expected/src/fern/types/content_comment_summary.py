@@ -9,8 +9,12 @@ from ..core.serialization import FieldMetadata
 
 
 class ContentCommentSummary(UniversalBaseModel):
-    comment_count: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="commentCount")] = None
-    topic_id: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="topicId")] = None
+    comment_count: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="commentCount"), pydantic.Field(alias="commentCount")
+    ] = None
+    topic_id: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="topicId"), pydantic.Field(alias="topicId")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

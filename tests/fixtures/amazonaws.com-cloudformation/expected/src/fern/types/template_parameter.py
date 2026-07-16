@@ -13,30 +13,41 @@ class TemplateParameter(UniversalBaseModel):
     The TemplateParameter data type.
     """
 
-    parameter_key: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="ParameterKey")] = (
-        pydantic.Field(default=None)
-    )
+    parameter_key: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="ParameterKey"),
+        pydantic.Field(alias="ParameterKey", description="The name associated with the parameter."),
+    ] = None
     """
     The name associated with the parameter.
     """
 
-    default_value: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="DefaultValue")] = (
-        pydantic.Field(default=None)
-    )
+    default_value: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="DefaultValue"),
+        pydantic.Field(alias="DefaultValue", description="The default value associated with the parameter."),
+    ] = None
     """
     The default value associated with the parameter.
     """
 
-    no_echo: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="NoEcho")] = pydantic.Field(
-        default=None
-    )
+    no_echo: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="NoEcho"),
+        pydantic.Field(
+            alias="NoEcho",
+            description="Flag indicating whether the parameter should be displayed as plain text in logs and UIs.",
+        ),
+    ] = None
     """
     Flag indicating whether the parameter should be displayed as plain text in logs and UIs.
     """
 
-    description: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="Description")] = pydantic.Field(
-        default=None
-    )
+    description: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="Description"),
+        pydantic.Field(alias="Description", description="User defined description associated with the parameter."),
+    ] = None
     """
     User defined description associated with the parameter.
     """

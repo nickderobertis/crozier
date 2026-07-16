@@ -12,7 +12,7 @@ class ApiErrorResponse(UniversalBaseModel):
     """
 
     code: typing.Optional[int] = None
-    detail: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = pydantic.Field(default=None)
+    detail: typing.Optional[typing.Dict[str, typing.Any]] = pydantic.Field(default=None)
     """
     Details structure for additional information about the error if available. Content and structure will be error specific.
     """

@@ -2,4 +2,4 @@
 
 import typing
 
-NoteTextPaymentBatchDelete = typing.Dict[str, typing.Optional[typing.Any]]
+NoteTextPaymentBatchDelete = typing.Dict[str, typing.Any]

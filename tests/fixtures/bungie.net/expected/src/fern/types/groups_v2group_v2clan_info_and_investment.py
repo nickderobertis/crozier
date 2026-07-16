@@ -16,11 +16,17 @@ class GroupsV2GroupV2ClanInfoAndInvestment(UniversalBaseModel):
     """
 
     clan_banner_data: typing_extensions.Annotated[
-        typing.Optional[GroupsV2ClanBanner], FieldMetadata(alias="clanBannerData")
+        typing.Optional[GroupsV2ClanBanner],
+        FieldMetadata(alias="clanBannerData"),
+        pydantic.Field(alias="clanBannerData"),
     ] = None
-    clan_callsign: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="clanCallsign")] = None
+    clan_callsign: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="clanCallsign"), pydantic.Field(alias="clanCallsign")
+    ] = None
     d2clan_progressions: typing_extensions.Annotated[
-        typing.Optional[typing.Dict[str, DestinyDestinyProgression]], FieldMetadata(alias="d2ClanProgressions")
+        typing.Optional[typing.Dict[str, DestinyDestinyProgression]],
+        FieldMetadata(alias="d2ClanProgressions"),
+        pydantic.Field(alias="d2ClanProgressions"),
     ] = None
 
     if IS_PYDANTIC_V2:

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class SuperannuationCalculationType(str, enum.Enum):
+class SuperannuationCalculationType(enum.StrEnum):
     FIXEDAMOUNT = "FIXEDAMOUNT"
     PERCENTAGEOFEARNINGS = "PERCENTAGEOFEARNINGS"
     STATUTORY = "STATUTORY"

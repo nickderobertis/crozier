@@ -16,7 +16,7 @@ class GetTopicResponse(UniversalBaseModel):
     archetype: str
     archived: bool
     bookmarked: bool
-    bookmarks: typing.List[typing.Optional[typing.Any]]
+    bookmarks: typing.List[typing.Any]
     category_id: int
     chunk_size: int
     closed: bool
@@ -51,10 +51,10 @@ class GetTopicResponse(UniversalBaseModel):
     slow_mode_seconds: int
     slug: str
     suggested_topics: typing.List[GetTopicResponseSuggestedTopicsItem]
-    tags: typing.List[typing.Optional[typing.Any]]
+    tags: typing.List[typing.Any]
     tags_descriptions: GetTopicResponseTagsDescriptions
     thumbnails: typing.Optional[str] = None
-    timeline_lookup: typing.List[typing.Optional[typing.Any]]
+    timeline_lookup: typing.List[typing.Any]
     title: str
     topic_timer: typing.Optional[str] = None
     unpinned: typing.Optional[str] = None

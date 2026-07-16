@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class WritableInterfacePoeType(str, enum.Enum):
+class WritableInterfacePoeType(enum.StrEnum):
     TYPE1IEEE8023AF = "type1-ieee802.3af"
     TYPE2IEEE8023AT = "type2-ieee802.3at"
     TYPE2IEEE8023AZ = "type2-ieee802.3az"

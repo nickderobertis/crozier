@@ -31,8 +31,8 @@ class ListCategoriesResponseCategoryListCategoriesItem(UniversalBaseModel):
     slug: str
     sort_ascending: typing.Optional[str] = None
     sort_order: typing.Optional[str] = None
-    subcategory_ids: typing.List[typing.Optional[typing.Any]]
-    subcategory_list: typing.Optional[typing.List[typing.Optional[typing.Any]]] = None
+    subcategory_ids: typing.List[typing.Any]
+    subcategory_list: typing.Optional[typing.List[typing.Any]] = None
     subcategory_list_style: str
     text_color: str
     topic_count: int

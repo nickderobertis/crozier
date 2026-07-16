@@ -11,14 +11,20 @@ from .attempt_failure_type import AttemptFailureType
 
 
 class AttemptFailureReason(UniversalBaseModel):
-    external_message: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="externalMessage")] = None
+    external_message: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="externalMessage"), pydantic.Field(alias="externalMessage")
+    ] = None
     failure_origin: typing_extensions.Annotated[
-        typing.Optional[AttemptFailureOrigin], FieldMetadata(alias="failureOrigin")
+        typing.Optional[AttemptFailureOrigin],
+        FieldMetadata(alias="failureOrigin"),
+        pydantic.Field(alias="failureOrigin"),
     ] = None
     failure_type: typing_extensions.Annotated[
-        typing.Optional[AttemptFailureType], FieldMetadata(alias="failureType")
+        typing.Optional[AttemptFailureType], FieldMetadata(alias="failureType"), pydantic.Field(alias="failureType")
     ] = None
-    internal_message: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="internalMessage")] = None
+    internal_message: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="internalMessage"), pydantic.Field(alias="internalMessage")
+    ] = None
     retryable: typing.Optional[bool] = pydantic.Field(default=None)
     """
     True if it is known that retrying may succeed, e.g. for a transient failure. False if it is known that a retry will not succeed, e.g. for a configuration issue. If not set, retryable status is not well known.

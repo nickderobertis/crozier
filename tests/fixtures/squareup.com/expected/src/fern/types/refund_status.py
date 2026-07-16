@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class RefundStatus(str, enum.Enum):
+class RefundStatus(enum.StrEnum):
     """
     Indicates a refund's current status.
     """

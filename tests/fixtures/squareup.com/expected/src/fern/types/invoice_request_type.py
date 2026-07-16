@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class InvoiceRequestType(str, enum.Enum):
+class InvoiceRequestType(enum.StrEnum):
     """
     Indicates the type of the payment request. For more information, see
     [Payment requests](https://developer.squareup.com/docs/invoices-api/overview#payment-requests).

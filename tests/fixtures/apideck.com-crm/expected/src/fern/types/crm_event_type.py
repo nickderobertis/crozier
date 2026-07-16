@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class CrmEventType(str, enum.Enum):
+class CrmEventType(enum.StrEnum):
     ALL = "*"
     CRM_ACTIVITY_CREATED = "crm.activity.created"
     CRM_ACTIVITY_UPDATED = "crm.activity.updated"

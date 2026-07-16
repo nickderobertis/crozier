@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ListUsersPublicRequestAsc(str, enum.Enum):
+class ListUsersPublicRequestAsc(enum.StrEnum):
     TRUE = "true"
 
     def visit(self, true: typing.Callable[[], T_Result]) -> T_Result:

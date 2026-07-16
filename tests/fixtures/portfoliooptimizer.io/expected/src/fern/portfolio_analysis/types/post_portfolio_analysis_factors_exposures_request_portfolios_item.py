@@ -9,9 +9,14 @@ from ...core.serialization import FieldMetadata
 
 
 class PostPortfolioAnalysisFactorsExposuresRequestPortfoliosItem(UniversalBaseModel):
-    portfolio_returns: typing_extensions.Annotated[typing.List[float], FieldMetadata(alias="portfolioReturns")] = (
-        pydantic.Field()
-    )
+    portfolio_returns: typing_extensions.Annotated[
+        typing.List[float],
+        FieldMetadata(alias="portfolioReturns"),
+        pydantic.Field(
+            alias="portfolioReturns",
+            description="portfolioReturns[t] is the return of the portfolio at the time t, all the portfolioReturns arrays must have the same length, equal to the common length of the factorReturns arrays",
+        ),
+    ]
     """
     portfolioReturns[t] is the return of the portfolio at the time t, all the portfolioReturns arrays must have the same length, equal to the common length of the factorReturns arrays
     """

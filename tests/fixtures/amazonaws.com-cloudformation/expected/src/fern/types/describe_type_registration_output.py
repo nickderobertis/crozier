@@ -11,29 +11,43 @@ from .describe_type_registration_output_progress_status import DescribeTypeRegis
 
 class DescribeTypeRegistrationOutput(UniversalBaseModel):
     progress_status: typing_extensions.Annotated[
-        typing.Optional[DescribeTypeRegistrationOutputProgressStatus], FieldMetadata(alias="ProgressStatus")
-    ] = pydantic.Field(default=None)
+        typing.Optional[DescribeTypeRegistrationOutputProgressStatus],
+        FieldMetadata(alias="ProgressStatus"),
+        pydantic.Field(alias="ProgressStatus", description="The current status of the extension registration request."),
+    ] = None
     """
     The current status of the extension registration request.
     """
 
-    description: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="Description")] = pydantic.Field(
-        default=None
-    )
+    description: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="Description"),
+        pydantic.Field(alias="Description", description="The description of the extension registration request."),
+    ] = None
     """
     The description of the extension registration request.
     """
 
-    type_arn: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="TypeArn")] = pydantic.Field(
-        default=None
-    )
+    type_arn: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="TypeArn"),
+        pydantic.Field(
+            alias="TypeArn",
+            description="<p>The Amazon Resource Name (ARN) of the extension being registered.</p> <p>For registration requests with a <code>ProgressStatus</code> of other than <code>COMPLETE</code>, this will be <code>null</code>.</p>",
+        ),
+    ] = None
     """
     <p>The Amazon Resource Name (ARN) of the extension being registered.</p> <p>For registration requests with a <code>ProgressStatus</code> of other than <code>COMPLETE</code>, this will be <code>null</code>.</p>
     """
 
-    type_version_arn: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="TypeVersionArn")] = (
-        pydantic.Field(default=None)
-    )
+    type_version_arn: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="TypeVersionArn"),
+        pydantic.Field(
+            alias="TypeVersionArn",
+            description="<p>The Amazon Resource Name (ARN) of this specific version of the extension being registered.</p> <p>For registration requests with a <code>ProgressStatus</code> of other than <code>COMPLETE</code>, this will be <code>null</code>.</p>",
+        ),
+    ] = None
     """
     <p>The Amazon Resource Name (ARN) of this specific version of the extension being registered.</p> <p>For registration requests with a <code>ProgressStatus</code> of other than <code>COMPLETE</code>, this will be <code>null</code>.</p>
     """

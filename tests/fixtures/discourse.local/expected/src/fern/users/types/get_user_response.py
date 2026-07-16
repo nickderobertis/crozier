@@ -9,7 +9,7 @@ from .get_user_response_user import GetUserResponseUser
 
 class GetUserResponse(UniversalBaseModel):
     user: GetUserResponseUser
-    user_badges: typing.List[typing.Optional[typing.Any]]
+    user_badges: typing.List[typing.Any]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

@@ -32,7 +32,7 @@ class VoiceV1DialingPermissionsDialingPermissionsCountry(UniversalBaseModel):
     The [ISO country code](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2).
     """
 
-    links: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = pydantic.Field(default=None)
+    links: typing.Optional[typing.Dict[str, typing.Any]] = pydantic.Field(default=None)
     """
     A list of URLs related to this resource.
     """

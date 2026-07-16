@@ -13,10 +13,16 @@ from .ob_risk2 import ObRisk2
 
 
 class ObReadConsentResponse1(UniversalBaseModel):
-    data: typing_extensions.Annotated[ObReadConsentResponse1Data, FieldMetadata(alias="Data")]
-    links: typing_extensions.Annotated[typing.Optional[Links], FieldMetadata(alias="Links")] = None
-    meta: typing_extensions.Annotated[typing.Optional[Meta], FieldMetadata(alias="Meta")] = None
-    risk: typing_extensions.Annotated[ObRisk2, FieldMetadata(alias="Risk")]
+    data: typing_extensions.Annotated[
+        ObReadConsentResponse1Data, FieldMetadata(alias="Data"), pydantic.Field(alias="Data")
+    ]
+    links: typing_extensions.Annotated[
+        typing.Optional[Links], FieldMetadata(alias="Links"), pydantic.Field(alias="Links")
+    ] = None
+    meta: typing_extensions.Annotated[
+        typing.Optional[Meta], FieldMetadata(alias="Meta"), pydantic.Field(alias="Meta")
+    ] = None
+    risk: typing_extensions.Annotated[ObRisk2, FieldMetadata(alias="Risk"), pydantic.Field(alias="Risk")]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

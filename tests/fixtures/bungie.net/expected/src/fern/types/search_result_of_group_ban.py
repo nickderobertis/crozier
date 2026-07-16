@@ -11,16 +11,27 @@ from .queries_paged_query import QueriesPagedQuery
 
 
 class SearchResultOfGroupBan(UniversalBaseModel):
-    has_more: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="hasMore")] = None
+    has_more: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="hasMore"), pydantic.Field(alias="hasMore")
+    ] = None
     query: typing.Optional[QueriesPagedQuery] = None
     replacement_continuation_token: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="replacementContinuationToken")
+        typing.Optional[str],
+        FieldMetadata(alias="replacementContinuationToken"),
+        pydantic.Field(alias="replacementContinuationToken"),
     ] = None
     results: typing.Optional[typing.List[GroupsV2GroupBan]] = None
-    total_results: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="totalResults")] = None
-    use_total_results: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="useTotalResults")] = (
-        pydantic.Field(default=None)
-    )
+    total_results: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="totalResults"), pydantic.Field(alias="totalResults")
+    ] = None
+    use_total_results: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="useTotalResults"),
+        pydantic.Field(
+            alias="useTotalResults",
+            description="If useTotalResults is true, then totalResults represents an accurate count.\r\nIf False, it does not, and may be estimated/only the size of the current page.\r\nEither way, you should probably always only trust hasMore.\r\nThis is a long-held historical throwback to when we used to do paging with known total results. Those queries toasted our database, and we were left to hastily alter our endpoints and create backward- compatible shims, of which useTotalResults is one.",
+        ),
+    ] = None
     """
     If useTotalResults is true, then totalResults represents an accurate count.
     If False, it does not, and may be estimated/only the size of the current page.

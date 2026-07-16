@@ -25,6 +25,7 @@ class DestinyDefinitionsChecklistsDestinyChecklistDefinition(UniversalBaseModel)
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
+        pydantic.Field(alias="displayProperties"),
     ] = None
     entries: typing.Optional[typing.List[DestinyDefinitionsChecklistsDestinyChecklistEntryDefinition]] = pydantic.Field(
         default=None
@@ -54,9 +55,11 @@ class DestinyDefinitionsChecklistsDestinyChecklistDefinition(UniversalBaseModel)
     Indicates whether you will find this checklist on the Profile or Character components.
     """
 
-    view_action_string: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="viewActionString")] = (
-        pydantic.Field(default=None)
-    )
+    view_action_string: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="viewActionString"),
+        pydantic.Field(alias="viewActionString", description="A localized string prompting you to view the checklist."),
+    ] = None
     """
     A localized string prompting you to view the checklist.
     """

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class StackSetDriftDetectionStatus(str, enum.Enum):
+class StackSetDriftDetectionStatus(enum.StrEnum):
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
     PARTIAL_SUCCESS = "PARTIAL_SUCCESS"

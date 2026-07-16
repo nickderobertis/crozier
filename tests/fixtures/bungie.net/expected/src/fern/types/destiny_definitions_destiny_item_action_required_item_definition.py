@@ -18,16 +18,26 @@ class DestinyDefinitionsDestinyItemActionRequiredItemDefinition(UniversalBaseMod
     The minimum quantity of the item you have to have.
     """
 
-    delete_on_action: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="deleteOnAction")] = (
-        pydantic.Field(default=None)
-    )
+    delete_on_action: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="deleteOnAction"),
+        pydantic.Field(
+            alias="deleteOnAction",
+            description="If true, the item/quantity will be deleted from your inventory when the action is performed. Otherwise, you'll retain these required items after the action is complete.",
+        ),
+    ] = None
     """
     If true, the item/quantity will be deleted from your inventory when the action is performed. Otherwise, you'll retain these required items after the action is complete.
     """
 
-    item_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="itemHash")] = pydantic.Field(
-        default=None
-    )
+    item_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="itemHash"),
+        pydantic.Field(
+            alias="itemHash",
+            description="The hash identifier of the item you need to have. Use it to look up the DestinyInventoryItemDefinition for more info.",
+        ),
+    ] = None
     """
     The hash identifier of the item you need to have. Use it to look up the DestinyInventoryItemDefinition for more info.
     """

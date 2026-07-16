@@ -17,7 +17,11 @@ class DestinyResponsesInventoryChangedResponse(UniversalBaseModel):
     added_inventory_items: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyEntitiesItemsDestinyItemComponent]],
         FieldMetadata(alias="addedInventoryItems"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="addedInventoryItems",
+            description="Items that appeared in the inventory possibly as a result of an action.",
+        ),
+    ] = None
     """
     Items that appeared in the inventory possibly as a result of an action.
     """
@@ -25,7 +29,11 @@ class DestinyResponsesInventoryChangedResponse(UniversalBaseModel):
     removed_inventory_items: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyEntitiesItemsDestinyItemComponent]],
         FieldMetadata(alias="removedInventoryItems"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="removedInventoryItems",
+            description="Items that disappeared from the inventory possibly as a result of an action.",
+        ),
+    ] = None
     """
     Items that disappeared from the inventory possibly as a result of an action.
     """

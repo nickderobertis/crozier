@@ -13,7 +13,7 @@ class TimeDelta(UniversalBaseModel):
     Time delta
     """
 
-    type: typing_extensions.Annotated[str, FieldMetadata(alias="__type")]
+    type: typing_extensions.Annotated[str, FieldMetadata(alias="__type"), pydantic.Field(alias="__type")]
     days: int
     microseconds: int
     seconds: int

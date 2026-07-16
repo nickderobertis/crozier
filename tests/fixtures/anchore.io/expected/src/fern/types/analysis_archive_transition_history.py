@@ -16,7 +16,9 @@ class AnalysisArchiveTransitionHistory(UniversalBaseModel):
     """
 
     created_at: typing.Optional[dt.datetime] = None
-    image_digest: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="imageDigest")] = None
+    image_digest: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="imageDigest"), pydantic.Field(alias="imageDigest")
+    ] = None
     last_updated: typing.Optional[dt.datetime] = None
     rule_id: typing.Optional[str] = None
     transition: typing.Optional[AnalysisArchiveTransitionHistoryTransition] = None

@@ -25,7 +25,7 @@ class WebClient:
 
     def protocol_web_get_args(
         self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Dict[str, typing.Optional[typing.Any]]:
+    ) -> typing.Dict[str, typing.Any]:
         """
         Agent's WEB configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
@@ -39,7 +39,7 @@ class WebClient:
 
         Returns
         -------
-        typing.Dict[str, typing.Optional[typing.Any]]
+        typing.Dict[str, typing.Any]
             successful operation
 
         Examples
@@ -532,7 +532,7 @@ class AsyncWebClient:
 
     async def protocol_web_get_args(
         self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Dict[str, typing.Optional[typing.Any]]:
+    ) -> typing.Dict[str, typing.Any]:
         """
         Agent's WEB configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
@@ -546,7 +546,7 @@ class AsyncWebClient:
 
         Returns
         -------
-        typing.Dict[str, typing.Optional[typing.Any]]
+        typing.Dict[str, typing.Any]
             successful operation
 
         Examples

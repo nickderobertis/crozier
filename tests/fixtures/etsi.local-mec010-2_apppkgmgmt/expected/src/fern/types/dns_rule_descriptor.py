@@ -10,22 +10,32 @@ from .ip_address_type import IpAddressType
 
 
 class DnsRuleDescriptor(UniversalBaseModel):
-    dns_rule_id: typing_extensions.Annotated[str, FieldMetadata(alias="dnsRuleId")] = pydantic.Field()
+    dns_rule_id: typing_extensions.Annotated[
+        str, FieldMetadata(alias="dnsRuleId"), pydantic.Field(alias="dnsRuleId", description="Identifies the DNS Rule")
+    ]
     """
     Identifies the DNS Rule
     """
 
-    domain_name: typing_extensions.Annotated[str, FieldMetadata(alias="domainName")] = pydantic.Field()
+    domain_name: typing_extensions.Annotated[
+        str, FieldMetadata(alias="domainName"), pydantic.Field(alias="domainName", description="FQDN of the DNS rule")
+    ]
     """
     FQDN of the DNS rule
     """
 
-    ip_address: typing_extensions.Annotated[str, FieldMetadata(alias="ipAddress")] = pydantic.Field()
+    ip_address: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="ipAddress"),
+        pydantic.Field(alias="ipAddress", description="IP address given by the DNS rule"),
+    ]
     """
     IP address given by the DNS rule
     """
 
-    ip_address_type: typing_extensions.Annotated[IpAddressType, FieldMetadata(alias="ipAddressType")]
+    ip_address_type: typing_extensions.Annotated[
+        IpAddressType, FieldMetadata(alias="ipAddressType"), pydantic.Field(alias="ipAddressType")
+    ]
     ttl: typing.Optional[int] = pydantic.Field(default=None)
     """
     Time-to-live value

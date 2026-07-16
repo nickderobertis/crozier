@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class StackEventHookStatus(str, enum.Enum):
+class StackEventHookStatus(enum.StrEnum):
     """
     Provides the status of the change set hook.
     """

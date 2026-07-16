@@ -13,12 +13,26 @@ class DescribeTypeOutputLoggingConfig(UniversalBaseModel):
     Contains logging configuration information for private extensions. This applies only to private extensions you have registered in your account. For public extensions, both those provided by Amazon Web Services and published by third parties, CloudFormation returns <code>null</code>. For more information, see <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_RegisterType.html">RegisterType</a>.
     """
 
-    log_role_arn: typing_extensions.Annotated[str, FieldMetadata(alias="LogRoleArn")] = pydantic.Field()
+    log_role_arn: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="LogRoleArn"),
+        pydantic.Field(
+            alias="LogRoleArn",
+            description="The Amazon Resource Name (ARN) of the role that CloudFormation should assume when sending log entries to CloudWatch Logs.",
+        ),
+    ]
     """
     The Amazon Resource Name (ARN) of the role that CloudFormation should assume when sending log entries to CloudWatch Logs.
     """
 
-    log_group_name: typing_extensions.Annotated[str, FieldMetadata(alias="LogGroupName")] = pydantic.Field()
+    log_group_name: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="LogGroupName"),
+        pydantic.Field(
+            alias="LogGroupName",
+            description="The Amazon CloudWatch Logs group to which CloudFormation sends error logging information when invoking the extension's handlers.",
+        ),
+    ]
     """
     The Amazon CloudWatch Logs group to which CloudFormation sends error logging information when invoking the extension's handlers.
     """

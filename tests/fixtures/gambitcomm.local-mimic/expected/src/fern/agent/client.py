@@ -1357,7 +1357,7 @@ class AgentClient:
 
     def protocol_get_config(
         self, agent_num: int, prot: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Dict[str, typing.Optional[typing.Any]]:
+    ) -> typing.Dict[str, typing.Any]:
         """
         Returns the protocol's configuration.
 
@@ -1374,7 +1374,7 @@ class AgentClient:
 
         Returns
         -------
-        typing.Dict[str, typing.Optional[typing.Any]]
+        typing.Dict[str, typing.Any]
             successful operation
 
         Examples
@@ -4530,7 +4530,7 @@ class AsyncAgentClient:
 
     async def protocol_get_config(
         self, agent_num: int, prot: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Dict[str, typing.Optional[typing.Any]]:
+    ) -> typing.Dict[str, typing.Any]:
         """
         Returns the protocol's configuration.
 
@@ -4547,7 +4547,7 @@ class AsyncAgentClient:
 
         Returns
         -------
-        typing.Dict[str, typing.Optional[typing.Any]]
+        typing.Dict[str, typing.Any]
             successful operation
 
         Examples

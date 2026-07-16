@@ -16,7 +16,9 @@ class SubscriptionsAppPkgSubscription(UniversalBaseModel):
     """
 
     href: Href
-    subsctiption_type: typing_extensions.Annotated[SubsctiptionTypeAppPkg, FieldMetadata(alias="subsctiptionType")]
+    subsctiption_type: typing_extensions.Annotated[
+        SubsctiptionTypeAppPkg, FieldMetadata(alias="subsctiptionType"), pydantic.Field(alias="subsctiptionType")
+    ]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

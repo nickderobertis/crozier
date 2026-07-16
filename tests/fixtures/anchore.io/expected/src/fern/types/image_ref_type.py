@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ImageRefType(str, enum.Enum):
+class ImageRefType(enum.StrEnum):
     TAG = "tag"
     DIGEST = "digest"
     ID = "id"

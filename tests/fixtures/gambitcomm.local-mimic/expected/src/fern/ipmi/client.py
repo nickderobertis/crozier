@@ -25,7 +25,7 @@ class IpmiClient:
 
     def protocol_ipmi_get_args(
         self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Dict[str, typing.Optional[typing.Any]]:
+    ) -> typing.Dict[str, typing.Any]:
         """
         Agent's IPMI configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
@@ -39,7 +39,7 @@ class IpmiClient:
 
         Returns
         -------
-        typing.Dict[str, typing.Optional[typing.Any]]
+        typing.Dict[str, typing.Any]
             successful operation
 
         Examples
@@ -367,7 +367,7 @@ class AsyncIpmiClient:
 
     async def protocol_ipmi_get_args(
         self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Dict[str, typing.Optional[typing.Any]]:
+    ) -> typing.Dict[str, typing.Any]:
         """
         Agent's IPMI configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
@@ -381,7 +381,7 @@ class AsyncIpmiClient:
 
         Returns
         -------
-        typing.Dict[str, typing.Optional[typing.Any]]
+        typing.Dict[str, typing.Any]
             successful operation
 
         Examples

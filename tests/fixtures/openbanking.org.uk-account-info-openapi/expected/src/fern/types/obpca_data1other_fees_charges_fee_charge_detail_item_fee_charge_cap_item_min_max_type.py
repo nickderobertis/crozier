@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObpcaData1OtherFeesChargesFeeChargeDetailItemFeeChargeCapItemMinMaxType(str, enum.Enum):
+class ObpcaData1OtherFeesChargesFeeChargeDetailItemFeeChargeCapItemMinMaxType(enum.StrEnum):
     """
     Indicates that this is the minimum/ maximum fee/charge that can be applied by the financial institution
     """

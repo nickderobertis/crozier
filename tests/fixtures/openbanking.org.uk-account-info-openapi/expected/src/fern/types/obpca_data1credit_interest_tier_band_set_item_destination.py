@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObpcaData1CreditInterestTierBandSetItemDestination(str, enum.Enum):
+class ObpcaData1CreditInterestTierBandSetItemDestination(enum.StrEnum):
     """
     Describes whether accrued interest is payable only to the PCA or to another bank account
     """

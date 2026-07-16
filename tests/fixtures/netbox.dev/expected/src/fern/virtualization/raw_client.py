@@ -7,7 +7,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -25,6 +26,7 @@ from .types.virtualization_cluster_types_list_response import VirtualizationClus
 from .types.virtualization_clusters_list_response import VirtualizationClustersListResponse
 from .types.virtualization_interfaces_list_response import VirtualizationInterfacesListResponse
 from .types.virtualization_virtual_machines_list_response import VirtualizationVirtualMachinesListResponse
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -387,6 +389,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cluster_groups_create(
@@ -396,7 +402,7 @@ class RawVirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -418,7 +424,7 @@ class RawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -474,6 +480,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cluster_groups_bulk_update(
@@ -483,7 +493,7 @@ class RawVirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -505,7 +515,7 @@ class RawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -561,6 +571,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cluster_groups_bulk_delete(
@@ -589,6 +603,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cluster_groups_bulk_partial_update(
@@ -598,7 +616,7 @@ class RawVirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -620,7 +638,7 @@ class RawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -676,6 +694,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cluster_groups_read(
@@ -698,7 +720,7 @@ class RawVirtualizationClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"virtualization/cluster-groups/{jsonable_encoder(id)}/",
+            f"virtualization/cluster-groups/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -715,6 +737,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cluster_groups_update(
@@ -725,7 +751,7 @@ class RawVirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -750,7 +776,7 @@ class RawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -773,7 +799,7 @@ class RawVirtualizationClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"virtualization/cluster-groups/{jsonable_encoder(id_)}/",
+            f"virtualization/cluster-groups/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "cluster_count": cluster_count,
@@ -809,6 +835,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cluster_groups_delete(
@@ -830,7 +860,7 @@ class RawVirtualizationClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"virtualization/cluster-groups/{jsonable_encoder(id)}/",
+            f"virtualization/cluster-groups/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -840,6 +870,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cluster_groups_partial_update(
@@ -850,7 +884,7 @@ class RawVirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -875,7 +909,7 @@ class RawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -898,7 +932,7 @@ class RawVirtualizationClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"virtualization/cluster-groups/{jsonable_encoder(id_)}/",
+            f"virtualization/cluster-groups/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "cluster_count": cluster_count,
@@ -934,6 +968,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cluster_types_list(
@@ -1259,6 +1297,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cluster_types_create(
@@ -1268,7 +1310,7 @@ class RawVirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -1290,7 +1332,7 @@ class RawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -1346,6 +1388,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cluster_types_bulk_update(
@@ -1355,7 +1401,7 @@ class RawVirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -1377,7 +1423,7 @@ class RawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -1433,6 +1479,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cluster_types_bulk_delete(
@@ -1461,6 +1511,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cluster_types_bulk_partial_update(
@@ -1470,7 +1524,7 @@ class RawVirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -1492,7 +1546,7 @@ class RawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -1548,6 +1602,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cluster_types_read(
@@ -1570,7 +1628,7 @@ class RawVirtualizationClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"virtualization/cluster-types/{jsonable_encoder(id)}/",
+            f"virtualization/cluster-types/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -1587,6 +1645,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cluster_types_update(
@@ -1597,7 +1659,7 @@ class RawVirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -1622,7 +1684,7 @@ class RawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -1645,7 +1707,7 @@ class RawVirtualizationClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"virtualization/cluster-types/{jsonable_encoder(id_)}/",
+            f"virtualization/cluster-types/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "cluster_count": cluster_count,
@@ -1681,6 +1743,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cluster_types_delete(
@@ -1702,7 +1768,7 @@ class RawVirtualizationClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"virtualization/cluster-types/{jsonable_encoder(id)}/",
+            f"virtualization/cluster-types/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -1712,6 +1778,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def cluster_types_partial_update(
@@ -1722,7 +1792,7 @@ class RawVirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -1747,7 +1817,7 @@ class RawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -1770,7 +1840,7 @@ class RawVirtualizationClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"virtualization/cluster-types/{jsonable_encoder(id_)}/",
+            f"virtualization/cluster-types/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "cluster_count": cluster_count,
@@ -1806,6 +1876,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def clusters_list(
@@ -2201,6 +2275,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def clusters_create(
@@ -2210,7 +2288,7 @@ class RawVirtualizationClient:
         type: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -2238,7 +2316,7 @@ class RawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -2312,6 +2390,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def clusters_bulk_update(
@@ -2321,7 +2403,7 @@ class RawVirtualizationClient:
         type: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -2349,7 +2431,7 @@ class RawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -2423,6 +2505,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def clusters_bulk_delete(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -2449,6 +2535,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def clusters_bulk_partial_update(
@@ -2458,7 +2548,7 @@ class RawVirtualizationClient:
         type: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -2486,7 +2576,7 @@ class RawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -2560,6 +2650,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def clusters_read(
@@ -2582,7 +2676,7 @@ class RawVirtualizationClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"virtualization/clusters/{jsonable_encoder(id)}/",
+            f"virtualization/clusters/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -2599,6 +2693,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def clusters_update(
@@ -2609,7 +2707,7 @@ class RawVirtualizationClient:
         type: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -2640,7 +2738,7 @@ class RawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -2675,7 +2773,7 @@ class RawVirtualizationClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"virtualization/clusters/{jsonable_encoder(id_)}/",
+            f"virtualization/clusters/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "comments": comments,
@@ -2717,6 +2815,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def clusters_delete(
@@ -2738,7 +2840,7 @@ class RawVirtualizationClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"virtualization/clusters/{jsonable_encoder(id)}/",
+            f"virtualization/clusters/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -2748,6 +2850,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def clusters_partial_update(
@@ -2758,7 +2864,7 @@ class RawVirtualizationClient:
         type: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -2789,7 +2895,7 @@ class RawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -2824,7 +2930,7 @@ class RawVirtualizationClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"virtualization/clusters/{jsonable_encoder(id_)}/",
+            f"virtualization/clusters/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "comments": comments,
@@ -2866,6 +2972,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def interfaces_list(
@@ -3321,6 +3431,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def interfaces_create(
@@ -3332,7 +3446,7 @@ class RawVirtualizationClient:
         count_fhrp_groups: typing.Optional[int] = OMIT,
         count_ipaddresses: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -3367,7 +3481,7 @@ class RawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -3452,6 +3566,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def interfaces_bulk_update(
@@ -3463,7 +3581,7 @@ class RawVirtualizationClient:
         count_fhrp_groups: typing.Optional[int] = OMIT,
         count_ipaddresses: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -3498,7 +3616,7 @@ class RawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -3583,6 +3701,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def interfaces_bulk_delete(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -3609,6 +3731,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def interfaces_bulk_partial_update(
@@ -3620,7 +3746,7 @@ class RawVirtualizationClient:
         count_fhrp_groups: typing.Optional[int] = OMIT,
         count_ipaddresses: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -3655,7 +3781,7 @@ class RawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -3740,6 +3866,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def interfaces_read(
@@ -3762,7 +3892,7 @@ class RawVirtualizationClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"virtualization/interfaces/{jsonable_encoder(id)}/",
+            f"virtualization/interfaces/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -3779,6 +3909,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def interfaces_update(
@@ -3791,7 +3925,7 @@ class RawVirtualizationClient:
         count_fhrp_groups: typing.Optional[int] = OMIT,
         count_ipaddresses: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -3829,7 +3963,7 @@ class RawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -3870,7 +4004,7 @@ class RawVirtualizationClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"virtualization/interfaces/{jsonable_encoder(id_)}/",
+            f"virtualization/interfaces/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "bridge": bridge,
@@ -3917,6 +4051,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def interfaces_delete(
@@ -3938,7 +4076,7 @@ class RawVirtualizationClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"virtualization/interfaces/{jsonable_encoder(id)}/",
+            f"virtualization/interfaces/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -3948,6 +4086,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def interfaces_partial_update(
@@ -3960,7 +4102,7 @@ class RawVirtualizationClient:
         count_fhrp_groups: typing.Optional[int] = OMIT,
         count_ipaddresses: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -3998,7 +4140,7 @@ class RawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -4039,7 +4181,7 @@ class RawVirtualizationClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"virtualization/interfaces/{jsonable_encoder(id_)}/",
+            f"virtualization/interfaces/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "bridge": bridge,
@@ -4086,6 +4228,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def virtual_machines_list(
@@ -4711,6 +4857,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def virtual_machines_create(
@@ -4719,16 +4869,16 @@ class RawVirtualizationClient:
         name: str,
         cluster: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
-        config_context: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        config_context: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         disk: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        local_context_data: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        local_context_data: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         memory: typing.Optional[int] = OMIT,
         platform: typing.Optional[int] = OMIT,
         primary_ip: typing.Optional[str] = OMIT,
@@ -4754,11 +4904,11 @@ class RawVirtualizationClient:
 
         comments : typing.Optional[str]
 
-        config_context : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        config_context : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -4772,7 +4922,7 @@ class RawVirtualizationClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        local_context_data : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        local_context_data : typing.Optional[typing.Dict[str, typing.Any]]
 
         memory : typing.Optional[int]
 
@@ -4854,6 +5004,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def virtual_machines_bulk_update(
@@ -4862,16 +5016,16 @@ class RawVirtualizationClient:
         name: str,
         cluster: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
-        config_context: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        config_context: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         disk: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        local_context_data: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        local_context_data: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         memory: typing.Optional[int] = OMIT,
         platform: typing.Optional[int] = OMIT,
         primary_ip: typing.Optional[str] = OMIT,
@@ -4897,11 +5051,11 @@ class RawVirtualizationClient:
 
         comments : typing.Optional[str]
 
-        config_context : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        config_context : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -4915,7 +5069,7 @@ class RawVirtualizationClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        local_context_data : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        local_context_data : typing.Optional[typing.Dict[str, typing.Any]]
 
         memory : typing.Optional[int]
 
@@ -4997,6 +5151,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def virtual_machines_bulk_delete(
@@ -5025,6 +5183,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def virtual_machines_bulk_partial_update(
@@ -5033,16 +5195,16 @@ class RawVirtualizationClient:
         name: str,
         cluster: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
-        config_context: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        config_context: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         disk: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        local_context_data: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        local_context_data: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         memory: typing.Optional[int] = OMIT,
         platform: typing.Optional[int] = OMIT,
         primary_ip: typing.Optional[str] = OMIT,
@@ -5068,11 +5230,11 @@ class RawVirtualizationClient:
 
         comments : typing.Optional[str]
 
-        config_context : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        config_context : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -5086,7 +5248,7 @@ class RawVirtualizationClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        local_context_data : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        local_context_data : typing.Optional[typing.Dict[str, typing.Any]]
 
         memory : typing.Optional[int]
 
@@ -5168,6 +5330,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def virtual_machines_read(
@@ -5190,7 +5356,7 @@ class RawVirtualizationClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"virtualization/virtual-machines/{jsonable_encoder(id)}/",
+            f"virtualization/virtual-machines/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -5207,6 +5373,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def virtual_machines_update(
@@ -5216,16 +5386,16 @@ class RawVirtualizationClient:
         name: str,
         cluster: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
-        config_context: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        config_context: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         disk: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        local_context_data: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        local_context_data: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         memory: typing.Optional[int] = OMIT,
         platform: typing.Optional[int] = OMIT,
         primary_ip: typing.Optional[str] = OMIT,
@@ -5254,11 +5424,11 @@ class RawVirtualizationClient:
 
         comments : typing.Optional[str]
 
-        config_context : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        config_context : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -5272,7 +5442,7 @@ class RawVirtualizationClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        local_context_data : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        local_context_data : typing.Optional[typing.Dict[str, typing.Any]]
 
         memory : typing.Optional[int]
 
@@ -5307,7 +5477,7 @@ class RawVirtualizationClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"virtualization/virtual-machines/{jsonable_encoder(id_)}/",
+            f"virtualization/virtual-machines/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "cluster": cluster,
@@ -5357,6 +5527,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def virtual_machines_delete(
@@ -5378,7 +5552,7 @@ class RawVirtualizationClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"virtualization/virtual-machines/{jsonable_encoder(id)}/",
+            f"virtualization/virtual-machines/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -5388,6 +5562,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def virtual_machines_partial_update(
@@ -5397,16 +5575,16 @@ class RawVirtualizationClient:
         name: str,
         cluster: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
-        config_context: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        config_context: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         disk: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        local_context_data: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        local_context_data: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         memory: typing.Optional[int] = OMIT,
         platform: typing.Optional[int] = OMIT,
         primary_ip: typing.Optional[str] = OMIT,
@@ -5435,11 +5613,11 @@ class RawVirtualizationClient:
 
         comments : typing.Optional[str]
 
-        config_context : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        config_context : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -5453,7 +5631,7 @@ class RawVirtualizationClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        local_context_data : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        local_context_data : typing.Optional[typing.Dict[str, typing.Any]]
 
         memory : typing.Optional[int]
 
@@ -5488,7 +5666,7 @@ class RawVirtualizationClient:
 
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"virtualization/virtual-machines/{jsonable_encoder(id_)}/",
+            f"virtualization/virtual-machines/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "cluster": cluster,
@@ -5538,6 +5716,10 @@ class RawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -5898,6 +6080,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cluster_groups_create(
@@ -5907,7 +6093,7 @@ class AsyncRawVirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -5929,7 +6115,7 @@ class AsyncRawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -5985,6 +6171,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cluster_groups_bulk_update(
@@ -5994,7 +6184,7 @@ class AsyncRawVirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -6016,7 +6206,7 @@ class AsyncRawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -6072,6 +6262,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cluster_groups_bulk_delete(
@@ -6100,6 +6294,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cluster_groups_bulk_partial_update(
@@ -6109,7 +6307,7 @@ class AsyncRawVirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -6131,7 +6329,7 @@ class AsyncRawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -6187,6 +6385,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cluster_groups_read(
@@ -6209,7 +6411,7 @@ class AsyncRawVirtualizationClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"virtualization/cluster-groups/{jsonable_encoder(id)}/",
+            f"virtualization/cluster-groups/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -6226,6 +6428,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cluster_groups_update(
@@ -6236,7 +6442,7 @@ class AsyncRawVirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -6261,7 +6467,7 @@ class AsyncRawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -6284,7 +6490,7 @@ class AsyncRawVirtualizationClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"virtualization/cluster-groups/{jsonable_encoder(id_)}/",
+            f"virtualization/cluster-groups/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "cluster_count": cluster_count,
@@ -6320,6 +6526,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cluster_groups_delete(
@@ -6341,7 +6551,7 @@ class AsyncRawVirtualizationClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"virtualization/cluster-groups/{jsonable_encoder(id)}/",
+            f"virtualization/cluster-groups/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -6351,6 +6561,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cluster_groups_partial_update(
@@ -6361,7 +6575,7 @@ class AsyncRawVirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -6386,7 +6600,7 @@ class AsyncRawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -6409,7 +6623,7 @@ class AsyncRawVirtualizationClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"virtualization/cluster-groups/{jsonable_encoder(id_)}/",
+            f"virtualization/cluster-groups/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "cluster_count": cluster_count,
@@ -6445,6 +6659,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cluster_types_list(
@@ -6770,6 +6988,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cluster_types_create(
@@ -6779,7 +7001,7 @@ class AsyncRawVirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -6801,7 +7023,7 @@ class AsyncRawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -6857,6 +7079,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cluster_types_bulk_update(
@@ -6866,7 +7092,7 @@ class AsyncRawVirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -6888,7 +7114,7 @@ class AsyncRawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -6944,6 +7170,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cluster_types_bulk_delete(
@@ -6972,6 +7202,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cluster_types_bulk_partial_update(
@@ -6981,7 +7215,7 @@ class AsyncRawVirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -7003,7 +7237,7 @@ class AsyncRawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -7059,6 +7293,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cluster_types_read(
@@ -7081,7 +7319,7 @@ class AsyncRawVirtualizationClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"virtualization/cluster-types/{jsonable_encoder(id)}/",
+            f"virtualization/cluster-types/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -7098,6 +7336,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cluster_types_update(
@@ -7108,7 +7350,7 @@ class AsyncRawVirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -7133,7 +7375,7 @@ class AsyncRawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -7156,7 +7398,7 @@ class AsyncRawVirtualizationClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"virtualization/cluster-types/{jsonable_encoder(id_)}/",
+            f"virtualization/cluster-types/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "cluster_count": cluster_count,
@@ -7192,6 +7434,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cluster_types_delete(
@@ -7213,7 +7459,7 @@ class AsyncRawVirtualizationClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"virtualization/cluster-types/{jsonable_encoder(id)}/",
+            f"virtualization/cluster-types/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -7223,6 +7469,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cluster_types_partial_update(
@@ -7233,7 +7483,7 @@ class AsyncRawVirtualizationClient:
         slug: str,
         cluster_count: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
@@ -7258,7 +7508,7 @@ class AsyncRawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -7281,7 +7531,7 @@ class AsyncRawVirtualizationClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"virtualization/cluster-types/{jsonable_encoder(id_)}/",
+            f"virtualization/cluster-types/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "cluster_count": cluster_count,
@@ -7317,6 +7567,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def clusters_list(
@@ -7712,6 +7966,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def clusters_create(
@@ -7721,7 +7979,7 @@ class AsyncRawVirtualizationClient:
         type: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -7749,7 +8007,7 @@ class AsyncRawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -7823,6 +8081,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def clusters_bulk_update(
@@ -7832,7 +8094,7 @@ class AsyncRawVirtualizationClient:
         type: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -7860,7 +8122,7 @@ class AsyncRawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -7934,6 +8196,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def clusters_bulk_delete(
@@ -7962,6 +8228,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def clusters_bulk_partial_update(
@@ -7971,7 +8241,7 @@ class AsyncRawVirtualizationClient:
         type: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -7999,7 +8269,7 @@ class AsyncRawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -8073,6 +8343,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def clusters_read(
@@ -8095,7 +8369,7 @@ class AsyncRawVirtualizationClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"virtualization/clusters/{jsonable_encoder(id)}/",
+            f"virtualization/clusters/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -8112,6 +8386,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def clusters_update(
@@ -8122,7 +8400,7 @@ class AsyncRawVirtualizationClient:
         type: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -8153,7 +8431,7 @@ class AsyncRawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -8188,7 +8466,7 @@ class AsyncRawVirtualizationClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"virtualization/clusters/{jsonable_encoder(id_)}/",
+            f"virtualization/clusters/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "comments": comments,
@@ -8230,6 +8508,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def clusters_delete(
@@ -8251,7 +8533,7 @@ class AsyncRawVirtualizationClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"virtualization/clusters/{jsonable_encoder(id)}/",
+            f"virtualization/clusters/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -8261,6 +8543,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def clusters_partial_update(
@@ -8271,7 +8557,7 @@ class AsyncRawVirtualizationClient:
         type: int,
         comments: typing.Optional[str] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device_count: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
@@ -8302,7 +8588,7 @@ class AsyncRawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -8337,7 +8623,7 @@ class AsyncRawVirtualizationClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"virtualization/clusters/{jsonable_encoder(id_)}/",
+            f"virtualization/clusters/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "comments": comments,
@@ -8379,6 +8665,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def interfaces_list(
@@ -8834,6 +9124,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def interfaces_create(
@@ -8845,7 +9139,7 @@ class AsyncRawVirtualizationClient:
         count_fhrp_groups: typing.Optional[int] = OMIT,
         count_ipaddresses: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -8880,7 +9174,7 @@ class AsyncRawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -8965,6 +9259,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def interfaces_bulk_update(
@@ -8976,7 +9274,7 @@ class AsyncRawVirtualizationClient:
         count_fhrp_groups: typing.Optional[int] = OMIT,
         count_ipaddresses: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -9011,7 +9309,7 @@ class AsyncRawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -9096,6 +9394,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def interfaces_bulk_delete(
@@ -9124,6 +9426,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def interfaces_bulk_partial_update(
@@ -9135,7 +9441,7 @@ class AsyncRawVirtualizationClient:
         count_fhrp_groups: typing.Optional[int] = OMIT,
         count_ipaddresses: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -9170,7 +9476,7 @@ class AsyncRawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -9255,6 +9561,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def interfaces_read(
@@ -9277,7 +9587,7 @@ class AsyncRawVirtualizationClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"virtualization/interfaces/{jsonable_encoder(id)}/",
+            f"virtualization/interfaces/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -9294,6 +9604,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def interfaces_update(
@@ -9306,7 +9620,7 @@ class AsyncRawVirtualizationClient:
         count_fhrp_groups: typing.Optional[int] = OMIT,
         count_ipaddresses: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -9344,7 +9658,7 @@ class AsyncRawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -9385,7 +9699,7 @@ class AsyncRawVirtualizationClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"virtualization/interfaces/{jsonable_encoder(id_)}/",
+            f"virtualization/interfaces/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "bridge": bridge,
@@ -9432,6 +9746,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def interfaces_delete(
@@ -9453,7 +9771,7 @@ class AsyncRawVirtualizationClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"virtualization/interfaces/{jsonable_encoder(id)}/",
+            f"virtualization/interfaces/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -9463,6 +9781,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def interfaces_partial_update(
@@ -9475,7 +9797,7 @@ class AsyncRawVirtualizationClient:
         count_fhrp_groups: typing.Optional[int] = OMIT,
         count_ipaddresses: typing.Optional[int] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         display: typing.Optional[str] = OMIT,
         enabled: typing.Optional[bool] = OMIT,
@@ -9513,7 +9835,7 @@ class AsyncRawVirtualizationClient:
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -9554,7 +9876,7 @@ class AsyncRawVirtualizationClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"virtualization/interfaces/{jsonable_encoder(id_)}/",
+            f"virtualization/interfaces/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "bridge": bridge,
@@ -9601,6 +9923,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def virtual_machines_list(
@@ -10226,6 +10552,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def virtual_machines_create(
@@ -10234,16 +10564,16 @@ class AsyncRawVirtualizationClient:
         name: str,
         cluster: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
-        config_context: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        config_context: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         disk: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        local_context_data: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        local_context_data: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         memory: typing.Optional[int] = OMIT,
         platform: typing.Optional[int] = OMIT,
         primary_ip: typing.Optional[str] = OMIT,
@@ -10269,11 +10599,11 @@ class AsyncRawVirtualizationClient:
 
         comments : typing.Optional[str]
 
-        config_context : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        config_context : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -10287,7 +10617,7 @@ class AsyncRawVirtualizationClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        local_context_data : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        local_context_data : typing.Optional[typing.Dict[str, typing.Any]]
 
         memory : typing.Optional[int]
 
@@ -10369,6 +10699,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def virtual_machines_bulk_update(
@@ -10377,16 +10711,16 @@ class AsyncRawVirtualizationClient:
         name: str,
         cluster: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
-        config_context: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        config_context: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         disk: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        local_context_data: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        local_context_data: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         memory: typing.Optional[int] = OMIT,
         platform: typing.Optional[int] = OMIT,
         primary_ip: typing.Optional[str] = OMIT,
@@ -10412,11 +10746,11 @@ class AsyncRawVirtualizationClient:
 
         comments : typing.Optional[str]
 
-        config_context : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        config_context : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -10430,7 +10764,7 @@ class AsyncRawVirtualizationClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        local_context_data : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        local_context_data : typing.Optional[typing.Dict[str, typing.Any]]
 
         memory : typing.Optional[int]
 
@@ -10512,6 +10846,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def virtual_machines_bulk_delete(
@@ -10540,6 +10878,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def virtual_machines_bulk_partial_update(
@@ -10548,16 +10890,16 @@ class AsyncRawVirtualizationClient:
         name: str,
         cluster: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
-        config_context: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        config_context: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         disk: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        local_context_data: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        local_context_data: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         memory: typing.Optional[int] = OMIT,
         platform: typing.Optional[int] = OMIT,
         primary_ip: typing.Optional[str] = OMIT,
@@ -10583,11 +10925,11 @@ class AsyncRawVirtualizationClient:
 
         comments : typing.Optional[str]
 
-        config_context : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        config_context : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -10601,7 +10943,7 @@ class AsyncRawVirtualizationClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        local_context_data : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        local_context_data : typing.Optional[typing.Dict[str, typing.Any]]
 
         memory : typing.Optional[int]
 
@@ -10683,6 +11025,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def virtual_machines_read(
@@ -10705,7 +11051,7 @@ class AsyncRawVirtualizationClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"virtualization/virtual-machines/{jsonable_encoder(id)}/",
+            f"virtualization/virtual-machines/{encode_path_param(id)}/",
             method="GET",
             request_options=request_options,
         )
@@ -10722,6 +11068,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def virtual_machines_update(
@@ -10731,16 +11081,16 @@ class AsyncRawVirtualizationClient:
         name: str,
         cluster: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
-        config_context: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        config_context: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         disk: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        local_context_data: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        local_context_data: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         memory: typing.Optional[int] = OMIT,
         platform: typing.Optional[int] = OMIT,
         primary_ip: typing.Optional[str] = OMIT,
@@ -10769,11 +11119,11 @@ class AsyncRawVirtualizationClient:
 
         comments : typing.Optional[str]
 
-        config_context : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        config_context : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -10787,7 +11137,7 @@ class AsyncRawVirtualizationClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        local_context_data : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        local_context_data : typing.Optional[typing.Dict[str, typing.Any]]
 
         memory : typing.Optional[int]
 
@@ -10822,7 +11172,7 @@ class AsyncRawVirtualizationClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"virtualization/virtual-machines/{jsonable_encoder(id_)}/",
+            f"virtualization/virtual-machines/{encode_path_param(id_)}/",
             method="PUT",
             json={
                 "cluster": cluster,
@@ -10872,6 +11222,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def virtual_machines_delete(
@@ -10893,7 +11247,7 @@ class AsyncRawVirtualizationClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"virtualization/virtual-machines/{jsonable_encoder(id)}/",
+            f"virtualization/virtual-machines/{encode_path_param(id)}/",
             method="DELETE",
             request_options=request_options,
         )
@@ -10903,6 +11257,10 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def virtual_machines_partial_update(
@@ -10912,16 +11270,16 @@ class AsyncRawVirtualizationClient:
         name: str,
         cluster: typing.Optional[int] = OMIT,
         comments: typing.Optional[str] = OMIT,
-        config_context: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        config_context: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         created: typing.Optional[dt.datetime] = OMIT,
-        custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         description: typing.Optional[str] = OMIT,
         device: typing.Optional[int] = OMIT,
         disk: typing.Optional[int] = OMIT,
         display: typing.Optional[str] = OMIT,
         id: typing.Optional[int] = OMIT,
         last_updated: typing.Optional[dt.datetime] = OMIT,
-        local_context_data: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        local_context_data: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         memory: typing.Optional[int] = OMIT,
         platform: typing.Optional[int] = OMIT,
         primary_ip: typing.Optional[str] = OMIT,
@@ -10950,11 +11308,11 @@ class AsyncRawVirtualizationClient:
 
         comments : typing.Optional[str]
 
-        config_context : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        config_context : typing.Optional[typing.Dict[str, typing.Any]]
 
         created : typing.Optional[dt.datetime]
 
-        custom_fields : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        custom_fields : typing.Optional[typing.Dict[str, typing.Any]]
 
         description : typing.Optional[str]
 
@@ -10968,7 +11326,7 @@ class AsyncRawVirtualizationClient:
 
         last_updated : typing.Optional[dt.datetime]
 
-        local_context_data : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        local_context_data : typing.Optional[typing.Dict[str, typing.Any]]
 
         memory : typing.Optional[int]
 
@@ -11003,7 +11361,7 @@ class AsyncRawVirtualizationClient:
 
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"virtualization/virtual-machines/{jsonable_encoder(id_)}/",
+            f"virtualization/virtual-machines/{encode_path_param(id_)}/",
             method="PATCH",
             json={
                 "cluster": cluster,
@@ -11053,4 +11411,8 @@ class AsyncRawVirtualizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

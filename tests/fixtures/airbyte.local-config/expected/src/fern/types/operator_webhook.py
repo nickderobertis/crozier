@@ -12,31 +12,39 @@ from .operator_webhook_webhook_type import OperatorWebhookWebhookType
 
 class OperatorWebhook(UniversalBaseModel):
     dbt_cloud: typing_extensions.Annotated[
-        typing.Optional[OperatorWebhookDbtCloud], FieldMetadata(alias="dbtCloud")
+        typing.Optional[OperatorWebhookDbtCloud], FieldMetadata(alias="dbtCloud"), pydantic.Field(alias="dbtCloud")
     ] = None
-    execution_body: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="executionBody")] = (
-        pydantic.Field(default=None)
-    )
+    execution_body: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="executionBody"),
+        pydantic.Field(alias="executionBody", description="DEPRECATED. Populate dbtCloud instead."),
+    ] = None
     """
     DEPRECATED. Populate dbtCloud instead.
     """
 
-    execution_url: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="executionUrl")] = (
-        pydantic.Field(default=None)
-    )
+    execution_url: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="executionUrl"),
+        pydantic.Field(alias="executionUrl", description="DEPRECATED. Populate dbtCloud instead."),
+    ] = None
     """
     DEPRECATED. Populate dbtCloud instead.
     """
 
-    webhook_config_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="webhookConfigId")] = (
-        pydantic.Field(default=None)
-    )
+    webhook_config_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="webhookConfigId"),
+        pydantic.Field(alias="webhookConfigId", description="The id of the webhook configs to use from the workspace."),
+    ] = None
     """
     The id of the webhook configs to use from the workspace.
     """
 
     webhook_type: typing_extensions.Annotated[
-        typing.Optional[OperatorWebhookWebhookType], FieldMetadata(alias="webhookType")
+        typing.Optional[OperatorWebhookWebhookType],
+        FieldMetadata(alias="webhookType"),
+        pydantic.Field(alias="webhookType"),
     ] = None
 
     if IS_PYDANTIC_V2:

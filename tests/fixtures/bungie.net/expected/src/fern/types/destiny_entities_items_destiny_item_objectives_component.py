@@ -15,16 +15,26 @@ class DestinyEntitiesItemsDestinyItemObjectivesComponent(UniversalBaseModel):
     Items can have objectives and progression. When you request this block, you will obtain information about any Objectives and progression tied to this item.
     """
 
-    date_completed: typing_extensions.Annotated[typing.Optional[dt.datetime], FieldMetadata(alias="dateCompleted")] = (
-        pydantic.Field(default=None)
-    )
+    date_completed: typing_extensions.Annotated[
+        typing.Optional[dt.datetime],
+        FieldMetadata(alias="dateCompleted"),
+        pydantic.Field(
+            alias="dateCompleted",
+            description="If we have any information on when these objectives were completed, this will be the date of that completion. This won't be on many items, but could be interesting for some items that do store this information.",
+        ),
+    ] = None
     """
     If we have any information on when these objectives were completed, this will be the date of that completion. This won't be on many items, but could be interesting for some items that do store this information.
     """
 
     flavor_objective: typing_extensions.Annotated[
-        typing.Optional[DestinyQuestsDestinyObjectiveProgress], FieldMetadata(alias="flavorObjective")
-    ] = pydantic.Field(default=None)
+        typing.Optional[DestinyQuestsDestinyObjectiveProgress],
+        FieldMetadata(alias="flavorObjective"),
+        pydantic.Field(
+            alias="flavorObjective",
+            description='I may regret naming it this way - but this represents when an item has an objective that doesn\'t serve a beneficial purpose, but rather is used for "flavor" or additional information. For instance, when Emblems track specific stats, those stats are represented as Objectives on the item.',
+        ),
+    ] = None
     """
     I may regret naming it this way - but this represents when an item has an objective that doesn't serve a beneficial purpose, but rather is used for "flavor" or additional information. For instance, when Emblems track specific stats, those stats are represented as Objectives on the item.
     """

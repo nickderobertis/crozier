@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class JournalEntryLineItemType(str, enum.Enum):
+class JournalEntryLineItemType(enum.StrEnum):
     """
     Debit entries are considered positive, and credit entries are considered negative.
     """

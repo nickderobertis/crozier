@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -30,6 +31,7 @@ from ..types.request_count_allocation import RequestCountAllocation
 from ..types.unauthorized_response import UnauthorizedResponse
 from ..types.unprocessable_response import UnprocessableResponse
 from ..types.update_consumer_response import UpdateConsumerResponse
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -142,6 +144,10 @@ class RawConsumersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def add(
@@ -285,6 +291,10 @@ class RawConsumersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def one(
@@ -307,7 +317,7 @@ class RawConsumersClient:
             Consumer
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"vault/consumers/{jsonable_encoder(consumer_id)}",
+            f"vault/consumers/{encode_path_param(consumer_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -379,6 +389,10 @@ class RawConsumersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete(
@@ -401,7 +415,7 @@ class RawConsumersClient:
             Consumer deleted
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"vault/consumers/{jsonable_encoder(consumer_id)}",
+            f"vault/consumers/{encode_path_param(consumer_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -473,6 +487,10 @@ class RawConsumersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update(
@@ -501,7 +519,7 @@ class RawConsumersClient:
             Consumer updated
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"vault/consumers/{jsonable_encoder(consumer_id)}",
+            f"vault/consumers/{encode_path_param(consumer_id)}",
             method="PATCH",
             json={
                 "metadata": convert_and_respect_annotation_metadata(
@@ -582,6 +600,10 @@ class RawConsumersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def consumer_request_counts_all(
@@ -615,7 +637,7 @@ class RawConsumersClient:
             Consumers Request Counts within Date Range
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"vault/consumers/{jsonable_encoder(consumer_id)}/stats",
+            f"vault/consumers/{encode_path_param(consumer_id)}/stats",
             method="GET",
             params={
                 "start_datetime": start_datetime,
@@ -691,6 +713,10 @@ class RawConsumersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -801,6 +827,10 @@ class AsyncRawConsumersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def add(
@@ -944,6 +974,10 @@ class AsyncRawConsumersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def one(
@@ -966,7 +1000,7 @@ class AsyncRawConsumersClient:
             Consumer
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"vault/consumers/{jsonable_encoder(consumer_id)}",
+            f"vault/consumers/{encode_path_param(consumer_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -1038,6 +1072,10 @@ class AsyncRawConsumersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete(
@@ -1060,7 +1098,7 @@ class AsyncRawConsumersClient:
             Consumer deleted
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"vault/consumers/{jsonable_encoder(consumer_id)}",
+            f"vault/consumers/{encode_path_param(consumer_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -1132,6 +1170,10 @@ class AsyncRawConsumersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update(
@@ -1160,7 +1202,7 @@ class AsyncRawConsumersClient:
             Consumer updated
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"vault/consumers/{jsonable_encoder(consumer_id)}",
+            f"vault/consumers/{encode_path_param(consumer_id)}",
             method="PATCH",
             json={
                 "metadata": convert_and_respect_annotation_metadata(
@@ -1241,6 +1283,10 @@ class AsyncRawConsumersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def consumer_request_counts_all(
@@ -1274,7 +1320,7 @@ class AsyncRawConsumersClient:
             Consumers Request Counts within Date Range
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"vault/consumers/{jsonable_encoder(consumer_id)}/stats",
+            f"vault/consumers/{encode_path_param(consumer_id)}/stats",
             method="GET",
             params={
                 "start_datetime": start_datetime,
@@ -1350,4 +1396,8 @@ class AsyncRawConsumersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

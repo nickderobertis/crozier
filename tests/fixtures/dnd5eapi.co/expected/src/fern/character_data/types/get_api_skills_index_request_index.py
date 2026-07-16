@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GetApiSkillsIndexRequestIndex(str, enum.Enum):
+class GetApiSkillsIndexRequestIndex(enum.StrEnum):
     ACROBATICS = "acrobatics"
     ANIMAL_HANDLING = "animal-handling"
     ARCANA = "arcana"

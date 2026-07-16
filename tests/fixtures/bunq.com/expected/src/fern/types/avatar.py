@@ -25,7 +25,11 @@ class Avatar(UniversalBaseModel):
     The style (if applicable) for this Avatar.
     """
 
-    uuid_: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="uuid")] = pydantic.Field(default=None)
+    uuid_: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="uuid"),
+        pydantic.Field(alias="uuid", description="The public UUID of the avatar."),
+    ] = None
     """
     The public UUID of the avatar.
     """

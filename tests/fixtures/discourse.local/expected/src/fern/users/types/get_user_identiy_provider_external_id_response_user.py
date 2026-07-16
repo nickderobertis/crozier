@@ -29,7 +29,7 @@ from .get_user_identiy_provider_external_id_response_user_user_option import (
 
 class GetUserIdentiyProviderExternalIdResponseUser(UniversalBaseModel):
     admin: bool
-    allowed_pm_usernames: typing.List[typing.Optional[typing.Any]]
+    allowed_pm_usernames: typing.List[typing.Any]
     avatar_template: str
     badge_count: int
     can_be_deleted: bool
@@ -51,7 +51,7 @@ class GetUserIdentiyProviderExternalIdResponseUser(UniversalBaseModel):
     created_at: str
     custom_fields: GetUserIdentiyProviderExternalIdResponseUserCustomFields
     featured_topic: typing.Optional[str] = None
-    featured_user_badge_ids: typing.List[typing.Optional[typing.Any]]
+    featured_user_badge_ids: typing.List[typing.Any]
     flair_bg_color: typing.Optional[str] = None
     flair_color: typing.Optional[str] = None
     flair_group_id: typing.Optional[str] = None
@@ -62,7 +62,7 @@ class GetUserIdentiyProviderExternalIdResponseUser(UniversalBaseModel):
     has_title_badges: bool
     id: int
     ignored: bool
-    ignored_usernames: typing.List[typing.Optional[typing.Any]]
+    ignored_usernames: typing.List[typing.Any]
     invited_by: typing.Optional[str] = None
     last_posted_at: typing.Optional[str] = None
     last_seen_at: typing.Optional[str] = None
@@ -70,9 +70,9 @@ class GetUserIdentiyProviderExternalIdResponseUser(UniversalBaseModel):
     mailing_list_posts_per_day: int
     moderator: bool
     muted: bool
-    muted_category_ids: typing.List[typing.Optional[typing.Any]]
-    muted_tags: typing.List[typing.Optional[typing.Any]]
-    muted_usernames: typing.List[typing.Optional[typing.Any]]
+    muted_category_ids: typing.List[typing.Any]
+    muted_tags: typing.List[typing.Any]
+    muted_usernames: typing.List[typing.Any]
     name: str
     pending_count: int
     pending_posts_count: typing.Optional[int] = None
@@ -81,7 +81,7 @@ class GetUserIdentiyProviderExternalIdResponseUser(UniversalBaseModel):
     primary_group_name: typing.Optional[str] = None
     profile_view_count: int
     recent_time_read: int
-    regular_category_ids: typing.List[typing.Optional[typing.Any]]
+    regular_category_ids: typing.List[typing.Any]
     second_factor_backup_enabled: typing.Optional[bool] = None
     second_factor_enabled: bool
     staged: bool
@@ -89,8 +89,8 @@ class GetUserIdentiyProviderExternalIdResponseUser(UniversalBaseModel):
     system_avatar_upload_id: typing.Optional[str] = None
     time_read: int
     title: typing.Optional[str] = None
-    tracked_category_ids: typing.List[typing.Optional[typing.Any]]
-    tracked_tags: typing.List[typing.Optional[typing.Any]]
+    tracked_category_ids: typing.List[typing.Any]
+    tracked_tags: typing.List[typing.Any]
     trust_level: int
     uploaded_avatar_id: typing.Optional[str] = None
     use_logo_small_as_avatar: bool
@@ -100,10 +100,10 @@ class GetUserIdentiyProviderExternalIdResponseUser(UniversalBaseModel):
     user_notification_schedule: GetUserIdentiyProviderExternalIdResponseUserUserNotificationSchedule
     user_option: GetUserIdentiyProviderExternalIdResponseUserUserOption
     username: str
-    watched_category_ids: typing.List[typing.Optional[typing.Any]]
-    watched_first_post_category_ids: typing.List[typing.Optional[typing.Any]]
-    watched_tags: typing.List[typing.Optional[typing.Any]]
-    watching_first_post_tags: typing.List[typing.Optional[typing.Any]]
+    watched_category_ids: typing.List[typing.Any]
+    watched_first_post_category_ids: typing.List[typing.Any]
+    watched_tags: typing.List[typing.Any]
+    watching_first_post_tags: typing.List[typing.Any]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

@@ -10,18 +10,22 @@ from ..core.serialization import FieldMetadata
 
 class NotFoundKnownExceptionInfo(UniversalBaseModel):
     exception_class_name: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="exceptionClassName")
+        typing.Optional[str], FieldMetadata(alias="exceptionClassName"), pydantic.Field(alias="exceptionClassName")
     ] = None
     exception_stack: typing_extensions.Annotated[
-        typing.Optional[typing.List[str]], FieldMetadata(alias="exceptionStack")
+        typing.Optional[typing.List[str]], FieldMetadata(alias="exceptionStack"), pydantic.Field(alias="exceptionStack")
     ] = None
     id: typing.Optional[str] = None
     message: str
     root_cause_exception_class_name: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="rootCauseExceptionClassName")
+        typing.Optional[str],
+        FieldMetadata(alias="rootCauseExceptionClassName"),
+        pydantic.Field(alias="rootCauseExceptionClassName"),
     ] = None
     root_cause_exception_stack: typing_extensions.Annotated[
-        typing.Optional[typing.List[str]], FieldMetadata(alias="rootCauseExceptionStack")
+        typing.Optional[typing.List[str]],
+        FieldMetadata(alias="rootCauseExceptionStack"),
+        pydantic.Field(alias="rootCauseExceptionStack"),
     ] = None
 
     if IS_PYDANTIC_V2:

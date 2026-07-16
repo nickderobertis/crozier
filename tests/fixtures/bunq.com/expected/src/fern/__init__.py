@@ -715,6 +715,7 @@ if typing.TYPE_CHECKING:
         whitelist_sdd_one_off,
         whitelist_sdd_recurring,
     )
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .environment import FernApiEnvironment
     from .version import __version__
@@ -816,6 +817,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "Customer": ".types",
     "CustomerLimit": ".types",
     "CustomerLimitListing": ".types",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "DeviceListing": ".types",
     "DeviceRead": ".types",
     "DeviceServer": ".types",
@@ -1550,6 +1553,8 @@ __all__ = [
     "Customer",
     "CustomerLimit",
     "CustomerLimitListing",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
     "DeviceListing",
     "DeviceRead",
     "DeviceServer",

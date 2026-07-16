@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class VersionBump(str, enum.Enum):
+class VersionBump(enum.StrEnum):
     MAJOR = "MAJOR"
     MINOR = "MINOR"
 

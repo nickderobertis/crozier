@@ -11,8 +11,13 @@ from .detect_stack_resource_drift_output_stack_resource_drift import DetectStack
 
 class DetectStackResourceDriftOutput(UniversalBaseModel):
     stack_resource_drift: typing_extensions.Annotated[
-        DetectStackResourceDriftOutputStackResourceDrift, FieldMetadata(alias="StackResourceDrift")
-    ] = pydantic.Field()
+        DetectStackResourceDriftOutputStackResourceDrift,
+        FieldMetadata(alias="StackResourceDrift"),
+        pydantic.Field(
+            alias="StackResourceDrift",
+            description="Information about whether the resource's actual configuration has drifted from its expected template configuration, including actual and expected property values and any differences detected.",
+        ),
+    ]
     """
     Information about whether the resource's actual configuration has drifted from its expected template configuration, including actual and expected property values and any differences detected.
     """

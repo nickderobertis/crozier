@@ -18,106 +18,163 @@ class StackEvent(UniversalBaseModel):
     The StackEvent data type.
     """
 
-    stack_id: typing_extensions.Annotated[str, FieldMetadata(alias="StackId")] = pydantic.Field()
+    stack_id: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="StackId"),
+        pydantic.Field(alias="StackId", description="The unique ID name of the instance of the stack."),
+    ]
     """
     The unique ID name of the instance of the stack.
     """
 
-    event_id: typing_extensions.Annotated[str, FieldMetadata(alias="EventId")] = pydantic.Field()
+    event_id: typing_extensions.Annotated[
+        str, FieldMetadata(alias="EventId"), pydantic.Field(alias="EventId", description="The unique ID of this event.")
+    ]
     """
     The unique ID of this event.
     """
 
-    stack_name: typing_extensions.Annotated[str, FieldMetadata(alias="StackName")] = pydantic.Field()
+    stack_name: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="StackName"),
+        pydantic.Field(alias="StackName", description="The name associated with a stack."),
+    ]
     """
     The name associated with a stack.
     """
 
-    logical_resource_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="LogicalResourceId")] = (
-        pydantic.Field(default=None)
-    )
+    logical_resource_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="LogicalResourceId"),
+        pydantic.Field(
+            alias="LogicalResourceId", description="The logical name of the resource specified in the template."
+        ),
+    ] = None
     """
     The logical name of the resource specified in the template.
     """
 
     physical_resource_id: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="PhysicalResourceId")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="PhysicalResourceId"),
+        pydantic.Field(
+            alias="PhysicalResourceId",
+            description="The name or unique identifier associated with the physical instance of the resource.",
+        ),
+    ] = None
     """
     The name or unique identifier associated with the physical instance of the resource.
     """
 
-    resource_type: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="ResourceType")] = (
-        pydantic.Field(default=None)
-    )
+    resource_type: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="ResourceType"),
+        pydantic.Field(
+            alias="ResourceType",
+            description='Type of resource. (For more information, go to <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-template-resource-type-ref.html">Amazon Web Services Resource Types Reference</a> in the CloudFormation User Guide.)',
+        ),
+    ] = None
     """
     Type of resource. (For more information, go to <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-template-resource-type-ref.html">Amazon Web Services Resource Types Reference</a> in the CloudFormation User Guide.)
     """
 
-    timestamp: typing_extensions.Annotated[dt.datetime, FieldMetadata(alias="Timestamp")] = pydantic.Field()
+    timestamp: typing_extensions.Annotated[
+        dt.datetime,
+        FieldMetadata(alias="Timestamp"),
+        pydantic.Field(alias="Timestamp", description="Time the status was updated."),
+    ]
     """
     Time the status was updated.
     """
 
     resource_status: typing_extensions.Annotated[
-        typing.Optional[StackEventResourceStatus], FieldMetadata(alias="ResourceStatus")
-    ] = pydantic.Field(default=None)
+        typing.Optional[StackEventResourceStatus],
+        FieldMetadata(alias="ResourceStatus"),
+        pydantic.Field(alias="ResourceStatus", description="Current status of the resource."),
+    ] = None
     """
     Current status of the resource.
     """
 
     resource_status_reason: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="ResourceStatusReason")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="ResourceStatusReason"),
+        pydantic.Field(
+            alias="ResourceStatusReason", description="Success/failure message associated with the resource."
+        ),
+    ] = None
     """
     Success/failure message associated with the resource.
     """
 
     resource_properties: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="ResourceProperties")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="ResourceProperties"),
+        pydantic.Field(alias="ResourceProperties", description="BLOB of the properties used to create the resource."),
+    ] = None
     """
     BLOB of the properties used to create the resource.
     """
 
     client_request_token: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="ClientRequestToken")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="ClientRequestToken"),
+        pydantic.Field(
+            alias="ClientRequestToken",
+            description="<p>The token passed to the operation that generated this event.</p> <p>All events triggered by a given stack operation are assigned the same client request token, which you can use to track operations. For example, if you execute a <code>CreateStack</code> operation with the token <code>token1</code>, then all the <code>StackEvents</code> generated by that operation will have <code>ClientRequestToken</code> set as <code>token1</code>.</p> <p>In the console, stack operations display the client request token on the Events tab. Stack operations that are initiated from the console use the token format <i>Console-StackOperation-ID</i>, which helps you easily identify the stack operation . For example, if you create a stack using the console, each stack event would be assigned the same token in the following format: <code>Console-CreateStack-7f59c3cf-00d2-40c7-b2ff-e75db0987002</code>.</p>",
+        ),
+    ] = None
     """
     <p>The token passed to the operation that generated this event.</p> <p>All events triggered by a given stack operation are assigned the same client request token, which you can use to track operations. For example, if you execute a <code>CreateStack</code> operation with the token <code>token1</code>, then all the <code>StackEvents</code> generated by that operation will have <code>ClientRequestToken</code> set as <code>token1</code>.</p> <p>In the console, stack operations display the client request token on the Events tab. Stack operations that are initiated from the console use the token format <i>Console-StackOperation-ID</i>, which helps you easily identify the stack operation . For example, if you create a stack using the console, each stack event would be assigned the same token in the following format: <code>Console-CreateStack-7f59c3cf-00d2-40c7-b2ff-e75db0987002</code>.</p>
     """
 
-    hook_type: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="HookType")] = pydantic.Field(
-        default=None
-    )
+    hook_type: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="HookType"),
+        pydantic.Field(alias="HookType", description="The name of the hook."),
+    ] = None
     """
     The name of the hook.
     """
 
     hook_status: typing_extensions.Annotated[
-        typing.Optional[StackEventHookStatus], FieldMetadata(alias="HookStatus")
-    ] = pydantic.Field(default=None)
+        typing.Optional[StackEventHookStatus],
+        FieldMetadata(alias="HookStatus"),
+        pydantic.Field(alias="HookStatus", description="Provides the status of the change set hook."),
+    ] = None
     """
     Provides the status of the change set hook.
     """
 
-    hook_status_reason: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="HookStatusReason")] = (
-        pydantic.Field(default=None)
-    )
+    hook_status_reason: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="HookStatusReason"),
+        pydantic.Field(alias="HookStatusReason", description="Provides the reason for the hook status."),
+    ] = None
     """
     Provides the reason for the hook status.
     """
 
     hook_invocation_point: typing_extensions.Annotated[
-        typing.Optional[StackEventHookInvocationPoint], FieldMetadata(alias="HookInvocationPoint")
-    ] = pydantic.Field(default=None)
+        typing.Optional[StackEventHookInvocationPoint],
+        FieldMetadata(alias="HookInvocationPoint"),
+        pydantic.Field(
+            alias="HookInvocationPoint",
+            description="Invocation points are points in provisioning logic where hooks are initiated.",
+        ),
+    ] = None
     """
     Invocation points are points in provisioning logic where hooks are initiated.
     """
 
     hook_failure_mode: typing_extensions.Annotated[
-        typing.Optional[StackEventHookFailureMode], FieldMetadata(alias="HookFailureMode")
-    ] = pydantic.Field(default=None)
+        typing.Optional[StackEventHookFailureMode],
+        FieldMetadata(alias="HookFailureMode"),
+        pydantic.Field(
+            alias="HookFailureMode",
+            description="<p>Specify the hook failure mode for non-compliant resources in the followings ways.</p> <ul> <li> <p> <code>FAIL</code> Stops provisioning resources.</p> </li> <li> <p> <code>WARN</code> Allows provisioning to continue with a warning message.</p> </li> </ul>",
+        ),
+    ] = None
     """
     <p>Specify the hook failure mode for non-compliant resources in the followings ways.</p> <ul> <li> <p> <code>FAIL</code> Stops provisioning resources.</p> </li> <li> <p> <code>WARN</code> Allows provisioning to continue with a warning message.</p> </li> </ul>
     """

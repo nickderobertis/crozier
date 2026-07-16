@@ -18,43 +18,43 @@ from .get_site_response_user_themes_item import GetSiteResponseUserThemesItem
 
 
 class GetSiteResponse(UniversalBaseModel):
-    anonymous_top_menu_items: typing.List[typing.Optional[typing.Any]]
+    anonymous_top_menu_items: typing.List[typing.Any]
     archetypes: typing.List[GetSiteResponseArchetypesItem]
-    auth_providers: typing.List[typing.Optional[typing.Any]]
+    auth_providers: typing.List[typing.Any]
     can_associate_groups: typing.Optional[bool] = None
     can_create_tag: bool
     can_tag_pms: bool
     can_tag_topics: bool
     categories: typing.List[GetSiteResponseCategoriesItem]
-    censored_regexp: typing.List[typing.Dict[str, typing.Optional[typing.Any]]]
+    censored_regexp: typing.List[typing.Dict[str, typing.Any]]
     custom_emoji_translation: GetSiteResponseCustomEmojiTranslation
     default_archetype: str
-    default_dark_color_scheme: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
-    displayed_about_plugin_stat_groups: typing.Optional[typing.List[typing.Optional[typing.Any]]] = None
-    filters: typing.List[typing.Optional[typing.Any]]
+    default_dark_color_scheme: typing.Optional[typing.Dict[str, typing.Any]] = None
+    displayed_about_plugin_stat_groups: typing.Optional[typing.List[typing.Any]] = None
+    filters: typing.List[typing.Any]
     groups: typing.List[GetSiteResponseGroupsItem]
-    hashtag_configurations: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
-    hashtag_icons: typing.Optional[typing.List[typing.Optional[typing.Any]]] = None
-    markdown_additional_options: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    hashtag_configurations: typing.Optional[typing.Dict[str, typing.Any]] = None
+    hashtag_icons: typing.Optional[typing.List[typing.Any]] = None
+    markdown_additional_options: typing.Optional[typing.Dict[str, typing.Any]] = None
     notification_types: GetSiteResponseNotificationTypes
-    periods: typing.List[typing.Optional[typing.Any]]
+    periods: typing.List[typing.Any]
     post_action_types: typing.List[GetSiteResponsePostActionTypesItem]
     post_types: GetSiteResponsePostTypes
     show_welcome_topic_banner: typing.Optional[bool] = None
     tags_filter_regexp: str
-    top_menu_items: typing.List[typing.Optional[typing.Any]]
-    top_tags: typing.List[typing.Optional[typing.Any]]
-    topic_featured_link_allowed_category_ids: typing.List[typing.Optional[typing.Any]]
+    top_menu_items: typing.List[typing.Any]
+    top_tags: typing.List[typing.Any]
+    topic_featured_link_allowed_category_ids: typing.List[typing.Any]
     topic_flag_types: typing.List[GetSiteResponseTopicFlagTypesItem]
     trust_levels: GetSiteResponseTrustLevels
     uncategorized_category_id: int
     user_color_schemes: typing.List[GetSiteResponseUserColorSchemesItem]
     user_field_max_length: int
-    user_fields: typing.List[typing.Optional[typing.Any]]
+    user_fields: typing.List[typing.Any]
     user_themes: typing.List[GetSiteResponseUserThemesItem]
     watched_words_link: typing.Optional[str] = None
     watched_words_replace: typing.Optional[str] = None
-    whispers_allowed_groups_names: typing.Optional[typing.List[typing.Optional[typing.Any]]] = None
+    whispers_allowed_groups_names: typing.Optional[typing.List[typing.Any]] = None
     wizard_required: typing.Optional[bool] = None
 
     if IS_PYDANTIC_V2:

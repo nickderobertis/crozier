@@ -46,9 +46,11 @@ class Service(UniversalBaseModel):
     Distinct version for a named Service or API
     """
 
-    xml_ns: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="xmlNS")] = pydantic.Field(
-        default=None
-    )
+    xml_ns: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="xmlNS"),
+        pydantic.Field(alias="xmlNS", description="Associated Xml Namespace in case of Xml based Service"),
+    ] = None
     """
     Associated Xml Namespace in case of Xml based Service
     """

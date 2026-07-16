@@ -25,7 +25,7 @@ class SflowClient:
 
     def protocol_sflow_get_args(
         self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Dict[str, typing.Optional[typing.Any]]:
+    ) -> typing.Dict[str, typing.Any]:
         """
         Agent's SFLOW configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
@@ -39,7 +39,7 @@ class SflowClient:
 
         Returns
         -------
-        typing.Dict[str, typing.Optional[typing.Any]]
+        typing.Dict[str, typing.Any]
             successful operation
 
         Examples
@@ -384,7 +384,7 @@ class AsyncSflowClient:
 
     async def protocol_sflow_get_args(
         self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Dict[str, typing.Optional[typing.Any]]:
+    ) -> typing.Dict[str, typing.Any]:
         """
         Agent's SFLOW configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
@@ -398,7 +398,7 @@ class AsyncSflowClient:
 
         Returns
         -------
-        typing.Dict[str, typing.Optional[typing.Any]]
+        typing.Dict[str, typing.Any]
             successful operation
 
         Examples

@@ -75,5 +75,18 @@ class Class(ApiReference):
 
 
 from .choice import Choice
+from .option_choice import OptionChoice
+from .option_items import OptionItems
+from .option_set_options_array import OptionSetOptionsArray
+from .option import Option
+from .option_set import OptionSet
 
-update_forward_refs(Class)
+update_forward_refs(
+    Class,
+    Choice=Choice,
+    Option=Option,
+    OptionChoice=OptionChoice,
+    OptionItems=OptionItems,
+    OptionSet=OptionSet,
+    OptionSetOptionsArray=OptionSetOptionsArray,
+)

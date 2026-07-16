@@ -6,6 +6,7 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
@@ -20,6 +21,7 @@ from ..types.not_found_known_exception_info import NotFoundKnownExceptionInfo
 from ..types.o_auth_consent_read import OAuthConsentRead
 from ..types.o_auth_input_configuration import OAuthInputConfiguration
 from ..types.workspace_id import WorkspaceId
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -36,7 +38,7 @@ class RawDestinationOauthClient:
         workspace_id: WorkspaceId,
         destination_id: typing.Optional[DestinationId] = OMIT,
         o_auth_input_configuration: typing.Optional[OAuthInputConfiguration] = OMIT,
-        query_params: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        query_params: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         redirect_url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[CompleteOAuthResponse]:
@@ -51,7 +53,7 @@ class RawDestinationOauthClient:
 
         o_auth_input_configuration : typing.Optional[OAuthInputConfiguration]
 
-        query_params : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        query_params : typing.Optional[typing.Dict[str, typing.Any]]
             The query parameters present in the redirect URL after a user granted consent e.g auth code
 
         redirect_url : typing.Optional[str]
@@ -117,6 +119,10 @@ class RawDestinationOauthClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_destination_o_auth_consent(
@@ -202,13 +208,17 @@ class RawDestinationOauthClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def set_instancewide_destination_oauth_params(
         self,
         *,
         destination_definition_id: DestinationDefinitionId,
-        params: typing.Dict[str, typing.Optional[typing.Any]],
+        params: typing.Dict[str, typing.Any],
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[None]:
         """
@@ -216,7 +226,7 @@ class RawDestinationOauthClient:
         ----------
         destination_definition_id : DestinationDefinitionId
 
-        params : typing.Dict[str, typing.Optional[typing.Any]]
+        params : typing.Dict[str, typing.Any]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -266,6 +276,10 @@ class RawDestinationOauthClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -280,7 +294,7 @@ class AsyncRawDestinationOauthClient:
         workspace_id: WorkspaceId,
         destination_id: typing.Optional[DestinationId] = OMIT,
         o_auth_input_configuration: typing.Optional[OAuthInputConfiguration] = OMIT,
-        query_params: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        query_params: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         redirect_url: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[CompleteOAuthResponse]:
@@ -295,7 +309,7 @@ class AsyncRawDestinationOauthClient:
 
         o_auth_input_configuration : typing.Optional[OAuthInputConfiguration]
 
-        query_params : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        query_params : typing.Optional[typing.Dict[str, typing.Any]]
             The query parameters present in the redirect URL after a user granted consent e.g auth code
 
         redirect_url : typing.Optional[str]
@@ -361,6 +375,10 @@ class AsyncRawDestinationOauthClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_destination_o_auth_consent(
@@ -446,13 +464,17 @@ class AsyncRawDestinationOauthClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def set_instancewide_destination_oauth_params(
         self,
         *,
         destination_definition_id: DestinationDefinitionId,
-        params: typing.Dict[str, typing.Optional[typing.Any]],
+        params: typing.Dict[str, typing.Any],
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[None]:
         """
@@ -460,7 +482,7 @@ class AsyncRawDestinationOauthClient:
         ----------
         destination_definition_id : DestinationDefinitionId
 
-        params : typing.Dict[str, typing.Optional[typing.Any]]
+        params : typing.Dict[str, typing.Any]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -510,4 +532,8 @@ class AsyncRawDestinationOauthClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

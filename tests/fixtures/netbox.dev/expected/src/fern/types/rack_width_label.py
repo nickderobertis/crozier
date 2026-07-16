@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class RackWidthLabel(str, enum.Enum):
+class RackWidthLabel(enum.StrEnum):
     TEN_INCHES = "10 inches"
     NINETEEN_INCHES = "19 inches"
     TWENTY_ONE_INCHES = "21 inches"

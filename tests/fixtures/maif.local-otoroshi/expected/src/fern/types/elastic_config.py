@@ -13,7 +13,11 @@ class ElasticConfig(UniversalBaseModel):
     The configuration for elastic access
     """
 
-    cluster_uri: typing_extensions.Annotated[str, FieldMetadata(alias="clusterUri")] = pydantic.Field()
+    cluster_uri: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="clusterUri"),
+        pydantic.Field(alias="clusterUri", description="URL of the elastic cluster"),
+    ]
     """
     URL of the elastic cluster
     """

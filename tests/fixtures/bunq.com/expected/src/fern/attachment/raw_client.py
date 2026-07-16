@@ -6,13 +6,15 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
 from ..types.attachment_monetary_account import AttachmentMonetaryAccount
 from ..types.attachment_monetary_account_create import AttachmentMonetaryAccountCreate
 from ..types.attachment_user_read import AttachmentUserRead
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -45,7 +47,7 @@ class RawAttachmentClient:
             This call is used to upload an attachment that is accessible only by a specific user. This can be used for example to upload passport scans or other documents. Attachments supported are png, jpg and gif.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/attachment/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -63,9 +65,9 @@ class RawAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -73,6 +75,10 @@ class RawAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_attachment_for_user_monetary_account(
@@ -105,7 +111,7 @@ class RawAttachmentClient:
             This call is used to upload an attachment that can be referenced to in payment requests and payments sent from a specific monetary account. Attachments supported are png, jpg and gif.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/attachment",
             method="POST",
             json=request,
             headers={
@@ -128,9 +134,9 @@ class RawAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -138,6 +144,10 @@ class RawAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -168,7 +178,7 @@ class AsyncRawAttachmentClient:
             This call is used to upload an attachment that is accessible only by a specific user. This can be used for example to upload passport scans or other documents. Attachments supported are png, jpg and gif.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/attachment/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/attachment/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -186,9 +196,9 @@ class AsyncRawAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -196,6 +206,10 @@ class AsyncRawAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_attachment_for_user_monetary_account(
@@ -228,7 +242,7 @@ class AsyncRawAttachmentClient:
             This call is used to upload an attachment that can be referenced to in payment requests and payments sent from a specific monetary account. Attachments supported are png, jpg and gif.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/attachment",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/attachment",
             method="POST",
             json=request,
             headers={
@@ -251,9 +265,9 @@ class AsyncRawAttachmentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -261,4 +275,8 @@ class AsyncRawAttachmentClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

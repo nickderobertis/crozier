@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class DeviceWithConfigContextFaceValue(str, enum.Enum):
+class DeviceWithConfigContextFaceValue(enum.StrEnum):
     FRONT = "front"
     REAR = "rear"
 

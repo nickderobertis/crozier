@@ -9,16 +9,27 @@ from ..core.serialization import FieldMetadata
 
 
 class DestinyDefinitionsRecordsDestinyRecordCompletionBlock(UniversalBaseModel):
-    score_value: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="ScoreValue")] = None
+    score_value: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="ScoreValue"), pydantic.Field(alias="ScoreValue")
+    ] = None
     partial_completion_objective_count_threshold: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="partialCompletionObjectiveCountThreshold")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="partialCompletionObjectiveCountThreshold"),
+        pydantic.Field(
+            alias="partialCompletionObjectiveCountThreshold",
+            description='The number of objectives that must be completed before the objective is considered "complete"',
+        ),
+    ] = None
     """
     The number of objectives that must be completed before the objective is considered "complete"
     """
 
-    should_fire_toast: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="shouldFireToast")] = None
-    toast_style: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="toastStyle")] = None
+    should_fire_toast: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="shouldFireToast"), pydantic.Field(alias="shouldFireToast")
+    ] = None
+    toast_style: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="toastStyle"), pydantic.Field(alias="toastStyle")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

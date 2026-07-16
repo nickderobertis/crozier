@@ -13,15 +13,25 @@ from .post_portfolio_analysis_sharpe_ratio_probabilistic_minimum_track_record_le
 
 class PostPortfolioAnalysisSharpeRatioProbabilisticMinimumTrackRecordLengthRequestBenchmarkValues(UniversalBaseModel):
     benchmark_values: typing_extensions.Annotated[
-        typing.Optional[typing.List[float]], FieldMetadata(alias="benchmarkValues")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[float]],
+        FieldMetadata(alias="benchmarkValues"),
+        pydantic.Field(
+            alias="benchmarkValues",
+            description="benchmarkValues[t] is the value of the benchmark at the time t; the benchmarkValues array must have the same length as all the portfolioValues arrays",
+        ),
+    ] = None
     """
     benchmarkValues[t] is the value of the benchmark at the time t; the benchmarkValues array must have the same length as all the portfolioValues arrays
     """
 
-    confidence_level: typing_extensions.Annotated[typing.Optional[float], FieldMetadata(alias="confidenceLevel")] = (
-        pydantic.Field(default=None)
-    )
+    confidence_level: typing_extensions.Annotated[
+        typing.Optional[float],
+        FieldMetadata(alias="confidenceLevel"),
+        pydantic.Field(
+            alias="confidenceLevel",
+            description="The confidence level of the minimum track record length, in percentage",
+        ),
+    ] = None
     """
     The confidence level of the minimum track record length, in percentage
     """
@@ -29,7 +39,11 @@ class PostPortfolioAnalysisSharpeRatioProbabilisticMinimumTrackRecordLengthReque
     portfolios: typing.List[
         PostPortfolioAnalysisSharpeRatioProbabilisticMinimumTrackRecordLengthRequestBenchmarkValuesPortfoliosItem
     ]
-    risk_free_rate: typing_extensions.Annotated[float, FieldMetadata(alias="riskFreeRate")] = pydantic.Field()
+    risk_free_rate: typing_extensions.Annotated[
+        float,
+        FieldMetadata(alias="riskFreeRate"),
+        pydantic.Field(alias="riskFreeRate", description="The risk free rate"),
+    ]
     """
     The risk free rate
     """

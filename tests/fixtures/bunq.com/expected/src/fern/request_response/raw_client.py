@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -21,6 +22,7 @@ from ..types.request_inquiry_reference import RequestInquiryReference
 from ..types.request_response_listing import RequestResponseListing
 from ..types.request_response_read import RequestResponseRead
 from ..types.request_response_update import RequestResponseUpdate
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -53,7 +55,7 @@ class RawRequestResponseClient:
             A RequestResponse is what a user on the other side of a RequestInquiry gets when he is sent one. So a RequestInquiry is the initiator and visible for the user that sent it and that wants to receive the money. A RequestResponse is what the other side sees, i.e. the user that pays the money to accept the request. The content is almost identical.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/request-response",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/request-response",
             method="GET",
             request_options=request_options,
         )
@@ -71,9 +73,9 @@ class RawRequestResponseClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -81,6 +83,10 @@ class RawRequestResponseClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def read_request_response_for_user_monetary_account(
@@ -114,7 +120,7 @@ class RawRequestResponseClient:
             A RequestResponse is what a user on the other side of a RequestInquiry gets when he is sent one. So a RequestInquiry is the initiator and visible for the user that sent it and that wants to receive the money. A RequestResponse is what the other side sees, i.e. the user that pays the money to accept the request. The content is almost identical.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/request-response/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/request-response/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -132,9 +138,9 @@ class RawRequestResponseClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -142,6 +148,10 @@ class RawRequestResponseClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_request_response_for_user_monetary_account(
@@ -291,7 +301,7 @@ class RawRequestResponseClient:
             A RequestResponse is what a user on the other side of a RequestInquiry gets when he is sent one. So a RequestInquiry is the initiator and visible for the user that sent it and that wants to receive the money. A RequestResponse is what the other side sees, i.e. the user that pays the money to accept the request. The content is almost identical.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id_)}/request-response/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id_)}/request-response/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "address_billing": convert_and_respect_annotation_metadata(
@@ -366,9 +376,9 @@ class RawRequestResponseClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -376,6 +386,10 @@ class RawRequestResponseClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -406,7 +420,7 @@ class AsyncRawRequestResponseClient:
             A RequestResponse is what a user on the other side of a RequestInquiry gets when he is sent one. So a RequestInquiry is the initiator and visible for the user that sent it and that wants to receive the money. A RequestResponse is what the other side sees, i.e. the user that pays the money to accept the request. The content is almost identical.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/request-response",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/request-response",
             method="GET",
             request_options=request_options,
         )
@@ -424,9 +438,9 @@ class AsyncRawRequestResponseClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -434,6 +448,10 @@ class AsyncRawRequestResponseClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def read_request_response_for_user_monetary_account(
@@ -467,7 +485,7 @@ class AsyncRawRequestResponseClient:
             A RequestResponse is what a user on the other side of a RequestInquiry gets when he is sent one. So a RequestInquiry is the initiator and visible for the user that sent it and that wants to receive the money. A RequestResponse is what the other side sees, i.e. the user that pays the money to accept the request. The content is almost identical.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/request-response/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/request-response/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -485,9 +503,9 @@ class AsyncRawRequestResponseClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -495,6 +513,10 @@ class AsyncRawRequestResponseClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_request_response_for_user_monetary_account(
@@ -644,7 +666,7 @@ class AsyncRawRequestResponseClient:
             A RequestResponse is what a user on the other side of a RequestInquiry gets when he is sent one. So a RequestInquiry is the initiator and visible for the user that sent it and that wants to receive the money. A RequestResponse is what the other side sees, i.e. the user that pays the money to accept the request. The content is almost identical.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id_)}/request-response/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id_)}/request-response/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "address_billing": convert_and_respect_annotation_metadata(
@@ -719,9 +741,9 @@ class AsyncRawRequestResponseClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -729,4 +751,8 @@ class AsyncRawRequestResponseClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

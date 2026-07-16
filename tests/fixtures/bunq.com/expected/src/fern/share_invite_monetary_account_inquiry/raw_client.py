@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -18,6 +19,7 @@ from ..types.share_invite_monetary_account_inquiry_create import ShareInviteMone
 from ..types.share_invite_monetary_account_inquiry_listing import ShareInviteMonetaryAccountInquiryListing
 from ..types.share_invite_monetary_account_inquiry_read import ShareInviteMonetaryAccountInquiryRead
 from ..types.share_invite_monetary_account_inquiry_update import ShareInviteMonetaryAccountInquiryUpdate
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -50,7 +52,7 @@ class RawShareInviteMonetaryAccountInquiryClient:
             [DEPRECATED - use /share-invite-monetary-account-response] Used to share a monetary account with another bunq user, as in the 'Connect' feature in the bunq app. Allow the creation of share inquiries that, in the same way as request inquiries, can be revoked by the user creating them or accepted/rejected by the other party.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/share-invite-monetary-account-inquiry",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/share-invite-monetary-account-inquiry",
             method="GET",
             request_options=request_options,
         )
@@ -68,9 +70,9 @@ class RawShareInviteMonetaryAccountInquiryClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -78,6 +80,10 @@ class RawShareInviteMonetaryAccountInquiryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_share_invite_monetary_account_inquiry_for_user_monetary_account(
@@ -163,7 +169,7 @@ class RawShareInviteMonetaryAccountInquiryClient:
             [DEPRECATED - use /share-invite-monetary-account-response] Used to share a monetary account with another bunq user, as in the 'Connect' feature in the bunq app. Allow the creation of share inquiries that, in the same way as request inquiries, can be revoked by the user creating them or accepted/rejected by the other party.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id_)}/share-invite-monetary-account-inquiry",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id_)}/share-invite-monetary-account-inquiry",
             method="POST",
             json={
                 "access_type": access_type,
@@ -211,9 +217,9 @@ class RawShareInviteMonetaryAccountInquiryClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -221,6 +227,10 @@ class RawShareInviteMonetaryAccountInquiryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def read_share_invite_monetary_account_inquiry_for_user_monetary_account(
@@ -254,7 +264,7 @@ class RawShareInviteMonetaryAccountInquiryClient:
             [DEPRECATED - use /share-invite-monetary-account-response] Used to share a monetary account with another bunq user, as in the 'Connect' feature in the bunq app. Allow the creation of share inquiries that, in the same way as request inquiries, can be revoked by the user creating them or accepted/rejected by the other party.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/share-invite-monetary-account-inquiry/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/share-invite-monetary-account-inquiry/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -272,9 +282,9 @@ class RawShareInviteMonetaryAccountInquiryClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -282,6 +292,10 @@ class RawShareInviteMonetaryAccountInquiryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_share_invite_monetary_account_inquiry_for_user_monetary_account(
@@ -371,7 +385,7 @@ class RawShareInviteMonetaryAccountInquiryClient:
             [DEPRECATED - use /share-invite-monetary-account-response] Used to share a monetary account with another bunq user, as in the 'Connect' feature in the bunq app. Allow the creation of share inquiries that, in the same way as request inquiries, can be revoked by the user creating them or accepted/rejected by the other party.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id_)}/share-invite-monetary-account-inquiry/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id_)}/share-invite-monetary-account-inquiry/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "access_type": access_type,
@@ -419,9 +433,9 @@ class RawShareInviteMonetaryAccountInquiryClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -429,6 +443,10 @@ class RawShareInviteMonetaryAccountInquiryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -459,7 +477,7 @@ class AsyncRawShareInviteMonetaryAccountInquiryClient:
             [DEPRECATED - use /share-invite-monetary-account-response] Used to share a monetary account with another bunq user, as in the 'Connect' feature in the bunq app. Allow the creation of share inquiries that, in the same way as request inquiries, can be revoked by the user creating them or accepted/rejected by the other party.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/share-invite-monetary-account-inquiry",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/share-invite-monetary-account-inquiry",
             method="GET",
             request_options=request_options,
         )
@@ -477,9 +495,9 @@ class AsyncRawShareInviteMonetaryAccountInquiryClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -487,6 +505,10 @@ class AsyncRawShareInviteMonetaryAccountInquiryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_share_invite_monetary_account_inquiry_for_user_monetary_account(
@@ -572,7 +594,7 @@ class AsyncRawShareInviteMonetaryAccountInquiryClient:
             [DEPRECATED - use /share-invite-monetary-account-response] Used to share a monetary account with another bunq user, as in the 'Connect' feature in the bunq app. Allow the creation of share inquiries that, in the same way as request inquiries, can be revoked by the user creating them or accepted/rejected by the other party.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id_)}/share-invite-monetary-account-inquiry",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id_)}/share-invite-monetary-account-inquiry",
             method="POST",
             json={
                 "access_type": access_type,
@@ -620,9 +642,9 @@ class AsyncRawShareInviteMonetaryAccountInquiryClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -630,6 +652,10 @@ class AsyncRawShareInviteMonetaryAccountInquiryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def read_share_invite_monetary_account_inquiry_for_user_monetary_account(
@@ -663,7 +689,7 @@ class AsyncRawShareInviteMonetaryAccountInquiryClient:
             [DEPRECATED - use /share-invite-monetary-account-response] Used to share a monetary account with another bunq user, as in the 'Connect' feature in the bunq app. Allow the creation of share inquiries that, in the same way as request inquiries, can be revoked by the user creating them or accepted/rejected by the other party.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id)}/share-invite-monetary-account-inquiry/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id)}/share-invite-monetary-account-inquiry/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -681,9 +707,9 @@ class AsyncRawShareInviteMonetaryAccountInquiryClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -691,6 +717,10 @@ class AsyncRawShareInviteMonetaryAccountInquiryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_share_invite_monetary_account_inquiry_for_user_monetary_account(
@@ -780,7 +810,7 @@ class AsyncRawShareInviteMonetaryAccountInquiryClient:
             [DEPRECATED - use /share-invite-monetary-account-response] Used to share a monetary account with another bunq user, as in the 'Connect' feature in the bunq app. Allow the creation of share inquiries that, in the same way as request inquiries, can be revoked by the user creating them or accepted/rejected by the other party.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/monetary-account/{jsonable_encoder(monetary_account_id_)}/share-invite-monetary-account-inquiry/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/monetary-account/{encode_path_param(monetary_account_id_)}/share-invite-monetary-account-inquiry/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "access_type": access_type,
@@ -828,9 +858,9 @@ class AsyncRawShareInviteMonetaryAccountInquiryClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -838,4 +868,8 @@ class AsyncRawShareInviteMonetaryAccountInquiryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

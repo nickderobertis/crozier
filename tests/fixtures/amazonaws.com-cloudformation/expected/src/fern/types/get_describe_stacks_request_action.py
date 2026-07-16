@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GetDescribeStacksRequestAction(str, enum.Enum):
+class GetDescribeStacksRequestAction(enum.StrEnum):
     DESCRIBE_STACKS = "DescribeStacks"
 
     def visit(self, describe_stacks: typing.Callable[[], T_Result]) -> T_Result:

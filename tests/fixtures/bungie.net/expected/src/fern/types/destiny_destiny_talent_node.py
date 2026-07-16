@@ -16,8 +16,13 @@ class DestinyDestinyTalentNode(UniversalBaseModel):
     """
 
     activation_grid_level: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="activationGridLevel")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="activationGridLevel"),
+        pydantic.Field(
+            alias="activationGridLevel",
+            description="The progression level required on the Talent Grid in order to be able to activate this talent node. Talent Grids have their own Progression - similar to Character Level, but in this case it is experience related to the item itself.",
+        ),
+    ] = None
     """
     The progression level required on the Talent Grid in order to be able to activate this talent node. Talent Grids have their own Progression - similar to Character Level, but in this case it is experience related to the item itself.
     """
@@ -27,9 +32,14 @@ class DestinyDestinyTalentNode(UniversalBaseModel):
     Whether or not the talent node is actually visible in the game's UI. Whether you want to show it in your own UI is up to you! I'm not gonna tell you who to sock it to.
     """
 
-    is_activated: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="isActivated")] = (
-        pydantic.Field(default=None)
-    )
+    is_activated: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="isActivated"),
+        pydantic.Field(
+            alias="isActivated",
+            description="If true, the node is activated: it's current step then provides its benefits.",
+        ),
+    ] = None
     """
     If true, the node is activated: it's current step then provides its benefits.
     """
@@ -37,35 +47,59 @@ class DestinyDestinyTalentNode(UniversalBaseModel):
     materials_to_upgrade: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyDefinitionsDestinyMaterialRequirement]],
         FieldMetadata(alias="materialsToUpgrade"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="materialsToUpgrade",
+            description="If the node has material requirements to be activated, this is the list of those requirements.",
+        ),
+    ] = None
     """
     If the node has material requirements to be activated, this is the list of those requirements.
     """
 
-    node_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="nodeHash")] = pydantic.Field(
-        default=None
-    )
+    node_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="nodeHash"),
+        pydantic.Field(
+            alias="nodeHash",
+            description="The hash of the Talent Node being referred to (in DestinyTalentGridDefinition.nodes). Deceptively CONTENT VERSION DEPENDENT. We have no guarantee of the hash's immutability between content versions.",
+        ),
+    ] = None
     """
     The hash of the Talent Node being referred to (in DestinyTalentGridDefinition.nodes). Deceptively CONTENT VERSION DEPENDENT. We have no guarantee of the hash's immutability between content versions.
     """
 
-    node_index: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="nodeIndex")] = pydantic.Field(
-        default=None
-    )
+    node_index: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="nodeIndex"),
+        pydantic.Field(
+            alias="nodeIndex",
+            description="The index of the Talent Node being referred to (an index into DestinyTalentGridDefinition.nodes[]). CONTENT VERSION DEPENDENT.",
+        ),
+    ] = None
     """
     The index of the Talent Node being referred to (an index into DestinyTalentGridDefinition.nodes[]). CONTENT VERSION DEPENDENT.
     """
 
     node_stats_block: typing_extensions.Annotated[
-        typing.Optional[DestinyDestinyTalentNodeStatBlock], FieldMetadata(alias="nodeStatsBlock")
-    ] = pydantic.Field(default=None)
+        typing.Optional[DestinyDestinyTalentNodeStatBlock],
+        FieldMetadata(alias="nodeStatsBlock"),
+        pydantic.Field(
+            alias="nodeStatsBlock",
+            description="This property has some history. A talent grid can provide stats on both the item it's related to and the character equipping the item. This returns data about those stat bonuses.",
+        ),
+    ] = None
     """
     This property has some history. A talent grid can provide stats on both the item it's related to and the character equipping the item. This returns data about those stat bonuses.
     """
 
-    progress_percent: typing_extensions.Annotated[typing.Optional[float], FieldMetadata(alias="progressPercent")] = (
-        pydantic.Field(default=None)
-    )
+    progress_percent: typing_extensions.Annotated[
+        typing.Optional[float],
+        FieldMetadata(alias="progressPercent"),
+        pydantic.Field(
+            alias="progressPercent",
+            description="If you want to show a progress bar or circle for how close this talent node is to being activate-able, this is the percentage to show. It follows the node's underlying rules about when the progress bar should first show up, and when it should be filled.",
+        ),
+    ] = None
     """
     If you want to show a progress bar or circle for how close this talent node is to being activate-able, this is the percentage to show. It follows the node's underlying rules about when the progress bar should first show up, and when it should be filled.
     """
@@ -75,9 +109,14 @@ class DestinyDestinyTalentNode(UniversalBaseModel):
     An DestinyTalentNodeState enum value indicating the node's state: whether it can be activated or swapped, and why not if neither can be performed.
     """
 
-    step_index: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="stepIndex")] = pydantic.Field(
-        default=None
-    )
+    step_index: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="stepIndex"),
+        pydantic.Field(
+            alias="stepIndex",
+            description="The currently relevant Step for the node. It is this step that has rendering data for the node and the benefits that are provided if the node is activated. (the actual rules for benefits provided are extremely complicated in theory, but with how Talent Grids are being used in Destiny 2 you don't have to worry about a lot of those old Destiny 1 rules.) This is an index into: DestinyTalentGridDefinition.nodes[nodeIndex].steps[stepIndex]",
+        ),
+    ] = None
     """
     The currently relevant Step for the node. It is this step that has rendering data for the node and the benefits that are provided if the node is activated. (the actual rules for benefits provided are extremely complicated in theory, but with how Talent Grids are being used in Destiny 2 you don't have to worry about a lot of those old Destiny 1 rules.) This is an index into: DestinyTalentGridDefinition.nodes[nodeIndex].steps[stepIndex]
     """

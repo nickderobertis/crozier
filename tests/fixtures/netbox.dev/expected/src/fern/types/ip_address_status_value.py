@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class IpAddressStatusValue(str, enum.Enum):
+class IpAddressStatusValue(enum.StrEnum):
     ACTIVE = "active"
     RESERVED = "reserved"
     DEPRECATED = "deprecated"

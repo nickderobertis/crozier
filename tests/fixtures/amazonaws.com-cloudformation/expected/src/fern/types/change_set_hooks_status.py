@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ChangeSetHooksStatus(str, enum.Enum):
+class ChangeSetHooksStatus(enum.StrEnum):
     PLANNING = "PLANNING"
     PLANNED = "PLANNED"
     UNAVAILABLE = "UNAVAILABLE"

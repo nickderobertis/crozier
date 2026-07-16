@@ -17,22 +17,28 @@ from .properties import Properties
 class VersionMetaData(UniversalBaseModel):
     """ """
 
-    content_id: typing_extensions.Annotated[int, FieldMetadata(alias="contentId")] = pydantic.Field()
+    content_id: typing_extensions.Annotated[
+        int, FieldMetadata(alias="contentId"), pydantic.Field(alias="contentId", description="")
+    ]
     """
     
     """
 
-    created_by: typing_extensions.Annotated[str, FieldMetadata(alias="createdBy")]
-    created_on: typing_extensions.Annotated[dt.datetime, FieldMetadata(alias="createdOn")]
+    created_by: typing_extensions.Annotated[str, FieldMetadata(alias="createdBy"), pydantic.Field(alias="createdBy")]
+    created_on: typing_extensions.Annotated[
+        dt.datetime, FieldMetadata(alias="createdOn"), pydantic.Field(alias="createdOn")
+    ]
     description: typing.Optional[str] = None
-    global_id: typing_extensions.Annotated[int, FieldMetadata(alias="globalId")] = pydantic.Field()
+    global_id: typing_extensions.Annotated[
+        int, FieldMetadata(alias="globalId"), pydantic.Field(alias="globalId", description="")
+    ]
     """
     
     """
 
-    group_id: typing_extensions.Annotated[typing.Optional[GroupId], FieldMetadata(alias="groupId")] = pydantic.Field(
-        default=None
-    )
+    group_id: typing_extensions.Annotated[
+        typing.Optional[GroupId], FieldMetadata(alias="groupId"), pydantic.Field(alias="groupId", description="")
+    ] = None
     """
     
     """

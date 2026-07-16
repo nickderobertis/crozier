@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObReadProduct2DataProductItemOtherProductTypeRepaymentAmountType(str, enum.Enum):
+class ObReadProduct2DataProductItemOtherProductTypeRepaymentAmountType(enum.StrEnum):
     """
     The repayment is for paying just the interest only or both interest and capital or bullet amount or balance to date etc
     """

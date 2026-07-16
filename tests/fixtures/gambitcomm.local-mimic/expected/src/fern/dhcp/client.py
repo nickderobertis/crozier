@@ -25,7 +25,7 @@ class DhcpClient:
 
     def protocol_dhcp_get_args(
         self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Dict[str, typing.Optional[typing.Any]]:
+    ) -> typing.Dict[str, typing.Any]:
         """
         Agent's DHCP configuration particulars
 
@@ -39,7 +39,7 @@ class DhcpClient:
 
         Returns
         -------
-        typing.Dict[str, typing.Optional[typing.Any]]
+        typing.Dict[str, typing.Any]
             successful operation
 
         Examples
@@ -161,7 +161,7 @@ class DhcpClient:
 
     def protocol_dhcp_params(
         self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.List[typing.Dict[str, typing.Optional[typing.Any]]]:
+    ) -> typing.List[typing.Dict[str, typing.Any]]:
         """
         DHCP-OFFER message parameters
 
@@ -175,7 +175,7 @@ class DhcpClient:
 
         Returns
         -------
-        typing.List[typing.Dict[str, typing.Optional[typing.Any]]]
+        typing.List[typing.Dict[str, typing.Any]]
             successful operation
 
         Examples
@@ -322,7 +322,7 @@ class AsyncDhcpClient:
 
     async def protocol_dhcp_get_args(
         self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Dict[str, typing.Optional[typing.Any]]:
+    ) -> typing.Dict[str, typing.Any]:
         """
         Agent's DHCP configuration particulars
 
@@ -336,7 +336,7 @@ class AsyncDhcpClient:
 
         Returns
         -------
-        typing.Dict[str, typing.Optional[typing.Any]]
+        typing.Dict[str, typing.Any]
             successful operation
 
         Examples
@@ -490,7 +490,7 @@ class AsyncDhcpClient:
 
     async def protocol_dhcp_params(
         self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.List[typing.Dict[str, typing.Optional[typing.Any]]]:
+    ) -> typing.List[typing.Dict[str, typing.Any]]:
         """
         DHCP-OFFER message parameters
 
@@ -504,7 +504,7 @@ class AsyncDhcpClient:
 
         Returns
         -------
-        typing.List[typing.Dict[str, typing.Optional[typing.Any]]]
+        typing.List[typing.Dict[str, typing.Any]]
             successful operation
 
         Examples

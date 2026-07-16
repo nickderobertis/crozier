@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ListingSettingsNaming(str, enum.Enum):
+class ListingSettingsNaming(enum.StrEnum):
     LISTING = "LISTING"
     LISTINGS = "LISTINGS"
     INTEGRATIONS = "INTEGRATIONS"

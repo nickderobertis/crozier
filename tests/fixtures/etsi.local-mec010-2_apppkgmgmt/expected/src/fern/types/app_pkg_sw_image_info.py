@@ -2,4 +2,7 @@
 
 import typing
 
-AppPkgSwImageInfo = typing.Optional[typing.Any]
+AppPkgSwImageInfo = typing.Any
+"""
+Information of application software image in application package. Type is TBD
+"""

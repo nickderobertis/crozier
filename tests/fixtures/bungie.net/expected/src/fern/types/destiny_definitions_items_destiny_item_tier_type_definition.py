@@ -23,6 +23,7 @@ class DestinyDefinitionsItemsDestinyItemTierTypeDefinition(UniversalBaseModel):
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
+        pydantic.Field(alias="displayProperties"),
     ] = None
     hash: typing.Optional[int] = pydantic.Field(default=None)
     """
@@ -36,8 +37,13 @@ class DestinyDefinitionsItemsDestinyItemTierTypeDefinition(UniversalBaseModel):
     """
 
     infusion_process: typing_extensions.Annotated[
-        typing.Optional[DestinyDefinitionsItemsDestinyItemTierTypeInfusionBlock], FieldMetadata(alias="infusionProcess")
-    ] = pydantic.Field(default=None)
+        typing.Optional[DestinyDefinitionsItemsDestinyItemTierTypeInfusionBlock],
+        FieldMetadata(alias="infusionProcess"),
+        pydantic.Field(
+            alias="infusionProcess",
+            description="If this tier defines infusion properties, they will be contained here.",
+        ),
+    ] = None
     """
     If this tier defines infusion properties, they will be contained here.
     """

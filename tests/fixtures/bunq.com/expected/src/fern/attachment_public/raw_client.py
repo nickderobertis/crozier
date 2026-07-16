@@ -6,13 +6,15 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
 from ..types.attachment_public import AttachmentPublic
 from ..types.attachment_public_create import AttachmentPublicCreate
 from ..types.attachment_public_read import AttachmentPublicRead
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -61,9 +63,9 @@ class RawAttachmentPublicClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -71,6 +73,10 @@ class RawAttachmentPublicClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def read_attachment_public(
@@ -93,7 +99,7 @@ class RawAttachmentPublicClient:
             This call is used to upload an attachment that can be referenced to as an avatar (through the Avatar endpoint) or in a tab sent. Attachments supported are png, jpg and gif.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"attachment-public/{jsonable_encoder(item_id)}",
+            f"attachment-public/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -111,9 +117,9 @@ class RawAttachmentPublicClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -121,6 +127,10 @@ class RawAttachmentPublicClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -167,9 +177,9 @@ class AsyncRawAttachmentPublicClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -177,6 +187,10 @@ class AsyncRawAttachmentPublicClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def read_attachment_public(
@@ -199,7 +213,7 @@ class AsyncRawAttachmentPublicClient:
             This call is used to upload an attachment that can be referenced to as an avatar (through the Avatar endpoint) or in a tab sent. Attachments supported are png, jpg and gif.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"attachment-public/{jsonable_encoder(item_id)}",
+            f"attachment-public/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -217,9 +231,9 @@ class AsyncRawAttachmentPublicClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -227,4 +241,8 @@ class AsyncRawAttachmentPublicClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

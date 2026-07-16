@@ -20,17 +20,20 @@ class DestinyDefinitionsSeasonsDestinySeasonDefinition(UniversalBaseModel):
     Defines a canonical "Season" of Destiny: a range of a few months where the game highlights certain challenges, provides new loot, has new Clan-related rewards and celebrates various seasonal events.
     """
 
-    artifact_item_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="artifactItemHash")] = (
-        None
-    )
+    artifact_item_hash: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="artifactItemHash"), pydantic.Field(alias="artifactItemHash")
+    ] = None
     background_image_path: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="backgroundImagePath")
+        typing.Optional[str], FieldMetadata(alias="backgroundImagePath"), pydantic.Field(alias="backgroundImagePath")
     ] = None
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
+        pydantic.Field(alias="displayProperties"),
     ] = None
-    end_date: typing_extensions.Annotated[typing.Optional[dt.datetime], FieldMetadata(alias="endDate")] = None
+    end_date: typing_extensions.Annotated[
+        typing.Optional[dt.datetime], FieldMetadata(alias="endDate"), pydantic.Field(alias="endDate")
+    ] = None
     hash: typing.Optional[int] = pydantic.Field(default=None)
     """
     The unique identifier for this entity. Guaranteed to be unique for the type of entity, but not globally.
@@ -53,17 +56,29 @@ class DestinyDefinitionsSeasonsDestinySeasonDefinition(UniversalBaseModel):
     """
 
     seal_presentation_node_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="sealPresentationNodeHash")
+        typing.Optional[int],
+        FieldMetadata(alias="sealPresentationNodeHash"),
+        pydantic.Field(alias="sealPresentationNodeHash"),
     ] = None
-    season_number: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="seasonNumber")] = None
-    season_pass_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="seasonPassHash")] = None
+    season_number: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="seasonNumber"), pydantic.Field(alias="seasonNumber")
+    ] = None
+    season_pass_hash: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="seasonPassHash"), pydantic.Field(alias="seasonPassHash")
+    ] = None
     season_pass_progression_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="seasonPassProgressionHash")
+        typing.Optional[int],
+        FieldMetadata(alias="seasonPassProgressionHash"),
+        pydantic.Field(alias="seasonPassProgressionHash"),
     ] = None
     seasonal_challenges_presentation_node_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="seasonalChallengesPresentationNodeHash")
+        typing.Optional[int],
+        FieldMetadata(alias="seasonalChallengesPresentationNodeHash"),
+        pydantic.Field(alias="seasonalChallengesPresentationNodeHash"),
     ] = None
-    start_date: typing_extensions.Annotated[typing.Optional[dt.datetime], FieldMetadata(alias="startDate")] = None
+    start_date: typing_extensions.Annotated[
+        typing.Optional[dt.datetime], FieldMetadata(alias="startDate"), pydantic.Field(alias="startDate")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

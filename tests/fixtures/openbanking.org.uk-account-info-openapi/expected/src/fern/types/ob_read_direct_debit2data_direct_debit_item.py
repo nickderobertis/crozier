@@ -20,29 +20,44 @@ class ObReadDirectDebit2DataDirectDebitItem(UniversalBaseModel):
     Account to or from which a cash entry is made.
     """
 
-    account_id: typing_extensions.Annotated[AccountId, FieldMetadata(alias="AccountId")]
+    account_id: typing_extensions.Annotated[
+        AccountId, FieldMetadata(alias="AccountId"), pydantic.Field(alias="AccountId")
+    ]
     direct_debit_id: typing_extensions.Annotated[
-        typing.Optional[DirectDebitId], FieldMetadata(alias="DirectDebitId")
+        typing.Optional[DirectDebitId], FieldMetadata(alias="DirectDebitId"), pydantic.Field(alias="DirectDebitId")
     ] = None
     direct_debit_status_code: typing_extensions.Annotated[
-        typing.Optional[ObExternalDirectDebitStatus1Code], FieldMetadata(alias="DirectDebitStatusCode")
+        typing.Optional[ObExternalDirectDebitStatus1Code],
+        FieldMetadata(alias="DirectDebitStatusCode"),
+        pydantic.Field(alias="DirectDebitStatusCode"),
     ] = None
-    frequency: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="Frequency")] = pydantic.Field(
-        default=None
-    )
+    frequency: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="Frequency"),
+        pydantic.Field(
+            alias="Frequency",
+            description="Regularity with which direct debit instructions are to be created and processed.",
+        ),
+    ] = None
     """
     Regularity with which direct debit instructions are to be created and processed.
     """
 
     mandate_identification: typing_extensions.Annotated[
-        MandateIdentification, FieldMetadata(alias="MandateIdentification")
+        MandateIdentification,
+        FieldMetadata(alias="MandateIdentification"),
+        pydantic.Field(alias="MandateIdentification"),
     ]
-    name: typing_extensions.Annotated[Name2, FieldMetadata(alias="Name")]
+    name: typing_extensions.Annotated[Name2, FieldMetadata(alias="Name"), pydantic.Field(alias="Name")]
     previous_payment_amount: typing_extensions.Annotated[
-        typing.Optional[ObActiveOrHistoricCurrencyAndAmount0], FieldMetadata(alias="PreviousPaymentAmount")
+        typing.Optional[ObActiveOrHistoricCurrencyAndAmount0],
+        FieldMetadata(alias="PreviousPaymentAmount"),
+        pydantic.Field(alias="PreviousPaymentAmount"),
     ] = None
     previous_payment_date_time: typing_extensions.Annotated[
-        typing.Optional[PreviousPaymentDateTime], FieldMetadata(alias="PreviousPaymentDateTime")
+        typing.Optional[PreviousPaymentDateTime],
+        FieldMetadata(alias="PreviousPaymentDateTime"),
+        pydantic.Field(alias="PreviousPaymentDateTime"),
     ] = None
 
     if IS_PYDANTIC_V2:

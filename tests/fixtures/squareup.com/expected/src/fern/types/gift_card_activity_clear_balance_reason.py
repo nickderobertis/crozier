@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GiftCardActivityClearBalanceReason(str, enum.Enum):
+class GiftCardActivityClearBalanceReason(enum.StrEnum):
     """ """
 
     SUSPICIOUS_ACTIVITY = "SUSPICIOUS_ACTIVITY"

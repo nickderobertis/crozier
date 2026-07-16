@@ -17,7 +17,9 @@ class ActorDefinitionResourceRequirements(UniversalBaseModel):
 
     default: typing.Optional[ResourceRequirements] = None
     job_specific: typing_extensions.Annotated[
-        typing.Optional[typing.List[JobTypeResourceLimit]], FieldMetadata(alias="jobSpecific")
+        typing.Optional[typing.List[JobTypeResourceLimit]],
+        FieldMetadata(alias="jobSpecific"),
+        pydantic.Field(alias="jobSpecific"),
     ] = None
 
     if IS_PYDANTIC_V2:

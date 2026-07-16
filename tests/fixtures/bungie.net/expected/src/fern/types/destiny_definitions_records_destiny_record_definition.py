@@ -31,16 +31,23 @@ from .destiny_destiny_item_quantity import DestinyDestinyItemQuantity
 
 class DestinyDefinitionsRecordsDestinyRecordDefinition(UniversalBaseModel):
     completion_info: typing_extensions.Annotated[
-        typing.Optional[DestinyDefinitionsRecordsDestinyRecordCompletionBlock], FieldMetadata(alias="completionInfo")
+        typing.Optional[DestinyDefinitionsRecordsDestinyRecordCompletionBlock],
+        FieldMetadata(alias="completionInfo"),
+        pydantic.Field(alias="completionInfo"),
     ] = None
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
+        pydantic.Field(alias="displayProperties"),
     ] = None
     expiration_info: typing_extensions.Annotated[
-        typing.Optional[DestinyDefinitionsRecordsDestinyRecordExpirationBlock], FieldMetadata(alias="expirationInfo")
+        typing.Optional[DestinyDefinitionsRecordsDestinyRecordExpirationBlock],
+        FieldMetadata(alias="expirationInfo"),
+        pydantic.Field(alias="expirationInfo"),
     ] = None
-    for_title_gilding: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="forTitleGilding")] = None
+    for_title_gilding: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="forTitleGilding"), pydantic.Field(alias="forTitleGilding")
+    ] = None
     hash: typing.Optional[int] = pydantic.Field(default=None)
     """
     The unique identifier for this entity. Guaranteed to be unique for the type of entity, but not globally.
@@ -53,19 +60,33 @@ class DestinyDefinitionsRecordsDestinyRecordDefinition(UniversalBaseModel):
     """
 
     interval_info: typing_extensions.Annotated[
-        typing.Optional[DestinyDefinitionsRecordsDestinyRecordIntervalBlock], FieldMetadata(alias="intervalInfo")
-    ] = pydantic.Field(default=None)
+        typing.Optional[DestinyDefinitionsRecordsDestinyRecordIntervalBlock],
+        FieldMetadata(alias="intervalInfo"),
+        pydantic.Field(
+            alias="intervalInfo",
+            description="Some records have multiple 'interval' objectives, and the record may be claimed at each completed interval",
+        ),
+    ] = None
     """
     Some records have multiple 'interval' objectives, and the record may be claimed at each completed interval
     """
 
-    lore_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="loreHash")] = None
+    lore_hash: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="loreHash"), pydantic.Field(alias="loreHash")
+    ] = None
     objective_hashes: typing_extensions.Annotated[
-        typing.Optional[typing.List[int]], FieldMetadata(alias="objectiveHashes")
+        typing.Optional[typing.List[int]],
+        FieldMetadata(alias="objectiveHashes"),
+        pydantic.Field(alias="objectiveHashes"),
     ] = None
     parent_node_hashes: typing_extensions.Annotated[
-        typing.Optional[typing.List[int]], FieldMetadata(alias="parentNodeHashes")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[int]],
+        FieldMetadata(alias="parentNodeHashes"),
+        pydantic.Field(
+            alias="parentNodeHashes",
+            description="A quick reference to presentation nodes that have this node as a child. Presentation nodes can be parented under multiple parents.",
+        ),
+    ] = None
     """
     A quick reference to presentation nodes that have this node as a child. Presentation nodes can be parented under multiple parents.
     """
@@ -73,13 +94,14 @@ class DestinyDefinitionsRecordsDestinyRecordDefinition(UniversalBaseModel):
     presentation_info: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsPresentationDestinyPresentationChildBlock],
         FieldMetadata(alias="presentationInfo"),
+        pydantic.Field(alias="presentationInfo"),
     ] = None
     presentation_node_type: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="presentationNodeType")
+        typing.Optional[int], FieldMetadata(alias="presentationNodeType"), pydantic.Field(alias="presentationNodeType")
     ] = None
-    record_value_style: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="recordValueStyle")] = (
-        None
-    )
+    record_value_style: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="recordValueStyle"), pydantic.Field(alias="recordValueStyle")
+    ] = None
     redacted: typing.Optional[bool] = pydantic.Field(default=None)
     """
     If this is true, then there is an entity with this identifier/type combination, but BNet is not yet allowed to show it. Sorry!
@@ -87,8 +109,13 @@ class DestinyDefinitionsRecordsDestinyRecordDefinition(UniversalBaseModel):
 
     requirements: typing.Optional[DestinyDefinitionsPresentationDestinyPresentationNodeRequirementsBlock] = None
     reward_items: typing_extensions.Annotated[
-        typing.Optional[typing.List[DestinyDestinyItemQuantity]], FieldMetadata(alias="rewardItems")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[DestinyDestinyItemQuantity]],
+        FieldMetadata(alias="rewardItems"),
+        pydantic.Field(
+            alias="rewardItems",
+            description='If there is any publicly available information about rewards earned for achieving this record, this is the list of those items.\r\n However, note that some records intentionally have "hidden" rewards. These will not be returned in this list.',
+        ),
+    ] = None
     """
     If there is any publicly available information about rewards earned for achieving this record, this is the list of those items.
      However, note that some records intentionally have "hidden" rewards. These will not be returned in this list.
@@ -100,22 +127,30 @@ class DestinyDefinitionsRecordsDestinyRecordDefinition(UniversalBaseModel):
     """
 
     should_show_large_icons: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="shouldShowLargeIcons")
-    ] = pydantic.Field(default=None)
+        typing.Optional[bool],
+        FieldMetadata(alias="shouldShowLargeIcons"),
+        pydantic.Field(alias="shouldShowLargeIcons", description="A hint to show a large icon for a reward"),
+    ] = None
     """
     A hint to show a large icon for a reward
     """
 
     state_info: typing_extensions.Annotated[
-        typing.Optional[DestinyDefinitionsRecordsSchemaRecordStateBlock], FieldMetadata(alias="stateInfo")
+        typing.Optional[DestinyDefinitionsRecordsSchemaRecordStateBlock],
+        FieldMetadata(alias="stateInfo"),
+        pydantic.Field(alias="stateInfo"),
     ] = None
     title_info: typing_extensions.Annotated[
-        typing.Optional[DestinyDefinitionsRecordsDestinyRecordTitleBlock], FieldMetadata(alias="titleInfo")
+        typing.Optional[DestinyDefinitionsRecordsDestinyRecordTitleBlock],
+        FieldMetadata(alias="titleInfo"),
+        pydantic.Field(alias="titleInfo"),
     ] = None
-    trait_hashes: typing_extensions.Annotated[typing.Optional[typing.List[int]], FieldMetadata(alias="traitHashes")] = (
-        None
-    )
-    trait_ids: typing_extensions.Annotated[typing.Optional[typing.List[str]], FieldMetadata(alias="traitIds")] = None
+    trait_hashes: typing_extensions.Annotated[
+        typing.Optional[typing.List[int]], FieldMetadata(alias="traitHashes"), pydantic.Field(alias="traitHashes")
+    ] = None
+    trait_ids: typing_extensions.Annotated[
+        typing.Optional[typing.List[str]], FieldMetadata(alias="traitIds"), pydantic.Field(alias="traitIds")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class EmailType(str, enum.Enum):
+class EmailType(enum.StrEnum):
     PRIMARY = "primary"
     SECONDARY = "secondary"
     WORK = "work"

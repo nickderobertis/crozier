@@ -10,7 +10,7 @@ from .nested_tag import NestedTag
 
 class WritablePlatform(UniversalBaseModel):
     created: typing.Optional[dt.datetime] = None
-    custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = None
     description: typing.Optional[str] = None
     device_count: typing.Optional[int] = None
     display: typing.Optional[str] = None
@@ -22,7 +22,7 @@ class WritablePlatform(UniversalBaseModel):
     """
 
     name: str
-    napalm_args: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = pydantic.Field(default=None)
+    napalm_args: typing.Optional[typing.Dict[str, typing.Any]] = pydantic.Field(default=None)
     """
     Additional arguments to pass when initiating the NAPALM driver (JSON format)
     """

@@ -32,21 +32,31 @@ class ObpcaData1OverdraftOverdraftTierBandSetItemOverdraftFeesChargesItemOverdra
             ObpcaData1OverdraftOverdraftTierBandSetItemOverdraftFeesChargesItemOverdraftFeeChargeDetailItemOverdraftFeeChargeCapCappingPeriod
         ],
         FieldMetadata(alias="CappingPeriod"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="CappingPeriod", description="Period e.g. day, week, month etc. for which the fee/charge is capped"
+        ),
+    ] = None
     """
     Period e.g. day, week, month etc. for which the fee/charge is capped
     """
 
-    fee_cap_amount: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="FeeCapAmount")] = (
-        pydantic.Field(default=None)
-    )
+    fee_cap_amount: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="FeeCapAmount"),
+        pydantic.Field(alias="FeeCapAmount", description="Cap amount charged for a fee/charge"),
+    ] = None
     """
     Cap amount charged for a fee/charge
     """
 
-    fee_cap_occurrence: typing_extensions.Annotated[typing.Optional[float], FieldMetadata(alias="FeeCapOccurrence")] = (
-        pydantic.Field(default=None)
-    )
+    fee_cap_occurrence: typing_extensions.Annotated[
+        typing.Optional[float],
+        FieldMetadata(alias="FeeCapOccurrence"),
+        pydantic.Field(
+            alias="FeeCapOccurrence",
+            description="fee/charges are captured dependent on the number of occurrences rather than capped at a particular amount",
+        ),
+    ] = None
     """
     fee/charges are captured dependent on the number of occurrences rather than capped at a particular amount
     """
@@ -56,7 +66,8 @@ class ObpcaData1OverdraftOverdraftTierBandSetItemOverdraftFeesChargesItemOverdra
             ObpcaData1OverdraftOverdraftTierBandSetItemOverdraftFeesChargesItemOverdraftFeeChargeDetailItemOverdraftFeeChargeCapFeeTypeItem
         ],
         FieldMetadata(alias="FeeType"),
-    ] = pydantic.Field()
+        pydantic.Field(alias="FeeType", description="Fee/charge type which is being capped"),
+    ]
     """
     Fee/charge type which is being capped
     """
@@ -64,14 +75,20 @@ class ObpcaData1OverdraftOverdraftTierBandSetItemOverdraftFeesChargesItemOverdra
     min_max_type: typing_extensions.Annotated[
         ObpcaData1OverdraftOverdraftTierBandSetItemOverdraftFeesChargesItemOverdraftFeeChargeDetailItemOverdraftFeeChargeCapMinMaxType,
         FieldMetadata(alias="MinMaxType"),
-    ] = pydantic.Field()
+        pydantic.Field(
+            alias="MinMaxType",
+            description="Indicates that this is the minimum/ maximum fee/charge that can be applied by the financial institution",
+        ),
+    ]
     """
     Indicates that this is the minimum/ maximum fee/charge that can be applied by the financial institution
     """
 
-    notes: typing_extensions.Annotated[typing.Optional[typing.List[str]], FieldMetadata(alias="Notes")] = (
-        pydantic.Field(default=None)
-    )
+    notes: typing_extensions.Annotated[
+        typing.Optional[typing.List[str]],
+        FieldMetadata(alias="Notes"),
+        pydantic.Field(alias="Notes", description="Notes related to Overdraft fee charge cap"),
+    ] = None
     """
     Notes related to Overdraft fee charge cap
     """
@@ -83,14 +100,21 @@ class ObpcaData1OverdraftOverdraftTierBandSetItemOverdraftFeesChargesItemOverdra
             ]
         ],
         FieldMetadata(alias="OtherFeeType"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="OtherFeeType", description="Other fee type code which is not available in the standard code set"
+        ),
+    ] = None
     """
     Other fee type code which is not available in the standard code set
     """
 
     overdraft_control_indicator: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="OverdraftControlIndicator")
-    ] = pydantic.Field(default=None)
+        typing.Optional[bool],
+        FieldMetadata(alias="OverdraftControlIndicator"),
+        pydantic.Field(
+            alias="OverdraftControlIndicator", description="Specifies for the overdraft control feature/benefit"
+        ),
+    ] = None
     """
     Specifies for the overdraft control feature/benefit
     """

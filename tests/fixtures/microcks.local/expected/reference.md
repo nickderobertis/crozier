@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_resources_by_service</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_resources_by_service</a>(...) -> typing.List[Resource]</code></summary>
 <dl>
 <dd>
 
@@ -13,10 +13,13 @@
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_resources_by_service(
     service_id="serviceId",
 )
@@ -55,7 +58,7 @@ client.get_resources_by_service(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_resource</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_resource</a>(...) -> Resource</code></summary>
 <dl>
 <dd>
 
@@ -69,10 +72,13 @@ client.get_resources_by_service(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_resource(
     name="name",
 )
@@ -112,7 +118,77 @@ client.get_resource(
 </details>
 
 ## job
-<details><summary><code>client.job.<a href="src/fern/job/client.py">get_import_jobs</a>(...)</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py">upload_artifact</a>(...) -> str</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Uploads an artifact to be imported by Microcks.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+client.job.upload_artifact(...)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**main_artifact:** `bool` — Flag telling if this should be considered as primary or secondary artifact. Default to 'true'
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**file:** `core.File` — The artifact to upload
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.job.<a href="src/fern/job/client.py">get_import_jobs</a>(...) -> typing.List[ImportJob]</code></summary>
 <dl>
 <dd>
 
@@ -140,10 +216,13 @@ Retrieve a list of ImportJobs
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.job.get_import_jobs()
 
 ```
@@ -196,7 +275,7 @@ client.job.get_import_jobs()
 </dl>
 </details>
 
-<details><summary><code>client.job.<a href="src/fern/job/client.py">create_import_job</a>(...)</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py">create_import_job</a>(...) -> ImportJob</code></summary>
 <dl>
 <dd>
 
@@ -224,10 +303,13 @@ Create a new ImportJob
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.job.create_import_job(
     name="name",
     repository_url="repositoryUrl",
@@ -247,111 +329,7 @@ client.job.create_import_job(
 <dl>
 <dd>
 
-**name:** `str` — Unique distinct name of this ImportJob
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**repository_url:** `str` — URL of mocks and tests repository artifact
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**active:** `typing.Optional[bool]` — Whether this ImportJob is active (ie. scheduled for execution)
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_date:** `typing.Optional[dt.datetime]` — Creation date for this ImportJob
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**etag:** `typing.Optional[str]` — Etag of repository URL during previous import. Is used for not re-importing if no recent changes
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**frequency:** `typing.Optional[str]` — Reserved for future usage
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[str]` — Unique identifier of ImportJob
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**last_import_date:** `typing.Optional[dt.datetime]` — Date last import was done
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**last_import_error:** `typing.Optional[str]` — Error message of last import (if any)
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**main_artifact:** `typing.Optional[bool]` — Flag telling if considered as primary or secondary artifact. Default to `true`
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**metadata:** `typing.Optional[Metadata]` — Metadata of ImportJob
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**repository_disable_ssl_validation:** `typing.Optional[bool]` — Whether to disable SSL certificate verification when checking repository
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**secret_ref:** `typing.Optional[SecretRef]` — Reference of a Secret to used when checking repository
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**service_refs:** `typing.Optional[typing.Sequence[ServiceRef]]` — References of Services discovered when checking repository
+**request:** `ImportJob` 
     
 </dd>
 </dl>
@@ -371,7 +349,7 @@ client.job.create_import_job(
 </dl>
 </details>
 
-<details><summary><code>client.job.<a href="src/fern/job/client.py">get_import_job_counter</a>()</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py">get_import_job_counter</a>() -> Counter</code></summary>
 <dl>
 <dd>
 
@@ -385,10 +363,13 @@ client.job.create_import_job(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.job.get_import_job_counter()
 
 ```
@@ -417,7 +398,7 @@ client.job.get_import_job_counter()
 </dl>
 </details>
 
-<details><summary><code>client.job.<a href="src/fern/job/client.py">get_import_job</a>(...)</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py">get_import_job</a>(...) -> ImportJob</code></summary>
 <dl>
 <dd>
 
@@ -445,10 +426,13 @@ Retrieve an ImportJob using its identifier
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.job.get_import_job(
     id="id",
 )
@@ -487,7 +471,7 @@ client.job.get_import_job(
 </dl>
 </details>
 
-<details><summary><code>client.job.<a href="src/fern/job/client.py">update_import_job</a>(...)</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py">update_import_job</a>(...) -> ImportJob</code></summary>
 <dl>
 <dd>
 
@@ -515,10 +499,13 @@ Update an ImportJob
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.job.update_import_job(
     id_="id",
     name="name",
@@ -539,7 +526,7 @@ client.job.update_import_job(
 <dl>
 <dd>
 
-**id_:** `str` — Unique identifier of ImportJob to manage
+**id:** `str` — Unique identifier of ImportJob to manage
     
 </dd>
 </dl>
@@ -547,111 +534,7 @@ client.job.update_import_job(
 <dl>
 <dd>
 
-**name:** `str` — Unique distinct name of this ImportJob
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**repository_url:** `str` — URL of mocks and tests repository artifact
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**active:** `typing.Optional[bool]` — Whether this ImportJob is active (ie. scheduled for execution)
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**created_date:** `typing.Optional[dt.datetime]` — Creation date for this ImportJob
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**etag:** `typing.Optional[str]` — Etag of repository URL during previous import. Is used for not re-importing if no recent changes
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**frequency:** `typing.Optional[str]` — Reserved for future usage
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[str]` — Unique identifier of ImportJob
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**last_import_date:** `typing.Optional[dt.datetime]` — Date last import was done
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**last_import_error:** `typing.Optional[str]` — Error message of last import (if any)
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**main_artifact:** `typing.Optional[bool]` — Flag telling if considered as primary or secondary artifact. Default to `true`
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**metadata:** `typing.Optional[Metadata]` — Metadata of ImportJob
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**repository_disable_ssl_validation:** `typing.Optional[bool]` — Whether to disable SSL certificate verification when checking repository
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**secret_ref:** `typing.Optional[SecretRef]` — Reference of a Secret to used when checking repository
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**service_refs:** `typing.Optional[typing.Sequence[ServiceRef]]` — References of Services discovered when checking repository
+**request:** `ImportJob` 
     
 </dd>
 </dl>
@@ -671,7 +554,7 @@ client.job.update_import_job(
 </dl>
 </details>
 
-<details><summary><code>client.job.<a href="src/fern/job/client.py">delete_import_job</a>(...)</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py">delete_import_job</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -699,10 +582,13 @@ Delete an ImportJob
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.job.delete_import_job(
     id="id",
 )
@@ -741,7 +627,7 @@ client.job.delete_import_job(
 </dl>
 </details>
 
-<details><summary><code>client.job.<a href="src/fern/job/client.py">activate_import_job</a>(...)</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py">activate_import_job</a>(...) -> ImportJob</code></summary>
 <dl>
 <dd>
 
@@ -769,10 +655,13 @@ Make an ImportJob active, so that it is executed
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.job.activate_import_job(
     id="id",
 )
@@ -811,7 +700,7 @@ client.job.activate_import_job(
 </dl>
 </details>
 
-<details><summary><code>client.job.<a href="src/fern/job/client.py">start_import_job</a>(...)</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py">start_import_job</a>(...) -> ImportJob</code></summary>
 <dl>
 <dd>
 
@@ -839,10 +728,13 @@ Starting an ImportJob forces it to immediatly import mock definitions
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.job.start_import_job(
     id="id",
 )
@@ -881,7 +773,7 @@ client.job.start_import_job(
 </dl>
 </details>
 
-<details><summary><code>client.job.<a href="src/fern/job/client.py">stop_import_job</a>(...)</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py">stop_import_job</a>(...) -> ImportJob</code></summary>
 <dl>
 <dd>
 
@@ -909,10 +801,13 @@ Stopping an ImportJob desactivate it, so that it won't execute at next schedule
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.job.stop_import_job(
     id="id",
 )
@@ -952,6 +847,68 @@ client.job.stop_import_job(
 </details>
 
 ## mock
+<details><summary><code>client.mock.<a href="src/fern/mock/client.py">export_snapshot</a>(...) -> typing.Iterator[bytes]</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Export a repostiory snapshot with requested services
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+client.mock.export_snapshot(...)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**service_ids:** `typing.Optional[typing.Union[str, typing.Sequence[str]]]` — List of service identifiers to export
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 <details><summary><code>client.mock.<a href="src/fern/mock/client.py">import_snapshot</a>(...)</code></summary>
 <dl>
 <dd>
@@ -980,11 +937,16 @@ Import a repository snapshot previsouly exported into Microcks
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
-client.mock.import_snapshot()
+
+client.mock.import_snapshot(
+    file="example_file",
+)
 
 ```
 </dd>
@@ -1000,9 +962,7 @@ client.mock.import_snapshot()
 <dl>
 <dd>
 
-**file:** `from __future__ import annotations
-
-core.File` — See core.File for more documentation
+**file:** `core.File` — The repository snapshot file
     
 </dd>
 </dl>
@@ -1022,7 +982,7 @@ core.File` — See core.File for more documentation
 </dl>
 </details>
 
-<details><summary><code>client.mock.<a href="src/fern/mock/client.py">get_services</a>(...)</code></summary>
+<details><summary><code>client.mock.<a href="src/fern/mock/client.py">get_services</a>(...) -> Service</code></summary>
 <dl>
 <dd>
 
@@ -1036,10 +996,13 @@ core.File` — See core.File for more documentation
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mock.get_services()
 
 ```
@@ -1084,7 +1047,7 @@ client.mock.get_services()
 </dl>
 </details>
 
-<details><summary><code>client.mock.<a href="src/fern/mock/client.py">get_services_counter</a>()</code></summary>
+<details><summary><code>client.mock.<a href="src/fern/mock/client.py">get_services_counter</a>() -> Counter</code></summary>
 <dl>
 <dd>
 
@@ -1098,10 +1061,13 @@ client.mock.get_services()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mock.get_services_counter()
 
 ```
@@ -1130,7 +1096,7 @@ client.mock.get_services_counter()
 </dl>
 </details>
 
-<details><summary><code>client.mock.<a href="src/fern/mock/client.py">get_services_labels</a>()</code></summary>
+<details><summary><code>client.mock.<a href="src/fern/mock/client.py">get_services_labels</a>() -> LabelsMap</code></summary>
 <dl>
 <dd>
 
@@ -1144,10 +1110,13 @@ client.mock.get_services_counter()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mock.get_services_labels()
 
 ```
@@ -1176,7 +1145,7 @@ client.mock.get_services_labels()
 </dl>
 </details>
 
-<details><summary><code>client.mock.<a href="src/fern/mock/client.py">search_services</a>(...)</code></summary>
+<details><summary><code>client.mock.<a href="src/fern/mock/client.py">search_services</a>(...) -> typing.List[Service]</code></summary>
 <dl>
 <dd>
 
@@ -1190,12 +1159,17 @@ client.mock.get_services_labels()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mock.search_services(
-    query_map={"queryMap": "queryMap"},
+    query_map={
+        "queryMap": "queryMap"
+    },
 )
 
 ```
@@ -1232,7 +1206,7 @@ client.mock.search_services(
 </dl>
 </details>
 
-<details><summary><code>client.mock.<a href="src/fern/mock/client.py">get_service</a>(...)</code></summary>
+<details><summary><code>client.mock.<a href="src/fern/mock/client.py">get_service</a>(...) -> GetServiceResponse</code></summary>
 <dl>
 <dd>
 
@@ -1246,10 +1220,13 @@ client.mock.search_services(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mock.get_service(
     id="id",
 )
@@ -1324,10 +1301,13 @@ Delete a Service
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mock.delete_service(
     id="id",
 )
@@ -1380,10 +1360,13 @@ client.mock.delete_service(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mock.update_service_metadata(
     id="id",
     created_on=1,
@@ -1412,31 +1395,7 @@ client.mock.update_service_metadata(
 <dl>
 <dd>
 
-**created_on:** `int` — Creation date of attached object
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**last_update:** `int` — Last update of attached object
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**annotations:** `typing.Optional[typing.Dict[str, str]]` — Annotations of attached object
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**labels:** `typing.Optional[typing.Dict[str, str]]` — Labels put on attached object
+**request:** `Metadata` 
     
 </dd>
 </dl>
@@ -1470,10 +1429,13 @@ client.mock.update_service_metadata(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mock.override_service_operation(
     id="id",
     operation_name="operationName",
@@ -1533,7 +1495,7 @@ client.mock.override_service_operation(
 <dl>
 <dd>
 
-**parameter_constraints:** `typing.Optional[typing.Sequence[ParameterConstraint]]` — Constraints that may apply to incoming parameters on this operation
+**parameter_constraints:** `typing.Optional[typing.List[ParameterConstraint]]` — Constraints that may apply to incoming parameters on this operation
     
 </dd>
 </dl>
@@ -1554,7 +1516,7 @@ client.mock.override_service_operation(
 </details>
 
 ## config
-<details><summary><code>client.config.<a href="src/fern/config/client.py">get_features_configuration</a>()</code></summary>
+<details><summary><code>client.config.<a href="src/fern/config/client.py">get_features_configuration</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1568,10 +1530,13 @@ client.mock.override_service_operation(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.config.get_features_configuration()
 
 ```
@@ -1600,7 +1565,7 @@ client.config.get_features_configuration()
 </dl>
 </details>
 
-<details><summary><code>client.config.<a href="src/fern/config/client.py">get_keycloak_config</a>()</code></summary>
+<details><summary><code>client.config.<a href="src/fern/config/client.py">get_keycloak_config</a>() -> KeycloakConfig</code></summary>
 <dl>
 <dd>
 
@@ -1614,10 +1579,13 @@ client.config.get_features_configuration()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.config.get_keycloak_config()
 
 ```
@@ -1646,7 +1614,7 @@ client.config.get_keycloak_config()
 </dl>
 </details>
 
-<details><summary><code>client.config.<a href="src/fern/config/client.py">get_secrets</a>(...)</code></summary>
+<details><summary><code>client.config.<a href="src/fern/config/client.py">get_secrets</a>(...) -> typing.List[Secret]</code></summary>
 <dl>
 <dd>
 
@@ -1660,10 +1628,13 @@ client.config.get_keycloak_config()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.config.get_secrets()
 
 ```
@@ -1708,7 +1679,7 @@ client.config.get_secrets()
 </dl>
 </details>
 
-<details><summary><code>client.config.<a href="src/fern/config/client.py">create_secret</a>(...)</code></summary>
+<details><summary><code>client.config.<a href="src/fern/config/client.py">create_secret</a>(...) -> Secret</code></summary>
 <dl>
 <dd>
 
@@ -1722,10 +1693,13 @@ client.config.get_secrets()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.config.create_secret(
     description="description",
     name="name",
@@ -1745,63 +1719,7 @@ client.config.create_secret(
 <dl>
 <dd>
 
-**description:** `str` — Description of this Secret
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**name:** `str` — Unique distinct name of Secret
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**ca_cert_pem:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**id:** `typing.Optional[str]` — Unique identifier of Secret
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**password:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**token:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**token_header:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**username:** `typing.Optional[str]` 
+**request:** `Secret` 
     
 </dd>
 </dl>
@@ -1821,7 +1739,7 @@ client.config.create_secret(
 </dl>
 </details>
 
-<details><summary><code>client.config.<a href="src/fern/config/client.py">get_secrets_counter</a>()</code></summary>
+<details><summary><code>client.config.<a href="src/fern/config/client.py">get_secrets_counter</a>() -> Counter</code></summary>
 <dl>
 <dd>
 
@@ -1835,10 +1753,13 @@ client.config.create_secret(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.config.get_secrets_counter()
 
 ```
@@ -1867,7 +1788,7 @@ client.config.get_secrets_counter()
 </dl>
 </details>
 
-<details><summary><code>client.config.<a href="src/fern/config/client.py">get_secret</a>(...)</code></summary>
+<details><summary><code>client.config.<a href="src/fern/config/client.py">get_secret</a>(...) -> Secret</code></summary>
 <dl>
 <dd>
 
@@ -1895,10 +1816,13 @@ Retrieve a Secret
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.config.get_secret(
     id="id",
 )
@@ -1965,10 +1889,13 @@ Update a Secret
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.config.update_secret(
     id="id",
 )
@@ -2035,10 +1962,13 @@ Delete a Secret
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.config.delete_secret(
     id="id",
 )
@@ -2078,7 +2008,7 @@ client.config.delete_secret(
 </details>
 
 ## metrics
-<details><summary><code>client.metrics.<a href="src/fern/metrics/client.py">get_conformance_metrics_aggregation</a>()</code></summary>
+<details><summary><code>client.metrics.<a href="src/fern/metrics/client.py">get_conformance_metrics_aggregation</a>() -> typing.List[WeightedMetricValue]</code></summary>
 <dl>
 <dd>
 
@@ -2092,10 +2022,13 @@ client.config.delete_secret(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.metrics.get_conformance_metrics_aggregation()
 
 ```
@@ -2124,7 +2057,7 @@ client.metrics.get_conformance_metrics_aggregation()
 </dl>
 </details>
 
-<details><summary><code>client.metrics.<a href="src/fern/metrics/client.py">get_service_test_conformance_metric</a>(...)</code></summary>
+<details><summary><code>client.metrics.<a href="src/fern/metrics/client.py">get_service_test_conformance_metric</a>(...) -> TestConformanceMetric</code></summary>
 <dl>
 <dd>
 
@@ -2138,10 +2071,13 @@ client.metrics.get_conformance_metrics_aggregation()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.metrics.get_service_test_conformance_metric(
     service_id="serviceId",
 )
@@ -2180,7 +2116,7 @@ client.metrics.get_service_test_conformance_metric(
 </dl>
 </details>
 
-<details><summary><code>client.metrics.<a href="src/fern/metrics/client.py">get_aggregated_invocations_stats</a>(...)</code></summary>
+<details><summary><code>client.metrics.<a href="src/fern/metrics/client.py">get_aggregated_invocations_stats</a>(...) -> DailyInvocationStatistic</code></summary>
 <dl>
 <dd>
 
@@ -2194,10 +2130,13 @@ client.metrics.get_service_test_conformance_metric(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.metrics.get_aggregated_invocations_stats()
 
 ```
@@ -2234,7 +2173,7 @@ client.metrics.get_aggregated_invocations_stats()
 </dl>
 </details>
 
-<details><summary><code>client.metrics.<a href="src/fern/metrics/client.py">get_latest_aggregated_invocations_stats</a>(...)</code></summary>
+<details><summary><code>client.metrics.<a href="src/fern/metrics/client.py">get_latest_aggregated_invocations_stats</a>(...) -> CounterMap</code></summary>
 <dl>
 <dd>
 
@@ -2248,10 +2187,13 @@ client.metrics.get_aggregated_invocations_stats()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.metrics.get_latest_aggregated_invocations_stats()
 
 ```
@@ -2288,7 +2230,7 @@ client.metrics.get_latest_aggregated_invocations_stats()
 </dl>
 </details>
 
-<details><summary><code>client.metrics.<a href="src/fern/metrics/client.py">get_top_ivnocations_stats_by_day</a>(...)</code></summary>
+<details><summary><code>client.metrics.<a href="src/fern/metrics/client.py">get_top_ivnocations_stats_by_day</a>(...) -> typing.List[DailyInvocationStatistic]</code></summary>
 <dl>
 <dd>
 
@@ -2302,10 +2244,13 @@ client.metrics.get_latest_aggregated_invocations_stats()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.metrics.get_top_ivnocations_stats_by_day()
 
 ```
@@ -2350,7 +2295,7 @@ client.metrics.get_top_ivnocations_stats_by_day()
 </dl>
 </details>
 
-<details><summary><code>client.metrics.<a href="src/fern/metrics/client.py">get_invocation_stats_by_service</a>(...)</code></summary>
+<details><summary><code>client.metrics.<a href="src/fern/metrics/client.py">get_invocation_stats_by_service</a>(...) -> DailyInvocationStatistic</code></summary>
 <dl>
 <dd>
 
@@ -2364,10 +2309,13 @@ client.metrics.get_top_ivnocations_stats_by_day()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.metrics.get_invocation_stats_by_service(
     service_name="serviceName",
     service_version="serviceVersion",
@@ -2423,7 +2371,7 @@ client.metrics.get_invocation_stats_by_service(
 </dl>
 </details>
 
-<details><summary><code>client.metrics.<a href="src/fern/metrics/client.py">get_latest_test_results</a>(...)</code></summary>
+<details><summary><code>client.metrics.<a href="src/fern/metrics/client.py">get_latest_test_results</a>(...) -> typing.List[TestResultSummary]</code></summary>
 <dl>
 <dd>
 
@@ -2437,10 +2385,13 @@ client.metrics.get_invocation_stats_by_service(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.metrics.get_latest_test_results()
 
 ```
@@ -2478,7 +2429,7 @@ client.metrics.get_latest_test_results()
 </details>
 
 ## test
-<details><summary><code>client.test.<a href="src/fern/test/client.py">create_test</a>(...)</code></summary>
+<details><summary><code>client.test.<a href="src/fern/test/client.py">create_test</a>(...) -> TestResult</code></summary>
 <dl>
 <dd>
 
@@ -2492,10 +2443,13 @@ client.metrics.get_latest_test_results()
 
 ```python
 from fern import FernApi, TestRunnerType
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.test.create_test(
     runner_type=TestRunnerType.HTTP,
     service_id="serviceId",
@@ -2549,7 +2503,7 @@ client.test.create_test(
 <dl>
 <dd>
 
-**filtered_operations:** `typing.Optional[typing.Sequence[str]]` — A restriction on service operations to test
+**filtered_operations:** `typing.Optional[typing.List[str]]` — A restriction on service operations to test
     
 </dd>
 </dl>
@@ -2585,7 +2539,7 @@ client.test.create_test(
 </dl>
 </details>
 
-<details><summary><code>client.test.<a href="src/fern/test/client.py">get_test_results_by_service</a>(...)</code></summary>
+<details><summary><code>client.test.<a href="src/fern/test/client.py">get_test_results_by_service</a>(...) -> typing.List[TestResult]</code></summary>
 <dl>
 <dd>
 
@@ -2599,10 +2553,13 @@ client.test.create_test(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.test.get_test_results_by_service(
     service_id="serviceId",
 )
@@ -2641,7 +2598,7 @@ client.test.get_test_results_by_service(
 </dl>
 </details>
 
-<details><summary><code>client.test.<a href="src/fern/test/client.py">get_test_results_by_service_counter</a>(...)</code></summary>
+<details><summary><code>client.test.<a href="src/fern/test/client.py">get_test_results_by_service_counter</a>(...) -> Counter</code></summary>
 <dl>
 <dd>
 
@@ -2655,10 +2612,13 @@ client.test.get_test_results_by_service(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.test.get_test_results_by_service_counter(
     service_id="serviceId",
 )
@@ -2697,7 +2657,7 @@ client.test.get_test_results_by_service_counter(
 </dl>
 </details>
 
-<details><summary><code>client.test.<a href="src/fern/test/client.py">get_test_result</a>(...)</code></summary>
+<details><summary><code>client.test.<a href="src/fern/test/client.py">get_test_result</a>(...) -> TestResult</code></summary>
 <dl>
 <dd>
 
@@ -2725,10 +2685,13 @@ client.test.get_test_results_by_service_counter(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.test.get_test_result(
     id="id",
 )
@@ -2767,7 +2730,7 @@ client.test.get_test_result(
 </dl>
 </details>
 
-<details><summary><code>client.test.<a href="src/fern/test/client.py">get_events_by_test_case</a>(...)</code></summary>
+<details><summary><code>client.test.<a href="src/fern/test/client.py">get_events_by_test_case</a>(...) -> typing.List[UnidirectionalEvent]</code></summary>
 <dl>
 <dd>
 
@@ -2781,10 +2744,13 @@ client.test.get_test_result(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.test.get_events_by_test_case(
     id="id",
     test_case_id="testCaseId",
@@ -2832,7 +2798,7 @@ client.test.get_events_by_test_case(
 </dl>
 </details>
 
-<details><summary><code>client.test.<a href="src/fern/test/client.py">get_messages_by_test_case</a>(...)</code></summary>
+<details><summary><code>client.test.<a href="src/fern/test/client.py">get_messages_by_test_case</a>(...) -> typing.List[RequestResponsePair]</code></summary>
 <dl>
 <dd>
 
@@ -2846,10 +2812,13 @@ client.test.get_events_by_test_case(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.test.get_messages_by_test_case(
     id="id",
     test_case_id="testCaseId",
@@ -2897,7 +2866,7 @@ client.test.get_messages_by_test_case(
 </dl>
 </details>
 
-<details><summary><code>client.test.<a href="src/fern/test/client.py">report_test_case_result</a>(...)</code></summary>
+<details><summary><code>client.test.<a href="src/fern/test/client.py">report_test_case_result</a>(...) -> TestCaseResult</code></summary>
 <dl>
 <dd>
 
@@ -2925,10 +2894,13 @@ Report a TestCaseResult (typically used by a Test runner)
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    token="YOUR_TOKEN",
+    token="<token>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.test.report_test_case_result(
     id="id",
     operation_name="operationName",

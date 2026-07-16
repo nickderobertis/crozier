@@ -553,6 +553,7 @@ if typing.TYPE_CHECKING:
         WritableWirelessLinkStatus,
     )
     from . import circuits, dcim, extras, ipam, status, tenancy, users, virtualization, wireless
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .circuits import (
         CircuitsCircuitTerminationsListResponse,
         CircuitsCircuitTypesListResponse,
@@ -791,6 +792,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "DcimSitesListResponse": ".dcim",
     "DcimVirtualChassisListResponse": ".dcim",
     "DcimVirtualDeviceContextsListResponse": ".dcim",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "Device": ".types",
     "DeviceAirflow": ".types",
     "DeviceAirflowLabel": ".types",
@@ -1469,6 +1472,8 @@ __all__ = [
     "DcimSitesListResponse",
     "DcimVirtualChassisListResponse",
     "DcimVirtualDeviceContextsListResponse",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
     "Device",
     "DeviceAirflow",
     "DeviceAirflowLabel",

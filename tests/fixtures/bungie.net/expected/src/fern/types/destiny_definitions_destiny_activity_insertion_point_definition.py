@@ -14,9 +14,14 @@ class DestinyDefinitionsDestinyActivityInsertionPointDefinition(UniversalBaseMod
     UPDATE: Turns out this information isn't actually useless, and is in fact actually useful for people. Who would have thought? We still don't have localized info for it, but at least this will help people when they're looking at phase indexes in stats data, or when they want to know what phases have been completed on a weekly achievement.
     """
 
-    phase_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="phaseHash")] = pydantic.Field(
-        default=None
-    )
+    phase_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="phaseHash"),
+        pydantic.Field(
+            alias="phaseHash",
+            description="A unique hash value representing the phase. This can be useful for, for example, comparing how different instances of Raids have phases in different orders!",
+        ),
+    ] = None
     """
     A unique hash value representing the phase. This can be useful for, for example, comparing how different instances of Raids have phases in different orders!
     """

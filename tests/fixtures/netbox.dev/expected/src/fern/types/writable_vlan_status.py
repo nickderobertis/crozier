@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class WritableVlanStatus(str, enum.Enum):
+class WritableVlanStatus(enum.StrEnum):
     ACTIVE = "active"
     RESERVED = "reserved"
     DEPRECATED = "deprecated"

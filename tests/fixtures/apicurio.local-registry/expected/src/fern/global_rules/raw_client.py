@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
@@ -16,6 +17,7 @@ from ..errors.not_found_error import NotFoundError
 from ..types.error import Error
 from ..types.rule import Rule
 from ..types.rule_type import RuleType
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -74,6 +76,10 @@ class RawGlobalRulesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_global_rule(
@@ -136,9 +142,9 @@ class RawGlobalRulesClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -157,6 +163,10 @@ class RawGlobalRulesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_all_global_rules(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -198,6 +208,10 @@ class RawGlobalRulesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_global_rule_config(
@@ -226,7 +240,7 @@ class RawGlobalRulesClient:
             The global rule's configuration.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"admin/rules/{jsonable_encoder(rule)}",
+            f"admin/rules/{encode_path_param(rule)}",
             method="GET",
             request_options=request_options,
         )
@@ -265,6 +279,10 @@ class RawGlobalRulesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_global_rule_config(
@@ -302,7 +320,7 @@ class RawGlobalRulesClient:
             The global rule's configuration was successfully updated.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"admin/rules/{jsonable_encoder(rule)}",
+            f"admin/rules/{encode_path_param(rule)}",
             method="PUT",
             json={
                 "config": config,
@@ -349,6 +367,10 @@ class RawGlobalRulesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_global_rule(
@@ -378,7 +400,7 @@ class RawGlobalRulesClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"admin/rules/{jsonable_encoder(rule)}",
+            f"admin/rules/{encode_path_param(rule)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -410,6 +432,10 @@ class RawGlobalRulesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -466,6 +492,10 @@ class AsyncRawGlobalRulesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_global_rule(
@@ -528,9 +558,9 @@ class AsyncRawGlobalRulesClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -549,6 +579,10 @@ class AsyncRawGlobalRulesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_all_global_rules(
@@ -592,6 +626,10 @@ class AsyncRawGlobalRulesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_global_rule_config(
@@ -620,7 +658,7 @@ class AsyncRawGlobalRulesClient:
             The global rule's configuration.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"admin/rules/{jsonable_encoder(rule)}",
+            f"admin/rules/{encode_path_param(rule)}",
             method="GET",
             request_options=request_options,
         )
@@ -659,6 +697,10 @@ class AsyncRawGlobalRulesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_global_rule_config(
@@ -696,7 +738,7 @@ class AsyncRawGlobalRulesClient:
             The global rule's configuration was successfully updated.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"admin/rules/{jsonable_encoder(rule)}",
+            f"admin/rules/{encode_path_param(rule)}",
             method="PUT",
             json={
                 "config": config,
@@ -743,6 +785,10 @@ class AsyncRawGlobalRulesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_global_rule(
@@ -772,7 +818,7 @@ class AsyncRawGlobalRulesClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"admin/rules/{jsonable_encoder(rule)}",
+            f"admin/rules/{encode_path_param(rule)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -804,4 +850,8 @@ class AsyncRawGlobalRulesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

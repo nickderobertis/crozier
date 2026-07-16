@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class TriggerRule(str, enum.Enum):
+class TriggerRule(enum.StrEnum):
     """
     Trigger rule.
 

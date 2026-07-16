@@ -15,8 +15,10 @@ class ObStatement2BasicStatementValueItem(UniversalBaseModel):
     Set of elements used to provide details of a generic number value related to the statement resource.
     """
 
-    type: typing_extensions.Annotated[ObExternalStatementValueType1Code, FieldMetadata(alias="Type")]
-    value: typing_extensions.Annotated[Value, FieldMetadata(alias="Value")]
+    type: typing_extensions.Annotated[
+        ObExternalStatementValueType1Code, FieldMetadata(alias="Type"), pydantic.Field(alias="Type")
+    ]
+    value: typing_extensions.Annotated[Value, FieldMetadata(alias="Value"), pydantic.Field(alias="Value")]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

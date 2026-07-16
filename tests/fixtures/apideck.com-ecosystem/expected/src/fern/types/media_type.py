@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class MediaType(str, enum.Enum):
+class MediaType(enum.StrEnum):
     SCREENSHOT = "SCREENSHOT"
     VIDEO = "VIDEO"
 

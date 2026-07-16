@@ -11,7 +11,9 @@ from .source_definition_read import SourceDefinitionRead
 
 class SourceDefinitionReadList(UniversalBaseModel):
     source_definitions: typing_extensions.Annotated[
-        typing.List[SourceDefinitionRead], FieldMetadata(alias="sourceDefinitions")
+        typing.List[SourceDefinitionRead],
+        FieldMetadata(alias="sourceDefinitions"),
+        pydantic.Field(alias="sourceDefinitions"),
     ]
 
     if IS_PYDANTIC_V2:

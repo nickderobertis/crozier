@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class BusinessAppointmentSettingsAlignmentTime(str, enum.Enum):
+class BusinessAppointmentSettingsAlignmentTime(enum.StrEnum):
     """
     Time units of a service duration for bookings.
     """

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class LogType(str, enum.Enum):
+class LogType(enum.StrEnum):
     """
     type/source of logs produced
     """

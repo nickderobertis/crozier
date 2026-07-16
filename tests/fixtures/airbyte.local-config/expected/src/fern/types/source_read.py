@@ -14,14 +14,20 @@ from .workspace_id import WorkspaceId
 
 class SourceRead(UniversalBaseModel):
     connection_configuration: typing_extensions.Annotated[
-        SourceConfiguration, FieldMetadata(alias="connectionConfiguration")
+        SourceConfiguration,
+        FieldMetadata(alias="connectionConfiguration"),
+        pydantic.Field(alias="connectionConfiguration"),
     ]
     icon: typing.Optional[str] = None
     name: str
-    source_definition_id: typing_extensions.Annotated[SourceDefinitionId, FieldMetadata(alias="sourceDefinitionId")]
-    source_id: typing_extensions.Annotated[SourceId, FieldMetadata(alias="sourceId")]
-    source_name: typing_extensions.Annotated[str, FieldMetadata(alias="sourceName")]
-    workspace_id: typing_extensions.Annotated[WorkspaceId, FieldMetadata(alias="workspaceId")]
+    source_definition_id: typing_extensions.Annotated[
+        SourceDefinitionId, FieldMetadata(alias="sourceDefinitionId"), pydantic.Field(alias="sourceDefinitionId")
+    ]
+    source_id: typing_extensions.Annotated[SourceId, FieldMetadata(alias="sourceId"), pydantic.Field(alias="sourceId")]
+    source_name: typing_extensions.Annotated[str, FieldMetadata(alias="sourceName"), pydantic.Field(alias="sourceName")]
+    workspace_id: typing_extensions.Annotated[
+        WorkspaceId, FieldMetadata(alias="workspaceId"), pydantic.Field(alias="workspaceId")
+    ]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

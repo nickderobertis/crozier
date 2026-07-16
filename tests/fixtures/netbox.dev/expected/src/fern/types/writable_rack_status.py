@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class WritableRackStatus(str, enum.Enum):
+class WritableRackStatus(enum.StrEnum):
     RESERVED = "reserved"
     AVAILABLE = "available"
     PLANNED = "planned"

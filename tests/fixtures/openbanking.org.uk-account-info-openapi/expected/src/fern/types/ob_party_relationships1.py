@@ -15,8 +15,10 @@ class ObPartyRelationships1(UniversalBaseModel):
     """
 
     account: typing_extensions.Annotated[
-        typing.Optional[ObPartyRelationships1Account], FieldMetadata(alias="Account")
-    ] = pydantic.Field(default=None)
+        typing.Optional[ObPartyRelationships1Account],
+        FieldMetadata(alias="Account"),
+        pydantic.Field(alias="Account", description="Relationship to the Account resource."),
+    ] = None
     """
     Relationship to the Account resource.
     """

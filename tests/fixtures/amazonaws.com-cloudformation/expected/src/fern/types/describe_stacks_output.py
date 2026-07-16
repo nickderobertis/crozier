@@ -14,16 +14,23 @@ class DescribeStacksOutput(UniversalBaseModel):
     The output for a <a>DescribeStacks</a> action.
     """
 
-    stacks: typing_extensions.Annotated[typing.Optional[typing.List[Stack]], FieldMetadata(alias="Stacks")] = (
-        pydantic.Field(default=None)
-    )
+    stacks: typing_extensions.Annotated[
+        typing.Optional[typing.List[Stack]],
+        FieldMetadata(alias="Stacks"),
+        pydantic.Field(alias="Stacks", description="A list of stack structures."),
+    ] = None
     """
     A list of stack structures.
     """
 
-    next_token: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="NextToken")] = pydantic.Field(
-        default=None
-    )
+    next_token: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="NextToken"),
+        pydantic.Field(
+            alias="NextToken",
+            description="If the output exceeds 1 MB in size, a string that identifies the next page of stacks. If no additional page exists, this value is null.",
+        ),
+    ] = None
     """
     If the output exceeds 1 MB in size, a string that identifies the next page of stacks. If no additional page exists, this value is null.
     """

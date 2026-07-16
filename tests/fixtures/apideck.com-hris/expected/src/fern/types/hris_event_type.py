@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class HrisEventType(str, enum.Enum):
+class HrisEventType(enum.StrEnum):
     ALL = "*"
     HRIS_EMPLOYEE_CREATED = "hris.employee.created"
     HRIS_EMPLOYEE_UPDATED = "hris.employee.updated"

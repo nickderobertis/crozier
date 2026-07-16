@@ -12,7 +12,7 @@ from .nested_tag import NestedTag
 
 class ModuleBay(UniversalBaseModel):
     created: typing.Optional[dt.datetime] = None
-    custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = None
     description: typing.Optional[str] = None
     device: NestedDevice
     display: typing.Optional[str] = None

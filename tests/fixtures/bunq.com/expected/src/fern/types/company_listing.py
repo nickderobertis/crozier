@@ -10,9 +10,11 @@ from .user_company import UserCompany
 
 
 class CompanyListing(UniversalBaseModel):
-    user_company: typing_extensions.Annotated[typing.Optional[UserCompany], FieldMetadata(alias="UserCompany")] = (
-        pydantic.Field(default=None)
-    )
+    user_company: typing_extensions.Annotated[
+        typing.Optional[UserCompany],
+        FieldMetadata(alias="UserCompany"),
+        pydantic.Field(alias="UserCompany", description=""),
+    ] = None
     """
     
     """

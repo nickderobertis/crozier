@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GetListTypeRegistrationsRequestRegistrationStatusFilter(str, enum.Enum):
+class GetListTypeRegistrationsRequestRegistrationStatusFilter(enum.StrEnum):
     COMPLETE = "COMPLETE"
     IN_PROGRESS = "IN_PROGRESS"
     FAILED = "FAILED"

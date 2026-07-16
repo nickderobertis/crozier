@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class DescribeTypeRegistrationOutputProgressStatus(str, enum.Enum):
+class DescribeTypeRegistrationOutputProgressStatus(enum.StrEnum):
     """
     The current status of the extension registration request.
     """

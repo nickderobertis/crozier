@@ -6,8 +6,10 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.request_options import RequestOptions
+from pydantic import ValidationError
 
 
 class RawComparisonShoppingPagesClient:
@@ -40,6 +42,10 @@ class RawComparisonShoppingPagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def show_comparison_shopping_page(
@@ -82,6 +88,10 @@ class RawComparisonShoppingPagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_comparison_shopping_pages_id(
@@ -100,7 +110,7 @@ class RawComparisonShoppingPagesClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"comparison_shopping_pages/{jsonable_encoder(id)}",
+            f"comparison_shopping_pages/{encode_path_param(id)}",
             method="GET",
             request_options=request_options,
         )
@@ -110,6 +120,10 @@ class RawComparisonShoppingPagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def return_new_or_used_listings_for_a_comparison_shopping_page(
@@ -146,7 +160,7 @@ class RawComparisonShoppingPagesClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"comparison_shopping_pages/{jsonable_encoder(id)}/listings",
+            f"comparison_shopping_pages/{encode_path_param(id)}/listings",
             method="GET",
             params={
                 "condition": condition,
@@ -162,6 +176,10 @@ class RawComparisonShoppingPagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def view_reviews_of_a_comparison_shopping_page(
@@ -182,7 +200,7 @@ class RawComparisonShoppingPagesClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"comparison_shopping_pages/{jsonable_encoder(id)}/reviews",
+            f"comparison_shopping_pages/{encode_path_param(id)}/reviews",
             method="GET",
             request_options=request_options,
         )
@@ -192,6 +210,10 @@ class RawComparisonShoppingPagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -225,6 +247,10 @@ class AsyncRawComparisonShoppingPagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def show_comparison_shopping_page(
@@ -267,6 +293,10 @@ class AsyncRawComparisonShoppingPagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_comparison_shopping_pages_id(
@@ -285,7 +315,7 @@ class AsyncRawComparisonShoppingPagesClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"comparison_shopping_pages/{jsonable_encoder(id)}",
+            f"comparison_shopping_pages/{encode_path_param(id)}",
             method="GET",
             request_options=request_options,
         )
@@ -295,6 +325,10 @@ class AsyncRawComparisonShoppingPagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def return_new_or_used_listings_for_a_comparison_shopping_page(
@@ -331,7 +365,7 @@ class AsyncRawComparisonShoppingPagesClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"comparison_shopping_pages/{jsonable_encoder(id)}/listings",
+            f"comparison_shopping_pages/{encode_path_param(id)}/listings",
             method="GET",
             params={
                 "condition": condition,
@@ -347,6 +381,10 @@ class AsyncRawComparisonShoppingPagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def view_reviews_of_a_comparison_shopping_page(
@@ -367,7 +405,7 @@ class AsyncRawComparisonShoppingPagesClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"comparison_shopping_pages/{jsonable_encoder(id)}/reviews",
+            f"comparison_shopping_pages/{encode_path_param(id)}/reviews",
             method="GET",
             request_options=request_options,
         )
@@ -377,4 +415,8 @@ class AsyncRawComparisonShoppingPagesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

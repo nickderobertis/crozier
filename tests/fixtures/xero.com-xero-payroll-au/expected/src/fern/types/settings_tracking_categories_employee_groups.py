@@ -14,15 +14,19 @@ class SettingsTrackingCategoriesEmployeeGroups(UniversalBaseModel):
     """
 
     tracking_category_id: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="TrackingCategoryID")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="TrackingCategoryID"),
+        pydantic.Field(alias="TrackingCategoryID", description="The identifier for the tracking category"),
+    ] = None
     """
     The identifier for the tracking category
     """
 
     tracking_category_name: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="TrackingCategoryName")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="TrackingCategoryName"),
+        pydantic.Field(alias="TrackingCategoryName", description="Name of the tracking category"),
+    ] = None
     """
     Name of the tracking category
     """

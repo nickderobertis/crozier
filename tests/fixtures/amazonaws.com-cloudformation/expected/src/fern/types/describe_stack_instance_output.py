@@ -11,8 +11,12 @@ from .describe_stack_instance_output_stack_instance import DescribeStackInstance
 
 class DescribeStackInstanceOutput(UniversalBaseModel):
     stack_instance: typing_extensions.Annotated[
-        typing.Optional[DescribeStackInstanceOutputStackInstance], FieldMetadata(alias="StackInstance")
-    ] = pydantic.Field(default=None)
+        typing.Optional[DescribeStackInstanceOutputStackInstance],
+        FieldMetadata(alias="StackInstance"),
+        pydantic.Field(
+            alias="StackInstance", description="The stack instance that matches the specified request parameters."
+        ),
+    ] = None
     """
     The stack instance that matches the specified request parameters.
     """

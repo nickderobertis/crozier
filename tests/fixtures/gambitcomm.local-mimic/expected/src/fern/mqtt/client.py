@@ -1013,7 +1013,7 @@ class MqttClient:
 
     def protocol_mqtt_get_args(
         self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Dict[str, typing.Optional[typing.Any]]:
+    ) -> typing.Dict[str, typing.Any]:
         """
         Agent's MQTT configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
@@ -1027,7 +1027,7 @@ class MqttClient:
 
         Returns
         -------
-        typing.Dict[str, typing.Optional[typing.Any]]
+        typing.Dict[str, typing.Any]
             successful operation
 
         Examples
@@ -2480,7 +2480,7 @@ class AsyncMqttClient:
 
     async def protocol_mqtt_get_args(
         self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.Dict[str, typing.Optional[typing.Any]]:
+    ) -> typing.Dict[str, typing.Any]:
         """
         Agent's MQTT configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
@@ -2494,7 +2494,7 @@ class AsyncMqttClient:
 
         Returns
         -------
-        typing.Dict[str, typing.Optional[typing.Any]]
+        typing.Dict[str, typing.Any]
             successful operation
 
         Examples

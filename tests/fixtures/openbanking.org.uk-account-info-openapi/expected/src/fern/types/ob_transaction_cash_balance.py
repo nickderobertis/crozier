@@ -16,15 +16,22 @@ class ObTransactionCashBalance(UniversalBaseModel):
     Set of elements used to define the balance as a numerical representation of the net increases and decreases in an account after a transaction entry is applied to the account.
     """
 
-    amount: typing_extensions.Annotated[ObTransactionCashBalanceAmount, FieldMetadata(alias="Amount")] = (
-        pydantic.Field()
-    )
+    amount: typing_extensions.Annotated[
+        ObTransactionCashBalanceAmount,
+        FieldMetadata(alias="Amount"),
+        pydantic.Field(
+            alias="Amount",
+            description="Amount of money of the cash balance after a transaction entry is applied to the account..",
+        ),
+    ]
     """
     Amount of money of the cash balance after a transaction entry is applied to the account..
     """
 
-    credit_debit_indicator: typing_extensions.Annotated[ObCreditDebitCode2, FieldMetadata(alias="CreditDebitIndicator")]
-    type: typing_extensions.Annotated[ObBalanceType1Code, FieldMetadata(alias="Type")]
+    credit_debit_indicator: typing_extensions.Annotated[
+        ObCreditDebitCode2, FieldMetadata(alias="CreditDebitIndicator"), pydantic.Field(alias="CreditDebitIndicator")
+    ]
+    type: typing_extensions.Annotated[ObBalanceType1Code, FieldMetadata(alias="Type"), pydantic.Field(alias="Type")]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

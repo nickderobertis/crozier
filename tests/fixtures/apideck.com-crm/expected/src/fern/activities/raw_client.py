@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -31,6 +32,7 @@ from ..types.payment_required_response import PaymentRequiredResponse
 from ..types.unauthorized_response import UnauthorizedResponse
 from ..types.unprocessable_response import UnprocessableResponse
 from ..types.update_activity_response import UpdateActivityResponse
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -160,6 +162,10 @@ class RawActivitiesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def add(
@@ -474,6 +480,10 @@ class RawActivitiesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def one(
@@ -507,7 +517,7 @@ class RawActivitiesClient:
             Activity
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"crm/activities/{jsonable_encoder(id)}",
+            f"crm/activities/{encode_path_param(id)}",
             method="GET",
             params={
                 "raw": raw,
@@ -583,6 +593,10 @@ class RawActivitiesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete(
@@ -608,7 +622,7 @@ class RawActivitiesClient:
             Activity deleted
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"crm/activities/{jsonable_encoder(id)}",
+            f"crm/activities/{encode_path_param(id)}",
             method="DELETE",
             params={
                 "raw": raw,
@@ -683,6 +697,10 @@ class RawActivitiesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update(
@@ -864,7 +882,7 @@ class RawActivitiesClient:
             Activity updated
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"crm/activities/{jsonable_encoder(id_)}",
+            f"crm/activities/{encode_path_param(id_)}",
             method="PATCH",
             params={
                 "raw": raw,
@@ -1001,6 +1019,10 @@ class RawActivitiesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -1128,6 +1150,10 @@ class AsyncRawActivitiesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def add(
@@ -1442,6 +1468,10 @@ class AsyncRawActivitiesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def one(
@@ -1475,7 +1505,7 @@ class AsyncRawActivitiesClient:
             Activity
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"crm/activities/{jsonable_encoder(id)}",
+            f"crm/activities/{encode_path_param(id)}",
             method="GET",
             params={
                 "raw": raw,
@@ -1551,6 +1581,10 @@ class AsyncRawActivitiesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete(
@@ -1576,7 +1610,7 @@ class AsyncRawActivitiesClient:
             Activity deleted
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"crm/activities/{jsonable_encoder(id)}",
+            f"crm/activities/{encode_path_param(id)}",
             method="DELETE",
             params={
                 "raw": raw,
@@ -1651,6 +1685,10 @@ class AsyncRawActivitiesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update(
@@ -1832,7 +1870,7 @@ class AsyncRawActivitiesClient:
             Activity updated
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"crm/activities/{jsonable_encoder(id_)}",
+            f"crm/activities/{encode_path_param(id_)}",
             method="PATCH",
             params={
                 "raw": raw,
@@ -1969,4 +2007,8 @@ class AsyncRawActivitiesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

@@ -10,7 +10,9 @@ from ..core.serialization import FieldMetadata
 
 class TelnetUser(UniversalBaseModel):
     groups: typing.Optional[typing.List[str]] = None
-    has_password: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="hasPassword")] = None
+    has_password: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="hasPassword"), pydantic.Field(alias="hasPassword")
+    ] = None
     password: typing.Optional[str] = None
     username: typing.Optional[str] = None
 

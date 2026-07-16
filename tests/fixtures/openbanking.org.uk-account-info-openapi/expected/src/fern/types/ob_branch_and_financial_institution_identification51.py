@@ -16,9 +16,13 @@ class ObBranchAndFinancialInstitutionIdentification51(UniversalBaseModel):
     This is the servicer of the beneficiary account.
     """
 
-    identification: typing_extensions.Annotated[Identification1, FieldMetadata(alias="Identification")]
+    identification: typing_extensions.Annotated[
+        Identification1, FieldMetadata(alias="Identification"), pydantic.Field(alias="Identification")
+    ]
     scheme_name: typing_extensions.Annotated[
-        ObExternalFinancialInstitutionIdentification4Code, FieldMetadata(alias="SchemeName")
+        ObExternalFinancialInstitutionIdentification4Code,
+        FieldMetadata(alias="SchemeName"),
+        pydantic.Field(alias="SchemeName"),
     ]
 
     if IS_PYDANTIC_V2:

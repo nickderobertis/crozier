@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class CompaniesSortBy(str, enum.Enum):
+class CompaniesSortBy(enum.StrEnum):
     """
     The field on which to sort the Companies
     """

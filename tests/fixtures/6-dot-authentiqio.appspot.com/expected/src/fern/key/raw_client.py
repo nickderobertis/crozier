@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.conflict_error import ConflictError
@@ -20,6 +21,7 @@ from .types.key_retrieve_response import KeyRetrieveResponse
 from .types.key_revoke_nosecret_response import KeyRevokeNosecretResponse
 from .types.key_revoke_response import KeyRevokeResponse
 from .types.key_update_response import KeyUpdateResponse
+from pydantic import ValidationError
 
 
 class RawKeyClient:
@@ -73,6 +75,10 @@ class RawKeyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def revoke_nosecret(
@@ -165,6 +171,10 @@ class RawKeyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def retrieve(
@@ -187,7 +197,7 @@ class RawKeyClient:
             Successfully retrieved
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"key/{jsonable_encoder(pk)}",
+            f"key/{encode_path_param(pk)}",
             method="GET",
             request_options=request_options,
         )
@@ -226,6 +236,10 @@ class RawKeyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update(
@@ -254,7 +268,7 @@ class RawKeyClient:
             Successfully updated
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"key/{jsonable_encoder(pk)}",
+            f"key/{encode_path_param(pk)}",
             method="POST",
             request_options=request_options,
         )
@@ -282,6 +296,10 @@ class RawKeyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def bind(
@@ -311,7 +329,7 @@ class RawKeyClient:
             Successfully updated
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"key/{jsonable_encoder(pk)}",
+            f"key/{encode_path_param(pk)}",
             method="PUT",
             request_options=request_options,
         )
@@ -350,6 +368,10 @@ class RawKeyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def revoke(
@@ -375,7 +397,7 @@ class RawKeyClient:
             Successful response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"key/{jsonable_encoder(pk)}",
+            f"key/{encode_path_param(pk)}",
             method="DELETE",
             params={
                 "secret": secret,
@@ -417,6 +439,10 @@ class RawKeyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def head_key_pk(self, pk: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
@@ -436,7 +462,7 @@ class RawKeyClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"key/{jsonable_encoder(pk)}",
+            f"key/{encode_path_param(pk)}",
             method="HEAD",
             request_options=request_options,
         )
@@ -468,6 +494,10 @@ class RawKeyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -524,6 +554,10 @@ class AsyncRawKeyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def revoke_nosecret(
@@ -616,6 +650,10 @@ class AsyncRawKeyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def retrieve(
@@ -638,7 +676,7 @@ class AsyncRawKeyClient:
             Successfully retrieved
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"key/{jsonable_encoder(pk)}",
+            f"key/{encode_path_param(pk)}",
             method="GET",
             request_options=request_options,
         )
@@ -677,6 +715,10 @@ class AsyncRawKeyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update(
@@ -705,7 +747,7 @@ class AsyncRawKeyClient:
             Successfully updated
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"key/{jsonable_encoder(pk)}",
+            f"key/{encode_path_param(pk)}",
             method="POST",
             request_options=request_options,
         )
@@ -733,6 +775,10 @@ class AsyncRawKeyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def bind(
@@ -762,7 +808,7 @@ class AsyncRawKeyClient:
             Successfully updated
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"key/{jsonable_encoder(pk)}",
+            f"key/{encode_path_param(pk)}",
             method="PUT",
             request_options=request_options,
         )
@@ -801,6 +847,10 @@ class AsyncRawKeyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def revoke(
@@ -826,7 +876,7 @@ class AsyncRawKeyClient:
             Successful response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"key/{jsonable_encoder(pk)}",
+            f"key/{encode_path_param(pk)}",
             method="DELETE",
             params={
                 "secret": secret,
@@ -868,6 +918,10 @@ class AsyncRawKeyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def head_key_pk(
@@ -889,7 +943,7 @@ class AsyncRawKeyClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"key/{jsonable_encoder(pk)}",
+            f"key/{encode_path_param(pk)}",
             method="HEAD",
             request_options=request_options,
         )
@@ -921,4 +975,8 @@ class AsyncRawKeyClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

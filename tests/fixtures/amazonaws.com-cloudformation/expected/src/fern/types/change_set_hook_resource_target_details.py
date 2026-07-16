@@ -14,23 +14,35 @@ class ChangeSetHookResourceTargetDetails(UniversalBaseModel):
     Specifies <code>RESOURCE</code> type target details for activated hooks.
     """
 
-    logical_resource_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="LogicalResourceId")] = (
-        pydantic.Field(default=None)
-    )
+    logical_resource_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="LogicalResourceId"),
+        pydantic.Field(
+            alias="LogicalResourceId",
+            description="The resource's logical ID, which is defined in the stack's template.",
+        ),
+    ] = None
     """
     The resource's logical ID, which is defined in the stack's template.
     """
 
-    resource_type: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="ResourceType")] = (
-        pydantic.Field(default=None)
-    )
+    resource_type: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="ResourceType"),
+        pydantic.Field(
+            alias="ResourceType",
+            description="The type of CloudFormation resource, such as <code>AWS::S3::Bucket</code>.",
+        ),
+    ] = None
     """
     The type of CloudFormation resource, such as <code>AWS::S3::Bucket</code>.
     """
 
     resource_action: typing_extensions.Annotated[
-        typing.Optional[ChangeSetHookResourceTargetDetailsResourceAction], FieldMetadata(alias="ResourceAction")
-    ] = pydantic.Field(default=None)
+        typing.Optional[ChangeSetHookResourceTargetDetailsResourceAction],
+        FieldMetadata(alias="ResourceAction"),
+        pydantic.Field(alias="ResourceAction", description="Specifies the action of the resource."),
+    ] = None
     """
     Specifies the action of the resource.
     """

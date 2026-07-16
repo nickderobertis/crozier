@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class BusinessAppointmentSettingsMaxAppointmentsPerDayLimitType(str, enum.Enum):
+class BusinessAppointmentSettingsMaxAppointmentsPerDayLimitType(enum.StrEnum):
     """
     Types of daily appointment limits.
     """

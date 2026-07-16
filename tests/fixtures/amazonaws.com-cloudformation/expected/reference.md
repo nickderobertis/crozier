@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_activate_type</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_activate_type</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -26,22 +26,14 @@
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetActivateTypeRequestAction,
-    GetActivateTypeRequestVersion,
-)
+from fern import FernApi, GetActivateTypeRequestAction, GetActivateTypeRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_activate_type(
     action=GetActivateTypeRequestAction.ACTIVATE_TYPE,
     version=GetActivateTypeRequestVersion.TWO_THOUSAND_TEN0515,
@@ -169,7 +161,7 @@ client.get_activate_type(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_activate_type</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_activate_type</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -196,22 +188,14 @@ client.get_activate_type(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostActivateTypeRequestAction,
-    PostActivateTypeRequestVersion,
-)
+from fern import FernApi, PostActivateTypeRequestAction, PostActivateTypeRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_activate_type(
     action=PostActivateTypeRequestAction.ACTIVATE_TYPE,
     version=PostActivateTypeRequestVersion.TWO_THOUSAND_TEN0515,
@@ -259,7 +243,7 @@ client.post_activate_type(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_batch_describe_type_configurations</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_batch_describe_type_configurations</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -286,22 +270,14 @@ client.post_activate_type(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetBatchDescribeTypeConfigurationsRequestAction,
-    GetBatchDescribeTypeConfigurationsRequestVersion,
-)
+from fern import FernApi, GetBatchDescribeTypeConfigurationsRequestAction, GetBatchDescribeTypeConfigurationsRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_batch_describe_type_configurations(
     action=GetBatchDescribeTypeConfigurationsRequestAction.BATCH_DESCRIBE_TYPE_CONFIGURATIONS,
     version=GetBatchDescribeTypeConfigurationsRequestVersion.TWO_THOUSAND_TEN0515,
@@ -337,12 +313,7 @@ client.get_batch_describe_type_configurations(
 <dl>
 <dd>
 
-**type_configuration_identifiers:** `typing.Optional[
-    typing.Union[
-        TypeConfigurationIdentifier,
-        typing.Sequence[TypeConfigurationIdentifier],
-    ]
-]` — The list of identifiers for the desired extension configurations.
+**type_configuration_identifiers:** `typing.Optional[typing.Union[TypeConfigurationIdentifier, typing.Sequence[TypeConfigurationIdentifier]]]` — The list of identifiers for the desired extension configurations.
     
 </dd>
 </dl>
@@ -362,7 +333,7 @@ client.get_batch_describe_type_configurations(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_batch_describe_type_configurations</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_batch_describe_type_configurations</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -389,22 +360,14 @@ client.get_batch_describe_type_configurations(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostBatchDescribeTypeConfigurationsRequestAction,
-    PostBatchDescribeTypeConfigurationsRequestVersion,
-)
+from fern import FernApi, PostBatchDescribeTypeConfigurationsRequestAction, PostBatchDescribeTypeConfigurationsRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_batch_describe_type_configurations(
     action=PostBatchDescribeTypeConfigurationsRequestAction.BATCH_DESCRIBE_TYPE_CONFIGURATIONS,
     version=PostBatchDescribeTypeConfigurationsRequestVersion.TWO_THOUSAND_TEN0515,
@@ -479,22 +442,14 @@ client.post_batch_describe_type_configurations(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetCancelUpdateStackRequestAction,
-    GetCancelUpdateStackRequestVersion,
-)
+from fern import FernApi, GetCancelUpdateStackRequestAction, GetCancelUpdateStackRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_cancel_update_stack(
     stack_name="StackName",
     action=GetCancelUpdateStackRequestAction.CANCEL_UPDATE_STACK,
@@ -586,22 +541,14 @@ client.get_cancel_update_stack(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostCancelUpdateStackRequestAction,
-    PostCancelUpdateStackRequestVersion,
-)
+from fern import FernApi, PostCancelUpdateStackRequestAction, PostCancelUpdateStackRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_cancel_update_stack(
     action=PostCancelUpdateStackRequestAction.CANCEL_UPDATE_STACK,
     version=PostCancelUpdateStackRequestVersion.TWO_THOUSAND_TEN0515,
@@ -649,7 +596,7 @@ client.post_cancel_update_stack(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_continue_update_rollback</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_continue_update_rollback</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -676,22 +623,14 @@ client.post_cancel_update_stack(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetContinueUpdateRollbackRequestAction,
-    GetContinueUpdateRollbackRequestVersion,
-)
+from fern import FernApi, GetContinueUpdateRollbackRequestAction, GetContinueUpdateRollbackRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_continue_update_rollback(
     stack_name="x",
     action=GetContinueUpdateRollbackRequestAction.CONTINUE_UPDATE_ROLLBACK,
@@ -772,7 +711,7 @@ client.get_continue_update_rollback(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_continue_update_rollback</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_continue_update_rollback</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -799,22 +738,14 @@ client.get_continue_update_rollback(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostContinueUpdateRollbackRequestAction,
-    PostContinueUpdateRollbackRequestVersion,
-)
+from fern import FernApi, PostContinueUpdateRollbackRequestAction, PostContinueUpdateRollbackRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_continue_update_rollback(
     action=PostContinueUpdateRollbackRequestAction.CONTINUE_UPDATE_ROLLBACK,
     version=PostContinueUpdateRollbackRequestVersion.TWO_THOUSAND_TEN0515,
@@ -862,7 +793,7 @@ client.post_continue_update_rollback(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_create_change_set</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_create_change_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -889,22 +820,14 @@ client.post_continue_update_rollback(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetCreateChangeSetRequestAction,
-    GetCreateChangeSetRequestVersion,
-)
+from fern import FernApi, GetCreateChangeSetRequestAction, GetCreateChangeSetRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_create_change_set(
     stack_name="x",
     change_set_name="x",
@@ -1062,9 +985,7 @@ client.get_create_change_set(
 <dl>
 <dd>
 
-**resources_to_import:** `typing.Optional[
-    typing.Union[ResourceToImport, typing.Sequence[ResourceToImport]]
-]` — The resources to import into your stack.
+**resources_to_import:** `typing.Optional[typing.Union[ResourceToImport, typing.Sequence[ResourceToImport]]]` — The resources to import into your stack.
     
 </dd>
 </dl>
@@ -1092,7 +1013,7 @@ client.get_create_change_set(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_create_change_set</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_create_change_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1119,22 +1040,14 @@ client.get_create_change_set(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostCreateChangeSetRequestAction,
-    PostCreateChangeSetRequestVersion,
-)
+from fern import FernApi, PostCreateChangeSetRequestAction, PostCreateChangeSetRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_create_change_set(
     action=PostCreateChangeSetRequestAction.CREATE_CHANGE_SET,
     version=PostCreateChangeSetRequestVersion.TWO_THOUSAND_TEN0515,
@@ -1182,7 +1095,7 @@ client.post_create_change_set(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_create_stack</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_create_stack</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1209,22 +1122,14 @@ Creates a stack as specified in the template. After the call completes successfu
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetCreateStackRequestAction,
-    GetCreateStackRequestVersion,
-)
+from fern import FernApi, GetCreateStackRequestAction, GetCreateStackRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_create_stack(
     stack_name="StackName",
     action=GetCreateStackRequestAction.CREATE_STACK,
@@ -1409,7 +1314,7 @@ client.get_create_stack(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_create_stack</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_create_stack</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1436,22 +1341,14 @@ Creates a stack as specified in the template. After the call completes successfu
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostCreateStackRequestAction,
-    PostCreateStackRequestVersion,
-)
+from fern import FernApi, PostCreateStackRequestAction, PostCreateStackRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_create_stack(
     action=PostCreateStackRequestAction.CREATE_STACK,
     version=PostCreateStackRequestVersion.TWO_THOUSAND_TEN0515,
@@ -1499,7 +1396,7 @@ client.post_create_stack(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_create_stack_instances</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_create_stack_instances</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1526,22 +1423,14 @@ Creates stack instances for the specified accounts, within the specified Amazon 
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetCreateStackInstancesRequestAction,
-    GetCreateStackInstancesRequestVersion,
-)
+from fern import FernApi, GetCreateStackInstancesRequestAction, GetCreateStackInstancesRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_create_stack_instances(
     stack_set_name="StackSetName",
     action=GetCreateStackInstancesRequestAction.CREATE_STACK_INSTANCES,
@@ -1654,7 +1543,7 @@ client.get_create_stack_instances(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_create_stack_instances</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_create_stack_instances</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1681,22 +1570,14 @@ Creates stack instances for the specified accounts, within the specified Amazon 
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostCreateStackInstancesRequestAction,
-    PostCreateStackInstancesRequestVersion,
-)
+from fern import FernApi, PostCreateStackInstancesRequestAction, PostCreateStackInstancesRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_create_stack_instances(
     action=PostCreateStackInstancesRequestAction.CREATE_STACK_INSTANCES,
     version=PostCreateStackInstancesRequestVersion.TWO_THOUSAND_TEN0515,
@@ -1744,7 +1625,7 @@ client.post_create_stack_instances(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_create_stack_set</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_create_stack_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1771,22 +1652,14 @@ Creates a stack set.
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetCreateStackSetRequestAction,
-    GetCreateStackSetRequestVersion,
-)
+from fern import FernApi, GetCreateStackSetRequestAction, GetCreateStackSetRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_create_stack_set(
     stack_set_name="StackSetName",
     action=GetCreateStackSetRequestAction.CREATE_STACK_SET,
@@ -1955,7 +1828,7 @@ client.get_create_stack_set(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_create_stack_set</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_create_stack_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1982,22 +1855,14 @@ Creates a stack set.
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostCreateStackSetRequestAction,
-    PostCreateStackSetRequestVersion,
-)
+from fern import FernApi, PostCreateStackSetRequestAction, PostCreateStackSetRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_create_stack_set(
     action=PostCreateStackSetRequestAction.CREATE_STACK_SET,
     version=PostCreateStackSetRequestVersion.TWO_THOUSAND_TEN0515,
@@ -2045,7 +1910,7 @@ client.post_create_stack_set(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_deactivate_type</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_deactivate_type</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2072,22 +1937,14 @@ client.post_create_stack_set(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetDeactivateTypeRequestAction,
-    GetDeactivateTypeRequestVersion,
-)
+from fern import FernApi, GetDeactivateTypeRequestAction, GetDeactivateTypeRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_deactivate_type(
     action=GetDeactivateTypeRequestAction.DEACTIVATE_TYPE,
     version=GetDeactivateTypeRequestVersion.TWO_THOUSAND_TEN0515,
@@ -2159,7 +2016,7 @@ client.get_deactivate_type(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_deactivate_type</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_deactivate_type</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2186,22 +2043,14 @@ client.get_deactivate_type(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostDeactivateTypeRequestAction,
-    PostDeactivateTypeRequestVersion,
-)
+from fern import FernApi, PostDeactivateTypeRequestAction, PostDeactivateTypeRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_deactivate_type(
     action=PostDeactivateTypeRequestAction.DEACTIVATE_TYPE,
     version=PostDeactivateTypeRequestVersion.TWO_THOUSAND_TEN0515,
@@ -2249,7 +2098,7 @@ client.post_deactivate_type(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_delete_change_set</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_delete_change_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2276,22 +2125,14 @@ client.post_deactivate_type(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetDeleteChangeSetRequestAction,
-    GetDeleteChangeSetRequestVersion,
-)
+from fern import FernApi, GetDeleteChangeSetRequestAction, GetDeleteChangeSetRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_delete_change_set(
     change_set_name="x",
     action=GetDeleteChangeSetRequestAction.DELETE_CHANGE_SET,
@@ -2356,7 +2197,7 @@ client.get_delete_change_set(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_delete_change_set</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_delete_change_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2383,22 +2224,14 @@ client.get_delete_change_set(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostDeleteChangeSetRequestAction,
-    PostDeleteChangeSetRequestVersion,
-)
+from fern import FernApi, PostDeleteChangeSetRequestAction, PostDeleteChangeSetRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_delete_change_set(
     action=PostDeleteChangeSetRequestAction.DELETE_CHANGE_SET,
     version=PostDeleteChangeSetRequestVersion.TWO_THOUSAND_TEN0515,
@@ -2473,22 +2306,14 @@ Deletes a specified stack. Once the call completes successfully, stack deletion 
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetDeleteStackRequestAction,
-    GetDeleteStackRequestVersion,
-)
+from fern import FernApi, GetDeleteStackRequestAction, GetDeleteStackRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_delete_stack(
     stack_name="StackName",
     action=GetDeleteStackRequestAction.DELETE_STACK,
@@ -2533,9 +2358,7 @@ client.get_delete_stack(
 <dl>
 <dd>
 
-**retain_resources:** `typing.Optional[
-    typing.Union[LogicalResourceId, typing.Sequence[LogicalResourceId]]
-]` — <p>For stacks in the <code>DELETE_FAILED</code> state, a list of resource logical IDs that are associated with the resources you want to retain. During deletion, CloudFormation deletes the stack but doesn't delete the retained resources.</p> <p>Retaining resources is useful when you can't delete a resource, such as a non-empty S3 bucket, but you want to delete the stack.</p>
+**retain_resources:** `typing.Optional[typing.Union[LogicalResourceId, typing.Sequence[LogicalResourceId]]]` — <p>For stacks in the <code>DELETE_FAILED</code> state, a list of resource logical IDs that are associated with the resources you want to retain. During deletion, CloudFormation deletes the stack but doesn't delete the retained resources.</p> <p>Retaining resources is useful when you can't delete a resource, such as a non-empty S3 bucket, but you want to delete the stack.</p>
     
 </dd>
 </dl>
@@ -2598,22 +2421,14 @@ Deletes a specified stack. Once the call completes successfully, stack deletion 
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostDeleteStackRequestAction,
-    PostDeleteStackRequestVersion,
-)
+from fern import FernApi, PostDeleteStackRequestAction, PostDeleteStackRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_delete_stack(
     action=PostDeleteStackRequestAction.DELETE_STACK,
     version=PostDeleteStackRequestVersion.TWO_THOUSAND_TEN0515,
@@ -2661,7 +2476,7 @@ client.post_delete_stack(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_delete_stack_instances</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_delete_stack_instances</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2688,22 +2503,14 @@ Deletes stack instances for the specified accounts, in the specified Amazon Web 
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetDeleteStackInstancesRequestAction,
-    GetDeleteStackInstancesRequestVersion,
-)
+from fern import FernApi, GetDeleteStackInstancesRequestAction, GetDeleteStackInstancesRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_delete_stack_instances(
     stack_set_name="StackSetName",
     retain_stacks=True,
@@ -2817,7 +2624,7 @@ client.get_delete_stack_instances(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_delete_stack_instances</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_delete_stack_instances</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2844,22 +2651,14 @@ Deletes stack instances for the specified accounts, in the specified Amazon Web 
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostDeleteStackInstancesRequestAction,
-    PostDeleteStackInstancesRequestVersion,
-)
+from fern import FernApi, PostDeleteStackInstancesRequestAction, PostDeleteStackInstancesRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_delete_stack_instances(
     action=PostDeleteStackInstancesRequestAction.DELETE_STACK_INSTANCES,
     version=PostDeleteStackInstancesRequestVersion.TWO_THOUSAND_TEN0515,
@@ -2907,7 +2706,7 @@ client.post_delete_stack_instances(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_delete_stack_set</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_delete_stack_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2934,22 +2733,14 @@ Deletes a stack set. Before you can delete a stack set, all its member stack ins
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetDeleteStackSetRequestAction,
-    GetDeleteStackSetRequestVersion,
-)
+from fern import FernApi, GetDeleteStackSetRequestAction, GetDeleteStackSetRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_delete_stack_set(
     stack_set_name="StackSetName",
     action=GetDeleteStackSetRequestAction.DELETE_STACK_SET,
@@ -3014,7 +2805,7 @@ client.get_delete_stack_set(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_delete_stack_set</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_delete_stack_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3041,22 +2832,14 @@ Deletes a stack set. Before you can delete a stack set, all its member stack ins
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostDeleteStackSetRequestAction,
-    PostDeleteStackSetRequestVersion,
-)
+from fern import FernApi, PostDeleteStackSetRequestAction, PostDeleteStackSetRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_delete_stack_set(
     action=PostDeleteStackSetRequestAction.DELETE_STACK_SET,
     version=PostDeleteStackSetRequestVersion.TWO_THOUSAND_TEN0515,
@@ -3104,7 +2887,7 @@ client.post_delete_stack_set(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_deregister_type</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_deregister_type</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3131,22 +2914,14 @@ client.post_delete_stack_set(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetDeregisterTypeRequestAction,
-    GetDeregisterTypeRequestVersion,
-)
+from fern import FernApi, GetDeregisterTypeRequestAction, GetDeregisterTypeRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_deregister_type(
     action=GetDeregisterTypeRequestAction.DEREGISTER_TYPE,
     version=GetDeregisterTypeRequestVersion.TWO_THOUSAND_TEN0515,
@@ -3226,7 +3001,7 @@ client.get_deregister_type(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_deregister_type</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_deregister_type</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3253,22 +3028,14 @@ client.get_deregister_type(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostDeregisterTypeRequestAction,
-    PostDeregisterTypeRequestVersion,
-)
+from fern import FernApi, PostDeregisterTypeRequestAction, PostDeregisterTypeRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_deregister_type(
     action=PostDeregisterTypeRequestAction.DEREGISTER_TYPE,
     version=PostDeregisterTypeRequestVersion.TWO_THOUSAND_TEN0515,
@@ -3316,7 +3083,7 @@ client.post_deregister_type(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_describe_account_limits</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_describe_account_limits</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3343,22 +3110,14 @@ Retrieves your account's CloudFormation limits, such as the maximum number of st
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetDescribeAccountLimitsRequestAction,
-    GetDescribeAccountLimitsRequestVersion,
-)
+from fern import FernApi, GetDescribeAccountLimitsRequestAction, GetDescribeAccountLimitsRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_describe_account_limits(
     action=GetDescribeAccountLimitsRequestAction.DESCRIBE_ACCOUNT_LIMITS,
     version=GetDescribeAccountLimitsRequestVersion.TWO_THOUSAND_TEN0515,
@@ -3414,7 +3173,7 @@ client.get_describe_account_limits(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_describe_account_limits</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_describe_account_limits</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3441,22 +3200,14 @@ Retrieves your account's CloudFormation limits, such as the maximum number of st
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostDescribeAccountLimitsRequestAction,
-    PostDescribeAccountLimitsRequestVersion,
-)
+from fern import FernApi, PostDescribeAccountLimitsRequestAction, PostDescribeAccountLimitsRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_describe_account_limits(
     action=PostDescribeAccountLimitsRequestAction.DESCRIBE_ACCOUNT_LIMITS,
     version=PostDescribeAccountLimitsRequestVersion.TWO_THOUSAND_TEN0515,
@@ -3512,7 +3263,7 @@ client.post_describe_account_limits(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_describe_change_set</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_describe_change_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3539,22 +3290,14 @@ Returns the inputs for the change set and a list of changes that CloudFormation 
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetDescribeChangeSetRequestAction,
-    GetDescribeChangeSetRequestVersion,
-)
+from fern import FernApi, GetDescribeChangeSetRequestAction, GetDescribeChangeSetRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_describe_change_set(
     change_set_name="x",
     action=GetDescribeChangeSetRequestAction.DESCRIBE_CHANGE_SET,
@@ -3627,7 +3370,7 @@ client.get_describe_change_set(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_describe_change_set</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_describe_change_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3654,22 +3397,14 @@ Returns the inputs for the change set and a list of changes that CloudFormation 
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostDescribeChangeSetRequestAction,
-    PostDescribeChangeSetRequestVersion,
-)
+from fern import FernApi, PostDescribeChangeSetRequestAction, PostDescribeChangeSetRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_describe_change_set(
     action=PostDescribeChangeSetRequestAction.DESCRIBE_CHANGE_SET,
     version=PostDescribeChangeSetRequestVersion.TWO_THOUSAND_TEN0515,
@@ -3717,7 +3452,7 @@ client.post_describe_change_set(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_describe_change_set_hooks</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_describe_change_set_hooks</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3744,22 +3479,14 @@ Returns hook-related information for the change set and a list of changes that C
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetDescribeChangeSetHooksRequestAction,
-    GetDescribeChangeSetHooksRequestVersion,
-)
+from fern import FernApi, GetDescribeChangeSetHooksRequestAction, GetDescribeChangeSetHooksRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_describe_change_set_hooks(
     change_set_name="x",
     action=GetDescribeChangeSetHooksRequestAction.DESCRIBE_CHANGE_SET_HOOKS,
@@ -3840,7 +3567,7 @@ client.get_describe_change_set_hooks(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_describe_change_set_hooks</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_describe_change_set_hooks</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3867,22 +3594,14 @@ Returns hook-related information for the change set and a list of changes that C
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostDescribeChangeSetHooksRequestAction,
-    PostDescribeChangeSetHooksRequestVersion,
-)
+from fern import FernApi, PostDescribeChangeSetHooksRequestAction, PostDescribeChangeSetHooksRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_describe_change_set_hooks(
     action=PostDescribeChangeSetHooksRequestAction.DESCRIBE_CHANGE_SET_HOOKS,
     version=PostDescribeChangeSetHooksRequestVersion.TWO_THOUSAND_TEN0515,
@@ -3930,7 +3649,7 @@ client.post_describe_change_set_hooks(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_describe_publisher</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_describe_publisher</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3957,22 +3676,14 @@ client.post_describe_change_set_hooks(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetDescribePublisherRequestAction,
-    GetDescribePublisherRequestVersion,
-)
+from fern import FernApi, GetDescribePublisherRequestAction, GetDescribePublisherRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_describe_publisher(
     action=GetDescribePublisherRequestAction.DESCRIBE_PUBLISHER,
     version=GetDescribePublisherRequestVersion.TWO_THOUSAND_TEN0515,
@@ -4028,7 +3739,7 @@ client.get_describe_publisher(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_describe_publisher</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_describe_publisher</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4055,22 +3766,14 @@ client.get_describe_publisher(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostDescribePublisherRequestAction,
-    PostDescribePublisherRequestVersion,
-)
+from fern import FernApi, PostDescribePublisherRequestAction, PostDescribePublisherRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_describe_publisher(
     action=PostDescribePublisherRequestAction.DESCRIBE_PUBLISHER,
     version=PostDescribePublisherRequestVersion.TWO_THOUSAND_TEN0515,
@@ -4118,7 +3821,7 @@ client.post_describe_publisher(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_describe_stack_drift_detection_status</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_describe_stack_drift_detection_status</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4145,22 +3848,14 @@ client.post_describe_publisher(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetDescribeStackDriftDetectionStatusRequestAction,
-    GetDescribeStackDriftDetectionStatusRequestVersion,
-)
+from fern import FernApi, GetDescribeStackDriftDetectionStatusRequestAction, GetDescribeStackDriftDetectionStatusRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_describe_stack_drift_detection_status(
     stack_drift_detection_id="x",
     action=GetDescribeStackDriftDetectionStatusRequestAction.DESCRIBE_STACK_DRIFT_DETECTION_STATUS,
@@ -4217,7 +3912,7 @@ client.get_describe_stack_drift_detection_status(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_describe_stack_drift_detection_status</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_describe_stack_drift_detection_status</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4244,22 +3939,14 @@ client.get_describe_stack_drift_detection_status(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostDescribeStackDriftDetectionStatusRequestAction,
-    PostDescribeStackDriftDetectionStatusRequestVersion,
-)
+from fern import FernApi, PostDescribeStackDriftDetectionStatusRequestAction, PostDescribeStackDriftDetectionStatusRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_describe_stack_drift_detection_status(
     action=PostDescribeStackDriftDetectionStatusRequestAction.DESCRIBE_STACK_DRIFT_DETECTION_STATUS,
     version=PostDescribeStackDriftDetectionStatusRequestVersion.TWO_THOUSAND_TEN0515,
@@ -4307,7 +3994,7 @@ client.post_describe_stack_drift_detection_status(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_describe_stack_events</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_describe_stack_events</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4334,22 +4021,14 @@ client.post_describe_stack_drift_detection_status(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetDescribeStackEventsRequestAction,
-    GetDescribeStackEventsRequestVersion,
-)
+from fern import FernApi, GetDescribeStackEventsRequestAction, GetDescribeStackEventsRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_describe_stack_events(
     action=GetDescribeStackEventsRequestAction.DESCRIBE_STACK_EVENTS,
     version=GetDescribeStackEventsRequestVersion.TWO_THOUSAND_TEN0515,
@@ -4413,7 +4092,7 @@ client.get_describe_stack_events(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_describe_stack_events</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_describe_stack_events</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4440,22 +4119,14 @@ client.get_describe_stack_events(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostDescribeStackEventsRequestAction,
-    PostDescribeStackEventsRequestVersion,
-)
+from fern import FernApi, PostDescribeStackEventsRequestAction, PostDescribeStackEventsRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_describe_stack_events(
     action=PostDescribeStackEventsRequestAction.DESCRIBE_STACK_EVENTS,
     version=PostDescribeStackEventsRequestVersion.TWO_THOUSAND_TEN0515,
@@ -4511,7 +4182,7 @@ client.post_describe_stack_events(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_describe_stack_instance</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_describe_stack_instance</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4538,22 +4209,14 @@ client.post_describe_stack_events(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetDescribeStackInstanceRequestAction,
-    GetDescribeStackInstanceRequestVersion,
-)
+from fern import FernApi, GetDescribeStackInstanceRequestAction, GetDescribeStackInstanceRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_describe_stack_instance(
     stack_set_name="StackSetName",
     stack_instance_account="StackInstanceAccount",
@@ -4636,7 +4299,7 @@ client.get_describe_stack_instance(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_describe_stack_instance</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_describe_stack_instance</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4663,22 +4326,14 @@ client.get_describe_stack_instance(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostDescribeStackInstanceRequestAction,
-    PostDescribeStackInstanceRequestVersion,
-)
+from fern import FernApi, PostDescribeStackInstanceRequestAction, PostDescribeStackInstanceRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_describe_stack_instance(
     action=PostDescribeStackInstanceRequestAction.DESCRIBE_STACK_INSTANCE,
     version=PostDescribeStackInstanceRequestVersion.TWO_THOUSAND_TEN0515,
@@ -4726,7 +4381,7 @@ client.post_describe_stack_instance(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_describe_stack_resource</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_describe_stack_resource</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4753,22 +4408,14 @@ client.post_describe_stack_instance(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetDescribeStackResourceRequestAction,
-    GetDescribeStackResourceRequestVersion,
-)
+from fern import FernApi, GetDescribeStackResourceRequestAction, GetDescribeStackResourceRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_describe_stack_resource(
     stack_name="StackName",
     logical_resource_id="LogicalResourceId",
@@ -4834,7 +4481,7 @@ client.get_describe_stack_resource(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_describe_stack_resource</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_describe_stack_resource</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4861,22 +4508,14 @@ client.get_describe_stack_resource(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostDescribeStackResourceRequestAction,
-    PostDescribeStackResourceRequestVersion,
-)
+from fern import FernApi, PostDescribeStackResourceRequestAction, PostDescribeStackResourceRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_describe_stack_resource(
     action=PostDescribeStackResourceRequestAction.DESCRIBE_STACK_RESOURCE,
     version=PostDescribeStackResourceRequestVersion.TWO_THOUSAND_TEN0515,
@@ -4924,7 +4563,7 @@ client.post_describe_stack_resource(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_describe_stack_resource_drifts</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_describe_stack_resource_drifts</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4951,22 +4590,14 @@ client.post_describe_stack_resource(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetDescribeStackResourceDriftsRequestAction,
-    GetDescribeStackResourceDriftsRequestVersion,
-)
+from fern import FernApi, GetDescribeStackResourceDriftsRequestAction, GetDescribeStackResourceDriftsRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_describe_stack_resource_drifts(
     stack_name="x",
     action=GetDescribeStackResourceDriftsRequestAction.DESCRIBE_STACK_RESOURCE_DRIFTS,
@@ -5011,11 +4642,7 @@ client.get_describe_stack_resource_drifts(
 <dl>
 <dd>
 
-**stack_resource_drift_status_filters:** `typing.Optional[
-    typing.Union[
-        StackResourceDriftStatus, typing.Sequence[StackResourceDriftStatus]
-    ]
-]` — <p>The resource drift status values to use as filters for the resource drift results returned.</p> <ul> <li> <p> <code>DELETED</code>: The resource differs from its expected template configuration in that the resource has been deleted.</p> </li> <li> <p> <code>MODIFIED</code>: One or more resource properties differ from their expected template values.</p> </li> <li> <p> <code>IN_SYNC</code>: The resource's actual configuration matches its expected template configuration.</p> </li> <li> <p> <code>NOT_CHECKED</code>: CloudFormation doesn't currently return this value.</p> </li> </ul>
+**stack_resource_drift_status_filters:** `typing.Optional[typing.Union[StackResourceDriftStatus, typing.Sequence[StackResourceDriftStatus]]]` — <p>The resource drift status values to use as filters for the resource drift results returned.</p> <ul> <li> <p> <code>DELETED</code>: The resource differs from its expected template configuration in that the resource has been deleted.</p> </li> <li> <p> <code>MODIFIED</code>: One or more resource properties differ from their expected template values.</p> </li> <li> <p> <code>IN_SYNC</code>: The resource's actual configuration matches its expected template configuration.</p> </li> <li> <p> <code>NOT_CHECKED</code>: CloudFormation doesn't currently return this value.</p> </li> </ul>
     
 </dd>
 </dl>
@@ -5051,7 +4678,7 @@ client.get_describe_stack_resource_drifts(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_describe_stack_resource_drifts</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_describe_stack_resource_drifts</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5078,22 +4705,14 @@ client.get_describe_stack_resource_drifts(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostDescribeStackResourceDriftsRequestAction,
-    PostDescribeStackResourceDriftsRequestVersion,
-)
+from fern import FernApi, PostDescribeStackResourceDriftsRequestAction, PostDescribeStackResourceDriftsRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_describe_stack_resource_drifts(
     action=PostDescribeStackResourceDriftsRequestAction.DESCRIBE_STACK_RESOURCE_DRIFTS,
     version=PostDescribeStackResourceDriftsRequestVersion.TWO_THOUSAND_TEN0515,
@@ -5157,7 +4776,7 @@ client.post_describe_stack_resource_drifts(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_describe_stack_resources</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_describe_stack_resources</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5184,22 +4803,14 @@ client.post_describe_stack_resource_drifts(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetDescribeStackResourcesRequestAction,
-    GetDescribeStackResourcesRequestVersion,
-)
+from fern import FernApi, GetDescribeStackResourcesRequestAction, GetDescribeStackResourcesRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_describe_stack_resources(
     action=GetDescribeStackResourcesRequestAction.DESCRIBE_STACK_RESOURCES,
     version=GetDescribeStackResourcesRequestVersion.TWO_THOUSAND_TEN0515,
@@ -5271,7 +4882,7 @@ client.get_describe_stack_resources(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_describe_stack_resources</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_describe_stack_resources</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5298,22 +4909,14 @@ client.get_describe_stack_resources(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostDescribeStackResourcesRequestAction,
-    PostDescribeStackResourcesRequestVersion,
-)
+from fern import FernApi, PostDescribeStackResourcesRequestAction, PostDescribeStackResourcesRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_describe_stack_resources(
     action=PostDescribeStackResourcesRequestAction.DESCRIBE_STACK_RESOURCES,
     version=PostDescribeStackResourcesRequestVersion.TWO_THOUSAND_TEN0515,
@@ -5361,7 +4964,7 @@ client.post_describe_stack_resources(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_describe_stack_set</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_describe_stack_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5388,22 +4991,14 @@ Returns the description of the specified stack set.
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetDescribeStackSetRequestAction,
-    GetDescribeStackSetRequestVersion,
-)
+from fern import FernApi, GetDescribeStackSetRequestAction, GetDescribeStackSetRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_describe_stack_set(
     stack_set_name="StackSetName",
     action=GetDescribeStackSetRequestAction.DESCRIBE_STACK_SET,
@@ -5468,7 +5063,7 @@ client.get_describe_stack_set(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_describe_stack_set</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_describe_stack_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5495,22 +5090,14 @@ Returns the description of the specified stack set.
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostDescribeStackSetRequestAction,
-    PostDescribeStackSetRequestVersion,
-)
+from fern import FernApi, PostDescribeStackSetRequestAction, PostDescribeStackSetRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_describe_stack_set(
     action=PostDescribeStackSetRequestAction.DESCRIBE_STACK_SET,
     version=PostDescribeStackSetRequestVersion.TWO_THOUSAND_TEN0515,
@@ -5558,7 +5145,7 @@ client.post_describe_stack_set(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_describe_stack_set_operation</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_describe_stack_set_operation</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5585,22 +5172,14 @@ Returns the description of the specified stack set operation.
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetDescribeStackSetOperationRequestAction,
-    GetDescribeStackSetOperationRequestVersion,
-)
+from fern import FernApi, GetDescribeStackSetOperationRequestAction, GetDescribeStackSetOperationRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_describe_stack_set_operation(
     stack_set_name="StackSetName",
     operation_id="x",
@@ -5674,7 +5253,7 @@ client.get_describe_stack_set_operation(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_describe_stack_set_operation</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_describe_stack_set_operation</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5701,22 +5280,14 @@ Returns the description of the specified stack set operation.
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostDescribeStackSetOperationRequestAction,
-    PostDescribeStackSetOperationRequestVersion,
-)
+from fern import FernApi, PostDescribeStackSetOperationRequestAction, PostDescribeStackSetOperationRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_describe_stack_set_operation(
     action=PostDescribeStackSetOperationRequestAction.DESCRIBE_STACK_SET_OPERATION,
     version=PostDescribeStackSetOperationRequestVersion.TWO_THOUSAND_TEN0515,
@@ -5764,7 +5335,7 @@ client.post_describe_stack_set_operation(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_describe_stacks</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_describe_stacks</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5791,22 +5362,14 @@ client.post_describe_stack_set_operation(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetDescribeStacksRequestAction,
-    GetDescribeStacksRequestVersion,
-)
+from fern import FernApi, GetDescribeStacksRequestAction, GetDescribeStacksRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_describe_stacks(
     action=GetDescribeStacksRequestAction.DESCRIBE_STACKS,
     version=GetDescribeStacksRequestVersion.TWO_THOUSAND_TEN0515,
@@ -5870,7 +5433,7 @@ client.get_describe_stacks(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_describe_stacks</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_describe_stacks</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5897,22 +5460,14 @@ client.get_describe_stacks(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostDescribeStacksRequestAction,
-    PostDescribeStacksRequestVersion,
-)
+from fern import FernApi, PostDescribeStacksRequestAction, PostDescribeStacksRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_describe_stacks(
     action=PostDescribeStacksRequestAction.DESCRIBE_STACKS,
     version=PostDescribeStacksRequestVersion.TWO_THOUSAND_TEN0515,
@@ -5968,7 +5523,7 @@ client.post_describe_stacks(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_describe_type</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_describe_type</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5995,22 +5550,14 @@ client.post_describe_stacks(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetDescribeTypeRequestAction,
-    GetDescribeTypeRequestVersion,
-)
+from fern import FernApi, GetDescribeTypeRequestAction, GetDescribeTypeRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_describe_type(
     action=GetDescribeTypeRequestAction.DESCRIBE_TYPE,
     version=GetDescribeTypeRequestVersion.TWO_THOUSAND_TEN0515,
@@ -6106,7 +5653,7 @@ client.get_describe_type(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_describe_type</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_describe_type</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6133,22 +5680,14 @@ client.get_describe_type(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostDescribeTypeRequestAction,
-    PostDescribeTypeRequestVersion,
-)
+from fern import FernApi, PostDescribeTypeRequestAction, PostDescribeTypeRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_describe_type(
     action=PostDescribeTypeRequestAction.DESCRIBE_TYPE,
     version=PostDescribeTypeRequestVersion.TWO_THOUSAND_TEN0515,
@@ -6196,7 +5735,7 @@ client.post_describe_type(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_describe_type_registration</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_describe_type_registration</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6223,22 +5762,14 @@ client.post_describe_type(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetDescribeTypeRegistrationRequestAction,
-    GetDescribeTypeRegistrationRequestVersion,
-)
+from fern import FernApi, GetDescribeTypeRegistrationRequestAction, GetDescribeTypeRegistrationRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_describe_type_registration(
     registration_token="x",
     action=GetDescribeTypeRegistrationRequestAction.DESCRIBE_TYPE_REGISTRATION,
@@ -6295,7 +5826,7 @@ client.get_describe_type_registration(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_describe_type_registration</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_describe_type_registration</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6322,22 +5853,14 @@ client.get_describe_type_registration(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostDescribeTypeRegistrationRequestAction,
-    PostDescribeTypeRegistrationRequestVersion,
-)
+from fern import FernApi, PostDescribeTypeRegistrationRequestAction, PostDescribeTypeRegistrationRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_describe_type_registration(
     action=PostDescribeTypeRegistrationRequestAction.DESCRIBE_TYPE_REGISTRATION,
     version=PostDescribeTypeRegistrationRequestVersion.TWO_THOUSAND_TEN0515,
@@ -6385,7 +5908,7 @@ client.post_describe_type_registration(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_detect_stack_drift</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_detect_stack_drift</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6412,22 +5935,14 @@ client.post_describe_type_registration(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetDetectStackDriftRequestAction,
-    GetDetectStackDriftRequestVersion,
-)
+from fern import FernApi, GetDetectStackDriftRequestAction, GetDetectStackDriftRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_detect_stack_drift(
     stack_name="x",
     action=GetDetectStackDriftRequestAction.DETECT_STACK_DRIFT,
@@ -6472,9 +5987,7 @@ client.get_detect_stack_drift(
 <dl>
 <dd>
 
-**logical_resource_ids:** `typing.Optional[
-    typing.Union[LogicalResourceId, typing.Sequence[LogicalResourceId]]
-]` — The logical names of any resources you want to use as filters.
+**logical_resource_ids:** `typing.Optional[typing.Union[LogicalResourceId, typing.Sequence[LogicalResourceId]]]` — The logical names of any resources you want to use as filters.
     
 </dd>
 </dl>
@@ -6494,7 +6007,7 @@ client.get_detect_stack_drift(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_detect_stack_drift</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_detect_stack_drift</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6521,22 +6034,14 @@ client.get_detect_stack_drift(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostDetectStackDriftRequestAction,
-    PostDetectStackDriftRequestVersion,
-)
+from fern import FernApi, PostDetectStackDriftRequestAction, PostDetectStackDriftRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_detect_stack_drift(
     action=PostDetectStackDriftRequestAction.DETECT_STACK_DRIFT,
     version=PostDetectStackDriftRequestVersion.TWO_THOUSAND_TEN0515,
@@ -6584,7 +6089,7 @@ client.post_detect_stack_drift(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_detect_stack_resource_drift</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_detect_stack_resource_drift</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6611,22 +6116,14 @@ client.post_detect_stack_drift(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetDetectStackResourceDriftRequestAction,
-    GetDetectStackResourceDriftRequestVersion,
-)
+from fern import FernApi, GetDetectStackResourceDriftRequestAction, GetDetectStackResourceDriftRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_detect_stack_resource_drift(
     stack_name="x",
     logical_resource_id="LogicalResourceId",
@@ -6692,7 +6189,7 @@ client.get_detect_stack_resource_drift(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_detect_stack_resource_drift</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_detect_stack_resource_drift</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6719,22 +6216,14 @@ client.get_detect_stack_resource_drift(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostDetectStackResourceDriftRequestAction,
-    PostDetectStackResourceDriftRequestVersion,
-)
+from fern import FernApi, PostDetectStackResourceDriftRequestAction, PostDetectStackResourceDriftRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_detect_stack_resource_drift(
     action=PostDetectStackResourceDriftRequestAction.DETECT_STACK_RESOURCE_DRIFT,
     version=PostDetectStackResourceDriftRequestVersion.TWO_THOUSAND_TEN0515,
@@ -6782,7 +6271,7 @@ client.post_detect_stack_resource_drift(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_detect_stack_set_drift</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_detect_stack_set_drift</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6809,22 +6298,14 @@ client.post_detect_stack_resource_drift(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetDetectStackSetDriftRequestAction,
-    GetDetectStackSetDriftRequestVersion,
-)
+from fern import FernApi, GetDetectStackSetDriftRequestAction, GetDetectStackSetDriftRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_detect_stack_set_drift(
     stack_set_name="StackSetName",
     action=GetDetectStackSetDriftRequestAction.DETECT_STACK_SET_DRIFT,
@@ -6905,7 +6386,7 @@ client.get_detect_stack_set_drift(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_detect_stack_set_drift</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_detect_stack_set_drift</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6932,22 +6413,14 @@ client.get_detect_stack_set_drift(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostDetectStackSetDriftRequestAction,
-    PostDetectStackSetDriftRequestVersion,
-)
+from fern import FernApi, PostDetectStackSetDriftRequestAction, PostDetectStackSetDriftRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_detect_stack_set_drift(
     action=PostDetectStackSetDriftRequestAction.DETECT_STACK_SET_DRIFT,
     version=PostDetectStackSetDriftRequestVersion.TWO_THOUSAND_TEN0515,
@@ -6995,7 +6468,7 @@ client.post_detect_stack_set_drift(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_estimate_template_cost</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_estimate_template_cost</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7022,22 +6495,14 @@ Returns the estimated monthly cost of a template. The return value is an Amazon 
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetEstimateTemplateCostRequestAction,
-    GetEstimateTemplateCostRequestVersion,
-)
+from fern import FernApi, GetEstimateTemplateCostRequestAction, GetEstimateTemplateCostRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_estimate_template_cost(
     action=GetEstimateTemplateCostRequestAction.ESTIMATE_TEMPLATE_COST,
     version=GetEstimateTemplateCostRequestVersion.TWO_THOUSAND_TEN0515,
@@ -7109,7 +6574,7 @@ client.get_estimate_template_cost(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_estimate_template_cost</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_estimate_template_cost</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7136,22 +6601,14 @@ Returns the estimated monthly cost of a template. The return value is an Amazon 
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostEstimateTemplateCostRequestAction,
-    PostEstimateTemplateCostRequestVersion,
-)
+from fern import FernApi, PostEstimateTemplateCostRequestAction, PostEstimateTemplateCostRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_estimate_template_cost(
     action=PostEstimateTemplateCostRequestAction.ESTIMATE_TEMPLATE_COST,
     version=PostEstimateTemplateCostRequestVersion.TWO_THOUSAND_TEN0515,
@@ -7199,7 +6656,7 @@ client.post_estimate_template_cost(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_execute_change_set</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_execute_change_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7226,22 +6683,14 @@ client.post_estimate_template_cost(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetExecuteChangeSetRequestAction,
-    GetExecuteChangeSetRequestVersion,
-)
+from fern import FernApi, GetExecuteChangeSetRequestAction, GetExecuteChangeSetRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_execute_change_set(
     change_set_name="x",
     action=GetExecuteChangeSetRequestAction.EXECUTE_CHANGE_SET,
@@ -7322,7 +6771,7 @@ client.get_execute_change_set(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_execute_change_set</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_execute_change_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7349,22 +6798,14 @@ client.get_execute_change_set(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostExecuteChangeSetRequestAction,
-    PostExecuteChangeSetRequestVersion,
-)
+from fern import FernApi, PostExecuteChangeSetRequestAction, PostExecuteChangeSetRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_execute_change_set(
     action=PostExecuteChangeSetRequestAction.EXECUTE_CHANGE_SET,
     version=PostExecuteChangeSetRequestVersion.TWO_THOUSAND_TEN0515,
@@ -7412,7 +6853,7 @@ client.post_execute_change_set(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_get_stack_policy</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_get_stack_policy</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7439,22 +6880,14 @@ Returns the stack policy for a specified stack. If a stack doesn't have a policy
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetGetStackPolicyRequestAction,
-    GetGetStackPolicyRequestVersion,
-)
+from fern import FernApi, GetGetStackPolicyRequestAction, GetGetStackPolicyRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_get_stack_policy(
     stack_name="StackName",
     action=GetGetStackPolicyRequestAction.GET_STACK_POLICY,
@@ -7511,7 +6944,7 @@ client.get_get_stack_policy(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_get_stack_policy</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_get_stack_policy</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7538,22 +6971,14 @@ Returns the stack policy for a specified stack. If a stack doesn't have a policy
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostGetStackPolicyRequestAction,
-    PostGetStackPolicyRequestVersion,
-)
+from fern import FernApi, PostGetStackPolicyRequestAction, PostGetStackPolicyRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_get_stack_policy(
     action=PostGetStackPolicyRequestAction.GET_STACK_POLICY,
     version=PostGetStackPolicyRequestVersion.TWO_THOUSAND_TEN0515,
@@ -7601,7 +7026,7 @@ client.post_get_stack_policy(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_get_template</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_get_template</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7628,22 +7053,14 @@ client.post_get_stack_policy(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetGetTemplateRequestAction,
-    GetGetTemplateRequestVersion,
-)
+from fern import FernApi, GetGetTemplateRequestAction, GetGetTemplateRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_get_template(
     action=GetGetTemplateRequestAction.GET_TEMPLATE,
     version=GetGetTemplateRequestVersion.TWO_THOUSAND_TEN0515,
@@ -7715,7 +7132,7 @@ client.get_get_template(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_get_template</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_get_template</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7742,22 +7159,14 @@ client.get_get_template(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostGetTemplateRequestAction,
-    PostGetTemplateRequestVersion,
-)
+from fern import FernApi, PostGetTemplateRequestAction, PostGetTemplateRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_get_template(
     action=PostGetTemplateRequestAction.GET_TEMPLATE,
     version=PostGetTemplateRequestVersion.TWO_THOUSAND_TEN0515,
@@ -7805,7 +7214,7 @@ client.post_get_template(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_get_template_summary</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_get_template_summary</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7832,22 +7241,14 @@ client.post_get_template(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetGetTemplateSummaryRequestAction,
-    GetGetTemplateSummaryRequestVersion,
-)
+from fern import FernApi, GetGetTemplateSummaryRequestAction, GetGetTemplateSummaryRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_get_template_summary(
     action=GetGetTemplateSummaryRequestAction.GET_TEMPLATE_SUMMARY,
     version=GetGetTemplateSummaryRequestVersion.TWO_THOUSAND_TEN0515,
@@ -7935,7 +7336,7 @@ client.get_get_template_summary(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_get_template_summary</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_get_template_summary</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7962,22 +7363,14 @@ client.get_get_template_summary(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostGetTemplateSummaryRequestAction,
-    PostGetTemplateSummaryRequestVersion,
-)
+from fern import FernApi, PostGetTemplateSummaryRequestAction, PostGetTemplateSummaryRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_get_template_summary(
     action=PostGetTemplateSummaryRequestAction.GET_TEMPLATE_SUMMARY,
     version=PostGetTemplateSummaryRequestVersion.TWO_THOUSAND_TEN0515,
@@ -8025,7 +7418,7 @@ client.post_get_template_summary(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_import_stacks_to_stack_set</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_import_stacks_to_stack_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -8052,22 +7445,14 @@ client.post_get_template_summary(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetImportStacksToStackSetRequestAction,
-    GetImportStacksToStackSetRequestVersion,
-)
+from fern import FernApi, GetImportStacksToStackSetRequestAction, GetImportStacksToStackSetRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_import_stacks_to_stack_set(
     stack_set_name="StackSetName",
     action=GetImportStacksToStackSetRequestAction.IMPORT_STACKS_TO_STACK_SET,
@@ -8128,9 +7513,7 @@ client.get_import_stacks_to_stack_set(
 <dl>
 <dd>
 
-**organizational_unit_ids:** `typing.Optional[
-    typing.Union[OrganizationalUnitId, typing.Sequence[OrganizationalUnitId]]
-]` — The list of OU ID's to which the stacks being imported has to be mapped as deployment target.
+**organizational_unit_ids:** `typing.Optional[typing.Union[OrganizationalUnitId, typing.Sequence[OrganizationalUnitId]]]` — The list of OU ID's to which the stacks being imported has to be mapped as deployment target.
     
 </dd>
 </dl>
@@ -8174,7 +7557,7 @@ client.get_import_stacks_to_stack_set(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_import_stacks_to_stack_set</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_import_stacks_to_stack_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -8201,22 +7584,14 @@ client.get_import_stacks_to_stack_set(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostImportStacksToStackSetRequestAction,
-    PostImportStacksToStackSetRequestVersion,
-)
+from fern import FernApi, PostImportStacksToStackSetRequestAction, PostImportStacksToStackSetRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_import_stacks_to_stack_set(
     action=PostImportStacksToStackSetRequestAction.IMPORT_STACKS_TO_STACK_SET,
     version=PostImportStacksToStackSetRequestVersion.TWO_THOUSAND_TEN0515,
@@ -8264,7 +7639,7 @@ client.post_import_stacks_to_stack_set(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_list_change_sets</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_list_change_sets</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -8291,22 +7666,14 @@ Returns the ID and status of each active change set for a stack. For example, Cl
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetListChangeSetsRequestAction,
-    GetListChangeSetsRequestVersion,
-)
+from fern import FernApi, GetListChangeSetsRequestAction, GetListChangeSetsRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_list_change_sets(
     stack_name="x",
     action=GetListChangeSetsRequestAction.LIST_CHANGE_SETS,
@@ -8371,7 +7738,7 @@ client.get_list_change_sets(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_list_change_sets</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_list_change_sets</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -8398,22 +7765,14 @@ Returns the ID and status of each active change set for a stack. For example, Cl
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostListChangeSetsRequestAction,
-    PostListChangeSetsRequestVersion,
-)
+from fern import FernApi, PostListChangeSetsRequestAction, PostListChangeSetsRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_list_change_sets(
     action=PostListChangeSetsRequestAction.LIST_CHANGE_SETS,
     version=PostListChangeSetsRequestVersion.TWO_THOUSAND_TEN0515,
@@ -8469,7 +7828,7 @@ client.post_list_change_sets(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_list_exports</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_list_exports</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -8496,22 +7855,14 @@ client.post_list_change_sets(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetListExportsRequestAction,
-    GetListExportsRequestVersion,
-)
+from fern import FernApi, GetListExportsRequestAction, GetListExportsRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_list_exports(
     action=GetListExportsRequestAction.LIST_EXPORTS,
     version=GetListExportsRequestVersion.TWO_THOUSAND_TEN0515,
@@ -8567,7 +7918,7 @@ client.get_list_exports(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_list_exports</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_list_exports</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -8594,22 +7945,14 @@ client.get_list_exports(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostListExportsRequestAction,
-    PostListExportsRequestVersion,
-)
+from fern import FernApi, PostListExportsRequestAction, PostListExportsRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_list_exports(
     action=PostListExportsRequestAction.LIST_EXPORTS,
     version=PostListExportsRequestVersion.TWO_THOUSAND_TEN0515,
@@ -8665,7 +8008,7 @@ client.post_list_exports(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_list_imports</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_list_imports</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -8692,22 +8035,14 @@ client.post_list_exports(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetListImportsRequestAction,
-    GetListImportsRequestVersion,
-)
+from fern import FernApi, GetListImportsRequestAction, GetListImportsRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_list_imports(
     export_name="ExportName",
     action=GetListImportsRequestAction.LIST_IMPORTS,
@@ -8772,7 +8107,7 @@ client.get_list_imports(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_list_imports</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_list_imports</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -8799,22 +8134,14 @@ client.get_list_imports(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostListImportsRequestAction,
-    PostListImportsRequestVersion,
-)
+from fern import FernApi, PostListImportsRequestAction, PostListImportsRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_list_imports(
     action=PostListImportsRequestAction.LIST_IMPORTS,
     version=PostListImportsRequestVersion.TWO_THOUSAND_TEN0515,
@@ -8870,7 +8197,7 @@ client.post_list_imports(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_list_stack_instances</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_list_stack_instances</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -8897,22 +8224,14 @@ Returns summary information about stack instances that are associated with the s
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetListStackInstancesRequestAction,
-    GetListStackInstancesRequestVersion,
-)
+from fern import FernApi, GetListStackInstancesRequestAction, GetListStackInstancesRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_list_stack_instances(
     stack_set_name="StackSetName",
     action=GetListStackInstancesRequestAction.LIST_STACK_INSTANCES,
@@ -8973,9 +8292,7 @@ client.get_list_stack_instances(
 <dl>
 <dd>
 
-**filters:** `typing.Optional[
-    typing.Union[StackInstanceFilter, typing.Sequence[StackInstanceFilter]]
-]` — The filter to apply to stack instances
+**filters:** `typing.Optional[typing.Union[StackInstanceFilter, typing.Sequence[StackInstanceFilter]]]` — The filter to apply to stack instances
     
 </dd>
 </dl>
@@ -9019,7 +8336,7 @@ client.get_list_stack_instances(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_list_stack_instances</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_list_stack_instances</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -9046,22 +8363,14 @@ Returns summary information about stack instances that are associated with the s
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostListStackInstancesRequestAction,
-    PostListStackInstancesRequestVersion,
-)
+from fern import FernApi, PostListStackInstancesRequestAction, PostListStackInstancesRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_list_stack_instances(
     action=PostListStackInstancesRequestAction.LIST_STACK_INSTANCES,
     version=PostListStackInstancesRequestVersion.TWO_THOUSAND_TEN0515,
@@ -9125,7 +8434,7 @@ client.post_list_stack_instances(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_list_stack_resources</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_list_stack_resources</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -9152,22 +8461,14 @@ client.post_list_stack_instances(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetListStackResourcesRequestAction,
-    GetListStackResourcesRequestVersion,
-)
+from fern import FernApi, GetListStackResourcesRequestAction, GetListStackResourcesRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_list_stack_resources(
     stack_name="StackName",
     action=GetListStackResourcesRequestAction.LIST_STACK_RESOURCES,
@@ -9232,7 +8533,7 @@ client.get_list_stack_resources(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_list_stack_resources</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_list_stack_resources</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -9259,22 +8560,14 @@ client.get_list_stack_resources(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostListStackResourcesRequestAction,
-    PostListStackResourcesRequestVersion,
-)
+from fern import FernApi, PostListStackResourcesRequestAction, PostListStackResourcesRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_list_stack_resources(
     action=PostListStackResourcesRequestAction.LIST_STACK_RESOURCES,
     version=PostListStackResourcesRequestVersion.TWO_THOUSAND_TEN0515,
@@ -9330,7 +8623,7 @@ client.post_list_stack_resources(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_list_stack_set_operation_results</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_list_stack_set_operation_results</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -9357,22 +8650,14 @@ Returns summary information about the results of a stack set operation.
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetListStackSetOperationResultsRequestAction,
-    GetListStackSetOperationResultsRequestVersion,
-)
+from fern import FernApi, GetListStackSetOperationResultsRequestAction, GetListStackSetOperationResultsRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_list_stack_set_operation_results(
     stack_set_name="StackSetName",
     operation_id="x",
@@ -9450,9 +8735,7 @@ client.get_list_stack_set_operation_results(
 <dl>
 <dd>
 
-**filters:** `typing.Optional[
-    typing.Union[OperationResultFilter, typing.Sequence[OperationResultFilter]]
-]` — The filter to apply to operation results.
+**filters:** `typing.Optional[typing.Union[OperationResultFilter, typing.Sequence[OperationResultFilter]]]` — The filter to apply to operation results.
     
 </dd>
 </dl>
@@ -9472,7 +8755,7 @@ client.get_list_stack_set_operation_results(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_list_stack_set_operation_results</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_list_stack_set_operation_results</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -9499,22 +8782,14 @@ Returns summary information about the results of a stack set operation.
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostListStackSetOperationResultsRequestAction,
-    PostListStackSetOperationResultsRequestVersion,
-)
+from fern import FernApi, PostListStackSetOperationResultsRequestAction, PostListStackSetOperationResultsRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_list_stack_set_operation_results(
     action=PostListStackSetOperationResultsRequestAction.LIST_STACK_SET_OPERATION_RESULTS,
     version=PostListStackSetOperationResultsRequestVersion.TWO_THOUSAND_TEN0515,
@@ -9578,7 +8853,7 @@ client.post_list_stack_set_operation_results(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_list_stack_set_operations</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_list_stack_set_operations</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -9605,22 +8880,14 @@ Returns summary information about operations performed on a stack set.
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetListStackSetOperationsRequestAction,
-    GetListStackSetOperationsRequestVersion,
-)
+from fern import FernApi, GetListStackSetOperationsRequestAction, GetListStackSetOperationsRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_list_stack_set_operations(
     stack_set_name="StackSetName",
     action=GetListStackSetOperationsRequestAction.LIST_STACK_SET_OPERATIONS,
@@ -9701,7 +8968,7 @@ client.get_list_stack_set_operations(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_list_stack_set_operations</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_list_stack_set_operations</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -9728,22 +8995,14 @@ Returns summary information about operations performed on a stack set.
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostListStackSetOperationsRequestAction,
-    PostListStackSetOperationsRequestVersion,
-)
+from fern import FernApi, PostListStackSetOperationsRequestAction, PostListStackSetOperationsRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_list_stack_set_operations(
     action=PostListStackSetOperationsRequestAction.LIST_STACK_SET_OPERATIONS,
     version=PostListStackSetOperationsRequestVersion.TWO_THOUSAND_TEN0515,
@@ -9807,7 +9066,7 @@ client.post_list_stack_set_operations(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_list_stack_sets</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_list_stack_sets</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -9834,22 +9093,14 @@ client.post_list_stack_set_operations(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetListStackSetsRequestAction,
-    GetListStackSetsRequestVersion,
-)
+from fern import FernApi, GetListStackSetsRequestAction, GetListStackSetsRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_list_stack_sets(
     action=GetListStackSetsRequestAction.LIST_STACK_SETS,
     version=GetListStackSetsRequestVersion.TWO_THOUSAND_TEN0515,
@@ -9929,7 +9180,7 @@ client.get_list_stack_sets(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_list_stack_sets</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_list_stack_sets</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -9956,22 +9207,14 @@ client.get_list_stack_sets(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostListStackSetsRequestAction,
-    PostListStackSetsRequestVersion,
-)
+from fern import FernApi, PostListStackSetsRequestAction, PostListStackSetsRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_list_stack_sets(
     action=PostListStackSetsRequestAction.LIST_STACK_SETS,
     version=PostListStackSetsRequestVersion.TWO_THOUSAND_TEN0515,
@@ -10035,7 +9278,7 @@ client.post_list_stack_sets(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_list_stacks</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_list_stacks</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -10062,22 +9305,14 @@ Returns the summary information for stacks whose status matches the specified St
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetListStacksRequestAction,
-    GetListStacksRequestVersion,
-)
+from fern import FernApi, GetListStacksRequestAction, GetListStacksRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_list_stacks(
     action=GetListStacksRequestAction.LIST_STACKS,
     version=GetListStacksRequestVersion.TWO_THOUSAND_TEN0515,
@@ -10141,7 +9376,7 @@ client.get_list_stacks(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_list_stacks</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_list_stacks</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -10168,22 +9403,14 @@ Returns the summary information for stacks whose status matches the specified St
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostListStacksRequestAction,
-    PostListStacksRequestVersion,
-)
+from fern import FernApi, PostListStacksRequestAction, PostListStacksRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_list_stacks(
     action=PostListStacksRequestAction.LIST_STACKS,
     version=PostListStacksRequestVersion.TWO_THOUSAND_TEN0515,
@@ -10239,7 +9466,7 @@ client.post_list_stacks(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_list_type_registrations</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_list_type_registrations</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -10266,22 +9493,14 @@ Returns a list of registration tokens for the specified extension(s).
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetListTypeRegistrationsRequestAction,
-    GetListTypeRegistrationsRequestVersion,
-)
+from fern import FernApi, GetListTypeRegistrationsRequestAction, GetListTypeRegistrationsRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_list_type_registrations(
     action=GetListTypeRegistrationsRequestAction.LIST_TYPE_REGISTRATIONS,
     version=GetListTypeRegistrationsRequestVersion.TWO_THOUSAND_TEN0515,
@@ -10377,7 +9596,7 @@ client.get_list_type_registrations(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_list_type_registrations</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_list_type_registrations</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -10404,22 +9623,14 @@ Returns a list of registration tokens for the specified extension(s).
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostListTypeRegistrationsRequestAction,
-    PostListTypeRegistrationsRequestVersion,
-)
+from fern import FernApi, PostListTypeRegistrationsRequestAction, PostListTypeRegistrationsRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_list_type_registrations(
     action=PostListTypeRegistrationsRequestAction.LIST_TYPE_REGISTRATIONS,
     version=PostListTypeRegistrationsRequestVersion.TWO_THOUSAND_TEN0515,
@@ -10483,7 +9694,7 @@ client.post_list_type_registrations(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_list_type_versions</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_list_type_versions</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -10510,22 +9721,14 @@ Returns summary information about the versions of an extension.
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetListTypeVersionsRequestAction,
-    GetListTypeVersionsRequestVersion,
-)
+from fern import FernApi, GetListTypeVersionsRequestAction, GetListTypeVersionsRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_list_type_versions(
     action=GetListTypeVersionsRequestAction.LIST_TYPE_VERSIONS,
     version=GetListTypeVersionsRequestVersion.TWO_THOUSAND_TEN0515,
@@ -10629,7 +9832,7 @@ client.get_list_type_versions(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_list_type_versions</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_list_type_versions</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -10656,22 +9859,14 @@ Returns summary information about the versions of an extension.
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostListTypeVersionsRequestAction,
-    PostListTypeVersionsRequestVersion,
-)
+from fern import FernApi, PostListTypeVersionsRequestAction, PostListTypeVersionsRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_list_type_versions(
     action=PostListTypeVersionsRequestAction.LIST_TYPE_VERSIONS,
     version=PostListTypeVersionsRequestVersion.TWO_THOUSAND_TEN0515,
@@ -10735,7 +9930,7 @@ client.post_list_type_versions(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_list_types</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_list_types</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -10763,17 +9958,13 @@ Returns summary information about extension that have been registered with Cloud
 
 ```python
 from fern import FernApi, GetListTypesRequestAction, GetListTypesRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_list_types(
     action=GetListTypesRequestAction.LIST_TYPES,
     version=GetListTypesRequestVersion.TWO_THOUSAND_TEN0515,
@@ -10877,7 +10068,7 @@ client.get_list_types(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_list_types</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_list_types</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -10904,22 +10095,14 @@ Returns summary information about extension that have been registered with Cloud
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostListTypesRequestAction,
-    PostListTypesRequestVersion,
-)
+from fern import FernApi, PostListTypesRequestAction, PostListTypesRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_list_types(
     action=PostListTypesRequestAction.LIST_TYPES,
     version=PostListTypesRequestVersion.TWO_THOUSAND_TEN0515,
@@ -10983,7 +10166,7 @@ client.post_list_types(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_publish_type</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_publish_type</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -11010,22 +10193,14 @@ client.post_list_types(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetPublishTypeRequestAction,
-    GetPublishTypeRequestVersion,
-)
+from fern import FernApi, GetPublishTypeRequestAction, GetPublishTypeRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_publish_type(
     action=GetPublishTypeRequestAction.PUBLISH_TYPE,
     version=GetPublishTypeRequestVersion.TWO_THOUSAND_TEN0515,
@@ -11105,7 +10280,7 @@ client.get_publish_type(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_publish_type</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_publish_type</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -11132,22 +10307,14 @@ client.get_publish_type(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostPublishTypeRequestAction,
-    PostPublishTypeRequestVersion,
-)
+from fern import FernApi, PostPublishTypeRequestAction, PostPublishTypeRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_publish_type(
     action=PostPublishTypeRequestAction.PUBLISH_TYPE,
     version=PostPublishTypeRequestVersion.TWO_THOUSAND_TEN0515,
@@ -11195,7 +10362,7 @@ client.post_publish_type(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_record_handler_progress</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_record_handler_progress</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -11222,23 +10389,14 @@ client.post_publish_type(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetRecordHandlerProgressRequestAction,
-    GetRecordHandlerProgressRequestOperationStatus,
-    GetRecordHandlerProgressRequestVersion,
-)
+from fern import FernApi, GetRecordHandlerProgressRequestOperationStatus, GetRecordHandlerProgressRequestAction, GetRecordHandlerProgressRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_record_handler_progress(
     bearer_token="x",
     operation_status=GetRecordHandlerProgressRequestOperationStatus.PENDING,
@@ -11344,7 +10502,7 @@ client.get_record_handler_progress(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_record_handler_progress</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_record_handler_progress</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -11371,22 +10529,14 @@ client.get_record_handler_progress(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostRecordHandlerProgressRequestAction,
-    PostRecordHandlerProgressRequestVersion,
-)
+from fern import FernApi, PostRecordHandlerProgressRequestAction, PostRecordHandlerProgressRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_record_handler_progress(
     action=PostRecordHandlerProgressRequestAction.RECORD_HANDLER_PROGRESS,
     version=PostRecordHandlerProgressRequestVersion.TWO_THOUSAND_TEN0515,
@@ -11434,7 +10584,7 @@ client.post_record_handler_progress(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_register_publisher</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_register_publisher</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -11461,22 +10611,14 @@ client.post_record_handler_progress(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetRegisterPublisherRequestAction,
-    GetRegisterPublisherRequestVersion,
-)
+from fern import FernApi, GetRegisterPublisherRequestAction, GetRegisterPublisherRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_register_publisher(
     action=GetRegisterPublisherRequestAction.REGISTER_PUBLISHER,
     version=GetRegisterPublisherRequestVersion.TWO_THOUSAND_TEN0515,
@@ -11540,7 +10682,7 @@ client.get_register_publisher(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_register_publisher</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_register_publisher</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -11567,22 +10709,14 @@ client.get_register_publisher(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostRegisterPublisherRequestAction,
-    PostRegisterPublisherRequestVersion,
-)
+from fern import FernApi, PostRegisterPublisherRequestAction, PostRegisterPublisherRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_register_publisher(
     action=PostRegisterPublisherRequestAction.REGISTER_PUBLISHER,
     version=PostRegisterPublisherRequestVersion.TWO_THOUSAND_TEN0515,
@@ -11630,7 +10764,7 @@ client.post_register_publisher(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_register_type</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_register_type</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -11657,22 +10791,14 @@ client.post_register_publisher(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetRegisterTypeRequestAction,
-    GetRegisterTypeRequestVersion,
-)
+from fern import FernApi, GetRegisterTypeRequestAction, GetRegisterTypeRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_register_type(
     type_name="strawberry",
     schema_handler_package="x",
@@ -11770,7 +10896,7 @@ client.get_register_type(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_register_type</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_register_type</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -11797,22 +10923,14 @@ client.get_register_type(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostRegisterTypeRequestAction,
-    PostRegisterTypeRequestVersion,
-)
+from fern import FernApi, PostRegisterTypeRequestAction, PostRegisterTypeRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_register_type(
     action=PostRegisterTypeRequestAction.REGISTER_TYPE,
     version=PostRegisterTypeRequestVersion.TWO_THOUSAND_TEN0515,
@@ -11860,7 +10978,7 @@ client.post_register_type(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_rollback_stack</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_rollback_stack</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -11887,22 +11005,14 @@ client.post_register_type(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetRollbackStackRequestAction,
-    GetRollbackStackRequestVersion,
-)
+from fern import FernApi, GetRollbackStackRequestAction, GetRollbackStackRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_rollback_stack(
     stack_name="x",
     action=GetRollbackStackRequestAction.ROLLBACK_STACK,
@@ -11975,7 +11085,7 @@ client.get_rollback_stack(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_rollback_stack</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_rollback_stack</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -12002,22 +11112,14 @@ client.get_rollback_stack(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostRollbackStackRequestAction,
-    PostRollbackStackRequestVersion,
-)
+from fern import FernApi, PostRollbackStackRequestAction, PostRollbackStackRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_rollback_stack(
     action=PostRollbackStackRequestAction.ROLLBACK_STACK,
     version=PostRollbackStackRequestVersion.TWO_THOUSAND_TEN0515,
@@ -12092,22 +11194,14 @@ Sets a stack policy for a specified stack.
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetSetStackPolicyRequestAction,
-    GetSetStackPolicyRequestVersion,
-)
+from fern import FernApi, GetSetStackPolicyRequestAction, GetSetStackPolicyRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_set_stack_policy(
     stack_name="StackName",
     action=GetSetStackPolicyRequestAction.SET_STACK_POLICY,
@@ -12207,22 +11301,14 @@ Sets a stack policy for a specified stack.
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostSetStackPolicyRequestAction,
-    PostSetStackPolicyRequestVersion,
-)
+from fern import FernApi, PostSetStackPolicyRequestAction, PostSetStackPolicyRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_set_stack_policy(
     action=PostSetStackPolicyRequestAction.SET_STACK_POLICY,
     version=PostSetStackPolicyRequestVersion.TWO_THOUSAND_TEN0515,
@@ -12270,7 +11356,7 @@ client.post_set_stack_policy(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_set_type_configuration</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_set_type_configuration</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -12297,22 +11383,14 @@ client.post_set_stack_policy(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetSetTypeConfigurationRequestAction,
-    GetSetTypeConfigurationRequestVersion,
-)
+from fern import FernApi, GetSetTypeConfigurationRequestAction, GetSetTypeConfigurationRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_set_type_configuration(
     configuration="x",
     action=GetSetTypeConfigurationRequestAction.SET_TYPE_CONFIGURATION,
@@ -12401,7 +11479,7 @@ client.get_set_type_configuration(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_set_type_configuration</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_set_type_configuration</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -12428,22 +11506,14 @@ client.get_set_type_configuration(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostSetTypeConfigurationRequestAction,
-    PostSetTypeConfigurationRequestVersion,
-)
+from fern import FernApi, PostSetTypeConfigurationRequestAction, PostSetTypeConfigurationRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_set_type_configuration(
     action=PostSetTypeConfigurationRequestAction.SET_TYPE_CONFIGURATION,
     version=PostSetTypeConfigurationRequestVersion.TWO_THOUSAND_TEN0515,
@@ -12491,7 +11561,7 @@ client.post_set_type_configuration(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_set_type_default_version</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_set_type_default_version</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -12518,22 +11588,14 @@ Specify the default version of an extension. The default version of an extension
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetSetTypeDefaultVersionRequestAction,
-    GetSetTypeDefaultVersionRequestVersion,
-)
+from fern import FernApi, GetSetTypeDefaultVersionRequestAction, GetSetTypeDefaultVersionRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_set_type_default_version(
     action=GetSetTypeDefaultVersionRequestAction.SET_TYPE_DEFAULT_VERSION,
     version=GetSetTypeDefaultVersionRequestVersion.TWO_THOUSAND_TEN0515,
@@ -12613,7 +11675,7 @@ client.get_set_type_default_version(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_set_type_default_version</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_set_type_default_version</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -12640,22 +11702,14 @@ Specify the default version of an extension. The default version of an extension
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostSetTypeDefaultVersionRequestAction,
-    PostSetTypeDefaultVersionRequestVersion,
-)
+from fern import FernApi, PostSetTypeDefaultVersionRequestAction, PostSetTypeDefaultVersionRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_set_type_default_version(
     action=PostSetTypeDefaultVersionRequestAction.SET_TYPE_DEFAULT_VERSION,
     version=PostSetTypeDefaultVersionRequestVersion.TWO_THOUSAND_TEN0515,
@@ -12730,23 +11784,14 @@ Sends a signal to the specified resource with a success or failure status. You c
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetSignalResourceRequestAction,
-    GetSignalResourceRequestStatus,
-    GetSignalResourceRequestVersion,
-)
+from fern import FernApi, GetSignalResourceRequestStatus, GetSignalResourceRequestAction, GetSignalResourceRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_signal_resource(
     stack_name="StackName",
     logical_resource_id="LogicalResourceId",
@@ -12857,22 +11902,14 @@ Sends a signal to the specified resource with a success or failure status. You c
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostSignalResourceRequestAction,
-    PostSignalResourceRequestVersion,
-)
+from fern import FernApi, PostSignalResourceRequestAction, PostSignalResourceRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_signal_resource(
     action=PostSignalResourceRequestAction.SIGNAL_RESOURCE,
     version=PostSignalResourceRequestVersion.TWO_THOUSAND_TEN0515,
@@ -12920,7 +11957,7 @@ client.post_signal_resource(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_stop_stack_set_operation</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_stop_stack_set_operation</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -12947,22 +11984,14 @@ Stops an in-progress operation on a stack set and its associated stack instances
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetStopStackSetOperationRequestAction,
-    GetStopStackSetOperationRequestVersion,
-)
+from fern import FernApi, GetStopStackSetOperationRequestAction, GetStopStackSetOperationRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_stop_stack_set_operation(
     stack_set_name="StackSetName",
     operation_id="x",
@@ -13036,7 +12065,7 @@ client.get_stop_stack_set_operation(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_stop_stack_set_operation</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_stop_stack_set_operation</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -13063,22 +12092,14 @@ Stops an in-progress operation on a stack set and its associated stack instances
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostStopStackSetOperationRequestAction,
-    PostStopStackSetOperationRequestVersion,
-)
+from fern import FernApi, PostStopStackSetOperationRequestAction, PostStopStackSetOperationRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_stop_stack_set_operation(
     action=PostStopStackSetOperationRequestAction.STOP_STACK_SET_OPERATION,
     version=PostStopStackSetOperationRequestVersion.TWO_THOUSAND_TEN0515,
@@ -13126,7 +12147,7 @@ client.post_stop_stack_set_operation(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_test_type</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_test_type</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -13154,17 +12175,13 @@ client.post_stop_stack_set_operation(
 
 ```python
 from fern import FernApi, GetTestTypeRequestAction, GetTestTypeRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_test_type(
     action=GetTestTypeRequestAction.TEST_TYPE,
     version=GetTestTypeRequestVersion.TWO_THOUSAND_TEN0515,
@@ -13252,7 +12269,7 @@ client.get_test_type(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_test_type</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_test_type</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -13280,17 +12297,13 @@ client.get_test_type(
 
 ```python
 from fern import FernApi, PostTestTypeRequestAction, PostTestTypeRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_test_type(
     action=PostTestTypeRequestAction.TEST_TYPE,
     version=PostTestTypeRequestVersion.TWO_THOUSAND_TEN0515,
@@ -13338,7 +12351,7 @@ client.post_test_type(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_update_stack</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_update_stack</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -13365,22 +12378,14 @@ client.post_test_type(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetUpdateStackRequestAction,
-    GetUpdateStackRequestVersion,
-)
+from fern import FernApi, GetUpdateStackRequestAction, GetUpdateStackRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_update_stack(
     stack_name="StackName",
     action=GetUpdateStackRequestAction.UPDATE_STACK,
@@ -13565,7 +12570,7 @@ client.get_update_stack(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_update_stack</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_update_stack</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -13592,22 +12597,14 @@ client.get_update_stack(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostUpdateStackRequestAction,
-    PostUpdateStackRequestVersion,
-)
+from fern import FernApi, PostUpdateStackRequestAction, PostUpdateStackRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_update_stack(
     action=PostUpdateStackRequestAction.UPDATE_STACK,
     version=PostUpdateStackRequestVersion.TWO_THOUSAND_TEN0515,
@@ -13655,7 +12652,7 @@ client.post_update_stack(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_update_stack_instances</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_update_stack_instances</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -13682,22 +12679,14 @@ client.post_update_stack(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetUpdateStackInstancesRequestAction,
-    GetUpdateStackInstancesRequestVersion,
-)
+from fern import FernApi, GetUpdateStackInstancesRequestAction, GetUpdateStackInstancesRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_update_stack_instances(
     stack_set_name="StackSetName",
     action=GetUpdateStackInstancesRequestAction.UPDATE_STACK_INSTANCES,
@@ -13810,7 +12799,7 @@ client.get_update_stack_instances(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_update_stack_instances</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_update_stack_instances</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -13837,22 +12826,14 @@ client.get_update_stack_instances(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostUpdateStackInstancesRequestAction,
-    PostUpdateStackInstancesRequestVersion,
-)
+from fern import FernApi, PostUpdateStackInstancesRequestAction, PostUpdateStackInstancesRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_update_stack_instances(
     action=PostUpdateStackInstancesRequestAction.UPDATE_STACK_INSTANCES,
     version=PostUpdateStackInstancesRequestVersion.TWO_THOUSAND_TEN0515,
@@ -13900,7 +12881,7 @@ client.post_update_stack_instances(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_update_stack_set</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_update_stack_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -13927,22 +12908,14 @@ client.post_update_stack_instances(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetUpdateStackSetRequestAction,
-    GetUpdateStackSetRequestVersion,
-)
+from fern import FernApi, GetUpdateStackSetRequestAction, GetUpdateStackSetRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_update_stack_set(
     stack_set_name="StackSetName",
     action=GetUpdateStackSetRequestAction.UPDATE_STACK_SET,
@@ -14143,7 +13116,7 @@ client.get_update_stack_set(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_update_stack_set</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_update_stack_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -14170,22 +13143,14 @@ client.get_update_stack_set(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostUpdateStackSetRequestAction,
-    PostUpdateStackSetRequestVersion,
-)
+from fern import FernApi, PostUpdateStackSetRequestAction, PostUpdateStackSetRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_update_stack_set(
     action=PostUpdateStackSetRequestAction.UPDATE_STACK_SET,
     version=PostUpdateStackSetRequestVersion.TWO_THOUSAND_TEN0515,
@@ -14233,7 +13198,7 @@ client.post_update_stack_set(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_update_termination_protection</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_update_termination_protection</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -14260,22 +13225,14 @@ client.post_update_stack_set(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetUpdateTerminationProtectionRequestAction,
-    GetUpdateTerminationProtectionRequestVersion,
-)
+from fern import FernApi, GetUpdateTerminationProtectionRequestAction, GetUpdateTerminationProtectionRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_update_termination_protection(
     enable_termination_protection=True,
     stack_name="x",
@@ -14341,7 +13298,7 @@ client.get_update_termination_protection(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_update_termination_protection</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_update_termination_protection</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -14368,22 +13325,14 @@ client.get_update_termination_protection(
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostUpdateTerminationProtectionRequestAction,
-    PostUpdateTerminationProtectionRequestVersion,
-)
+from fern import FernApi, PostUpdateTerminationProtectionRequestAction, PostUpdateTerminationProtectionRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_update_termination_protection(
     action=PostUpdateTerminationProtectionRequestAction.UPDATE_TERMINATION_PROTECTION,
     version=PostUpdateTerminationProtectionRequestVersion.TWO_THOUSAND_TEN0515,
@@ -14431,7 +13380,7 @@ client.post_update_termination_protection(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_validate_template</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">get_validate_template</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -14458,22 +13407,14 @@ Validates a specified template. CloudFormation first checks if the template is v
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    GetValidateTemplateRequestAction,
-    GetValidateTemplateRequestVersion,
-)
+from fern import FernApi, GetValidateTemplateRequestAction, GetValidateTemplateRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.get_validate_template(
     action=GetValidateTemplateRequestAction.VALIDATE_TEMPLATE,
     version=GetValidateTemplateRequestVersion.TWO_THOUSAND_TEN0515,
@@ -14537,7 +13478,7 @@ client.get_validate_template(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_validate_template</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">post_validate_template</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -14564,22 +13505,14 @@ Validates a specified template. CloudFormation first checks if the template is v
 <dd>
 
 ```python
-from fern import (
-    FernApi,
-    PostValidateTemplateRequestAction,
-    PostValidateTemplateRequestVersion,
-)
+from fern import FernApi, PostValidateTemplateRequestAction, PostValidateTemplateRequestVersion
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    amz_content_sha256="YOUR_AMZ_CONTENT_SHA256",
-    amz_date="YOUR_AMZ_DATE",
-    amz_algorithm="YOUR_AMZ_ALGORITHM",
-    amz_credential="YOUR_AMZ_CREDENTIAL",
-    amz_security_token="YOUR_AMZ_SECURITY_TOKEN",
-    amz_signature="YOUR_AMZ_SIGNATURE",
-    amz_signed_headers="YOUR_AMZ_SIGNED_HEADERS",
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.post_validate_template(
     action=PostValidateTemplateRequestAction.VALIDATE_TEMPLATE,
     version=PostValidateTemplateRequestVersion.TWO_THOUSAND_TEN0515,

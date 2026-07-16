@@ -14,14 +14,18 @@ class RoleMapping(UniversalBaseModel):
     The mapping between a user/principal and their role.
     """
 
-    principal_id: typing_extensions.Annotated[str, FieldMetadata(alias="principalId")] = pydantic.Field()
+    principal_id: typing_extensions.Annotated[
+        str, FieldMetadata(alias="principalId"), pydantic.Field(alias="principalId", description="")
+    ]
     """
     
     """
 
-    principal_name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="principalName")] = (
-        pydantic.Field(default=None)
-    )
+    principal_name: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="principalName"),
+        pydantic.Field(alias="principalName", description="A friendly name for the principal."),
+    ] = None
     """
     A friendly name for the principal.
     """

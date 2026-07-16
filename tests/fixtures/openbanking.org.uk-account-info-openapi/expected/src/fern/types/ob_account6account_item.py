@@ -17,11 +17,19 @@ class ObAccount6AccountItem(UniversalBaseModel):
     Provides the details to identify an account.
     """
 
-    identification: typing_extensions.Annotated[Identification0, FieldMetadata(alias="Identification")]
-    name: typing_extensions.Annotated[typing.Optional[Name0], FieldMetadata(alias="Name")] = None
-    scheme_name: typing_extensions.Annotated[ObExternalAccountIdentification4Code, FieldMetadata(alias="SchemeName")]
+    identification: typing_extensions.Annotated[
+        Identification0, FieldMetadata(alias="Identification"), pydantic.Field(alias="Identification")
+    ]
+    name: typing_extensions.Annotated[
+        typing.Optional[Name0], FieldMetadata(alias="Name"), pydantic.Field(alias="Name")
+    ] = None
+    scheme_name: typing_extensions.Annotated[
+        ObExternalAccountIdentification4Code, FieldMetadata(alias="SchemeName"), pydantic.Field(alias="SchemeName")
+    ]
     secondary_identification: typing_extensions.Annotated[
-        typing.Optional[SecondaryIdentification], FieldMetadata(alias="SecondaryIdentification")
+        typing.Optional[SecondaryIdentification],
+        FieldMetadata(alias="SecondaryIdentification"),
+        pydantic.Field(alias="SecondaryIdentification"),
     ] = None
 
     if IS_PYDANTIC_V2:

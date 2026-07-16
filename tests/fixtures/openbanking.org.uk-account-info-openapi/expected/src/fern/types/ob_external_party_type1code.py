@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObExternalPartyType1Code(str, enum.Enum):
+class ObExternalPartyType1Code(enum.StrEnum):
     """
     Party type, in a coded form.
     """

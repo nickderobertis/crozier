@@ -23,9 +23,14 @@ class DestinyMilestonesDestinyMilestoneRewardEntry(UniversalBaseModel):
     If TRUE, the player has redeemed/picked up/obtained this reward. Feel free to alias this to "gotTheShinyBauble" in your own codebase.
     """
 
-    reward_entry_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="rewardEntryHash")] = (
-        pydantic.Field(default=None)
-    )
+    reward_entry_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="rewardEntryHash"),
+        pydantic.Field(
+            alias="rewardEntryHash",
+            description="The identifier for the reward entry in question. It is important to look up the related DestinyMilestoneRewardEntryDefinition to get the static details about the reward, which you can do by looking up the milestone's DestinyMilestoneDefinition and examining the DestinyMilestoneDefinition.rewards[rewardCategoryHash].rewardEntries[rewardEntryHash] data.",
+        ),
+    ] = None
     """
     The identifier for the reward entry in question. It is important to look up the related DestinyMilestoneRewardEntryDefinition to get the static details about the reward, which you can do by looking up the milestone's DestinyMilestoneDefinition and examining the DestinyMilestoneDefinition.rewards[rewardCategoryHash].rewardEntries[rewardEntryHash] data.
     """

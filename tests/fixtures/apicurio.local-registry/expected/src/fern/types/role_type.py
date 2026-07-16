@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class RoleType(str, enum.Enum):
+class RoleType(enum.StrEnum):
     """ """
 
     READ_ONLY = "READ_ONLY"

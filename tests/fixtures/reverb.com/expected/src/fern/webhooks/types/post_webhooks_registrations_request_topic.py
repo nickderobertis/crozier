@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PostWebhooksRegistrationsRequestTopic(str, enum.Enum):
+class PostWebhooksRegistrationsRequestTopic(enum.StrEnum):
     """
     Valid values: listings/update, listings/publish, listings/bumps-ran-out, orders/create, orders/update, payments/create, payments/update, app/uninstalled
     """

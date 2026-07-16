@@ -14,9 +14,14 @@ class DestinyDefinitionsMilestonesDestinyMilestoneActivityVariantDefinition(Univ
     These will often have more specific details, such as an associated Guided Game, progression steps, tier-specific rewards, and custom values.
     """
 
-    activity_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="activityHash")] = (
-        pydantic.Field(default=None)
-    )
+    activity_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="activityHash"),
+        pydantic.Field(
+            alias="activityHash",
+            description="The hash to use for looking up the variant Activity's definition (DestinyActivityDefinition), where you can find its distinguishing characteristics such as difficulty level and recommended light level. \r\nFrequently, that will be the only distinguishing characteristics in practice, which is somewhat of a bummer.",
+        ),
+    ] = None
     """
     The hash to use for looking up the variant Activity's definition (DestinyActivityDefinition), where you can find its distinguishing characteristics such as difficulty level and recommended light level. 
     Frequently, that will be the only distinguishing characteristics in practice, which is somewhat of a bummer.

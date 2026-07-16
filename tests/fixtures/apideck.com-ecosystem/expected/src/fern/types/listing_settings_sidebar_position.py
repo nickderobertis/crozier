@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ListingSettingsSidebarPosition(str, enum.Enum):
+class ListingSettingsSidebarPosition(enum.StrEnum):
     TOP = "TOP"
     LEFT = "LEFT"
     RIGHT = "RIGHT"

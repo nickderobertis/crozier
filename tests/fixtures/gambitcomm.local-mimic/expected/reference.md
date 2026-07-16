@@ -1,6 +1,6 @@
 # Reference
 ## Access
-<details><summary><code>client.access.<a href="src/fern/access/client.py">add</a>(...)</code></summary>
+<details><summary><code>client.access.<a href="src/fern/access/client.py">add</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -28,11 +28,14 @@ Adds/Overwrites the user entry in the access control database.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.access.add(
     user="user",
     agents="agents",
@@ -89,7 +92,7 @@ client.access.add(
 </dl>
 </details>
 
-<details><summary><code>client.access.<a href="src/fern/access/client.py">del_</a>(...)</code></summary>
+<details><summary><code>client.access.<a href="src/fern/access/client.py">del</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -117,11 +120,14 @@ Using '*' for user clears all the users.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.access.del_(
     user="user",
 )
@@ -160,7 +166,7 @@ client.access.del_(
 </dl>
 </details>
 
-<details><summary><code>client.access.<a href="src/fern/access/client.py">get_acldb</a>()</code></summary>
+<details><summary><code>client.access.<a href="src/fern/access/client.py">get_acldb</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -188,11 +194,14 @@ If nothing is specified then this returns "".
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.access.get_acldb()
 
 ```
@@ -221,7 +230,7 @@ client.access.get_acldb()
 </dl>
 </details>
 
-<details><summary><code>client.access.<a href="src/fern/access/client.py">get_admindir</a>()</code></summary>
+<details><summary><code>client.access.<a href="src/fern/access/client.py">get_admindir</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -249,11 +258,14 @@ If nothing is specified in admin/settings.cfg then returns "". If no admin direc
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.access.get_admindir()
 
 ```
@@ -282,7 +294,7 @@ client.access.get_admindir()
 </dl>
 </details>
 
-<details><summary><code>client.access.<a href="src/fern/access/client.py">get_adminuser</a>()</code></summary>
+<details><summary><code>client.access.<a href="src/fern/access/client.py">get_adminuser</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -310,11 +322,14 @@ If nothing is specified in admin/settings.cfg then returns "".
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.access.get_adminuser()
 
 ```
@@ -343,7 +358,7 @@ client.access.get_adminuser()
 </dl>
 </details>
 
-<details><summary><code>client.access.<a href="src/fern/access/client.py">get_enabled</a>()</code></summary>
+<details><summary><code>client.access.<a href="src/fern/access/client.py">get_enabled</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -371,11 +386,14 @@ client.access.get_adminuser()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.access.get_enabled()
 
 ```
@@ -404,7 +422,7 @@ client.access.get_enabled()
 </dl>
 </details>
 
-<details><summary><code>client.access.<a href="src/fern/access/client.py">list</a>()</code></summary>
+<details><summary><code>client.access.<a href="src/fern/access/client.py">list</a>() -> typing.List[AccessEntry]</code></summary>
 <dl>
 <dd>
 
@@ -432,11 +450,14 @@ Each entry consists of user, agents (in minimal range representation) and access
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.access.list()
 
 ```
@@ -465,7 +486,7 @@ client.access.list()
 </dl>
 </details>
 
-<details><summary><code>client.access.<a href="src/fern/access/client.py">load</a>(...)</code></summary>
+<details><summary><code>client.access.<a href="src/fern/access/client.py">load</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -493,11 +514,14 @@ If filename is not specified then the currently set 'acldb' parameter is used.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.access.load(
     filename="filename",
 )
@@ -536,7 +560,7 @@ client.access.load(
 </dl>
 </details>
 
-<details><summary><code>client.access.<a href="src/fern/access/client.py">save</a>(...)</code></summary>
+<details><summary><code>client.access.<a href="src/fern/access/client.py">save</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -564,11 +588,14 @@ If filename is not specified then the currently set 'acldb' parameter is used.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.access.save(
     filename="filename",
 )
@@ -607,7 +634,7 @@ client.access.save(
 </dl>
 </details>
 
-<details><summary><code>client.access.<a href="src/fern/access/client.py">set_acldb</a>(...)</code></summary>
+<details><summary><code>client.access.<a href="src/fern/access/client.py">set_acldb</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -635,11 +662,14 @@ This will be used for subsequent load and save operations.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.access.set_acldb(
     database_name="databaseName",
 )
@@ -678,7 +708,7 @@ client.access.set_acldb(
 </dl>
 </details>
 
-<details><summary><code>client.access.<a href="src/fern/access/client.py">set_enabled</a>(...)</code></summary>
+<details><summary><code>client.access.<a href="src/fern/access/client.py">set_enabled</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -706,11 +736,14 @@ client.access.set_acldb(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.access.set_enabled(
     enabled_or_not="enabledOrNot",
 )
@@ -750,7 +783,7 @@ client.access.set_enabled(
 </details>
 
 ## Agent
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">new</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">new</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -778,15 +811,20 @@ Add an agent.
 
 ```python
 from fern import FernApi, Triplet
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.new(
     agent_num=1,
     ip="IP",
-    request=[Triplet()],
+    request=[
+        Triplet()
+    ],
 )
 
 ```
@@ -819,7 +857,7 @@ client.agent.new(
 <dl>
 <dd>
 
-**request:** `typing.Sequence[Triplet]` 
+**request:** `typing.List[Triplet]` — Triplet array
     
 </dd>
 </dl>
@@ -839,7 +877,7 @@ client.agent.new(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">from_add</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">from_add</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -867,11 +905,14 @@ An empty ipaddress or 0.0.0.0 both imply any address. Similarly an empty port or
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.from_add(
     agent_num=1,
     ip="IP",
@@ -928,7 +969,7 @@ client.agent.from_add(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">from_del</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">from_del</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -956,11 +997,14 @@ An empty ipaddress or 0.0.0.0 both imply any address. Similarly an empty port or
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.from_del(
     agent_num=1,
     ip="IP",
@@ -1017,7 +1061,7 @@ client.agent.from_del(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">from_list</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">from_list</a>(...) -> typing.List[IpSource]</code></summary>
 <dl>
 <dd>
 
@@ -1045,11 +1089,14 @@ This in effect implements source-address-indexing, where 2 agents with the same 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.from_list(
     agent_num=1,
 )
@@ -1088,7 +1135,7 @@ client.agent.from_list(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_changed</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_changed</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -1116,11 +1163,14 @@ has the agent value space changed?
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.get_changed(
     agent_num=1,
 )
@@ -1159,7 +1209,7 @@ client.agent.get_changed(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_config_changed</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_config_changed</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -1187,11 +1237,14 @@ has the lab configuration changed?
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.get_config_changed(
     agent_num=1,
 )
@@ -1230,7 +1283,7 @@ client.agent.get_config_changed(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_delay</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_delay</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -1258,11 +1311,14 @@ The minimum granularity is 10 msec.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.get_delay(
     agent_num=1,
 )
@@ -1301,7 +1357,7 @@ client.agent.get_delay(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_drops</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_drops</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -1329,11 +1385,14 @@ drop rate (every N-th PDU). 0 means no drops.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.get_drops(
     agent_num=1,
 )
@@ -1372,7 +1431,7 @@ client.agent.get_drops(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_host</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_host</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1400,11 +1459,14 @@ Currently, only IPv4 addresses are allowed as the main address of the agent, but
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.get_host(
     agent_num=1,
 )
@@ -1443,7 +1505,7 @@ client.agent.get_host(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_inform_timeout</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_inform_timeout</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -1471,11 +1533,14 @@ The agent will retransmit INFORM PDUs at this interval until it has received a r
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.get_inform_timeout(
     agent_num=1,
 )
@@ -1514,7 +1579,7 @@ client.agent.get_inform_timeout(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_interface</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_interface</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1542,11 +1607,14 @@ network interface card for the agent.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.get_interface(
     agent_num=1,
 )
@@ -1585,7 +1653,7 @@ client.agent.get_interface(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_mask</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_mask</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1613,11 +1681,14 @@ subnet mask of the agent.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.get_mask(
     agent_num=1,
 )
@@ -1656,7 +1727,7 @@ client.agent.get_mask(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_mibs</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_mibs</a>(...) -> typing.List[Triplet]</code></summary>
 <dl>
 <dd>
 
@@ -1684,11 +1755,14 @@ set of MIBs, simulations and scenarios
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.get_mibs(
     agent_num=1,
 )
@@ -1727,7 +1801,7 @@ client.agent.get_mibs(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_number_starts</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_number_starts</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -1755,11 +1829,14 @@ This count is incremented each time an agent starts. It affects the SNMPv3 Engin
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.get_number_starts(
     agent_num=1,
 )
@@ -1798,7 +1875,7 @@ client.agent.get_number_starts(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_oiddir</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_oiddir</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1826,11 +1903,14 @@ MIB directory of the agent.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.get_oiddir(
     agent_num=1,
 )
@@ -1869,7 +1949,7 @@ client.agent.get_oiddir(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_owner</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_owner</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1897,11 +1977,14 @@ owner of the agent.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.get_owner(
     agent_num=1,
 )
@@ -1940,7 +2023,7 @@ client.agent.get_owner(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_pdusize</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_pdusize</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -1968,11 +2051,14 @@ The limit for this configurable is 65536.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.get_pdusize(
     agent_num=1,
 )
@@ -2011,7 +2097,7 @@ client.agent.get_pdusize(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_port</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_port</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2039,11 +2125,14 @@ port number
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.get_port(
     agent_num=1,
 )
@@ -2082,7 +2171,7 @@ client.agent.get_port(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_privdir</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_privdir</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2110,11 +2199,14 @@ private directory of the agent.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.get_privdir(
     agent_num=1,
 )
@@ -2153,7 +2245,7 @@ client.agent.get_privdir(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_protocols</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_protocols</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -2181,11 +2273,14 @@ protocols supported by agent as an array of strings
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.get_protocols(
     agent_num=1,
 )
@@ -2224,7 +2319,7 @@ client.agent.get_protocols(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_read_community</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_read_community</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2252,11 +2347,14 @@ read community string
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.get_read_community(
     agent_num=1,
 )
@@ -2295,7 +2393,7 @@ client.agent.get_read_community(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_scen</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_scen</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -2323,11 +2421,14 @@ first scenario name
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.get_scen(
     agent_num=1,
 )
@@ -2366,7 +2467,7 @@ client.agent.get_scen(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_sim</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_sim</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2394,11 +2495,14 @@ first simulation name
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.get_sim(
     agent_num=1,
 )
@@ -2437,7 +2541,7 @@ client.agent.get_sim(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_starttime</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_starttime</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2465,11 +2569,14 @@ relative start time
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.get_starttime(
     agent_num=1,
 )
@@ -2508,7 +2615,7 @@ client.agent.get_starttime(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_agent_state</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_agent_state</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -2536,11 +2643,14 @@ client.agent.get_starttime(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.get_agent_state(
     agent_num=1,
 )
@@ -2579,7 +2689,7 @@ client.agent.get_agent_state(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_state_changed</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_state_changed</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -2607,11 +2717,14 @@ has the agent state changed?
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.get_state_changed(
     agent_num=1,
 )
@@ -2650,7 +2763,7 @@ client.agent.get_state_changed(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_statistics</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_statistics</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -2678,11 +2791,14 @@ The statistics are returned as 64-bit decimal numbers for the following statisti
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.get_statistics(
     agent_num=1,
 )
@@ -2721,7 +2837,7 @@ client.agent.get_statistics(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_trace</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_trace</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -2749,11 +2865,14 @@ SNMP PDU tracing
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.get_trace(
     agent_num=1,
 )
@@ -2792,7 +2911,7 @@ client.agent.get_trace(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_validate</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_validate</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -2820,11 +2939,14 @@ Is a bitmask in which with the following bits (from LSB) check for type, length,
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.get_validate(
     agent_num=1,
 )
@@ -2863,7 +2985,7 @@ client.agent.get_validate(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_write_community</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_write_community</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2891,11 +3013,14 @@ write community string
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.get_write_community(
     agent_num=1,
 )
@@ -2934,7 +3059,7 @@ client.agent.get_write_community(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">halt</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">halt</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2962,11 +3087,14 @@ Halt the current agent.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.halt(
     agent_num=1,
 )
@@ -3005,7 +3133,7 @@ client.agent.halt(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">add_ipalias</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">add_ipalias</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3033,11 +3161,14 @@ port defaults to 161 if not specified. mask defaults to the class-based network 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.add_ipalias(
     agent_num=1,
     ip="IP",
@@ -3112,7 +3243,7 @@ client.agent.add_ipalias(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">del_ipalias</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">del_ipalias</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3140,11 +3271,14 @@ port defaults to 161 if not specified.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.del_ipalias(
     agent_num=1,
     ip="IP",
@@ -3201,7 +3335,7 @@ client.agent.del_ipalias(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">list_ipaliases</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">list_ipaliases</a>(...) -> typing.List[IpAlias]</code></summary>
 <dl>
 <dd>
 
@@ -3229,11 +3363,14 @@ The agent host address (set with mimic agent set host) is not in this list, sinc
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.list_ipaliases(
     agent_num=1,
 )
@@ -3272,7 +3409,7 @@ client.agent.list_ipaliases(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">start_ipalias</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">start_ipalias</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3300,11 +3437,14 @@ port defaults to 161 if not specified.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.start_ipalias(
     agent_num=1,
     ip="IP",
@@ -3361,7 +3501,7 @@ client.agent.start_ipalias(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">status_ipalias</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">status_ipalias</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3389,11 +3529,14 @@ port defaults to 161 if not specified.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.status_ipalias(
     agent_num=1,
     ip="IP",
@@ -3450,7 +3593,7 @@ client.agent.status_ipalias(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">stop_ipalias</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">stop_ipalias</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3478,11 +3621,14 @@ port defaults to 161 if not specified.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.stop_ipalias(
     agent_num=1,
     ip="IP",
@@ -3539,7 +3685,7 @@ client.agent.stop_ipalias(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">pause_now</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">pause_now</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3567,11 +3713,14 @@ Pause the current agent.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.pause_now(
     agent_num=1,
 )
@@ -3610,7 +3759,7 @@ client.agent.pause_now(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">protocol_get_config</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">protocol_get_config</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -3638,11 +3787,14 @@ Returns the protocol's configuration.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.protocol_get_config(
     agent_num=1,
     prot="prot",
@@ -3690,7 +3842,7 @@ client.agent.protocol_get_config(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">reload</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">reload</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3718,11 +3870,14 @@ This only works for halted agents. The net effect is the same as restarting an a
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.reload(
     agent_num=1,
 )
@@ -3761,7 +3916,7 @@ client.agent.reload(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">remove</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">remove</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3789,11 +3944,14 @@ For speed, this operation will complete asynchronously. The same synchronization
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.remove(
     agent_num=1,
 )
@@ -3832,7 +3990,7 @@ client.agent.remove(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">resume</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">resume</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3860,11 +4018,14 @@ Resume the current agent.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.resume(
     agent_num=1,
 )
@@ -3903,7 +4064,7 @@ client.agent.resume(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">save</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">save</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3931,11 +4092,14 @@ Save agent MIB values.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.save(
     agent_num=1,
 )
@@ -3974,7 +4138,7 @@ client.agent.save(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_delay</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_delay</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -4002,11 +4166,14 @@ The minimum granularity is 10 msec.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.set_delay(
     agent_num=1,
     delay=1,
@@ -4054,7 +4221,7 @@ client.agent.set_delay(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_drops</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_drops</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -4082,11 +4249,14 @@ client.agent.set_delay(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.set_drops(
     agent_num=1,
     drops=1,
@@ -4134,7 +4304,7 @@ client.agent.set_drops(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_host</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_host</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4162,11 +4332,14 @@ Currently, only IPv4 addresses are allowed as the main address of the agent, but
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.set_host(
     agent_num=1,
     host="host",
@@ -4214,7 +4387,7 @@ client.agent.set_host(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_inform_timeout</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_inform_timeout</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -4242,11 +4415,14 @@ The agent will retransmit INFORM PDUs at this interval until it has received a r
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.set_inform_timeout(
     agent_num=1,
     inform_timeout=1,
@@ -4294,7 +4470,7 @@ client.agent.set_inform_timeout(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_interface</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_interface</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4322,11 +4498,14 @@ network interface card for the agent
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.set_interface(
     agent_num=1,
     interface="interface",
@@ -4374,7 +4553,7 @@ client.agent.set_interface(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_mask</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_mask</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4402,11 +4581,14 @@ subnet mask of the agent.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.set_mask(
     agent_num=1,
     mask="mask",
@@ -4454,7 +4636,7 @@ client.agent.set_mask(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_mibs</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_mibs</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4482,14 +4664,19 @@ set of MIBs, simulations and scenarios
 
 ```python
 from fern import FernApi, Triplet
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.set_mibs(
     agent_num=1,
-    request=[Triplet()],
+    request=[
+        Triplet()
+    ],
 )
 
 ```
@@ -4514,7 +4701,7 @@ client.agent.set_mibs(
 <dl>
 <dd>
 
-**request:** `typing.Sequence[Triplet]` 
+**request:** `typing.List[Triplet]` — Triplet array
     
 </dd>
 </dl>
@@ -4534,7 +4721,7 @@ client.agent.set_mibs(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_oiddir</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_oiddir</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4562,11 +4749,14 @@ MIB directory of the agent.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.set_oiddir(
     agent_num=1,
     oiddir="oiddir",
@@ -4614,7 +4804,7 @@ client.agent.set_oiddir(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_owner</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_owner</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4642,11 +4832,14 @@ owner of the agent
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.set_owner(
     agent_num=1,
     owner="owner",
@@ -4694,7 +4887,7 @@ client.agent.set_owner(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_pdusize</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_pdusize</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -4722,11 +4915,14 @@ The limit for this configurable is 65536
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.set_pdusize(
     agent_num=1,
     pdusize=1,
@@ -4774,7 +4970,7 @@ client.agent.set_pdusize(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_port</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_port</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4802,11 +4998,14 @@ port number
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.set_port(
     agent_num=1,
     port=1,
@@ -4854,7 +5053,7 @@ client.agent.set_port(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_privdir</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_privdir</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4882,11 +5081,14 @@ private directory of the agent.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.set_privdir(
     agent_num=1,
     privdir="privdir",
@@ -4934,7 +5136,7 @@ client.agent.set_privdir(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_protocols</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_protocols</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -4962,14 +5164,19 @@ protocols supported by agent as a comma-separated list
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.set_protocols(
     agent_num=1,
-    request=["string"],
+    request=[
+        "string"
+    ],
 )
 
 ```
@@ -4994,7 +5201,7 @@ client.agent.set_protocols(
 <dl>
 <dd>
 
-**request:** `typing.Sequence[str]` 
+**request:** `typing.List[str]` 
     
 </dd>
 </dl>
@@ -5014,7 +5221,7 @@ client.agent.set_protocols(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_read_community</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_read_community</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5042,11 +5249,14 @@ read community string
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.set_read_community(
     agent_num=1,
     read="read",
@@ -5094,7 +5304,7 @@ client.agent.set_read_community(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_starttime</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_starttime</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5122,11 +5332,14 @@ relative start time
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.set_starttime(
     agent_num=1,
     start=1,
@@ -5174,7 +5387,7 @@ client.agent.set_starttime(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_trace</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_trace</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -5202,11 +5415,14 @@ SNMP PDU tracing
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.set_trace(
     agent_num=1,
     trace=1,
@@ -5254,7 +5470,7 @@ client.agent.set_trace(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_validate</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_validate</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -5282,11 +5498,14 @@ Is a bitmask in which with the following bits (from LSB) check for type, length,
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.set_validate(
     agent_num=1,
     validate=1,
@@ -5334,7 +5553,7 @@ client.agent.set_validate(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_write_community</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_write_community</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5362,11 +5581,14 @@ write community string
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.set_write_community(
     agent_num=1,
     write="write",
@@ -5414,7 +5636,7 @@ client.agent.set_write_community(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">start</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">start</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5442,11 +5664,14 @@ For speed, this operation will complete asynchronously. A successful return from
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.start(
     agent_num=1,
 )
@@ -5485,7 +5710,7 @@ client.agent.start(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">stop</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">stop</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5513,11 +5738,14 @@ Agent primary IP address
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.stop(
     agent_num=1,
 )
@@ -5556,7 +5784,7 @@ client.agent.stop(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">store_copy</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">store_copy</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5584,11 +5812,14 @@ This command copies the variable store from the other agent to this agent.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.store_copy(
     agent_num=1,
     other_agent=1,
@@ -5636,7 +5867,7 @@ client.agent.store_copy(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">store_exists</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">store_exists</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5664,11 +5895,14 @@ It returns "1" if the variable exists, else "0".
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.store_exists(
     agent_num=1,
     var="var",
@@ -5716,7 +5950,7 @@ client.agent.store_exists(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">store_get</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">store_get</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5744,11 +5978,14 @@ The value will be returned as a string (like all Tcl values).
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.store_get(
     agent_num=1,
     var="var",
@@ -5796,7 +6033,7 @@ client.agent.store_get(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">store_list</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">store_list</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -5824,11 +6061,14 @@ The list will be a Tcl format list with curly braces "{}" around each list eleme
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.store_list(
     agent_num=1,
 )
@@ -5867,7 +6107,7 @@ client.agent.store_list(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">store_lreplace</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">store_lreplace</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5895,11 +6135,14 @@ These commands treat the variable as a list, and allow to replace an entry in th
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.store_lreplace(
     agent_num=1,
     var="var",
@@ -5965,7 +6208,7 @@ client.agent.store_lreplace(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">store_persists</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">store_persists</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5993,11 +6236,14 @@ It returns "1" if the variable is persistent, else "0".
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.store_persists(
     agent_num=1,
     var="var",
@@ -6045,7 +6291,7 @@ client.agent.store_persists(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">store_set</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">store_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6073,11 +6319,14 @@ The append sub-command will append the value to an existing variable, or create 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.store_set(
     agent_num=1,
     var="var",
@@ -6143,7 +6392,7 @@ client.agent.store_set(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">store_unset</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">store_unset</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6171,11 +6420,14 @@ This will cleanup persistent variables if needed
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.store_unset(
     agent_num=1,
     var="var",
@@ -6223,7 +6475,7 @@ client.agent.store_unset(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">add_timer_script</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">add_timer_script</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6251,11 +6503,14 @@ Add a new timer script to be executed at specified interval (in msec) with the s
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.add_timer_script(
     agent_num=1,
     script="script",
@@ -6321,7 +6576,7 @@ client.agent.add_timer_script(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">del_timer_script</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">del_timer_script</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6349,11 +6604,14 @@ The first scheduled script that matches the script name, and optionally the inte
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.del_timer_script(
     agent_num=1,
     script="script",
@@ -6419,7 +6677,7 @@ client.agent.del_timer_script(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">list_timer_scripts</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">list_timer_scripts</a>(...) -> typing.List[TimerScript]</code></summary>
 <dl>
 <dd>
 
@@ -6447,11 +6705,14 @@ The command mimic timer script list lists global timer scripts, the command /mim
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.list_timer_scripts(
     agent_num=1,
 )
@@ -6490,7 +6751,7 @@ client.agent.list_timer_scripts(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">trap_config_add</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">trap_config_add</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6518,11 +6779,14 @@ Add a trap destination to the set of destinations.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.trap_config_add(
     agent_num=1,
     ip="IP",
@@ -6579,7 +6843,7 @@ client.agent.trap_config_add(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">trap_config_del</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">trap_config_del</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6607,11 +6871,14 @@ Remove a trap destination from the set of destinations.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.trap_config_del(
     agent_num=1,
     ip="IP",
@@ -6668,7 +6935,7 @@ client.agent.trap_config_del(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">trap_config_list</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">trap_config_list</a>(...) -> typing.List[TrapDest]</code></summary>
 <dl>
 <dd>
 
@@ -6696,11 +6963,14 @@ Each trap destination is identified with an IP address and a port number. The de
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.trap_config_list(
     agent_num=1,
 )
@@ -6739,7 +7009,7 @@ client.agent.trap_config_list(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">trap_list</a>(...)</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py">trap_list</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -6767,11 +7037,14 @@ List the outstanding asynchronous traps for this agent instance.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.agent.trap_list(
     agent_num=1,
 )
@@ -6811,7 +7084,7 @@ client.agent.trap_list(
 </details>
 
 ## Coap
-<details><summary><code>client.coap.<a href="src/fern/coap/client.py">protocol_coap_get_args</a>(...)</code></summary>
+<details><summary><code>client.coap.<a href="src/fern/coap/client.py">protocol_coap_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -6839,11 +7112,14 @@ Agent's COAP configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.coap.protocol_coap_get_args(
     agent_num=1,
 )
@@ -6882,7 +7158,7 @@ client.coap.protocol_coap_get_args(
 </dl>
 </details>
 
-<details><summary><code>client.coap.<a href="src/fern/coap/client.py">protocol_coap_get_config</a>(...)</code></summary>
+<details><summary><code>client.coap.<a href="src/fern/coap/client.py">protocol_coap_get_config</a>(...) -> ConfigCoap</code></summary>
 <dl>
 <dd>
 
@@ -6910,11 +7186,14 @@ Agent's COAP configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.coap.protocol_coap_get_config(
     agent_num=1,
 )
@@ -6953,7 +7232,7 @@ client.coap.protocol_coap_get_config(
 </dl>
 </details>
 
-<details><summary><code>client.coap.<a href="src/fern/coap/client.py">protocol_coap_get_statistics</a>(...)</code></summary>
+<details><summary><code>client.coap.<a href="src/fern/coap/client.py">protocol_coap_get_statistics</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -6981,11 +7260,14 @@ Statistics of fields indicated in the headers
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.coap.protocol_coap_get_statistics(
     agent_num=1,
 )
@@ -7024,7 +7306,7 @@ client.coap.protocol_coap_get_statistics(
 </dl>
 </details>
 
-<details><summary><code>client.coap.<a href="src/fern/coap/client.py">protocol_coap_get_trace</a>(...)</code></summary>
+<details><summary><code>client.coap.<a href="src/fern/coap/client.py">protocol_coap_get_trace</a>(...) -> ConfigCoap</code></summary>
 <dl>
 <dd>
 
@@ -7052,11 +7334,14 @@ Trace 1 means enabled, 0 means not
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.coap.protocol_coap_get_trace(
     agent_num=1,
 )
@@ -7095,7 +7380,7 @@ client.coap.protocol_coap_get_trace(
 </dl>
 </details>
 
-<details><summary><code>client.coap.<a href="src/fern/coap/client.py">protocol_coap_set_config</a>(...)</code></summary>
+<details><summary><code>client.coap.<a href="src/fern/coap/client.py">protocol_coap_set_config</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7123,11 +7408,14 @@ Agent's COAP configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.coap.protocol_coap_set_config(
     agent_num=1,
     argument="argument",
@@ -7184,7 +7472,7 @@ client.coap.protocol_coap_set_config(
 </dl>
 </details>
 
-<details><summary><code>client.coap.<a href="src/fern/coap/client.py">protocol_coap_set_trace</a>(...)</code></summary>
+<details><summary><code>client.coap.<a href="src/fern/coap/client.py">protocol_coap_set_trace</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7212,11 +7500,14 @@ client.coap.protocol_coap_set_config(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.coap.protocol_coap_set_trace(
     agent_num=1,
     enable_or_not="enableOrNot",
@@ -7264,7 +7555,7 @@ client.coap.protocol_coap_set_trace(
 </dl>
 </details>
 
-<details><summary><code>client.coap.<a href="src/fern/coap/client.py">protocol_coap_get_stats_hdr</a>()</code></summary>
+<details><summary><code>client.coap.<a href="src/fern/coap/client.py">protocol_coap_get_stats_hdr</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -7292,11 +7583,14 @@ The headers of statistics fields
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.coap.protocol_coap_get_stats_hdr()
 
 ```
@@ -7326,7 +7620,7 @@ client.coap.protocol_coap_get_stats_hdr()
 </details>
 
 ## Dhcp
-<details><summary><code>client.dhcp.<a href="src/fern/dhcp/client.py">protocol_dhcp_get_args</a>(...)</code></summary>
+<details><summary><code>client.dhcp.<a href="src/fern/dhcp/client.py">protocol_dhcp_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -7354,11 +7648,14 @@ Agent's DHCP configuration particulars
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.dhcp.protocol_dhcp_get_args(
     agent_num=1,
 )
@@ -7397,7 +7694,7 @@ client.dhcp.protocol_dhcp_get_args(
 </dl>
 </details>
 
-<details><summary><code>client.dhcp.<a href="src/fern/dhcp/client.py">protocol_dhcp_get_config</a>(...)</code></summary>
+<details><summary><code>client.dhcp.<a href="src/fern/dhcp/client.py">protocol_dhcp_get_config</a>(...) -> ConfigDhcp</code></summary>
 <dl>
 <dd>
 
@@ -7425,11 +7722,14 @@ Agent's DHCP configuration hwaddr,classid,add_options,script
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.dhcp.protocol_dhcp_get_config(
     agent_num=1,
 )
@@ -7468,7 +7768,7 @@ client.dhcp.protocol_dhcp_get_config(
 </dl>
 </details>
 
-<details><summary><code>client.dhcp.<a href="src/fern/dhcp/client.py">protocol_dhcp_get_statistics</a>(...)</code></summary>
+<details><summary><code>client.dhcp.<a href="src/fern/dhcp/client.py">protocol_dhcp_get_statistics</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -7496,11 +7796,14 @@ Statistics of fields indicated in the headers
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.dhcp.protocol_dhcp_get_statistics(
     agent_num=1,
 )
@@ -7539,7 +7842,7 @@ client.dhcp.protocol_dhcp_get_statistics(
 </dl>
 </details>
 
-<details><summary><code>client.dhcp.<a href="src/fern/dhcp/client.py">protocol_dhcp_get_trace</a>(...)</code></summary>
+<details><summary><code>client.dhcp.<a href="src/fern/dhcp/client.py">protocol_dhcp_get_trace</a>(...) -> ConfigDhcp</code></summary>
 <dl>
 <dd>
 
@@ -7567,11 +7870,14 @@ Trace 1 means enabled, 0 means not
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.dhcp.protocol_dhcp_get_trace(
     agent_num=1,
 )
@@ -7610,7 +7916,7 @@ client.dhcp.protocol_dhcp_get_trace(
 </dl>
 </details>
 
-<details><summary><code>client.dhcp.<a href="src/fern/dhcp/client.py">protocol_dhcp_params</a>(...)</code></summary>
+<details><summary><code>client.dhcp.<a href="src/fern/dhcp/client.py">protocol_dhcp_params</a>(...) -> typing.List[typing.Dict[str, typing.Any]]</code></summary>
 <dl>
 <dd>
 
@@ -7638,11 +7944,14 @@ DHCP-OFFER message parameters
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.dhcp.protocol_dhcp_params(
     agent_num=1,
 )
@@ -7681,7 +7990,7 @@ client.dhcp.protocol_dhcp_params(
 </dl>
 </details>
 
-<details><summary><code>client.dhcp.<a href="src/fern/dhcp/client.py">protocol_dhcp_set_config</a>(...)</code></summary>
+<details><summary><code>client.dhcp.<a href="src/fern/dhcp/client.py">protocol_dhcp_set_config</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7709,11 +8018,14 @@ Agent's DHCP configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.dhcp.protocol_dhcp_set_config(
     agent_num=1,
     argument="argument",
@@ -7770,7 +8082,7 @@ client.dhcp.protocol_dhcp_set_config(
 </dl>
 </details>
 
-<details><summary><code>client.dhcp.<a href="src/fern/dhcp/client.py">protocol_dhcp_set_trace</a>(...)</code></summary>
+<details><summary><code>client.dhcp.<a href="src/fern/dhcp/client.py">protocol_dhcp_set_trace</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7798,11 +8110,14 @@ client.dhcp.protocol_dhcp_set_config(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.dhcp.protocol_dhcp_set_trace(
     agent_num=1,
     enable_or_not="enableOrNot",
@@ -7850,7 +8165,7 @@ client.dhcp.protocol_dhcp_set_trace(
 </dl>
 </details>
 
-<details><summary><code>client.dhcp.<a href="src/fern/dhcp/client.py">protocol_dhcp_get_stats_hdr</a>()</code></summary>
+<details><summary><code>client.dhcp.<a href="src/fern/dhcp/client.py">protocol_dhcp_get_stats_hdr</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -7878,11 +8193,14 @@ The headers of statistics fields
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.dhcp.protocol_dhcp_get_stats_hdr()
 
 ```
@@ -7912,7 +8230,7 @@ client.dhcp.protocol_dhcp_get_stats_hdr()
 </details>
 
 ## Ipmi
-<details><summary><code>client.ipmi.<a href="src/fern/ipmi/client.py">protocol_ipmi_get_args</a>(...)</code></summary>
+<details><summary><code>client.ipmi.<a href="src/fern/ipmi/client.py">protocol_ipmi_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -7940,11 +8258,14 @@ Agent's IPMI configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.ipmi.protocol_ipmi_get_args(
     agent_num=1,
 )
@@ -7983,7 +8304,7 @@ client.ipmi.protocol_ipmi_get_args(
 </dl>
 </details>
 
-<details><summary><code>client.ipmi.<a href="src/fern/ipmi/client.py">protocol_ipmi_get_config</a>(...)</code></summary>
+<details><summary><code>client.ipmi.<a href="src/fern/ipmi/client.py">protocol_ipmi_get_config</a>(...) -> ConfigIpmi</code></summary>
 <dl>
 <dd>
 
@@ -8011,11 +8332,14 @@ Agent's IPMI configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.ipmi.protocol_ipmi_get_config(
     agent_num=1,
 )
@@ -8054,7 +8378,7 @@ client.ipmi.protocol_ipmi_get_config(
 </dl>
 </details>
 
-<details><summary><code>client.ipmi.<a href="src/fern/ipmi/client.py">protocol_ipmi_get_statistics</a>(...)</code></summary>
+<details><summary><code>client.ipmi.<a href="src/fern/ipmi/client.py">protocol_ipmi_get_statistics</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -8082,11 +8406,14 @@ Statistics of fields indicated in the headers
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.ipmi.protocol_ipmi_get_statistics(
     agent_num=1,
 )
@@ -8125,7 +8452,7 @@ client.ipmi.protocol_ipmi_get_statistics(
 </dl>
 </details>
 
-<details><summary><code>client.ipmi.<a href="src/fern/ipmi/client.py">protocol_ipmi_get_trace</a>(...)</code></summary>
+<details><summary><code>client.ipmi.<a href="src/fern/ipmi/client.py">protocol_ipmi_get_trace</a>(...) -> ConfigIpmi</code></summary>
 <dl>
 <dd>
 
@@ -8153,11 +8480,14 @@ Trace 1 means enabled, 0 means not
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.ipmi.protocol_ipmi_get_trace(
     agent_num=1,
 )
@@ -8196,7 +8526,7 @@ client.ipmi.protocol_ipmi_get_trace(
 </dl>
 </details>
 
-<details><summary><code>client.ipmi.<a href="src/fern/ipmi/client.py">protocol_ipmi_get_attr</a>(...)</code></summary>
+<details><summary><code>client.ipmi.<a href="src/fern/ipmi/client.py">protocol_ipmi_get_attr</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -8224,11 +8554,14 @@ Attribute can be working_authtype ,session_id, outbound_seq, inbound_seq , field
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.ipmi.protocol_ipmi_get_attr(
     agent_num=1,
     attr="attr",
@@ -8276,7 +8609,7 @@ client.ipmi.protocol_ipmi_get_attr(
 </dl>
 </details>
 
-<details><summary><code>client.ipmi.<a href="src/fern/ipmi/client.py">protocol_ipmi_set_config</a>(...)</code></summary>
+<details><summary><code>client.ipmi.<a href="src/fern/ipmi/client.py">protocol_ipmi_set_config</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -8304,11 +8637,14 @@ Agent's IPMI configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.ipmi.protocol_ipmi_set_config(
     agent_num=1,
     argument="argument",
@@ -8365,7 +8701,7 @@ client.ipmi.protocol_ipmi_set_config(
 </dl>
 </details>
 
-<details><summary><code>client.ipmi.<a href="src/fern/ipmi/client.py">protocol_ipmi_set_trace</a>(...)</code></summary>
+<details><summary><code>client.ipmi.<a href="src/fern/ipmi/client.py">protocol_ipmi_set_trace</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -8393,11 +8729,14 @@ client.ipmi.protocol_ipmi_set_config(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.ipmi.protocol_ipmi_set_trace(
     agent_num=1,
     enable_or_not="enableOrNot",
@@ -8445,7 +8784,7 @@ client.ipmi.protocol_ipmi_set_trace(
 </dl>
 </details>
 
-<details><summary><code>client.ipmi.<a href="src/fern/ipmi/client.py">protocol_ipmi_set_attr</a>(...)</code></summary>
+<details><summary><code>client.ipmi.<a href="src/fern/ipmi/client.py">protocol_ipmi_set_attr</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -8473,11 +8812,14 @@ Attribute can be working_authtype ,session_id, outbound_seq, inbound_seq , field
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.ipmi.protocol_ipmi_set_attr(
     agent_num=1,
     attr="attr",
@@ -8534,7 +8876,7 @@ client.ipmi.protocol_ipmi_set_attr(
 </dl>
 </details>
 
-<details><summary><code>client.ipmi.<a href="src/fern/ipmi/client.py">protocol_ipmi_get_stats_hdr</a>()</code></summary>
+<details><summary><code>client.ipmi.<a href="src/fern/ipmi/client.py">protocol_ipmi_get_stats_hdr</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -8562,11 +8904,14 @@ The headers of statistics fields
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.ipmi.protocol_ipmi_get_stats_hdr()
 
 ```
@@ -8596,7 +8941,7 @@ client.ipmi.protocol_ipmi_get_stats_hdr()
 </details>
 
 ## Mqtt
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_get_protstate</a>(...)</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_get_protstate</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -8624,11 +8969,14 @@ client.ipmi.protocol_ipmi_get_stats_hdr()
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mqtt.protocol_mqtt_client_get_protstate(
     agent_num=1,
 )
@@ -8667,7 +9015,7 @@ client.mqtt.protocol_mqtt_client_get_protstate(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_get_state</a>(...)</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_get_state</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -8695,11 +9043,14 @@ client.mqtt.protocol_mqtt_client_get_protstate(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mqtt.protocol_mqtt_client_get_state(
     agent_num=1,
 )
@@ -8738,7 +9089,7 @@ client.mqtt.protocol_mqtt_client_get_state(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_message_card</a>(...)</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_message_card</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -8766,11 +9117,14 @@ client.mqtt.protocol_mqtt_client_get_state(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mqtt.protocol_mqtt_client_message_card(
     agent_num=1,
 )
@@ -8809,7 +9163,7 @@ client.mqtt.protocol_mqtt_client_message_card(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_message_get</a>(...)</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_message_get</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -8837,11 +9191,14 @@ Attribute can be topic, interval, count, sent , pre, post, properties(list of PU
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mqtt.protocol_mqtt_client_message_get(
     agent_num=1,
     msg_num=1,
@@ -8898,7 +9255,7 @@ client.mqtt.protocol_mqtt_client_message_get(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_message_set</a>(...)</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_message_set</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -8926,11 +9283,14 @@ Attribute can not be sent or properties . Use set/{msgNum}/count/{value} togethe
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mqtt.protocol_mqtt_client_message_set(
     agent_num=1,
     msg_num=1,
@@ -8996,7 +9356,7 @@ client.mqtt.protocol_mqtt_client_message_set(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_resubscribe</a>(...)</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_resubscribe</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -9024,11 +9384,14 @@ Restarts a subscription
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mqtt.protocol_mqtt_client_resubscribe(
     agent_num=1,
     sub_num=1,
@@ -9076,7 +9439,7 @@ client.mqtt.protocol_mqtt_client_resubscribe(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_runtime_abort</a>(...)</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_runtime_abort</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -9104,11 +9467,14 @@ Abort a connection
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mqtt.protocol_mqtt_client_runtime_abort(
     agent_num=1,
 )
@@ -9147,7 +9513,7 @@ client.mqtt.protocol_mqtt_client_runtime_abort(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_runtime_connect</a>(...)</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_runtime_connect</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -9175,11 +9541,14 @@ Start a connection
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mqtt.protocol_mqtt_client_runtime_connect(
     agent_num=1,
 )
@@ -9218,7 +9587,7 @@ client.mqtt.protocol_mqtt_client_runtime_connect(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_runtime_disconnect</a>(...)</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_runtime_disconnect</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -9246,11 +9615,14 @@ Graceful disconnect
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mqtt.protocol_mqtt_client_runtime_disconnect(
     agent_num=1,
 )
@@ -9289,7 +9661,7 @@ client.mqtt.protocol_mqtt_client_runtime_disconnect(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_set_broker</a>(...)</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_set_broker</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -9317,11 +9689,14 @@ Broker IP address
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mqtt.protocol_mqtt_client_set_broker(
     agent_num=1,
     broker_addr="brokerAddr",
@@ -9369,7 +9744,7 @@ client.mqtt.protocol_mqtt_client_set_broker(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_set_cleansession</a>(...)</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_set_cleansession</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -9397,11 +9772,14 @@ client.mqtt.protocol_mqtt_client_set_broker(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mqtt.protocol_mqtt_client_set_cleansession(
     agent_num=1,
     clean_or_not=1,
@@ -9449,7 +9827,7 @@ client.mqtt.protocol_mqtt_client_set_cleansession(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_set_clientid</a>(...)</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_set_clientid</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -9477,11 +9855,14 @@ MQTT client ID
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mqtt.protocol_mqtt_client_set_clientid(
     agent_num=1,
     client_id="clientID",
@@ -9529,7 +9910,7 @@ client.mqtt.protocol_mqtt_client_set_clientid(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_set_keepalive</a>(...)</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_set_keepalive</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -9557,11 +9938,14 @@ Keep alive the TCP connection
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mqtt.protocol_mqtt_client_set_keepalive(
     agent_num=1,
     alive_time=1,
@@ -9609,7 +9993,7 @@ client.mqtt.protocol_mqtt_client_set_keepalive(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_set_on_disconnect</a>(...)</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_set_on_disconnect</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -9637,11 +10021,14 @@ Action to take when MQTT session is disconnected
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mqtt.protocol_mqtt_client_set_on_disconnect(
     agent_num=1,
     action="action",
@@ -9689,7 +10076,7 @@ client.mqtt.protocol_mqtt_client_set_on_disconnect(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_set_password</a>(...)</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_set_password</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -9717,11 +10104,14 @@ Client password
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mqtt.protocol_mqtt_client_set_password(
     agent_num=1,
     password="password",
@@ -9769,7 +10159,7 @@ client.mqtt.protocol_mqtt_client_set_password(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_set_port</a>(...)</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_set_port</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -9797,11 +10187,14 @@ target TCP port
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mqtt.protocol_mqtt_client_set_port(
     agent_num=1,
     port="port",
@@ -9849,7 +10242,7 @@ client.mqtt.protocol_mqtt_client_set_port(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_set_username</a>(...)</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_set_username</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -9877,11 +10270,14 @@ Client username
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mqtt.protocol_mqtt_client_set_username(
     agent_num=1,
     username="username",
@@ -9929,7 +10325,7 @@ client.mqtt.protocol_mqtt_client_set_username(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_set_willmsg</a>(...)</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_set_willmsg</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -9957,11 +10353,14 @@ Will message
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mqtt.protocol_mqtt_client_set_willmsg(
     agent_num=1,
     msg="msg",
@@ -10009,7 +10408,7 @@ client.mqtt.protocol_mqtt_client_set_willmsg(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_set_willqos</a>(...)</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_set_willqos</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -10037,11 +10436,14 @@ QOS field
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mqtt.protocol_mqtt_client_set_willqos(
     agent_num=1,
     qos="qos",
@@ -10089,7 +10491,7 @@ client.mqtt.protocol_mqtt_client_set_willqos(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_set_willretain</a>(...)</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_set_willretain</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -10117,11 +10519,14 @@ Retaining will
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mqtt.protocol_mqtt_client_set_willretain(
     agent_num=1,
     retain="retain",
@@ -10169,7 +10574,7 @@ client.mqtt.protocol_mqtt_client_set_willretain(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_set_willtopic</a>(...)</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_set_willtopic</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -10197,11 +10602,14 @@ Will topic for the will message
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mqtt.protocol_mqtt_client_set_willtopic(
     agent_num=1,
     topic="topic",
@@ -10249,7 +10657,7 @@ client.mqtt.protocol_mqtt_client_set_willtopic(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_subscribe_card</a>(...)</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_subscribe_card</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -10277,11 +10685,14 @@ client.mqtt.protocol_mqtt_client_set_willtopic(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mqtt.protocol_mqtt_client_subscribe_card(
     agent_num=1,
 )
@@ -10320,7 +10731,7 @@ client.mqtt.protocol_mqtt_client_subscribe_card(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_subscribe_get</a>(...)</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_subscribe_get</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -10348,11 +10759,14 @@ Attribute can be topic, properties(list of SUBSCRIBE properties), properties.i (
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mqtt.protocol_mqtt_client_subscribe_get(
     agent_num=1,
     sub_num=1,
@@ -10409,7 +10823,7 @@ client.mqtt.protocol_mqtt_client_subscribe_get(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_subscribe_set</a>(...)</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_subscribe_set</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -10437,11 +10851,14 @@ Attribute can not be properties .
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mqtt.protocol_mqtt_client_subscribe_set(
     agent_num=1,
     sub_num=1,
@@ -10507,7 +10924,7 @@ client.mqtt.protocol_mqtt_client_subscribe_set(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_unsubscribe</a>(...)</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_unsubscribe</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -10535,11 +10952,14 @@ Stops a subscription
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mqtt.protocol_mqtt_client_unsubscribe(
     agent_num=1,
     sub_num=1,
@@ -10587,7 +11007,7 @@ client.mqtt.protocol_mqtt_client_unsubscribe(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_get_args</a>(...)</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -10615,11 +11035,14 @@ Agent's MQTT configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mqtt.protocol_mqtt_get_args(
     agent_num=1,
 )
@@ -10658,7 +11081,7 @@ client.mqtt.protocol_mqtt_get_args(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_get_config</a>(...)</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_get_config</a>(...) -> ConfigMqtt</code></summary>
 <dl>
 <dd>
 
@@ -10686,11 +11109,14 @@ Agent's MQTT configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mqtt.protocol_mqtt_get_config(
     agent_num=1,
 )
@@ -10729,7 +11155,7 @@ client.mqtt.protocol_mqtt_get_config(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_get_statistics</a>(...)</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_get_statistics</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -10757,11 +11183,14 @@ Statistics of fields indicated in the headers
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mqtt.protocol_mqtt_get_statistics(
     agent_num=1,
 )
@@ -10800,7 +11229,7 @@ client.mqtt.protocol_mqtt_get_statistics(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_get_trace</a>(...)</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_get_trace</a>(...) -> ConfigMqtt</code></summary>
 <dl>
 <dd>
 
@@ -10828,11 +11257,14 @@ Trace 1 means enabled, 0 means not
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mqtt.protocol_mqtt_get_trace(
     agent_num=1,
 )
@@ -10871,7 +11303,7 @@ client.mqtt.protocol_mqtt_get_trace(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_set_config</a>(...)</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_set_config</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -10899,11 +11331,14 @@ Agent's MQTT configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mqtt.protocol_mqtt_set_config(
     agent_num=1,
     argument="argument",
@@ -10960,7 +11395,7 @@ client.mqtt.protocol_mqtt_set_config(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_set_trace</a>(...)</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_set_trace</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -10988,11 +11423,14 @@ client.mqtt.protocol_mqtt_set_config(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mqtt.protocol_mqtt_set_trace(
     agent_num=1,
     enable_or_not="enableOrNot",
@@ -11040,7 +11478,7 @@ client.mqtt.protocol_mqtt_set_trace(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_get_stats_hdr</a>()</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_get_stats_hdr</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -11068,11 +11506,14 @@ The headers of statistics fields
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.mqtt.protocol_mqtt_get_stats_hdr()
 
 ```
@@ -11102,7 +11543,7 @@ client.mqtt.protocol_mqtt_get_stats_hdr()
 </details>
 
 ## Netflow
-<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_change_dfs</a>(...)</code></summary>
+<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_change_dfs</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -11130,11 +11571,14 @@ Interval in msec .
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.netflow.protocol_netflow_change_dfs(
     agent_num=1,
     interval=1,
@@ -11182,7 +11626,7 @@ client.netflow.protocol_netflow_change_dfs(
 </dl>
 </details>
 
-<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_change_tfs</a>(...)</code></summary>
+<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_change_tfs</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -11210,11 +11654,14 @@ Interval in msec .
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.netflow.protocol_netflow_change_tfs(
     agent_num=1,
     interval=1,
@@ -11262,7 +11709,7 @@ client.netflow.protocol_netflow_change_tfs(
 </dl>
 </details>
 
-<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_change_attr</a>(...)</code></summary>
+<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_change_attr</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -11290,11 +11737,14 @@ Change attributes
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.netflow.protocol_netflow_change_attr(
     agent_num=1,
     flowset_uid=1,
@@ -11369,7 +11819,7 @@ client.netflow.protocol_netflow_change_attr(
 </dl>
 </details>
 
-<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_list</a>(...)</code></summary>
+<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_list</a>(...) -> typing.List[typing.Dict[str, typing.Any]]</code></summary>
 <dl>
 <dd>
 
@@ -11397,11 +11847,14 @@ Show list of NETFLOW exports
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.netflow.protocol_netflow_list(
     agent_num=1,
 )
@@ -11440,7 +11893,7 @@ client.netflow.protocol_netflow_list(
 </dl>
 </details>
 
-<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_get_args</a>(...)</code></summary>
+<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -11468,11 +11921,14 @@ Agent's NETFLOW configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.netflow.protocol_netflow_get_args(
     agent_num=1,
 )
@@ -11511,7 +11967,7 @@ client.netflow.protocol_netflow_get_args(
 </dl>
 </details>
 
-<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_get_config</a>(...)</code></summary>
+<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_get_config</a>(...) -> ConfigNetflow</code></summary>
 <dl>
 <dd>
 
@@ -11539,11 +11995,14 @@ Agent's NETFLOW configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.netflow.protocol_netflow_get_config(
     agent_num=1,
 )
@@ -11582,7 +12041,7 @@ client.netflow.protocol_netflow_get_config(
 </dl>
 </details>
 
-<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_get_statistics</a>(...)</code></summary>
+<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_get_statistics</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -11610,11 +12069,14 @@ Statistics of fields indicated in the headers
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.netflow.protocol_netflow_get_statistics(
     agent_num=1,
 )
@@ -11653,7 +12115,7 @@ client.netflow.protocol_netflow_get_statistics(
 </dl>
 </details>
 
-<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_get_trace</a>(...)</code></summary>
+<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_get_trace</a>(...) -> ConfigNetflow</code></summary>
 <dl>
 <dd>
 
@@ -11681,11 +12143,14 @@ Trace 1 means enabled, 0 means not
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.netflow.protocol_netflow_get_trace(
     agent_num=1,
 )
@@ -11724,7 +12189,7 @@ client.netflow.protocol_netflow_get_trace(
 </dl>
 </details>
 
-<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_halt</a>(...)</code></summary>
+<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_halt</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -11752,11 +12217,14 @@ Halt NETFLOW traffic
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.netflow.protocol_netflow_halt(
     agent_num=1,
 )
@@ -11795,7 +12263,7 @@ client.netflow.protocol_netflow_halt(
 </dl>
 </details>
 
-<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_reload</a>(...)</code></summary>
+<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_reload</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -11823,11 +12291,14 @@ Reload NETFLOW configuration before resuming traffic
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.netflow.protocol_netflow_reload(
     agent_num=1,
 )
@@ -11866,7 +12337,7 @@ client.netflow.protocol_netflow_reload(
 </dl>
 </details>
 
-<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_resume</a>(...)</code></summary>
+<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_resume</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -11894,11 +12365,14 @@ Resuming traffic
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.netflow.protocol_netflow_resume(
     agent_num=1,
 )
@@ -11937,7 +12411,7 @@ client.netflow.protocol_netflow_resume(
 </dl>
 </details>
 
-<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_set_collector</a>(...)</code></summary>
+<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_set_collector</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -11965,11 +12439,14 @@ Allow changing collector without stopping agent
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.netflow.protocol_netflow_set_collector(
     agent_num=1,
     collector_ip="collectorIP",
@@ -12017,7 +12494,7 @@ client.netflow.protocol_netflow_set_collector(
 </dl>
 </details>
 
-<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_set_config</a>(...)</code></summary>
+<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_set_config</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -12045,11 +12522,14 @@ Agent's NETFLOW configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.netflow.protocol_netflow_set_config(
     agent_num=1,
     argument="argument",
@@ -12106,7 +12586,7 @@ client.netflow.protocol_netflow_set_config(
 </dl>
 </details>
 
-<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_set_file_name</a>(...)</code></summary>
+<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_set_file_name</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -12134,11 +12614,14 @@ Allow reloading the configuration file for an agent without stopping agent
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.netflow.protocol_netflow_set_file_name(
     agent_num=1,
     file_name="fileName",
@@ -12186,7 +12669,7 @@ client.netflow.protocol_netflow_set_file_name(
 </dl>
 </details>
 
-<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_set_trace</a>(...)</code></summary>
+<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_set_trace</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -12214,11 +12697,14 @@ client.netflow.protocol_netflow_set_file_name(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.netflow.protocol_netflow_set_trace(
     agent_num=1,
     enable_or_not="enableOrNot",
@@ -12266,7 +12752,7 @@ client.netflow.protocol_netflow_set_trace(
 </dl>
 </details>
 
-<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_get_stats_hdr</a>()</code></summary>
+<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_get_stats_hdr</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -12294,11 +12780,14 @@ The headers of statistics fields
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.netflow.protocol_netflow_get_stats_hdr()
 
 ```
@@ -12328,7 +12817,7 @@ client.netflow.protocol_netflow_get_stats_hdr()
 </details>
 
 ## Proxy
-<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_get_args</a>(...)</code></summary>
+<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -12356,11 +12845,14 @@ Agent's PROXY configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.proxy.protocol_proxy_get_args(
     agent_num=1,
 )
@@ -12399,7 +12891,7 @@ client.proxy.protocol_proxy_get_args(
 </dl>
 </details>
 
-<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_get_config</a>(...)</code></summary>
+<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_get_config</a>(...) -> ConfigProxy</code></summary>
 <dl>
 <dd>
 
@@ -12427,11 +12919,14 @@ Agent's PROXY configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.proxy.protocol_proxy_get_config(
     agent_num=1,
 )
@@ -12470,7 +12965,7 @@ client.proxy.protocol_proxy_get_config(
 </dl>
 </details>
 
-<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_get_statistics</a>(...)</code></summary>
+<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_get_statistics</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -12498,11 +12993,14 @@ Statistics of fields indicated in the headers
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.proxy.protocol_proxy_get_statistics(
     agent_num=1,
 )
@@ -12541,7 +13039,7 @@ client.proxy.protocol_proxy_get_statistics(
 </dl>
 </details>
 
-<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_get_trace</a>(...)</code></summary>
+<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_get_trace</a>(...) -> ConfigProxy</code></summary>
 <dl>
 <dd>
 
@@ -12569,11 +13067,14 @@ Trace 1 means enabled, 0 means not
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.proxy.protocol_proxy_get_trace(
     agent_num=1,
 )
@@ -12612,7 +13113,7 @@ client.proxy.protocol_proxy_get_trace(
 </dl>
 </details>
 
-<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_port_add</a>(...)</code></summary>
+<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_port_add</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -12640,11 +13141,14 @@ Additional proxy target
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.proxy.protocol_proxy_port_add(
     agent_num=1,
     port=1,
@@ -12710,7 +13214,7 @@ client.proxy.protocol_proxy_port_add(
 </dl>
 </details>
 
-<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_port_isstarted</a>(...)</code></summary>
+<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_port_isstarted</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -12738,11 +13242,14 @@ Check individual target
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.proxy.protocol_proxy_port_isstarted(
     agent_num=1,
     port=1,
@@ -12790,7 +13297,7 @@ client.proxy.protocol_proxy_port_isstarted(
 </dl>
 </details>
 
-<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_port_list</a>(...)</code></summary>
+<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_port_list</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -12804,11 +13311,14 @@ client.proxy.protocol_proxy_port_isstarted(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.proxy.protocol_proxy_port_list(
     agent_num=1,
 )
@@ -12847,7 +13357,7 @@ client.proxy.protocol_proxy_port_list(
 </dl>
 </details>
 
-<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_port_remove</a>(...)</code></summary>
+<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_port_remove</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -12875,11 +13385,14 @@ Remove proxy target
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.proxy.protocol_proxy_port_remove(
     agent_num=1,
     port=1,
@@ -12927,7 +13440,7 @@ client.proxy.protocol_proxy_port_remove(
 </dl>
 </details>
 
-<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_port_start</a>(...)</code></summary>
+<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_port_start</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -12955,11 +13468,14 @@ Start additional target
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.proxy.protocol_proxy_port_start(
     agent_num=1,
     port=1,
@@ -13007,7 +13523,7 @@ client.proxy.protocol_proxy_port_start(
 </dl>
 </details>
 
-<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_port_stop</a>(...)</code></summary>
+<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_port_stop</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -13035,11 +13551,14 @@ Stop additional target
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.proxy.protocol_proxy_port_stop(
     agent_num=1,
     port=1,
@@ -13087,7 +13606,7 @@ client.proxy.protocol_proxy_port_stop(
 </dl>
 </details>
 
-<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_set_config</a>(...)</code></summary>
+<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_set_config</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -13115,11 +13634,14 @@ Agent's PROXY configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.proxy.protocol_proxy_set_config(
     agent_num=1,
     argument="argument",
@@ -13176,7 +13698,7 @@ client.proxy.protocol_proxy_set_config(
 </dl>
 </details>
 
-<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_set_trace</a>(...)</code></summary>
+<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_set_trace</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -13204,11 +13726,14 @@ client.proxy.protocol_proxy_set_config(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.proxy.protocol_proxy_set_trace(
     agent_num=1,
     enable_or_not="enableOrNot",
@@ -13256,7 +13781,7 @@ client.proxy.protocol_proxy_set_trace(
 </dl>
 </details>
 
-<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_get_stats_hdr</a>()</code></summary>
+<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_get_stats_hdr</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -13284,11 +13809,14 @@ The headers of statistics fields
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.proxy.protocol_proxy_get_stats_hdr()
 
 ```
@@ -13318,7 +13846,7 @@ client.proxy.protocol_proxy_get_stats_hdr()
 </details>
 
 ## Sflow
-<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py">protocol_sflow_get_args</a>(...)</code></summary>
+<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py">protocol_sflow_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -13346,11 +13874,14 @@ Agent's SFLOW configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.sflow.protocol_sflow_get_args(
     agent_num=1,
 )
@@ -13389,7 +13920,7 @@ client.sflow.protocol_sflow_get_args(
 </dl>
 </details>
 
-<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py">protocol_sflow_get_config</a>(...)</code></summary>
+<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py">protocol_sflow_get_config</a>(...) -> ConfigSflow</code></summary>
 <dl>
 <dd>
 
@@ -13417,11 +13948,14 @@ Agent's SFLOW configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.sflow.protocol_sflow_get_config(
     agent_num=1,
 )
@@ -13460,7 +13994,7 @@ client.sflow.protocol_sflow_get_config(
 </dl>
 </details>
 
-<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py">protocol_sflow_get_statistics</a>(...)</code></summary>
+<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py">protocol_sflow_get_statistics</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -13488,11 +14022,14 @@ Statistics of fields indicated in the headers
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.sflow.protocol_sflow_get_statistics(
     agent_num=1,
 )
@@ -13531,7 +14068,7 @@ client.sflow.protocol_sflow_get_statistics(
 </dl>
 </details>
 
-<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py">protocol_sflow_get_trace</a>(...)</code></summary>
+<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py">protocol_sflow_get_trace</a>(...) -> ConfigSflow</code></summary>
 <dl>
 <dd>
 
@@ -13559,11 +14096,14 @@ Trace 1 means enabled, 0 means not
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.sflow.protocol_sflow_get_trace(
     agent_num=1,
 )
@@ -13602,7 +14142,7 @@ client.sflow.protocol_sflow_get_trace(
 </dl>
 </details>
 
-<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py">protocol_sflow_halt</a>(...)</code></summary>
+<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py">protocol_sflow_halt</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -13630,11 +14170,14 @@ Halt SFLOW traffic
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.sflow.protocol_sflow_halt(
     agent_num=1,
 )
@@ -13673,7 +14216,7 @@ client.sflow.protocol_sflow_halt(
 </dl>
 </details>
 
-<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py">protocol_sflow_reload</a>(...)</code></summary>
+<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py">protocol_sflow_reload</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -13701,11 +14244,14 @@ Reload SFLOW configuration before resuming traffic
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.sflow.protocol_sflow_reload(
     agent_num=1,
 )
@@ -13744,7 +14290,7 @@ client.sflow.protocol_sflow_reload(
 </dl>
 </details>
 
-<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py">protocol_sflow_resume</a>(...)</code></summary>
+<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py">protocol_sflow_resume</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -13772,11 +14318,14 @@ Resuming traffic
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.sflow.protocol_sflow_resume(
     agent_num=1,
 )
@@ -13815,7 +14364,7 @@ client.sflow.protocol_sflow_resume(
 </dl>
 </details>
 
-<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py">protocol_sflow_set_config</a>(...)</code></summary>
+<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py">protocol_sflow_set_config</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -13843,11 +14392,14 @@ Agent's SFLOW configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.sflow.protocol_sflow_set_config(
     agent_num=1,
     argument="argument",
@@ -13904,7 +14456,7 @@ client.sflow.protocol_sflow_set_config(
 </dl>
 </details>
 
-<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py">protocol_sflow_set_trace</a>(...)</code></summary>
+<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py">protocol_sflow_set_trace</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -13932,11 +14484,14 @@ client.sflow.protocol_sflow_set_config(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.sflow.protocol_sflow_set_trace(
     agent_num=1,
     enable_or_not="enableOrNot",
@@ -13984,7 +14539,7 @@ client.sflow.protocol_sflow_set_trace(
 </dl>
 </details>
 
-<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py">protocol_sflow_get_stats_hdr</a>()</code></summary>
+<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py">protocol_sflow_get_stats_hdr</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -14012,11 +14567,14 @@ The headers of statistics fields
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.sflow.protocol_sflow_get_stats_hdr()
 
 ```
@@ -14046,7 +14604,7 @@ client.sflow.protocol_sflow_get_stats_hdr()
 </details>
 
 ## Snmptcp
-<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py">protocol_snmptcp_get_args</a>(...)</code></summary>
+<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py">protocol_snmptcp_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -14074,11 +14632,14 @@ Agent's SNMPTCP configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snmptcp.protocol_snmptcp_get_args(
     agent_num=1,
 )
@@ -14117,7 +14678,7 @@ client.snmptcp.protocol_snmptcp_get_args(
 </dl>
 </details>
 
-<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py">protocol_snmptcp_get_config</a>(...)</code></summary>
+<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py">protocol_snmptcp_get_config</a>(...) -> ConfigSnmptcp</code></summary>
 <dl>
 <dd>
 
@@ -14145,11 +14706,14 @@ Agent's SNMPTCP configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snmptcp.protocol_snmptcp_get_config(
     agent_num=1,
 )
@@ -14188,7 +14752,7 @@ client.snmptcp.protocol_snmptcp_get_config(
 </dl>
 </details>
 
-<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py">protocol_snmptcp_get_statistics</a>(...)</code></summary>
+<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py">protocol_snmptcp_get_statistics</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -14216,11 +14780,14 @@ Statistics of fields indicated in the headers
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snmptcp.protocol_snmptcp_get_statistics(
     agent_num=1,
 )
@@ -14259,7 +14826,7 @@ client.snmptcp.protocol_snmptcp_get_statistics(
 </dl>
 </details>
 
-<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py">protocol_snmptcp_get_trace</a>(...)</code></summary>
+<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py">protocol_snmptcp_get_trace</a>(...) -> ConfigSnmptcp</code></summary>
 <dl>
 <dd>
 
@@ -14287,11 +14854,14 @@ Trace 1 means enabled, 0 means not
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snmptcp.protocol_snmptcp_get_trace(
     agent_num=1,
 )
@@ -14330,7 +14900,7 @@ client.snmptcp.protocol_snmptcp_get_trace(
 </dl>
 </details>
 
-<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py">protocol_snmptcp_ipalias_disable</a>(...)</code></summary>
+<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py">protocol_snmptcp_ipalias_disable</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -14358,11 +14928,14 @@ By default, the MIMIC SNMPTCP server listens on all the IP addresses (aliases) t
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snmptcp.protocol_snmptcp_ipalias_disable(
     agent_num=1,
     ipaddress="ipaddress",
@@ -14419,7 +14992,7 @@ client.snmptcp.protocol_snmptcp_ipalias_disable(
 </dl>
 </details>
 
-<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py">protocol_snmptcp_ipalias_enable</a>(...)</code></summary>
+<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py">protocol_snmptcp_ipalias_enable</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -14447,11 +15020,14 @@ By default, the MIMIC SNMPTCP server listens on all the IP addresses (aliases) t
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snmptcp.protocol_snmptcp_ipalias_enable(
     agent_num=1,
     ipaddress="ipaddress",
@@ -14508,7 +15084,7 @@ client.snmptcp.protocol_snmptcp_ipalias_enable(
 </dl>
 </details>
 
-<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py">protocol_snmptcp_ipalias_isenabled</a>(...)</code></summary>
+<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py">protocol_snmptcp_ipalias_isenabled</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -14536,11 +15112,14 @@ By default, the MIMIC SNMPTCP server listens on all the IP addresses (aliases) t
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snmptcp.protocol_snmptcp_ipalias_isenabled(
     agent_num=1,
     ipaddress="ipaddress",
@@ -14597,7 +15176,7 @@ client.snmptcp.protocol_snmptcp_ipalias_isenabled(
 </dl>
 </details>
 
-<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py">protocol_snmptcp_ipalias_list</a>(...)</code></summary>
+<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py">protocol_snmptcp_ipalias_list</a>(...) -> typing.List[IpAlias]</code></summary>
 <dl>
 <dd>
 
@@ -14625,11 +15204,14 @@ By default, the MIMIC SNMPTCP server listens on all the IP addresses (aliases) t
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snmptcp.protocol_snmptcp_ipalias_list(
     agent_num=1,
 )
@@ -14668,7 +15250,7 @@ client.snmptcp.protocol_snmptcp_ipalias_list(
 </dl>
 </details>
 
-<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py">protocol_snmptcp_set_config</a>(...)</code></summary>
+<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py">protocol_snmptcp_set_config</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -14696,11 +15278,14 @@ Agent's SNMPTCP configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snmptcp.protocol_snmptcp_set_config(
     agent_num=1,
     argument="argument",
@@ -14757,7 +15342,7 @@ client.snmptcp.protocol_snmptcp_set_config(
 </dl>
 </details>
 
-<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py">protocol_snmptcp_set_trace</a>(...)</code></summary>
+<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py">protocol_snmptcp_set_trace</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -14785,11 +15370,14 @@ client.snmptcp.protocol_snmptcp_set_config(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snmptcp.protocol_snmptcp_set_trace(
     agent_num=1,
     enable_or_not="enableOrNot",
@@ -14837,7 +15425,7 @@ client.snmptcp.protocol_snmptcp_set_trace(
 </dl>
 </details>
 
-<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py">protocol_snmptcp_get_stats_hdr</a>()</code></summary>
+<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py">protocol_snmptcp_get_stats_hdr</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -14865,11 +15453,14 @@ The headers of statistics fields
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snmptcp.protocol_snmptcp_get_stats_hdr()
 
 ```
@@ -14899,7 +15490,7 @@ client.snmptcp.protocol_snmptcp_get_stats_hdr()
 </details>
 
 ## SnmPv3
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3access_add</a>(...)</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3access_add</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -14927,11 +15518,14 @@ Adds a new access entry with the specified parameters.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snm_pv3.protocol_snmpv3access_add(
     agent_num=1,
     group_name="groupName",
@@ -15042,7 +15636,7 @@ client.snm_pv3.protocol_snmpv3access_add(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3access_clear</a>(...)</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3access_clear</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -15070,11 +15664,14 @@ Clears all access entries.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snm_pv3.protocol_snmpv3access_clear(
     agent_num=1,
 )
@@ -15113,7 +15710,7 @@ client.snm_pv3.protocol_snmpv3access_clear(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3access_del</a>(...)</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3access_del</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -15141,11 +15738,14 @@ Deletes the specified access entry.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snm_pv3.protocol_snmpv3access_del(
     agent_num=1,
     access_name="accessName",
@@ -15193,7 +15793,7 @@ client.snm_pv3.protocol_snmpv3access_del(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3access_list</a>(...)</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3access_list</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -15221,11 +15821,14 @@ Returns the current acccess entries as an array of strings.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snm_pv3.protocol_snmpv3access_list(
     agent_num=1,
 )
@@ -15264,7 +15867,7 @@ client.snm_pv3.protocol_snmpv3access_list(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3get_config</a>(...)</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3get_config</a>(...) -> ConfigSnmPv3</code></summary>
 <dl>
 <dd>
 
@@ -15292,11 +15895,14 @@ Returns the SNMPv3 configuration.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snm_pv3.protocol_snmpv3get_config(
     agent_num=1,
 )
@@ -15335,7 +15941,7 @@ client.snm_pv3.protocol_snmpv3get_config(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3get_context_engineid</a>(...)</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3get_context_engineid</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -15363,11 +15969,14 @@ Retrieves the contextEngineID for the agent instance.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snm_pv3.protocol_snmpv3get_context_engineid(
     agent_num=1,
 )
@@ -15406,7 +16015,7 @@ client.snm_pv3.protocol_snmpv3get_context_engineid(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3get_engineboots</a>(...)</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3get_engineboots</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -15434,11 +16043,14 @@ Retrieves the number of times the agent has been restarted.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snm_pv3.protocol_snmpv3get_engineboots(
     agent_num=1,
 )
@@ -15477,7 +16089,7 @@ client.snm_pv3.protocol_snmpv3get_engineboots(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3get_engineid</a>(...)</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3get_engineid</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -15505,11 +16117,14 @@ For stopped agents, this operation is meaningless. If not explicitly set by the 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snm_pv3.protocol_snmpv3get_engineid(
     agent_num=1,
 )
@@ -15548,7 +16163,7 @@ client.snm_pv3.protocol_snmpv3get_engineid(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3get_enginetime</a>(...)</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3get_enginetime</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -15576,11 +16191,14 @@ Retrieves the time in seconds for which the agent has been running.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snm_pv3.protocol_snmpv3get_enginetime(
     agent_num=1,
 )
@@ -15619,7 +16237,7 @@ client.snm_pv3.protocol_snmpv3get_enginetime(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3group_add</a>(...)</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3group_add</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -15647,11 +16265,14 @@ Adds a new group entry with the specified parameters.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snm_pv3.protocol_snmpv3group_add(
     agent_num=1,
     group_name="groupName",
@@ -15717,7 +16338,7 @@ client.snm_pv3.protocol_snmpv3group_add(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3group_clear</a>(...)</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3group_clear</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -15745,11 +16366,14 @@ Clears all group entries.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snm_pv3.protocol_snmpv3group_clear(
     agent_num=1,
 )
@@ -15788,7 +16412,7 @@ client.snm_pv3.protocol_snmpv3group_clear(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3group_del</a>(...)</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3group_del</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -15816,11 +16440,14 @@ Deletes the specified group entry.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snm_pv3.protocol_snmpv3group_del(
     agent_num=1,
     group_name="groupName",
@@ -15868,7 +16495,7 @@ client.snm_pv3.protocol_snmpv3group_del(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3group_list</a>(...)</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3group_list</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -15896,11 +16523,14 @@ Returns the current group entries as an array of strings.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snm_pv3.protocol_snmpv3group_list(
     agent_num=1,
 )
@@ -15939,7 +16569,7 @@ client.snm_pv3.protocol_snmpv3group_list(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3set_config</a>(...)</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3set_config</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -15967,11 +16597,14 @@ Changes the SNMPv3 configuration.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snm_pv3.protocol_snmpv3set_config(
     agent_num=1,
     parameter="parameter",
@@ -16028,7 +16661,7 @@ client.snm_pv3.protocol_snmpv3set_config(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3user_add</a>(...)</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3user_add</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -16056,11 +16689,14 @@ Adds a new user entry with the specified parameters.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snm_pv3.protocol_snmpv3user_add(
     agent_num=1,
     user_name="userName",
@@ -16153,7 +16789,7 @@ client.snm_pv3.protocol_snmpv3user_add(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3user_clear</a>(...)</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3user_clear</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -16181,11 +16817,14 @@ Clears all user entries.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snm_pv3.protocol_snmpv3user_clear(
     agent_num=1,
 )
@@ -16224,7 +16863,7 @@ client.snm_pv3.protocol_snmpv3user_clear(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3user_del</a>(...)</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3user_del</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -16252,11 +16891,14 @@ Deletes the specified user entry.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snm_pv3.protocol_snmpv3user_del(
     agent_num=1,
     user_name="userName",
@@ -16304,7 +16946,7 @@ client.snm_pv3.protocol_snmpv3user_del(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3user_list</a>(...)</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3user_list</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -16332,11 +16974,14 @@ Returns the current user entries as a Tcl list.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snm_pv3.protocol_snmpv3user_list(
     agent_num=1,
 )
@@ -16375,7 +17020,7 @@ client.snm_pv3.protocol_snmpv3user_list(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3usm_save</a>(...)</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3usm_save</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -16403,11 +17048,14 @@ Saves current user settings in the currently loaded USM config file.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snm_pv3.protocol_snmpv3usm_save(
     agent_num=1,
 )
@@ -16446,7 +17094,7 @@ client.snm_pv3.protocol_snmpv3usm_save(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3usm_saveas</a>(...)</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3usm_saveas</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -16474,11 +17122,14 @@ Saves current user settings in the specified USM config file.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snm_pv3.protocol_snmpv3usm_saveas(
     agent_num=1,
     filename="filename",
@@ -16526,7 +17177,7 @@ client.snm_pv3.protocol_snmpv3usm_saveas(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3vacm_save</a>(...)</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3vacm_save</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -16554,11 +17205,14 @@ Saves current group, access, view settings in the currently loaded VACM config f
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snm_pv3.protocol_snmpv3vacm_save(
     agent_num=1,
 )
@@ -16597,7 +17251,7 @@ client.snm_pv3.protocol_snmpv3vacm_save(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3vacm_saveas</a>(...)</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3vacm_saveas</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -16625,11 +17279,14 @@ Saves current group, access, view settings in the specified VACM config file.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snm_pv3.protocol_snmpv3vacm_saveas(
     agent_num=1,
     filename="filename",
@@ -16677,7 +17334,7 @@ client.snm_pv3.protocol_snmpv3vacm_saveas(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3view_add</a>(...)</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3view_add</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -16705,11 +17362,14 @@ Adds a new view entry with the specified parameters.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snm_pv3.protocol_snmpv3view_add(
     agent_num=1,
     view_name="viewName",
@@ -16784,7 +17444,7 @@ client.snm_pv3.protocol_snmpv3view_add(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3view_clear</a>(...)</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3view_clear</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -16812,11 +17472,14 @@ Clears all view entries.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snm_pv3.protocol_snmpv3view_clear(
     agent_num=1,
 )
@@ -16855,7 +17518,7 @@ client.snm_pv3.protocol_snmpv3view_clear(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3view_del</a>(...)</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3view_del</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -16883,11 +17546,14 @@ Deletes the specified view entry.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snm_pv3.protocol_snmpv3view_del(
     agent_num=1,
     view_name="viewName",
@@ -16935,7 +17601,7 @@ client.snm_pv3.protocol_snmpv3view_del(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3view_list</a>(...)</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3view_list</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -16963,11 +17629,14 @@ Returns the current view entries as an array of strings.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.snm_pv3.protocol_snmpv3view_list(
     agent_num=1,
 )
@@ -17007,7 +17676,7 @@ client.snm_pv3.protocol_snmpv3view_list(
 </details>
 
 ## Ssh
-<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py">protocol_ssh_get_args</a>(...)</code></summary>
+<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py">protocol_ssh_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -17035,11 +17704,14 @@ Agent's SSH configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.ssh.protocol_ssh_get_args(
     agent_num=1,
 )
@@ -17078,7 +17750,7 @@ client.ssh.protocol_ssh_get_args(
 </dl>
 </details>
 
-<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py">protocol_ssh_get_config</a>(...)</code></summary>
+<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py">protocol_ssh_get_config</a>(...) -> ConfigSsh</code></summary>
 <dl>
 <dd>
 
@@ -17106,11 +17778,14 @@ Agent's SSH configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.ssh.protocol_ssh_get_config(
     agent_num=1,
 )
@@ -17149,7 +17824,7 @@ client.ssh.protocol_ssh_get_config(
 </dl>
 </details>
 
-<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py">protocol_ssh_get_statistics</a>(...)</code></summary>
+<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py">protocol_ssh_get_statistics</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -17177,11 +17852,14 @@ Statistics of fields indicated in the headers
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.ssh.protocol_ssh_get_statistics(
     agent_num=1,
 )
@@ -17220,7 +17898,7 @@ client.ssh.protocol_ssh_get_statistics(
 </dl>
 </details>
 
-<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py">protocol_ssh_get_trace</a>(...)</code></summary>
+<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py">protocol_ssh_get_trace</a>(...) -> ConfigSsh</code></summary>
 <dl>
 <dd>
 
@@ -17248,11 +17926,14 @@ Trace 1 means enabled, 0 means not
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.ssh.protocol_ssh_get_trace(
     agent_num=1,
 )
@@ -17291,7 +17972,7 @@ client.ssh.protocol_ssh_get_trace(
 </dl>
 </details>
 
-<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py">protocol_ssh_ipalias_disable</a>(...)</code></summary>
+<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py">protocol_ssh_ipalias_disable</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -17319,11 +18000,14 @@ By default, the MIMIC SSH server listens on all the IP addresses (aliases) that 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.ssh.protocol_ssh_ipalias_disable(
     agent_num=1,
     ipaddress="ipaddress",
@@ -17380,7 +18064,7 @@ client.ssh.protocol_ssh_ipalias_disable(
 </dl>
 </details>
 
-<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py">protocol_ssh_ipalias_enable</a>(...)</code></summary>
+<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py">protocol_ssh_ipalias_enable</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -17408,11 +18092,14 @@ By default, the MIMIC SSH server listens on all the IP addresses (aliases) that 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.ssh.protocol_ssh_ipalias_enable(
     agent_num=1,
     ipaddress="ipaddress",
@@ -17469,7 +18156,7 @@ client.ssh.protocol_ssh_ipalias_enable(
 </dl>
 </details>
 
-<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py">protocol_ssh_ipalias_isenabled</a>(...)</code></summary>
+<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py">protocol_ssh_ipalias_isenabled</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -17497,11 +18184,14 @@ By default, the MIMIC SSH server listens on all the IP addresses (aliases) that 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.ssh.protocol_ssh_ipalias_isenabled(
     agent_num=1,
     ipaddress="ipaddress",
@@ -17558,7 +18248,7 @@ client.ssh.protocol_ssh_ipalias_isenabled(
 </dl>
 </details>
 
-<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py">protocol_ssh_ipalias_list</a>(...)</code></summary>
+<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py">protocol_ssh_ipalias_list</a>(...) -> typing.List[IpAlias]</code></summary>
 <dl>
 <dd>
 
@@ -17586,11 +18276,14 @@ By default, the MIMIC SSH server listens on all the IP addresses (aliases) that 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.ssh.protocol_ssh_ipalias_list(
     agent_num=1,
 )
@@ -17629,7 +18322,7 @@ client.ssh.protocol_ssh_ipalias_list(
 </dl>
 </details>
 
-<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py">protocol_ssh_set_config</a>(...)</code></summary>
+<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py">protocol_ssh_set_config</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -17657,11 +18350,14 @@ Agent's SSH configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.ssh.protocol_ssh_set_config(
     agent_num=1,
     argument="argument",
@@ -17718,7 +18414,7 @@ client.ssh.protocol_ssh_set_config(
 </dl>
 </details>
 
-<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py">protocol_ssh_set_trace</a>(...)</code></summary>
+<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py">protocol_ssh_set_trace</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -17746,11 +18442,14 @@ client.ssh.protocol_ssh_set_config(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.ssh.protocol_ssh_set_trace(
     agent_num=1,
     enable_or_not="enableOrNot",
@@ -17798,7 +18497,7 @@ client.ssh.protocol_ssh_set_trace(
 </dl>
 </details>
 
-<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py">protocol_ssh_get_stats_hdr</a>()</code></summary>
+<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py">protocol_ssh_get_stats_hdr</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -17826,11 +18525,14 @@ The headers of statistics fields
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.ssh.protocol_ssh_get_stats_hdr()
 
 ```
@@ -17860,7 +18562,7 @@ client.ssh.protocol_ssh_get_stats_hdr()
 </details>
 
 ## Syslog
-<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py">protocol_syslog_get_args</a>(...)</code></summary>
+<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py">protocol_syslog_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -17888,11 +18590,14 @@ Agent's SYSLOG configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.syslog.protocol_syslog_get_args(
     agent_num=1,
 )
@@ -17931,7 +18636,7 @@ client.syslog.protocol_syslog_get_args(
 </dl>
 </details>
 
-<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py">protocol_syslog_get_config</a>(...)</code></summary>
+<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py">protocol_syslog_get_config</a>(...) -> ConfigSyslog</code></summary>
 <dl>
 <dd>
 
@@ -17959,11 +18664,14 @@ Agent's SYSLOG configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.syslog.protocol_syslog_get_config(
     agent_num=1,
 )
@@ -18002,7 +18710,7 @@ client.syslog.protocol_syslog_get_config(
 </dl>
 </details>
 
-<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py">protocol_syslog_get_statistics</a>(...)</code></summary>
+<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py">protocol_syslog_get_statistics</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -18030,11 +18738,14 @@ Statistics of fields indicated in the headers
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.syslog.protocol_syslog_get_statistics(
     agent_num=1,
 )
@@ -18073,7 +18784,7 @@ client.syslog.protocol_syslog_get_statistics(
 </dl>
 </details>
 
-<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py">protocol_syslog_get_trace</a>(...)</code></summary>
+<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py">protocol_syslog_get_trace</a>(...) -> ConfigSyslog</code></summary>
 <dl>
 <dd>
 
@@ -18101,11 +18812,14 @@ Trace 1 means enabled, 0 means not
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.syslog.protocol_syslog_get_trace(
     agent_num=1,
 )
@@ -18144,7 +18858,7 @@ client.syslog.protocol_syslog_get_trace(
 </dl>
 </details>
 
-<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py">protocol_syslog_get_attr</a>(...)</code></summary>
+<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py">protocol_syslog_get_attr</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -18172,11 +18886,14 @@ Attribute can be server , sequence , separator , hostname , timestamp
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.syslog.protocol_syslog_get_attr(
     agent_num=1,
     attr="attr",
@@ -18224,7 +18941,7 @@ client.syslog.protocol_syslog_get_attr(
 </dl>
 </details>
 
-<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py">protocol_syslog_send</a>(...)</code></summary>
+<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py">protocol_syslog_send</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -18252,11 +18969,14 @@ client.syslog.protocol_syslog_get_attr(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.syslog.protocol_syslog_send(
     agent_num=1,
     pri=1,
@@ -18344,7 +19064,7 @@ client.syslog.protocol_syslog_send(
 </dl>
 </details>
 
-<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py">protocol_syslog_set_config</a>(...)</code></summary>
+<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py">protocol_syslog_set_config</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -18372,11 +19092,14 @@ Agent's SYSLOG configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.syslog.protocol_syslog_set_config(
     agent_num=1,
     argument="argument",
@@ -18433,7 +19156,7 @@ client.syslog.protocol_syslog_set_config(
 </dl>
 </details>
 
-<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py">protocol_syslog_set_trace</a>(...)</code></summary>
+<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py">protocol_syslog_set_trace</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -18461,11 +19184,14 @@ client.syslog.protocol_syslog_set_config(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.syslog.protocol_syslog_set_trace(
     agent_num=1,
     enable_or_not="enableOrNot",
@@ -18513,7 +19239,7 @@ client.syslog.protocol_syslog_set_trace(
 </dl>
 </details>
 
-<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py">protocol_syslog_set_attr</a>(...)</code></summary>
+<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py">protocol_syslog_set_attr</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -18541,11 +19267,14 @@ Attribute can be server , sequence , separator , hostname , timestamp
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.syslog.protocol_syslog_set_attr(
     agent_num=1,
     attr="attr",
@@ -18602,7 +19331,7 @@ client.syslog.protocol_syslog_set_attr(
 </dl>
 </details>
 
-<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py">protocol_syslog_get_stats_hdr</a>()</code></summary>
+<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py">protocol_syslog_get_stats_hdr</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -18630,11 +19359,14 @@ The headers of statistics fields
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.syslog.protocol_syslog_get_stats_hdr()
 
 ```
@@ -18664,7 +19396,7 @@ client.syslog.protocol_syslog_get_stats_hdr()
 </details>
 
 ## Telnet
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_connection_logon</a>(...)</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_connection_logon</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -18692,11 +19424,14 @@ Logon change allows (hidden) commands for a different access mode to run.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.telnet.protocol_telnet_connection_logon(
     agent_num=1,
     connection_id=1,
@@ -18762,7 +19497,7 @@ client.telnet.protocol_telnet_connection_logon(
 </dl>
 </details>
 
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_connection_request</a>(...)</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_connection_request</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -18790,11 +19525,14 @@ Equivalent of the command typed in by the user.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.telnet.protocol_telnet_connection_request(
     agent_num=1,
     connection_id=1,
@@ -18851,7 +19589,7 @@ client.telnet.protocol_telnet_connection_request(
 </dl>
 </details>
 
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_connection_signal</a>(...)</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_connection_signal</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -18879,11 +19617,14 @@ Signal name is either connect or idle
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.telnet.protocol_telnet_connection_signal(
     agent_num=1,
     connection_id=1,
@@ -18940,7 +19681,7 @@ client.telnet.protocol_telnet_connection_signal(
 </dl>
 </details>
 
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_get_args</a>(...)</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -18968,11 +19709,14 @@ Agent's TELNET configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.telnet.protocol_telnet_get_args(
     agent_num=1,
 )
@@ -19011,7 +19755,7 @@ client.telnet.protocol_telnet_get_args(
 </dl>
 </details>
 
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_get_config</a>(...)</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_get_config</a>(...) -> ConfigTelnet</code></summary>
 <dl>
 <dd>
 
@@ -19039,11 +19783,14 @@ Agent's TELNET configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.telnet.protocol_telnet_get_config(
     agent_num=1,
 )
@@ -19082,7 +19829,7 @@ client.telnet.protocol_telnet_get_config(
 </dl>
 </details>
 
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_get_statistics</a>(...)</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_get_statistics</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -19110,11 +19857,14 @@ Statistics of fields indicated in the headers
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.telnet.protocol_telnet_get_statistics(
     agent_num=1,
 )
@@ -19153,7 +19903,7 @@ client.telnet.protocol_telnet_get_statistics(
 </dl>
 </details>
 
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_get_trace</a>(...)</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_get_trace</a>(...) -> ConfigTelnet</code></summary>
 <dl>
 <dd>
 
@@ -19181,11 +19931,14 @@ Trace 1 means enabled, 0 means not
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.telnet.protocol_telnet_get_trace(
     agent_num=1,
 )
@@ -19224,7 +19977,7 @@ client.telnet.protocol_telnet_get_trace(
 </dl>
 </details>
 
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_ipalias_disable</a>(...)</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_ipalias_disable</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -19252,11 +20005,14 @@ By default, the MIMIC TELNET server listens on all the IP addresses (aliases) th
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.telnet.protocol_telnet_ipalias_disable(
     agent_num=1,
     ipaddress="ipaddress",
@@ -19313,7 +20069,7 @@ client.telnet.protocol_telnet_ipalias_disable(
 </dl>
 </details>
 
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_ipalias_enable</a>(...)</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_ipalias_enable</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -19341,11 +20097,14 @@ By default, the MIMIC TELNET server listens on all the IP addresses (aliases) th
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.telnet.protocol_telnet_ipalias_enable(
     agent_num=1,
     ipaddress="ipaddress",
@@ -19402,7 +20161,7 @@ client.telnet.protocol_telnet_ipalias_enable(
 </dl>
 </details>
 
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_ipalias_isenabled</a>(...)</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_ipalias_isenabled</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -19430,11 +20189,14 @@ By default, the MIMIC TELNET server listens on all the IP addresses (aliases) th
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.telnet.protocol_telnet_ipalias_isenabled(
     agent_num=1,
     ipaddress="ipaddress",
@@ -19491,7 +20253,7 @@ client.telnet.protocol_telnet_ipalias_isenabled(
 </dl>
 </details>
 
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_ipalias_list</a>(...)</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_ipalias_list</a>(...) -> typing.List[IpAlias]</code></summary>
 <dl>
 <dd>
 
@@ -19519,11 +20281,14 @@ By default, the MIMIC TELNET server listens on all the IP addresses (aliases) th
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.telnet.protocol_telnet_ipalias_list(
     agent_num=1,
 )
@@ -19562,7 +20327,7 @@ client.telnet.protocol_telnet_ipalias_list(
 </dl>
 </details>
 
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_server_get_connections</a>(...)</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_server_get_connections</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -19590,11 +20355,14 @@ IDs of all connected connections
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.telnet.protocol_telnet_server_get_connections(
     agent_num=1,
 )
@@ -19633,7 +20401,7 @@ client.telnet.protocol_telnet_server_get_connections(
 </dl>
 </details>
 
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_server_get_keymap</a>(...)</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_server_get_keymap</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -19661,11 +20429,14 @@ Keymap file name
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.telnet.protocol_telnet_server_get_keymap(
     agent_num=1,
 )
@@ -19704,7 +20475,7 @@ client.telnet.protocol_telnet_server_get_keymap(
 </dl>
 </details>
 
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_server_get_rulesdb</a>(...)</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_server_get_rulesdb</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -19732,11 +20503,14 @@ Rules db file name
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.telnet.protocol_telnet_server_get_rulesdb(
     agent_num=1,
 )
@@ -19775,7 +20549,7 @@ client.telnet.protocol_telnet_server_get_rulesdb(
 </dl>
 </details>
 
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_server_get_state</a>(...)</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_server_get_state</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -19803,11 +20577,14 @@ Return 1 means accepting connections, 0 not
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.telnet.protocol_telnet_server_get_state(
     agent_num=1,
 )
@@ -19846,7 +20623,7 @@ client.telnet.protocol_telnet_server_get_state(
 </dl>
 </details>
 
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_server_get_userdb</a>(...)</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_server_get_userdb</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -19874,11 +20651,14 @@ User db file name
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.telnet.protocol_telnet_server_get_userdb(
     agent_num=1,
 )
@@ -19917,7 +20697,7 @@ client.telnet.protocol_telnet_server_get_userdb(
 </dl>
 </details>
 
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_server_get_users</a>(...)</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_server_get_users</a>(...) -> typing.List[TelnetUser]</code></summary>
 <dl>
 <dd>
 
@@ -19945,11 +20725,14 @@ List of users
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.telnet.protocol_telnet_server_get_users(
     agent_num=1,
 )
@@ -19988,7 +20771,7 @@ client.telnet.protocol_telnet_server_get_users(
 </dl>
 </details>
 
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_set_config</a>(...)</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_set_config</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -20016,11 +20799,14 @@ Agent's TELNET configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.telnet.protocol_telnet_set_config(
     agent_num=1,
     argument="argument",
@@ -20077,7 +20863,7 @@ client.telnet.protocol_telnet_set_config(
 </dl>
 </details>
 
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_set_trace</a>(...)</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_set_trace</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -20105,11 +20891,14 @@ client.telnet.protocol_telnet_set_config(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.telnet.protocol_telnet_set_trace(
     agent_num=1,
     enable_or_not="enableOrNot",
@@ -20157,7 +20946,7 @@ client.telnet.protocol_telnet_set_trace(
 </dl>
 </details>
 
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_get_stats_hdr</a>()</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_get_stats_hdr</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -20185,11 +20974,14 @@ The headers of statistics fields
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.telnet.protocol_telnet_get_stats_hdr()
 
 ```
@@ -20219,7 +21011,7 @@ client.telnet.protocol_telnet_get_stats_hdr()
 </details>
 
 ## Tftp
-<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_get_args</a>(...)</code></summary>
+<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -20247,11 +21039,14 @@ Agent's TFTP configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tftp.protocol_tftp_get_args(
     agent_num=1,
 )
@@ -20290,7 +21085,7 @@ client.tftp.protocol_tftp_get_args(
 </dl>
 </details>
 
-<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_get_config</a>(...)</code></summary>
+<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_get_config</a>(...) -> ConfigTftp</code></summary>
 <dl>
 <dd>
 
@@ -20318,11 +21113,14 @@ Agent's TFTP configuration
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tftp.protocol_tftp_get_config(
     agent_num=1,
 )
@@ -20361,7 +21159,7 @@ client.tftp.protocol_tftp_get_config(
 </dl>
 </details>
 
-<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_get_statistics</a>(...)</code></summary>
+<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_get_statistics</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -20389,11 +21187,14 @@ Statistics of fields indicated in the headers
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tftp.protocol_tftp_get_statistics(
     agent_num=1,
 )
@@ -20432,7 +21233,7 @@ client.tftp.protocol_tftp_get_statistics(
 </dl>
 </details>
 
-<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_get_trace</a>(...)</code></summary>
+<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_get_trace</a>(...) -> ConfigTftp</code></summary>
 <dl>
 <dd>
 
@@ -20460,11 +21261,14 @@ Trace 1 means enabled, 0 means not
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tftp.protocol_tftp_get_trace(
     agent_num=1,
 )
@@ -20503,7 +21307,7 @@ client.tftp.protocol_tftp_get_trace(
 </dl>
 </details>
 
-<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_session_read</a>(...)</code></summary>
+<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_session_read</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -20531,11 +21335,14 @@ Session ID is returned
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tftp.protocol_tftp_session_read(
     agent_num=1,
     srcfile="srcfile",
@@ -20583,7 +21390,7 @@ client.tftp.protocol_tftp_session_read(
 </dl>
 </details>
 
-<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_session_write</a>(...)</code></summary>
+<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_session_write</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -20611,11 +21418,14 @@ Session ID is returned
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tftp.protocol_tftp_session_write(
     agent_num=1,
     srcfile="srcfile",
@@ -20663,7 +21473,7 @@ client.tftp.protocol_tftp_session_write(
 </dl>
 </details>
 
-<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_set_config</a>(...)</code></summary>
+<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_set_config</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -20691,11 +21501,14 @@ Agent's TFTP configuration
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tftp.protocol_tftp_set_config(
     agent_num=1,
     argument="argument",
@@ -20752,7 +21565,7 @@ client.tftp.protocol_tftp_set_config(
 </dl>
 </details>
 
-<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_set_trace</a>(...)</code></summary>
+<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_set_trace</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -20780,11 +21593,14 @@ client.tftp.protocol_tftp_set_config(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tftp.protocol_tftp_set_trace(
     agent_num=1,
     enable_or_not="enableOrNot",
@@ -20832,7 +21648,7 @@ client.tftp.protocol_tftp_set_trace(
 </dl>
 </details>
 
-<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_session_get_parameter</a>(...)</code></summary>
+<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_session_get_parameter</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -20860,11 +21676,14 @@ Parameter is server , port , or dstfile
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tftp.protocol_tftp_session_get_parameter(
     agent_num=1,
     session_id="sessionID",
@@ -20921,7 +21740,7 @@ client.tftp.protocol_tftp_session_get_parameter(
 </dl>
 </details>
 
-<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_session_set_parameter</a>(...)</code></summary>
+<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_session_set_parameter</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -20949,11 +21768,14 @@ Parameter is server , port , or dstfile
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tftp.protocol_tftp_session_set_parameter(
     agent_num=1,
     session_id="sessionID",
@@ -21019,7 +21841,7 @@ client.tftp.protocol_tftp_session_set_parameter(
 </dl>
 </details>
 
-<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_session_start</a>(...)</code></summary>
+<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_session_start</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -21047,11 +21869,14 @@ Start uploading or downloading the file
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tftp.protocol_tftp_session_start(
     agent_num=1,
     session_id="sessionID",
@@ -21099,7 +21924,7 @@ client.tftp.protocol_tftp_session_start(
 </dl>
 </details>
 
-<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_session_status</a>(...)</code></summary>
+<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_session_status</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -21127,11 +21952,14 @@ Status includes running state, bytes transfered, and time elapsed
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tftp.protocol_tftp_session_status(
     agent_num=1,
     session_id="sessionID",
@@ -21179,7 +22007,7 @@ client.tftp.protocol_tftp_session_status(
 </dl>
 </details>
 
-<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_session_stop</a>(...)</code></summary>
+<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_session_stop</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -21207,11 +22035,14 @@ Stop uploading or downloading the file
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tftp.protocol_tftp_session_stop(
     agent_num=1,
     session_id="sessionID",
@@ -21259,7 +22090,7 @@ client.tftp.protocol_tftp_session_stop(
 </dl>
 </details>
 
-<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_get_stats_hdr</a>()</code></summary>
+<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_get_stats_hdr</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -21287,11 +22118,14 @@ The headers of statistics fields
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tftp.protocol_tftp_get_stats_hdr()
 
 ```
@@ -21321,7 +22155,7 @@ client.tftp.protocol_tftp_get_stats_hdr()
 </details>
 
 ## Tod
-<details><summary><code>client.tod.<a href="src/fern/tod/client.py">protocol_tod_get_args</a>(...)</code></summary>
+<details><summary><code>client.tod.<a href="src/fern/tod/client.py">protocol_tod_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -21349,11 +22183,14 @@ Agent's TOD configuration
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tod.protocol_tod_get_args(
     agent_num=1,
 )
@@ -21392,7 +22229,7 @@ client.tod.protocol_tod_get_args(
 </dl>
 </details>
 
-<details><summary><code>client.tod.<a href="src/fern/tod/client.py">protocol_tod_get_config</a>(...)</code></summary>
+<details><summary><code>client.tod.<a href="src/fern/tod/client.py">protocol_tod_get_config</a>(...) -> ConfigTod</code></summary>
 <dl>
 <dd>
 
@@ -21420,11 +22257,14 @@ Agent's TOD configuration
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tod.protocol_tod_get_config(
     agent_num=1,
 )
@@ -21463,7 +22303,7 @@ client.tod.protocol_tod_get_config(
 </dl>
 </details>
 
-<details><summary><code>client.tod.<a href="src/fern/tod/client.py">protocol_tod_get_statistics</a>(...)</code></summary>
+<details><summary><code>client.tod.<a href="src/fern/tod/client.py">protocol_tod_get_statistics</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -21491,11 +22331,14 @@ Statistics of fields indicated in the headers
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tod.protocol_tod_get_statistics(
     agent_num=1,
 )
@@ -21534,7 +22377,7 @@ client.tod.protocol_tod_get_statistics(
 </dl>
 </details>
 
-<details><summary><code>client.tod.<a href="src/fern/tod/client.py">protocol_tod_get_trace</a>(...)</code></summary>
+<details><summary><code>client.tod.<a href="src/fern/tod/client.py">protocol_tod_get_trace</a>(...) -> ConfigTod</code></summary>
 <dl>
 <dd>
 
@@ -21562,11 +22405,14 @@ Trace 1 means enabled, 0 means not
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tod.protocol_tod_get_trace(
     agent_num=1,
 )
@@ -21605,7 +22451,7 @@ client.tod.protocol_tod_get_trace(
 </dl>
 </details>
 
-<details><summary><code>client.tod.<a href="src/fern/tod/client.py">protocol_tod_gettime</a>(...)</code></summary>
+<details><summary><code>client.tod.<a href="src/fern/tod/client.py">protocol_tod_gettime</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -21633,11 +22479,14 @@ Retrive time from server
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tod.protocol_tod_gettime(
     agent_num=1,
     server_addr="serverAddr",
@@ -21721,7 +22570,7 @@ client.tod.protocol_tod_gettime(
 </dl>
 </details>
 
-<details><summary><code>client.tod.<a href="src/fern/tod/client.py">protocol_tod_set_config</a>(...)</code></summary>
+<details><summary><code>client.tod.<a href="src/fern/tod/client.py">protocol_tod_set_config</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -21749,11 +22598,14 @@ Agent's TOD configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tod.protocol_tod_set_config(
     agent_num=1,
     argument="argument",
@@ -21810,7 +22662,7 @@ client.tod.protocol_tod_set_config(
 </dl>
 </details>
 
-<details><summary><code>client.tod.<a href="src/fern/tod/client.py">protocol_tod_set_trace</a>(...)</code></summary>
+<details><summary><code>client.tod.<a href="src/fern/tod/client.py">protocol_tod_set_trace</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -21838,11 +22690,14 @@ client.tod.protocol_tod_set_config(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tod.protocol_tod_set_trace(
     agent_num=1,
     enable_or_not="enableOrNot",
@@ -21890,7 +22745,7 @@ client.tod.protocol_tod_set_trace(
 </dl>
 </details>
 
-<details><summary><code>client.tod.<a href="src/fern/tod/client.py">protocol_tod_get_stats_hdr</a>()</code></summary>
+<details><summary><code>client.tod.<a href="src/fern/tod/client.py">protocol_tod_get_stats_hdr</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -21918,11 +22773,14 @@ The headers of statistics fields
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tod.protocol_tod_get_stats_hdr()
 
 ```
@@ -21952,7 +22810,7 @@ client.tod.protocol_tod_get_stats_hdr()
 </details>
 
 ## Web
-<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_get_args</a>(...)</code></summary>
+<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -21980,11 +22838,14 @@ Agent's WEB configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.web.protocol_web_get_args(
     agent_num=1,
 )
@@ -22023,7 +22884,7 @@ client.web.protocol_web_get_args(
 </dl>
 </details>
 
-<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_get_config</a>(...)</code></summary>
+<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_get_config</a>(...) -> ConfigWeb</code></summary>
 <dl>
 <dd>
 
@@ -22051,11 +22912,14 @@ Agent's WEB configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.web.protocol_web_get_config(
     agent_num=1,
 )
@@ -22094,7 +22958,7 @@ client.web.protocol_web_get_config(
 </dl>
 </details>
 
-<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_get_statistics</a>(...)</code></summary>
+<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_get_statistics</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -22122,11 +22986,14 @@ Statistics of fields indicated in the headers
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.web.protocol_web_get_statistics(
     agent_num=1,
 )
@@ -22165,7 +23032,7 @@ client.web.protocol_web_get_statistics(
 </dl>
 </details>
 
-<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_get_trace</a>(...)</code></summary>
+<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_get_trace</a>(...) -> ConfigWeb</code></summary>
 <dl>
 <dd>
 
@@ -22193,11 +23060,14 @@ Trace 1 means enabled, 0 means not
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.web.protocol_web_get_trace(
     agent_num=1,
 )
@@ -22236,7 +23106,7 @@ client.web.protocol_web_get_trace(
 </dl>
 </details>
 
-<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_port_add</a>(...)</code></summary>
+<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_port_add</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -22264,11 +23134,14 @@ Add port
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.web.protocol_web_port_add(
     agent_num=1,
     port=1,
@@ -22316,7 +23189,7 @@ client.web.protocol_web_port_add(
 </dl>
 </details>
 
-<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_port_exists</a>(...)</code></summary>
+<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_port_exists</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -22344,11 +23217,14 @@ Check the port. 1 means existing, 0 means not
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.web.protocol_web_port_exists(
     agent_num=1,
     port=1,
@@ -22396,7 +23272,7 @@ client.web.protocol_web_port_exists(
 </dl>
 </details>
 
-<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_port_remove</a>(...)</code></summary>
+<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_port_remove</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -22424,11 +23300,14 @@ Remove port
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.web.protocol_web_port_remove(
     agent_num=1,
     port=1,
@@ -22476,7 +23355,7 @@ client.web.protocol_web_port_remove(
 </dl>
 </details>
 
-<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_port_set</a>(...)</code></summary>
+<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_port_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -22504,11 +23383,14 @@ Set port
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.web.protocol_web_port_set(
     agent_num=1,
     port=1,
@@ -22574,7 +23456,7 @@ client.web.protocol_web_port_set(
 </dl>
 </details>
 
-<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_port_start</a>(...)</code></summary>
+<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_port_start</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -22602,11 +23484,14 @@ Start port
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.web.protocol_web_port_start(
     agent_num=1,
     port=1,
@@ -22654,7 +23539,7 @@ client.web.protocol_web_port_start(
 </dl>
 </details>
 
-<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_port_stop</a>(...)</code></summary>
+<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_port_stop</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -22682,11 +23567,14 @@ Stop port
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.web.protocol_web_port_stop(
     agent_num=1,
     port=1,
@@ -22734,7 +23622,7 @@ client.web.protocol_web_port_stop(
 </dl>
 </details>
 
-<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_set_config</a>(...)</code></summary>
+<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_set_config</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -22762,11 +23650,14 @@ Agent's WEB configuration with port,rule,prompt,paging_prompt,userdb,keymap
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.web.protocol_web_set_config(
     agent_num=1,
     argument="argument",
@@ -22823,7 +23714,7 @@ client.web.protocol_web_set_config(
 </dl>
 </details>
 
-<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_set_trace</a>(...)</code></summary>
+<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_set_trace</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -22851,11 +23742,14 @@ client.web.protocol_web_set_config(
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.web.protocol_web_set_trace(
     agent_num=1,
     enable_or_not="enableOrNot",
@@ -22903,7 +23797,7 @@ client.web.protocol_web_set_trace(
 </dl>
 </details>
 
-<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_get_stats_hdr</a>()</code></summary>
+<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_get_stats_hdr</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -22931,11 +23825,14 @@ The headers of statistics fields
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.web.protocol_web_get_stats_hdr()
 
 ```
@@ -22965,7 +23862,7 @@ client.web.protocol_web_get_stats_hdr()
 </details>
 
 ## Valuespace
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">add</a>(...)</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">add</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -22993,11 +23890,14 @@ The object needs to specify the MIB object with the INDEX clause, usually an obj
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.valuespace.add(
     agent_num=1,
     object="object",
@@ -23054,7 +23954,7 @@ client.valuespace.add(
 </dl>
 </details>
 
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">eval_value</a>(...)</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">eval_value</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -23082,11 +23982,14 @@ Evaluate the values of the specified instance instance for each specified MIB ob
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.valuespace.eval_value(
     agent_num=1,
     object="object",
@@ -23143,7 +24046,7 @@ client.valuespace.eval_value(
 </dl>
 </details>
 
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">get_value</a>(...)</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">get_value</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -23171,11 +24074,14 @@ Get a variable in the Value Space.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.valuespace.get_value(
     agent_num=1,
     object="object",
@@ -23241,7 +24147,7 @@ client.valuespace.get_value(
 </dl>
 </details>
 
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">get_info</a>(...)</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">get_info</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -23269,11 +24175,14 @@ Return the syntactical information for the specified object, such as type, size,
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.valuespace.get_info(
     agent_num=1,
     object="object",
@@ -23321,7 +24230,7 @@ client.valuespace.get_info(
 </dl>
 </details>
 
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">get_instances</a>(...)</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">get_instances</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -23349,11 +24258,14 @@ This enables MIB browsing of the MIB on the current agent.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.valuespace.get_instances(
     agent_num=1,
     object="object",
@@ -23401,7 +24313,7 @@ client.valuespace.get_instances(
 </dl>
 </details>
 
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">get_objects</a>(...)</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">get_objects</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -23429,11 +24341,14 @@ This command is similar to the ls or dir operating system commands to list files
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.valuespace.get_objects(
     agent_num=1,
     oid="OID",
@@ -23481,7 +24396,7 @@ client.valuespace.get_objects(
 </dl>
 </details>
 
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">meval_value</a>(...)</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">meval_value</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -23509,14 +24424,16 @@ Evaluate the values of the specified instance instance for each specified MIB ob
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.valuespace.meval_value(
     agent_num=1,
-    obj_ins_array="objInsArray",
 )
 
 ```
@@ -23541,7 +24458,7 @@ client.valuespace.meval_value(
 <dl>
 <dd>
 
-**obj_ins_array:** `typing.Sequence[typing.Sequence[str]]` — Multiple objects or object (column) of the table in the agent's value space.
+**obj_ins_array:** `typing.List[typing.List[str]]` — Multiple objects or object (column) of the table in the agent's value space.
     
 </dd>
 </dl>
@@ -23561,7 +24478,7 @@ client.valuespace.meval_value(
 </dl>
 </details>
 
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">mget_value</a>(...)</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">mget_value</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -23589,14 +24506,16 @@ This is a performance optimization of the mimic value get command, to be used wh
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.valuespace.mget_value(
     agent_num=1,
-    obj_ins_var_array="objInsVarArray",
 )
 
 ```
@@ -23621,7 +24540,7 @@ client.valuespace.mget_value(
 <dl>
 <dd>
 
-**obj_ins_var_array:** `typing.Sequence[typing.Sequence[str]]` — Multiple objects or object (column) of the table in the agent's value space.
+**obj_ins_var_array:** `typing.List[typing.List[str]]` — Multiple objects or object (column) of the table in the agent's value space.
     
 </dd>
 </dl>
@@ -23641,7 +24560,7 @@ client.valuespace.mget_value(
 </dl>
 </details>
 
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">get_mib</a>(...)</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">get_mib</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -23669,11 +24588,14 @@ This will only return a MIB name if the object is unmistakeably defined in a MIB
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.valuespace.get_mib(
     agent_num=1,
     object="object",
@@ -23721,7 +24643,7 @@ client.valuespace.get_mib(
 </dl>
 </details>
 
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">mset_value</a>(...)</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">mset_value</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -23749,14 +24671,21 @@ This is a performance optimization of the mimic value set command, to be used wh
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.valuespace.mset_value(
     agent_num=1,
-    request=[["string"]],
+    request=[
+        [
+            "string"
+        ]
+    ],
 )
 
 ```
@@ -23781,7 +24710,7 @@ client.valuespace.mset_value(
 <dl>
 <dd>
 
-**request:** `typing.Sequence[typing.Sequence[str]]` 
+**request:** `typing.List[typing.List[str]]` 
     
 </dd>
 </dl>
@@ -23801,7 +24730,7 @@ client.valuespace.mset_value(
 </dl>
 </details>
 
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">munset_value</a>(...)</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">munset_value</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -23829,14 +24758,21 @@ This is a performance optimization of the mimic value unset command, to be used 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.valuespace.munset_value(
     agent_num=1,
-    request=[["string"]],
+    request=[
+        [
+            "string"
+        ]
+    ],
 )
 
 ```
@@ -23861,7 +24797,7 @@ client.valuespace.munset_value(
 <dl>
 <dd>
 
-**request:** `typing.Sequence[typing.Sequence[str]]` 
+**request:** `typing.List[typing.List[str]]` 
     
 </dd>
 </dl>
@@ -23881,7 +24817,7 @@ client.valuespace.munset_value(
 </dl>
 </details>
 
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">get_name</a>(...)</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">get_name</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -23909,11 +24845,14 @@ Return the symbolic name of the specified object identifier.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.valuespace.get_name(
     agent_num=1,
     oid="OID",
@@ -23961,7 +24900,7 @@ client.valuespace.get_name(
 </dl>
 </details>
 
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">get_oid</a>(...)</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">get_oid</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -23989,11 +24928,14 @@ Return the numeric OID of the specified object.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.valuespace.get_oid(
     agent_num=1,
     object="object",
@@ -24041,7 +24983,7 @@ client.valuespace.get_oid(
 </dl>
 </details>
 
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">remove</a>(...)</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">remove</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -24069,11 +25011,14 @@ The object needs to specify the MIB object with the INDEX clause, usually an obj
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.valuespace.remove(
     agent_num=1,
     object="object",
@@ -24130,7 +25075,7 @@ client.valuespace.remove(
 </dl>
 </details>
 
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">set_value</a>(...)</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">set_value</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -24158,11 +25103,14 @@ NOTE to set a binary string value, specify a string starting with \\x followed b
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.valuespace.set_value(
     agent_num=1,
     object="object",
@@ -24237,7 +25185,7 @@ client.valuespace.set_value(
 </dl>
 </details>
 
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">split_oid</a>(...)</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">split_oid</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -24265,11 +25213,14 @@ This is useful if you have an OID which is a combination of object and instance.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.valuespace.split_oid(
     agent_num=1,
     oid="OID",
@@ -24317,7 +25268,7 @@ client.valuespace.split_oid(
 </dl>
 </details>
 
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">get_state</a>(...)</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">get_state</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -24345,11 +25296,14 @@ To disable traversal into a MIB object and any subtree underneath, set the state
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.valuespace.get_state(
     agent_num=1,
     object="object",
@@ -24397,7 +25351,7 @@ client.valuespace.get_state(
 </dl>
 </details>
 
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">set_state</a>(...)</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">set_state</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -24425,11 +25379,14 @@ To disable traversal into a MIB object and any subtree underneath, set the state
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.valuespace.set_state(
     agent_num=1,
     object="object",
@@ -24486,7 +25443,7 @@ client.valuespace.set_state(
 </dl>
 </details>
 
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">unset_value</a>(...)</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">unset_value</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -24514,11 +25471,14 @@ Only variables that have previously been set can be unset.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.valuespace.unset_value(
     agent_num=1,
     object="object",
@@ -24584,7 +25544,7 @@ client.valuespace.unset_value(
 </dl>
 </details>
 
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">get_variables</a>(...)</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">get_variables</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -24612,11 +25572,14 @@ This enables variable browsing of the MIB on the current agent.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.valuespace.get_variables(
     agent_num=1,
     object="object",
@@ -24674,7 +25637,7 @@ client.valuespace.get_variables(
 </details>
 
 ## Daemon
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">cfg_new</a>(...)</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">cfg_new</a>(...) -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -24702,11 +25665,14 @@ Clear the lab configuration.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.daemon.cfg_new(
     first_agent_num=1,
     last_agent_num=1,
@@ -24754,7 +25720,7 @@ client.daemon.cfg_new(
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_active_data_list</a>()</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_active_data_list</a>() -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -24782,11 +25748,14 @@ This list is guaranteed to be sorted into increasing order.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.daemon.get_active_data_list()
 
 ```
@@ -24815,7 +25784,7 @@ client.daemon.get_active_data_list()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_active_list</a>()</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_active_list</a>() -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -24843,11 +25812,14 @@ This list is guaranteed to be sorted into increasing order.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.daemon.get_active_list()
 
 ```
@@ -24876,7 +25848,7 @@ client.daemon.get_active_list()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_cfgfile</a>()</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_cfgfile</a>() -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -24904,11 +25876,14 @@ In the case of multi-user access this command returns a different configuration 
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.daemon.get_cfgfile()
 
 ```
@@ -24937,7 +25912,7 @@ client.daemon.get_cfgfile()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_cfg_file_changed</a>()</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_cfg_file_changed</a>() -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -24965,11 +25940,14 @@ Whether the loaded agent configuration file has changed since the last time this
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.daemon.get_cfg_file_changed()
 
 ```
@@ -24998,7 +25976,7 @@ client.daemon.get_cfg_file_changed()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_changed_config_list</a>()</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_changed_config_list</a>() -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -25026,11 +26004,14 @@ This list contains at most 5000 agent(s), and is guaranteed to be sorted into in
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.daemon.get_changed_config_list()
 
 ```
@@ -25059,7 +26040,7 @@ client.daemon.get_changed_config_list()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_changed_state_list</a>()</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_changed_state_list</a>() -> typing.List[AgentState]</code></summary>
 <dl>
 <dd>
 
@@ -25087,11 +26068,14 @@ This list contains at most 5000 agent(s), and is guaranteed to be sorted into in
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.daemon.get_changed_state_list()
 
 ```
@@ -25120,7 +26104,7 @@ client.daemon.get_changed_state_list()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_clients</a>()</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_clients</a>() -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -25148,11 +26132,14 @@ The number of clients currently connected to the daemon.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.daemon.get_clients()
 
 ```
@@ -25181,7 +26168,7 @@ client.daemon.get_clients()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_configured_list</a>()</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_configured_list</a>() -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -25209,11 +26196,14 @@ This list is guaranteed to be sorted into increasing order.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.daemon.get_configured_list()
 
 ```
@@ -25242,7 +26232,7 @@ client.daemon.get_configured_list()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_interfaces</a>()</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_interfaces</a>() -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -25270,11 +26260,14 @@ The set of network interfaces that can be used for simulations.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.daemon.get_interfaces()
 
 ```
@@ -25303,7 +26296,7 @@ client.daemon.get_interfaces()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_last</a>()</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_last</a>() -> int</code></summary>
 <dl>
 <dd>
 
@@ -25331,11 +26324,14 @@ The last configured agent instance.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.daemon.get_last()
 
 ```
@@ -25364,7 +26360,7 @@ client.daemon.get_last()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_log</a>()</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_log</a>() -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -25392,11 +26388,14 @@ The current log file for the Simulator.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.daemon.get_log()
 
 ```
@@ -25425,7 +26424,7 @@ client.daemon.get_log()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_max</a>()</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_max</a>() -> int</code></summary>
 <dl>
 <dd>
 
@@ -25453,11 +26452,14 @@ The maximum number of agent instances.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.daemon.get_max()
 
 ```
@@ -25486,7 +26488,7 @@ client.daemon.get_max()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_netaddr</a>()</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_netaddr</a>() -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -25514,11 +26516,14 @@ The network address of the host where the MIMIC simulator is running.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.daemon.get_netaddr()
 
 ```
@@ -25547,7 +26552,7 @@ client.daemon.get_netaddr()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_netdev</a>()</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_netdev</a>() -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -25575,11 +26580,14 @@ The default network device to be used for agent addresses if the interface is no
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.daemon.get_netdev()
 
 ```
@@ -25608,7 +26616,7 @@ client.daemon.get_netdev()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_product</a>()</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_product</a>() -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -25636,11 +26644,14 @@ The product number that is licensed.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.daemon.get_product()
 
 ```
@@ -25669,7 +26680,7 @@ client.daemon.get_product()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_daemon_protocols</a>()</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_daemon_protocols</a>() -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -25697,11 +26708,14 @@ The set of protocols supported by the Simulator.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.daemon.get_daemon_protocols()
 
 ```
@@ -25730,7 +26744,7 @@ client.daemon.get_daemon_protocols()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_return</a>()</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_return</a>() -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -25758,11 +26772,14 @@ The OpenAPI daemon operates in two modes, nocatch, where error returns from MIMI
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.daemon.get_return()
 
 ```
@@ -25791,7 +26808,7 @@ client.daemon.get_return()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_version</a>()</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_version</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -25819,11 +26836,14 @@ The version of the MIMIC command interface.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.daemon.get_version()
 
 ```
@@ -25852,7 +26872,7 @@ client.daemon.get_version()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">cfg_load</a>(...)</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">cfg_load</a>(...) -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -25880,11 +26900,14 @@ Load agents in cfgFile from firstAgentNum to lastAgentNum on startAgentNum of cu
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.daemon.cfg_load(
     cfg_file="cfgFile",
     first_agent_num=1,
@@ -25950,7 +26973,7 @@ client.daemon.cfg_load(
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">mget_info</a>(...)</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">mget_info</a>(...) -> typing.List[typing.Dict[str, typing.Any]]</code></summary>
 <dl>
 <dd>
 
@@ -25978,14 +27001,15 @@ Get multiple sets of information about MIMIC, where infoArray is one of the para
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
-client.daemon.mget_info(
-    info_array="infoArray",
-)
+
+client.daemon.mget_info()
 
 ```
 </dd>
@@ -26001,7 +27025,7 @@ client.daemon.mget_info(
 <dl>
 <dd>
 
-**info_array:** `typing.Sequence[str]` — Multiple strings of info.
+**info_array:** `typing.List[str]` — Multiple strings of info.
     
 </dd>
 </dl>
@@ -26021,7 +27045,7 @@ client.daemon.mget_info(
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">cfg_save</a>()</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">cfg_save</a>() -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -26049,11 +27073,14 @@ Save the lab configuration.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.daemon.cfg_save()
 
 ```
@@ -26082,7 +27109,7 @@ client.daemon.cfg_save()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">cfg_saveas</a>(...)</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">cfg_saveas</a>(...) -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -26110,11 +27137,14 @@ Save the lab configuration in file.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.daemon.cfg_saveas(
     cfg_file="cfgFile",
     first_agent_num=1,
@@ -26171,7 +27201,7 @@ client.daemon.cfg_saveas(
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">set_log</a>(...)</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">set_log</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -26199,11 +27229,14 @@ The current log file for the Simulator.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.daemon.set_log(
     request="string",
 )
@@ -26242,7 +27275,7 @@ client.daemon.set_log(
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">set_netdev</a>()</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">set_netdev</a>() -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -26270,11 +27303,14 @@ The network address of the host where the MIMIC simulator is running.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.daemon.set_netdev()
 
 ```
@@ -26303,7 +27339,7 @@ client.daemon.set_netdev()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">store_save</a>()</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">store_save</a>() -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -26331,11 +27367,14 @@ The MIMIC daemon caches persistent objects and their changes, and writes them to
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.daemon.store_save()
 
 ```
@@ -26364,7 +27403,7 @@ client.daemon.store_save()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">start_all_agents</a>()</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">start_all_agents</a>() -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -26392,11 +27431,14 @@ Start MIMIC.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.daemon.start_all_agents()
 
 ```
@@ -26425,7 +27467,7 @@ client.daemon.start_all_agents()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">stop_all_agents</a>()</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">stop_all_agents</a>() -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -26453,11 +27495,14 @@ Stop MIMIC.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.daemon.stop_all_agents()
 
 ```
@@ -26486,7 +27531,7 @@ client.daemon.stop_all_agents()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">store_exists</a>(...)</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">store_exists</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -26514,11 +27559,14 @@ It returns "1" if the variable exists, else "0".
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.daemon.store_exists(
     var="var",
 )
@@ -26557,7 +27605,7 @@ client.daemon.store_exists(
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">store_get</a>(...)</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">store_get</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -26585,11 +27633,14 @@ The value will be returned as a string (like all Tcl values).
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.daemon.store_get(
     var="var",
 )
@@ -26628,7 +27679,7 @@ client.daemon.store_get(
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">store_list</a>()</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">store_list</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -26656,11 +27707,14 @@ The list will be a Tcl format list with curly braces "{}" around each list eleme
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.daemon.store_list()
 
 ```
@@ -26689,7 +27743,7 @@ client.daemon.store_list()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">store_lreplace</a>(...)</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">store_lreplace</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -26717,11 +27771,14 @@ These commands treat the variable as a list, and allow to replace an entry in th
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.daemon.store_lreplace(
     var="var",
     index=1,
@@ -26778,7 +27835,7 @@ client.daemon.store_lreplace(
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">store_persists</a>(...)</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">store_persists</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -26806,11 +27863,14 @@ It returns "1" if the variable is persistent, else "0".
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.daemon.store_persists(
     var="var",
 )
@@ -26849,7 +27909,7 @@ client.daemon.store_persists(
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">store_set</a>(...)</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">store_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -26877,11 +27937,14 @@ Persist 1 means persistent , 0 means non-persistent
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.daemon.store_set(
     var="var",
     persist=1,
@@ -26938,7 +28001,7 @@ client.daemon.store_set(
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">store_unset</a>(...)</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">store_unset</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -26966,11 +28029,14 @@ This will cleanup persistent variables if needed
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.daemon.store_unset(
     var="var",
 )
@@ -27009,7 +28075,7 @@ client.daemon.store_unset(
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">terminate</a>()</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">terminate</a>() -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -27037,11 +28103,14 @@ Terminate the MIMIC daemon.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.daemon.terminate()
 
 ```
@@ -27070,7 +28139,7 @@ client.daemon.terminate()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">add_daemon_timer_script</a>(...)</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">add_daemon_timer_script</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -27098,11 +28167,14 @@ Add a new timer script to be executed at specified interval (in msec) with the s
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.daemon.add_daemon_timer_script(
     script="script",
     interval=1,
@@ -27159,7 +28231,7 @@ client.daemon.add_daemon_timer_script(
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">del_daemon_timer_script</a>(...)</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">del_daemon_timer_script</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -27187,11 +28259,14 @@ The first scheduled script that matches the script name, and optionally the inte
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.daemon.del_daemon_timer_script(
     script="script",
     interval=1,
@@ -27248,7 +28323,7 @@ client.daemon.del_daemon_timer_script(
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">list_daemon_timer_scripts</a>()</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">list_daemon_timer_scripts</a>() -> typing.List[TimerScript]</code></summary>
 <dl>
 <dd>
 
@@ -27276,11 +28351,14 @@ The command mimic timer script list lists global timer scripts, the command /mim
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.daemon.list_daemon_timer_scripts()
 
 ```

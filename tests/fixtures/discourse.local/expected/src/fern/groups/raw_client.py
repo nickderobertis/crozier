@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -20,6 +21,7 @@ from .types.list_groups_response import ListGroupsResponse
 from .types.remove_group_members_response import RemoveGroupMembersResponse
 from .types.update_group_request_group import UpdateGroupRequestGroup
 from .types.update_group_response import UpdateGroupResponse
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -72,6 +74,10 @@ class RawGroupsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_group(
@@ -91,7 +97,7 @@ class RawGroupsClient:
             response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"admin/groups/{jsonable_encoder(id)}.json",
+            f"admin/groups/{encode_path_param(id)}.json",
             method="DELETE",
             request_options=request_options,
         )
@@ -108,6 +114,10 @@ class RawGroupsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_groups(
@@ -142,6 +152,10 @@ class RawGroupsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_group(
@@ -162,7 +176,7 @@ class RawGroupsClient:
             success response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(id)}.json",
+            f"groups/{encode_path_param(id)}.json",
             method="GET",
             request_options=request_options,
         )
@@ -179,6 +193,10 @@ class RawGroupsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_group(
@@ -200,7 +218,7 @@ class RawGroupsClient:
             success response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(id)}.json",
+            f"groups/{encode_path_param(id)}.json",
             method="PUT",
             json={
                 "group": convert_and_respect_annotation_metadata(
@@ -226,6 +244,10 @@ class RawGroupsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_group_members(
@@ -246,7 +268,7 @@ class RawGroupsClient:
             success response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(id)}/members.json",
+            f"groups/{encode_path_param(id)}/members.json",
             method="GET",
             request_options=request_options,
         )
@@ -263,6 +285,10 @@ class RawGroupsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def add_group_members(
@@ -289,7 +315,7 @@ class RawGroupsClient:
             success response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(id)}/members.json",
+            f"groups/{encode_path_param(id)}/members.json",
             method="PUT",
             json={
                 "usernames": usernames,
@@ -313,6 +339,10 @@ class RawGroupsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def remove_group_members(
@@ -339,7 +369,7 @@ class RawGroupsClient:
             success response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(id)}/members.json",
+            f"groups/{encode_path_param(id)}/members.json",
             method="DELETE",
             json={
                 "usernames": usernames,
@@ -363,6 +393,10 @@ class RawGroupsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -413,6 +447,10 @@ class AsyncRawGroupsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_group(
@@ -432,7 +470,7 @@ class AsyncRawGroupsClient:
             response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"admin/groups/{jsonable_encoder(id)}.json",
+            f"admin/groups/{encode_path_param(id)}.json",
             method="DELETE",
             request_options=request_options,
         )
@@ -449,6 +487,10 @@ class AsyncRawGroupsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_groups(
@@ -483,6 +525,10 @@ class AsyncRawGroupsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_group(
@@ -503,7 +549,7 @@ class AsyncRawGroupsClient:
             success response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(id)}.json",
+            f"groups/{encode_path_param(id)}.json",
             method="GET",
             request_options=request_options,
         )
@@ -520,6 +566,10 @@ class AsyncRawGroupsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_group(
@@ -541,7 +591,7 @@ class AsyncRawGroupsClient:
             success response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(id)}.json",
+            f"groups/{encode_path_param(id)}.json",
             method="PUT",
             json={
                 "group": convert_and_respect_annotation_metadata(
@@ -567,6 +617,10 @@ class AsyncRawGroupsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_group_members(
@@ -587,7 +641,7 @@ class AsyncRawGroupsClient:
             success response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(id)}/members.json",
+            f"groups/{encode_path_param(id)}/members.json",
             method="GET",
             request_options=request_options,
         )
@@ -604,6 +658,10 @@ class AsyncRawGroupsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def add_group_members(
@@ -630,7 +688,7 @@ class AsyncRawGroupsClient:
             success response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(id)}/members.json",
+            f"groups/{encode_path_param(id)}/members.json",
             method="PUT",
             json={
                 "usernames": usernames,
@@ -654,6 +712,10 @@ class AsyncRawGroupsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def remove_group_members(
@@ -680,7 +742,7 @@ class AsyncRawGroupsClient:
             success response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(id)}/members.json",
+            f"groups/{encode_path_param(id)}/members.json",
             method="DELETE",
             json={
                 "usernames": usernames,
@@ -704,4 +766,8 @@ class AsyncRawGroupsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

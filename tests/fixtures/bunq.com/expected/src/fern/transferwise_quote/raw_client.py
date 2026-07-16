@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -14,6 +15,7 @@ from ..errors.bad_request_error import BadRequestError
 from ..types.amount import Amount
 from ..types.transferwise_quote_create import TransferwiseQuoteCreate
 from ..types.transferwise_quote_read import TransferwiseQuoteRead
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -94,7 +96,7 @@ class RawTransferwiseQuoteClient:
             Used to get quotes from Transferwise. These can be used to initiate payments.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/transferwise-quote",
+            f"user/{encode_path_param(user_id)}/transferwise-quote",
             method="POST",
             json={
                 "amount_fee": convert_and_respect_annotation_metadata(
@@ -136,9 +138,9 @@ class RawTransferwiseQuoteClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -146,6 +148,10 @@ class RawTransferwiseQuoteClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def read_transferwise_quote_for_user(
@@ -171,7 +177,7 @@ class RawTransferwiseQuoteClient:
             Used to get quotes from Transferwise. These can be used to initiate payments.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/transferwise-quote/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/transferwise-quote/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -189,9 +195,9 @@ class RawTransferwiseQuoteClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -199,6 +205,10 @@ class RawTransferwiseQuoteClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -277,7 +287,7 @@ class AsyncRawTransferwiseQuoteClient:
             Used to get quotes from Transferwise. These can be used to initiate payments.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/transferwise-quote",
+            f"user/{encode_path_param(user_id)}/transferwise-quote",
             method="POST",
             json={
                 "amount_fee": convert_and_respect_annotation_metadata(
@@ -319,9 +329,9 @@ class AsyncRawTransferwiseQuoteClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -329,6 +339,10 @@ class AsyncRawTransferwiseQuoteClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def read_transferwise_quote_for_user(
@@ -354,7 +368,7 @@ class AsyncRawTransferwiseQuoteClient:
             Used to get quotes from Transferwise. These can be used to initiate payments.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user/{jsonable_encoder(user_id)}/transferwise-quote/{jsonable_encoder(item_id)}",
+            f"user/{encode_path_param(user_id)}/transferwise-quote/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -372,9 +386,9 @@ class AsyncRawTransferwiseQuoteClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -382,4 +396,8 @@ class AsyncRawTransferwiseQuoteClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

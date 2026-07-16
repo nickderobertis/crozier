@@ -20,14 +20,23 @@ class DestinyDefinitionsDestinyProgressionMappingDefinition(UniversalBaseModel):
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="displayProperties",
+            description="Infrequently defined in practice. Defer to the individual progressions' display properties.",
+        ),
+    ] = None
     """
     Infrequently defined in practice. Defer to the individual progressions' display properties.
     """
 
-    display_units: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="displayUnits")] = (
-        pydantic.Field(default=None)
-    )
+    display_units: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="displayUnits"),
+        pydantic.Field(
+            alias="displayUnits",
+            description="The localized unit of measurement for progression across the progressions defined in this mapping. Unfortunately, this is very infrequently defined. Defer to the individual progressions' display units.",
+        ),
+    ] = None
     """
     The localized unit of measurement for progression across the progressions defined in this mapping. Unfortunately, this is very infrequently defined. Defer to the individual progressions' display units.
     """

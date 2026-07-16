@@ -18,13 +18,23 @@ class FieldTransform(UniversalBaseModel):
     Describes the difference between two Streams.
     """
 
-    add_field: typing_extensions.Annotated[typing.Optional[FieldAdd], FieldMetadata(alias="addField")] = None
+    add_field: typing_extensions.Annotated[
+        typing.Optional[FieldAdd], FieldMetadata(alias="addField"), pydantic.Field(alias="addField")
+    ] = None
     breaking: bool
-    field_name: typing_extensions.Annotated[FieldName, FieldMetadata(alias="fieldName")]
-    remove_field: typing_extensions.Annotated[typing.Optional[FieldRemove], FieldMetadata(alias="removeField")] = None
-    transform_type: typing_extensions.Annotated[FieldTransformTransformType, FieldMetadata(alias="transformType")]
+    field_name: typing_extensions.Annotated[
+        FieldName, FieldMetadata(alias="fieldName"), pydantic.Field(alias="fieldName")
+    ]
+    remove_field: typing_extensions.Annotated[
+        typing.Optional[FieldRemove], FieldMetadata(alias="removeField"), pydantic.Field(alias="removeField")
+    ] = None
+    transform_type: typing_extensions.Annotated[
+        FieldTransformTransformType, FieldMetadata(alias="transformType"), pydantic.Field(alias="transformType")
+    ]
     update_field_schema: typing_extensions.Annotated[
-        typing.Optional[FieldSchemaUpdate], FieldMetadata(alias="updateFieldSchema")
+        typing.Optional[FieldSchemaUpdate],
+        FieldMetadata(alias="updateFieldSchema"),
+        pydantic.Field(alias="updateFieldSchema"),
     ] = None
 
     if IS_PYDANTIC_V2:

@@ -6,11 +6,13 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
 from ..types.config_snm_pv3 import ConfigSnmPv3
+from pydantic import ValidationError
 
 
 class RawSnmPv3Client:
@@ -72,7 +74,7 @@ class RawSnmPv3Client:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/access/add/{jsonable_encoder(group_name)}/{jsonable_encoder(prefix)}/{jsonable_encoder(security_model)}/{jsonable_encoder(security_level)}/{jsonable_encoder(context_match)}/{jsonable_encoder(read_view)}/{jsonable_encoder(write_view)}/{jsonable_encoder(notify_view)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/access/add/{encode_path_param(group_name)}/{encode_path_param(prefix)}/{encode_path_param(security_model)}/{encode_path_param(security_level)}/{encode_path_param(context_match)}/{encode_path_param(read_view)}/{encode_path_param(write_view)}/{encode_path_param(notify_view)}",
             method="POST",
             request_options=request_options,
         )
@@ -90,9 +92,9 @@ class RawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -100,6 +102,10 @@ class RawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_snmpv3access_clear(
@@ -122,7 +128,7 @@ class RawSnmPv3Client:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/access/clear",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/access/clear",
             method="DELETE",
             request_options=request_options,
         )
@@ -140,9 +146,9 @@ class RawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -150,6 +156,10 @@ class RawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_snmpv3access_del(
@@ -175,7 +185,7 @@ class RawSnmPv3Client:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/access/del/{jsonable_encoder(access_name)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/access/del/{encode_path_param(access_name)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -193,9 +203,9 @@ class RawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -203,6 +213,10 @@ class RawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_snmpv3access_list(
@@ -225,7 +239,7 @@ class RawSnmPv3Client:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/access/list",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/access/list",
             method="GET",
             request_options=request_options,
         )
@@ -243,9 +257,9 @@ class RawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -253,6 +267,10 @@ class RawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_snmpv3get_config(
@@ -275,7 +293,7 @@ class RawSnmPv3Client:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/get/config",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/get/config",
             method="GET",
             request_options=request_options,
         )
@@ -293,9 +311,9 @@ class RawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -303,6 +321,10 @@ class RawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_snmpv3get_context_engineid(
@@ -325,7 +347,7 @@ class RawSnmPv3Client:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/get/context_engineid",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/get/context_engineid",
             method="GET",
             request_options=request_options,
         )
@@ -343,9 +365,9 @@ class RawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -353,6 +375,10 @@ class RawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_snmpv3get_engineboots(
@@ -375,7 +401,7 @@ class RawSnmPv3Client:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/get/engineboots",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/get/engineboots",
             method="GET",
             request_options=request_options,
         )
@@ -393,9 +419,9 @@ class RawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -403,13 +429,17 @@ class RawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_snmpv3get_engineid(
         self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[str]:
         """
-        For stopped agents, this operation is meaningless. If not explicitly set by the user then the autogenerated engineID is returned. The format of the engineID is in the familiar hex format, eg. \x01 23 45 67 89...
+        For stopped agents, this operation is meaningless. If not explicitly set by the user then the autogenerated engineID is returned. The format of the engineID is in the familiar hex format, eg. \\x01 23 45 67 89...
 
         Parameters
         ----------
@@ -425,7 +455,7 @@ class RawSnmPv3Client:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/get/engineid",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/get/engineid",
             method="GET",
             request_options=request_options,
         )
@@ -443,9 +473,9 @@ class RawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -453,6 +483,10 @@ class RawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_snmpv3get_enginetime(
@@ -475,7 +509,7 @@ class RawSnmPv3Client:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/get/enginetime",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/get/enginetime",
             method="GET",
             request_options=request_options,
         )
@@ -493,9 +527,9 @@ class RawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -503,6 +537,10 @@ class RawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_snmpv3group_add(
@@ -540,7 +578,7 @@ class RawSnmPv3Client:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/group/add/{jsonable_encoder(group_name)}/{jsonable_encoder(security_model)}/{jsonable_encoder(security_name)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/group/add/{encode_path_param(group_name)}/{encode_path_param(security_model)}/{encode_path_param(security_name)}",
             method="POST",
             request_options=request_options,
         )
@@ -558,9 +596,9 @@ class RawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -568,6 +606,10 @@ class RawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_snmpv3group_clear(
@@ -590,7 +632,7 @@ class RawSnmPv3Client:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/group/clear",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/group/clear",
             method="DELETE",
             request_options=request_options,
         )
@@ -608,9 +650,9 @@ class RawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -618,6 +660,10 @@ class RawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_snmpv3group_del(
@@ -643,7 +689,7 @@ class RawSnmPv3Client:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/group/del/{jsonable_encoder(group_name)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/group/del/{encode_path_param(group_name)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -661,9 +707,9 @@ class RawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -671,6 +717,10 @@ class RawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_snmpv3group_list(
@@ -693,7 +743,7 @@ class RawSnmPv3Client:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/group/list",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/group/list",
             method="GET",
             request_options=request_options,
         )
@@ -711,9 +761,9 @@ class RawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -721,6 +771,10 @@ class RawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_snmpv3set_config(
@@ -749,7 +803,7 @@ class RawSnmPv3Client:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/set/config/{jsonable_encoder(parameter)}/{jsonable_encoder(value)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/set/config/{encode_path_param(parameter)}/{encode_path_param(value)}",
             method="PUT",
             request_options=request_options,
         )
@@ -767,9 +821,9 @@ class RawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -777,6 +831,10 @@ class RawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_snmpv3user_add(
@@ -826,7 +884,7 @@ class RawSnmPv3Client:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/user/add/{jsonable_encoder(user_name)}/{jsonable_encoder(security_name)}/{jsonable_encoder(auth_protocol)}/{jsonable_encoder(auth_key)}/{jsonable_encoder(priv_protocol)}/{jsonable_encoder(priv_key)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/user/add/{encode_path_param(user_name)}/{encode_path_param(security_name)}/{encode_path_param(auth_protocol)}/{encode_path_param(auth_key)}/{encode_path_param(priv_protocol)}/{encode_path_param(priv_key)}",
             method="POST",
             request_options=request_options,
         )
@@ -844,9 +902,9 @@ class RawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -854,6 +912,10 @@ class RawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_snmpv3user_clear(
@@ -876,7 +938,7 @@ class RawSnmPv3Client:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/user/clear",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/user/clear",
             method="DELETE",
             request_options=request_options,
         )
@@ -894,9 +956,9 @@ class RawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -904,6 +966,10 @@ class RawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_snmpv3user_del(
@@ -929,7 +995,7 @@ class RawSnmPv3Client:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/user/del/{jsonable_encoder(user_name)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/user/del/{encode_path_param(user_name)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -947,9 +1013,9 @@ class RawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -957,6 +1023,10 @@ class RawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_snmpv3user_list(
@@ -979,7 +1049,7 @@ class RawSnmPv3Client:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/user/list",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/user/list",
             method="GET",
             request_options=request_options,
         )
@@ -997,9 +1067,9 @@ class RawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1007,6 +1077,10 @@ class RawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_snmpv3usm_save(
@@ -1029,7 +1103,7 @@ class RawSnmPv3Client:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/usm/save",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/usm/save",
             method="PUT",
             request_options=request_options,
         )
@@ -1047,9 +1121,9 @@ class RawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1057,6 +1131,10 @@ class RawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_snmpv3usm_saveas(
@@ -1082,7 +1160,7 @@ class RawSnmPv3Client:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/usm/saveas/{jsonable_encoder(filename)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/usm/saveas/{encode_path_param(filename)}",
             method="PUT",
             request_options=request_options,
         )
@@ -1100,9 +1178,9 @@ class RawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1110,6 +1188,10 @@ class RawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_snmpv3vacm_save(
@@ -1132,7 +1214,7 @@ class RawSnmPv3Client:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/vacm/save",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/vacm/save",
             method="PUT",
             request_options=request_options,
         )
@@ -1150,9 +1232,9 @@ class RawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1160,6 +1242,10 @@ class RawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_snmpv3vacm_saveas(
@@ -1185,7 +1271,7 @@ class RawSnmPv3Client:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/vacm/saveas/{jsonable_encoder(filename)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/vacm/saveas/{encode_path_param(filename)}",
             method="PUT",
             request_options=request_options,
         )
@@ -1203,9 +1289,9 @@ class RawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1213,6 +1299,10 @@ class RawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_snmpv3view_add(
@@ -1254,7 +1344,7 @@ class RawSnmPv3Client:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/view/add/{jsonable_encoder(view_name)}/{jsonable_encoder(view_type)}/{jsonable_encoder(subtree)}/{jsonable_encoder(mask)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/view/add/{encode_path_param(view_name)}/{encode_path_param(view_type)}/{encode_path_param(subtree)}/{encode_path_param(mask)}",
             method="POST",
             request_options=request_options,
         )
@@ -1272,9 +1362,9 @@ class RawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1282,6 +1372,10 @@ class RawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_snmpv3view_clear(
@@ -1304,7 +1398,7 @@ class RawSnmPv3Client:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/view/clear",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/view/clear",
             method="DELETE",
             request_options=request_options,
         )
@@ -1322,9 +1416,9 @@ class RawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1332,6 +1426,10 @@ class RawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_snmpv3view_del(
@@ -1357,7 +1455,7 @@ class RawSnmPv3Client:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/view/del/{jsonable_encoder(view_name)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/view/del/{encode_path_param(view_name)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -1375,9 +1473,9 @@ class RawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1385,6 +1483,10 @@ class RawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def protocol_snmpv3view_list(
@@ -1407,7 +1509,7 @@ class RawSnmPv3Client:
             successful operation
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/view/list",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/view/list",
             method="GET",
             request_options=request_options,
         )
@@ -1425,9 +1527,9 @@ class RawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1435,6 +1537,10 @@ class RawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -1497,7 +1603,7 @@ class AsyncRawSnmPv3Client:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/access/add/{jsonable_encoder(group_name)}/{jsonable_encoder(prefix)}/{jsonable_encoder(security_model)}/{jsonable_encoder(security_level)}/{jsonable_encoder(context_match)}/{jsonable_encoder(read_view)}/{jsonable_encoder(write_view)}/{jsonable_encoder(notify_view)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/access/add/{encode_path_param(group_name)}/{encode_path_param(prefix)}/{encode_path_param(security_model)}/{encode_path_param(security_level)}/{encode_path_param(context_match)}/{encode_path_param(read_view)}/{encode_path_param(write_view)}/{encode_path_param(notify_view)}",
             method="POST",
             request_options=request_options,
         )
@@ -1515,9 +1621,9 @@ class AsyncRawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1525,6 +1631,10 @@ class AsyncRawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_snmpv3access_clear(
@@ -1547,7 +1657,7 @@ class AsyncRawSnmPv3Client:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/access/clear",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/access/clear",
             method="DELETE",
             request_options=request_options,
         )
@@ -1565,9 +1675,9 @@ class AsyncRawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1575,6 +1685,10 @@ class AsyncRawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_snmpv3access_del(
@@ -1600,7 +1714,7 @@ class AsyncRawSnmPv3Client:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/access/del/{jsonable_encoder(access_name)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/access/del/{encode_path_param(access_name)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -1618,9 +1732,9 @@ class AsyncRawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1628,6 +1742,10 @@ class AsyncRawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_snmpv3access_list(
@@ -1650,7 +1768,7 @@ class AsyncRawSnmPv3Client:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/access/list",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/access/list",
             method="GET",
             request_options=request_options,
         )
@@ -1668,9 +1786,9 @@ class AsyncRawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1678,6 +1796,10 @@ class AsyncRawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_snmpv3get_config(
@@ -1700,7 +1822,7 @@ class AsyncRawSnmPv3Client:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/get/config",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/get/config",
             method="GET",
             request_options=request_options,
         )
@@ -1718,9 +1840,9 @@ class AsyncRawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1728,6 +1850,10 @@ class AsyncRawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_snmpv3get_context_engineid(
@@ -1750,7 +1876,7 @@ class AsyncRawSnmPv3Client:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/get/context_engineid",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/get/context_engineid",
             method="GET",
             request_options=request_options,
         )
@@ -1768,9 +1894,9 @@ class AsyncRawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1778,6 +1904,10 @@ class AsyncRawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_snmpv3get_engineboots(
@@ -1800,7 +1930,7 @@ class AsyncRawSnmPv3Client:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/get/engineboots",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/get/engineboots",
             method="GET",
             request_options=request_options,
         )
@@ -1818,9 +1948,9 @@ class AsyncRawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1828,13 +1958,17 @@ class AsyncRawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_snmpv3get_engineid(
         self, agent_num: int, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[str]:
         """
-        For stopped agents, this operation is meaningless. If not explicitly set by the user then the autogenerated engineID is returned. The format of the engineID is in the familiar hex format, eg. \x01 23 45 67 89...
+        For stopped agents, this operation is meaningless. If not explicitly set by the user then the autogenerated engineID is returned. The format of the engineID is in the familiar hex format, eg. \\x01 23 45 67 89...
 
         Parameters
         ----------
@@ -1850,7 +1984,7 @@ class AsyncRawSnmPv3Client:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/get/engineid",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/get/engineid",
             method="GET",
             request_options=request_options,
         )
@@ -1868,9 +2002,9 @@ class AsyncRawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1878,6 +2012,10 @@ class AsyncRawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_snmpv3get_enginetime(
@@ -1900,7 +2038,7 @@ class AsyncRawSnmPv3Client:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/get/enginetime",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/get/enginetime",
             method="GET",
             request_options=request_options,
         )
@@ -1918,9 +2056,9 @@ class AsyncRawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1928,6 +2066,10 @@ class AsyncRawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_snmpv3group_add(
@@ -1965,7 +2107,7 @@ class AsyncRawSnmPv3Client:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/group/add/{jsonable_encoder(group_name)}/{jsonable_encoder(security_model)}/{jsonable_encoder(security_name)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/group/add/{encode_path_param(group_name)}/{encode_path_param(security_model)}/{encode_path_param(security_name)}",
             method="POST",
             request_options=request_options,
         )
@@ -1983,9 +2125,9 @@ class AsyncRawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1993,6 +2135,10 @@ class AsyncRawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_snmpv3group_clear(
@@ -2015,7 +2161,7 @@ class AsyncRawSnmPv3Client:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/group/clear",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/group/clear",
             method="DELETE",
             request_options=request_options,
         )
@@ -2033,9 +2179,9 @@ class AsyncRawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2043,6 +2189,10 @@ class AsyncRawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_snmpv3group_del(
@@ -2068,7 +2218,7 @@ class AsyncRawSnmPv3Client:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/group/del/{jsonable_encoder(group_name)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/group/del/{encode_path_param(group_name)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -2086,9 +2236,9 @@ class AsyncRawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2096,6 +2246,10 @@ class AsyncRawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_snmpv3group_list(
@@ -2118,7 +2272,7 @@ class AsyncRawSnmPv3Client:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/group/list",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/group/list",
             method="GET",
             request_options=request_options,
         )
@@ -2136,9 +2290,9 @@ class AsyncRawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2146,6 +2300,10 @@ class AsyncRawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_snmpv3set_config(
@@ -2174,7 +2332,7 @@ class AsyncRawSnmPv3Client:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/set/config/{jsonable_encoder(parameter)}/{jsonable_encoder(value)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/set/config/{encode_path_param(parameter)}/{encode_path_param(value)}",
             method="PUT",
             request_options=request_options,
         )
@@ -2192,9 +2350,9 @@ class AsyncRawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2202,6 +2360,10 @@ class AsyncRawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_snmpv3user_add(
@@ -2251,7 +2413,7 @@ class AsyncRawSnmPv3Client:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/user/add/{jsonable_encoder(user_name)}/{jsonable_encoder(security_name)}/{jsonable_encoder(auth_protocol)}/{jsonable_encoder(auth_key)}/{jsonable_encoder(priv_protocol)}/{jsonable_encoder(priv_key)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/user/add/{encode_path_param(user_name)}/{encode_path_param(security_name)}/{encode_path_param(auth_protocol)}/{encode_path_param(auth_key)}/{encode_path_param(priv_protocol)}/{encode_path_param(priv_key)}",
             method="POST",
             request_options=request_options,
         )
@@ -2269,9 +2431,9 @@ class AsyncRawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2279,6 +2441,10 @@ class AsyncRawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_snmpv3user_clear(
@@ -2301,7 +2467,7 @@ class AsyncRawSnmPv3Client:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/user/clear",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/user/clear",
             method="DELETE",
             request_options=request_options,
         )
@@ -2319,9 +2485,9 @@ class AsyncRawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2329,6 +2495,10 @@ class AsyncRawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_snmpv3user_del(
@@ -2354,7 +2524,7 @@ class AsyncRawSnmPv3Client:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/user/del/{jsonable_encoder(user_name)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/user/del/{encode_path_param(user_name)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -2372,9 +2542,9 @@ class AsyncRawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2382,6 +2552,10 @@ class AsyncRawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_snmpv3user_list(
@@ -2404,7 +2578,7 @@ class AsyncRawSnmPv3Client:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/user/list",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/user/list",
             method="GET",
             request_options=request_options,
         )
@@ -2422,9 +2596,9 @@ class AsyncRawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2432,6 +2606,10 @@ class AsyncRawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_snmpv3usm_save(
@@ -2454,7 +2632,7 @@ class AsyncRawSnmPv3Client:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/usm/save",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/usm/save",
             method="PUT",
             request_options=request_options,
         )
@@ -2472,9 +2650,9 @@ class AsyncRawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2482,6 +2660,10 @@ class AsyncRawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_snmpv3usm_saveas(
@@ -2507,7 +2689,7 @@ class AsyncRawSnmPv3Client:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/usm/saveas/{jsonable_encoder(filename)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/usm/saveas/{encode_path_param(filename)}",
             method="PUT",
             request_options=request_options,
         )
@@ -2525,9 +2707,9 @@ class AsyncRawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2535,6 +2717,10 @@ class AsyncRawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_snmpv3vacm_save(
@@ -2557,7 +2743,7 @@ class AsyncRawSnmPv3Client:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/vacm/save",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/vacm/save",
             method="PUT",
             request_options=request_options,
         )
@@ -2575,9 +2761,9 @@ class AsyncRawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2585,6 +2771,10 @@ class AsyncRawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_snmpv3vacm_saveas(
@@ -2610,7 +2800,7 @@ class AsyncRawSnmPv3Client:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/vacm/saveas/{jsonable_encoder(filename)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/vacm/saveas/{encode_path_param(filename)}",
             method="PUT",
             request_options=request_options,
         )
@@ -2628,9 +2818,9 @@ class AsyncRawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2638,6 +2828,10 @@ class AsyncRawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_snmpv3view_add(
@@ -2679,7 +2873,7 @@ class AsyncRawSnmPv3Client:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/view/add/{jsonable_encoder(view_name)}/{jsonable_encoder(view_type)}/{jsonable_encoder(subtree)}/{jsonable_encoder(mask)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/view/add/{encode_path_param(view_name)}/{encode_path_param(view_type)}/{encode_path_param(subtree)}/{encode_path_param(mask)}",
             method="POST",
             request_options=request_options,
         )
@@ -2697,9 +2891,9 @@ class AsyncRawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2707,6 +2901,10 @@ class AsyncRawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_snmpv3view_clear(
@@ -2729,7 +2927,7 @@ class AsyncRawSnmPv3Client:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/view/clear",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/view/clear",
             method="DELETE",
             request_options=request_options,
         )
@@ -2747,9 +2945,9 @@ class AsyncRawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2757,6 +2955,10 @@ class AsyncRawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_snmpv3view_del(
@@ -2782,7 +2984,7 @@ class AsyncRawSnmPv3Client:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/view/del/{jsonable_encoder(view_name)}",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/view/del/{encode_path_param(view_name)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -2800,9 +3002,9 @@ class AsyncRawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2810,6 +3012,10 @@ class AsyncRawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def protocol_snmpv3view_list(
@@ -2832,7 +3038,7 @@ class AsyncRawSnmPv3Client:
             successful operation
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mimic/agent/{jsonable_encoder(agent_num)}/protocol/msg/snmpv3/view/list",
+            f"mimic/agent/{encode_path_param(agent_num)}/protocol/msg/snmpv3/view/list",
             method="GET",
             request_options=request_options,
         )
@@ -2850,9 +3056,9 @@ class AsyncRawSnmPv3Client:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2860,4 +3066,8 @@ class AsyncRawSnmPv3Client:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

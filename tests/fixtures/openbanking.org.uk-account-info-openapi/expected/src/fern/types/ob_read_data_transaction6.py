@@ -11,7 +11,9 @@ from .ob_transaction6 import ObTransaction6
 
 class ObReadDataTransaction6(UniversalBaseModel):
     transaction: typing_extensions.Annotated[
-        typing.Optional[typing.List[ObTransaction6]], FieldMetadata(alias="Transaction")
+        typing.Optional[typing.List[ObTransaction6]],
+        FieldMetadata(alias="Transaction"),
+        pydantic.Field(alias="Transaction"),
     ] = None
 
     if IS_PYDANTIC_V2:

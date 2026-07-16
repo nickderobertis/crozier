@@ -6,12 +6,14 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from .types.trending_get_trending_categories_response import TrendingGetTrendingCategoriesResponse
 from .types.trending_get_trending_category_response import TrendingGetTrendingCategoryResponse
 from .types.trending_get_trending_entry_detail_response import TrendingGetTrendingEntryDetailResponse
+from pydantic import ValidationError
 
 
 class RawTrendingClient:
@@ -52,6 +54,10 @@ class RawTrendingClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def gettrendingcategory(
@@ -77,7 +83,7 @@ class RawTrendingClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Trending/Categories/{jsonable_encoder(category_id)}/{jsonable_encoder(page_number)}/",
+            f"Trending/Categories/{encode_path_param(category_id)}/{encode_path_param(page_number)}/",
             method="GET",
             request_options=request_options,
         )
@@ -94,6 +100,10 @@ class RawTrendingClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def gettrendingentrydetail(
@@ -119,7 +129,7 @@ class RawTrendingClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"Trending/Details/{jsonable_encoder(trending_entry_type)}/{jsonable_encoder(identifier)}/",
+            f"Trending/Details/{encode_path_param(trending_entry_type)}/{encode_path_param(identifier)}/",
             method="GET",
             request_options=request_options,
         )
@@ -136,6 +146,10 @@ class RawTrendingClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -177,6 +191,10 @@ class AsyncRawTrendingClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def gettrendingcategory(
@@ -202,7 +220,7 @@ class AsyncRawTrendingClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Trending/Categories/{jsonable_encoder(category_id)}/{jsonable_encoder(page_number)}/",
+            f"Trending/Categories/{encode_path_param(category_id)}/{encode_path_param(page_number)}/",
             method="GET",
             request_options=request_options,
         )
@@ -219,6 +237,10 @@ class AsyncRawTrendingClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def gettrendingentrydetail(
@@ -244,7 +266,7 @@ class AsyncRawTrendingClient:
             Look at the Response property for more information about the nature of this response
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"Trending/Details/{jsonable_encoder(trending_entry_type)}/{jsonable_encoder(identifier)}/",
+            f"Trending/Details/{encode_path_param(trending_entry_type)}/{encode_path_param(identifier)}/",
             method="GET",
             request_options=request_options,
         )
@@ -261,4 +283,8 @@ class AsyncRawTrendingClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

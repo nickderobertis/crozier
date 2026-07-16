@@ -15,15 +15,25 @@ class ListStacksOutput(UniversalBaseModel):
     """
 
     stack_summaries: typing_extensions.Annotated[
-        typing.Optional[typing.List[StackSummary]], FieldMetadata(alias="StackSummaries")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[StackSummary]],
+        FieldMetadata(alias="StackSummaries"),
+        pydantic.Field(
+            alias="StackSummaries",
+            description="A list of <code>StackSummary</code> structures containing information about the specified stacks.",
+        ),
+    ] = None
     """
     A list of <code>StackSummary</code> structures containing information about the specified stacks.
     """
 
-    next_token: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="NextToken")] = pydantic.Field(
-        default=None
-    )
+    next_token: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="NextToken"),
+        pydantic.Field(
+            alias="NextToken",
+            description="If the output exceeds 1 MB in size, a string that identifies the next page of stacks. If no additional page exists, this value is null.",
+        ),
+    ] = None
     """
     If the output exceeds 1 MB in size, a string that identifies the next page of stacks. If no additional page exists, this value is null.
     """

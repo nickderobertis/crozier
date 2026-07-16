@@ -15,22 +15,34 @@ class DestinyDefinitionsDestinyFactionVendorDefinition(UniversalBaseModel):
     """
 
     background_image_path: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="backgroundImagePath")
-    ] = pydantic.Field(default=None)
+        typing.Optional[str],
+        FieldMetadata(alias="backgroundImagePath"),
+        pydantic.Field(
+            alias="backgroundImagePath",
+            description="The relative path to the background image representing this Vendor at this location, for use in a banner.",
+        ),
+    ] = None
     """
     The relative path to the background image representing this Vendor at this location, for use in a banner.
     """
 
-    destination_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="destinationHash")] = (
-        pydantic.Field(default=None)
-    )
+    destination_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="destinationHash"),
+        pydantic.Field(
+            alias="destinationHash",
+            description="The hash identifier for a Destination at which this vendor may be located. Each destination where a Vendor may exist will only ever have a single entry.",
+        ),
+    ] = None
     """
     The hash identifier for a Destination at which this vendor may be located. Each destination where a Vendor may exist will only ever have a single entry.
     """
 
-    vendor_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="vendorHash")] = pydantic.Field(
-        default=None
-    )
+    vendor_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="vendorHash"),
+        pydantic.Field(alias="vendorHash", description="The faction vendor hash."),
+    ] = None
     """
     The faction vendor hash.
     """

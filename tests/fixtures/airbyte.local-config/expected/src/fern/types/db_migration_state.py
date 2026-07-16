@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class DbMigrationState(str, enum.Enum):
+class DbMigrationState(enum.StrEnum):
     PENDING = "pending"
     ABOVE_TARGET = "above_target"
     BELOW_BASELINE = "below_baseline"

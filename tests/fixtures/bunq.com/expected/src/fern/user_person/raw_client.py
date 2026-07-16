@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -20,6 +21,7 @@ from ..types.relation_user import RelationUser
 from ..types.tax_resident import TaxResident
 from ..types.user_person_read import UserPersonRead
 from ..types.user_person_update import UserPersonUpdate
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -49,7 +51,7 @@ class RawUserPersonClient:
             With UserPerson you can retrieve information regarding the authenticated UserPerson and update specific fields.<br/><br/>Notification filters can be set on a UserPerson level to receive callbacks. For more information check the <a href="/api/1/page/callbacks">dedicated callbacks page</a>.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user-person/{jsonable_encoder(item_id)}",
+            f"user-person/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -67,9 +69,9 @@ class RawUserPersonClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -77,6 +79,10 @@ class RawUserPersonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_user_person(
@@ -254,7 +260,7 @@ class RawUserPersonClient:
             With UserPerson you can retrieve information regarding the authenticated UserPerson and update specific fields.<br/><br/>Notification filters can be set on a UserPerson level to receive callbacks. For more information check the <a href="/api/1/page/callbacks">dedicated callbacks page</a>.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"user-person/{jsonable_encoder(item_id)}",
+            f"user-person/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "address_main": convert_and_respect_annotation_metadata(
@@ -332,9 +338,9 @@ class RawUserPersonClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -342,6 +348,10 @@ class RawUserPersonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -369,7 +379,7 @@ class AsyncRawUserPersonClient:
             With UserPerson you can retrieve information regarding the authenticated UserPerson and update specific fields.<br/><br/>Notification filters can be set on a UserPerson level to receive callbacks. For more information check the <a href="/api/1/page/callbacks">dedicated callbacks page</a>.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user-person/{jsonable_encoder(item_id)}",
+            f"user-person/{encode_path_param(item_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -387,9 +397,9 @@ class AsyncRawUserPersonClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -397,6 +407,10 @@ class AsyncRawUserPersonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_user_person(
@@ -574,7 +588,7 @@ class AsyncRawUserPersonClient:
             With UserPerson you can retrieve information regarding the authenticated UserPerson and update specific fields.<br/><br/>Notification filters can be set on a UserPerson level to receive callbacks. For more information check the <a href="/api/1/page/callbacks">dedicated callbacks page</a>.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"user-person/{jsonable_encoder(item_id)}",
+            f"user-person/{encode_path_param(item_id)}",
             method="PUT",
             json={
                 "address_main": convert_and_respect_annotation_metadata(
@@ -652,9 +666,9 @@ class AsyncRawUserPersonClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -662,4 +676,8 @@ class AsyncRawUserPersonClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

@@ -1,6 +1,6 @@
 # Reference
 ## AssetsAnalysis
-<details><summary><code>client.assets_analysis.<a href="src/fern/assets_analysis/client.py">absorption_ratio</a>(...)</code></summary>
+<details><summary><code>client.assets_analysis.<a href="src/fern/assets_analysis/client.py">absorption_ratio</a>(...) -> PostAssetsAnalysisAbsorptionRatioResponse</code></summary>
 <dl>
 <dd>
 
@@ -31,13 +31,25 @@ References
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.assets_analysis.absorption_ratio(
     assets=2,
-    assets_covariance_matrix=[[9.0, 1.0], [1.0, 1.0]],
+    assets_covariance_matrix=[
+        [
+            9,
+            1
+        ],
+        [
+            1,
+            1
+        ]
+    ],
 )
 
 ```
@@ -62,7 +74,7 @@ client.assets_analysis.absorption_ratio(
 <dl>
 <dd>
 
-**assets_covariance_matrix:** `typing.Sequence[typing.Sequence[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
+**assets_covariance_matrix:** `typing.List[typing.List[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
     
 </dd>
 </dl>
@@ -70,9 +82,7 @@ client.assets_analysis.absorption_ratio(
 <dl>
 <dd>
 
-**assets_covariance_matrix_eigenvectors:** `typing.Optional[
-    PostAssetsAnalysisAbsorptionRatioRequestAssetsCovarianceMatrixEigenvectors
-]` 
+**assets_covariance_matrix_eigenvectors:** `typing.Optional[PostAssetsAnalysisAbsorptionRatioRequestAssetsCovarianceMatrixEigenvectors]` 
     
 </dd>
 </dl>
@@ -92,7 +102,7 @@ client.assets_analysis.absorption_ratio(
 </dl>
 </details>
 
-<details><summary><code>client.assets_analysis.<a href="src/fern/assets_analysis/client.py">turbulence_index</a>(...)</code></summary>
+<details><summary><code>client.assets_analysis.<a href="src/fern/assets_analysis/client.py">turbulence_index</a>(...) -> PostAssetsAnalysisTurbulenceIndexResponse</code></summary>
 <dl>
 <dd>
 
@@ -124,15 +134,33 @@ References
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.assets_analysis.turbulence_index(
     assets=2,
-    assets_average_returns=[1.0, 1.0],
-    assets_covariance_matrix=[[9.0, 1.0], [1.0, 1.0]],
-    assets_returns=[1.0, 0.0],
+    assets_average_returns=[
+        1,
+        1
+    ],
+    assets_covariance_matrix=[
+        [
+            9,
+            1
+        ],
+        [
+            1,
+            1
+        ]
+    ],
+    assets_returns=[
+        1,
+        0
+    ],
 )
 
 ```
@@ -157,7 +185,7 @@ client.assets_analysis.turbulence_index(
 <dl>
 <dd>
 
-**assets_average_returns:** `typing.Sequence[float]` — assetsAverageReturns[i] is the average return of asset i over an historical reference period
+**assets_average_returns:** `typing.List[float]` — assetsAverageReturns[i] is the average return of asset i over an historical reference period
     
 </dd>
 </dl>
@@ -165,7 +193,7 @@ client.assets_analysis.turbulence_index(
 <dl>
 <dd>
 
-**assets_covariance_matrix:** `typing.Sequence[typing.Sequence[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j over an historical reference period
+**assets_covariance_matrix:** `typing.List[typing.List[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j over an historical reference period
     
 </dd>
 </dl>
@@ -173,7 +201,7 @@ client.assets_analysis.turbulence_index(
 <dl>
 <dd>
 
-**assets_returns:** `typing.Sequence[float]` — assetsReturns[i] is the return of asset i over a period different from the historical reference period
+**assets_returns:** `typing.List[float]` — assetsReturns[i] is the return of asset i over a period different from the historical reference period
     
 </dd>
 </dl>
@@ -194,7 +222,7 @@ client.assets_analysis.turbulence_index(
 </details>
 
 ## AssetsCorrelationMatrix
-<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py">correlation_matrix</a>(...)</code></summary>
+<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py">correlation_matrix</a>(...) -> PostAssetsCorrelationMatrixResponse</code></summary>
 <dl>
 <dd>
 
@@ -226,25 +254,27 @@ References
 <dd>
 
 ```python
-from fern.assets_correlation_matrix import (
-    PostAssetsCorrelationMatrixRequestZero,
-    PostAssetsCorrelationMatrixRequestZeroAssetsItem,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.assets_correlation_matrix import PostAssetsCorrelationMatrixRequestAssetsCovarianceMatrix
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.assets_correlation_matrix.correlation_matrix(
-    request=PostAssetsCorrelationMatrixRequestZero(
-        assets=[
-            PostAssetsCorrelationMatrixRequestZeroAssetsItem(
-                asset_returns=[0.01, 0.0, 0.02, -0.03],
-            ),
-            PostAssetsCorrelationMatrixRequestZeroAssetsItem(
-                asset_returns=[0.01, 0.0, 0.02, -0.03],
-            ),
+    request=PostAssetsCorrelationMatrixRequestAssetsCovarianceMatrix(
+        assets=2,
+        assets_covariance_matrix=[
+            [
+                0.01,
+                -0.0025
+            ],
+            [
+                -0.0025,
+                0.0025
+            ]
         ],
     ),
 )
@@ -283,7 +313,7 @@ client.assets_correlation_matrix.correlation_matrix(
 </dl>
 </details>
 
-<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py">correlation_matrix_bounds</a>(...)</code></summary>
+<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py">correlation_matrix_bounds</a>(...) -> PostAssetsCorrelationMatrixBoundsResponse</code></summary>
 <dl>
 <dd>
 
@@ -314,19 +344,46 @@ Compute the lower bounds and the upper bounds of an asset correlation matrix ass
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.assets_correlation_matrix.correlation_matrix_bounds(
     assets=4,
     assets_correlation_matrix=[
-        [1.0, -0.55, -0.15, -0.1],
-        [-0.55, 1.0, 0.4, 0.3],
-        [-0.15, 0.4, 1.0, 0.5],
-        [-0.1, 0.3, 0.5, 1.0],
+        [
+            1,
+            -0.55,
+            -0.15,
+            -0.1
+        ],
+        [
+            -0.55,
+            1,
+            0.4,
+            0.3
+        ],
+        [
+            -0.15,
+            0.4,
+            1,
+            0.5
+        ],
+        [
+            -0.1,
+            0.3,
+            0.5,
+            1
+        ]
     ],
-    assets_group=[2, 3, 4],
+    assets_group=[
+        2,
+        3,
+        4
+    ],
 )
 
 ```
@@ -351,7 +408,7 @@ client.assets_correlation_matrix.correlation_matrix_bounds(
 <dl>
 <dd>
 
-**assets_correlation_matrix:** `typing.Sequence[typing.Sequence[float]]` — assetsCorrelationMatrix[i][j] is the correlation between the asset i and the asset j
+**assets_correlation_matrix:** `typing.List[typing.List[float]]` — assetsCorrelationMatrix[i][j] is the correlation between the asset i and the asset j
     
 </dd>
 </dl>
@@ -359,7 +416,7 @@ client.assets_correlation_matrix.correlation_matrix_bounds(
 <dl>
 <dd>
 
-**assets_group:** `typing.Sequence[int]` — assetsGroup[k] is the indexes of the assets belonging to the assets group
+**assets_group:** `typing.List[int]` — assetsGroup[k] is the indexes of the assets belonging to the assets group
     
 </dd>
 </dl>
@@ -379,7 +436,7 @@ client.assets_correlation_matrix.correlation_matrix_bounds(
 </dl>
 </details>
 
-<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py">denoised_correlation_matrix</a>(...)</code></summary>
+<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py">denoised_correlation_matrix</a>(...) -> PostAssetsCorrelationMatrixDenoisedResponse</code></summary>
 <dl>
 <dd>
 
@@ -411,16 +468,31 @@ Compute a denoised asset correlation matrix, using one of the following methods:
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.assets_correlation_matrix.denoised_correlation_matrix(
     assets=3,
     assets_correlation_matrix=[
-        [1.0, 0.5, 0.9],
-        [0.5, 1.0, 0.7],
-        [0.9, 0.7, 1.0],
+        [
+            1,
+            0.5,
+            0.9
+        ],
+        [
+            0.5,
+            1,
+            0.7
+        ],
+        [
+            0.9,
+            0.7,
+            1
+        ]
     ],
     assets_correlation_matrix_aspect_ratio=0.5,
 )
@@ -447,7 +519,7 @@ client.assets_correlation_matrix.denoised_correlation_matrix(
 <dl>
 <dd>
 
-**assets_correlation_matrix:** `typing.Sequence[typing.Sequence[float]]` — assetsCorrelationMatrix[i][j] is the correlation between the asset i and the asset j
+**assets_correlation_matrix:** `typing.List[typing.List[float]]` — assetsCorrelationMatrix[i][j] is the correlation between the asset i and the asset j
     
 </dd>
 </dl>
@@ -483,7 +555,7 @@ client.assets_correlation_matrix.denoised_correlation_matrix(
 </dl>
 </details>
 
-<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py">correlation_matrix_distance</a>(...)</code></summary>
+<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py">correlation_matrix_distance</a>(...) -> PostAssetsCorrelationMatrixDistanceResponse</code></summary>
 <dl>
 <dd>
 
@@ -518,21 +590,50 @@ Compute the distance between an asset correlation matrix and a reference correla
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.assets_correlation_matrix import PostAssetsCorrelationMatrixDistanceRequestDistanceMetric
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.assets_correlation_matrix.correlation_matrix_distance(
     assets=3,
     assets_correlation_matrix=[
-        [1.0, 0.5, 0.9],
-        [0.5, 1.0, 0.7],
-        [0.9, 0.7, 1.0],
+        [
+            1,
+            0.5,
+            0.9
+        ],
+        [
+            0.5,
+            1,
+            0.7
+        ],
+        [
+            0.9,
+            0.7,
+            1
+        ]
     ],
+    distance_metric=PostAssetsCorrelationMatrixDistanceRequestDistanceMetric.CORRELATION_MATRIX,
     reference_correlation_matrix=[
-        [1.0, 1.0, 1.0],
-        [1.0, 1.0, 1.0],
-        [1.0, 1.0, 1.0],
+        [
+            1,
+            1,
+            1
+        ],
+        [
+            1,
+            1,
+            1
+        ],
+        [
+            1,
+            1,
+            1
+        ]
     ],
 )
 
@@ -558,7 +659,7 @@ client.assets_correlation_matrix.correlation_matrix_distance(
 <dl>
 <dd>
 
-**assets_correlation_matrix:** `typing.Sequence[typing.Sequence[float]]` — assetsCorrelationMatrix[i][j] is the correlation between the asset i and the asset j
+**assets_correlation_matrix:** `typing.List[typing.List[float]]` — assetsCorrelationMatrix[i][j] is the correlation between the asset i and the asset j
     
 </dd>
 </dl>
@@ -566,7 +667,7 @@ client.assets_correlation_matrix.correlation_matrix_distance(
 <dl>
 <dd>
 
-**reference_correlation_matrix:** `typing.Sequence[typing.Sequence[float]]` — referenceCorrelationMatrix[i][j] is the reference correlation between the asset i and the asset j
+**reference_correlation_matrix:** `typing.List[typing.List[float]]` — referenceCorrelationMatrix[i][j] is the reference correlation between the asset i and the asset j
     
 </dd>
 </dl>
@@ -594,7 +695,7 @@ client.assets_correlation_matrix.correlation_matrix_distance(
 </dl>
 </details>
 
-<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py">correlation_matrix_effective_rank</a>(...)</code></summary>
+<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py">correlation_matrix_effective_rank</a>(...) -> PostAssetsCorrelationMatrixEffectiveRankResponse</code></summary>
 <dl>
 <dd>
 
@@ -625,13 +726,25 @@ References
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.assets_correlation_matrix.correlation_matrix_effective_rank(
     assets=2,
-    assets_correlation_matrix=[[1.0, 0.0], [0.0, 1.0]],
+    assets_correlation_matrix=[
+        [
+            1,
+            0
+        ],
+        [
+            0,
+            1
+        ]
+    ],
 )
 
 ```
@@ -656,7 +769,7 @@ client.assets_correlation_matrix.correlation_matrix_effective_rank(
 <dl>
 <dd>
 
-**assets_correlation_matrix:** `typing.Sequence[typing.Sequence[float]]` — assetsCorrelationMatrix[i][j] is the correlation between the asset i and the asset j
+**assets_correlation_matrix:** `typing.List[typing.List[float]]` — assetsCorrelationMatrix[i][j] is the correlation between the asset i and the asset j
     
 </dd>
 </dl>
@@ -676,7 +789,7 @@ client.assets_correlation_matrix.correlation_matrix_effective_rank(
 </dl>
 </details>
 
-<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py">correlation_matrix_informativeness</a>(...)</code></summary>
+<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py">correlation_matrix_informativeness</a>(...) -> PostAssetsCorrelationMatrixInformativenessResponse</code></summary>
 <dl>
 <dd>
 
@@ -712,17 +825,34 @@ Compute the informativeness of an asset correlation matrix, using one of the fol
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.assets_correlation_matrix import PostAssetsCorrelationMatrixInformativenessRequestDistanceMetric
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.assets_correlation_matrix.correlation_matrix_informativeness(
     assets=3,
     assets_correlation_matrix=[
-        [1.0, 0.5, 0.9],
-        [0.5, 1.0, 0.7],
-        [0.9, 0.7, 1.0],
+        [
+            1,
+            0.5,
+            0.9
+        ],
+        [
+            0.5,
+            1,
+            0.7
+        ],
+        [
+            0.9,
+            0.7,
+            1
+        ]
     ],
+    distance_metric=PostAssetsCorrelationMatrixInformativenessRequestDistanceMetric.BURES,
 )
 
 ```
@@ -747,7 +877,7 @@ client.assets_correlation_matrix.correlation_matrix_informativeness(
 <dl>
 <dd>
 
-**assets_correlation_matrix:** `typing.Sequence[typing.Sequence[float]]` — assetsCorrelationMatrix[i][j] is the correlation between the asset i and the asset j
+**assets_correlation_matrix:** `typing.List[typing.List[float]]` — assetsCorrelationMatrix[i][j] is the correlation between the asset i and the asset j
     
 </dd>
 </dl>
@@ -775,7 +905,7 @@ client.assets_correlation_matrix.correlation_matrix_informativeness(
 </dl>
 </details>
 
-<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py">nearest_correlation_matrix</a>(...)</code></summary>
+<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py">nearest_correlation_matrix</a>(...) -> PostAssetsCorrelationMatrixNearestResponse</code></summary>
 <dl>
 <dd>
 
@@ -806,18 +936,32 @@ References
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.assets_correlation_matrix.nearest_correlation_matrix(
     assets=3,
     assets_approximate_correlation_matrix=[
-        [1.0, 0.5, 0.9],
-        [0.5, 1.0, -0.2],
-        [0.9, -0.2, 1.0],
+        [
+            1,
+            1,
+            0
+        ],
+        [
+            1,
+            1,
+            1
+        ],
+        [
+            0,
+            1,
+            1
+        ]
     ],
-    assets_fixed_correlations=[[2, 3]],
 )
 
 ```
@@ -842,7 +986,7 @@ client.assets_correlation_matrix.nearest_correlation_matrix(
 <dl>
 <dd>
 
-**assets_approximate_correlation_matrix:** `typing.Sequence[typing.Sequence[float]]` — assetsApproximateCorrelationMatrix[i][i] is the approximate correlation between the asset i and the asset j
+**assets_approximate_correlation_matrix:** `typing.List[typing.List[float]]` — assetsApproximateCorrelationMatrix[i][i] is the approximate correlation between the asset i and the asset j
     
 </dd>
 </dl>
@@ -850,7 +994,7 @@ client.assets_correlation_matrix.nearest_correlation_matrix(
 <dl>
 <dd>
 
-**assets_fixed_correlations:** `typing.Optional[typing.Sequence[typing.Sequence[int]]]` — assetsFixedCorrelations[k] is the couple of indices (i,j) of the assets i and j for which to keep the approximate correlation assetsApproximateCorrelationMatrix[i][j] fixed
+**assets_fixed_correlations:** `typing.Optional[typing.List[typing.List[int]]]` — assetsFixedCorrelations[k] is the couple of indices (i,j) of the assets i and j for which to keep the approximate correlation assetsApproximateCorrelationMatrix[i][j] fixed
     
 </dd>
 </dl>
@@ -870,7 +1014,7 @@ client.assets_correlation_matrix.nearest_correlation_matrix(
 </dl>
 </details>
 
-<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py">random_correlation_matrix</a>(...)</code></summary>
+<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py">random_correlation_matrix</a>(...) -> PostAssetsCorrelationMatrixRandomResponse</code></summary>
 <dl>
 <dd>
 
@@ -901,10 +1045,13 @@ References
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.assets_correlation_matrix.random_correlation_matrix(
     assets=2,
 )
@@ -943,7 +1090,7 @@ client.assets_correlation_matrix.random_correlation_matrix(
 </dl>
 </details>
 
-<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py">correlation_matrix_shrinkage</a>(...)</code></summary>
+<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py">correlation_matrix_shrinkage</a>(...) -> PostAssetsCorrelationMatrixShrinkageResponse</code></summary>
 <dl>
 <dd>
 
@@ -977,26 +1124,53 @@ Compute an asset correlation matrix as a convex linear combination of an asset c
 <dd>
 
 ```python
-from fern.assets_correlation_matrix import (
-    PostAssetsCorrelationMatrixShrinkageRequestTargetEquicorrelationMatrix,
-    PostAssetsCorrelationMatrixShrinkageRequestTargetEquicorrelationMatrixTargetEquicorrelationMatrix,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.assets_correlation_matrix import PostAssetsCorrelationMatrixShrinkageRequestTargetCorrelationMatrix
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.assets_correlation_matrix.correlation_matrix_shrinkage(
-    request=PostAssetsCorrelationMatrixShrinkageRequestTargetEquicorrelationMatrix(
+    request=PostAssetsCorrelationMatrixShrinkageRequestTargetCorrelationMatrix(
         assets=3,
         assets_correlation_matrix=[
-            [1.0, 0.5, 0.9],
-            [0.5, 1.0, 0.7],
-            [0.9, 0.7, 1.0],
+            [
+                1,
+                0.5,
+                0.9
+            ],
+            [
+                0.5,
+                1,
+                0.7
+            ],
+            [
+                0.9,
+                0.7,
+                1
+            ]
         ],
         shrinkage_factor=0.5,
-        target_equicorrelation_matrix=PostAssetsCorrelationMatrixShrinkageRequestTargetEquicorrelationMatrixTargetEquicorrelationMatrix.MAXIMUM_EQUICORRELATION_MATRIX,
+        target_correlation_matrix=[
+            [
+                1,
+                0,
+                0
+            ],
+            [
+                0,
+                1,
+                0
+            ],
+            [
+                0,
+                0,
+                1
+            ]
+        ],
     ),
 )
 
@@ -1034,7 +1208,7 @@ client.assets_correlation_matrix.correlation_matrix_shrinkage(
 </dl>
 </details>
 
-<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py">theory_implied_correlation_matrix</a>(...)</code></summary>
+<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py">theory_implied_correlation_matrix</a>(...) -> PostAssetsCorrelationMatrixTheoryImpliedResponse</code></summary>
 <dl>
 <dd>
 
@@ -1066,31 +1240,43 @@ References
 <dd>
 
 ```python
-from fern.assets_correlation_matrix import (
-    PostAssetsCorrelationMatrixTheoryImpliedRequestAssetsItem,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.assets_correlation_matrix import PostAssetsCorrelationMatrixTheoryImpliedRequestAssetsItem
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.assets_correlation_matrix.theory_implied_correlation_matrix(
     assets=[
         PostAssetsCorrelationMatrixTheoryImpliedRequestAssetsItem(
-            asset_hierarchical_classification=["acwi", "dm", "americas"],
+            asset_hierarchical_classification=[
+                35,
+                3510,
+                351010,
+                35101010
+            ],
         ),
         PostAssetsCorrelationMatrixTheoryImpliedRequestAssetsItem(
-            asset_hierarchical_classification=["acwi", "dm", "americas"],
-        ),
-        PostAssetsCorrelationMatrixTheoryImpliedRequestAssetsItem(
-            asset_hierarchical_classification=["standalone", "", "americas"],
-        ),
+            asset_hierarchical_classification=[
+                20,
+                2030,
+                203020,
+                20302010
+            ],
+        )
     ],
     assets_correlation_matrix=[
-        [1.0, 0.95, 0.6],
-        [0.95, 1.0, 0.65],
-        [0.6, 0.65, 1.0],
+        [
+            1,
+            -0.00035
+        ],
+        [
+            -0.00035,
+            1
+        ]
     ],
 )
 
@@ -1108,7 +1294,7 @@ client.assets_correlation_matrix.theory_implied_correlation_matrix(
 <dl>
 <dd>
 
-**assets:** `typing.Sequence[PostAssetsCorrelationMatrixTheoryImpliedRequestAssetsItem]` 
+**assets:** `typing.List[PostAssetsCorrelationMatrixTheoryImpliedRequestAssetsItem]` 
     
 </dd>
 </dl>
@@ -1116,7 +1302,7 @@ client.assets_correlation_matrix.theory_implied_correlation_matrix(
 <dl>
 <dd>
 
-**assets_correlation_matrix:** `typing.Sequence[typing.Sequence[float]]` — assetsCorrelationMatrix[i][j] is the correlation between the asset i and the asset j
+**assets_correlation_matrix:** `typing.List[typing.List[float]]` — assetsCorrelationMatrix[i][j] is the correlation between the asset i and the asset j
     
 </dd>
 </dl>
@@ -1144,7 +1330,7 @@ client.assets_correlation_matrix.theory_implied_correlation_matrix(
 </dl>
 </details>
 
-<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py">correlation_matrix_validation</a>(...)</code></summary>
+<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py">correlation_matrix_validation</a>(...) -> PostAssetsCorrelationMatrixValidationResponse</code></summary>
 <dl>
 <dd>
 
@@ -1175,13 +1361,25 @@ References
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.assets_correlation_matrix.correlation_matrix_validation(
     assets=2,
-    assets_correlation_matrix=[[1.0, -0.00035], [-0.00035, 1.0]],
+    assets_correlation_matrix=[
+        [
+            1,
+            -0.00035
+        ],
+        [
+            -0.00035,
+            1
+        ]
+    ],
 )
 
 ```
@@ -1206,7 +1404,7 @@ client.assets_correlation_matrix.correlation_matrix_validation(
 <dl>
 <dd>
 
-**assets_correlation_matrix:** `typing.Sequence[typing.Sequence[float]]` — assetsCorrelationMatrix[i][j] is the correlation between the asset i and the asset j
+**assets_correlation_matrix:** `typing.List[typing.List[float]]` — assetsCorrelationMatrix[i][j] is the correlation between the asset i and the asset j
     
 </dd>
 </dl>
@@ -1227,7 +1425,7 @@ client.assets_correlation_matrix.correlation_matrix_validation(
 </details>
 
 ## AssetsCovarianceMatrix
-<details><summary><code>client.assets_covariance_matrix.<a href="src/fern/assets_covariance_matrix/client.py">covariance_matrix</a>(...)</code></summary>
+<details><summary><code>client.assets_covariance_matrix.<a href="src/fern/assets_covariance_matrix/client.py">covariance_matrix</a>(...) -> PostAssetsCovarianceMatrixResponse</code></summary>
 <dl>
 <dd>
 
@@ -1260,20 +1458,32 @@ References
 <dd>
 
 ```python
-from fern.assets_covariance_matrix import (
-    PostAssetsCovarianceMatrixRequestAssets,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.assets_covariance_matrix import PostAssetsCovarianceMatrixRequestAssets
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.assets_covariance_matrix.covariance_matrix(
     request=PostAssetsCovarianceMatrixRequestAssets(
         assets=2,
-        assets_correlation_matrix=[[1.0, -0.5], [-0.5, 1.0]],
-        assets_volatilities=[0.1, 0.05],
+        assets_correlation_matrix=[
+            [
+                1,
+                -0.5
+            ],
+            [
+                -0.5,
+                1
+            ]
+        ],
+        assets_volatilities=[
+            0.1,
+            0.05
+        ],
     ),
 )
 
@@ -1311,7 +1521,7 @@ client.assets_covariance_matrix.covariance_matrix(
 </dl>
 </details>
 
-<details><summary><code>client.assets_covariance_matrix.<a href="src/fern/assets_covariance_matrix/client.py">covariance_matrix_effective_rank</a>(...)</code></summary>
+<details><summary><code>client.assets_covariance_matrix.<a href="src/fern/assets_covariance_matrix/client.py">covariance_matrix_effective_rank</a>(...) -> PostAssetsCovarianceMatrixEffectiveRankResponse</code></summary>
 <dl>
 <dd>
 
@@ -1342,13 +1552,25 @@ References
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.assets_covariance_matrix.covariance_matrix_effective_rank(
     assets=2,
-    assets_covariance_matrix=[[0.00035, -0.00035], [-0.00035, 0.00035]],
+    assets_covariance_matrix=[
+        [
+            0.00035,
+            -0.00035
+        ],
+        [
+            -0.00035,
+            0.00035
+        ]
+    ],
 )
 
 ```
@@ -1373,7 +1595,7 @@ client.assets_covariance_matrix.covariance_matrix_effective_rank(
 <dl>
 <dd>
 
-**assets_covariance_matrix:** `typing.Sequence[typing.Sequence[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
+**assets_covariance_matrix:** `typing.List[typing.List[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
     
 </dd>
 </dl>
@@ -1393,7 +1615,7 @@ client.assets_covariance_matrix.covariance_matrix_effective_rank(
 </dl>
 </details>
 
-<details><summary><code>client.assets_covariance_matrix.<a href="src/fern/assets_covariance_matrix/client.py">exponentially_weighted_covariance_matrix</a>(...)</code></summary>
+<details><summary><code>client.assets_covariance_matrix.<a href="src/fern/assets_covariance_matrix/client.py">exponentially_weighted_covariance_matrix</a>(...) -> PostAssetsCovarianceMatrixExponentiallyWeightedResponse</code></summary>
 <dl>
 <dd>
 
@@ -1423,23 +1645,33 @@ References
 <dd>
 
 ```python
-from fern.assets_covariance_matrix import (
-    PostAssetsCovarianceMatrixExponentiallyWeightedRequestAssetsItem,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.assets_covariance_matrix import PostAssetsCovarianceMatrixExponentiallyWeightedRequestAssetsItem
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.assets_covariance_matrix.exponentially_weighted_covariance_matrix(
     assets=[
         PostAssetsCovarianceMatrixExponentiallyWeightedRequestAssetsItem(
-            asset_returns=[0.01, 0.01, 0.02, 0.01],
+            asset_returns=[
+                0.01,
+                0.01,
+                0.02,
+                0.01
+            ],
         ),
         PostAssetsCovarianceMatrixExponentiallyWeightedRequestAssetsItem(
-            asset_returns=[-0.02, -0.02, -0.04, -0.02],
-        ),
+            asset_returns=[
+                -0.02,
+                -0.02,
+                -0.04,
+                -0.02
+            ],
+        )
     ],
     decay_factor=0.5,
 )
@@ -1458,9 +1690,7 @@ client.assets_covariance_matrix.exponentially_weighted_covariance_matrix(
 <dl>
 <dd>
 
-**assets:** `typing.Sequence[
-    PostAssetsCovarianceMatrixExponentiallyWeightedRequestAssetsItem
-]` 
+**assets:** `typing.List[PostAssetsCovarianceMatrixExponentiallyWeightedRequestAssetsItem]` 
     
 </dd>
 </dl>
@@ -1488,7 +1718,7 @@ client.assets_covariance_matrix.exponentially_weighted_covariance_matrix(
 </dl>
 </details>
 
-<details><summary><code>client.assets_covariance_matrix.<a href="src/fern/assets_covariance_matrix/client.py">covariance_matrix_validation</a>(...)</code></summary>
+<details><summary><code>client.assets_covariance_matrix.<a href="src/fern/assets_covariance_matrix/client.py">covariance_matrix_validation</a>(...) -> PostAssetsCovarianceMatrixValidationResponse</code></summary>
 <dl>
 <dd>
 
@@ -1519,13 +1749,25 @@ References
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.assets_covariance_matrix.covariance_matrix_validation(
     assets=2,
-    assets_covariance_matrix=[[0.00035, -0.00035], [-0.00035, 0.00035]],
+    assets_covariance_matrix=[
+        [
+            0.00035,
+            -0.00035
+        ],
+        [
+            -0.00035,
+            0.00035
+        ]
+    ],
 )
 
 ```
@@ -1550,7 +1792,7 @@ client.assets_covariance_matrix.covariance_matrix_validation(
 <dl>
 <dd>
 
-**assets_covariance_matrix:** `typing.Sequence[typing.Sequence[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
+**assets_covariance_matrix:** `typing.List[typing.List[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
     
 </dd>
 </dl>
@@ -1571,7 +1813,7 @@ client.assets_covariance_matrix.covariance_matrix_validation(
 </details>
 
 ## AssetsKurtosis
-<details><summary><code>client.assets_kurtosis.<a href="src/fern/assets_kurtosis/client.py">kurtosis</a>(...)</code></summary>
+<details><summary><code>client.assets_kurtosis.<a href="src/fern/assets_kurtosis/client.py">kurtosis</a>(...) -> PostAssetsKurtosisResponse</code></summary>
 <dl>
 <dd>
 
@@ -1601,17 +1843,24 @@ References
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.assets_kurtosis import PostAssetsKurtosisRequestAssetsItem
 
-from fern import FernApi
-
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.assets_kurtosis.kurtosis(
     assets=[
         PostAssetsKurtosisRequestAssetsItem(
-            asset_returns=[0.01, 0.0, 0.02, -0.03],
+            asset_returns=[
+                0.01,
+                0,
+                0.02,
+                -0.03
+            ],
         )
     ],
 )
@@ -1630,7 +1879,7 @@ client.assets_kurtosis.kurtosis(
 <dl>
 <dd>
 
-**assets:** `typing.Sequence[PostAssetsKurtosisRequestAssetsItem]` 
+**assets:** `typing.List[PostAssetsKurtosisRequestAssetsItem]` 
     
 </dd>
 </dl>
@@ -1651,7 +1900,7 @@ client.assets_kurtosis.kurtosis(
 </details>
 
 ## AssetsPrices
-<details><summary><code>client.assets_prices.<a href="src/fern/assets_prices/client.py">adjusted_prices</a>(...)</code></summary>
+<details><summary><code>client.assets_prices.<a href="src/fern/assets_prices/client.py">adjusted_prices</a>(...) -> PostAssetsPricesAdjustedResponse</code></summary>
 <dl>
 <dd>
 
@@ -1688,17 +1937,15 @@ References
 <dd>
 
 ```python
-from fern.assets_prices import (
-    PostAssetsPricesAdjustedRequestAssetsItem,
-    PostAssetsPricesAdjustedRequestAssetsItemAssetPricesItem,
-    PostAssetsPricesAdjustedRequestAssetsItemAssetSplitsItem,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.assets_prices import PostAssetsPricesAdjustedRequestAssetsItem, PostAssetsPricesAdjustedRequestAssetsItemAssetPricesItem, PostAssetsPricesAdjustedRequestAssetsItemAssetSplitsItem
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.assets_prices.adjusted_prices(
     assets=[
         PostAssetsPricesAdjustedRequestAssetsItem(
@@ -1714,12 +1961,12 @@ client.assets_prices.adjusted_prices(
                 PostAssetsPricesAdjustedRequestAssetsItemAssetPricesItem(
                     close=475.05,
                     date="2020-09-01",
-                ),
+                )
             ],
             asset_splits=[
                 PostAssetsPricesAdjustedRequestAssetsItemAssetSplitsItem(
                     date="2020-08-31",
-                    factor=5.0,
+                    factor=5,
                 )
             ],
         )
@@ -1740,7 +1987,7 @@ client.assets_prices.adjusted_prices(
 <dl>
 <dd>
 
-**assets:** `typing.Sequence[PostAssetsPricesAdjustedRequestAssetsItem]` 
+**assets:** `typing.List[PostAssetsPricesAdjustedRequestAssetsItem]` 
     
 </dd>
 </dl>
@@ -1760,7 +2007,7 @@ client.assets_prices.adjusted_prices(
 </dl>
 </details>
 
-<details><summary><code>client.assets_prices.<a href="src/fern/assets_prices/client.py">forward_adjusted_prices</a>(...)</code></summary>
+<details><summary><code>client.assets_prices.<a href="src/fern/assets_prices/client.py">forward_adjusted_prices</a>(...) -> PostAssetsPricesAdjustedForwardResponse</code></summary>
 <dl>
 <dd>
 
@@ -1797,17 +2044,15 @@ References
 <dd>
 
 ```python
-from fern.assets_prices import (
-    PostAssetsPricesAdjustedForwardRequestAssetsItem,
-    PostAssetsPricesAdjustedForwardRequestAssetsItemAssetPricesItem,
-    PostAssetsPricesAdjustedForwardRequestAssetsItemAssetSplitsItem,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.assets_prices import PostAssetsPricesAdjustedForwardRequestAssetsItem, PostAssetsPricesAdjustedForwardRequestAssetsItemAssetPricesItem, PostAssetsPricesAdjustedForwardRequestAssetsItemAssetSplitsItem
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.assets_prices.forward_adjusted_prices(
     assets=[
         PostAssetsPricesAdjustedForwardRequestAssetsItem(
@@ -1823,12 +2068,12 @@ client.assets_prices.forward_adjusted_prices(
                 PostAssetsPricesAdjustedForwardRequestAssetsItemAssetPricesItem(
                     close=475.05,
                     date="2020-09-01",
-                ),
+                )
             ],
             asset_splits=[
                 PostAssetsPricesAdjustedForwardRequestAssetsItemAssetSplitsItem(
                     date="2020-08-31",
-                    factor=5.0,
+                    factor=5,
                 )
             ],
         )
@@ -1849,7 +2094,7 @@ client.assets_prices.forward_adjusted_prices(
 <dl>
 <dd>
 
-**assets:** `typing.Sequence[PostAssetsPricesAdjustedForwardRequestAssetsItem]` 
+**assets:** `typing.List[PostAssetsPricesAdjustedForwardRequestAssetsItem]` 
     
 </dd>
 </dl>
@@ -1870,7 +2115,7 @@ client.assets_prices.forward_adjusted_prices(
 </details>
 
 ## AssetsReturns
-<details><summary><code>client.assets_returns.<a href="src/fern/assets_returns/client.py">arithmetic_returns</a>(...)</code></summary>
+<details><summary><code>client.assets_returns.<a href="src/fern/assets_returns/client.py">arithmetic_returns</a>(...) -> PostAssetsReturnsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1900,21 +2145,30 @@ References
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.assets_returns import PostAssetsReturnsRequestAssetsItem
 
-from fern import FernApi
-
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.assets_returns.arithmetic_returns(
     assets=[
         PostAssetsReturnsRequestAssetsItem(
-            asset_prices=[1.0, 2.0],
+            asset_prices=[
+                1,
+                2
+            ],
         ),
         PostAssetsReturnsRequestAssetsItem(
-            asset_prices=[2.0, 3.0, 6.0],
-        ),
+            asset_prices=[
+                2,
+                3,
+                6
+            ],
+        )
     ],
 )
 
@@ -1932,7 +2186,7 @@ client.assets_returns.arithmetic_returns(
 <dl>
 <dd>
 
-**assets:** `typing.Sequence[PostAssetsReturnsRequestAssetsItem]` 
+**assets:** `typing.List[PostAssetsReturnsRequestAssetsItem]` 
     
 </dd>
 </dl>
@@ -1952,7 +2206,7 @@ client.assets_returns.arithmetic_returns(
 </dl>
 </details>
 
-<details><summary><code>client.assets_returns.<a href="src/fern/assets_returns/client.py">arithmetic_average_return</a>(...)</code></summary>
+<details><summary><code>client.assets_returns.<a href="src/fern/assets_returns/client.py">arithmetic_average_return</a>(...) -> PostAssetsReturnsAverageResponse</code></summary>
 <dl>
 <dd>
 
@@ -1982,21 +2236,30 @@ References
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.assets_returns import PostAssetsReturnsAverageRequestAssetsItem
 
-from fern import FernApi
-
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.assets_returns.arithmetic_average_return(
     assets=[
         PostAssetsReturnsAverageRequestAssetsItem(
-            asset_returns=[0.1, -0.05],
+            asset_returns=[
+                0.1,
+                -0.05
+            ],
         ),
         PostAssetsReturnsAverageRequestAssetsItem(
-            asset_returns=[0.0, -0.01, 0.01],
-        ),
+            asset_returns=[
+                0,
+                -0.01,
+                0.01
+            ],
+        )
     ],
 )
 
@@ -2014,7 +2277,7 @@ client.assets_returns.arithmetic_average_return(
 <dl>
 <dd>
 
-**assets:** `typing.Sequence[PostAssetsReturnsAverageRequestAssetsItem]` 
+**assets:** `typing.List[PostAssetsReturnsAverageRequestAssetsItem]` 
     
 </dd>
 </dl>
@@ -2035,7 +2298,7 @@ client.assets_returns.arithmetic_average_return(
 </details>
 
 ## AssetsReturnsSimulation
-<details><summary><code>client.assets_returns_simulation.<a href="src/fern/assets_returns_simulation/client.py">bootstrap</a>(...)</code></summary>
+<details><summary><code>client.assets_returns_simulation.<a href="src/fern/assets_returns_simulation/client.py">bootstrap</a>(...) -> PostAssetsReturnsSimulationBootstrapResponse</code></summary>
 <dl>
 <dd>
 
@@ -2067,24 +2330,35 @@ References
 <dd>
 
 ```python
-from fern.assets_returns_simulation import (
-    PostAssetsReturnsSimulationBootstrapRequestAssetsItem,
-    PostAssetsReturnsSimulationBootstrapRequestBootstrapMethod,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.assets_returns_simulation import PostAssetsReturnsSimulationBootstrapRequestAssetsItem, PostAssetsReturnsSimulationBootstrapRequestBootstrapMethod
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.assets_returns_simulation.bootstrap(
     assets=[
         PostAssetsReturnsSimulationBootstrapRequestAssetsItem(
-            asset_returns=[0.1, -0.05, 0.01, 0.025, -0.1],
+            asset_returns=[
+                0.1,
+                -0.05,
+                0.01,
+                0.025,
+                -0.1
+            ],
         ),
         PostAssetsReturnsSimulationBootstrapRequestAssetsItem(
-            asset_returns=[0.0, 0.01, 0.02, -0.01, 0.05],
-        ),
+            asset_returns=[
+                0,
+                0.01,
+                0.02,
+                -0.01,
+                0.05
+            ],
+        )
     ],
     bootstrap_block_length=2,
     bootstrap_method=PostAssetsReturnsSimulationBootstrapRequestBootstrapMethod.CIRCULAR_BLOCK,
@@ -2106,7 +2380,7 @@ client.assets_returns_simulation.bootstrap(
 <dl>
 <dd>
 
-**assets:** `typing.Sequence[PostAssetsReturnsSimulationBootstrapRequestAssetsItem]` 
+**assets:** `typing.List[PostAssetsReturnsSimulationBootstrapRequestAssetsItem]` 
     
 </dd>
 </dl>
@@ -2167,7 +2441,7 @@ client.assets_returns_simulation.bootstrap(
 </details>
 
 ## AssetsSkewness
-<details><summary><code>client.assets_skewness.<a href="src/fern/assets_skewness/client.py">skewness</a>(...)</code></summary>
+<details><summary><code>client.assets_skewness.<a href="src/fern/assets_skewness/client.py">skewness</a>(...) -> PostAssetsSkewnessResponse</code></summary>
 <dl>
 <dd>
 
@@ -2197,17 +2471,24 @@ References
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.assets_skewness import PostAssetsSkewnessRequestAssetsItem
 
-from fern import FernApi
-
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.assets_skewness.skewness(
     assets=[
         PostAssetsSkewnessRequestAssetsItem(
-            asset_returns=[0.01, 0.0, 0.02, -0.03],
+            asset_returns=[
+                0.01,
+                0,
+                0.02,
+                -0.03
+            ],
         )
     ],
 )
@@ -2226,7 +2507,7 @@ client.assets_skewness.skewness(
 <dl>
 <dd>
 
-**assets:** `typing.Sequence[PostAssetsSkewnessRequestAssetsItem]` 
+**assets:** `typing.List[PostAssetsSkewnessRequestAssetsItem]` 
     
 </dd>
 </dl>
@@ -2247,7 +2528,7 @@ client.assets_skewness.skewness(
 </details>
 
 ## AssetsVariance
-<details><summary><code>client.assets_variance.<a href="src/fern/assets_variance/client.py">variance</a>(...)</code></summary>
+<details><summary><code>client.assets_variance.<a href="src/fern/assets_variance/client.py">variance</a>(...) -> PostAssetsVarianceResponse</code></summary>
 <dl>
 <dd>
 
@@ -2280,17 +2561,28 @@ References
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.assets_variance import PostAssetsVarianceRequestAssetsCovarianceMatrix
 
-from fern import FernApi
-
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.assets_variance.variance(
     request=PostAssetsVarianceRequestAssetsCovarianceMatrix(
         assets=2,
-        assets_covariance_matrix=[[0.01, -0.0025], [-0.0025, 0.0025]],
+        assets_covariance_matrix=[
+            [
+                0.01,
+                -0.0025
+            ],
+            [
+                -0.0025,
+                0.0025
+            ]
+        ],
     ),
 )
 
@@ -2329,7 +2621,7 @@ client.assets_variance.variance(
 </details>
 
 ## AssetsVolatility
-<details><summary><code>client.assets_volatility.<a href="src/fern/assets_volatility/client.py">volatility</a>(...)</code></summary>
+<details><summary><code>client.assets_volatility.<a href="src/fern/assets_volatility/client.py">volatility</a>(...) -> PostAssetsVolatilityResponse</code></summary>
 <dl>
 <dd>
 
@@ -2362,19 +2654,28 @@ References
 <dd>
 
 ```python
-from fern.assets_volatility import (
-    PostAssetsVolatilityRequestAssetsCovarianceMatrix,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.assets_volatility import PostAssetsVolatilityRequestAssetsCovarianceMatrix
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.assets_volatility.volatility(
     request=PostAssetsVolatilityRequestAssetsCovarianceMatrix(
         assets=2,
-        assets_covariance_matrix=[[0.01, -0.0025], [-0.0025, 0.0025]],
+        assets_covariance_matrix=[
+            [
+                0.01,
+                -0.0025
+            ],
+            [
+                -0.0025,
+                0.0025
+            ]
+        ],
     ),
 )
 
@@ -2413,7 +2714,7 @@ client.assets_volatility.volatility(
 </details>
 
 ## Factors
-<details><summary><code>client.factors.<a href="src/fern/factors/client.py">residualization</a>(...)</code></summary>
+<details><summary><code>client.factors.<a href="src/fern/factors/client.py">residualization</a>(...) -> PostFactorsResidualizationResponse</code></summary>
 <dl>
 <dd>
 
@@ -2444,21 +2745,31 @@ References
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 from fern.factors import PostFactorsResidualizationRequestFactorsItem
 
-from fern import FernApi
-
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.factors.residualization(
     factors=[
         PostFactorsResidualizationRequestFactorsItem(
-            factor_returns=[0.01, 0.02, -0.01],
+            factor_returns=[
+                0.01,
+                0.02,
+                -0.01
+            ],
         ),
         PostFactorsResidualizationRequestFactorsItem(
-            factor_returns=[0.025, 0.005, -0.02],
-        ),
+            factor_returns=[
+                0.025,
+                0.005,
+                -0.02
+            ],
+        )
     ],
     residualized_factor=1,
 )
@@ -2477,7 +2788,7 @@ client.factors.residualization(
 <dl>
 <dd>
 
-**factors:** `typing.Sequence[PostFactorsResidualizationRequestFactorsItem]` 
+**factors:** `typing.List[PostFactorsResidualizationRequestFactorsItem]` 
     
 </dd>
 </dl>
@@ -2506,7 +2817,7 @@ client.factors.residualization(
 </details>
 
 ## PortfolioAnalysis
-<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">alpha</a>(...)</code></summary>
+<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">alpha</a>(...) -> PostPortfolioAnalysisAlphaResponse</code></summary>
 <dl>
 <dd>
 
@@ -2536,22 +2847,33 @@ References
 <dd>
 
 ```python
-from fern.portfolio_analysis import (
-    PostPortfolioAnalysisAlphaRequestRiskFreeRate,
-    PostPortfolioAnalysisAlphaRequestRiskFreeRatePortfoliosItem,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_analysis import PostPortfolioAnalysisAlphaRequestRiskFreeRate, PostPortfolioAnalysisAlphaRequestRiskFreeRatePortfoliosItem
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_analysis.alpha(
     request=PostPortfolioAnalysisAlphaRequestRiskFreeRate(
-        benchmark_returns=[0.002, 0.025, 0.018, -0.011, 0.014],
+        benchmark_returns=[
+            0.002,
+            0.025,
+            0.018,
+            -0.011,
+            0.014
+        ],
         portfolios=[
             PostPortfolioAnalysisAlphaRequestRiskFreeRatePortfoliosItem(
-                portfolio_returns=[0.003, 0.026, 0.011, -0.01, 0.015],
+                portfolio_returns=[
+                    0.003,
+                    0.026,
+                    0.011,
+                    -0.01,
+                    0.015
+                ],
             )
         ],
         risk_free_rate=0.01,
@@ -2592,7 +2914,7 @@ client.portfolio_analysis.alpha(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">beta</a>(...)</code></summary>
+<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">beta</a>(...) -> PostPortfolioAnalysisBetaResponse</code></summary>
 <dl>
 <dd>
 
@@ -2622,22 +2944,33 @@ References
 <dd>
 
 ```python
-from fern.portfolio_analysis import (
-    PostPortfolioAnalysisBetaRequestRiskFreeRate,
-    PostPortfolioAnalysisBetaRequestRiskFreeRatePortfoliosItem,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_analysis import PostPortfolioAnalysisBetaRequestRiskFreeRate, PostPortfolioAnalysisBetaRequestRiskFreeRatePortfoliosItem
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_analysis.beta(
     request=PostPortfolioAnalysisBetaRequestRiskFreeRate(
-        benchmark_returns=[0.002, 0.025, 0.018, -0.011, 0.014],
+        benchmark_returns=[
+            0.002,
+            0.025,
+            0.018,
+            -0.011,
+            0.014
+        ],
         portfolios=[
             PostPortfolioAnalysisBetaRequestRiskFreeRatePortfoliosItem(
-                portfolio_returns=[0.003, 0.026, 0.011, -0.01, 0.015],
+                portfolio_returns=[
+                    0.003,
+                    0.026,
+                    0.011,
+                    -0.01,
+                    0.015
+                ],
             )
         ],
         risk_free_rate=0.01,
@@ -2678,7 +3011,7 @@ client.portfolio_analysis.beta(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">conditional_value_at_risk</a>(...)</code></summary>
+<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">conditional_value_at_risk</a>(...) -> PostPortfolioAnalysisConditionalValueAtRiskResponse</code></summary>
 <dl>
 <dd>
 
@@ -2709,20 +3042,27 @@ References
 <dd>
 
 ```python
-from fern.portfolio_analysis import (
-    PostPortfolioAnalysisConditionalValueAtRiskRequestPortfoliosItem,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_analysis import PostPortfolioAnalysisConditionalValueAtRiskRequestPortfoliosItem
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_analysis.conditional_value_at_risk(
     alpha=0.05,
     portfolios=[
         PostPortfolioAnalysisConditionalValueAtRiskRequestPortfoliosItem(
-            portfolio_values=[100.0, 95.0, 100.0, 90.0, 85.0, 70.0],
+            portfolio_values=[
+                100,
+                95,
+                100,
+                90,
+                85,
+                70
+            ],
         )
     ],
 )
@@ -2749,9 +3089,7 @@ client.portfolio_analysis.conditional_value_at_risk(
 <dl>
 <dd>
 
-**portfolios:** `typing.Sequence[
-    PostPortfolioAnalysisConditionalValueAtRiskRequestPortfoliosItem
-]` 
+**portfolios:** `typing.List[PostPortfolioAnalysisConditionalValueAtRiskRequestPortfoliosItem]` 
     
 </dd>
 </dl>
@@ -2771,7 +3109,7 @@ client.portfolio_analysis.conditional_value_at_risk(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">return_contributions</a>(...)</code></summary>
+<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">return_contributions</a>(...) -> PostPortfolioAnalysisContributionsReturnResponse</code></summary>
 <dl>
 <dd>
 
@@ -2801,22 +3139,35 @@ References
 <dd>
 
 ```python
-from fern.portfolio_analysis import (
-    PostPortfolioAnalysisContributionsReturnRequestPortfoliosItem,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_analysis import PostPortfolioAnalysisContributionsReturnRequestPortfoliosItem
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_analysis.return_contributions(
     assets=3,
-    assets_groups=[[1, 2]],
-    assets_returns=[0.01, -0.01, 0.025],
+    assets_groups=[
+        [
+            1,
+            2
+        ]
+    ],
+    assets_returns=[
+        0.01,
+        -0.01,
+        0.025
+    ],
     portfolios=[
         PostPortfolioAnalysisContributionsReturnRequestPortfoliosItem(
-            assets_weights=[0.5, 0.25, 0.25],
+            assets_weights=[
+                0.5,
+                0.25,
+                0.25
+            ],
         )
     ],
 )
@@ -2843,7 +3194,7 @@ client.portfolio_analysis.return_contributions(
 <dl>
 <dd>
 
-**assets_returns:** `typing.Sequence[float]` — assetsReturns[i] is the arithmetic return of asset i
+**assets_returns:** `typing.List[float]` — assetsReturns[i] is the arithmetic return of asset i
     
 </dd>
 </dl>
@@ -2851,7 +3202,7 @@ client.portfolio_analysis.return_contributions(
 <dl>
 <dd>
 
-**portfolios:** `typing.Sequence[PostPortfolioAnalysisContributionsReturnRequestPortfoliosItem]` 
+**portfolios:** `typing.List[PostPortfolioAnalysisContributionsReturnRequestPortfoliosItem]` 
     
 </dd>
 </dl>
@@ -2859,7 +3210,7 @@ client.portfolio_analysis.return_contributions(
 <dl>
 <dd>
 
-**assets_groups:** `typing.Optional[typing.Sequence[typing.Sequence[int]]]` 
+**assets_groups:** `typing.Optional[typing.List[typing.List[int]]]` 
     
 </dd>
 </dl>
@@ -2879,7 +3230,7 @@ client.portfolio_analysis.return_contributions(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">risk_contributions</a>(...)</code></summary>
+<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">risk_contributions</a>(...) -> PostPortfolioAnalysisContributionsRiskResponse</code></summary>
 <dl>
 <dd>
 
@@ -2909,25 +3260,41 @@ References
 <dd>
 
 ```python
-from fern.portfolio_analysis import (
-    PostPortfolioAnalysisContributionsRiskRequestPortfoliosItem,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_analysis import PostPortfolioAnalysisContributionsRiskRequestPortfoliosItem
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_analysis.risk_contributions(
     assets=3,
     assets_covariance_matrix=[
-        [0.0001, 0.0, 0.0],
-        [0.0, 0.0001, 0.0],
-        [0.0, 0.0, 0.04],
+        [
+            0.0001,
+            0,
+            0
+        ],
+        [
+            0,
+            0.0001,
+            0
+        ],
+        [
+            0,
+            0,
+            0.04
+        ]
     ],
     portfolios=[
         PostPortfolioAnalysisContributionsRiskRequestPortfoliosItem(
-            assets_weights=[0.5, 0.25, 0.25],
+            assets_weights=[
+                0.5,
+                0.25,
+                0.25
+            ],
         )
     ],
 )
@@ -2954,7 +3321,7 @@ client.portfolio_analysis.risk_contributions(
 <dl>
 <dd>
 
-**assets_covariance_matrix:** `typing.Sequence[typing.Sequence[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
+**assets_covariance_matrix:** `typing.List[typing.List[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
     
 </dd>
 </dl>
@@ -2962,7 +3329,7 @@ client.portfolio_analysis.risk_contributions(
 <dl>
 <dd>
 
-**portfolios:** `typing.Sequence[PostPortfolioAnalysisContributionsRiskRequestPortfoliosItem]` 
+**portfolios:** `typing.List[PostPortfolioAnalysisContributionsRiskRequestPortfoliosItem]` 
     
 </dd>
 </dl>
@@ -2970,7 +3337,7 @@ client.portfolio_analysis.risk_contributions(
 <dl>
 <dd>
 
-**assets_groups:** `typing.Optional[typing.Sequence[typing.Sequence[int]]]` 
+**assets_groups:** `typing.Optional[typing.List[typing.List[int]]]` 
     
 </dd>
 </dl>
@@ -2990,7 +3357,7 @@ client.portfolio_analysis.risk_contributions(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">correlation_spectrum</a>(...)</code></summary>
+<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">correlation_spectrum</a>(...) -> PostPortfolioAnalysisCorrelationSpectrumResponse</code></summary>
 <dl>
 <dd>
 
@@ -3020,30 +3387,34 @@ References
 <dd>
 
 ```python
-from fern.portfolio_analysis import (
-    PostPortfolioAnalysisCorrelationSpectrumRequestOne,
-    PostPortfolioAnalysisCorrelationSpectrumRequestOneAssetsItem,
-    PostPortfolioAnalysisCorrelationSpectrumRequestOnePortfoliosItem,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_analysis import PostPortfolioAnalysisCorrelationSpectrumRequestAssetsCovarianceMatrix, PostPortfolioAnalysisCorrelationSpectrumRequestAssetsCovarianceMatrixPortfoliosItem
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_analysis.correlation_spectrum(
-    request=PostPortfolioAnalysisCorrelationSpectrumRequestOne(
-        assets=[
-            PostPortfolioAnalysisCorrelationSpectrumRequestOneAssetsItem(
-                asset_prices=[100.0, 101.0, 105.0],
-            ),
-            PostPortfolioAnalysisCorrelationSpectrumRequestOneAssetsItem(
-                asset_prices=[100.0, 99.0, 101.0],
-            ),
+    request=PostPortfolioAnalysisCorrelationSpectrumRequestAssetsCovarianceMatrix(
+        assets=2,
+        assets_covariance_matrix=[
+            [
+                0.0025,
+                0.0005
+            ],
+            [
+                0.0005,
+                0.01
+            ]
         ],
         portfolios=[
-            PostPortfolioAnalysisCorrelationSpectrumRequestOnePortfoliosItem(
-                portfolio_values=[100.0, 100.5, 101.0],
+            PostPortfolioAnalysisCorrelationSpectrumRequestAssetsCovarianceMatrixPortfoliosItem(
+                assets_weights=[
+                    0.5,
+                    0.5
+                ],
             )
         ],
     ),
@@ -3083,7 +3454,7 @@ client.portfolio_analysis.correlation_spectrum(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">diversification_ratio</a>(...)</code></summary>
+<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">diversification_ratio</a>(...) -> PostPortfolioAnalysisDiversificationRatioResponse</code></summary>
 <dl>
 <dd>
 
@@ -3114,30 +3485,34 @@ References
 <dd>
 
 ```python
-from fern.portfolio_analysis import (
-    PostPortfolioAnalysisDiversificationRatioRequestOne,
-    PostPortfolioAnalysisDiversificationRatioRequestOneAssetsItem,
-    PostPortfolioAnalysisDiversificationRatioRequestOnePortfoliosItem,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_analysis import PostPortfolioAnalysisDiversificationRatioRequestAssetsCovarianceMatrix, PostPortfolioAnalysisDiversificationRatioRequestAssetsCovarianceMatrixPortfoliosItem
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_analysis.diversification_ratio(
-    request=PostPortfolioAnalysisDiversificationRatioRequestOne(
-        assets=[
-            PostPortfolioAnalysisDiversificationRatioRequestOneAssetsItem(
-                asset_prices=[100.0, 101.0, 105.0],
-            ),
-            PostPortfolioAnalysisDiversificationRatioRequestOneAssetsItem(
-                asset_prices=[100.0, 99.0, 101.0],
-            ),
+    request=PostPortfolioAnalysisDiversificationRatioRequestAssetsCovarianceMatrix(
+        assets=2,
+        assets_covariance_matrix=[
+            [
+                0.0025,
+                0.0005
+            ],
+            [
+                0.0005,
+                0.01
+            ]
         ],
         portfolios=[
-            PostPortfolioAnalysisDiversificationRatioRequestOnePortfoliosItem(
-                portfolio_values=[100.0, 100.5, 101.0],
+            PostPortfolioAnalysisDiversificationRatioRequestAssetsCovarianceMatrixPortfoliosItem(
+                assets_weights=[
+                    0.5,
+                    0.5
+                ],
             )
         ],
     ),
@@ -3177,7 +3552,7 @@ client.portfolio_analysis.diversification_ratio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">drawdowns</a>(...)</code></summary>
+<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">drawdowns</a>(...) -> PostPortfolioAnalysisDrawdownsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3207,19 +3582,26 @@ References
 <dd>
 
 ```python
-from fern.portfolio_analysis import (
-    PostPortfolioAnalysisDrawdownsRequestPortfoliosItem,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_analysis import PostPortfolioAnalysisDrawdownsRequestPortfoliosItem
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_analysis.drawdowns(
     portfolios=[
         PostPortfolioAnalysisDrawdownsRequestPortfoliosItem(
-            portfolio_values=[100.0, 95.0, 100.0, 90.0, 85.0, 70.0],
+            portfolio_values=[
+                100,
+                95,
+                100,
+                90,
+                85,
+                70
+            ],
         )
     ],
 )
@@ -3238,7 +3620,7 @@ client.portfolio_analysis.drawdowns(
 <dl>
 <dd>
 
-**portfolios:** `typing.Sequence[PostPortfolioAnalysisDrawdownsRequestPortfoliosItem]` 
+**portfolios:** `typing.List[PostPortfolioAnalysisDrawdownsRequestPortfoliosItem]` 
     
 </dd>
 </dl>
@@ -3258,7 +3640,7 @@ client.portfolio_analysis.drawdowns(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">effective_number_of_bets</a>(...)</code></summary>
+<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">effective_number_of_bets</a>(...) -> PostPortfolioAnalysisEffectiveNumberOfBetsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3288,25 +3670,41 @@ References
 <dd>
 
 ```python
-from fern.portfolio_analysis import (
-    PostPortfolioAnalysisEffectiveNumberOfBetsRequestPortfoliosItem,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_analysis import PostPortfolioAnalysisEffectiveNumberOfBetsRequestPortfoliosItem
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_analysis.effective_number_of_bets(
     assets=3,
     assets_covariance_matrix=[
-        [1.0, 0.0, 0.0],
-        [0.0, 286.31, 100.79],
-        [0.0, 100.79, 601.36],
+        [
+            1,
+            0,
+            0
+        ],
+        [
+            0,
+            286.31,
+            100.79
+        ],
+        [
+            0,
+            100.79,
+            601.36
+        ]
     ],
     portfolios=[
         PostPortfolioAnalysisEffectiveNumberOfBetsRequestPortfoliosItem(
-            assets_weights=[10.96, 1.06, 0.22],
+            assets_weights=[
+                10.96,
+                1.06,
+                0.22
+            ],
         )
     ],
 )
@@ -3333,7 +3731,7 @@ client.portfolio_analysis.effective_number_of_bets(
 <dl>
 <dd>
 
-**assets_covariance_matrix:** `typing.Sequence[typing.Sequence[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
+**assets_covariance_matrix:** `typing.List[typing.List[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
     
 </dd>
 </dl>
@@ -3341,7 +3739,7 @@ client.portfolio_analysis.effective_number_of_bets(
 <dl>
 <dd>
 
-**portfolios:** `typing.Sequence[PostPortfolioAnalysisEffectiveNumberOfBetsRequestPortfoliosItem]` 
+**portfolios:** `typing.List[PostPortfolioAnalysisEffectiveNumberOfBetsRequestPortfoliosItem]` 
     
 </dd>
 </dl>
@@ -3349,9 +3747,7 @@ client.portfolio_analysis.effective_number_of_bets(
 <dl>
 <dd>
 
-**factors_extraction_method:** `typing.Optional[
-    PostPortfolioAnalysisEffectiveNumberOfBetsRequestFactorsExtractionMethod
-]` — The method used to extract the uncorrelated risk factors from the asset covariance matrix
+**factors_extraction_method:** `typing.Optional[PostPortfolioAnalysisEffectiveNumberOfBetsRequestFactorsExtractionMethod]` — The method used to extract the uncorrelated risk factors from the asset covariance matrix
     
 </dd>
 </dl>
@@ -3371,7 +3767,7 @@ client.portfolio_analysis.effective_number_of_bets(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">factor_exposures</a>(...)</code></summary>
+<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">factor_exposures</a>(...) -> PostPortfolioAnalysisFactorsExposuresResponse</code></summary>
 <dl>
 <dd>
 
@@ -3401,28 +3797,39 @@ References
 <dd>
 
 ```python
-from fern.portfolio_analysis import (
-    PostPortfolioAnalysisFactorsExposuresRequestFactorsItem,
-    PostPortfolioAnalysisFactorsExposuresRequestPortfoliosItem,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_analysis import PostPortfolioAnalysisFactorsExposuresRequestFactorsItem, PostPortfolioAnalysisFactorsExposuresRequestPortfoliosItem
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_analysis.factor_exposures(
     factors=[
         PostPortfolioAnalysisFactorsExposuresRequestFactorsItem(
-            factor_returns=[-0.00414169934, 0.01201656108, 0.0087181369],
+            factor_returns=[
+                -0.00414169934,
+                0.01201656108,
+                0.0087181369
+            ],
         ),
         PostPortfolioAnalysisFactorsExposuresRequestFactorsItem(
-            factor_returns=[-0.01387258782, -0.01097961581, 0.01742002062],
-        ),
+            factor_returns=[
+                -0.01387258782,
+                -0.01097961581,
+                0.01742002062
+            ],
+        )
     ],
     portfolios=[
         PostPortfolioAnalysisFactorsExposuresRequestPortfoliosItem(
-            portfolio_returns=[-0.04302, 0.01310372213, 0.06482589323],
+            portfolio_returns=[
+                -0.04302,
+                0.01310372213,
+                0.06482589323
+            ],
         )
     ],
 )
@@ -3441,7 +3848,7 @@ client.portfolio_analysis.factor_exposures(
 <dl>
 <dd>
 
-**portfolios:** `typing.Sequence[PostPortfolioAnalysisFactorsExposuresRequestPortfoliosItem]` 
+**portfolios:** `typing.List[PostPortfolioAnalysisFactorsExposuresRequestPortfoliosItem]` 
     
 </dd>
 </dl>
@@ -3449,9 +3856,7 @@ client.portfolio_analysis.factor_exposures(
 <dl>
 <dd>
 
-**factors:** `typing.Optional[
-    typing.Sequence[PostPortfolioAnalysisFactorsExposuresRequestFactorsItem]
-]` 
+**factors:** `typing.Optional[typing.List[PostPortfolioAnalysisFactorsExposuresRequestFactorsItem]]` 
     
 </dd>
 </dl>
@@ -3471,7 +3876,7 @@ client.portfolio_analysis.factor_exposures(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">mean_variance_efficient_frontier</a>(...)</code></summary>
+<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">mean_variance_efficient_frontier</a>(...) -> PostPortfolioAnalysisMeanVarianceEfficientFrontierResponse</code></summary>
 <dl>
 <dd>
 
@@ -3504,21 +3909,36 @@ References
 <dd>
 
 ```python
-from fern.portfolio_analysis import (
-    PostPortfolioAnalysisMeanVarianceEfficientFrontierRequestConstraints,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_analysis import PostPortfolioAnalysisMeanVarianceEfficientFrontierRequestConstraints
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_analysis.mean_variance_efficient_frontier(
     assets=2,
-    assets_covariance_matrix=[[0.0025, 0.0005], [0.0005, 0.01]],
-    assets_returns=[0.01, 0.05],
+    assets_covariance_matrix=[
+        [
+            0.0025,
+            0.0005
+        ],
+        [
+            0.0005,
+            0.01
+        ]
+    ],
+    assets_returns=[
+        0.01,
+        0.05
+    ],
     constraints=PostPortfolioAnalysisMeanVarianceEfficientFrontierRequestConstraints(
-        minimum_assets_weights=[0.2, 0.0],
+        minimum_assets_weights=[
+            0.2,
+            0
+        ],
     ),
     portfolios=3,
 )
@@ -3545,7 +3965,7 @@ client.portfolio_analysis.mean_variance_efficient_frontier(
 <dl>
 <dd>
 
-**assets_covariance_matrix:** `typing.Sequence[typing.Sequence[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
+**assets_covariance_matrix:** `typing.List[typing.List[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
     
 </dd>
 </dl>
@@ -3553,7 +3973,7 @@ client.portfolio_analysis.mean_variance_efficient_frontier(
 <dl>
 <dd>
 
-**assets_returns:** `typing.Sequence[float]` — assetsReturns[i] is the arithmetic return of asset i
+**assets_returns:** `typing.List[float]` — assetsReturns[i] is the arithmetic return of asset i
     
 </dd>
 </dl>
@@ -3561,9 +3981,7 @@ client.portfolio_analysis.mean_variance_efficient_frontier(
 <dl>
 <dd>
 
-**constraints:** `typing.Optional[
-    PostPortfolioAnalysisMeanVarianceEfficientFrontierRequestConstraints
-]` 
+**constraints:** `typing.Optional[PostPortfolioAnalysisMeanVarianceEfficientFrontierRequestConstraints]` 
     
 </dd>
 </dl>
@@ -3591,7 +4009,7 @@ client.portfolio_analysis.mean_variance_efficient_frontier(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">mean_variance_minimum_variance_frontier</a>(...)</code></summary>
+<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">mean_variance_minimum_variance_frontier</a>(...) -> PostPortfolioAnalysisMeanVarianceMinimumVarianceFrontierResponse</code></summary>
 <dl>
 <dd>
 
@@ -3626,21 +4044,36 @@ References
 <dd>
 
 ```python
-from fern.portfolio_analysis import (
-    PostPortfolioAnalysisMeanVarianceMinimumVarianceFrontierRequestConstraints,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_analysis import PostPortfolioAnalysisMeanVarianceMinimumVarianceFrontierRequestConstraints
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_analysis.mean_variance_minimum_variance_frontier(
     assets=2,
-    assets_covariance_matrix=[[0.0025, 0.0005], [0.0005, 0.01]],
-    assets_returns=[0.01, 0.05],
+    assets_covariance_matrix=[
+        [
+            0.0025,
+            0.0005
+        ],
+        [
+            0.0005,
+            0.01
+        ]
+    ],
+    assets_returns=[
+        0.01,
+        0.05
+    ],
     constraints=PostPortfolioAnalysisMeanVarianceMinimumVarianceFrontierRequestConstraints(
-        minimum_assets_weights=[0.2, 0.0],
+        minimum_assets_weights=[
+            0.2,
+            0
+        ],
     ),
     portfolios=4,
 )
@@ -3667,7 +4100,7 @@ client.portfolio_analysis.mean_variance_minimum_variance_frontier(
 <dl>
 <dd>
 
-**assets_covariance_matrix:** `typing.Sequence[typing.Sequence[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
+**assets_covariance_matrix:** `typing.List[typing.List[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
     
 </dd>
 </dl>
@@ -3675,7 +4108,7 @@ client.portfolio_analysis.mean_variance_minimum_variance_frontier(
 <dl>
 <dd>
 
-**assets_returns:** `typing.Sequence[float]` — assetsReturns[i] is the arithmetic return of asset i
+**assets_returns:** `typing.List[float]` — assetsReturns[i] is the arithmetic return of asset i
     
 </dd>
 </dl>
@@ -3683,9 +4116,7 @@ client.portfolio_analysis.mean_variance_minimum_variance_frontier(
 <dl>
 <dd>
 
-**constraints:** `typing.Optional[
-    PostPortfolioAnalysisMeanVarianceMinimumVarianceFrontierRequestConstraints
-]` 
+**constraints:** `typing.Optional[PostPortfolioAnalysisMeanVarianceMinimumVarianceFrontierRequestConstraints]` 
     
 </dd>
 </dl>
@@ -3713,7 +4144,7 @@ client.portfolio_analysis.mean_variance_minimum_variance_frontier(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">arithmetic_return</a>(...)</code></summary>
+<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">arithmetic_return</a>(...) -> PostPortfolioAnalysisReturnResponse</code></summary>
 <dl>
 <dd>
 
@@ -3746,21 +4177,34 @@ References
 <dd>
 
 ```python
-from fern.portfolio_analysis import (
-    PostPortfolioAnalysisReturnRequestOne,
-    PostPortfolioAnalysisReturnRequestOnePortfoliosItem,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_analysis import PostPortfolioAnalysisReturnRequestAssets, PostPortfolioAnalysisReturnRequestAssetsPortfoliosItem
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_analysis.arithmetic_return(
-    request=PostPortfolioAnalysisReturnRequestOne(
+    request=PostPortfolioAnalysisReturnRequestAssets(
+        assets=2,
+        assets_returns=[
+            0.01,
+            0.05
+        ],
         portfolios=[
-            PostPortfolioAnalysisReturnRequestOnePortfoliosItem(
-                portfolio_values=[100.0, 95.0, 100.0, 90.0, 85.0, 70.0],
+            PostPortfolioAnalysisReturnRequestAssetsPortfoliosItem(
+                assets_weights=[
+                    1,
+                    0
+                ],
+            ),
+            PostPortfolioAnalysisReturnRequestAssetsPortfoliosItem(
+                assets_weights=[
+                    0,
+                    1
+                ],
             )
         ],
     ),
@@ -3800,7 +4244,7 @@ client.portfolio_analysis.arithmetic_return(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">arithmetic_average_return</a>(...)</code></summary>
+<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">arithmetic_average_return</a>(...) -> PostPortfolioAnalysisReturnsAverageResponse</code></summary>
 <dl>
 <dd>
 
@@ -3830,19 +4274,26 @@ References
 <dd>
 
 ```python
-from fern.portfolio_analysis import (
-    PostPortfolioAnalysisReturnsAverageRequestPortfoliosItem,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_analysis import PostPortfolioAnalysisReturnsAverageRequestPortfoliosItem
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_analysis.arithmetic_average_return(
     portfolios=[
         PostPortfolioAnalysisReturnsAverageRequestPortfoliosItem(
-            portfolio_values=[100.0, 95.0, 100.0, 90.0, 85.0, 70.0],
+            portfolio_values=[
+                100,
+                95,
+                100,
+                90,
+                85,
+                70
+            ],
         )
     ],
 )
@@ -3861,7 +4312,7 @@ client.portfolio_analysis.arithmetic_average_return(
 <dl>
 <dd>
 
-**portfolios:** `typing.Sequence[PostPortfolioAnalysisReturnsAverageRequestPortfoliosItem]` 
+**portfolios:** `typing.List[PostPortfolioAnalysisReturnsAverageRequestPortfoliosItem]` 
     
 </dd>
 </dl>
@@ -3881,7 +4332,7 @@ client.portfolio_analysis.arithmetic_average_return(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">tracking_error</a>(...)</code></summary>
+<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">tracking_error</a>(...) -> PostPortfolioAnalysisTrackingErrorResponse</code></summary>
 <dl>
 <dd>
 
@@ -3912,15 +4363,15 @@ References
 <dd>
 
 ```python
-from fern.portfolio_analysis import (
-    PostPortfolioAnalysisTrackingErrorRequestPortfoliosItem,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_analysis import PostPortfolioAnalysisTrackingErrorRequestPortfoliosItem
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_analysis.tracking_error(
     benchmark_returns=[
         0.002,
@@ -3946,7 +4397,7 @@ client.portfolio_analysis.tracking_error(
         -0.067,
         0.019,
         -0.003,
-        0.0,
+        0
     ],
     portfolios=[
         PostPortfolioAnalysisTrackingErrorRequestPortfoliosItem(
@@ -3974,7 +4425,7 @@ client.portfolio_analysis.tracking_error(
                 -0.065,
                 0.024,
                 -0.005,
-                -0.009,
+                -0.009
             ],
         )
     ],
@@ -3994,7 +4445,7 @@ client.portfolio_analysis.tracking_error(
 <dl>
 <dd>
 
-**benchmark_returns:** `typing.Sequence[float]` — benchmarkReturns[t] is the return of the benchmark at the time t; the benchmarkReturns array must have the same length as all the portfolioReturns arrays
+**benchmark_returns:** `typing.List[float]` — benchmarkReturns[t] is the return of the benchmark at the time t; the benchmarkReturns array must have the same length as all the portfolioReturns arrays
     
 </dd>
 </dl>
@@ -4002,7 +4453,7 @@ client.portfolio_analysis.tracking_error(
 <dl>
 <dd>
 
-**portfolios:** `typing.Sequence[PostPortfolioAnalysisTrackingErrorRequestPortfoliosItem]` 
+**portfolios:** `typing.List[PostPortfolioAnalysisTrackingErrorRequestPortfoliosItem]` 
     
 </dd>
 </dl>
@@ -4022,7 +4473,7 @@ client.portfolio_analysis.tracking_error(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">ulcer_index</a>(...)</code></summary>
+<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">ulcer_index</a>(...) -> PostPortfolioAnalysisUlcerIndexResponse</code></summary>
 <dl>
 <dd>
 
@@ -4053,19 +4504,26 @@ References
 <dd>
 
 ```python
-from fern.portfolio_analysis import (
-    PostPortfolioAnalysisUlcerIndexRequestPortfoliosItem,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_analysis import PostPortfolioAnalysisUlcerIndexRequestPortfoliosItem
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_analysis.ulcer_index(
     portfolios=[
         PostPortfolioAnalysisUlcerIndexRequestPortfoliosItem(
-            portfolio_values=[100.0, 95.0, 100.0, 90.0, 85.0, 70.0],
+            portfolio_values=[
+                100,
+                95,
+                100,
+                90,
+                85,
+                70
+            ],
         )
     ],
     risk_free_rate=1.1,
@@ -4085,7 +4543,7 @@ client.portfolio_analysis.ulcer_index(
 <dl>
 <dd>
 
-**portfolios:** `typing.Sequence[PostPortfolioAnalysisUlcerIndexRequestPortfoliosItem]` 
+**portfolios:** `typing.List[PostPortfolioAnalysisUlcerIndexRequestPortfoliosItem]` 
     
 </dd>
 </dl>
@@ -4113,7 +4571,7 @@ client.portfolio_analysis.ulcer_index(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">ulcer_performance_index</a>(...)</code></summary>
+<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">ulcer_performance_index</a>(...) -> PostPortfolioAnalysisUlcerPerformanceIndexResponse</code></summary>
 <dl>
 <dd>
 
@@ -4144,22 +4602,29 @@ References
 <dd>
 
 ```python
-from fern.portfolio_analysis import (
-    PostPortfolioAnalysisUlcerPerformanceIndexRequestPortfoliosItem,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_analysis import PostPortfolioAnalysisUlcerPerformanceIndexRequestPortfoliosItem
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_analysis.ulcer_performance_index(
     portfolios=[
         PostPortfolioAnalysisUlcerPerformanceIndexRequestPortfoliosItem(
-            portfolio_values=[100.0, 95.0, 100.0, 90.0, 85.0, 70.0],
+            portfolio_values=[
+                100,
+                95,
+                100,
+                90,
+                85,
+                70
+            ],
         )
     ],
-    risk_free_rate=0.0,
+    risk_free_rate=0,
 )
 
 ```
@@ -4176,7 +4641,7 @@ client.portfolio_analysis.ulcer_performance_index(
 <dl>
 <dd>
 
-**portfolios:** `typing.Sequence[PostPortfolioAnalysisUlcerPerformanceIndexRequestPortfoliosItem]` 
+**portfolios:** `typing.List[PostPortfolioAnalysisUlcerPerformanceIndexRequestPortfoliosItem]` 
     
 </dd>
 </dl>
@@ -4204,7 +4669,7 @@ client.portfolio_analysis.ulcer_performance_index(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">value_at_risk</a>(...)</code></summary>
+<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">value_at_risk</a>(...) -> PostPortfolioAnalysisValueAtRiskResponse</code></summary>
 <dl>
 <dd>
 
@@ -4235,20 +4700,27 @@ References
 <dd>
 
 ```python
-from fern.portfolio_analysis import (
-    PostPortfolioAnalysisValueAtRiskRequestPortfoliosItem,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_analysis import PostPortfolioAnalysisValueAtRiskRequestPortfoliosItem
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_analysis.value_at_risk(
     alpha=0.05,
     portfolios=[
         PostPortfolioAnalysisValueAtRiskRequestPortfoliosItem(
-            portfolio_values=[100.0, 95.0, 100.0, 90.0, 85.0, 70.0],
+            portfolio_values=[
+                100,
+                95,
+                100,
+                90,
+                85,
+                70
+            ],
         )
     ],
 )
@@ -4275,7 +4747,7 @@ client.portfolio_analysis.value_at_risk(
 <dl>
 <dd>
 
-**portfolios:** `typing.Sequence[PostPortfolioAnalysisValueAtRiskRequestPortfoliosItem]` 
+**portfolios:** `typing.List[PostPortfolioAnalysisValueAtRiskRequestPortfoliosItem]` 
     
 </dd>
 </dl>
@@ -4295,7 +4767,7 @@ client.portfolio_analysis.value_at_risk(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">volatility</a>(...)</code></summary>
+<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">volatility</a>(...) -> PostPortfolioAnalysisVolatilityResponse</code></summary>
 <dl>
 <dd>
 
@@ -4329,21 +4801,40 @@ References
 <dd>
 
 ```python
-from fern.portfolio_analysis import (
-    PostPortfolioAnalysisVolatilityRequestOne,
-    PostPortfolioAnalysisVolatilityRequestOnePortfoliosItem,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_analysis import PostPortfolioAnalysisVolatilityRequestAssets, PostPortfolioAnalysisVolatilityRequestAssetsPortfoliosItem
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_analysis.volatility(
-    request=PostPortfolioAnalysisVolatilityRequestOne(
+    request=PostPortfolioAnalysisVolatilityRequestAssets(
+        assets=2,
+        assets_covariance_matrix=[
+            [
+                0.0025,
+                0.0005
+            ],
+            [
+                0.0005,
+                0.01
+            ]
+        ],
         portfolios=[
-            PostPortfolioAnalysisVolatilityRequestOnePortfoliosItem(
-                portfolio_values=[100.0, 95.0, 100.0, 90.0, 85.0, 70.0],
+            PostPortfolioAnalysisVolatilityRequestAssetsPortfoliosItem(
+                assets_weights=[
+                    1,
+                    0
+                ],
+            ),
+            PostPortfolioAnalysisVolatilityRequestAssetsPortfoliosItem(
+                assets_weights=[
+                    0,
+                    1
+                ],
             )
         ],
     ),
@@ -4384,7 +4875,7 @@ client.portfolio_analysis.volatility(
 </details>
 
 ## PortfolioAnalysisSharpeRatio
-<details><summary><code>client.portfolio_analysis_sharpe_ratio.<a href="src/fern/portfolio_analysis_sharpe_ratio/client.py">sharpe_ratio</a>(...)</code></summary>
+<details><summary><code>client.portfolio_analysis_sharpe_ratio.<a href="src/fern/portfolio_analysis_sharpe_ratio/client.py">sharpe_ratio</a>(...) -> PostPortfolioAnalysisSharpeRatioResponse</code></summary>
 <dl>
 <dd>
 
@@ -4417,24 +4908,47 @@ References
 <dd>
 
 ```python
-from fern.portfolio_analysis_sharpe_ratio import (
-    PostPortfolioAnalysisSharpeRatioRequestOne,
-    PostPortfolioAnalysisSharpeRatioRequestOnePortfoliosItem,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_analysis_sharpe_ratio import PostPortfolioAnalysisSharpeRatioRequestAssets, PostPortfolioAnalysisSharpeRatioRequestAssetsPortfoliosItem
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_analysis_sharpe_ratio.sharpe_ratio(
-    request=PostPortfolioAnalysisSharpeRatioRequestOne(
+    request=PostPortfolioAnalysisSharpeRatioRequestAssets(
+        assets=2,
+        assets_covariance_matrix=[
+            [
+                0.0025,
+                0.0005
+            ],
+            [
+                0.0005,
+                0.01
+            ]
+        ],
+        assets_returns=[
+            0.01,
+            0.05
+        ],
         portfolios=[
-            PostPortfolioAnalysisSharpeRatioRequestOnePortfoliosItem(
-                portfolio_values=[100.0, 95.0, 100.0, 90.0, 85.0, 70.0],
+            PostPortfolioAnalysisSharpeRatioRequestAssetsPortfoliosItem(
+                assets_weights=[
+                    1,
+                    0
+                ],
+            ),
+            PostPortfolioAnalysisSharpeRatioRequestAssetsPortfoliosItem(
+                assets_weights=[
+                    0,
+                    1
+                ],
             )
         ],
-        risk_free_rate=0.0,
+        risk_free_rate=0,
     ),
 )
 
@@ -4472,7 +4986,7 @@ client.portfolio_analysis_sharpe_ratio.sharpe_ratio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis_sharpe_ratio.<a href="src/fern/portfolio_analysis_sharpe_ratio/client.py">bias_adjusted_sharpe_ratio</a>(...)</code></summary>
+<details><summary><code>client.portfolio_analysis_sharpe_ratio.<a href="src/fern/portfolio_analysis_sharpe_ratio/client.py">bias_adjusted_sharpe_ratio</a>(...) -> PostPortfolioAnalysisSharpeRatioBiasAdjustedResponse</code></summary>
 <dl>
 <dd>
 
@@ -4502,22 +5016,29 @@ References
 <dd>
 
 ```python
-from fern.portfolio_analysis_sharpe_ratio import (
-    PostPortfolioAnalysisSharpeRatioBiasAdjustedRequestPortfoliosItem,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_analysis_sharpe_ratio import PostPortfolioAnalysisSharpeRatioBiasAdjustedRequestPortfoliosItem
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_analysis_sharpe_ratio.bias_adjusted_sharpe_ratio(
     portfolios=[
         PostPortfolioAnalysisSharpeRatioBiasAdjustedRequestPortfoliosItem(
-            portfolio_values=[100.0, 95.0, 100.0, 90.0, 85.0, 70.0],
+            portfolio_values=[
+                100,
+                95,
+                100,
+                90,
+                85,
+                70
+            ],
         )
     ],
-    risk_free_rate=0.0,
+    risk_free_rate=0,
 )
 
 ```
@@ -4534,9 +5055,7 @@ client.portfolio_analysis_sharpe_ratio.bias_adjusted_sharpe_ratio(
 <dl>
 <dd>
 
-**portfolios:** `typing.Sequence[
-    PostPortfolioAnalysisSharpeRatioBiasAdjustedRequestPortfoliosItem
-]` 
+**portfolios:** `typing.List[PostPortfolioAnalysisSharpeRatioBiasAdjustedRequestPortfoliosItem]` 
     
 </dd>
 </dl>
@@ -4564,7 +5083,7 @@ client.portfolio_analysis_sharpe_ratio.bias_adjusted_sharpe_ratio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis_sharpe_ratio.<a href="src/fern/portfolio_analysis_sharpe_ratio/client.py">sharpe_ratio_confidence_interval</a>(...)</code></summary>
+<details><summary><code>client.portfolio_analysis_sharpe_ratio.<a href="src/fern/portfolio_analysis_sharpe_ratio/client.py">sharpe_ratio_confidence_interval</a>(...) -> PostPortfolioAnalysisSharpeRatioConfidenceIntervalResponse</code></summary>
 <dl>
 <dd>
 
@@ -4594,25 +5113,31 @@ References
 <dd>
 
 ```python
-from fern.portfolio_analysis_sharpe_ratio import (
-    PostPortfolioAnalysisSharpeRatioConfidenceIntervalRequestConfidenceIntervalType,
-    PostPortfolioAnalysisSharpeRatioConfidenceIntervalRequestPortfoliosItem,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_analysis_sharpe_ratio import PostPortfolioAnalysisSharpeRatioConfidenceIntervalRequestConfidenceIntervalType, PostPortfolioAnalysisSharpeRatioConfidenceIntervalRequestPortfoliosItem
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_analysis_sharpe_ratio.sharpe_ratio_confidence_interval(
     confidence_interval_type=PostPortfolioAnalysisSharpeRatioConfidenceIntervalRequestConfidenceIntervalType.TWO_SIDED,
     confidence_level=0.99,
     portfolios=[
         PostPortfolioAnalysisSharpeRatioConfidenceIntervalRequestPortfoliosItem(
-            portfolio_values=[100.0, 95.0, 100.0, 90.0, 85.0, 70.0],
+            portfolio_values=[
+                100,
+                95,
+                100,
+                90,
+                85,
+                70
+            ],
         )
     ],
-    risk_free_rate=0.0,
+    risk_free_rate=0,
 )
 
 ```
@@ -4629,9 +5154,7 @@ client.portfolio_analysis_sharpe_ratio.sharpe_ratio_confidence_interval(
 <dl>
 <dd>
 
-**portfolios:** `typing.Sequence[
-    PostPortfolioAnalysisSharpeRatioConfidenceIntervalRequestPortfoliosItem
-]` 
+**portfolios:** `typing.List[PostPortfolioAnalysisSharpeRatioConfidenceIntervalRequestPortfoliosItem]` 
     
 </dd>
 </dl>
@@ -4647,9 +5170,7 @@ client.portfolio_analysis_sharpe_ratio.sharpe_ratio_confidence_interval(
 <dl>
 <dd>
 
-**confidence_interval_type:** `typing.Optional[
-    PostPortfolioAnalysisSharpeRatioConfidenceIntervalRequestConfidenceIntervalType
-]` — The type of confidence interval to build
+**confidence_interval_type:** `typing.Optional[PostPortfolioAnalysisSharpeRatioConfidenceIntervalRequestConfidenceIntervalType]` — The type of confidence interval to build
     
 </dd>
 </dl>
@@ -4677,7 +5198,7 @@ client.portfolio_analysis_sharpe_ratio.sharpe_ratio_confidence_interval(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis_sharpe_ratio.<a href="src/fern/portfolio_analysis_sharpe_ratio/client.py">probabilistic_sharpe_ratio</a>(...)</code></summary>
+<details><summary><code>client.portfolio_analysis_sharpe_ratio.<a href="src/fern/portfolio_analysis_sharpe_ratio/client.py">probabilistic_sharpe_ratio</a>(...) -> PostPortfolioAnalysisSharpeRatioProbabilisticResponse</code></summary>
 <dl>
 <dd>
 
@@ -4708,25 +5229,38 @@ References
 <dd>
 
 ```python
-from fern.portfolio_analysis_sharpe_ratio import (
-    PostPortfolioAnalysisSharpeRatioProbabilisticRequestBenchmarkSharpeRatio,
-    PostPortfolioAnalysisSharpeRatioProbabilisticRequestBenchmarkSharpeRatioPortfoliosItem,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_analysis_sharpe_ratio import PostPortfolioAnalysisSharpeRatioProbabilisticRequestBenchmarkValues, PostPortfolioAnalysisSharpeRatioProbabilisticRequestBenchmarkValuesPortfoliosItem
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_analysis_sharpe_ratio.probabilistic_sharpe_ratio(
-    request=PostPortfolioAnalysisSharpeRatioProbabilisticRequestBenchmarkSharpeRatio(
-        benchmark_sharpe_ratio=0.0,
+    request=PostPortfolioAnalysisSharpeRatioProbabilisticRequestBenchmarkValues(
+        benchmark_values=[
+            100,
+            101,
+            98,
+            102,
+            95,
+            90
+        ],
         portfolios=[
-            PostPortfolioAnalysisSharpeRatioProbabilisticRequestBenchmarkSharpeRatioPortfoliosItem(
-                portfolio_values=[100.0, 95.0, 100.0, 90.0, 85.0, 70.0],
+            PostPortfolioAnalysisSharpeRatioProbabilisticRequestBenchmarkValuesPortfoliosItem(
+                portfolio_values=[
+                    100,
+                    95,
+                    100,
+                    90,
+                    85,
+                    70
+                ],
             )
         ],
-        risk_free_rate=0.0,
+        risk_free_rate=0,
     ),
 )
 
@@ -4764,7 +5298,7 @@ client.portfolio_analysis_sharpe_ratio.probabilistic_sharpe_ratio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis_sharpe_ratio.<a href="src/fern/portfolio_analysis_sharpe_ratio/client.py">minimum_track_record_length</a>(...)</code></summary>
+<details><summary><code>client.portfolio_analysis_sharpe_ratio.<a href="src/fern/portfolio_analysis_sharpe_ratio/client.py">minimum_track_record_length</a>(...) -> PostPortfolioAnalysisSharpeRatioProbabilisticMinimumTrackRecordLengthResponse</code></summary>
 <dl>
 <dd>
 
@@ -4794,25 +5328,38 @@ References
 <dd>
 
 ```python
-from fern.portfolio_analysis_sharpe_ratio import (
-    PostPortfolioAnalysisSharpeRatioProbabilisticMinimumTrackRecordLengthRequestBenchmarkSharpeRatio,
-    PostPortfolioAnalysisSharpeRatioProbabilisticMinimumTrackRecordLengthRequestBenchmarkSharpeRatioPortfoliosItem,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_analysis_sharpe_ratio import PostPortfolioAnalysisSharpeRatioProbabilisticMinimumTrackRecordLengthRequestBenchmarkValues, PostPortfolioAnalysisSharpeRatioProbabilisticMinimumTrackRecordLengthRequestBenchmarkValuesPortfoliosItem
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_analysis_sharpe_ratio.minimum_track_record_length(
-    request=PostPortfolioAnalysisSharpeRatioProbabilisticMinimumTrackRecordLengthRequestBenchmarkSharpeRatio(
-        benchmark_sharpe_ratio=0.0,
+    request=PostPortfolioAnalysisSharpeRatioProbabilisticMinimumTrackRecordLengthRequestBenchmarkValues(
+        benchmark_values=[
+            100,
+            101,
+            98,
+            85,
+            75,
+            65
+        ],
         portfolios=[
-            PostPortfolioAnalysisSharpeRatioProbabilisticMinimumTrackRecordLengthRequestBenchmarkSharpeRatioPortfoliosItem(
-                portfolio_values=[100.0, 95.0, 100.0, 90.0, 85.0, 70.0],
+            PostPortfolioAnalysisSharpeRatioProbabilisticMinimumTrackRecordLengthRequestBenchmarkValuesPortfoliosItem(
+                portfolio_values=[
+                    100,
+                    95,
+                    100,
+                    90,
+                    85,
+                    70
+                ],
             )
         ],
-        risk_free_rate=0.0,
+        risk_free_rate=0,
     ),
 )
 
@@ -4851,7 +5398,7 @@ client.portfolio_analysis_sharpe_ratio.minimum_track_record_length(
 </details>
 
 ## PortfolioConstruction
-<details><summary><code>client.portfolio_construction.<a href="src/fern/portfolio_construction/client.py">investable_portfolio</a>(...)</code></summary>
+<details><summary><code>client.portfolio_construction.<a href="src/fern/portfolio_construction/client.py">investable_portfolio</a>(...) -> PostPortfolioConstructionInvestableResponse</code></summary>
 <dl>
 <dd>
 
@@ -4890,15 +5437,42 @@ References
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_construction.investable_portfolio(
-    assets=3,
-    assets_prices=[10.0, 25.0, 500.0],
-    assets_weights=[0.05, 0.6, 0.35],
-    portfolio_value=10000.0,
+    assets=4,
+    assets_groups=[
+        [
+            1,
+            2
+        ],
+        [
+            3,
+            4
+        ]
+    ],
+    assets_groups_weights=[
+        0.4,
+        0.4
+    ],
+    assets_prices=[
+        10,
+        25,
+        100,
+        500
+    ],
+    assets_weights=[
+        0.2,
+        1.1,
+        1.1,
+        1.1
+    ],
+    portfolio_value=10000,
 )
 
 ```
@@ -4923,7 +5497,7 @@ client.portfolio_construction.investable_portfolio(
 <dl>
 <dd>
 
-**assets_prices:** `typing.Sequence[float]` — assetsPrices[i] is the price of the asset i
+**assets_prices:** `typing.List[float]` — assetsPrices[i] is the price of the asset i
     
 </dd>
 </dl>
@@ -4939,7 +5513,7 @@ client.portfolio_construction.investable_portfolio(
 <dl>
 <dd>
 
-**assets_groups:** `typing.Optional[typing.Sequence[typing.Sequence[int]]]` 
+**assets_groups:** `typing.Optional[typing.List[typing.List[int]]]` 
     
 </dd>
 </dl>
@@ -4947,7 +5521,7 @@ client.portfolio_construction.investable_portfolio(
 <dl>
 <dd>
 
-**assets_groups_weights:** `typing.Optional[typing.Sequence[float]]` — assetsGroupsWeights[i] is the desired weight of the assets group k in the portfolio, in percentage (can be null to indicate no specific desire); requires assetsGroups to be present
+**assets_groups_weights:** `typing.Optional[typing.List[float]]` — assetsGroupsWeights[i] is the desired weight of the assets group k in the portfolio, in percentage (can be null to indicate no specific desire); requires assetsGroups to be present
     
 </dd>
 </dl>
@@ -4955,7 +5529,7 @@ client.portfolio_construction.investable_portfolio(
 <dl>
 <dd>
 
-**assets_minimum_notional_values:** `typing.Optional[typing.Sequence[float]]` — assetsMinimumNotionalValues[i] is the minimum monetary value that the position in the asset i is required to represent when the asset i is included in the portfolio
+**assets_minimum_notional_values:** `typing.Optional[typing.List[float]]` — assetsMinimumNotionalValues[i] is the minimum monetary value that the position in the asset i is required to represent when the asset i is included in the portfolio
     
 </dd>
 </dl>
@@ -4963,7 +5537,7 @@ client.portfolio_construction.investable_portfolio(
 <dl>
 <dd>
 
-**assets_minimum_positions:** `typing.Optional[typing.Sequence[float]]` — assetsMinimumPositions[i] is the minimum number of shares of the asset i that is required to purchase when the asset i is included in the portfolio (usual values are the same as for assetsSizeLots)
+**assets_minimum_positions:** `typing.Optional[typing.List[float]]` — assetsMinimumPositions[i] is the minimum number of shares of the asset i that is required to purchase when the asset i is included in the portfolio (usual values are the same as for assetsSizeLots)
     
 </dd>
 </dl>
@@ -4971,7 +5545,7 @@ client.portfolio_construction.investable_portfolio(
 <dl>
 <dd>
 
-**assets_size_lots:** `typing.Optional[typing.Sequence[float]]` — assetsSizeLots[i] is the number of shares by which it is required to purchase the asset i (usual values are 1 if the asset needs to be purchased share by share, 100 if the asset needs to be purchased by an integer multiple of 100 shares, and 1/1000000 - e.g. for Robinhood broker - if the asset can be purchased by fractional shares)
+**assets_size_lots:** `typing.Optional[typing.List[float]]` — assetsSizeLots[i] is the number of shares by which it is required to purchase the asset i (usual values are 1 if the asset needs to be purchased share by share, 100 if the asset needs to be purchased by an integer multiple of 100 shares, and 1/1000000 - e.g. for Robinhood broker - if the asset can be purchased by fractional shares)
     
 </dd>
 </dl>
@@ -4979,7 +5553,7 @@ client.portfolio_construction.investable_portfolio(
 <dl>
 <dd>
 
-**assets_weights:** `typing.Optional[typing.Sequence[float]]` — assetsWeights[i] is the desired weight of the asset i in the portfolio, in percentage (can be null to indicate no specific desire)
+**assets_weights:** `typing.Optional[typing.List[float]]` — assetsWeights[i] is the desired weight of the asset i in the portfolio, in percentage (can be null to indicate no specific desire)
     
 </dd>
 </dl>
@@ -4987,7 +5561,7 @@ client.portfolio_construction.investable_portfolio(
 <dl>
 <dd>
 
-**maximum_assets_groups_weights:** `typing.Optional[typing.Sequence[float]]` — maximumAssetsGroupsWeights[k] is the maximum desired weight of the assets group k in the portfolio, in percentage (can be null to indicate no specific desire); requires assetsGroups to be present
+**maximum_assets_groups_weights:** `typing.Optional[typing.List[float]]` — maximumAssetsGroupsWeights[k] is the maximum desired weight of the assets group k in the portfolio, in percentage (can be null to indicate no specific desire); requires assetsGroups to be present
     
 </dd>
 </dl>
@@ -5007,7 +5581,7 @@ client.portfolio_construction.investable_portfolio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_construction.<a href="src/fern/portfolio_construction/client.py">mimicking_portfolio</a>(...)</code></summary>
+<details><summary><code>client.portfolio_construction.<a href="src/fern/portfolio_construction/client.py">mimicking_portfolio</a>(...) -> PostPortfolioConstructionMimickingResponse</code></summary>
 <dl>
 <dd>
 
@@ -5040,33 +5614,37 @@ References
 <dd>
 
 ```python
-from fern.portfolio_construction import (
-    PostPortfolioConstructionMimickingRequestAssetsItem,
-    PostPortfolioConstructionMimickingRequestConstraints,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_construction import PostPortfolioConstructionMimickingRequestAssetsItem
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_construction.mimicking_portfolio(
     assets=[
         PostPortfolioConstructionMimickingRequestAssetsItem(
-            asset_returns=[0.01, 0.02, 0.03],
+            asset_returns=[
+                0.01,
+                0.02,
+                0.03
+            ],
         ),
         PostPortfolioConstructionMimickingRequestAssetsItem(
-            asset_returns=[-0.01, 0.04, 0.01],
-        ),
-        PostPortfolioConstructionMimickingRequestAssetsItem(
-            asset_returns=[0.05, -0.01, 0.0],
-        ),
+            asset_returns=[
+                -0.01,
+                -0.02,
+                -0.03
+            ],
+        )
     ],
-    benchmark_returns=[0.02, 0.01, 0.06],
-    constraints=PostPortfolioConstructionMimickingRequestConstraints(
-        assets_groups=[[1, 2]],
-        maximum_assets_groups_weights=[0.35],
-    ),
+    benchmark_returns=[
+        0,
+        0,
+        0
+    ],
 )
 
 ```
@@ -5083,7 +5661,7 @@ client.portfolio_construction.mimicking_portfolio(
 <dl>
 <dd>
 
-**assets:** `typing.Sequence[PostPortfolioConstructionMimickingRequestAssetsItem]` 
+**assets:** `typing.List[PostPortfolioConstructionMimickingRequestAssetsItem]` 
     
 </dd>
 </dl>
@@ -5091,7 +5669,7 @@ client.portfolio_construction.mimicking_portfolio(
 <dl>
 <dd>
 
-**benchmark_returns:** `typing.Sequence[float]` — benchmarkReturns[t] is the return of the benchmark at the time t; the benchmarkReturns array must have the same length as all the assetReturns arrays
+**benchmark_returns:** `typing.List[float]` — benchmarkReturns[t] is the return of the benchmark at the time t; the benchmarkReturns array must have the same length as all the assetReturns arrays
     
 </dd>
 </dl>
@@ -5119,7 +5697,7 @@ client.portfolio_construction.mimicking_portfolio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_construction.<a href="src/fern/portfolio_construction/client.py">random_portfolio</a>(...)</code></summary>
+<details><summary><code>client.portfolio_construction.<a href="src/fern/portfolio_construction/client.py">random_portfolio</a>(...) -> PostPortfolioConstructionRandomResponse</code></summary>
 <dl>
 <dd>
 
@@ -5154,10 +5732,13 @@ References
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_construction.random_portfolio(
     assets=3,
     portfolios=2,
@@ -5214,7 +5795,7 @@ client.portfolio_construction.random_portfolio(
 </details>
 
 ## PortfolioOptimization
-<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">equal_risk_contributions_portfolio</a>(...)</code></summary>
+<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">equal_risk_contributions_portfolio</a>(...) -> PostPortfolioOptimizationEqualRiskContributionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5245,20 +5826,32 @@ References
 <dd>
 
 ```python
-from fern.portfolio_optimization import (
-    PostPortfolioOptimizationEqualRiskContributionsRequestConstraints,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_optimization import PostPortfolioOptimizationEqualRiskContributionsRequestConstraints
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_optimization.equal_risk_contributions_portfolio(
     assets=2,
-    assets_covariance_matrix=[[0.0025, 0.0005], [0.0005, 0.01]],
+    assets_covariance_matrix=[
+        [
+            0.0025,
+            0.0005
+        ],
+        [
+            0.0005,
+            0.01
+        ]
+    ],
     constraints=PostPortfolioOptimizationEqualRiskContributionsRequestConstraints(
-        maximum_assets_weights=[0.4, 1.0],
+        maximum_assets_weights=[
+            0.4,
+            1
+        ],
     ),
 )
 
@@ -5284,7 +5877,7 @@ client.portfolio_optimization.equal_risk_contributions_portfolio(
 <dl>
 <dd>
 
-**assets_covariance_matrix:** `typing.Sequence[typing.Sequence[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
+**assets_covariance_matrix:** `typing.List[typing.List[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
     
 </dd>
 </dl>
@@ -5292,9 +5885,7 @@ client.portfolio_optimization.equal_risk_contributions_portfolio(
 <dl>
 <dd>
 
-**constraints:** `typing.Optional[
-    PostPortfolioOptimizationEqualRiskContributionsRequestConstraints
-]` 
+**constraints:** `typing.Optional[PostPortfolioOptimizationEqualRiskContributionsRequestConstraints]` 
     
 </dd>
 </dl>
@@ -5314,7 +5905,7 @@ client.portfolio_optimization.equal_risk_contributions_portfolio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">equal_sharpe_ratio_contributions_portfolio</a>(...)</code></summary>
+<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">equal_sharpe_ratio_contributions_portfolio</a>(...) -> PostPortfolioOptimizationEqualSharpeRatioContributionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5345,15 +5936,30 @@ References
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_optimization.equal_sharpe_ratio_contributions_portfolio(
     assets=2,
-    assets_covariance_matrix=[[0.05, 0.02], [0.02, 0.07]],
-    assets_returns=[0.05, 0.1],
-    risk_free_rate=0.0,
+    assets_covariance_matrix=[
+        [
+            0.05,
+            0.02
+        ],
+        [
+            0.02,
+            0.07
+        ]
+    ],
+    assets_returns=[
+        0.05,
+        0.1
+    ],
+    risk_free_rate=0,
 )
 
 ```
@@ -5378,7 +5984,7 @@ client.portfolio_optimization.equal_sharpe_ratio_contributions_portfolio(
 <dl>
 <dd>
 
-**assets_covariance_matrix:** `typing.Sequence[typing.Sequence[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
+**assets_covariance_matrix:** `typing.List[typing.List[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
     
 </dd>
 </dl>
@@ -5386,7 +5992,7 @@ client.portfolio_optimization.equal_sharpe_ratio_contributions_portfolio(
 <dl>
 <dd>
 
-**assets_returns:** `typing.Sequence[float]` — assetsReturns[i] is the arithmetic return of asset i
+**assets_returns:** `typing.List[float]` — assetsReturns[i] is the arithmetic return of asset i
     
 </dd>
 </dl>
@@ -5414,7 +6020,7 @@ client.portfolio_optimization.equal_sharpe_ratio_contributions_portfolio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">equal_volatility_weighted_portfolio</a>(...)</code></summary>
+<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">equal_volatility_weighted_portfolio</a>(...) -> PostPortfolioOptimizationEqualVolatilityWeightedResponse</code></summary>
 <dl>
 <dd>
 
@@ -5445,13 +6051,19 @@ References
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_optimization.equal_volatility_weighted_portfolio(
     assets=2,
-    assets_volatilities=[0.05, 0.1],
+    assets_volatilities=[
+        0.05,
+        0.1
+    ],
 )
 
 ```
@@ -5476,7 +6088,7 @@ client.portfolio_optimization.equal_volatility_weighted_portfolio(
 <dl>
 <dd>
 
-**assets_volatilities:** `typing.Sequence[float]` — assetsVolatilities[i] is the volatility of the asset i
+**assets_volatilities:** `typing.List[float]` — assetsVolatilities[i] is the volatility of the asset i
     
 </dd>
 </dl>
@@ -5496,7 +6108,7 @@ client.portfolio_optimization.equal_volatility_weighted_portfolio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">equal_weighted_portfolio</a>(...)</code></summary>
+<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">equal_weighted_portfolio</a>(...) -> PostPortfolioOptimizationEqualWeightedResponse</code></summary>
 <dl>
 <dd>
 
@@ -5527,10 +6139,13 @@ References
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_optimization.equal_weighted_portfolio(
     assets=2,
 )
@@ -5569,7 +6184,7 @@ client.portfolio_optimization.equal_weighted_portfolio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">hierarchical_risk_parity_portfolio</a>(...)</code></summary>
+<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">hierarchical_risk_parity_portfolio</a>(...) -> PostPortfolioOptimizationHierarchicalRiskParityResponse</code></summary>
 <dl>
 <dd>
 
@@ -5602,20 +6217,32 @@ References
 <dd>
 
 ```python
-from fern.portfolio_optimization import (
-    PostPortfolioOptimizationHierarchicalRiskParityRequestConstraints,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_optimization import PostPortfolioOptimizationHierarchicalRiskParityRequestConstraints
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_optimization.hierarchical_risk_parity_portfolio(
     assets=2,
-    assets_covariance_matrix=[[0.0025, 0.0005], [0.0005, 0.01]],
+    assets_covariance_matrix=[
+        [
+            0.0025,
+            0.0005
+        ],
+        [
+            0.0005,
+            0.01
+        ]
+    ],
     constraints=PostPortfolioOptimizationHierarchicalRiskParityRequestConstraints(
-        maximum_assets_weights=[0.4, 1.0],
+        maximum_assets_weights=[
+            0.4,
+            1
+        ],
         maximum_portfolio_exposure=0.5,
         minimum_portfolio_exposure=0.5,
     ),
@@ -5643,7 +6270,7 @@ client.portfolio_optimization.hierarchical_risk_parity_portfolio(
 <dl>
 <dd>
 
-**assets_covariance_matrix:** `typing.Sequence[typing.Sequence[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
+**assets_covariance_matrix:** `typing.List[typing.List[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
     
 </dd>
 </dl>
@@ -5651,9 +6278,7 @@ client.portfolio_optimization.hierarchical_risk_parity_portfolio(
 <dl>
 <dd>
 
-**clustering_method:** `typing.Optional[
-    PostPortfolioOptimizationHierarchicalRiskParityRequestClusteringMethod
-]` — The hierarchical clustering method to use
+**clustering_method:** `typing.Optional[PostPortfolioOptimizationHierarchicalRiskParityRequestClusteringMethod]` — The hierarchical clustering method to use
     
 </dd>
 </dl>
@@ -5661,9 +6286,7 @@ client.portfolio_optimization.hierarchical_risk_parity_portfolio(
 <dl>
 <dd>
 
-**clustering_ordering:** `typing.Optional[
-    PostPortfolioOptimizationHierarchicalRiskParityRequestClusteringOrdering
-]` — The order to impose on the hierarchical clustering tree leaves
+**clustering_ordering:** `typing.Optional[PostPortfolioOptimizationHierarchicalRiskParityRequestClusteringOrdering]` — The order to impose on the hierarchical clustering tree leaves
     
 </dd>
 </dl>
@@ -5671,9 +6294,7 @@ client.portfolio_optimization.hierarchical_risk_parity_portfolio(
 <dl>
 <dd>
 
-**constraints:** `typing.Optional[
-    PostPortfolioOptimizationHierarchicalRiskParityRequestConstraints
-]` 
+**constraints:** `typing.Optional[PostPortfolioOptimizationHierarchicalRiskParityRequestConstraints]` 
     
 </dd>
 </dl>
@@ -5693,7 +6314,7 @@ client.portfolio_optimization.hierarchical_risk_parity_portfolio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">hierarchical_clustering_based_risk_parity_portfolio</a>(...)</code></summary>
+<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">hierarchical_clustering_based_risk_parity_portfolio</a>(...) -> PostPortfolioOptimizationHierarchicalRiskParityClusteringBasedResponse</code></summary>
 <dl>
 <dd>
 
@@ -5728,20 +6349,32 @@ References
 <dd>
 
 ```python
-from fern.portfolio_optimization import (
-    PostPortfolioOptimizationHierarchicalRiskParityClusteringBasedRequestConstraints,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_optimization import PostPortfolioOptimizationHierarchicalRiskParityClusteringBasedRequestConstraints
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_optimization.hierarchical_clustering_based_risk_parity_portfolio(
     assets=2,
-    assets_covariance_matrix=[[0.0025, 0.0005], [0.0005, 0.01]],
+    assets_covariance_matrix=[
+        [
+            0.0025,
+            0.0005
+        ],
+        [
+            0.0005,
+            0.01
+        ]
+    ],
     constraints=PostPortfolioOptimizationHierarchicalRiskParityClusteringBasedRequestConstraints(
-        maximum_assets_weights=[0.4, 1.0],
+        maximum_assets_weights=[
+            0.4,
+            1
+        ],
         maximum_portfolio_exposure=0.5,
         minimum_portfolio_exposure=0.5,
     ),
@@ -5769,7 +6402,7 @@ client.portfolio_optimization.hierarchical_clustering_based_risk_parity_portfoli
 <dl>
 <dd>
 
-**assets_covariance_matrix:** `typing.Sequence[typing.Sequence[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
+**assets_covariance_matrix:** `typing.List[typing.List[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
     
 </dd>
 </dl>
@@ -5777,9 +6410,7 @@ client.portfolio_optimization.hierarchical_clustering_based_risk_parity_portfoli
 <dl>
 <dd>
 
-**across_cluster_allocation_method:** `typing.Optional[
-    PostPortfolioOptimizationHierarchicalRiskParityClusteringBasedRequestAcrossClusterAllocationMethod
-]` — The allocation method to use across clusters
+**across_cluster_allocation_method:** `typing.Optional[PostPortfolioOptimizationHierarchicalRiskParityClusteringBasedRequestAcrossClusterAllocationMethod]` — The allocation method to use across clusters
     
 </dd>
 </dl>
@@ -5787,9 +6418,7 @@ client.portfolio_optimization.hierarchical_clustering_based_risk_parity_portfoli
 <dl>
 <dd>
 
-**clustering_method:** `typing.Optional[
-    PostPortfolioOptimizationHierarchicalRiskParityClusteringBasedRequestClusteringMethod
-]` — The hierarchical clustering method to use
+**clustering_method:** `typing.Optional[PostPortfolioOptimizationHierarchicalRiskParityClusteringBasedRequestClusteringMethod]` — The hierarchical clustering method to use
     
 </dd>
 </dl>
@@ -5797,9 +6426,7 @@ client.portfolio_optimization.hierarchical_clustering_based_risk_parity_portfoli
 <dl>
 <dd>
 
-**clustering_ordering:** `typing.Optional[
-    PostPortfolioOptimizationHierarchicalRiskParityClusteringBasedRequestClusteringOrdering
-]` — The order to impose on the hierarchical clustering tree leaves
+**clustering_ordering:** `typing.Optional[PostPortfolioOptimizationHierarchicalRiskParityClusteringBasedRequestClusteringOrdering]` — The order to impose on the hierarchical clustering tree leaves
     
 </dd>
 </dl>
@@ -5815,9 +6442,7 @@ client.portfolio_optimization.hierarchical_clustering_based_risk_parity_portfoli
 <dl>
 <dd>
 
-**constraints:** `typing.Optional[
-    PostPortfolioOptimizationHierarchicalRiskParityClusteringBasedRequestConstraints
-]` 
+**constraints:** `typing.Optional[PostPortfolioOptimizationHierarchicalRiskParityClusteringBasedRequestConstraints]` 
     
 </dd>
 </dl>
@@ -5825,9 +6450,7 @@ client.portfolio_optimization.hierarchical_clustering_based_risk_parity_portfoli
 <dl>
 <dd>
 
-**within_cluster_allocation_method:** `typing.Optional[
-    PostPortfolioOptimizationHierarchicalRiskParityClusteringBasedRequestWithinClusterAllocationMethod
-]` — The allocation method to use within clusters
+**within_cluster_allocation_method:** `typing.Optional[PostPortfolioOptimizationHierarchicalRiskParityClusteringBasedRequestWithinClusterAllocationMethod]` — The allocation method to use within clusters
     
 </dd>
 </dl>
@@ -5847,7 +6470,7 @@ client.portfolio_optimization.hierarchical_clustering_based_risk_parity_portfoli
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">inverse_variance_weighted_portfolio</a>(...)</code></summary>
+<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">inverse_variance_weighted_portfolio</a>(...) -> PostPortfolioOptimizationInverseVarianceWeightedResponse</code></summary>
 <dl>
 <dd>
 
@@ -5878,13 +6501,19 @@ References
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_optimization.inverse_variance_weighted_portfolio(
     assets=2,
-    assets_variances=[1.0, 0.5],
+    assets_variances=[
+        1,
+        0.5
+    ],
 )
 
 ```
@@ -5909,7 +6538,7 @@ client.portfolio_optimization.inverse_variance_weighted_portfolio(
 <dl>
 <dd>
 
-**assets_variances:** `typing.Sequence[float]` — assetsVariances[i] is the variance of the asset i
+**assets_variances:** `typing.List[float]` — assetsVariances[i] is the variance of the asset i
     
 </dd>
 </dl>
@@ -5929,7 +6558,7 @@ client.portfolio_optimization.inverse_variance_weighted_portfolio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">inverse_volatility_weighted_portfolio</a>(...)</code></summary>
+<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">inverse_volatility_weighted_portfolio</a>(...) -> PostPortfolioOptimizationInverseVolatilityWeightedResponse</code></summary>
 <dl>
 <dd>
 
@@ -5960,13 +6589,19 @@ References
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_optimization.inverse_volatility_weighted_portfolio(
     assets=2,
-    assets_volatilities=[0.05, 0.1],
+    assets_volatilities=[
+        0.05,
+        0.1
+    ],
 )
 
 ```
@@ -5991,7 +6626,7 @@ client.portfolio_optimization.inverse_volatility_weighted_portfolio(
 <dl>
 <dd>
 
-**assets_volatilities:** `typing.Sequence[float]` — assetsVolatilities[i] is the volatility of the asset i
+**assets_volatilities:** `typing.List[float]` — assetsVolatilities[i] is the volatility of the asset i
     
 </dd>
 </dl>
@@ -6011,7 +6646,7 @@ client.portfolio_optimization.inverse_volatility_weighted_portfolio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">market_capitalization_weighted_portfolio</a>(...)</code></summary>
+<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">market_capitalization_weighted_portfolio</a>(...) -> PostPortfolioOptimizationMarketCapitalizationWeightedResponse</code></summary>
 <dl>
 <dd>
 
@@ -6042,13 +6677,19 @@ References
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_optimization.market_capitalization_weighted_portfolio(
     assets=2,
-    assets_market_capitalizations=[1.0, 2.0],
+    assets_market_capitalizations=[
+        1,
+        2
+    ],
 )
 
 ```
@@ -6073,7 +6714,7 @@ client.portfolio_optimization.market_capitalization_weighted_portfolio(
 <dl>
 <dd>
 
-**assets_market_capitalizations:** `typing.Sequence[float]` — assetsMarketCapitalizations[i] is the market capitalization of the asset i
+**assets_market_capitalizations:** `typing.List[float]` — assetsMarketCapitalizations[i] is the market capitalization of the asset i
     
 </dd>
 </dl>
@@ -6093,7 +6734,7 @@ client.portfolio_optimization.market_capitalization_weighted_portfolio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">maximum_decorrelation_portfolio</a>(...)</code></summary>
+<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">maximum_decorrelation_portfolio</a>(...) -> PostPortfolioOptimizationMaximumDecorrelationResponse</code></summary>
 <dl>
 <dd>
 
@@ -6127,16 +6768,31 @@ References
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_optimization.maximum_decorrelation_portfolio(
     assets=3,
     assets_correlation_matrix=[
-        [1.0, 0.9, 0.85],
-        [0.9, 1.0, 0.7],
-        [0.85, 0.7, 1.0],
+        [
+            1,
+            0.9,
+            0.85
+        ],
+        [
+            0.9,
+            1,
+            0.7
+        ],
+        [
+            0.85,
+            0.7,
+            1
+        ]
     ],
 )
 
@@ -6162,7 +6818,7 @@ client.portfolio_optimization.maximum_decorrelation_portfolio(
 <dl>
 <dd>
 
-**assets_correlation_matrix:** `typing.Sequence[typing.Sequence[float]]` — assetsCorrelationMatrix[i][j] is the correlation between the asset i and the asset j
+**assets_correlation_matrix:** `typing.List[typing.List[float]]` — assetsCorrelationMatrix[i][j] is the correlation between the asset i and the asset j
     
 </dd>
 </dl>
@@ -6170,7 +6826,7 @@ client.portfolio_optimization.maximum_decorrelation_portfolio(
 <dl>
 <dd>
 
-**assets_returns:** `typing.Optional[typing.Sequence[float]]` — assetsReturns[i] is the arithmetic return of asset i
+**assets_returns:** `typing.Optional[typing.List[float]]` — assetsReturns[i] is the arithmetic return of asset i
     
 </dd>
 </dl>
@@ -6198,7 +6854,7 @@ client.portfolio_optimization.maximum_decorrelation_portfolio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">maximum_ulcer_performance_index_portfolio</a>(...)</code></summary>
+<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">maximum_ulcer_performance_index_portfolio</a>(...) -> PostPortfolioOptimizationMaximumUlcerPerformanceIndexResponse</code></summary>
 <dl>
 <dd>
 
@@ -6236,25 +6892,33 @@ References
 <dd>
 
 ```python
-from fern.portfolio_optimization import (
-    PostPortfolioOptimizationMaximumUlcerPerformanceIndexRequestAssetsItem,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_optimization import PostPortfolioOptimizationMaximumUlcerPerformanceIndexRequestAssetsItem
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_optimization.maximum_ulcer_performance_index_portfolio(
     assets=[
         PostPortfolioOptimizationMaximumUlcerPerformanceIndexRequestAssetsItem(
-            asset_prices=[100.0, 95.0, 110.0],
+            asset_prices=[
+                100,
+                95,
+                110
+            ],
         ),
         PostPortfolioOptimizationMaximumUlcerPerformanceIndexRequestAssetsItem(
-            asset_prices=[100.0, 105.0, 100.0],
-        ),
+            asset_prices=[
+                100,
+                105,
+                100
+            ],
+        )
     ],
-    risk_free_rate=0.0,
+    risk_free_rate=0,
 )
 
 ```
@@ -6271,9 +6935,7 @@ client.portfolio_optimization.maximum_ulcer_performance_index_portfolio(
 <dl>
 <dd>
 
-**assets:** `typing.Sequence[
-    PostPortfolioOptimizationMaximumUlcerPerformanceIndexRequestAssetsItem
-]` 
+**assets:** `typing.List[PostPortfolioOptimizationMaximumUlcerPerformanceIndexRequestAssetsItem]` 
     
 </dd>
 </dl>
@@ -6289,9 +6951,7 @@ client.portfolio_optimization.maximum_ulcer_performance_index_portfolio(
 <dl>
 <dd>
 
-**constraints:** `typing.Optional[
-    PostPortfolioOptimizationMaximumUlcerPerformanceIndexRequestConstraints
-]` 
+**constraints:** `typing.Optional[PostPortfolioOptimizationMaximumUlcerPerformanceIndexRequestConstraints]` 
     
 </dd>
 </dl>
@@ -6311,7 +6971,7 @@ client.portfolio_optimization.maximum_ulcer_performance_index_portfolio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">minimum_correlation_portfolio</a>(...)</code></summary>
+<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">minimum_correlation_portfolio</a>(...) -> PostPortfolioOptimizationMinimumCorrelationResponse</code></summary>
 <dl>
 <dd>
 
@@ -6342,18 +7002,37 @@ References
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_optimization.minimum_correlation_portfolio(
     assets=3,
     assets_correlation_matrix=[
-        [1.0, 0.9, 0.85],
-        [0.9, 1.0, 0.7],
-        [0.85, 0.7, 1.0],
+        [
+            1,
+            0.9,
+            0.85
+        ],
+        [
+            0.9,
+            1,
+            0.7
+        ],
+        [
+            0.85,
+            0.7,
+            1
+        ]
     ],
-    assets_volatilities=[0.14, 0.18, 0.22],
+    assets_volatilities=[
+        0.14,
+        0.18,
+        0.22
+    ],
 )
 
 ```
@@ -6378,7 +7057,7 @@ client.portfolio_optimization.minimum_correlation_portfolio(
 <dl>
 <dd>
 
-**assets_correlation_matrix:** `typing.Sequence[typing.Sequence[float]]` — assetsCorrelationMatrix[i][j] is the correlation between the asset i and the asset j; required if assetsReturns is not provided
+**assets_correlation_matrix:** `typing.List[typing.List[float]]` — assetsCorrelationMatrix[i][j] is the correlation between the asset i and the asset j; required if assetsReturns is not provided
     
 </dd>
 </dl>
@@ -6386,7 +7065,7 @@ client.portfolio_optimization.minimum_correlation_portfolio(
 <dl>
 <dd>
 
-**assets_volatilities:** `typing.Sequence[float]` — assetsVariances[i] is the volatility of the asset i; required if assetsCorrelationMatrix is provided and assetsVariances is not provided
+**assets_volatilities:** `typing.List[float]` — assetsVariances[i] is the volatility of the asset i; required if assetsCorrelationMatrix is provided and assetsVariances is not provided
     
 </dd>
 </dl>
@@ -6406,7 +7085,7 @@ client.portfolio_optimization.minimum_correlation_portfolio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">minimum_ulcer_index_portfolio</a>(...)</code></summary>
+<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">minimum_ulcer_index_portfolio</a>(...) -> PostPortfolioOptimizationMinimumUlcerIndexResponse</code></summary>
 <dl>
 <dd>
 
@@ -6441,23 +7120,31 @@ References
 <dd>
 
 ```python
-from fern.portfolio_optimization import (
-    PostPortfolioOptimizationMinimumUlcerIndexRequestAssetsItem,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_optimization import PostPortfolioOptimizationMinimumUlcerIndexRequestAssetsItem
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_optimization.minimum_ulcer_index_portfolio(
     assets=[
         PostPortfolioOptimizationMinimumUlcerIndexRequestAssetsItem(
-            asset_prices=[100.0, 95.0, 110.0],
+            asset_prices=[
+                100,
+                95,
+                110
+            ],
         ),
         PostPortfolioOptimizationMinimumUlcerIndexRequestAssetsItem(
-            asset_prices=[100.0, 105.0, 100.0],
-        ),
+            asset_prices=[
+                100,
+                105,
+                100
+            ],
+        )
     ],
 )
 
@@ -6475,7 +7162,7 @@ client.portfolio_optimization.minimum_ulcer_index_portfolio(
 <dl>
 <dd>
 
-**assets:** `typing.Sequence[PostPortfolioOptimizationMinimumUlcerIndexRequestAssetsItem]` 
+**assets:** `typing.List[PostPortfolioOptimizationMinimumUlcerIndexRequestAssetsItem]` 
     
 </dd>
 </dl>
@@ -6503,7 +7190,7 @@ client.portfolio_optimization.minimum_ulcer_index_portfolio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">most_diversified_portfolio</a>(...)</code></summary>
+<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">most_diversified_portfolio</a>(...) -> PostPortfolioOptimizationMostDiversifiedResponse</code></summary>
 <dl>
 <dd>
 
@@ -6537,13 +7224,25 @@ References
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_optimization.most_diversified_portfolio(
     assets=2,
-    assets_covariance_matrix=[[0.04, 0.01], [0.01, 0.01]],
+    assets_covariance_matrix=[
+        [
+            0.04,
+            0.01
+        ],
+        [
+            0.01,
+            0.01
+        ]
+    ],
 )
 
 ```
@@ -6568,7 +7267,7 @@ client.portfolio_optimization.most_diversified_portfolio(
 <dl>
 <dd>
 
-**assets_covariance_matrix:** `typing.Sequence[typing.Sequence[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
+**assets_covariance_matrix:** `typing.List[typing.List[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
     
 </dd>
 </dl>
@@ -6597,7 +7296,7 @@ client.portfolio_optimization.most_diversified_portfolio(
 </details>
 
 ## PortfolioOptimizationMeanVariance
-<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py">maximum_return_portfolio</a>(...)</code></summary>
+<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py">maximum_return_portfolio</a>(...) -> PostPortfolioOptimizationMaximumReturnResponse</code></summary>
 <dl>
 <dd>
 
@@ -6630,20 +7329,26 @@ References
 <dd>
 
 ```python
-from fern.portfolio_optimization_mean_variance import (
-    PostPortfolioOptimizationMaximumReturnRequestConstraints,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_optimization_mean_variance import PostPortfolioOptimizationMaximumReturnRequestConstraints
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_optimization_mean_variance.maximum_return_portfolio(
     assets=2,
-    assets_returns=[0.02, 0.01],
+    assets_returns=[
+        0.02,
+        0.01
+    ],
     constraints=PostPortfolioOptimizationMaximumReturnRequestConstraints(
-        maximum_assets_weights=[0.4, 1.0],
+        maximum_assets_weights=[
+            0.4,
+            1
+        ],
     ),
 )
 
@@ -6669,7 +7374,7 @@ client.portfolio_optimization_mean_variance.maximum_return_portfolio(
 <dl>
 <dd>
 
-**assets_returns:** `typing.Sequence[float]` — assetsReturns[i] is the arithmetic return of asset i
+**assets_returns:** `typing.List[float]` — assetsReturns[i] is the arithmetic return of asset i
     
 </dd>
 </dl>
@@ -6677,7 +7382,7 @@ client.portfolio_optimization_mean_variance.maximum_return_portfolio(
 <dl>
 <dd>
 
-**assets_covariance_matrix:** `typing.Optional[typing.Sequence[typing.Sequence[float]]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
+**assets_covariance_matrix:** `typing.Optional[typing.List[typing.List[float]]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
     
 </dd>
 </dl>
@@ -6705,7 +7410,7 @@ client.portfolio_optimization_mean_variance.maximum_return_portfolio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py">diversified_maximum_return_portfolio</a>(...)</code></summary>
+<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py">diversified_maximum_return_portfolio</a>(...) -> PostPortfolioOptimizationMaximumReturnDiversifiedResponse</code></summary>
 <dl>
 <dd>
 
@@ -6742,20 +7447,26 @@ References
 <dd>
 
 ```python
-from fern.portfolio_optimization_mean_variance import (
-    PostPortfolioOptimizationMaximumReturnDiversifiedRequestConstraints,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_optimization_mean_variance import PostPortfolioOptimizationMaximumReturnDiversifiedRequestConstraints
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_optimization_mean_variance.diversified_maximum_return_portfolio(
     assets=2,
-    assets_returns=[0.02, 0.01],
+    assets_returns=[
+        0.02,
+        0.01
+    ],
     constraints=PostPortfolioOptimizationMaximumReturnDiversifiedRequestConstraints(
-        maximum_assets_weights=[0.4, 1.0],
+        maximum_assets_weights=[
+            0.4,
+            1
+        ],
     ),
 )
 
@@ -6781,7 +7492,7 @@ client.portfolio_optimization_mean_variance.diversified_maximum_return_portfolio
 <dl>
 <dd>
 
-**assets_returns:** `typing.Sequence[float]` — assetsReturns[i] is the arithmetic return of asset i
+**assets_returns:** `typing.List[float]` — assetsReturns[i] is the arithmetic return of asset i
     
 </dd>
 </dl>
@@ -6789,7 +7500,7 @@ client.portfolio_optimization_mean_variance.diversified_maximum_return_portfolio
 <dl>
 <dd>
 
-**assets_covariance_matrix:** `typing.Optional[typing.Sequence[typing.Sequence[float]]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
+**assets_covariance_matrix:** `typing.Optional[typing.List[typing.List[float]]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
     
 </dd>
 </dl>
@@ -6797,9 +7508,7 @@ client.portfolio_optimization_mean_variance.diversified_maximum_return_portfolio
 <dl>
 <dd>
 
-**constraints:** `typing.Optional[
-    PostPortfolioOptimizationMaximumReturnDiversifiedRequestConstraints
-]` 
+**constraints:** `typing.Optional[PostPortfolioOptimizationMaximumReturnDiversifiedRequestConstraints]` 
     
 </dd>
 </dl>
@@ -6819,7 +7528,7 @@ client.portfolio_optimization_mean_variance.diversified_maximum_return_portfolio
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py">subset_resampling_based_maximum_return_portfolio</a>(...)</code></summary>
+<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py">subset_resampling_based_maximum_return_portfolio</a>(...) -> PostPortfolioOptimizationMaximumReturnSubsetResamplingBasedResponse</code></summary>
 <dl>
 <dd>
 
@@ -6854,18 +7563,22 @@ References
 <dd>
 
 ```python
-from fern.portfolio_optimization_mean_variance import (
-    PostPortfolioOptimizationMaximumReturnSubsetResamplingBasedRequestSubsetPortfoliosEnumerationMethod,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_optimization_mean_variance import PostPortfolioOptimizationMaximumReturnSubsetResamplingBasedRequestSubsetPortfoliosEnumerationMethod
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_optimization_mean_variance.subset_resampling_based_maximum_return_portfolio(
     assets=3,
-    assets_returns=[0.01, 0.02, 0.03],
+    assets_returns=[
+        0.01,
+        0.02,
+        0.03
+    ],
     subset_portfolios_enumeration_method=PostPortfolioOptimizationMaximumReturnSubsetResamplingBasedRequestSubsetPortfoliosEnumerationMethod.COMPLETE,
 )
 
@@ -6891,7 +7604,7 @@ client.portfolio_optimization_mean_variance.subset_resampling_based_maximum_retu
 <dl>
 <dd>
 
-**assets_returns:** `typing.Sequence[float]` — assetsReturns[i] is the arithmetic return of asset i
+**assets_returns:** `typing.List[float]` — assetsReturns[i] is the arithmetic return of asset i
     
 </dd>
 </dl>
@@ -6899,7 +7612,7 @@ client.portfolio_optimization_mean_variance.subset_resampling_based_maximum_retu
 <dl>
 <dd>
 
-**assets_covariance_matrix:** `typing.Optional[typing.Sequence[typing.Sequence[float]]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
+**assets_covariance_matrix:** `typing.Optional[typing.List[typing.List[float]]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
     
 </dd>
 </dl>
@@ -6907,9 +7620,7 @@ client.portfolio_optimization_mean_variance.subset_resampling_based_maximum_retu
 <dl>
 <dd>
 
-**constraints:** `typing.Optional[
-    PostPortfolioOptimizationMaximumReturnSubsetResamplingBasedRequestConstraints
-]` 
+**constraints:** `typing.Optional[PostPortfolioOptimizationMaximumReturnSubsetResamplingBasedRequestConstraints]` 
     
 </dd>
 </dl>
@@ -6925,9 +7636,7 @@ client.portfolio_optimization_mean_variance.subset_resampling_based_maximum_retu
 <dl>
 <dd>
 
-**subset_portfolios_aggregation_method:** `typing.Optional[
-    PostPortfolioOptimizationMaximumReturnSubsetResamplingBasedRequestSubsetPortfoliosAggregationMethod
-]` — The method to aggregate the subset portfolios
+**subset_portfolios_aggregation_method:** `typing.Optional[PostPortfolioOptimizationMaximumReturnSubsetResamplingBasedRequestSubsetPortfoliosAggregationMethod]` — The method to aggregate the subset portfolios
     
 </dd>
 </dl>
@@ -6935,9 +7644,7 @@ client.portfolio_optimization_mean_variance.subset_resampling_based_maximum_retu
 <dl>
 <dd>
 
-**subset_portfolios_enumeration_method:** `typing.Optional[
-    PostPortfolioOptimizationMaximumReturnSubsetResamplingBasedRequestSubsetPortfoliosEnumerationMethod
-]` — The method to enumerate the subset portfolios
+**subset_portfolios_enumeration_method:** `typing.Optional[PostPortfolioOptimizationMaximumReturnSubsetResamplingBasedRequestSubsetPortfoliosEnumerationMethod]` — The method to enumerate the subset portfolios
     
 </dd>
 </dl>
@@ -6965,7 +7672,7 @@ client.portfolio_optimization_mean_variance.subset_resampling_based_maximum_retu
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py">maximum_sharpe_ratio_portfolio</a>(...)</code></summary>
+<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py">maximum_sharpe_ratio_portfolio</a>(...) -> PostPortfolioOptimizationMaximumSharpeRatioResponse</code></summary>
 <dl>
 <dd>
 
@@ -6999,15 +7706,30 @@ References
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_optimization_mean_variance.maximum_sharpe_ratio_portfolio(
     assets=2,
-    assets_covariance_matrix=[[0.05, 0.02], [0.02, 0.07]],
-    assets_returns=[0.05, 0.1],
-    risk_free_rate=0.0,
+    assets_covariance_matrix=[
+        [
+            0.05,
+            0.02
+        ],
+        [
+            0.02,
+            0.07
+        ]
+    ],
+    assets_returns=[
+        0.05,
+        0.1
+    ],
+    risk_free_rate=0,
 )
 
 ```
@@ -7032,7 +7754,7 @@ client.portfolio_optimization_mean_variance.maximum_sharpe_ratio_portfolio(
 <dl>
 <dd>
 
-**assets_covariance_matrix:** `typing.Sequence[typing.Sequence[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
+**assets_covariance_matrix:** `typing.List[typing.List[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
     
 </dd>
 </dl>
@@ -7040,7 +7762,7 @@ client.portfolio_optimization_mean_variance.maximum_sharpe_ratio_portfolio(
 <dl>
 <dd>
 
-**assets_returns:** `typing.Sequence[float]` — assetsReturns[i] is the arithmetic return of asset i
+**assets_returns:** `typing.List[float]` — assetsReturns[i] is the arithmetic return of asset i
     
 </dd>
 </dl>
@@ -7076,7 +7798,7 @@ client.portfolio_optimization_mean_variance.maximum_sharpe_ratio_portfolio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py">diversified_maximum_sharpe_ratio_portfolio</a>(...)</code></summary>
+<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py">diversified_maximum_sharpe_ratio_portfolio</a>(...) -> PostPortfolioOptimizationMaximumSharpeRatioDiversifiedResponse</code></summary>
 <dl>
 <dd>
 
@@ -7114,15 +7836,30 @@ References
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_optimization_mean_variance.diversified_maximum_sharpe_ratio_portfolio(
     assets=2,
-    assets_covariance_matrix=[[0.05, 0.02], [0.02, 0.07]],
-    assets_returns=[0.05, 0.1],
-    risk_free_rate=0.0,
+    assets_covariance_matrix=[
+        [
+            0.05,
+            0.02
+        ],
+        [
+            0.02,
+            0.07
+        ]
+    ],
+    assets_returns=[
+        0.05,
+        0.1
+    ],
+    risk_free_rate=0,
 )
 
 ```
@@ -7147,7 +7884,7 @@ client.portfolio_optimization_mean_variance.diversified_maximum_sharpe_ratio_por
 <dl>
 <dd>
 
-**assets_covariance_matrix:** `typing.Sequence[typing.Sequence[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
+**assets_covariance_matrix:** `typing.List[typing.List[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
     
 </dd>
 </dl>
@@ -7155,7 +7892,7 @@ client.portfolio_optimization_mean_variance.diversified_maximum_sharpe_ratio_por
 <dl>
 <dd>
 
-**assets_returns:** `typing.Sequence[float]` — assetsReturns[i] is the arithmetic return of asset i
+**assets_returns:** `typing.List[float]` — assetsReturns[i] is the arithmetic return of asset i
     
 </dd>
 </dl>
@@ -7171,9 +7908,7 @@ client.portfolio_optimization_mean_variance.diversified_maximum_sharpe_ratio_por
 <dl>
 <dd>
 
-**constraints:** `typing.Optional[
-    PostPortfolioOptimizationMaximumSharpeRatioDiversifiedRequestConstraints
-]` 
+**constraints:** `typing.Optional[PostPortfolioOptimizationMaximumSharpeRatioDiversifiedRequestConstraints]` 
     
 </dd>
 </dl>
@@ -7193,7 +7928,7 @@ client.portfolio_optimization_mean_variance.diversified_maximum_sharpe_ratio_por
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py">subset_resampling_based_maximum_sharpe_ratio_portfolio</a>(...)</code></summary>
+<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py">subset_resampling_based_maximum_sharpe_ratio_portfolio</a>(...) -> PostPortfolioOptimizationMaximumSharpeRatioSubsetResamplingBasedResponse</code></summary>
 <dl>
 <dd>
 
@@ -7229,19 +7964,38 @@ References
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_optimization_mean_variance.subset_resampling_based_maximum_sharpe_ratio_portfolio(
     assets=3,
     assets_covariance_matrix=[
-        [0.05, 0.02, 0.0],
-        [0.02, 0.07, 0.5],
-        [0.0, 0.5, 0.1],
+        [
+            0.05,
+            0.02,
+            0
+        ],
+        [
+            0.02,
+            0.07,
+            0.5
+        ],
+        [
+            0,
+            0.5,
+            0.1
+        ]
     ],
-    assets_returns=[0.05, 0.1, 0.025],
-    risk_free_rate=0.0,
+    assets_returns=[
+        0.05,
+        0.1,
+        0.025
+    ],
+    risk_free_rate=0,
 )
 
 ```
@@ -7266,7 +8020,7 @@ client.portfolio_optimization_mean_variance.subset_resampling_based_maximum_shar
 <dl>
 <dd>
 
-**assets_covariance_matrix:** `typing.Sequence[typing.Sequence[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
+**assets_covariance_matrix:** `typing.List[typing.List[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
     
 </dd>
 </dl>
@@ -7274,7 +8028,7 @@ client.portfolio_optimization_mean_variance.subset_resampling_based_maximum_shar
 <dl>
 <dd>
 
-**assets_returns:** `typing.Sequence[float]` — assetsReturns[i] is the arithmetic return of asset i
+**assets_returns:** `typing.List[float]` — assetsReturns[i] is the arithmetic return of asset i
     
 </dd>
 </dl>
@@ -7290,9 +8044,7 @@ client.portfolio_optimization_mean_variance.subset_resampling_based_maximum_shar
 <dl>
 <dd>
 
-**constraints:** `typing.Optional[
-    PostPortfolioOptimizationMaximumSharpeRatioSubsetResamplingBasedRequestConstraints
-]` 
+**constraints:** `typing.Optional[PostPortfolioOptimizationMaximumSharpeRatioSubsetResamplingBasedRequestConstraints]` 
     
 </dd>
 </dl>
@@ -7308,9 +8060,7 @@ client.portfolio_optimization_mean_variance.subset_resampling_based_maximum_shar
 <dl>
 <dd>
 
-**subset_portfolios_aggregation_method:** `typing.Optional[
-    PostPortfolioOptimizationMaximumSharpeRatioSubsetResamplingBasedRequestSubsetPortfoliosAggregationMethod
-]` — The method to aggregate the subset portfolios
+**subset_portfolios_aggregation_method:** `typing.Optional[PostPortfolioOptimizationMaximumSharpeRatioSubsetResamplingBasedRequestSubsetPortfoliosAggregationMethod]` — The method to aggregate the subset portfolios
     
 </dd>
 </dl>
@@ -7318,9 +8068,7 @@ client.portfolio_optimization_mean_variance.subset_resampling_based_maximum_shar
 <dl>
 <dd>
 
-**subset_portfolios_enumeration_method:** `typing.Optional[
-    PostPortfolioOptimizationMaximumSharpeRatioSubsetResamplingBasedRequestSubsetPortfoliosEnumerationMethod
-]` — The method to enumerate the subset portfolios
+**subset_portfolios_enumeration_method:** `typing.Optional[PostPortfolioOptimizationMaximumSharpeRatioSubsetResamplingBasedRequestSubsetPortfoliosEnumerationMethod]` — The method to enumerate the subset portfolios
     
 </dd>
 </dl>
@@ -7348,7 +8096,7 @@ client.portfolio_optimization_mean_variance.subset_resampling_based_maximum_shar
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py">mean_variance_efficient_portfolio</a>(...)</code></summary>
+<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py">mean_variance_efficient_portfolio</a>(...) -> PostPortfolioOptimizationMeanVarianceEfficientResponse</code></summary>
 <dl>
 <dd>
 
@@ -7383,26 +8131,32 @@ References
 <dd>
 
 ```python
-from fern.portfolio_optimization_mean_variance import (
-    PostPortfolioOptimizationMeanVarianceEfficientRequestConstraints,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_optimization_mean_variance import PostPortfolioOptimizationMeanVarianceEfficientRequestConstraints
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_optimization_mean_variance.mean_variance_efficient_portfolio(
-    assets=3,
+    assets=2,
     assets_covariance_matrix=[
-        [1.0, 0.3, -0.2],
-        [0.3, 1.0, 0.2],
-        [-0.2, 0.2, 1.0],
+        [
+            1,
+            0.3
+        ],
+        [
+            0.3,
+            1
+        ]
     ],
-    assets_returns=[0.1, 0.2, 0.15],
+    assets_returns=[
+        0.1,
+        0.2
+    ],
     constraints=PostPortfolioOptimizationMeanVarianceEfficientRequestConstraints(
-        assets_groups=[[1, 2]],
-        maximum_assets_groups_weights=[0.5],
         portfolio_return=0.15,
     ),
 )
@@ -7429,7 +8183,7 @@ client.portfolio_optimization_mean_variance.mean_variance_efficient_portfolio(
 <dl>
 <dd>
 
-**assets_covariance_matrix:** `typing.Sequence[typing.Sequence[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
+**assets_covariance_matrix:** `typing.List[typing.List[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
     
 </dd>
 </dl>
@@ -7437,7 +8191,7 @@ client.portfolio_optimization_mean_variance.mean_variance_efficient_portfolio(
 <dl>
 <dd>
 
-**assets_returns:** `typing.Sequence[float]` — assetsReturns[i] is the arithmetic return of asset i
+**assets_returns:** `typing.List[float]` — assetsReturns[i] is the arithmetic return of asset i
     
 </dd>
 </dl>
@@ -7465,7 +8219,7 @@ client.portfolio_optimization_mean_variance.mean_variance_efficient_portfolio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py">diversified_mean_variance_efficient_portfolio</a>(...)</code></summary>
+<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py">diversified_mean_variance_efficient_portfolio</a>(...) -> PostPortfolioOptimizationMeanVarianceEfficientDiversifiedResponse</code></summary>
 <dl>
 <dd>
 
@@ -7504,27 +8258,35 @@ References
 <dd>
 
 ```python
-from fern.portfolio_optimization_mean_variance import (
-    PostPortfolioOptimizationMeanVarianceEfficientDiversifiedRequestConstraints,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_optimization_mean_variance import PostPortfolioOptimizationMeanVarianceEfficientDiversifiedRequestConstraints
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_optimization_mean_variance.diversified_mean_variance_efficient_portfolio(
-    assets=3,
+    assets=2,
     assets_covariance_matrix=[
-        [1.0, 0.3, -0.2],
-        [0.3, 1.0, 0.2],
-        [-0.2, 0.2, 1.0],
+        [
+            1,
+            0.3
+        ],
+        [
+            0.3,
+            1
+        ]
     ],
-    assets_returns=[0.1, 0.2, 0.15],
+    assets_returns=[
+        0.1,
+        0.2
+    ],
     constraints=PostPortfolioOptimizationMeanVarianceEfficientDiversifiedRequestConstraints(
-        assets_groups=[[1, 2]],
-        maximum_assets_groups_weights=[0.5],
-        portfolio_return=0.15,
+        delta_return=0.05,
+        delta_volatility=0.05,
+        portfolio_return=0.175,
     ),
 )
 
@@ -7550,7 +8312,7 @@ client.portfolio_optimization_mean_variance.diversified_mean_variance_efficient_
 <dl>
 <dd>
 
-**assets_covariance_matrix:** `typing.Sequence[typing.Sequence[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
+**assets_covariance_matrix:** `typing.List[typing.List[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
     
 </dd>
 </dl>
@@ -7558,7 +8320,7 @@ client.portfolio_optimization_mean_variance.diversified_mean_variance_efficient_
 <dl>
 <dd>
 
-**assets_returns:** `typing.Sequence[float]` — assetsReturns[i] is the arithmetic return of asset i
+**assets_returns:** `typing.List[float]` — assetsReturns[i] is the arithmetic return of asset i
     
 </dd>
 </dl>
@@ -7586,7 +8348,7 @@ client.portfolio_optimization_mean_variance.diversified_mean_variance_efficient_
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py">subset_resampling_based_mean_variance_efficient_portfolio</a>(...)</code></summary>
+<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py">subset_resampling_based_mean_variance_efficient_portfolio</a>(...) -> PostPortfolioOptimizationMeanVarianceEfficientSubsetResamplingBasedResponse</code></summary>
 <dl>
 <dd>
 
@@ -7621,25 +8383,41 @@ References
 <dd>
 
 ```python
-from fern.portfolio_optimization_mean_variance import (
-    PostPortfolioOptimizationMeanVarianceEfficientSubsetResamplingBasedRequestConstraints,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_optimization_mean_variance import PostPortfolioOptimizationMeanVarianceEfficientSubsetResamplingBasedRequestConstraints
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_optimization_mean_variance.subset_resampling_based_mean_variance_efficient_portfolio(
     assets=3,
     assets_covariance_matrix=[
-        [1.0, 0.0, 0.0],
-        [0.0, 1.0, 0.0],
-        [0.0, 0.0, 1.0],
+        [
+            1,
+            0,
+            0
+        ],
+        [
+            0,
+            1,
+            0
+        ],
+        [
+            0,
+            0,
+            1
+        ]
     ],
-    assets_returns=[0.1, 0.2, 0.3],
+    assets_returns=[
+        0.1,
+        0.2,
+        0.3
+    ],
     constraints=PostPortfolioOptimizationMeanVarianceEfficientSubsetResamplingBasedRequestConstraints(
-        risk_tolerance=2.0,
+        risk_tolerance=2,
     ),
 )
 
@@ -7665,7 +8443,7 @@ client.portfolio_optimization_mean_variance.subset_resampling_based_mean_varianc
 <dl>
 <dd>
 
-**assets_covariance_matrix:** `typing.Sequence[typing.Sequence[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
+**assets_covariance_matrix:** `typing.List[typing.List[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
     
 </dd>
 </dl>
@@ -7673,7 +8451,7 @@ client.portfolio_optimization_mean_variance.subset_resampling_based_mean_varianc
 <dl>
 <dd>
 
-**assets_returns:** `typing.Sequence[float]` — assetsReturns[i] is the arithmetic return of asset i
+**assets_returns:** `typing.List[float]` — assetsReturns[i] is the arithmetic return of asset i
     
 </dd>
 </dl>
@@ -7697,9 +8475,7 @@ client.portfolio_optimization_mean_variance.subset_resampling_based_mean_varianc
 <dl>
 <dd>
 
-**subset_portfolios_aggregation_method:** `typing.Optional[
-    PostPortfolioOptimizationMeanVarianceEfficientSubsetResamplingBasedRequestSubsetPortfoliosAggregationMethod
-]` — The method to aggregate the subset portfolios
+**subset_portfolios_aggregation_method:** `typing.Optional[PostPortfolioOptimizationMeanVarianceEfficientSubsetResamplingBasedRequestSubsetPortfoliosAggregationMethod]` — The method to aggregate the subset portfolios
     
 </dd>
 </dl>
@@ -7707,9 +8483,7 @@ client.portfolio_optimization_mean_variance.subset_resampling_based_mean_varianc
 <dl>
 <dd>
 
-**subset_portfolios_enumeration_method:** `typing.Optional[
-    PostPortfolioOptimizationMeanVarianceEfficientSubsetResamplingBasedRequestSubsetPortfoliosEnumerationMethod
-]` — The method to enumerate the subset portfolios
+**subset_portfolios_enumeration_method:** `typing.Optional[PostPortfolioOptimizationMeanVarianceEfficientSubsetResamplingBasedRequestSubsetPortfoliosEnumerationMethod]` — The method to enumerate the subset portfolios
     
 </dd>
 </dl>
@@ -7737,7 +8511,7 @@ client.portfolio_optimization_mean_variance.subset_resampling_based_mean_varianc
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py">minimum_variance_portfolio</a>(...)</code></summary>
+<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py">minimum_variance_portfolio</a>(...) -> PostPortfolioOptimizationMinimumVarianceResponse</code></summary>
 <dl>
 <dd>
 
@@ -7770,20 +8544,32 @@ References
 <dd>
 
 ```python
-from fern.portfolio_optimization_mean_variance import (
-    PostPortfolioOptimizationMinimumVarianceRequestConstraints,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_optimization_mean_variance import PostPortfolioOptimizationMinimumVarianceRequestConstraints
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_optimization_mean_variance.minimum_variance_portfolio(
     assets=2,
-    assets_covariance_matrix=[[0.0025, 0.0005], [0.0005, 0.01]],
+    assets_covariance_matrix=[
+        [
+            0.0025,
+            0.0005
+        ],
+        [
+            0.0005,
+            0.01
+        ]
+    ],
     constraints=PostPortfolioOptimizationMinimumVarianceRequestConstraints(
-        maximum_assets_weights=[0.4, 1.0],
+        maximum_assets_weights=[
+            0.4,
+            1
+        ],
         maximum_portfolio_exposure=0.5,
         minimum_portfolio_exposure=0.5,
     ),
@@ -7811,7 +8597,7 @@ client.portfolio_optimization_mean_variance.minimum_variance_portfolio(
 <dl>
 <dd>
 
-**assets_covariance_matrix:** `typing.Sequence[typing.Sequence[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
+**assets_covariance_matrix:** `typing.List[typing.List[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
     
 </dd>
 </dl>
@@ -7819,7 +8605,7 @@ client.portfolio_optimization_mean_variance.minimum_variance_portfolio(
 <dl>
 <dd>
 
-**assets_returns:** `typing.Optional[typing.Sequence[float]]` — assetsReturns[i] is the arithmetic return of asset i
+**assets_returns:** `typing.Optional[typing.List[float]]` — assetsReturns[i] is the arithmetic return of asset i
     
 </dd>
 </dl>
@@ -7847,7 +8633,7 @@ client.portfolio_optimization_mean_variance.minimum_variance_portfolio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py">diversified_minimum_variance_portfolio</a>(...)</code></summary>
+<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py">diversified_minimum_variance_portfolio</a>(...) -> PostPortfolioOptimizationMinimumVarianceDiversifiedResponse</code></summary>
 <dl>
 <dd>
 
@@ -7884,20 +8670,32 @@ References
 <dd>
 
 ```python
-from fern.portfolio_optimization_mean_variance import (
-    PostPortfolioOptimizationMinimumVarianceDiversifiedRequestConstraints,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_optimization_mean_variance import PostPortfolioOptimizationMinimumVarianceDiversifiedRequestConstraints
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_optimization_mean_variance.diversified_minimum_variance_portfolio(
     assets=2,
-    assets_covariance_matrix=[[0.0025, 0.0005], [0.0005, 0.01]],
+    assets_covariance_matrix=[
+        [
+            0.0025,
+            0.0005
+        ],
+        [
+            0.0005,
+            0.01
+        ]
+    ],
     constraints=PostPortfolioOptimizationMinimumVarianceDiversifiedRequestConstraints(
-        maximum_assets_weights=[0.4, 1.0],
+        maximum_assets_weights=[
+            0.4,
+            1
+        ],
         maximum_portfolio_exposure=0.5,
         minimum_portfolio_exposure=0.5,
     ),
@@ -7925,7 +8723,7 @@ client.portfolio_optimization_mean_variance.diversified_minimum_variance_portfol
 <dl>
 <dd>
 
-**assets_covariance_matrix:** `typing.Sequence[typing.Sequence[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
+**assets_covariance_matrix:** `typing.List[typing.List[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
     
 </dd>
 </dl>
@@ -7933,7 +8731,7 @@ client.portfolio_optimization_mean_variance.diversified_minimum_variance_portfol
 <dl>
 <dd>
 
-**assets_returns:** `typing.Optional[typing.Sequence[float]]` — assetsReturns[i] is the arithmetic return of asset i
+**assets_returns:** `typing.Optional[typing.List[float]]` — assetsReturns[i] is the arithmetic return of asset i
     
 </dd>
 </dl>
@@ -7941,9 +8739,7 @@ client.portfolio_optimization_mean_variance.diversified_minimum_variance_portfol
 <dl>
 <dd>
 
-**constraints:** `typing.Optional[
-    PostPortfolioOptimizationMinimumVarianceDiversifiedRequestConstraints
-]` 
+**constraints:** `typing.Optional[PostPortfolioOptimizationMinimumVarianceDiversifiedRequestConstraints]` 
     
 </dd>
 </dl>
@@ -7963,7 +8759,7 @@ client.portfolio_optimization_mean_variance.diversified_minimum_variance_portfol
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py">subset_resampling_based_minimum_variance_portfolio</a>(...)</code></summary>
+<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py">subset_resampling_based_minimum_variance_portfolio</a>(...) -> PostPortfolioOptimizationMinimumVarianceSubsetResamplingBasedResponse</code></summary>
 <dl>
 <dd>
 
@@ -7998,20 +8794,32 @@ References
 <dd>
 
 ```python
-from fern.portfolio_optimization_mean_variance import (
-    PostPortfolioOptimizationMinimumVarianceSubsetResamplingBasedRequestConstraints,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_optimization_mean_variance import PostPortfolioOptimizationMinimumVarianceSubsetResamplingBasedRequestConstraints
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_optimization_mean_variance.subset_resampling_based_minimum_variance_portfolio(
     assets=2,
-    assets_covariance_matrix=[[0.0025, 0.0005], [0.0005, 0.01]],
+    assets_covariance_matrix=[
+        [
+            0.0025,
+            0.0005
+        ],
+        [
+            0.0005,
+            0.01
+        ]
+    ],
     constraints=PostPortfolioOptimizationMinimumVarianceSubsetResamplingBasedRequestConstraints(
-        maximum_assets_weights=[0.4, 1.0],
+        maximum_assets_weights=[
+            0.4,
+            1
+        ],
         maximum_portfolio_exposure=0.5,
         minimum_portfolio_exposure=0.5,
     ),
@@ -8040,7 +8848,7 @@ client.portfolio_optimization_mean_variance.subset_resampling_based_minimum_vari
 <dl>
 <dd>
 
-**assets_covariance_matrix:** `typing.Sequence[typing.Sequence[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
+**assets_covariance_matrix:** `typing.List[typing.List[float]]` — assetsCovarianceMatrix[i][j] is the covariance between the asset i and the asset j
     
 </dd>
 </dl>
@@ -8048,7 +8856,7 @@ client.portfolio_optimization_mean_variance.subset_resampling_based_minimum_vari
 <dl>
 <dd>
 
-**assets_returns:** `typing.Optional[typing.Sequence[float]]` — assetsReturns[i] is the arithmetic return of asset i
+**assets_returns:** `typing.Optional[typing.List[float]]` — assetsReturns[i] is the arithmetic return of asset i
     
 </dd>
 </dl>
@@ -8056,9 +8864,7 @@ client.portfolio_optimization_mean_variance.subset_resampling_based_minimum_vari
 <dl>
 <dd>
 
-**constraints:** `typing.Optional[
-    PostPortfolioOptimizationMinimumVarianceSubsetResamplingBasedRequestConstraints
-]` 
+**constraints:** `typing.Optional[PostPortfolioOptimizationMinimumVarianceSubsetResamplingBasedRequestConstraints]` 
     
 </dd>
 </dl>
@@ -8074,9 +8880,7 @@ client.portfolio_optimization_mean_variance.subset_resampling_based_minimum_vari
 <dl>
 <dd>
 
-**subset_portfolios_aggregation_method:** `typing.Optional[
-    PostPortfolioOptimizationMinimumVarianceSubsetResamplingBasedRequestSubsetPortfoliosAggregationMethod
-]` — The method to aggregate the subset portfolios
+**subset_portfolios_aggregation_method:** `typing.Optional[PostPortfolioOptimizationMinimumVarianceSubsetResamplingBasedRequestSubsetPortfoliosAggregationMethod]` — The method to aggregate the subset portfolios
     
 </dd>
 </dl>
@@ -8084,9 +8888,7 @@ client.portfolio_optimization_mean_variance.subset_resampling_based_minimum_vari
 <dl>
 <dd>
 
-**subset_portfolios_enumeration_method:** `typing.Optional[
-    PostPortfolioOptimizationMinimumVarianceSubsetResamplingBasedRequestSubsetPortfoliosEnumerationMethod
-]` — The method to enumerate the subset portfolios
+**subset_portfolios_enumeration_method:** `typing.Optional[PostPortfolioOptimizationMinimumVarianceSubsetResamplingBasedRequestSubsetPortfoliosEnumerationMethod]` — The method to enumerate the subset portfolios
     
 </dd>
 </dl>
@@ -8115,7 +8917,7 @@ client.portfolio_optimization_mean_variance.subset_resampling_based_minimum_vari
 </details>
 
 ## PortfolioSimulation
-<details><summary><code>client.portfolio_simulation.<a href="src/fern/portfolio_simulation/client.py">drift_weight_portfolio_rebalancing</a>(...)</code></summary>
+<details><summary><code>client.portfolio_simulation.<a href="src/fern/portfolio_simulation/client.py">drift_weight_portfolio_rebalancing</a>(...) -> PostPortfolioSimulationRebalancingDriftWeightResponse</code></summary>
 <dl>
 <dd>
 
@@ -8145,38 +8947,61 @@ References
 <dd>
 
 ```python
-from fern.portfolio_simulation import (
-    PostPortfolioSimulationRebalancingDriftWeightRequestAssetsItem,
-    PostPortfolioSimulationRebalancingDriftWeightRequestPortfoliosItem,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_simulation import PostPortfolioSimulationRebalancingDriftWeightRequestAssetsItem, PostPortfolioSimulationRebalancingDriftWeightRequestPortfoliosItem
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_simulation.drift_weight_portfolio_rebalancing(
     assets=[
         PostPortfolioSimulationRebalancingDriftWeightRequestAssetsItem(
-            asset_prices=[100.0, 105.0, 110.0],
+            asset_prices=[
+                100,
+                105,
+                110
+            ],
         ),
         PostPortfolioSimulationRebalancingDriftWeightRequestAssetsItem(
-            asset_prices=[15.0, 12.5, 11.25],
+            asset_prices=[
+                15,
+                12.5,
+                11.25
+            ],
         ),
         PostPortfolioSimulationRebalancingDriftWeightRequestAssetsItem(
-            asset_prices=[0.5, 0.51, 0.49],
-        ),
+            asset_prices=[
+                0.5,
+                0.51,
+                0.49
+            ],
+        )
     ],
     portfolios=[
         PostPortfolioSimulationRebalancingDriftWeightRequestPortfoliosItem(
-            assets_weights=[1.0, 0.0, 0.0],
+            assets_weights=[
+                1,
+                0,
+                0
+            ],
         ),
         PostPortfolioSimulationRebalancingDriftWeightRequestPortfoliosItem(
-            assets_weights=[0.0, 1.0, 0.0],
+            assets_weights=[
+                0,
+                1,
+                0
+            ],
         ),
         PostPortfolioSimulationRebalancingDriftWeightRequestPortfoliosItem(
-            assets_weights=[0.0, 0.0, 1.0],
-        ),
+            assets_weights=[
+                0,
+                0,
+                1
+            ],
+        )
     ],
 )
 
@@ -8194,7 +9019,7 @@ client.portfolio_simulation.drift_weight_portfolio_rebalancing(
 <dl>
 <dd>
 
-**assets:** `typing.Sequence[PostPortfolioSimulationRebalancingDriftWeightRequestAssetsItem]` 
+**assets:** `typing.List[PostPortfolioSimulationRebalancingDriftWeightRequestAssetsItem]` 
     
 </dd>
 </dl>
@@ -8202,9 +9027,7 @@ client.portfolio_simulation.drift_weight_portfolio_rebalancing(
 <dl>
 <dd>
 
-**portfolios:** `typing.Sequence[
-    PostPortfolioSimulationRebalancingDriftWeightRequestPortfoliosItem
-]` 
+**portfolios:** `typing.List[PostPortfolioSimulationRebalancingDriftWeightRequestPortfoliosItem]` 
     
 </dd>
 </dl>
@@ -8224,7 +9047,7 @@ client.portfolio_simulation.drift_weight_portfolio_rebalancing(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_simulation.<a href="src/fern/portfolio_simulation/client.py">fixed_weight_portfolio_rebalancing</a>(...)</code></summary>
+<details><summary><code>client.portfolio_simulation.<a href="src/fern/portfolio_simulation/client.py">fixed_weight_portfolio_rebalancing</a>(...) -> PostPortfolioSimulationRebalancingFixedWeightResponse</code></summary>
 <dl>
 <dd>
 
@@ -8254,38 +9077,61 @@ References
 <dd>
 
 ```python
-from fern.portfolio_simulation import (
-    PostPortfolioSimulationRebalancingFixedWeightRequestAssetsItem,
-    PostPortfolioSimulationRebalancingFixedWeightRequestPortfoliosItem,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_simulation import PostPortfolioSimulationRebalancingFixedWeightRequestAssetsItem, PostPortfolioSimulationRebalancingFixedWeightRequestPortfoliosItem
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_simulation.fixed_weight_portfolio_rebalancing(
     assets=[
         PostPortfolioSimulationRebalancingFixedWeightRequestAssetsItem(
-            asset_prices=[100.0, 105.0, 110.0],
+            asset_prices=[
+                100,
+                105,
+                110
+            ],
         ),
         PostPortfolioSimulationRebalancingFixedWeightRequestAssetsItem(
-            asset_prices=[15.0, 12.5, 11.25],
+            asset_prices=[
+                15,
+                12.5,
+                11.25
+            ],
         ),
         PostPortfolioSimulationRebalancingFixedWeightRequestAssetsItem(
-            asset_prices=[0.5, 0.51, 0.49],
-        ),
+            asset_prices=[
+                0.5,
+                0.51,
+                0.49
+            ],
+        )
     ],
     portfolios=[
         PostPortfolioSimulationRebalancingFixedWeightRequestPortfoliosItem(
-            assets_weights=[0.5, 0.5, 0.0],
+            assets_weights=[
+                0.5,
+                0.5,
+                0
+            ],
         ),
         PostPortfolioSimulationRebalancingFixedWeightRequestPortfoliosItem(
-            assets_weights=[0.0, 0.5, 0.5],
+            assets_weights=[
+                0,
+                0.5,
+                0.5
+            ],
         ),
         PostPortfolioSimulationRebalancingFixedWeightRequestPortfoliosItem(
-            assets_weights=[0.5, 0.0, 0.5],
-        ),
+            assets_weights=[
+                0.5,
+                0,
+                0.5
+            ],
+        )
     ],
 )
 
@@ -8303,7 +9149,7 @@ client.portfolio_simulation.fixed_weight_portfolio_rebalancing(
 <dl>
 <dd>
 
-**assets:** `typing.Sequence[PostPortfolioSimulationRebalancingFixedWeightRequestAssetsItem]` 
+**assets:** `typing.List[PostPortfolioSimulationRebalancingFixedWeightRequestAssetsItem]` 
     
 </dd>
 </dl>
@@ -8311,9 +9157,7 @@ client.portfolio_simulation.fixed_weight_portfolio_rebalancing(
 <dl>
 <dd>
 
-**portfolios:** `typing.Sequence[
-    PostPortfolioSimulationRebalancingFixedWeightRequestPortfoliosItem
-]` 
+**portfolios:** `typing.List[PostPortfolioSimulationRebalancingFixedWeightRequestPortfoliosItem]` 
     
 </dd>
 </dl>
@@ -8333,7 +9177,7 @@ client.portfolio_simulation.fixed_weight_portfolio_rebalancing(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_simulation.<a href="src/fern/portfolio_simulation/client.py">random_weight_portfolio_rebalancing</a>(...)</code></summary>
+<details><summary><code>client.portfolio_simulation.<a href="src/fern/portfolio_simulation/client.py">random_weight_portfolio_rebalancing</a>(...) -> PostPortfolioSimulationRebalancingRandomWeightResponse</code></summary>
 <dl>
 <dd>
 
@@ -8363,26 +9207,38 @@ References
 <dd>
 
 ```python
-from fern.portfolio_simulation import (
-    PostPortfolioSimulationRebalancingRandomWeightRequestAssetsItem,
-)
-
 from fern import FernApi
+from fern.environment import FernApiEnvironment
+from fern.portfolio_simulation import PostPortfolioSimulationRebalancingRandomWeightRequestAssetsItem
 
 client = FernApi(
-    api_key="YOUR_API_KEY",
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.portfolio_simulation.random_weight_portfolio_rebalancing(
     assets=[
         PostPortfolioSimulationRebalancingRandomWeightRequestAssetsItem(
-            asset_prices=[100.0, 105.0, 110.0],
+            asset_prices=[
+                100,
+                105,
+                110
+            ],
         ),
         PostPortfolioSimulationRebalancingRandomWeightRequestAssetsItem(
-            asset_prices=[15.0, 12.5, 11.25],
+            asset_prices=[
+                15,
+                12.5,
+                11.25
+            ],
         ),
         PostPortfolioSimulationRebalancingRandomWeightRequestAssetsItem(
-            asset_prices=[0.5, 0.51, 0.49],
-        ),
+            asset_prices=[
+                0.5,
+                0.51,
+                0.49
+            ],
+        )
     ],
     portfolios=2,
 )
@@ -8401,7 +9257,7 @@ client.portfolio_simulation.random_weight_portfolio_rebalancing(
 <dl>
 <dd>
 
-**assets:** `typing.Sequence[PostPortfolioSimulationRebalancingRandomWeightRequestAssetsItem]` 
+**assets:** `typing.List[PostPortfolioSimulationRebalancingRandomWeightRequestAssetsItem]` 
     
 </dd>
 </dl>

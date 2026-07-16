@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObExternalAccountSubType1Code(str, enum.Enum):
+class ObExternalAccountSubType1Code(enum.StrEnum):
     """
     Specifies the sub type of account (product family group).
     """

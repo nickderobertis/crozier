@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class CustomFieldUiVisibilityValue(str, enum.Enum):
+class CustomFieldUiVisibilityValue(enum.StrEnum):
     READ_WRITE = "read-write"
     READ_ONLY = "read-only"
     HIDDEN = "hidden"

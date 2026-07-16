@@ -26,9 +26,14 @@ class DestinyDefinitionsProgressionDestinyProgressionLevelRequirementDefinition(
     The index of the entity as it was found in the investment tables.
     """
 
-    progression_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="progressionHash")] = (
-        pydantic.Field(default=None)
-    )
+    progression_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="progressionHash"),
+        pydantic.Field(
+            alias="progressionHash",
+            description="The progression whose level should be used to determine the level requirement.\r\nLook up the DestinyProgressionDefinition with this hash for more information about the progression in question.",
+        ),
+    ] = None
     """
     The progression whose level should be used to determine the level requirement.
     Look up the DestinyProgressionDefinition with this hash for more information about the progression in question.
@@ -40,8 +45,13 @@ class DestinyDefinitionsProgressionDestinyProgressionLevelRequirementDefinition(
     """
 
     requirement_curve: typing_extensions.Annotated[
-        typing.Optional[typing.List[InterpolationInterpolationPointFloat]], FieldMetadata(alias="requirementCurve")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[InterpolationInterpolationPointFloat]],
+        FieldMetadata(alias="requirementCurve"),
+        pydantic.Field(
+            alias="requirementCurve",
+            description="A curve of level requirements, weighted by the related progressions' level.\r\nInterpolate against this curve with the character's progression level to determine what the level requirement of the generated item that is using this data will be.",
+        ),
+    ] = None
     """
     A curve of level requirements, weighted by the related progressions' level.
     Interpolate against this curve with the character's progression level to determine what the level requirement of the generated item that is using this data will be.

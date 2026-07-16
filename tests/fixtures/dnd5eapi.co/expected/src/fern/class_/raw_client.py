@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.not_found_error import NotFoundError
@@ -17,6 +18,7 @@ from ..types.spellcasting import Spellcasting
 from .types.get_api_classes_index_multi_classing_request_index import GetApiClassesIndexMultiClassingRequestIndex
 from .types.get_api_classes_index_request_index import GetApiClassesIndexRequestIndex
 from .types.get_api_classes_index_spellcasting_request_index import GetApiClassesIndexSpellcastingRequestIndex
+from pydantic import ValidationError
 
 
 class RawClassClient:
@@ -48,7 +50,7 @@ class RawClassClient:
             OK
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/classes/{jsonable_encoder(index)}",
+            f"api/classes/{encode_path_param(index)}",
             method="GET",
             request_options=request_options,
         )
@@ -65,6 +67,10 @@ class RawClassClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_multiclassing_resource_for_a_class(
@@ -88,7 +94,7 @@ class RawClassClient:
             OK
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/classes/{jsonable_encoder(index)}/multi-classing",
+            f"api/classes/{encode_path_param(index)}/multi-classing",
             method="GET",
             request_options=request_options,
         )
@@ -105,6 +111,10 @@ class RawClassClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_spellcasting_info_for_a_class(
@@ -128,7 +138,7 @@ class RawClassClient:
             OK
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/classes/{jsonable_encoder(index)}/spellcasting",
+            f"api/classes/{encode_path_param(index)}/spellcasting",
             method="GET",
             request_options=request_options,
         )
@@ -156,6 +166,10 @@ class RawClassClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -188,7 +202,7 @@ class AsyncRawClassClient:
             OK
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/classes/{jsonable_encoder(index)}",
+            f"api/classes/{encode_path_param(index)}",
             method="GET",
             request_options=request_options,
         )
@@ -205,6 +219,10 @@ class AsyncRawClassClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_multiclassing_resource_for_a_class(
@@ -228,7 +246,7 @@ class AsyncRawClassClient:
             OK
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/classes/{jsonable_encoder(index)}/multi-classing",
+            f"api/classes/{encode_path_param(index)}/multi-classing",
             method="GET",
             request_options=request_options,
         )
@@ -245,6 +263,10 @@ class AsyncRawClassClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_spellcasting_info_for_a_class(
@@ -268,7 +290,7 @@ class AsyncRawClassClient:
             OK
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/classes/{jsonable_encoder(index)}/spellcasting",
+            f"api/classes/{encode_path_param(index)}/spellcasting",
             method="GET",
             request_options=request_options,
         )
@@ -296,4 +318,8 @@ class AsyncRawClassClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

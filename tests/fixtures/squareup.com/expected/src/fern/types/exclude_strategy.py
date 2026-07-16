@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ExcludeStrategy(str, enum.Enum):
+class ExcludeStrategy(enum.StrEnum):
     """
     Indicates which products matched by a CatalogPricingRule
     will be excluded if the pricing rule uses an exclude set.

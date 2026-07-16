@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class InventoryState(str, enum.Enum):
+class InventoryState(enum.StrEnum):
     """
     Indicates the state of a tracked item quantity in the lifecycle of goods.
     """

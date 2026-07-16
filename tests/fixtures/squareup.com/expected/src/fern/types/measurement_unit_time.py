@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class MeasurementUnitTime(str, enum.Enum):
+class MeasurementUnitTime(enum.StrEnum):
     """
     Unit of time used to measure a quantity (a duration).
     """

@@ -22,15 +22,25 @@ class DestinyEntitiesItemsDestinyItemTalentGridComponent(UniversalBaseModel):
     """
 
     grid_progression: typing_extensions.Annotated[
-        typing.Optional[DestinyDestinyProgression], FieldMetadata(alias="gridProgression")
-    ] = pydantic.Field(default=None)
+        typing.Optional[DestinyDestinyProgression],
+        FieldMetadata(alias="gridProgression"),
+        pydantic.Field(
+            alias="gridProgression",
+            description="If the item has a progression, it will be detailed here. A progression means that the item can gain experience. Thresholds of experience are what determines whether and when a talent node can be activated.",
+        ),
+    ] = None
     """
     If the item has a progression, it will be detailed here. A progression means that the item can gain experience. Thresholds of experience are what determines whether and when a talent node can be activated.
     """
 
-    is_grid_complete: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="isGridComplete")] = (
-        pydantic.Field(default=None)
-    )
+    is_grid_complete: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="isGridComplete"),
+        pydantic.Field(
+            alias="isGridComplete",
+            description="Indicates whether the talent grid on this item is completed, and thus whether it should have a gold border around it.\r\nOnly will be true if the item actually *has* a talent grid, and only then if it is completed (i.e. every exclusive set has an activated node, and every non-exclusive set node has been activated)",
+        ),
+    ] = None
     """
     Indicates whether the talent grid on this item is completed, and thus whether it should have a gold border around it.
     Only will be true if the item actually *has* a talent grid, and only then if it is completed (i.e. every exclusive set has an activated node, and every non-exclusive set node has been activated)
@@ -42,9 +52,14 @@ class DestinyEntitiesItemsDestinyItemTalentGridComponent(UniversalBaseModel):
     A node represents a single visual "pip" in the talent grid or Build detail view, though each node may have multiple "steps" which indicate the actual bonuses and visual representation of that node.
     """
 
-    talent_grid_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="talentGridHash")] = (
-        pydantic.Field(default=None)
-    )
+    talent_grid_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="talentGridHash"),
+        pydantic.Field(
+            alias="talentGridHash",
+            description="Most items don't have useful talent grids anymore, but Builds in particular still do.\r\nYou can use this hash to lookup the DestinyTalentGridDefinition attached to this item, which will be crucial for understanding the node values on the item.",
+        ),
+    ] = None
     """
     Most items don't have useful talent grids anymore, but Builds in particular still do.
     You can use this hash to lookup the DestinyTalentGridDefinition attached to this item, which will be crucial for understanding the node values on the item.

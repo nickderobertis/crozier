@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ContactType(str, enum.Enum):
+class ContactType(enum.StrEnum):
     CUSTOMER = "customer"
     SUPPLIER = "supplier"
     EMPLOYEE = "employee"

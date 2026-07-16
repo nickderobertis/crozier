@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class RateType(str, enum.Enum):
+class RateType(enum.StrEnum):
     FIXEDAMOUNT = "FIXEDAMOUNT"
     MULTIPLE = "MULTIPLE"
     RATEPERUNIT = "RATEPERUNIT"

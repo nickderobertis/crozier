@@ -20,7 +20,7 @@ class WritableRack(UniversalBaseModel):
 
     comments: typing.Optional[str] = None
     created: typing.Optional[dt.datetime] = None
-    custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = None
     desc_units: typing.Optional[bool] = pydantic.Field(default=None)
     """
     Units are numbered top-to-bottom

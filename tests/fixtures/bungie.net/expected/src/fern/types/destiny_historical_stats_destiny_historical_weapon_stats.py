@@ -10,9 +10,13 @@ from .destiny_historical_stats_destiny_historical_stats_value import DestinyHist
 
 
 class DestinyHistoricalStatsDestinyHistoricalWeaponStats(UniversalBaseModel):
-    reference_id: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="referenceId")] = (
-        pydantic.Field(default=None)
-    )
+    reference_id: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="referenceId"),
+        pydantic.Field(
+            alias="referenceId", description="The hash ID of the item definition that describes the weapon."
+        ),
+    ] = None
     """
     The hash ID of the item definition that describes the weapon.
     """

@@ -2,4 +2,4 @@
 
 import typing
 
-CustomerioNotificationConfiguration = typing.Dict[str, typing.Optional[typing.Any]]
+CustomerioNotificationConfiguration = typing.Dict[str, typing.Any]

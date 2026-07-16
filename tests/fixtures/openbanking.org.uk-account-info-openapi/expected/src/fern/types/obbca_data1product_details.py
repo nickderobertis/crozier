@@ -11,30 +11,44 @@ from .obbca_data1product_details_segment_item import ObbcaData1ProductDetailsSeg
 
 
 class ObbcaData1ProductDetails(UniversalBaseModel):
-    fee_free_length: typing_extensions.Annotated[typing.Optional[float], FieldMetadata(alias="FeeFreeLength")] = (
-        pydantic.Field(default=None)
-    )
+    fee_free_length: typing_extensions.Annotated[
+        typing.Optional[float],
+        FieldMetadata(alias="FeeFreeLength"),
+        pydantic.Field(alias="FeeFreeLength", description="The length/duration of the fee free period"),
+    ] = None
     """
     The length/duration of the fee free period
     """
 
     fee_free_length_period: typing_extensions.Annotated[
-        typing.Optional[ObbcaData1ProductDetailsFeeFreeLengthPeriod], FieldMetadata(alias="FeeFreeLengthPeriod")
-    ] = pydantic.Field(default=None)
+        typing.Optional[ObbcaData1ProductDetailsFeeFreeLengthPeriod],
+        FieldMetadata(alias="FeeFreeLengthPeriod"),
+        pydantic.Field(
+            alias="FeeFreeLengthPeriod",
+            description="The unit of period (days, weeks, months etc.) of the promotional length",
+        ),
+    ] = None
     """
     The unit of period (days, weeks, months etc.) of the promotional length
     """
 
-    notes: typing_extensions.Annotated[typing.Optional[typing.List[str]], FieldMetadata(alias="Notes")] = (
-        pydantic.Field(default=None)
-    )
+    notes: typing_extensions.Annotated[
+        typing.Optional[typing.List[str]],
+        FieldMetadata(alias="Notes"),
+        pydantic.Field(alias="Notes", description="Optional additional notes to supplement the Core product details"),
+    ] = None
     """
     Optional additional notes to supplement the Core product details
     """
 
     segment: typing_extensions.Annotated[
-        typing.Optional[typing.List[ObbcaData1ProductDetailsSegmentItem]], FieldMetadata(alias="Segment")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[ObbcaData1ProductDetailsSegmentItem]],
+        FieldMetadata(alias="Segment"),
+        pydantic.Field(
+            alias="Segment",
+            description="Market segmentation is a marketing term referring to the aggregating of prospective buyers into groups, or segments, that have common needs and respond similarly to a marketing action. Market segmentation enables companies to target different categories of consumers who perceive the full value of certain products and services differently from one another.\n\nRead more: Market Segmentation http://www.investopedia.com/terms/m/marketsegmentation.asp#ixzz4gfEEalTd \nWith respect to BCA products, they are segmented in relation to different markets that they wish to focus on. ",
+        ),
+    ] = None
     """
     Market segmentation is a marketing term referring to the aggregating of prospective buyers into groups, or segments, that have common needs and respond similarly to a marketing action. Market segmentation enables companies to target different categories of consumers who perceive the full value of certain products and services differently from one another.
     

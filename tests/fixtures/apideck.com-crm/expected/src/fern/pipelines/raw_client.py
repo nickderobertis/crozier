@@ -7,7 +7,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -28,6 +29,7 @@ from ..types.pipeline_stages_item import PipelineStagesItem
 from ..types.unauthorized_response import UnauthorizedResponse
 from ..types.unprocessable_response import UnprocessableResponse
 from ..types.update_pipeline_response import UpdatePipelineResponse
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -150,6 +152,10 @@ class RawPipelinesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def add(
@@ -300,6 +306,10 @@ class RawPipelinesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def one(
@@ -333,7 +343,7 @@ class RawPipelinesClient:
             Pipeline
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"crm/pipelines/{jsonable_encoder(id)}",
+            f"crm/pipelines/{encode_path_param(id)}",
             method="GET",
             params={
                 "raw": raw,
@@ -409,6 +419,10 @@ class RawPipelinesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete(
@@ -434,7 +448,7 @@ class RawPipelinesClient:
             Pipeline deleted
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"crm/pipelines/{jsonable_encoder(id)}",
+            f"crm/pipelines/{encode_path_param(id)}",
             method="DELETE",
             params={
                 "raw": raw,
@@ -509,6 +523,10 @@ class RawPipelinesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update(
@@ -570,7 +588,7 @@ class RawPipelinesClient:
             Pipeline updated
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"crm/pipelines/{jsonable_encoder(id_)}",
+            f"crm/pipelines/{encode_path_param(id_)}",
             method="PATCH",
             params={
                 "raw": raw,
@@ -663,6 +681,10 @@ class RawPipelinesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -783,6 +805,10 @@ class AsyncRawPipelinesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def add(
@@ -933,6 +959,10 @@ class AsyncRawPipelinesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def one(
@@ -966,7 +996,7 @@ class AsyncRawPipelinesClient:
             Pipeline
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"crm/pipelines/{jsonable_encoder(id)}",
+            f"crm/pipelines/{encode_path_param(id)}",
             method="GET",
             params={
                 "raw": raw,
@@ -1042,6 +1072,10 @@ class AsyncRawPipelinesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete(
@@ -1067,7 +1101,7 @@ class AsyncRawPipelinesClient:
             Pipeline deleted
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"crm/pipelines/{jsonable_encoder(id)}",
+            f"crm/pipelines/{encode_path_param(id)}",
             method="DELETE",
             params={
                 "raw": raw,
@@ -1142,6 +1176,10 @@ class AsyncRawPipelinesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update(
@@ -1203,7 +1241,7 @@ class AsyncRawPipelinesClient:
             Pipeline updated
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"crm/pipelines/{jsonable_encoder(id_)}",
+            f"crm/pipelines/{encode_path_param(id_)}",
             method="PATCH",
             params={
                 "raw": raw,
@@ -1296,4 +1334,8 @@ class AsyncRawPipelinesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

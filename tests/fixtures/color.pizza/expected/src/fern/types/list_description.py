@@ -9,7 +9,9 @@ from ..core.serialization import FieldMetadata
 
 
 class ListDescription(UniversalBaseModel):
-    color_count: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="colorCount")] = None
+    color_count: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="colorCount"), pydantic.Field(alias="colorCount")
+    ] = None
     description: typing.Optional[str] = None
     key: typing.Optional[str] = None
     license: typing.Optional[str] = None

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class DescribeTypeOutputDeprecatedStatus(str, enum.Enum):
+class DescribeTypeOutputDeprecatedStatus(enum.StrEnum):
     """
     <p>The deprecation status of the extension version.</p> <p>Valid values include:</p> <ul> <li> <p> <code>LIVE</code>: The extension is activated or registered and can be used in CloudFormation operations, dependent on its provisioning behavior and visibility scope.</p> </li> <li> <p> <code>DEPRECATED</code>: The extension has been deactivated or deregistered and can no longer be used in CloudFormation operations.</p> </li> </ul> <p>For public third-party extensions, CloudFormation returns <code>null</code>.</p>
     """

@@ -9,20 +9,30 @@ from ..core.serialization import FieldMetadata
 
 
 class DestinyRequestsDestinyItemTransferRequest(UniversalBaseModel):
-    character_id: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="characterId")] = None
-    item_id: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="itemId")] = pydantic.Field(
-        default=None
-    )
+    character_id: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="characterId"), pydantic.Field(alias="characterId")
+    ] = None
+    item_id: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="itemId"),
+        pydantic.Field(alias="itemId", description="The instance ID of the item for this action request."),
+    ] = None
     """
     The instance ID of the item for this action request.
     """
 
-    item_reference_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="itemReferenceHash")] = (
-        None
-    )
-    membership_type: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="membershipType")] = None
-    stack_size: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="stackSize")] = None
-    transfer_to_vault: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="transferToVault")] = None
+    item_reference_hash: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="itemReferenceHash"), pydantic.Field(alias="itemReferenceHash")
+    ] = None
+    membership_type: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="membershipType"), pydantic.Field(alias="membershipType")
+    ] = None
+    stack_size: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="stackSize"), pydantic.Field(alias="stackSize")
+    ] = None
+    transfer_to_vault: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="transferToVault"), pydantic.Field(alias="transferToVault")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

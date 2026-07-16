@@ -38,7 +38,10 @@ class DestinyDefinitionsDirectorDestinyActivityGraphDefinition(UniversalBaseMode
     art_elements: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyDefinitionsDirectorDestinyActivityGraphArtElementDefinition]],
         FieldMetadata(alias="artElements"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="artElements", description="Represents one-off/special UI elements that appear on the map."
+        ),
+    ] = None
     """
     Represents one-off/special UI elements that appear on the map.
     """
@@ -53,7 +56,11 @@ class DestinyDefinitionsDirectorDestinyActivityGraphDefinition(UniversalBaseMode
     display_objectives: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyDefinitionsDirectorDestinyActivityGraphDisplayObjectiveDefinition]],
         FieldMetadata(alias="displayObjectives"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="displayObjectives",
+            description="Objectives can display on maps, and this is supposedly metadata for that. I have not had the time to analyze the details of what is useful within however: we could be missing important data to make this work. Expect this property to be expanded on later if possible.",
+        ),
+    ] = None
     """
     Objectives can display on maps, and this is supposedly metadata for that. I have not had the time to analyze the details of what is useful within however: we could be missing important data to make this work. Expect this property to be expanded on later if possible.
     """
@@ -61,7 +68,11 @@ class DestinyDefinitionsDirectorDestinyActivityGraphDefinition(UniversalBaseMode
     display_progressions: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyDefinitionsDirectorDestinyActivityGraphDisplayProgressionDefinition]],
         FieldMetadata(alias="displayProgressions"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="displayProgressions",
+            description="Progressions can also display on maps, but similarly to displayObjectives we appear to lack some required information and context right now. We will have to look into it later and add more data if possible.",
+        ),
+    ] = None
     """
     Progressions can also display on maps, but similarly to displayObjectives we appear to lack some required information and context right now. We will have to look into it later and add more data if possible.
     """
@@ -80,7 +91,10 @@ class DestinyDefinitionsDirectorDestinyActivityGraphDefinition(UniversalBaseMode
     linked_graphs: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyDefinitionsDirectorDestinyLinkedGraphDefinition]],
         FieldMetadata(alias="linkedGraphs"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="linkedGraphs", description="Represents links between this Activity Graph and other ones."
+        ),
+    ] = None
     """
     Represents links between this Activity Graph and other ones.
     """

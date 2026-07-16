@@ -12,11 +12,20 @@ from .destiny_milestones_destiny_public_milestone import DestinyMilestonesDestin
 
 
 class TrendingTrendingEntryDestinyRitual(UniversalBaseModel):
-    date_end: typing_extensions.Annotated[typing.Optional[dt.datetime], FieldMetadata(alias="dateEnd")] = None
-    date_start: typing_extensions.Annotated[typing.Optional[dt.datetime], FieldMetadata(alias="dateStart")] = None
+    date_end: typing_extensions.Annotated[
+        typing.Optional[dt.datetime], FieldMetadata(alias="dateEnd"), pydantic.Field(alias="dateEnd")
+    ] = None
+    date_start: typing_extensions.Annotated[
+        typing.Optional[dt.datetime], FieldMetadata(alias="dateStart"), pydantic.Field(alias="dateStart")
+    ] = None
     event_content: typing_extensions.Annotated[
-        typing.Optional[DestinyMilestonesDestinyMilestoneContent], FieldMetadata(alias="eventContent")
-    ] = pydantic.Field(default=None)
+        typing.Optional[DestinyMilestonesDestinyMilestoneContent],
+        FieldMetadata(alias="eventContent"),
+        pydantic.Field(
+            alias="eventContent",
+            description='A destiny event will not necessarily have milestone "custom content", but if it does the details will be here.',
+        ),
+    ] = None
     """
     A destiny event will not necessarily have milestone "custom content", but if it does the details will be here.
     """
@@ -24,8 +33,13 @@ class TrendingTrendingEntryDestinyRitual(UniversalBaseModel):
     icon: typing.Optional[str] = None
     image: typing.Optional[str] = None
     milestone_details: typing_extensions.Annotated[
-        typing.Optional[DestinyMilestonesDestinyPublicMilestone], FieldMetadata(alias="milestoneDetails")
-    ] = pydantic.Field(default=None)
+        typing.Optional[DestinyMilestonesDestinyPublicMilestone],
+        FieldMetadata(alias="milestoneDetails"),
+        pydantic.Field(
+            alias="milestoneDetails",
+            description="A destiny event does not necessarily have a related Milestone, but if it does the details will be returned here.",
+        ),
+    ] = None
     """
     A destiny event does not necessarily have a related Milestone, but if it does the details will be returned here.
     """

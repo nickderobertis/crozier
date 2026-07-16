@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class AppPkgNotificationType(str, enum.Enum):
+class AppPkgNotificationType(enum.StrEnum):
     """
     Discriminator for the different notification types
     """

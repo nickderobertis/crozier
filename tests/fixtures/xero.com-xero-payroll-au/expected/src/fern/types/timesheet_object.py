@@ -10,7 +10,9 @@ from .timesheet import Timesheet
 
 
 class TimesheetObject(UniversalBaseModel):
-    timesheet: typing_extensions.Annotated[typing.Optional[Timesheet], FieldMetadata(alias="Timesheet")] = None
+    timesheet: typing_extensions.Annotated[
+        typing.Optional[Timesheet], FieldMetadata(alias="Timesheet"), pydantic.Field(alias="Timesheet")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

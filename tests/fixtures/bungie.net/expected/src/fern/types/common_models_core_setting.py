@@ -12,12 +12,20 @@ from ..core.serialization import FieldMetadata
 
 class CommonModelsCoreSetting(UniversalBaseModel):
     child_settings: typing_extensions.Annotated[
-        typing.Optional[typing.List["CommonModelsCoreSetting"]], FieldMetadata(alias="childSettings")
+        typing.Optional[typing.List["CommonModelsCoreSetting"]],
+        FieldMetadata(alias="childSettings"),
+        pydantic.Field(alias="childSettings"),
     ] = None
-    display_name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="displayName")] = None
+    display_name: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="displayName"), pydantic.Field(alias="displayName")
+    ] = None
     identifier: typing.Optional[str] = None
-    image_path: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="imagePath")] = None
-    is_default: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="isDefault")] = None
+    image_path: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="imagePath"), pydantic.Field(alias="imagePath")
+    ] = None
+    is_default: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="isDefault"), pydantic.Field(alias="isDefault")
+    ] = None
     summary: typing.Optional[str] = None
 
     if IS_PYDANTIC_V2:

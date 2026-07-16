@@ -6,12 +6,14 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..types.list_cash_drawer_shift_events_response import ListCashDrawerShiftEventsResponse
 from ..types.list_cash_drawer_shifts_response import ListCashDrawerShiftsResponse
 from ..types.retrieve_cash_drawer_shift_response import RetrieveCashDrawerShiftResponse
+from pydantic import ValidationError
 
 
 class RawCashDrawersClient:
@@ -89,6 +91,10 @@ class RawCashDrawersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def retrieve_cash_drawer_shift(
@@ -115,7 +121,7 @@ class RawCashDrawersClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/cash-drawers/shifts/{jsonable_encoder(shift_id)}",
+            f"v2/cash-drawers/shifts/{encode_path_param(shift_id)}",
             method="GET",
             params={
                 "location_id": location_id,
@@ -135,6 +141,10 @@ class RawCashDrawersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_cash_drawer_shift_events(
@@ -173,7 +183,7 @@ class RawCashDrawersClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"v2/cash-drawers/shifts/{jsonable_encoder(shift_id)}/events",
+            f"v2/cash-drawers/shifts/{encode_path_param(shift_id)}/events",
             method="GET",
             params={
                 "location_id": location_id,
@@ -195,6 +205,10 @@ class RawCashDrawersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -273,6 +287,10 @@ class AsyncRawCashDrawersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def retrieve_cash_drawer_shift(
@@ -299,7 +317,7 @@ class AsyncRawCashDrawersClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/cash-drawers/shifts/{jsonable_encoder(shift_id)}",
+            f"v2/cash-drawers/shifts/{encode_path_param(shift_id)}",
             method="GET",
             params={
                 "location_id": location_id,
@@ -319,6 +337,10 @@ class AsyncRawCashDrawersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_cash_drawer_shift_events(
@@ -357,7 +379,7 @@ class AsyncRawCashDrawersClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"v2/cash-drawers/shifts/{jsonable_encoder(shift_id)}/events",
+            f"v2/cash-drawers/shifts/{encode_path_param(shift_id)}/events",
             method="GET",
             params={
                 "location_id": location_id,
@@ -379,4 +401,8 @@ class AsyncRawCashDrawersClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

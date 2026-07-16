@@ -66,6 +66,7 @@ if typing.TYPE_CHECKING:
         users,
         versions,
     )
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .artifact_rules import (
         DeleteArtifactRuleRequestRule,
         GetArtifactRuleConfigRequestRule,
@@ -93,6 +94,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "ConflictError": ".errors",
     "ContentCreateRequest": ".types",
     "CreateArtifactRequestXRegistryHashAlgorithm": ".artifacts",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "DeleteArtifactRuleRequestRule": ".artifact_rules",
     "DownloadRef": ".types",
     "EditableMetaData": ".types",
@@ -187,6 +190,8 @@ __all__ = [
     "ConflictError",
     "ContentCreateRequest",
     "CreateArtifactRequestXRegistryHashAlgorithm",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
     "DeleteArtifactRuleRequestRule",
     "DownloadRef",
     "EditableMetaData",

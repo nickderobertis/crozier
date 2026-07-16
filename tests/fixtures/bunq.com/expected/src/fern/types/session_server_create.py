@@ -15,42 +15,59 @@ from .user_person import UserPerson
 
 
 class SessionServerCreate(UniversalBaseModel):
-    id: typing_extensions.Annotated[typing.Optional[BunqId], FieldMetadata(alias="Id")] = pydantic.Field(default=None)
+    id: typing_extensions.Annotated[
+        typing.Optional[BunqId],
+        FieldMetadata(alias="Id"),
+        pydantic.Field(alias="Id", description="The Id object of the created Session."),
+    ] = None
     """
     The Id object of the created Session.
     """
 
-    token: typing_extensions.Annotated[typing.Optional[SessionServerToken], FieldMetadata(alias="Token")] = (
-        pydantic.Field(default=None)
-    )
+    token: typing_extensions.Annotated[
+        typing.Optional[SessionServerToken],
+        FieldMetadata(alias="Token"),
+        pydantic.Field(alias="Token", description="The token object of this Session."),
+    ] = None
     """
     The token object of this Session.
     """
 
-    user_api_key: typing_extensions.Annotated[typing.Optional[UserApiKey], FieldMetadata(alias="UserApiKey")] = (
-        pydantic.Field(default=None)
-    )
+    user_api_key: typing_extensions.Annotated[
+        typing.Optional[UserApiKey],
+        FieldMetadata(alias="UserApiKey"),
+        pydantic.Field(alias="UserApiKey", description="The UserApiKey object that is logged in with this Session."),
+    ] = None
     """
     The UserApiKey object that is logged in with this Session.
     """
 
-    user_company: typing_extensions.Annotated[typing.Optional[UserCompany], FieldMetadata(alias="UserCompany")] = (
-        pydantic.Field(default=None)
-    )
+    user_company: typing_extensions.Annotated[
+        typing.Optional[UserCompany],
+        FieldMetadata(alias="UserCompany"),
+        pydantic.Field(alias="UserCompany", description="The UserCompany object that is logged in with this Session."),
+    ] = None
     """
     The UserCompany object that is logged in with this Session.
     """
 
     user_payment_service_provider: typing_extensions.Annotated[
-        typing.Optional[UserPaymentServiceProvider], FieldMetadata(alias="UserPaymentServiceProvider")
-    ] = pydantic.Field(default=None)
+        typing.Optional[UserPaymentServiceProvider],
+        FieldMetadata(alias="UserPaymentServiceProvider"),
+        pydantic.Field(
+            alias="UserPaymentServiceProvider",
+            description="The UserPaymentServiceProvider object that is logged in with this Session.",
+        ),
+    ] = None
     """
     The UserPaymentServiceProvider object that is logged in with this Session.
     """
 
-    user_person: typing_extensions.Annotated[typing.Optional[UserPerson], FieldMetadata(alias="UserPerson")] = (
-        pydantic.Field(default=None)
-    )
+    user_person: typing_extensions.Annotated[
+        typing.Optional[UserPerson],
+        FieldMetadata(alias="UserPerson"),
+        pydantic.Field(alias="UserPerson", description="The UserPerson object that is logged in with this Session."),
+    ] = None
     """
     The UserPerson object that is logged in with this Session.
     """

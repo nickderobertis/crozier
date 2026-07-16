@@ -6,8 +6,10 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.request_options import RequestOptions
+from pydantic import ValidationError
 
 
 class RawHandpickedClient:
@@ -168,14 +170,16 @@ class RawHandpickedClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"handpicked/{jsonable_encoder(slug)}",
+            f"handpicked/{encode_path_param(slug)}",
             method="GET",
             params={
                 "query": query,
                 "auction_price_max": auction_price_max,
                 "category": category,
                 "product_type": product_type,
-                "conditions": conditions,
+                "conditions": ",".join(map(str, conditions))
+                if isinstance(conditions, (list, tuple, set))
+                else conditions,
                 "decade": decade,
                 "finish": finish,
                 "handmade": handmade,
@@ -183,7 +187,7 @@ class RawHandpickedClient:
                 "item_country": item_country,
                 "item_region": item_region,
                 "item_state": item_state,
-                "make": make,
+                "make": ",".join(map(str, make)) if isinstance(make, (list, tuple, set)) else make,
                 "model": model,
                 "must_not": must_not,
                 "price_max": price_max,
@@ -200,7 +204,7 @@ class RawHandpickedClient:
                 "exclude_auctions": exclude_auctions,
                 "accepts_payment_plans": accepts_payment_plans,
                 "watchers_count_min": watchers_count_min,
-                "not_ids": not_ids,
+                "not_ids": ",".join(map(str, not_ids)) if isinstance(not_ids, (list, tuple, set)) else not_ids,
                 "local_pickup": local_pickup,
                 "page": page,
                 "per_page": per_page,
@@ -214,6 +218,10 @@ class RawHandpickedClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -375,14 +383,16 @@ class AsyncRawHandpickedClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"handpicked/{jsonable_encoder(slug)}",
+            f"handpicked/{encode_path_param(slug)}",
             method="GET",
             params={
                 "query": query,
                 "auction_price_max": auction_price_max,
                 "category": category,
                 "product_type": product_type,
-                "conditions": conditions,
+                "conditions": ",".join(map(str, conditions))
+                if isinstance(conditions, (list, tuple, set))
+                else conditions,
                 "decade": decade,
                 "finish": finish,
                 "handmade": handmade,
@@ -390,7 +400,7 @@ class AsyncRawHandpickedClient:
                 "item_country": item_country,
                 "item_region": item_region,
                 "item_state": item_state,
-                "make": make,
+                "make": ",".join(map(str, make)) if isinstance(make, (list, tuple, set)) else make,
                 "model": model,
                 "must_not": must_not,
                 "price_max": price_max,
@@ -407,7 +417,7 @@ class AsyncRawHandpickedClient:
                 "exclude_auctions": exclude_auctions,
                 "accepts_payment_plans": accepts_payment_plans,
                 "watchers_count_min": watchers_count_min,
-                "not_ids": not_ids,
+                "not_ids": ",".join(map(str, not_ids)) if isinstance(not_ids, (list, tuple, set)) else not_ids,
                 "local_pickup": local_pickup,
                 "page": page,
                 "per_page": per_page,
@@ -421,4 +431,8 @@ class AsyncRawHandpickedClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

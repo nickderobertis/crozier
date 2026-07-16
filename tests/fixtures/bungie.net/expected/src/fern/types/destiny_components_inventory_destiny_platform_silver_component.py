@@ -13,7 +13,11 @@ class DestinyComponentsInventoryDestinyPlatformSilverComponent(UniversalBaseMode
     platform_silver: typing_extensions.Annotated[
         typing.Optional[typing.Dict[str, DestinyEntitiesItemsDestinyItemComponent]],
         FieldMetadata(alias="platformSilver"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="platformSilver",
+            description="If a Profile is played on multiple platforms, this is the silver they have for each platform, keyed by Membership Type.",
+        ),
+    ] = None
     """
     If a Profile is played on multiple platforms, this is the silver they have for each platform, keyed by Membership Type.
     """

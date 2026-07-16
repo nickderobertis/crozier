@@ -6,8 +6,10 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.request_options import RequestOptions
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -33,7 +35,7 @@ class RawProductsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"products/reviews/{jsonable_encoder(id)}",
+            f"products/reviews/{encode_path_param(id)}",
             method="GET",
             request_options=request_options,
         )
@@ -43,6 +45,10 @@ class RawProductsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_a_review(
@@ -78,7 +84,7 @@ class RawProductsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"products/reviews/{jsonable_encoder(id)}",
+            f"products/reviews/{encode_path_param(id)}",
             method="PUT",
             json={
                 "body": body,
@@ -97,6 +103,10 @@ class RawProductsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def view_reviews_of_a_comparison_shopping_page(
@@ -117,7 +127,7 @@ class RawProductsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"products/{jsonable_encoder(slug)}/reviews",
+            f"products/{encode_path_param(slug)}/reviews",
             method="GET",
             request_options=request_options,
         )
@@ -127,6 +137,10 @@ class RawProductsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_a_review_for_a_product(
@@ -147,7 +161,7 @@ class RawProductsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"products/{jsonable_encoder(slug)}/reviews",
+            f"products/{encode_path_param(slug)}/reviews",
             method="POST",
             request_options=request_options,
         )
@@ -157,6 +171,10 @@ class RawProductsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -182,7 +200,7 @@ class AsyncRawProductsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"products/reviews/{jsonable_encoder(id)}",
+            f"products/reviews/{encode_path_param(id)}",
             method="GET",
             request_options=request_options,
         )
@@ -192,6 +210,10 @@ class AsyncRawProductsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_a_review(
@@ -227,7 +249,7 @@ class AsyncRawProductsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"products/reviews/{jsonable_encoder(id)}",
+            f"products/reviews/{encode_path_param(id)}",
             method="PUT",
             json={
                 "body": body,
@@ -246,6 +268,10 @@ class AsyncRawProductsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def view_reviews_of_a_comparison_shopping_page(
@@ -266,7 +292,7 @@ class AsyncRawProductsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"products/{jsonable_encoder(slug)}/reviews",
+            f"products/{encode_path_param(slug)}/reviews",
             method="GET",
             request_options=request_options,
         )
@@ -276,6 +302,10 @@ class AsyncRawProductsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_a_review_for_a_product(
@@ -296,7 +326,7 @@ class AsyncRawProductsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"products/{jsonable_encoder(slug)}/reviews",
+            f"products/{encode_path_param(slug)}/reviews",
             method="POST",
             request_options=request_options,
         )
@@ -306,4 +336,8 @@ class AsyncRawProductsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

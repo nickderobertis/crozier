@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class AnalysisArchiveAddResultStatus(str, enum.Enum):
+class AnalysisArchiveAddResultStatus(enum.StrEnum):
     """
     The status of the archive add operation. Typically either 'archived' or 'error'
     """

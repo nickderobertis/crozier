@@ -9,7 +9,11 @@ from ...core.serialization import FieldMetadata
 
 
 class PostAssetsVarianceResponseAssetsItem(UniversalBaseModel):
-    asset_variance: typing_extensions.Annotated[float, FieldMetadata(alias="assetVariance")] = pydantic.Field()
+    asset_variance: typing_extensions.Annotated[
+        float,
+        FieldMetadata(alias="assetVariance"),
+        pydantic.Field(alias="assetVariance", description="The variance of the asset"),
+    ]
     """
     The variance of the asset
     """

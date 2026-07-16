@@ -15,7 +15,9 @@ class AppPkgInfoModifications(UniversalBaseModel):
     """
 
     operation_state: typing_extensions.Annotated[
-        AppPkgInfoModificationsOperationState, FieldMetadata(alias="operationState")
+        AppPkgInfoModificationsOperationState,
+        FieldMetadata(alias="operationState"),
+        pydantic.Field(alias="operationState"),
     ]
 
     if IS_PYDANTIC_V2:

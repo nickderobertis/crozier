@@ -1,3 +1,6 @@
 
 
 PartyNumber = str
+"""
+Number assigned by an agent to identify its customer.
+"""

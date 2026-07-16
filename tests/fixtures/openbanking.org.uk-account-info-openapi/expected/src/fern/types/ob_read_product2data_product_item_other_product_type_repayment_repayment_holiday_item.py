@@ -16,9 +16,11 @@ class ObReadProduct2DataProductItemOtherProductTypeRepaymentRepaymentHolidayItem
     Details of capital repayment holiday if any
     """
 
-    max_holiday_length: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="MaxHolidayLength")] = (
-        pydantic.Field(default=None)
-    )
+    max_holiday_length: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="MaxHolidayLength"),
+        pydantic.Field(alias="MaxHolidayLength", description="The maximum length/duration of a Repayment Holiday"),
+    ] = None
     """
     The maximum length/duration of a Repayment Holiday
     """
@@ -26,12 +28,18 @@ class ObReadProduct2DataProductItemOtherProductTypeRepaymentRepaymentHolidayItem
     max_holiday_period: typing_extensions.Annotated[
         typing.Optional[ObReadProduct2DataProductItemOtherProductTypeRepaymentRepaymentHolidayItemMaxHolidayPeriod],
         FieldMetadata(alias="MaxHolidayPeriod"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="MaxHolidayPeriod",
+            description="The unit of period (days, weeks, months etc.) of the repayment holiday",
+        ),
+    ] = None
     """
     The unit of period (days, weeks, months etc.) of the repayment holiday
     """
 
-    notes: typing_extensions.Annotated[typing.Optional[typing.List[str]], FieldMetadata(alias="Notes")] = None
+    notes: typing_extensions.Annotated[
+        typing.Optional[typing.List[str]], FieldMetadata(alias="Notes"), pydantic.Field(alias="Notes")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

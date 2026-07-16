@@ -11,13 +11,17 @@ from .import_package_location import ImportPackageLocation
 
 class ImportPackage(UniversalBaseModel):
     cpes: typing.List[str]
-    found_by: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="foundBy")] = None
+    found_by: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="foundBy"), pydantic.Field(alias="foundBy")
+    ] = None
     id: typing.Optional[str] = None
     language: str
     licenses: typing.List[str]
     locations: typing.List[ImportPackageLocation]
-    metadata: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
-    metadata_type: typing_extensions.Annotated[str, FieldMetadata(alias="metadataType")]
+    metadata: typing.Optional[typing.Dict[str, typing.Any]] = None
+    metadata_type: typing_extensions.Annotated[
+        str, FieldMetadata(alias="metadataType"), pydantic.Field(alias="metadataType")
+    ]
     name: str
     purl: typing.Optional[str] = None
     type: str

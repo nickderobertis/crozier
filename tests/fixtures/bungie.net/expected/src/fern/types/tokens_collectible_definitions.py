@@ -16,10 +16,12 @@ class TokensCollectibleDefinitions(UniversalBaseModel):
     collectible_definition: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCollectiblesDestinyCollectibleDefinition],
         FieldMetadata(alias="CollectibleDefinition"),
+        pydantic.Field(alias="CollectibleDefinition"),
     ] = None
     destiny_inventory_item_definition: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsDestinyInventoryItemDefinition],
         FieldMetadata(alias="DestinyInventoryItemDefinition"),
+        pydantic.Field(alias="DestinyInventoryItemDefinition"),
     ] = None
 
     if IS_PYDANTIC_V2:

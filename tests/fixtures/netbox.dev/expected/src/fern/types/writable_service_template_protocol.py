@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class WritableServiceTemplateProtocol(str, enum.Enum):
+class WritableServiceTemplateProtocol(enum.StrEnum):
     TCP = "tcp"
     UDP = "udp"
     SCTP = "sctp"

@@ -6,11 +6,13 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..types.execution import Execution
 from ..types.execution_list import ExecutionList
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -59,7 +61,7 @@ class RawFunctionsClient:
             Executions List
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"functions/{jsonable_encoder(function_id)}/executions",
+            f"functions/{encode_path_param(function_id)}/executions",
             method="GET",
             params={
                 "search": search,
@@ -82,6 +84,10 @@ class RawFunctionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_execution(
@@ -111,7 +117,7 @@ class RawFunctionsClient:
             Execution
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"functions/{jsonable_encoder(function_id)}/executions",
+            f"functions/{encode_path_param(function_id)}/executions",
             method="POST",
             json={
                 "data": data,
@@ -135,6 +141,10 @@ class RawFunctionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_execution(
@@ -160,7 +170,7 @@ class RawFunctionsClient:
             Execution
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"functions/{jsonable_encoder(function_id)}/executions/{jsonable_encoder(execution_id)}",
+            f"functions/{encode_path_param(function_id)}/executions/{encode_path_param(execution_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -177,6 +187,10 @@ class RawFunctionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -223,7 +237,7 @@ class AsyncRawFunctionsClient:
             Executions List
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"functions/{jsonable_encoder(function_id)}/executions",
+            f"functions/{encode_path_param(function_id)}/executions",
             method="GET",
             params={
                 "search": search,
@@ -246,6 +260,10 @@ class AsyncRawFunctionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_execution(
@@ -275,7 +293,7 @@ class AsyncRawFunctionsClient:
             Execution
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"functions/{jsonable_encoder(function_id)}/executions",
+            f"functions/{encode_path_param(function_id)}/executions",
             method="POST",
             json={
                 "data": data,
@@ -299,6 +317,10 @@ class AsyncRawFunctionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_execution(
@@ -324,7 +346,7 @@ class AsyncRawFunctionsClient:
             Execution
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"functions/{jsonable_encoder(function_id)}/executions/{jsonable_encoder(execution_id)}",
+            f"functions/{encode_path_param(function_id)}/executions/{encode_path_param(execution_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -341,4 +363,8 @@ class AsyncRawFunctionsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

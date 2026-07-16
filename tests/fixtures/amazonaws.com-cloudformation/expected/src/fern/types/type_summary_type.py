@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class TypeSummaryType(str, enum.Enum):
+class TypeSummaryType(enum.StrEnum):
     """
     The kind of extension.
     """

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ReleaseStage(str, enum.Enum):
+class ReleaseStage(enum.StrEnum):
     ALPHA = "alpha"
     BETA = "beta"
     GENERALLY_AVAILABLE = "generally_available"

@@ -9,9 +9,14 @@ from ..core.serialization import FieldMetadata
 
 
 class DescribePublisherInput(UniversalBaseModel):
-    publisher_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="PublisherId")] = (
-        pydantic.Field(default=None)
-    )
+    publisher_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="PublisherId"),
+        pydantic.Field(
+            alias="PublisherId",
+            description="<p>The ID of the extension publisher.</p> <p>If you don't supply a <code>PublisherId</code>, and you have registered as an extension publisher, <code>DescribePublisher</code> returns information about your own publisher account.</p>",
+        ),
+    ] = None
     """
     <p>The ID of the extension publisher.</p> <p>If you don't supply a <code>PublisherId</code>, and you have registered as an extension publisher, <code>DescribePublisher</code> returns information about your own publisher account.</p>
     """

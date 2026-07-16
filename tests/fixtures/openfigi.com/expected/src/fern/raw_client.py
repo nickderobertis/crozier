@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from .core.api_error import ApiError
 from .core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from .core.http_response import AsyncHttpResponse, HttpResponse
-from .core.jsonable_encoder import jsonable_encoder
+from .core.jsonable_encoder import encode_path_param
+from .core.parse_error import ParsingError
 from .core.pydantic_utilities import parse_obj_as
 from .core.request_options import RequestOptions
 from .core.serialization import convert_and_respect_annotation_metadata
@@ -19,6 +20,7 @@ from .types.bulk_mapping_job import BulkMappingJob
 from .types.bulk_mapping_job_result import BulkMappingJobResult
 from .types.get_mapping_values_key_request_key import GetMappingValuesKeyRequestKey
 from .types.get_mapping_values_key_response import GetMappingValuesKeyResponse
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -121,6 +123,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_mapping_values_key(
@@ -143,7 +149,7 @@ class RawFernApi:
             The list of values.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"mapping/values/{jsonable_encoder(key)}",
+            f"mapping/values/{encode_path_param(key)}",
             method="GET",
             request_options=request_options,
         )
@@ -182,6 +188,10 @@ class RawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -282,6 +292,10 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_mapping_values_key(
@@ -304,7 +318,7 @@ class AsyncRawFernApi:
             The list of values.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"mapping/values/{jsonable_encoder(key)}",
+            f"mapping/values/{encode_path_param(key)}",
             method="GET",
             request_options=request_options,
         )
@@ -343,4 +357,8 @@ class AsyncRawFernApi:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

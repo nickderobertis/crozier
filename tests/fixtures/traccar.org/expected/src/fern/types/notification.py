@@ -12,7 +12,9 @@ from .notification_attributes import NotificationAttributes
 class Notification(UniversalBaseModel):
     always: typing.Optional[bool] = None
     attributes: typing.Optional[NotificationAttributes] = None
-    calendar_id: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="calendarId")] = None
+    calendar_id: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="calendarId"), pydantic.Field(alias="calendarId")
+    ] = None
     id: typing.Optional[int] = None
     mail: typing.Optional[bool] = None
     sms: typing.Optional[bool] = None

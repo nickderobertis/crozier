@@ -36,16 +36,26 @@ class DestinyResponsesDestinyVendorResponse(UniversalBaseModel):
     """
 
     currency_lookups: typing_extensions.Annotated[
-        typing.Optional[SingleComponentResponseOfDestinyCurrenciesComponent], FieldMetadata(alias="currencyLookups")
-    ] = pydantic.Field(default=None)
+        typing.Optional[SingleComponentResponseOfDestinyCurrenciesComponent],
+        FieldMetadata(alias="currencyLookups"),
+        pydantic.Field(
+            alias="currencyLookups",
+            description='A "lookup" convenience component that can be used to quickly check if the character has access to items that can be used for purchasing.\r\nCOMPONENT TYPE: CurrencyLookups',
+        ),
+    ] = None
     """
     A "lookup" convenience component that can be used to quickly check if the character has access to items that can be used for purchasing.
     COMPONENT TYPE: CurrencyLookups
     """
 
     item_components: typing_extensions.Annotated[
-        typing.Optional[DestinyItemComponentSetOfint32], FieldMetadata(alias="itemComponents")
-    ] = pydantic.Field(default=None)
+        typing.Optional[DestinyItemComponentSetOfint32],
+        FieldMetadata(alias="itemComponents"),
+        pydantic.Field(
+            alias="itemComponents",
+            description="Item components, keyed by the vendorItemIndex of the active sale items.\r\nCOMPONENT TYPE: [See inside the DestinyItemComponentSet contract for component types.]",
+        ),
+    ] = None
     """
     Item components, keyed by the vendorItemIndex of the active sale items.
     COMPONENT TYPE: [See inside the DestinyItemComponentSet contract for component types.]
@@ -62,7 +72,11 @@ class DestinyResponsesDestinyVendorResponse(UniversalBaseModel):
     string_variables: typing_extensions.Annotated[
         typing.Optional[SingleComponentResponseOfDestinyStringVariablesComponent],
         FieldMetadata(alias="stringVariables"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="stringVariables",
+            description="A map of string variable values by hash for this character context.\r\nCOMPONENT TYPE: StringVariables",
+        ),
+    ] = None
     """
     A map of string variable values by hash for this character context.
     COMPONENT TYPE: StringVariables

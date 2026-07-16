@@ -13,17 +13,27 @@ class CleverSettings(UniversalBaseModel):
     Configuration for CleverCloud client
     """
 
-    consumer_key: typing_extensions.Annotated[str, FieldMetadata(alias="consumerKey")] = pydantic.Field()
+    consumer_key: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="consumerKey"),
+        pydantic.Field(alias="consumerKey", description="CleverCloud consumer key"),
+    ]
     """
     CleverCloud consumer key
     """
 
-    consumer_secret: typing_extensions.Annotated[str, FieldMetadata(alias="consumerSecret")] = pydantic.Field()
+    consumer_secret: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="consumerSecret"),
+        pydantic.Field(alias="consumerSecret", description="CleverCloud consumer token"),
+    ]
     """
     CleverCloud consumer token
     """
 
-    orga_id: typing_extensions.Annotated[str, FieldMetadata(alias="orgaId")] = pydantic.Field()
+    orga_id: typing_extensions.Annotated[
+        str, FieldMetadata(alias="orgaId"), pydantic.Field(alias="orgaId", description="CleverCloud organization id")
+    ]
     """
     CleverCloud organization id
     """

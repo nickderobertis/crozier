@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class DataExporterConfigTyp(str, enum.Enum):
+class DataExporterConfigTyp(enum.StrEnum):
     """
     Type of data exporter
     """

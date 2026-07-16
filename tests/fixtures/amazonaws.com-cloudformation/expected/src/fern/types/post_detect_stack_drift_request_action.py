@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PostDetectStackDriftRequestAction(str, enum.Enum):
+class PostDetectStackDriftRequestAction(enum.StrEnum):
     DETECT_STACK_DRIFT = "DetectStackDrift"
 
     def visit(self, detect_stack_drift: typing.Callable[[], T_Result]) -> T_Result:

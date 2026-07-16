@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class CardType(str, enum.Enum):
+class CardType(enum.StrEnum):
     """
     Indicates a card's type, such as `CREDIT` or `DEBIT`.
     """

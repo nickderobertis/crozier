@@ -11,11 +11,13 @@ from ..core.serialization import FieldMetadata
 class TrendingTrendingEntryCommunityCreation(UniversalBaseModel):
     author: typing.Optional[str] = None
     author_membership_id: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="authorMembershipId")
+        typing.Optional[int], FieldMetadata(alias="authorMembershipId"), pydantic.Field(alias="authorMembershipId")
     ] = None
     body: typing.Optional[str] = None
     media: typing.Optional[str] = None
-    post_id: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="postId")] = None
+    post_id: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="postId"), pydantic.Field(alias="postId")
+    ] = None
     title: typing.Optional[str] = None
     upvotes: typing.Optional[int] = None
 

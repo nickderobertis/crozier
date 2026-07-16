@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class AdminListUsersRequestFlag(str, enum.Enum):
+class AdminListUsersRequestFlag(enum.StrEnum):
     ACTIVE = "active"
     NEW = "new"
     STAFF = "staff"

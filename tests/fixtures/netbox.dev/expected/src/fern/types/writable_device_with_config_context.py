@@ -21,9 +21,9 @@ class WritableDeviceWithConfigContext(UniversalBaseModel):
 
     cluster: typing.Optional[int] = None
     comments: typing.Optional[str] = None
-    config_context: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    config_context: typing.Optional[typing.Dict[str, typing.Any]] = None
     created: typing.Optional[dt.datetime] = None
-    custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = None
     description: typing.Optional[str] = None
     device_role: int
     device_type: int
@@ -31,7 +31,7 @@ class WritableDeviceWithConfigContext(UniversalBaseModel):
     face: typing.Optional[WritableDeviceWithConfigContextFace] = None
     id: typing.Optional[int] = None
     last_updated: typing.Optional[dt.datetime] = None
-    local_context_data: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    local_context_data: typing.Optional[typing.Dict[str, typing.Any]] = None
     location: typing.Optional[int] = None
     name: typing.Optional[str] = None
     parent_device: typing.Optional[NestedDevice] = None

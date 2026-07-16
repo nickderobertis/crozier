@@ -2,4 +2,4 @@
 
 import typing
 
-ExportStatementCardCsvDelete = typing.Dict[str, typing.Optional[typing.Any]]
+ExportStatementCardCsvDelete = typing.Dict[str, typing.Any]

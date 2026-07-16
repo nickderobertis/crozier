@@ -2,4 +2,4 @@
 
 import typing
 
-InvoiceDeliveryMethodInvoiceDeliveryMethod = typing.Optional[typing.Any]
+InvoiceDeliveryMethodInvoiceDeliveryMethod = typing.Any

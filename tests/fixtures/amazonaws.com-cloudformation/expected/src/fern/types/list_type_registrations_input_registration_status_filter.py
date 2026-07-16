@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ListTypeRegistrationsInputRegistrationStatusFilter(str, enum.Enum):
+class ListTypeRegistrationsInputRegistrationStatusFilter(enum.StrEnum):
     """
     <p>The current status of the extension registration request.</p> <p>The default is <code>IN_PROGRESS</code>.</p>
     """

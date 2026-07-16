@@ -28,22 +28,27 @@ class ObReadProduct2DataProductItemOtherProductTypeOtherFeesChargesItem(Universa
     fee_charge_cap: typing_extensions.Annotated[
         typing.Optional[typing.List[ObReadProduct2DataProductItemOtherProductTypeOtherFeesChargesItemFeeChargeCapItem]],
         FieldMetadata(alias="FeeChargeCap"),
+        pydantic.Field(alias="FeeChargeCap"),
     ] = None
     fee_charge_detail: typing_extensions.Annotated[
         typing.List[ObReadProduct2DataProductItemOtherProductTypeOtherFeesChargesItemFeeChargeDetailItem],
         FieldMetadata(alias="FeeChargeDetail"),
+        pydantic.Field(alias="FeeChargeDetail"),
     ]
     other_tariff_type: typing_extensions.Annotated[
         typing.Optional[ObReadProduct2DataProductItemOtherProductTypeOtherFeesChargesItemOtherTariffType],
         FieldMetadata(alias="OtherTariffType"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(alias="OtherTariffType", description="Other tariff type which is not in the standard list."),
+    ] = None
     """
     Other tariff type which is not in the standard list.
     """
 
-    tariff_name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="TariffName")] = pydantic.Field(
-        default=None
-    )
+    tariff_name: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="TariffName"),
+        pydantic.Field(alias="TariffName", description="Name of the tariff"),
+    ] = None
     """
     Name of the tariff
     """
@@ -51,7 +56,8 @@ class ObReadProduct2DataProductItemOtherProductTypeOtherFeesChargesItem(Universa
     tariff_type: typing_extensions.Annotated[
         typing.Optional[ObReadProduct2DataProductItemOtherProductTypeOtherFeesChargesItemTariffType],
         FieldMetadata(alias="TariffType"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(alias="TariffType", description="TariffType which defines the fee and charges."),
+    ] = None
     """
     TariffType which defines the fee and charges.
     """

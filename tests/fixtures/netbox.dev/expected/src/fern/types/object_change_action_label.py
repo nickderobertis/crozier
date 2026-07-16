@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObjectChangeActionLabel(str, enum.Enum):
+class ObjectChangeActionLabel(enum.StrEnum):
     CREATED = "Created"
     UPDATED = "Updated"
     DELETED = "Deleted"

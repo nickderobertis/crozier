@@ -7,7 +7,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
@@ -32,6 +33,7 @@ from ..types.sort_by import SortBy
 from ..types.sort_order import SortOrder
 from ..types.version import Version
 from .types.create_artifact_request_x_registry_hash_algorithm import CreateArtifactRequestXRegistryHashAlgorithm
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -83,7 +85,7 @@ class RawArtifactsClient:
             On a successful response, returns a bounded set of artifacts.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts",
+            f"groups/{encode_path_param(group_id)}/artifacts",
             method="GET",
             params={
                 "limit": limit,
@@ -117,6 +119,10 @@ class RawArtifactsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_artifact(
@@ -251,7 +257,7 @@ class RawArtifactsClient:
             Artifact was successfully created.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts",
+            f"groups/{encode_path_param(group_id)}/artifacts",
             method="POST",
             params={
                 "ifExists": if_exists,
@@ -269,7 +275,7 @@ class RawArtifactsClient:
                 "X-Registry-Name": str(registry_name) if registry_name is not None else None,
                 "X-Registry-Name-Encoded": str(registry_name_encoded) if registry_name_encoded is not None else None,
                 "X-Registry-Content-Hash": str(registry_content_hash) if registry_content_hash is not None else None,
-                "X-Registry-Hash-Algorithm": str(registry_hash_algorithm)
+                "X-Registry-Hash-Algorithm": registry_hash_algorithm.value
                 if registry_hash_algorithm is not None
                 else None,
             },
@@ -301,9 +307,9 @@ class RawArtifactsClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -322,6 +328,10 @@ class RawArtifactsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_artifacts_in_group(
@@ -343,7 +353,7 @@ class RawArtifactsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts",
+            f"groups/{encode_path_param(group_id)}/artifacts",
             method="DELETE",
             request_options=request_options,
         )
@@ -364,6 +374,10 @@ class RawArtifactsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     @contextlib.contextmanager
@@ -405,7 +419,7 @@ class RawArtifactsClient:
             The content of one version of one artifact.
         """
         with self._client_wrapper.httpx_client.stream(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}",
             method="GET",
             params={
                 "dereference": dereference,
@@ -447,6 +461,13 @@ class RawArtifactsClient:
                 except JSONDecodeError:
                     raise ApiError(
                         status_code=_response.status_code, headers=dict(_response.headers), body=_response.text
+                    )
+                except ValidationError as e:
+                    raise ParsingError(
+                        status_code=_response.status_code,
+                        headers=dict(_response.headers),
+                        body=_response.json(),
+                        cause=e,
                     )
                 raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
@@ -520,7 +541,7 @@ class RawArtifactsClient:
             When successful, returns the updated artifact metadata.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}",
             method="PUT",
             json=request,
             headers={
@@ -560,9 +581,9 @@ class RawArtifactsClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -581,6 +602,10 @@ class RawArtifactsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_artifact(
@@ -609,7 +634,7 @@ class RawArtifactsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -641,6 +666,10 @@ class RawArtifactsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_artifact_state(
@@ -679,7 +708,7 @@ class RawArtifactsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/state",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/state",
             method="PUT",
             json={
                 "state": state,
@@ -729,6 +758,10 @@ class RawArtifactsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     @contextlib.contextmanager
@@ -759,7 +792,7 @@ class RawArtifactsClient:
             The content of one version of one artifact.
         """
         with self._client_wrapper.httpx_client.stream(
-            f"ids/contentHashes/{jsonable_encoder(content_hash)}/",
+            f"ids/contentHashes/{encode_path_param(content_hash)}/",
             method="GET",
             request_options=request_options,
         ) as _response:
@@ -799,6 +832,13 @@ class RawArtifactsClient:
                     raise ApiError(
                         status_code=_response.status_code, headers=dict(_response.headers), body=_response.text
                     )
+                except ValidationError as e:
+                    raise ParsingError(
+                        status_code=_response.status_code,
+                        headers=dict(_response.headers),
+                        body=_response.json(),
+                        cause=e,
+                    )
                 raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
             yield _stream()
@@ -827,7 +867,7 @@ class RawArtifactsClient:
             A list containing all the references for the artifact with the given content hash.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ids/contentHashes/{jsonable_encoder(content_hash)}/references",
+            f"ids/contentHashes/{encode_path_param(content_hash)}/references",
             method="GET",
             request_options=request_options,
         )
@@ -844,6 +884,10 @@ class RawArtifactsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     @contextlib.contextmanager
@@ -874,7 +918,7 @@ class RawArtifactsClient:
             The content of one version of one artifact.
         """
         with self._client_wrapper.httpx_client.stream(
-            f"ids/contentIds/{jsonable_encoder(content_id)}/",
+            f"ids/contentIds/{encode_path_param(content_id)}/",
             method="GET",
             request_options=request_options,
         ) as _response:
@@ -914,6 +958,13 @@ class RawArtifactsClient:
                     raise ApiError(
                         status_code=_response.status_code, headers=dict(_response.headers), body=_response.text
                     )
+                except ValidationError as e:
+                    raise ParsingError(
+                        status_code=_response.status_code,
+                        headers=dict(_response.headers),
+                        body=_response.json(),
+                        cause=e,
+                    )
                 raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
             yield _stream()
@@ -942,7 +993,7 @@ class RawArtifactsClient:
             A list containing all the references for the artifact with the given content id.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ids/contentIds/{jsonable_encoder(content_id)}/references",
+            f"ids/contentIds/{encode_path_param(content_id)}/references",
             method="GET",
             request_options=request_options,
         )
@@ -959,6 +1010,10 @@ class RawArtifactsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     @contextlib.contextmanager
@@ -995,7 +1050,7 @@ class RawArtifactsClient:
             The content of one version of one artifact.
         """
         with self._client_wrapper.httpx_client.stream(
-            f"ids/globalIds/{jsonable_encoder(global_id)}",
+            f"ids/globalIds/{encode_path_param(global_id)}",
             method="GET",
             params={
                 "dereference": dereference,
@@ -1038,6 +1093,13 @@ class RawArtifactsClient:
                     raise ApiError(
                         status_code=_response.status_code, headers=dict(_response.headers), body=_response.text
                     )
+                except ValidationError as e:
+                    raise ParsingError(
+                        status_code=_response.status_code,
+                        headers=dict(_response.headers),
+                        body=_response.json(),
+                        cause=e,
+                    )
                 raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
             yield _stream()
@@ -1066,7 +1128,7 @@ class RawArtifactsClient:
             A list containing all the references for the artifact with the given global id.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"ids/globalIds/{jsonable_encoder(global_id)}/references",
+            f"ids/globalIds/{encode_path_param(global_id)}/references",
             method="GET",
             request_options=request_options,
         )
@@ -1083,6 +1145,10 @@ class RawArtifactsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -1132,7 +1198,7 @@ class AsyncRawArtifactsClient:
             On a successful response, returns a bounded set of artifacts.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts",
+            f"groups/{encode_path_param(group_id)}/artifacts",
             method="GET",
             params={
                 "limit": limit,
@@ -1166,6 +1232,10 @@ class AsyncRawArtifactsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_artifact(
@@ -1300,7 +1370,7 @@ class AsyncRawArtifactsClient:
             Artifact was successfully created.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts",
+            f"groups/{encode_path_param(group_id)}/artifacts",
             method="POST",
             params={
                 "ifExists": if_exists,
@@ -1318,7 +1388,7 @@ class AsyncRawArtifactsClient:
                 "X-Registry-Name": str(registry_name) if registry_name is not None else None,
                 "X-Registry-Name-Encoded": str(registry_name_encoded) if registry_name_encoded is not None else None,
                 "X-Registry-Content-Hash": str(registry_content_hash) if registry_content_hash is not None else None,
-                "X-Registry-Hash-Algorithm": str(registry_hash_algorithm)
+                "X-Registry-Hash-Algorithm": registry_hash_algorithm.value
                 if registry_hash_algorithm is not None
                 else None,
             },
@@ -1350,9 +1420,9 @@ class AsyncRawArtifactsClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1371,6 +1441,10 @@ class AsyncRawArtifactsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_artifacts_in_group(
@@ -1392,7 +1466,7 @@ class AsyncRawArtifactsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts",
+            f"groups/{encode_path_param(group_id)}/artifacts",
             method="DELETE",
             request_options=request_options,
         )
@@ -1413,6 +1487,10 @@ class AsyncRawArtifactsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     @contextlib.asynccontextmanager
@@ -1454,7 +1532,7 @@ class AsyncRawArtifactsClient:
             The content of one version of one artifact.
         """
         async with self._client_wrapper.httpx_client.stream(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}",
             method="GET",
             params={
                 "dereference": dereference,
@@ -1497,6 +1575,13 @@ class AsyncRawArtifactsClient:
                 except JSONDecodeError:
                     raise ApiError(
                         status_code=_response.status_code, headers=dict(_response.headers), body=_response.text
+                    )
+                except ValidationError as e:
+                    raise ParsingError(
+                        status_code=_response.status_code,
+                        headers=dict(_response.headers),
+                        body=_response.json(),
+                        cause=e,
                     )
                 raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
@@ -1570,7 +1655,7 @@ class AsyncRawArtifactsClient:
             When successful, returns the updated artifact metadata.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}",
             method="PUT",
             json=request,
             headers={
@@ -1610,9 +1695,9 @@ class AsyncRawArtifactsClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1631,6 +1716,10 @@ class AsyncRawArtifactsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_artifact(
@@ -1659,7 +1748,7 @@ class AsyncRawArtifactsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -1691,6 +1780,10 @@ class AsyncRawArtifactsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_artifact_state(
@@ -1729,7 +1822,7 @@ class AsyncRawArtifactsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"groups/{jsonable_encoder(group_id)}/artifacts/{jsonable_encoder(artifact_id)}/state",
+            f"groups/{encode_path_param(group_id)}/artifacts/{encode_path_param(artifact_id)}/state",
             method="PUT",
             json={
                 "state": state,
@@ -1779,6 +1872,10 @@ class AsyncRawArtifactsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     @contextlib.asynccontextmanager
@@ -1809,7 +1906,7 @@ class AsyncRawArtifactsClient:
             The content of one version of one artifact.
         """
         async with self._client_wrapper.httpx_client.stream(
-            f"ids/contentHashes/{jsonable_encoder(content_hash)}/",
+            f"ids/contentHashes/{encode_path_param(content_hash)}/",
             method="GET",
             request_options=request_options,
         ) as _response:
@@ -1850,6 +1947,13 @@ class AsyncRawArtifactsClient:
                     raise ApiError(
                         status_code=_response.status_code, headers=dict(_response.headers), body=_response.text
                     )
+                except ValidationError as e:
+                    raise ParsingError(
+                        status_code=_response.status_code,
+                        headers=dict(_response.headers),
+                        body=_response.json(),
+                        cause=e,
+                    )
                 raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
             yield await _stream()
@@ -1878,7 +1982,7 @@ class AsyncRawArtifactsClient:
             A list containing all the references for the artifact with the given content hash.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ids/contentHashes/{jsonable_encoder(content_hash)}/references",
+            f"ids/contentHashes/{encode_path_param(content_hash)}/references",
             method="GET",
             request_options=request_options,
         )
@@ -1895,6 +1999,10 @@ class AsyncRawArtifactsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     @contextlib.asynccontextmanager
@@ -1925,7 +2033,7 @@ class AsyncRawArtifactsClient:
             The content of one version of one artifact.
         """
         async with self._client_wrapper.httpx_client.stream(
-            f"ids/contentIds/{jsonable_encoder(content_id)}/",
+            f"ids/contentIds/{encode_path_param(content_id)}/",
             method="GET",
             request_options=request_options,
         ) as _response:
@@ -1966,6 +2074,13 @@ class AsyncRawArtifactsClient:
                     raise ApiError(
                         status_code=_response.status_code, headers=dict(_response.headers), body=_response.text
                     )
+                except ValidationError as e:
+                    raise ParsingError(
+                        status_code=_response.status_code,
+                        headers=dict(_response.headers),
+                        body=_response.json(),
+                        cause=e,
+                    )
                 raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
             yield await _stream()
@@ -1994,7 +2109,7 @@ class AsyncRawArtifactsClient:
             A list containing all the references for the artifact with the given content id.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ids/contentIds/{jsonable_encoder(content_id)}/references",
+            f"ids/contentIds/{encode_path_param(content_id)}/references",
             method="GET",
             request_options=request_options,
         )
@@ -2011,6 +2126,10 @@ class AsyncRawArtifactsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     @contextlib.asynccontextmanager
@@ -2047,7 +2166,7 @@ class AsyncRawArtifactsClient:
             The content of one version of one artifact.
         """
         async with self._client_wrapper.httpx_client.stream(
-            f"ids/globalIds/{jsonable_encoder(global_id)}",
+            f"ids/globalIds/{encode_path_param(global_id)}",
             method="GET",
             params={
                 "dereference": dereference,
@@ -2091,6 +2210,13 @@ class AsyncRawArtifactsClient:
                     raise ApiError(
                         status_code=_response.status_code, headers=dict(_response.headers), body=_response.text
                     )
+                except ValidationError as e:
+                    raise ParsingError(
+                        status_code=_response.status_code,
+                        headers=dict(_response.headers),
+                        body=_response.json(),
+                        cause=e,
+                    )
                 raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
             yield await _stream()
@@ -2119,7 +2245,7 @@ class AsyncRawArtifactsClient:
             A list containing all the references for the artifact with the given global id.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"ids/globalIds/{jsonable_encoder(global_id)}/references",
+            f"ids/globalIds/{encode_path_param(global_id)}/references",
             method="GET",
             request_options=request_options,
         )
@@ -2136,4 +2262,8 @@ class AsyncRawArtifactsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

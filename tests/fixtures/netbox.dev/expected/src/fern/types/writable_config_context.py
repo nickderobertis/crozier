@@ -12,7 +12,7 @@ class WritableConfigContext(UniversalBaseModel):
     cluster_types: typing.Optional[typing.List[int]] = None
     clusters: typing.Optional[typing.List[int]] = None
     created: typing.Optional[dt.datetime] = None
-    data: typing.Dict[str, typing.Optional[typing.Any]]
+    data: typing.Dict[str, typing.Any]
     description: typing.Optional[str] = None
     device_types: typing.Optional[typing.List[int]] = None
     display: typing.Optional[str] = None

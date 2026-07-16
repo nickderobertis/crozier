@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class InterfaceRfChannelLabel(str, enum.Enum):
+class InterfaceRfChannelLabel(enum.StrEnum):
     ONE2412M_HZ = "1 (2412 MHz)"
     TWO2417M_HZ = "2 (2417 MHz)"
     THREE2422M_HZ = "3 (2422 MHz)"

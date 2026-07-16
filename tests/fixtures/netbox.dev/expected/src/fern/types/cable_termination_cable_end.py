@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class CableTerminationCableEnd(str, enum.Enum):
+class CableTerminationCableEnd(enum.StrEnum):
     A = "A"
     B = "B"
 

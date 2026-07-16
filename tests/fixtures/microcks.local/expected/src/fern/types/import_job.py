@@ -22,9 +22,11 @@ class ImportJob(UniversalBaseModel):
     Whether this ImportJob is active (ie. scheduled for execution)
     """
 
-    created_date: typing_extensions.Annotated[typing.Optional[dt.datetime], FieldMetadata(alias="createdDate")] = (
-        pydantic.Field(default=None)
-    )
+    created_date: typing_extensions.Annotated[
+        typing.Optional[dt.datetime],
+        FieldMetadata(alias="createdDate"),
+        pydantic.Field(alias="createdDate", description="Creation date for this ImportJob"),
+    ] = None
     """
     Creation date for this ImportJob
     """
@@ -45,22 +47,31 @@ class ImportJob(UniversalBaseModel):
     """
 
     last_import_date: typing_extensions.Annotated[
-        typing.Optional[dt.datetime], FieldMetadata(alias="lastImportDate")
-    ] = pydantic.Field(default=None)
+        typing.Optional[dt.datetime],
+        FieldMetadata(alias="lastImportDate"),
+        pydantic.Field(alias="lastImportDate", description="Date last import was done"),
+    ] = None
     """
     Date last import was done
     """
 
-    last_import_error: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="lastImportError")] = (
-        pydantic.Field(default=None)
-    )
+    last_import_error: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="lastImportError"),
+        pydantic.Field(alias="lastImportError", description="Error message of last import (if any)"),
+    ] = None
     """
     Error message of last import (if any)
     """
 
-    main_artifact: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="mainArtifact")] = (
-        pydantic.Field(default=None)
-    )
+    main_artifact: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="mainArtifact"),
+        pydantic.Field(
+            alias="mainArtifact",
+            description="Flag telling if considered as primary or secondary artifact. Default to `true`",
+        ),
+    ] = None
     """
     Flag telling if considered as primary or secondary artifact. Default to `true`
     """
@@ -76,27 +87,40 @@ class ImportJob(UniversalBaseModel):
     """
 
     repository_disable_ssl_validation: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="repositoryDisableSSLValidation")
-    ] = pydantic.Field(default=None)
+        typing.Optional[bool],
+        FieldMetadata(alias="repositoryDisableSSLValidation"),
+        pydantic.Field(
+            alias="repositoryDisableSSLValidation",
+            description="Whether to disable SSL certificate verification when checking repository",
+        ),
+    ] = None
     """
     Whether to disable SSL certificate verification when checking repository
     """
 
-    repository_url: typing_extensions.Annotated[str, FieldMetadata(alias="repositoryUrl")] = pydantic.Field()
+    repository_url: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="repositoryUrl"),
+        pydantic.Field(alias="repositoryUrl", description="URL of mocks and tests repository artifact"),
+    ]
     """
     URL of mocks and tests repository artifact
     """
 
-    secret_ref: typing_extensions.Annotated[typing.Optional[SecretRef], FieldMetadata(alias="secretRef")] = (
-        pydantic.Field(default=None)
-    )
+    secret_ref: typing_extensions.Annotated[
+        typing.Optional[SecretRef],
+        FieldMetadata(alias="secretRef"),
+        pydantic.Field(alias="secretRef", description="Reference of a Secret to used when checking repository"),
+    ] = None
     """
     Reference of a Secret to used when checking repository
     """
 
     service_refs: typing_extensions.Annotated[
-        typing.Optional[typing.List[ServiceRef]], FieldMetadata(alias="serviceRefs")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[ServiceRef]],
+        FieldMetadata(alias="serviceRefs"),
+        pydantic.Field(alias="serviceRefs", description="References of Services discovered when checking repository"),
+    ] = None
     """
     References of Services discovered when checking repository
     """

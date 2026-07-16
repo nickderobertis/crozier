@@ -9,11 +9,11 @@ from .nested_tag import NestedTag
 
 
 class WritableL2VpnTermination(UniversalBaseModel):
-    assigned_object: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    assigned_object: typing.Optional[typing.Dict[str, typing.Any]] = None
     assigned_object_id: int
     assigned_object_type: str
     created: typing.Optional[dt.datetime] = None
-    custom_fields: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    custom_fields: typing.Optional[typing.Dict[str, typing.Any]] = None
     display: typing.Optional[str] = None
     id: typing.Optional[int] = None
     l2vpn: int

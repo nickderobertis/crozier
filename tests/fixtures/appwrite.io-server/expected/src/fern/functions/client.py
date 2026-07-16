@@ -91,7 +91,7 @@ class FunctionsClient:
         events: typing.Optional[typing.Sequence[str]] = OMIT,
         schedule: typing.Optional[str] = OMIT,
         timeout: typing.Optional[int] = OMIT,
-        vars: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        vars: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> Function:
         """
@@ -117,7 +117,7 @@ class FunctionsClient:
         timeout : typing.Optional[int]
             Function maximum execution time in seconds.
 
-        vars : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        vars : typing.Optional[typing.Dict[str, typing.Any]]
             Key-value JSON object.
 
         request_options : typing.Optional[RequestOptions]
@@ -199,7 +199,7 @@ class FunctionsClient:
         events: typing.Optional[typing.Sequence[str]] = OMIT,
         schedule: typing.Optional[str] = OMIT,
         timeout: typing.Optional[int] = OMIT,
-        vars: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        vars: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> Function:
         """
@@ -225,7 +225,7 @@ class FunctionsClient:
         timeout : typing.Optional[int]
             Function maximum execution time in seconds.
 
-        vars : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        vars : typing.Optional[typing.Dict[str, typing.Any]]
             Key-value JSON object.
 
         request_options : typing.Optional[RequestOptions]
@@ -755,7 +755,7 @@ class AsyncFunctionsClient:
         events: typing.Optional[typing.Sequence[str]] = OMIT,
         schedule: typing.Optional[str] = OMIT,
         timeout: typing.Optional[int] = OMIT,
-        vars: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        vars: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> Function:
         """
@@ -781,7 +781,7 @@ class AsyncFunctionsClient:
         timeout : typing.Optional[int]
             Function maximum execution time in seconds.
 
-        vars : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        vars : typing.Optional[typing.Dict[str, typing.Any]]
             Key-value JSON object.
 
         request_options : typing.Optional[RequestOptions]
@@ -879,7 +879,7 @@ class AsyncFunctionsClient:
         events: typing.Optional[typing.Sequence[str]] = OMIT,
         schedule: typing.Optional[str] = OMIT,
         timeout: typing.Optional[int] = OMIT,
-        vars: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = OMIT,
+        vars: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> Function:
         """
@@ -905,7 +905,7 @@ class AsyncFunctionsClient:
         timeout : typing.Optional[int]
             Function maximum execution time in seconds.
 
-        vars : typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]]
+        vars : typing.Optional[typing.Dict[str, typing.Any]]
             Key-value JSON object.
 
         request_options : typing.Optional[RequestOptions]

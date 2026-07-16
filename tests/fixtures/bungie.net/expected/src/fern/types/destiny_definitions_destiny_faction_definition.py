@@ -21,6 +21,7 @@ class DestinyDefinitionsDestinyFactionDefinition(UniversalBaseModel):
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
+        pydantic.Field(alias="displayProperties"),
     ] = None
     hash: typing.Optional[int] = pydantic.Field(default=None)
     """
@@ -33,9 +34,14 @@ class DestinyDefinitionsDestinyFactionDefinition(UniversalBaseModel):
     The index of the entity as it was found in the investment tables.
     """
 
-    progression_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="progressionHash")] = (
-        pydantic.Field(default=None)
-    )
+    progression_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="progressionHash"),
+        pydantic.Field(
+            alias="progressionHash",
+            description="The hash identifier for the DestinyProgressionDefinition that indicates the character's relationship with this faction in terms of experience and levels.",
+        ),
+    ] = None
     """
     The hash identifier for the DestinyProgressionDefinition that indicates the character's relationship with this faction in terms of experience and levels.
     """
@@ -45,23 +51,33 @@ class DestinyDefinitionsDestinyFactionDefinition(UniversalBaseModel):
     If this is true, then there is an entity with this identifier/type combination, but BNet is not yet allowed to show it. Sorry!
     """
 
-    reward_item_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="rewardItemHash")] = (
-        pydantic.Field(default=None)
-    )
+    reward_item_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="rewardItemHash"),
+        pydantic.Field(alias="rewardItemHash", description="The faction reward item hash, usually an engram."),
+    ] = None
     """
     The faction reward item hash, usually an engram.
     """
 
-    reward_vendor_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="rewardVendorHash")] = (
-        pydantic.Field(default=None)
-    )
+    reward_vendor_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="rewardVendorHash"),
+        pydantic.Field(
+            alias="rewardVendorHash", description="The faction reward vendor hash, used for faction engram previews."
+        ),
+    ] = None
     """
     The faction reward vendor hash, used for faction engram previews.
     """
 
     token_values: typing_extensions.Annotated[
-        typing.Optional[typing.Dict[str, int]], FieldMetadata(alias="tokenValues")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.Dict[str, int]],
+        FieldMetadata(alias="tokenValues"),
+        pydantic.Field(
+            alias="tokenValues", description="The faction token item hashes, and their respective progression values."
+        ),
+    ] = None
     """
     The faction token item hashes, and their respective progression values.
     """

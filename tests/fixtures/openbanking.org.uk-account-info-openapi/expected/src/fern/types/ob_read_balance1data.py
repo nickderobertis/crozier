@@ -10,7 +10,9 @@ from .ob_read_balance1data_balance_item import ObReadBalance1DataBalanceItem
 
 
 class ObReadBalance1Data(UniversalBaseModel):
-    balance: typing_extensions.Annotated[typing.List[ObReadBalance1DataBalanceItem], FieldMetadata(alias="Balance")]
+    balance: typing_extensions.Annotated[
+        typing.List[ObReadBalance1DataBalanceItem], FieldMetadata(alias="Balance"), pydantic.Field(alias="Balance")
+    ]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

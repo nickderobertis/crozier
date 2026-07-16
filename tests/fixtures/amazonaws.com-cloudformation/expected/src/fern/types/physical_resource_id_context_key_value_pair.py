@@ -13,12 +13,16 @@ class PhysicalResourceIdContextKeyValuePair(UniversalBaseModel):
     Context information that enables CloudFormation to uniquely identify a resource. CloudFormation uses context key-value pairs in cases where a resource's logical and physical IDs aren't enough to uniquely identify that resource. Each context key-value pair specifies a resource that contains the targeted resource.
     """
 
-    key: typing_extensions.Annotated[str, FieldMetadata(alias="Key")] = pydantic.Field()
+    key: typing_extensions.Annotated[
+        str, FieldMetadata(alias="Key"), pydantic.Field(alias="Key", description="The resource context key.")
+    ]
     """
     The resource context key.
     """
 
-    value: typing_extensions.Annotated[str, FieldMetadata(alias="Value")] = pydantic.Field()
+    value: typing_extensions.Annotated[
+        str, FieldMetadata(alias="Value"), pydantic.Field(alias="Value", description="The resource context value.")
+    ]
     """
     The resource context value.
     """

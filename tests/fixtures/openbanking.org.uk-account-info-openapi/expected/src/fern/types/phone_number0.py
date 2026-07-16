@@ -1,3 +1,6 @@
 
 
 PhoneNumber0 = str
+"""
+Collection of information that identifies a phone number, as defined by telecom services.
+"""

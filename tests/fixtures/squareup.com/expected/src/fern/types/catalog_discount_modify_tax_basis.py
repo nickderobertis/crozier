@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class CatalogDiscountModifyTaxBasis(str, enum.Enum):
+class CatalogDiscountModifyTaxBasis(enum.StrEnum):
     """ """
 
     MODIFY_TAX_BASIS = "MODIFY_TAX_BASIS"

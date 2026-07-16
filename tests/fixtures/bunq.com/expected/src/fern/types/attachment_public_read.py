@@ -25,7 +25,11 @@ class AttachmentPublicRead(UniversalBaseModel):
     The timestamp of the attachment's last update.
     """
 
-    uuid_: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="uuid")] = pydantic.Field(default=None)
+    uuid_: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="uuid"),
+        pydantic.Field(alias="uuid", description="The UUID of the attachment."),
+    ] = None
     """
     The UUID of the attachment.
     """

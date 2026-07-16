@@ -11,15 +11,19 @@ from .attempt_number import AttemptNumber
 
 class AttemptNormalizationStatusRead(UniversalBaseModel):
     attempt_number: typing_extensions.Annotated[
-        typing.Optional[AttemptNumber], FieldMetadata(alias="attemptNumber")
+        typing.Optional[AttemptNumber], FieldMetadata(alias="attemptNumber"), pydantic.Field(alias="attemptNumber")
     ] = None
     has_normalization_failed: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="hasNormalizationFailed")
+        typing.Optional[bool],
+        FieldMetadata(alias="hasNormalizationFailed"),
+        pydantic.Field(alias="hasNormalizationFailed"),
     ] = None
     has_records_committed: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="hasRecordsCommitted")
+        typing.Optional[bool], FieldMetadata(alias="hasRecordsCommitted"), pydantic.Field(alias="hasRecordsCommitted")
     ] = None
-    records_committed: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="recordsCommitted")] = None
+    records_committed: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="recordsCommitted"), pydantic.Field(alias="recordsCommitted")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
@@ -30,6 +31,7 @@ from ..types.key_value_pairs import KeyValuePairs
 from ..types.problem_details import ProblemDetails
 from ..types.subsctiption_type_app_pkg import SubsctiptionTypeAppPkg
 from ..types.uri import Uri
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -168,6 +170,10 @@ class RawAppPkgmClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def app_packages_post(
@@ -308,6 +314,10 @@ class RawAppPkgmClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def app_package_get(
@@ -330,7 +340,7 @@ class RawAppPkgmClient:
             Contains a representation of the application package resource
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"app_packages/{jsonable_encoder(app_pkg_id)}",
+            f"app_packages/{encode_path_param(app_pkg_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -413,6 +423,10 @@ class RawAppPkgmClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def app_package_delete(
@@ -434,7 +448,7 @@ class RawAppPkgmClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"app_packages/{jsonable_encoder(app_pkg_id)}",
+            f"app_packages/{encode_path_param(app_pkg_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -510,6 +524,10 @@ class RawAppPkgmClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def app_package_patch(
@@ -538,7 +556,7 @@ class RawAppPkgmClient:
             Shows that the operation has been completed successfully
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"app_packages/{jsonable_encoder(app_pkg_id)}",
+            f"app_packages/{encode_path_param(app_pkg_id)}",
             method="PATCH",
             json={
                 "operationState": operation_state,
@@ -639,6 +657,10 @@ class RawAppPkgmClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def app_pkg_id_get(
@@ -684,7 +706,7 @@ class RawAppPkgmClient:
             Content of the AppD is returned.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"app_packages/{jsonable_encoder(app_pkg_id)}/appd",
+            f"app_packages/{encode_path_param(app_pkg_id)}/appd",
             method="GET",
             params={
                 "filter": filter,
@@ -767,6 +789,10 @@ class RawAppPkgmClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def app_pkg_get(
@@ -788,7 +814,7 @@ class RawAppPkgmClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"app_packages/{jsonable_encoder(app_pkg_id)}/package_content",
+            f"app_packages/{encode_path_param(app_pkg_id)}/package_content",
             method="GET",
             request_options=request_options,
         )
@@ -854,9 +880,9 @@ class RawAppPkgmClient:
                 raise RangeNotSatisfiableError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -875,6 +901,10 @@ class RawAppPkgmClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def app_pkg_put(
@@ -902,7 +932,7 @@ class RawAppPkgmClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"app_packages/{jsonable_encoder(app_pkg_id)}/package_content",
+            f"app_packages/{encode_path_param(app_pkg_id)}/package_content",
             method="PUT",
             content=request,
             headers={
@@ -994,6 +1024,10 @@ class RawAppPkgmClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def app_dget(
@@ -1039,7 +1073,7 @@ class RawAppPkgmClient:
             Content of the AppD is returned.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"onboarded_app_packages/{jsonable_encoder(app_d_id)}/appd",
+            f"onboarded_app_packages/{encode_path_param(app_d_id)}/appd",
             method="GET",
             params={
                 "filter": filter,
@@ -1122,6 +1156,10 @@ class RawAppPkgmClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def app_d_id_get(
@@ -1143,7 +1181,7 @@ class RawAppPkgmClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"onboarded_app_packages/{jsonable_encoder(app_d_id)}/package_content",
+            f"onboarded_app_packages/{encode_path_param(app_d_id)}/package_content",
             method="GET",
             request_options=request_options,
         )
@@ -1209,9 +1247,9 @@ class RawAppPkgmClient:
                 raise RangeNotSatisfiableError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -1230,6 +1268,10 @@ class RawAppPkgmClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def app_d_id_put(
@@ -1257,7 +1299,7 @@ class RawAppPkgmClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"onboarded_app_packages/{jsonable_encoder(app_d_id)}/package_content",
+            f"onboarded_app_packages/{encode_path_param(app_d_id)}/package_content",
             method="PUT",
             content=request,
             headers={
@@ -1349,6 +1391,10 @@ class RawAppPkgmClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def subscriptions_get(
@@ -1451,6 +1497,10 @@ class RawAppPkgmClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def subscriptions_post(
@@ -1573,6 +1623,10 @@ class RawAppPkgmClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def individual_subscription_get(
@@ -1595,7 +1649,7 @@ class RawAppPkgmClient:
             Representation of the resource.
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"subscriptions/{jsonable_encoder(subscription_id)}",
+            f"subscriptions/{encode_path_param(subscription_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -1678,6 +1732,10 @@ class RawAppPkgmClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def individual_subscription_delete(
@@ -1699,7 +1757,7 @@ class RawAppPkgmClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"subscriptions/{jsonable_encoder(subscription_id)}",
+            f"subscriptions/{encode_path_param(subscription_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -1753,6 +1811,10 @@ class RawAppPkgmClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -1889,6 +1951,10 @@ class AsyncRawAppPkgmClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def app_packages_post(
@@ -2029,6 +2095,10 @@ class AsyncRawAppPkgmClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def app_package_get(
@@ -2051,7 +2121,7 @@ class AsyncRawAppPkgmClient:
             Contains a representation of the application package resource
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"app_packages/{jsonable_encoder(app_pkg_id)}",
+            f"app_packages/{encode_path_param(app_pkg_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -2134,6 +2204,10 @@ class AsyncRawAppPkgmClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def app_package_delete(
@@ -2155,7 +2229,7 @@ class AsyncRawAppPkgmClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"app_packages/{jsonable_encoder(app_pkg_id)}",
+            f"app_packages/{encode_path_param(app_pkg_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -2231,6 +2305,10 @@ class AsyncRawAppPkgmClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def app_package_patch(
@@ -2259,7 +2337,7 @@ class AsyncRawAppPkgmClient:
             Shows that the operation has been completed successfully
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"app_packages/{jsonable_encoder(app_pkg_id)}",
+            f"app_packages/{encode_path_param(app_pkg_id)}",
             method="PATCH",
             json={
                 "operationState": operation_state,
@@ -2360,6 +2438,10 @@ class AsyncRawAppPkgmClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def app_pkg_id_get(
@@ -2405,7 +2487,7 @@ class AsyncRawAppPkgmClient:
             Content of the AppD is returned.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"app_packages/{jsonable_encoder(app_pkg_id)}/appd",
+            f"app_packages/{encode_path_param(app_pkg_id)}/appd",
             method="GET",
             params={
                 "filter": filter,
@@ -2488,6 +2570,10 @@ class AsyncRawAppPkgmClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def app_pkg_get(
@@ -2509,7 +2595,7 @@ class AsyncRawAppPkgmClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"app_packages/{jsonable_encoder(app_pkg_id)}/package_content",
+            f"app_packages/{encode_path_param(app_pkg_id)}/package_content",
             method="GET",
             request_options=request_options,
         )
@@ -2575,9 +2661,9 @@ class AsyncRawAppPkgmClient:
                 raise RangeNotSatisfiableError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2596,6 +2682,10 @@ class AsyncRawAppPkgmClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def app_pkg_put(
@@ -2623,7 +2713,7 @@ class AsyncRawAppPkgmClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"app_packages/{jsonable_encoder(app_pkg_id)}/package_content",
+            f"app_packages/{encode_path_param(app_pkg_id)}/package_content",
             method="PUT",
             content=request,
             headers={
@@ -2715,6 +2805,10 @@ class AsyncRawAppPkgmClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def app_dget(
@@ -2760,7 +2854,7 @@ class AsyncRawAppPkgmClient:
             Content of the AppD is returned.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"onboarded_app_packages/{jsonable_encoder(app_d_id)}/appd",
+            f"onboarded_app_packages/{encode_path_param(app_d_id)}/appd",
             method="GET",
             params={
                 "filter": filter,
@@ -2843,6 +2937,10 @@ class AsyncRawAppPkgmClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def app_d_id_get(
@@ -2864,7 +2962,7 @@ class AsyncRawAppPkgmClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"onboarded_app_packages/{jsonable_encoder(app_d_id)}/package_content",
+            f"onboarded_app_packages/{encode_path_param(app_d_id)}/package_content",
             method="GET",
             request_options=request_options,
         )
@@ -2930,9 +3028,9 @@ class AsyncRawAppPkgmClient:
                 raise RangeNotSatisfiableError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],
+                            type_=typing.Any,
                             object_=_response.json(),
                         ),
                     ),
@@ -2951,6 +3049,10 @@ class AsyncRawAppPkgmClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def app_d_id_put(
@@ -2978,7 +3080,7 @@ class AsyncRawAppPkgmClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"onboarded_app_packages/{jsonable_encoder(app_d_id)}/package_content",
+            f"onboarded_app_packages/{encode_path_param(app_d_id)}/package_content",
             method="PUT",
             content=request,
             headers={
@@ -3070,6 +3172,10 @@ class AsyncRawAppPkgmClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def subscriptions_get(
@@ -3172,6 +3278,10 @@ class AsyncRawAppPkgmClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def subscriptions_post(
@@ -3294,6 +3404,10 @@ class AsyncRawAppPkgmClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def individual_subscription_get(
@@ -3316,7 +3430,7 @@ class AsyncRawAppPkgmClient:
             Representation of the resource.
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"subscriptions/{jsonable_encoder(subscription_id)}",
+            f"subscriptions/{encode_path_param(subscription_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -3399,6 +3513,10 @@ class AsyncRawAppPkgmClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def individual_subscription_delete(
@@ -3420,7 +3538,7 @@ class AsyncRawAppPkgmClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"subscriptions/{jsonable_encoder(subscription_id)}",
+            f"subscriptions/{encode_path_param(subscription_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -3474,4 +3592,8 @@ class AsyncRawAppPkgmClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

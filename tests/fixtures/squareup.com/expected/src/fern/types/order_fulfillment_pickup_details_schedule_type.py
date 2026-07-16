@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class OrderFulfillmentPickupDetailsScheduleType(str, enum.Enum):
+class OrderFulfillmentPickupDetailsScheduleType(enum.StrEnum):
     """
     The schedule type of the pickup fulfillment.
     """

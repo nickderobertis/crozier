@@ -9,7 +9,7 @@ from .generic_notification_payload import GenericNotificationPayload
 
 
 class AnalysisUpdateNotificationPayload(GenericNotificationPayload):
-    annotations: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = pydantic.Field(default=None)
+    annotations: typing.Optional[typing.Dict[str, typing.Any]] = pydantic.Field(default=None)
     """
     List of Corresponding Image Annotations
     """

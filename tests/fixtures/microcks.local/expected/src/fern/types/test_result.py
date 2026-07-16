@@ -17,9 +17,11 @@ class TestResult(UniversalBaseModel):
     Represents the result of a Service or API test run by Microcks. Tests are related to a service and made of multiple test cases corresponding to each operations / actions composing service. Tests are run against a specific endpoint named testedEndpoint. It holds global markers telling if test still ran, is a success, how many times is has taken and so on ...
     """
 
-    elapsed_time: typing_extensions.Annotated[typing.Optional[float], FieldMetadata(alias="elapsedTime")] = (
-        pydantic.Field(default=None)
-    )
+    elapsed_time: typing_extensions.Annotated[
+        typing.Optional[float],
+        FieldMetadata(alias="elapsedTime"),
+        pydantic.Field(alias="elapsedTime", description="Elapsed time in milliseconds since test beginning"),
+    ] = None
     """
     Elapsed time in milliseconds since test beginning
     """
@@ -29,31 +31,49 @@ class TestResult(UniversalBaseModel):
     Unique identifier of TestResult
     """
 
-    in_progress: typing_extensions.Annotated[bool, FieldMetadata(alias="inProgress")] = pydantic.Field()
+    in_progress: typing_extensions.Annotated[
+        bool,
+        FieldMetadata(alias="inProgress"),
+        pydantic.Field(alias="inProgress", description="Flag telling is test is still in progress"),
+    ]
     """
     Flag telling is test is still in progress
     """
 
     operation_headers: typing_extensions.Annotated[
-        typing.Optional[OperationHeaders], FieldMetadata(alias="operationHeaders")
-    ] = pydantic.Field(default=None)
+        typing.Optional[OperationHeaders],
+        FieldMetadata(alias="operationHeaders"),
+        pydantic.Field(alias="operationHeaders", description="This test operations headers override"),
+    ] = None
     """
     This test operations headers override
     """
 
-    runner_type: typing_extensions.Annotated[TestRunnerType, FieldMetadata(alias="runnerType")] = pydantic.Field()
+    runner_type: typing_extensions.Annotated[
+        TestRunnerType,
+        FieldMetadata(alias="runnerType"),
+        pydantic.Field(alias="runnerType", description="Runner used for this test"),
+    ]
     """
     Runner used for this test
     """
 
-    secret_ref: typing_extensions.Annotated[typing.Optional[SecretRef], FieldMetadata(alias="secretRef")] = (
-        pydantic.Field(default=None)
-    )
+    secret_ref: typing_extensions.Annotated[
+        typing.Optional[SecretRef],
+        FieldMetadata(alias="secretRef"),
+        pydantic.Field(
+            alias="secretRef", description="The referrence of the Secret used for connecting to test endpoint"
+        ),
+    ] = None
     """
     The referrence of the Secret used for connecting to test endpoint
     """
 
-    service_id: typing_extensions.Annotated[str, FieldMetadata(alias="serviceId")] = pydantic.Field()
+    service_id: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="serviceId"),
+        pydantic.Field(alias="serviceId", description="Unique identifier of service tested"),
+    ]
     """
     Unique identifier of service tested
     """
@@ -64,23 +84,37 @@ class TestResult(UniversalBaseModel):
     """
 
     test_case_results: typing_extensions.Annotated[
-        typing.Optional[typing.List[TestCaseResult]], FieldMetadata(alias="testCaseResults")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.List[TestCaseResult]],
+        FieldMetadata(alias="testCaseResults"),
+        pydantic.Field(alias="testCaseResults", description="TestCase results associated to this test"),
+    ] = None
     """
     TestCase results associated to this test
     """
 
-    test_date: typing_extensions.Annotated[int, FieldMetadata(alias="testDate")] = pydantic.Field()
+    test_date: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="testDate"),
+        pydantic.Field(alias="testDate", description="Timestamp of creation date of this service"),
+    ]
     """
     Timestamp of creation date of this service
     """
 
-    test_number: typing_extensions.Annotated[float, FieldMetadata(alias="testNumber")] = pydantic.Field()
+    test_number: typing_extensions.Annotated[
+        float,
+        FieldMetadata(alias="testNumber"),
+        pydantic.Field(alias="testNumber", description="Incremental number for tracking number of tests of a service"),
+    ]
     """
     Incremental number for tracking number of tests of a service
     """
 
-    tested_endpoint: typing_extensions.Annotated[str, FieldMetadata(alias="testedEndpoint")] = pydantic.Field()
+    tested_endpoint: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="testedEndpoint"),
+        pydantic.Field(alias="testedEndpoint", description="Endpoint used during test"),
+    ]
     """
     Endpoint used during test
     """

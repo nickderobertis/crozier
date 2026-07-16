@@ -12,10 +12,12 @@ from .source_id import SourceId
 
 class SourceUpdate(UniversalBaseModel):
     connection_configuration: typing_extensions.Annotated[
-        SourceConfiguration, FieldMetadata(alias="connectionConfiguration")
+        SourceConfiguration,
+        FieldMetadata(alias="connectionConfiguration"),
+        pydantic.Field(alias="connectionConfiguration"),
     ]
     name: str
-    source_id: typing_extensions.Annotated[SourceId, FieldMetadata(alias="sourceId")]
+    source_id: typing_extensions.Annotated[SourceId, FieldMetadata(alias="sourceId"), pydantic.Field(alias="sourceId")]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

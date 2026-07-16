@@ -15,8 +15,10 @@ class ObStatement2StatementRateItem(UniversalBaseModel):
     Set of elements used to provide details of a generic rate related to the statement resource.
     """
 
-    rate: typing_extensions.Annotated[Rate, FieldMetadata(alias="Rate")]
-    type: typing_extensions.Annotated[ObExternalStatementRateType1Code, FieldMetadata(alias="Type")]
+    rate: typing_extensions.Annotated[Rate, FieldMetadata(alias="Rate"), pydantic.Field(alias="Rate")]
+    type: typing_extensions.Annotated[
+        ObExternalStatementRateType1Code, FieldMetadata(alias="Type"), pydantic.Field(alias="Type")
+    ]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

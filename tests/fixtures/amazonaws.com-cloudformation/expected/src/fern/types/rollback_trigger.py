@@ -13,12 +13,26 @@ class RollbackTrigger(UniversalBaseModel):
     A rollback trigger CloudFormation monitors during creation and updating of stacks. If any of the alarms you specify goes to ALARM state during the stack operation or within the specified monitoring period afterwards, CloudFormation rolls back the entire stack operation.
     """
 
-    arn: typing_extensions.Annotated[str, FieldMetadata(alias="Arn")] = pydantic.Field()
+    arn: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="Arn"),
+        pydantic.Field(
+            alias="Arn",
+            description="<p>The Amazon Resource Name (ARN) of the rollback trigger.</p> <p>If a specified trigger is missing, the entire stack operation fails and is rolled back.</p>",
+        ),
+    ]
     """
     <p>The Amazon Resource Name (ARN) of the rollback trigger.</p> <p>If a specified trigger is missing, the entire stack operation fails and is rolled back.</p>
     """
 
-    type: typing_extensions.Annotated[str, FieldMetadata(alias="Type")] = pydantic.Field()
+    type: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="Type"),
+        pydantic.Field(
+            alias="Type",
+            description='The resource type of the rollback trigger. Specify either <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-cw-alarm.html">AWS::CloudWatch::Alarm</a> or <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-cloudwatch-compositealarm.html">AWS::CloudWatch::CompositeAlarm</a> resource types.',
+        ),
+    ]
     """
     The resource type of the rollback trigger. Specify either <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-cw-alarm.html">AWS::CloudWatch::Alarm</a> or <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-cloudwatch-compositealarm.html">AWS::CloudWatch::CompositeAlarm</a> resource types.
     """

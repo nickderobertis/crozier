@@ -11,7 +11,9 @@ from .destiny_historical_stats_destiny_leaderboard_entry import DestinyHistorica
 
 class DestinyHistoricalStatsDestinyLeaderboard(UniversalBaseModel):
     entries: typing.Optional[typing.List[DestinyHistoricalStatsDestinyLeaderboardEntry]] = None
-    stat_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="statId")] = None
+    stat_id: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="statId"), pydantic.Field(alias="statId")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

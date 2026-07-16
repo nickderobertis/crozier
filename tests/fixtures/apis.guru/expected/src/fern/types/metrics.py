@@ -14,14 +14,16 @@ class Metrics(UniversalBaseModel):
     List of basic metrics
     """
 
-    datasets: typing.Optional[typing.List[typing.Optional[typing.Any]]] = pydantic.Field(default=None)
+    datasets: typing.Optional[typing.List[typing.Any]] = pydantic.Field(default=None)
     """
     Data used for charting etc
     """
 
-    fixed_pct: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="fixedPct")] = pydantic.Field(
-        default=None
-    )
+    fixed_pct: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="fixedPct"),
+        pydantic.Field(alias="fixedPct", description="Percentage of all APIs where auto fixes have been applied"),
+    ] = None
     """
     Percentage of all APIs where auto fixes have been applied
     """
@@ -41,31 +43,47 @@ class Metrics(UniversalBaseModel):
     Open GitHub issues on our main repo
     """
 
-    num_ap_is: typing_extensions.Annotated[int, FieldMetadata(alias="numAPIs")] = pydantic.Field()
+    num_ap_is: typing_extensions.Annotated[
+        int, FieldMetadata(alias="numAPIs"), pydantic.Field(alias="numAPIs", description="Number of unique APIs")
+    ]
     """
     Number of unique APIs
     """
 
-    num_drivers: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="numDrivers")] = pydantic.Field(
-        default=None
-    )
+    num_drivers: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="numDrivers"),
+        pydantic.Field(alias="numDrivers", description="Number of methods of API retrieval"),
+    ] = None
     """
     Number of methods of API retrieval
     """
 
-    num_endpoints: typing_extensions.Annotated[int, FieldMetadata(alias="numEndpoints")] = pydantic.Field()
+    num_endpoints: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="numEndpoints"),
+        pydantic.Field(alias="numEndpoints", description="Total number of endpoints inside all definitions"),
+    ]
     """
     Total number of endpoints inside all definitions
     """
 
-    num_providers: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="numProviders")] = (
-        pydantic.Field(default=None)
-    )
+    num_providers: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="numProviders"),
+        pydantic.Field(alias="numProviders", description="Number of API providers in directory"),
+    ] = None
     """
     Number of API providers in directory
     """
 
-    num_specs: typing_extensions.Annotated[int, FieldMetadata(alias="numSpecs")] = pydantic.Field()
+    num_specs: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="numSpecs"),
+        pydantic.Field(
+            alias="numSpecs", description="Number of API definitions including different versions of the same API"
+        ),
+    ]
     """
     Number of API definitions including different versions of the same API
     """
@@ -75,9 +93,11 @@ class Metrics(UniversalBaseModel):
     GitHub stars for our main repo
     """
 
-    this_week: typing_extensions.Annotated[typing.Optional[MetricsThisWeek], FieldMetadata(alias="thisWeek")] = (
-        pydantic.Field(default=None)
-    )
+    this_week: typing_extensions.Annotated[
+        typing.Optional[MetricsThisWeek],
+        FieldMetadata(alias="thisWeek"),
+        pydantic.Field(alias="thisWeek", description="Summary totals for the last 7 days"),
+    ] = None
     """
     Summary totals for the last 7 days
     """

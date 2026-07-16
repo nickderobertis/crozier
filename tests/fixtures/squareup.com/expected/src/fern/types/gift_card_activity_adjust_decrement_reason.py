@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class GiftCardActivityAdjustDecrementReason(str, enum.Enum):
+class GiftCardActivityAdjustDecrementReason(enum.StrEnum):
     """ """
 
     SUSPICIOUS_ACTIVITY = "SUSPICIOUS_ACTIVITY"

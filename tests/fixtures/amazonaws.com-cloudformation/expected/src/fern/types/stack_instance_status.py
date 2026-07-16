@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class StackInstanceStatus(str, enum.Enum):
+class StackInstanceStatus(enum.StrEnum):
     CURRENT = "CURRENT"
     OUTDATED = "OUTDATED"
     INOPERABLE = "INOPERABLE"

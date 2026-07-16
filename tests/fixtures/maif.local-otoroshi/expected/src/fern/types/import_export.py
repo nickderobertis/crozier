@@ -27,16 +27,20 @@ class ImportExport(UniversalBaseModel):
     Current U2F admin at the time of export
     """
 
-    api_keys: typing_extensions.Annotated[typing.List[ImportExportApiKeysItem], FieldMetadata(alias="apiKeys")] = (
-        pydantic.Field()
-    )
+    api_keys: typing_extensions.Annotated[
+        typing.List[ImportExportApiKeysItem],
+        FieldMetadata(alias="apiKeys"),
+        pydantic.Field(alias="apiKeys", description="Current apik keys at the time of export"),
+    ]
     """
     Current apik keys at the time of export
     """
 
     app_config: typing_extensions.Annotated[
-        typing.Optional[typing.Dict[str, str]], FieldMetadata(alias="appConfig")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.Dict[str, str]],
+        FieldMetadata(alias="appConfig"),
+        pydantic.Field(alias="appConfig", description="Current env variables at the time of export"),
+    ] = None
     """
     Current env variables at the time of export
     """
@@ -47,32 +51,40 @@ class ImportExport(UniversalBaseModel):
     """
 
     date: dt.datetime
-    date_raw: typing_extensions.Annotated[int, FieldMetadata(alias="dateRaw")]
+    date_raw: typing_extensions.Annotated[int, FieldMetadata(alias="dateRaw"), pydantic.Field(alias="dateRaw")]
     error_templates: typing_extensions.Annotated[
-        typing.List[ImportExportErrorTemplatesItem], FieldMetadata(alias="errorTemplates")
-    ] = pydantic.Field()
+        typing.List[ImportExportErrorTemplatesItem],
+        FieldMetadata(alias="errorTemplates"),
+        pydantic.Field(alias="errorTemplates", description="Current error templates at the time of export"),
+    ]
     """
     Current error templates at the time of export
     """
 
     label: str
     service_descriptors: typing_extensions.Annotated[
-        typing.List[ImportExportServiceDescriptorsItem], FieldMetadata(alias="serviceDescriptors")
-    ] = pydantic.Field()
+        typing.List[ImportExportServiceDescriptorsItem],
+        FieldMetadata(alias="serviceDescriptors"),
+        pydantic.Field(alias="serviceDescriptors", description="Current service descriptors at the time of export"),
+    ]
     """
     Current service descriptors at the time of export
     """
 
     service_groups: typing_extensions.Annotated[
-        typing.List[ImportExportServiceGroupsItem], FieldMetadata(alias="serviceGroups")
-    ] = pydantic.Field()
+        typing.List[ImportExportServiceGroupsItem],
+        FieldMetadata(alias="serviceGroups"),
+        pydantic.Field(alias="serviceGroups", description="Current service groups at the time of export"),
+    ]
     """
     Current service groups at the time of export
     """
 
     simple_admins: typing_extensions.Annotated[
-        typing.List[ImportExportSimpleAdminsItem], FieldMetadata(alias="simpleAdmins")
-    ] = pydantic.Field()
+        typing.List[ImportExportSimpleAdminsItem],
+        FieldMetadata(alias="simpleAdmins"),
+        pydantic.Field(alias="simpleAdmins", description="Current simple admins at the time of export"),
+    ]
     """
     Current simple admins at the time of export
     """

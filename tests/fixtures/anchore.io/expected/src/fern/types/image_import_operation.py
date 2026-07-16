@@ -18,7 +18,9 @@ class ImageImportOperation(UniversalBaseModel):
     created_at: typing.Optional[dt.datetime] = None
     expires_at: typing.Optional[dt.datetime] = None
     status: typing.Optional[ImageImportOperationStatus] = None
-    uuid_: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="uuid")] = None
+    uuid_: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="uuid"), pydantic.Field(alias="uuid")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

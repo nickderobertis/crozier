@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class UpdateDagRunStateState(str, enum.Enum):
+class UpdateDagRunStateState(enum.StrEnum):
     """
     The state to set this DagRun
     """

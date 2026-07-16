@@ -38,9 +38,11 @@ class Subscription(UniversalBaseModel):
     The value of the subscription target
     """
 
-    user_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="userId")] = pydantic.Field(
-        default=None
-    )
+    user_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="userId"),
+        pydantic.Field(alias="userId", description="The userId of the subscribed user"),
+    ] = None
     """
     The userId of the subscribed user
     """

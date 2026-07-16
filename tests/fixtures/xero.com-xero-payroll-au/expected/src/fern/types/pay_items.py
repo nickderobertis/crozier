@@ -10,7 +10,9 @@ from .pay_item import PayItem
 
 
 class PayItems(UniversalBaseModel):
-    pay_items: typing_extensions.Annotated[typing.Optional[PayItem], FieldMetadata(alias="PayItems")] = None
+    pay_items: typing_extensions.Annotated[
+        typing.Optional[PayItem], FieldMetadata(alias="PayItems"), pydantic.Field(alias="PayItems")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

@@ -12,7 +12,9 @@ from .geofence_attributes import GeofenceAttributes
 class Geofence(UniversalBaseModel):
     area: typing.Optional[str] = None
     attributes: typing.Optional[GeofenceAttributes] = None
-    calendar_id: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="calendarId")] = None
+    calendar_id: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="calendarId"), pydantic.Field(alias="calendarId")
+    ] = None
     description: typing.Optional[str] = None
     id: typing.Optional[int] = None
     name: typing.Optional[str] = None

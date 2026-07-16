@@ -15,31 +15,31 @@ class SubclassLevelSpellcasting(UniversalBaseModel):
 
     cantrips_known: typing.Optional[float] = None
     spell_slots_level1: typing_extensions.Annotated[
-        typing.Optional[float], FieldMetadata(alias="spell_slots_level_1")
+        typing.Optional[float], FieldMetadata(alias="spell_slots_level_1"), pydantic.Field(alias="spell_slots_level_1")
     ] = None
     spell_slots_level2: typing_extensions.Annotated[
-        typing.Optional[float], FieldMetadata(alias="spell_slots_level_2")
+        typing.Optional[float], FieldMetadata(alias="spell_slots_level_2"), pydantic.Field(alias="spell_slots_level_2")
     ] = None
     spell_slots_level3: typing_extensions.Annotated[
-        typing.Optional[float], FieldMetadata(alias="spell_slots_level_3")
+        typing.Optional[float], FieldMetadata(alias="spell_slots_level_3"), pydantic.Field(alias="spell_slots_level_3")
     ] = None
     spell_slots_level4: typing_extensions.Annotated[
-        typing.Optional[float], FieldMetadata(alias="spell_slots_level_4")
+        typing.Optional[float], FieldMetadata(alias="spell_slots_level_4"), pydantic.Field(alias="spell_slots_level_4")
     ] = None
     spell_slots_level5: typing_extensions.Annotated[
-        typing.Optional[float], FieldMetadata(alias="spell_slots_level_5")
+        typing.Optional[float], FieldMetadata(alias="spell_slots_level_5"), pydantic.Field(alias="spell_slots_level_5")
     ] = None
     spell_slots_level6: typing_extensions.Annotated[
-        typing.Optional[float], FieldMetadata(alias="spell_slots_level_6")
+        typing.Optional[float], FieldMetadata(alias="spell_slots_level_6"), pydantic.Field(alias="spell_slots_level_6")
     ] = None
     spell_slots_level7: typing_extensions.Annotated[
-        typing.Optional[float], FieldMetadata(alias="spell_slots_level_7")
+        typing.Optional[float], FieldMetadata(alias="spell_slots_level_7"), pydantic.Field(alias="spell_slots_level_7")
     ] = None
     spell_slots_level8: typing_extensions.Annotated[
-        typing.Optional[float], FieldMetadata(alias="spell_slots_level_8")
+        typing.Optional[float], FieldMetadata(alias="spell_slots_level_8"), pydantic.Field(alias="spell_slots_level_8")
     ] = None
     spell_slots_level9: typing_extensions.Annotated[
-        typing.Optional[float], FieldMetadata(alias="spell_slots_level_9")
+        typing.Optional[float], FieldMetadata(alias="spell_slots_level_9"), pydantic.Field(alias="spell_slots_level_9")
     ] = None
     spells_known: typing.Optional[float] = None
 

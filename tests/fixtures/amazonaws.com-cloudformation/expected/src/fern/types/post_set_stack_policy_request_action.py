@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PostSetStackPolicyRequestAction(str, enum.Enum):
+class PostSetStackPolicyRequestAction(enum.StrEnum):
     SET_STACK_POLICY = "SetStackPolicy"
 
     def visit(self, set_stack_policy: typing.Callable[[], T_Result]) -> T_Result:

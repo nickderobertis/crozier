@@ -9,21 +9,32 @@ from ...core.serialization import FieldMetadata
 
 
 class PostPortfolioAnalysisMeanVarianceMinimumVarianceFrontierResponsePortfoliosItem(UniversalBaseModel):
-    assets_weights: typing_extensions.Annotated[typing.List[float], FieldMetadata(alias="assetsWeights")] = (
-        pydantic.Field()
-    )
+    assets_weights: typing_extensions.Annotated[
+        typing.List[float],
+        FieldMetadata(alias="assetsWeights"),
+        pydantic.Field(
+            alias="assetsWeights",
+            description="assetsWeights[i] is the weight of the asset i in the portfolio, in percentage",
+        ),
+    ]
     """
     assetsWeights[i] is the weight of the asset i in the portfolio, in percentage
     """
 
-    portfolio_return: typing_extensions.Annotated[float, FieldMetadata(alias="portfolioReturn")] = pydantic.Field()
+    portfolio_return: typing_extensions.Annotated[
+        float,
+        FieldMetadata(alias="portfolioReturn"),
+        pydantic.Field(alias="portfolioReturn", description="The arithmetic return of the portfolio"),
+    ]
     """
     The arithmetic return of the portfolio
     """
 
-    portfolio_volatility: typing_extensions.Annotated[float, FieldMetadata(alias="portfolioVolatility")] = (
-        pydantic.Field()
-    )
+    portfolio_volatility: typing_extensions.Annotated[
+        float,
+        FieldMetadata(alias="portfolioVolatility"),
+        pydantic.Field(alias="portfolioVolatility", description="The volatility of the portfolio"),
+    ]
     """
     The volatility of the portfolio
     """

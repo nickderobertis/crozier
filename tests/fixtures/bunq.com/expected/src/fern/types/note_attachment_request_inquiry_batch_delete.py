@@ -2,4 +2,4 @@
 
 import typing
 
-NoteAttachmentRequestInquiryBatchDelete = typing.Dict[str, typing.Optional[typing.Any]]
+NoteAttachmentRequestInquiryBatchDelete = typing.Dict[str, typing.Any]

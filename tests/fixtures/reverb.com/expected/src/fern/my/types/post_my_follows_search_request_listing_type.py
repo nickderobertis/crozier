@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class PostMyFollowsSearchRequestListingType(str, enum.Enum):
+class PostMyFollowsSearchRequestListingType(enum.StrEnum):
     """
     Type of listing: auctions,offers
     """

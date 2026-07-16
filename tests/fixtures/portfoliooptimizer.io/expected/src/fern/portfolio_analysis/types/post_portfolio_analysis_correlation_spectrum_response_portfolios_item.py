@@ -10,8 +10,10 @@ from ...core.serialization import FieldMetadata
 
 class PostPortfolioAnalysisCorrelationSpectrumResponsePortfoliosItem(UniversalBaseModel):
     portfolio_correlation_spectrum: typing_extensions.Annotated[
-        typing.List[float], FieldMetadata(alias="portfolioCorrelationSpectrum")
-    ] = pydantic.Field()
+        typing.List[float],
+        FieldMetadata(alias="portfolioCorrelationSpectrum"),
+        pydantic.Field(alias="portfolioCorrelationSpectrum", description="The correlation spectrum of the portfolio"),
+    ]
     """
     The correlation spectrum of the portfolio
     """

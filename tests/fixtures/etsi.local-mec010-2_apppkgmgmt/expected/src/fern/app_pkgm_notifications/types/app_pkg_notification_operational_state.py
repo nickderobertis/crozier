@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class AppPkgNotificationOperationalState(str, enum.Enum):
+class AppPkgNotificationOperationalState(enum.StrEnum):
     DISABLED = "DISABLED"
     ENABLED = "ENABLED"
 

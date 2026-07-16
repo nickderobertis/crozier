@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class WritableInterfaceRfChannel(str, enum.Enum):
+class WritableInterfaceRfChannel(enum.StrEnum):
     TWO4G1241222 = "2.4g-1-2412-22"
     TWO4G2241722 = "2.4g-2-2417-22"
     TWO4G3242222 = "2.4g-3-2422-22"

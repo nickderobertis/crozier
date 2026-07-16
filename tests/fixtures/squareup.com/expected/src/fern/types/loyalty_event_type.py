@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class LoyaltyEventType(str, enum.Enum):
+class LoyaltyEventType(enum.StrEnum):
     """
     The type of the loyalty event.
     """

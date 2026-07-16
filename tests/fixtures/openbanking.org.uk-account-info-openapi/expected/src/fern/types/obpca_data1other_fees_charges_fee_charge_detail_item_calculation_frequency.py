@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObpcaData1OtherFeesChargesFeeChargeDetailItemCalculationFrequency(str, enum.Enum):
+class ObpcaData1OtherFeesChargesFeeChargeDetailItemCalculationFrequency(enum.StrEnum):
     """
     How frequently the fee/charge is calculated
     """

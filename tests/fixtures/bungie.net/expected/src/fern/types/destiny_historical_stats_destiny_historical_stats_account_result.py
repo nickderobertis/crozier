@@ -19,10 +19,12 @@ class DestinyHistoricalStatsDestinyHistoricalStatsAccountResult(UniversalBaseMod
     merged_all_characters: typing_extensions.Annotated[
         typing.Optional[DestinyHistoricalStatsDestinyHistoricalStatsWithMerged],
         FieldMetadata(alias="mergedAllCharacters"),
+        pydantic.Field(alias="mergedAllCharacters"),
     ] = None
     merged_deleted_characters: typing_extensions.Annotated[
         typing.Optional[DestinyHistoricalStatsDestinyHistoricalStatsWithMerged],
         FieldMetadata(alias="mergedDeletedCharacters"),
+        pydantic.Field(alias="mergedDeletedCharacters"),
     ] = None
 
     if IS_PYDANTIC_V2:

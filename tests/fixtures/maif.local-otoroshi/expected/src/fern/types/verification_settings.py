@@ -20,7 +20,9 @@ class VerificationSettings(UniversalBaseModel):
     """
 
     mapping_settings: typing_extensions.Annotated[
-        typing.Optional[MappingSettings], FieldMetadata(alias="mappingSettings")
+        typing.Optional[MappingSettings],
+        FieldMetadata(alias="mappingSettings"),
+        pydantic.Field(alias="mappingSettings"),
     ] = None
 
     if IS_PYDANTIC_V2:

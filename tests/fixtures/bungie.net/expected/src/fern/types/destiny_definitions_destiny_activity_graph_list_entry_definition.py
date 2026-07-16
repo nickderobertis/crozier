@@ -14,9 +14,14 @@ class DestinyDefinitionsDestinyActivityGraphListEntryDefinition(UniversalBaseMod
     This contract defines the graph referred to and the gating for when it is relevant.
     """
 
-    activity_graph_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="activityGraphHash")] = (
-        pydantic.Field(default=None)
-    )
+    activity_graph_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="activityGraphHash"),
+        pydantic.Field(
+            alias="activityGraphHash",
+            description="The hash identifier of the DestinyActivityGraphDefinition that should be shown when opening the director.",
+        ),
+    ] = None
     """
     The hash identifier of the DestinyActivityGraphDefinition that should be shown when opening the director.
     """

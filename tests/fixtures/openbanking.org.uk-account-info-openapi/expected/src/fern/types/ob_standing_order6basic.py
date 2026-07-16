@@ -24,44 +24,74 @@ from .standing_order_id import StandingOrderId
 
 
 class ObStandingOrder6Basic(UniversalBaseModel):
-    account_id: typing_extensions.Annotated[AccountId, FieldMetadata(alias="AccountId")]
+    account_id: typing_extensions.Annotated[
+        AccountId, FieldMetadata(alias="AccountId"), pydantic.Field(alias="AccountId")
+    ]
     final_payment_amount: typing_extensions.Annotated[
-        typing.Optional[ObActiveOrHistoricCurrencyAndAmount4], FieldMetadata(alias="FinalPaymentAmount")
+        typing.Optional[ObActiveOrHistoricCurrencyAndAmount4],
+        FieldMetadata(alias="FinalPaymentAmount"),
+        pydantic.Field(alias="FinalPaymentAmount"),
     ] = None
     final_payment_date_time: typing_extensions.Annotated[
-        typing.Optional[FinalPaymentDateTime], FieldMetadata(alias="FinalPaymentDateTime")
+        typing.Optional[FinalPaymentDateTime],
+        FieldMetadata(alias="FinalPaymentDateTime"),
+        pydantic.Field(alias="FinalPaymentDateTime"),
     ] = None
     first_payment_amount: typing_extensions.Annotated[
-        typing.Optional[ObActiveOrHistoricCurrencyAndAmount2], FieldMetadata(alias="FirstPaymentAmount")
+        typing.Optional[ObActiveOrHistoricCurrencyAndAmount2],
+        FieldMetadata(alias="FirstPaymentAmount"),
+        pydantic.Field(alias="FirstPaymentAmount"),
     ] = None
     first_payment_date_time: typing_extensions.Annotated[
-        typing.Optional[FirstPaymentDateTime], FieldMetadata(alias="FirstPaymentDateTime")
+        typing.Optional[FirstPaymentDateTime],
+        FieldMetadata(alias="FirstPaymentDateTime"),
+        pydantic.Field(alias="FirstPaymentDateTime"),
     ] = None
-    frequency: typing_extensions.Annotated[Frequency1, FieldMetadata(alias="Frequency")]
+    frequency: typing_extensions.Annotated[
+        Frequency1, FieldMetadata(alias="Frequency"), pydantic.Field(alias="Frequency")
+    ]
     last_payment_amount: typing_extensions.Annotated[
-        typing.Optional[ObActiveOrHistoricCurrencyAndAmount11], FieldMetadata(alias="LastPaymentAmount")
+        typing.Optional[ObActiveOrHistoricCurrencyAndAmount11],
+        FieldMetadata(alias="LastPaymentAmount"),
+        pydantic.Field(alias="LastPaymentAmount"),
     ] = None
     last_payment_date_time: typing_extensions.Annotated[
-        typing.Optional[LastPaymentDateTime], FieldMetadata(alias="LastPaymentDateTime")
+        typing.Optional[LastPaymentDateTime],
+        FieldMetadata(alias="LastPaymentDateTime"),
+        pydantic.Field(alias="LastPaymentDateTime"),
     ] = None
     next_payment_amount: typing_extensions.Annotated[
-        typing.Optional[ObActiveOrHistoricCurrencyAndAmount3], FieldMetadata(alias="NextPaymentAmount")
+        typing.Optional[ObActiveOrHistoricCurrencyAndAmount3],
+        FieldMetadata(alias="NextPaymentAmount"),
+        pydantic.Field(alias="NextPaymentAmount"),
     ] = None
     next_payment_date_time: typing_extensions.Annotated[
-        typing.Optional[NextPaymentDateTime], FieldMetadata(alias="NextPaymentDateTime")
+        typing.Optional[NextPaymentDateTime],
+        FieldMetadata(alias="NextPaymentDateTime"),
+        pydantic.Field(alias="NextPaymentDateTime"),
     ] = None
     number_of_payments: typing_extensions.Annotated[
-        typing.Optional[NumberOfPayments], FieldMetadata(alias="NumberOfPayments")
+        typing.Optional[NumberOfPayments],
+        FieldMetadata(alias="NumberOfPayments"),
+        pydantic.Field(alias="NumberOfPayments"),
     ] = None
-    reference: typing_extensions.Annotated[typing.Optional[Reference], FieldMetadata(alias="Reference")] = None
+    reference: typing_extensions.Annotated[
+        typing.Optional[Reference], FieldMetadata(alias="Reference"), pydantic.Field(alias="Reference")
+    ] = None
     standing_order_id: typing_extensions.Annotated[
-        typing.Optional[StandingOrderId], FieldMetadata(alias="StandingOrderId")
+        typing.Optional[StandingOrderId],
+        FieldMetadata(alias="StandingOrderId"),
+        pydantic.Field(alias="StandingOrderId"),
     ] = None
     standing_order_status_code: typing_extensions.Annotated[
-        typing.Optional[ObExternalStandingOrderStatus1Code], FieldMetadata(alias="StandingOrderStatusCode")
+        typing.Optional[ObExternalStandingOrderStatus1Code],
+        FieldMetadata(alias="StandingOrderStatusCode"),
+        pydantic.Field(alias="StandingOrderStatusCode"),
     ] = None
     supplementary_data: typing_extensions.Annotated[
-        typing.Optional[ObSupplementaryData1], FieldMetadata(alias="SupplementaryData")
+        typing.Optional[ObSupplementaryData1],
+        FieldMetadata(alias="SupplementaryData"),
+        pydantic.Field(alias="SupplementaryData"),
     ] = None
 
     if IS_PYDANTIC_V2:

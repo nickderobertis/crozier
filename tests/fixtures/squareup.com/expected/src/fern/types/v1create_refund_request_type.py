@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class V1CreateRefundRequestType(str, enum.Enum):
+class V1CreateRefundRequestType(enum.StrEnum):
     """ """
 
     FULL = "FULL"

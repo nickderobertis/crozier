@@ -14,17 +14,26 @@ class DestinyEntitiesItemsDestinyItemRenderComponent(UniversalBaseModel):
     """
 
     art_regions: typing_extensions.Annotated[
-        typing.Optional[typing.Dict[str, int]], FieldMetadata(alias="artRegions")
-    ] = pydantic.Field(default=None)
+        typing.Optional[typing.Dict[str, int]],
+        FieldMetadata(alias="artRegions"),
+        pydantic.Field(
+            alias="artRegions",
+            description="A dictionary for rendering gear components, with:\r\nkey = Art Arrangement Region Index\r\nvalue = The chosen Arrangement Index for the Region, based on the value of a stat on the item used for making the choice.",
+        ),
+    ] = None
     """
     A dictionary for rendering gear components, with:
     key = Art Arrangement Region Index
     value = The chosen Arrangement Index for the Region, based on the value of a stat on the item used for making the choice.
     """
 
-    use_custom_dyes: typing_extensions.Annotated[typing.Optional[bool], FieldMetadata(alias="useCustomDyes")] = (
-        pydantic.Field(default=None)
-    )
+    use_custom_dyes: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="useCustomDyes"),
+        pydantic.Field(
+            alias="useCustomDyes", description="If you should use custom dyes on this item, it will be indicated here."
+        ),
+    ] = None
     """
     If you should use custom dyes on this item, it will be indicated here.
     """

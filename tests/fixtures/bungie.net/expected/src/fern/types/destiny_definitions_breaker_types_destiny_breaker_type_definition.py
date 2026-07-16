@@ -15,10 +15,16 @@ class DestinyDefinitionsBreakerTypesDestinyBreakerTypeDefinition(UniversalBaseMo
     display_properties: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="displayProperties"),
+        pydantic.Field(alias="displayProperties"),
     ] = None
-    enum_value: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="enumValue")] = pydantic.Field(
-        default=None
-    )
+    enum_value: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="enumValue"),
+        pydantic.Field(
+            alias="enumValue",
+            description="We have an enumeration for Breaker types for quick reference. This is the current definition's breaker type enum value.",
+        ),
+    ] = None
     """
     We have an enumeration for Breaker types for quick reference. This is the current definition's breaker type enum value.
     """

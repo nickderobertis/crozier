@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class OnboardingState(str, enum.Enum):
+class OnboardingState(enum.StrEnum):
     """
     Onboarding state of application package
     """

@@ -9,9 +9,11 @@ from ...core.serialization import FieldMetadata
 
 
 class PostPortfolioAnalysisSharpeRatioResponsePortfoliosItem(UniversalBaseModel):
-    portfolio_sharpe_ratio: typing_extensions.Annotated[float, FieldMetadata(alias="portfolioSharpeRatio")] = (
-        pydantic.Field()
-    )
+    portfolio_sharpe_ratio: typing_extensions.Annotated[
+        float,
+        FieldMetadata(alias="portfolioSharpeRatio"),
+        pydantic.Field(alias="portfolioSharpeRatio", description="The Sharpe ratio of the portfolio"),
+    ]
     """
     The Sharpe ratio of the portfolio
     """

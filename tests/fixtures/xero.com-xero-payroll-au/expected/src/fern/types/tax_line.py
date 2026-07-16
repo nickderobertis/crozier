@@ -10,40 +10,53 @@ from .manual_tax_type import ManualTaxType
 
 
 class TaxLine(UniversalBaseModel):
-    amount: typing_extensions.Annotated[typing.Optional[float], FieldMetadata(alias="Amount")] = pydantic.Field(
-        default=None
-    )
+    amount: typing_extensions.Annotated[
+        typing.Optional[float],
+        FieldMetadata(alias="Amount"),
+        pydantic.Field(alias="Amount", description="The tax line amount"),
+    ] = None
     """
     The tax line amount
     """
 
-    description: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="Description")] = pydantic.Field(
-        default=None
-    )
+    description: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="Description"),
+        pydantic.Field(alias="Description", description="Description of the tax line."),
+    ] = None
     """
     Description of the tax line.
     """
 
-    liability_account: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="LiabilityAccount")] = (
-        pydantic.Field(default=None)
-    )
+    liability_account: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="LiabilityAccount"),
+        pydantic.Field(
+            alias="LiabilityAccount",
+            description="The tax line liability account code. For posted pay run you should be able to see liability account code",
+        ),
+    ] = None
     """
     The tax line liability account code. For posted pay run you should be able to see liability account code
     """
 
     manual_tax_type: typing_extensions.Annotated[
-        typing.Optional[ManualTaxType], FieldMetadata(alias="ManualTaxType")
+        typing.Optional[ManualTaxType], FieldMetadata(alias="ManualTaxType"), pydantic.Field(alias="ManualTaxType")
     ] = None
-    payslip_tax_line_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="PayslipTaxLineID")] = (
-        pydantic.Field(default=None)
-    )
+    payslip_tax_line_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="PayslipTaxLineID"),
+        pydantic.Field(alias="PayslipTaxLineID", description="Xero identifier for payslip tax line ID."),
+    ] = None
     """
     Xero identifier for payslip tax line ID.
     """
 
-    tax_type_name: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="TaxTypeName")] = (
-        pydantic.Field(default=None)
-    )
+    tax_type_name: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="TaxTypeName"),
+        pydantic.Field(alias="TaxTypeName", description="Name of the tax type."),
+    ] = None
     """
     Name of the tax type.
     """

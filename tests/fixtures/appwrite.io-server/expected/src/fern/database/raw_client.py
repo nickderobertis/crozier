@@ -6,13 +6,15 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..types.collection import Collection
 from ..types.collection_list import CollectionList
 from ..types.document import Document
 from ..types.document_list import DocumentList
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -80,6 +82,10 @@ class RawDatabaseClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_collection(
@@ -144,6 +150,10 @@ class RawDatabaseClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_collection(
@@ -166,7 +176,7 @@ class RawDatabaseClient:
             Collection
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"database/collections/{jsonable_encoder(collection_id)}",
+            f"database/collections/{encode_path_param(collection_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -183,6 +193,10 @@ class RawDatabaseClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_collection(
@@ -224,7 +238,7 @@ class RawDatabaseClient:
             Collection
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"database/collections/{jsonable_encoder(collection_id)}",
+            f"database/collections/{encode_path_param(collection_id)}",
             method="PUT",
             json={
                 "name": name,
@@ -251,6 +265,10 @@ class RawDatabaseClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_collection(
@@ -272,7 +290,7 @@ class RawDatabaseClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"database/collections/{jsonable_encoder(collection_id)}",
+            f"database/collections/{encode_path_param(collection_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -282,6 +300,10 @@ class RawDatabaseClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_documents(
@@ -335,7 +357,7 @@ class RawDatabaseClient:
             Documents List
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"database/collections/{jsonable_encoder(collection_id)}/documents",
+            f"database/collections/{encode_path_param(collection_id)}/documents",
             method="GET",
             params={
                 "filters": filters,
@@ -361,13 +383,17 @@ class RawDatabaseClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_document(
         self,
         collection_id: str,
         *,
-        data: typing.Dict[str, typing.Optional[typing.Any]],
+        data: typing.Dict[str, typing.Any],
         parent_document: typing.Optional[str] = OMIT,
         parent_property: typing.Optional[str] = OMIT,
         parent_property_type: typing.Optional[str] = OMIT,
@@ -383,7 +409,7 @@ class RawDatabaseClient:
         collection_id : str
             Collection unique ID. You can create a new collection with validation rules using the Database service [server integration](/docs/server/database#createCollection).
 
-        data : typing.Dict[str, typing.Optional[typing.Any]]
+        data : typing.Dict[str, typing.Any]
             Document data as JSON object.
 
         parent_document : typing.Optional[str]
@@ -410,7 +436,7 @@ class RawDatabaseClient:
             Document
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"database/collections/{jsonable_encoder(collection_id)}/documents",
+            f"database/collections/{encode_path_param(collection_id)}/documents",
             method="POST",
             json={
                 "data": data,
@@ -439,6 +465,10 @@ class RawDatabaseClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_document(
@@ -464,7 +494,7 @@ class RawDatabaseClient:
             Document
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"database/collections/{jsonable_encoder(collection_id)}/documents/{jsonable_encoder(document_id)}",
+            f"database/collections/{encode_path_param(collection_id)}/documents/{encode_path_param(document_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -481,6 +511,10 @@ class RawDatabaseClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_document(
@@ -505,7 +539,7 @@ class RawDatabaseClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"database/collections/{jsonable_encoder(collection_id)}/documents/{jsonable_encoder(document_id)}",
+            f"database/collections/{encode_path_param(collection_id)}/documents/{encode_path_param(document_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -515,6 +549,10 @@ class RawDatabaseClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_document(
@@ -522,7 +560,7 @@ class RawDatabaseClient:
         collection_id: str,
         document_id: str,
         *,
-        data: typing.Dict[str, typing.Optional[typing.Any]],
+        data: typing.Dict[str, typing.Any],
         read: typing.Optional[typing.Sequence[str]] = OMIT,
         write: typing.Optional[typing.Sequence[str]] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -538,7 +576,7 @@ class RawDatabaseClient:
         document_id : str
             Document unique ID.
 
-        data : typing.Dict[str, typing.Optional[typing.Any]]
+        data : typing.Dict[str, typing.Any]
             Document data as JSON object.
 
         read : typing.Optional[typing.Sequence[str]]
@@ -556,7 +594,7 @@ class RawDatabaseClient:
             Document
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"database/collections/{jsonable_encoder(collection_id)}/documents/{jsonable_encoder(document_id)}",
+            f"database/collections/{encode_path_param(collection_id)}/documents/{encode_path_param(document_id)}",
             method="PATCH",
             json={
                 "data": data,
@@ -582,6 +620,10 @@ class RawDatabaseClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -647,6 +689,10 @@ class AsyncRawDatabaseClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_collection(
@@ -711,6 +757,10 @@ class AsyncRawDatabaseClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_collection(
@@ -733,7 +783,7 @@ class AsyncRawDatabaseClient:
             Collection
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"database/collections/{jsonable_encoder(collection_id)}",
+            f"database/collections/{encode_path_param(collection_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -750,6 +800,10 @@ class AsyncRawDatabaseClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_collection(
@@ -791,7 +845,7 @@ class AsyncRawDatabaseClient:
             Collection
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"database/collections/{jsonable_encoder(collection_id)}",
+            f"database/collections/{encode_path_param(collection_id)}",
             method="PUT",
             json={
                 "name": name,
@@ -818,6 +872,10 @@ class AsyncRawDatabaseClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_collection(
@@ -839,7 +897,7 @@ class AsyncRawDatabaseClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"database/collections/{jsonable_encoder(collection_id)}",
+            f"database/collections/{encode_path_param(collection_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -849,6 +907,10 @@ class AsyncRawDatabaseClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_documents(
@@ -902,7 +964,7 @@ class AsyncRawDatabaseClient:
             Documents List
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"database/collections/{jsonable_encoder(collection_id)}/documents",
+            f"database/collections/{encode_path_param(collection_id)}/documents",
             method="GET",
             params={
                 "filters": filters,
@@ -928,13 +990,17 @@ class AsyncRawDatabaseClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_document(
         self,
         collection_id: str,
         *,
-        data: typing.Dict[str, typing.Optional[typing.Any]],
+        data: typing.Dict[str, typing.Any],
         parent_document: typing.Optional[str] = OMIT,
         parent_property: typing.Optional[str] = OMIT,
         parent_property_type: typing.Optional[str] = OMIT,
@@ -950,7 +1016,7 @@ class AsyncRawDatabaseClient:
         collection_id : str
             Collection unique ID. You can create a new collection with validation rules using the Database service [server integration](/docs/server/database#createCollection).
 
-        data : typing.Dict[str, typing.Optional[typing.Any]]
+        data : typing.Dict[str, typing.Any]
             Document data as JSON object.
 
         parent_document : typing.Optional[str]
@@ -977,7 +1043,7 @@ class AsyncRawDatabaseClient:
             Document
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"database/collections/{jsonable_encoder(collection_id)}/documents",
+            f"database/collections/{encode_path_param(collection_id)}/documents",
             method="POST",
             json={
                 "data": data,
@@ -1006,6 +1072,10 @@ class AsyncRawDatabaseClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_document(
@@ -1031,7 +1101,7 @@ class AsyncRawDatabaseClient:
             Document
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"database/collections/{jsonable_encoder(collection_id)}/documents/{jsonable_encoder(document_id)}",
+            f"database/collections/{encode_path_param(collection_id)}/documents/{encode_path_param(document_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -1048,6 +1118,10 @@ class AsyncRawDatabaseClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_document(
@@ -1072,7 +1146,7 @@ class AsyncRawDatabaseClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"database/collections/{jsonable_encoder(collection_id)}/documents/{jsonable_encoder(document_id)}",
+            f"database/collections/{encode_path_param(collection_id)}/documents/{encode_path_param(document_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -1082,6 +1156,10 @@ class AsyncRawDatabaseClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_document(
@@ -1089,7 +1167,7 @@ class AsyncRawDatabaseClient:
         collection_id: str,
         document_id: str,
         *,
-        data: typing.Dict[str, typing.Optional[typing.Any]],
+        data: typing.Dict[str, typing.Any],
         read: typing.Optional[typing.Sequence[str]] = OMIT,
         write: typing.Optional[typing.Sequence[str]] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -1105,7 +1183,7 @@ class AsyncRawDatabaseClient:
         document_id : str
             Document unique ID.
 
-        data : typing.Dict[str, typing.Optional[typing.Any]]
+        data : typing.Dict[str, typing.Any]
             Document data as JSON object.
 
         read : typing.Optional[typing.Sequence[str]]
@@ -1123,7 +1201,7 @@ class AsyncRawDatabaseClient:
             Document
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"database/collections/{jsonable_encoder(collection_id)}/documents/{jsonable_encoder(document_id)}",
+            f"database/collections/{encode_path_param(collection_id)}/documents/{encode_path_param(document_id)}",
             method="PATCH",
             json={
                 "data": data,
@@ -1149,4 +1227,8 @@ class AsyncRawDatabaseClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

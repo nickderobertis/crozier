@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ObExternalStandingOrderStatus1Code(str, enum.Enum):
+class ObExternalStandingOrderStatus1Code(enum.StrEnum):
     """
     Specifies the status of the standing order in code form.
     """

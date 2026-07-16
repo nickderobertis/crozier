@@ -62,6 +62,7 @@ if typing.TYPE_CHECKING:
         tags,
         task,
     )
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .environment import FernApiEnvironment
     from .service_offering import OrderServiceOfferingResponse
@@ -72,6 +73,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "CheckAvailabilityTask": ".types",
     "CollectionLinks": ".types",
     "CollectionMetadata": ".types",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "ErrorNotFound": ".types",
     "ErrorNotFoundErrorsItem": ".types",
     "FernApi": ".client",
@@ -156,6 +159,8 @@ __all__ = [
     "CheckAvailabilityTask",
     "CollectionLinks",
     "CollectionMetadata",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
     "ErrorNotFound",
     "ErrorNotFoundErrorsItem",
     "FernApi",

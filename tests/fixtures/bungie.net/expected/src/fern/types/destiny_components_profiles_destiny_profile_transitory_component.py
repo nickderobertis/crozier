@@ -29,7 +29,11 @@ class DestinyComponentsProfilesDestinyProfileTransitoryComponent(UniversalBaseMo
     current_activity: typing_extensions.Annotated[
         typing.Optional[DestinyComponentsProfilesDestinyProfileTransitoryCurrentActivity],
         FieldMetadata(alias="currentActivity"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="currentActivity",
+            description="If you are in an activity, this is some transitory info about the activity currently being played.",
+        ),
+    ] = None
     """
     If you are in an activity, this is some transitory info about the activity currently being played.
     """
@@ -42,8 +46,13 @@ class DestinyComponentsProfilesDestinyProfileTransitoryComponent(UniversalBaseMo
     """
 
     last_orbited_destination_hash: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="lastOrbitedDestinationHash")
-    ] = pydantic.Field(default=None)
+        typing.Optional[int],
+        FieldMetadata(alias="lastOrbitedDestinationHash"),
+        pydantic.Field(
+            alias="lastOrbitedDestinationHash",
+            description="The hash identifier for the DestinyDestinationDefinition of the last location you were orbiting when in orbit.",
+        ),
+    ] = None
     """
     The hash identifier for the DestinyDestinationDefinition of the last location you were orbiting when in orbit.
     """
@@ -51,7 +60,11 @@ class DestinyComponentsProfilesDestinyProfileTransitoryComponent(UniversalBaseMo
     party_members: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyComponentsProfilesDestinyProfileTransitoryPartyMember]],
         FieldMetadata(alias="partyMembers"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="partyMembers",
+            description="If you have any members currently in your party, this is some (very) bare-bones information about those members.",
+        ),
+    ] = None
     """
     If you have any members currently in your party, this is some (very) bare-bones information about those members.
     """

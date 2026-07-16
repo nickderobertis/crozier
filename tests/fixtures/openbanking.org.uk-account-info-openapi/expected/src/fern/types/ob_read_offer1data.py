@@ -11,7 +11,9 @@ from .ob_read_offer1data_offer_item import ObReadOffer1DataOfferItem
 
 class ObReadOffer1Data(UniversalBaseModel):
     offer: typing_extensions.Annotated[
-        typing.Optional[typing.List[ObReadOffer1DataOfferItem]], FieldMetadata(alias="Offer")
+        typing.Optional[typing.List[ObReadOffer1DataOfferItem]],
+        FieldMetadata(alias="Offer"),
+        pydantic.Field(alias="Offer"),
     ] = None
 
     if IS_PYDANTIC_V2:

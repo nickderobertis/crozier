@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class BusinessAppointmentSettingsCancellationPolicy(str, enum.Enum):
+class BusinessAppointmentSettingsCancellationPolicy(enum.StrEnum):
     """
     The category of the seller’s cancellation policy.
     """

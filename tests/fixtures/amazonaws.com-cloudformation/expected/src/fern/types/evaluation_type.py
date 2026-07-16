@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class EvaluationType(str, enum.Enum):
+class EvaluationType(enum.StrEnum):
     STATIC = "Static"
     DYNAMIC = "Dynamic"
 

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class EmployeeStatus(str, enum.Enum):
+class EmployeeStatus(enum.StrEnum):
     """
     Employee Status Types
     """

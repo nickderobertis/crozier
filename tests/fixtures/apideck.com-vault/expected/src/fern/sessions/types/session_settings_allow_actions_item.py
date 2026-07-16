@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ...core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class SessionSettingsAllowActionsItem(str, enum.Enum):
+class SessionSettingsAllowActionsItem(enum.StrEnum):
     DELETE = "delete"
     DISCONNECT = "disconnect"
     REAUTHORIZE = "reauthorize"

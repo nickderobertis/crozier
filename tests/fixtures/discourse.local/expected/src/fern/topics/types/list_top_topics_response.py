@@ -9,7 +9,7 @@ from .list_top_topics_response_users_item import ListTopTopicsResponseUsersItem
 
 
 class ListTopTopicsResponse(UniversalBaseModel):
-    primary_groups: typing.Optional[typing.List[typing.Optional[typing.Any]]] = None
+    primary_groups: typing.Optional[typing.List[typing.Any]] = None
     topic_list: typing.Optional[ListTopTopicsResponseTopicList] = None
     users: typing.Optional[typing.List[ListTopTopicsResponseUsersItem]] = None
 

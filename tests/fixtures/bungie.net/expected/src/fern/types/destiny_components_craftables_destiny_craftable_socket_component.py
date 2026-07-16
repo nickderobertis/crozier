@@ -12,7 +12,9 @@ from .destiny_components_craftables_destiny_craftable_socket_plug_component impo
 
 
 class DestinyComponentsCraftablesDestinyCraftableSocketComponent(UniversalBaseModel):
-    plug_set_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="plugSetHash")] = None
+    plug_set_hash: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="plugSetHash"), pydantic.Field(alias="plugSetHash")
+    ] = None
     plugs: typing.Optional[typing.List[DestinyComponentsCraftablesDestinyCraftableSocketPlugComponent]] = (
         pydantic.Field(default=None)
     )

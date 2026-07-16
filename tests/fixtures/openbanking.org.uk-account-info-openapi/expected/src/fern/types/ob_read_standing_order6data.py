@@ -11,7 +11,9 @@ from .ob_standing_order6 import ObStandingOrder6
 
 class ObReadStandingOrder6Data(UniversalBaseModel):
     standing_order: typing_extensions.Annotated[
-        typing.Optional[typing.List[ObStandingOrder6]], FieldMetadata(alias="StandingOrder")
+        typing.Optional[typing.List[ObStandingOrder6]],
+        FieldMetadata(alias="StandingOrder"),
+        pydantic.Field(alias="StandingOrder"),
     ] = None
 
     if IS_PYDANTIC_V2:

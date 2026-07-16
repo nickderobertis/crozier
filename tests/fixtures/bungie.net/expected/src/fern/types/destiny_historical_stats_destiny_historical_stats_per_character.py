@@ -12,7 +12,9 @@ from .destiny_historical_stats_destiny_historical_stats_by_period import (
 
 
 class DestinyHistoricalStatsDestinyHistoricalStatsPerCharacter(UniversalBaseModel):
-    character_id: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="characterId")] = None
+    character_id: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="characterId"), pydantic.Field(alias="characterId")
+    ] = None
     deleted: typing.Optional[bool] = None
     merged: typing.Optional[DestinyHistoricalStatsDestinyHistoricalStatsByPeriod] = None
     results: typing.Optional[typing.Dict[str, DestinyHistoricalStatsDestinyHistoricalStatsByPeriod]] = None

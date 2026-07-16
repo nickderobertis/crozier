@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ConnectionStateType(str, enum.Enum):
+class ConnectionStateType(enum.StrEnum):
     GLOBAL = "global"
     STREAM = "stream"
     LEGACY = "legacy"

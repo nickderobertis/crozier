@@ -36,14 +36,23 @@ class DestinyDefinitionsDirectorDestinyActivityGraphNodeDefinition(UniversalBase
     featuring_states: typing_extensions.Annotated[
         typing.Optional[typing.List[DestinyDefinitionsDirectorDestinyActivityGraphNodeFeaturingStateDefinition]],
         FieldMetadata(alias="featuringStates"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="featuringStates",
+            description="The node may have various visual accents placed on it, or styles applied. These are the list of possible styles that the Node can have. The game iterates through each, looking for the first one that passes a check of the required game/character/account state in order to show that style, and then renders the node in that style.",
+        ),
+    ] = None
     """
     The node may have various visual accents placed on it, or styles applied. These are the list of possible styles that the Node can have. The game iterates through each, looking for the first one that passes a check of the required game/character/account state in order to show that style, and then renders the node in that style.
     """
 
-    node_id: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="nodeId")] = pydantic.Field(
-        default=None
-    )
+    node_id: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="nodeId"),
+        pydantic.Field(
+            alias="nodeId",
+            description="An identifier for the Activity Graph Node, only guaranteed to be unique within its parent Activity Graph.",
+        ),
+    ] = None
     """
     An identifier for the Activity Graph Node, only guaranteed to be unique within its parent Activity Graph.
     """
@@ -51,7 +60,11 @@ class DestinyDefinitionsDirectorDestinyActivityGraphNodeDefinition(UniversalBase
     override_display: typing_extensions.Annotated[
         typing.Optional[DestinyDefinitionsCommonDestinyDisplayPropertiesDefinition],
         FieldMetadata(alias="overrideDisplay"),
-    ] = pydantic.Field(default=None)
+        pydantic.Field(
+            alias="overrideDisplay",
+            description="The node *may* have display properties that override the active Activity's display properties.",
+        ),
+    ] = None
     """
     The node *may* have display properties that override the active Activity's display properties.
     """

@@ -9,16 +9,26 @@ from ..core.serialization import FieldMetadata
 
 
 class DestinyDefinitionsDestinyObjectiveDisplayProperties(UniversalBaseModel):
-    activity_hash: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="activityHash")] = (
-        pydantic.Field(default=None)
-    )
+    activity_hash: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="activityHash"),
+        pydantic.Field(
+            alias="activityHash",
+            description="The activity associated with this objective in the context of this item, if any.",
+        ),
+    ] = None
     """
     The activity associated with this objective in the context of this item, if any.
     """
 
     display_on_item_preview_screen: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="displayOnItemPreviewScreen")
-    ] = pydantic.Field(default=None)
+        typing.Optional[bool],
+        FieldMetadata(alias="displayOnItemPreviewScreen"),
+        pydantic.Field(
+            alias="displayOnItemPreviewScreen",
+            description="If true, the game shows this objective on item preview screens.",
+        ),
+    ] = None
     """
     If true, the game shows this objective on item preview screens.
     """

@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class MessageType(str, enum.Enum):
+class MessageType(enum.StrEnum):
     """
     Set to sms for SMS messages and mms for MMS messages.
     """

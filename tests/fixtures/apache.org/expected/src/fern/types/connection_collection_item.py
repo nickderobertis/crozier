@@ -44,9 +44,11 @@ class ConnectionCollectionItem(UniversalBaseModel):
     Port of the connection.
     """
 
-    schema_: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="schema")] = pydantic.Field(
-        default=None
-    )
+    schema_: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="schema"),
+        pydantic.Field(alias="schema", description="Schema of the connection."),
+    ] = None
     """
     Schema of the connection.
     """

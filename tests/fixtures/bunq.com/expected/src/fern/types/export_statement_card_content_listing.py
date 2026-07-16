@@ -2,4 +2,4 @@
 
 import typing
 
-ExportStatementCardContentListing = typing.Dict[str, typing.Optional[typing.Any]]
+ExportStatementCardContentListing = typing.Dict[str, typing.Any]

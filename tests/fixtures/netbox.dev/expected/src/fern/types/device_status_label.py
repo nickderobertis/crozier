@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class DeviceStatusLabel(str, enum.Enum):
+class DeviceStatusLabel(enum.StrEnum):
     OFFLINE = "Offline"
     ACTIVE = "Active"
     PLANNED = "Planned"

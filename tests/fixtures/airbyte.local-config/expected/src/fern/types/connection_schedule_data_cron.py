@@ -9,8 +9,12 @@ from ..core.serialization import FieldMetadata
 
 
 class ConnectionScheduleDataCron(UniversalBaseModel):
-    cron_expression: typing_extensions.Annotated[str, FieldMetadata(alias="cronExpression")]
-    cron_time_zone: typing_extensions.Annotated[str, FieldMetadata(alias="cronTimeZone")]
+    cron_expression: typing_extensions.Annotated[
+        str, FieldMetadata(alias="cronExpression"), pydantic.Field(alias="cronExpression")
+    ]
+    cron_time_zone: typing_extensions.Annotated[
+        str, FieldMetadata(alias="cronTimeZone"), pydantic.Field(alias="cronTimeZone")
+    ]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

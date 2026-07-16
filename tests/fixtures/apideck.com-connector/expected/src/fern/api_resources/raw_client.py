@@ -6,7 +6,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.not_found_error import NotFoundError
@@ -17,6 +18,7 @@ from ..types.get_api_resource_response import GetApiResourceResponse
 from ..types.not_found_response import NotFoundResponse
 from ..types.payment_required_response import PaymentRequiredResponse
 from ..types.unauthorized_response import UnauthorizedResponse
+from pydantic import ValidationError
 
 
 class RawApiResourcesClient:
@@ -46,7 +48,7 @@ class RawApiResourcesClient:
             ApiResources
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"connector/apis/{jsonable_encoder(id)}/resources/{jsonable_encoder(resource_id)}",
+            f"connector/apis/{encode_path_param(id)}/resources/{encode_path_param(resource_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -96,6 +98,10 @@ class RawApiResourcesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def api_resource_coverage_one(
@@ -121,7 +127,7 @@ class RawApiResourcesClient:
             ApiResources
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"connector/apis/{jsonable_encoder(id)}/resources/{jsonable_encoder(resource_id)}/coverage",
+            f"connector/apis/{encode_path_param(id)}/resources/{encode_path_param(resource_id)}/coverage",
             method="GET",
             request_options=request_options,
         )
@@ -171,6 +177,10 @@ class RawApiResourcesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
 
@@ -201,7 +211,7 @@ class AsyncRawApiResourcesClient:
             ApiResources
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"connector/apis/{jsonable_encoder(id)}/resources/{jsonable_encoder(resource_id)}",
+            f"connector/apis/{encode_path_param(id)}/resources/{encode_path_param(resource_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -251,6 +261,10 @@ class AsyncRawApiResourcesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def api_resource_coverage_one(
@@ -276,7 +290,7 @@ class AsyncRawApiResourcesClient:
             ApiResources
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"connector/apis/{jsonable_encoder(id)}/resources/{jsonable_encoder(resource_id)}/coverage",
+            f"connector/apis/{encode_path_param(id)}/resources/{encode_path_param(resource_id)}/coverage",
             method="GET",
             request_options=request_options,
         )
@@ -326,4 +340,8 @@ class AsyncRawApiResourcesClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

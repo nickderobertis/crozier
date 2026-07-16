@@ -10,7 +10,7 @@ from .list_category_topics_response_topic_list_topics_item import ListCategoryTo
 class ListCategoryTopicsResponseTopicList(UniversalBaseModel):
     can_create_topic: bool
     per_page: int
-    top_tags: typing.Optional[typing.List[typing.Optional[typing.Any]]] = None
+    top_tags: typing.Optional[typing.List[typing.Any]] = None
     topics: typing.List[ListCategoryTopicsResponseTopicListTopicsItem]
 
     if IS_PYDANTIC_V2:

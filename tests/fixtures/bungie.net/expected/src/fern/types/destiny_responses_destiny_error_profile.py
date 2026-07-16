@@ -15,16 +15,26 @@ class DestinyResponsesDestinyErrorProfile(UniversalBaseModel):
     Assume that the most you'll get is the Error Code, the Membership Type and the Membership ID.
     """
 
-    error_code: typing_extensions.Annotated[typing.Optional[int], FieldMetadata(alias="errorCode")] = pydantic.Field(
-        default=None
-    )
+    error_code: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="errorCode"),
+        pydantic.Field(
+            alias="errorCode",
+            description="The error that we encountered. You should be able to look up localized text to show to the user for these failures.",
+        ),
+    ] = None
     """
     The error that we encountered. You should be able to look up localized text to show to the user for these failures.
     """
 
-    info_card: typing_extensions.Annotated[typing.Optional[UserUserInfoCard], FieldMetadata(alias="infoCard")] = (
-        pydantic.Field(default=None)
-    )
+    info_card: typing_extensions.Annotated[
+        typing.Optional[UserUserInfoCard],
+        FieldMetadata(alias="infoCard"),
+        pydantic.Field(
+            alias="infoCard",
+            description="Basic info about the account that failed. Don't expect anything other than membership ID, Membership Type, and displayName to be populated.",
+        ),
+    ] = None
     """
     Basic info about the account that failed. Don't expect anything other than membership ID, Membership Type, and displayName to be populated.
     """

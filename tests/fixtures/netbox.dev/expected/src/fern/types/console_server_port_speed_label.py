@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class ConsoleServerPortSpeedLabel(str, enum.Enum):
+class ConsoleServerPortSpeedLabel(enum.StrEnum):
     ONE_THOUSAND_TWO_HUNDRED_BPS = "1200 bps"
     TWO_THOUSAND_FOUR_HUNDRED_BPS = "2400 bps"
     FOUR_THOUSAND_EIGHT_HUNDRED_BPS = "4800 bps"
