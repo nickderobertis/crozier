@@ -75,7 +75,17 @@ pub fn to_snake_case(input: &str) -> String {
 /// `the_content_endpoint` rather than retaining the slash.
 #[must_use]
 pub fn prose_identifier(input: &str) -> String {
-    sanitize_identifier(&to_snake_case(&fold_non_identifier(input)))
+    let folded: String = input
+        .chars()
+        .filter_map(|c| match c {
+            // Possessives are contractions, not word boundaries: Fern derives
+            // `seller's feedback` as `sellers_feedback`.
+            '\'' | '\u{2019}' => None,
+            c if c.is_ascii_alphanumeric() => Some(c),
+            _ => Some(' '),
+        })
+        .collect();
+    sanitize_identifier(&collapse_digit_boundaries(&to_snake_case(&folded)))
 }
 
 /// `PascalCase` of an identifier.
@@ -220,10 +230,9 @@ fn digit_word(word: &str) -> Option<&'static str> {
 
 /// Split an enum wire value into Fern's identifier words: every non-alphanumeric
 /// run separates, `camelCase`/`PascalCase` boundaries split, and a bare
-/// single-digit word is spelled out (`0` → `zero`). This reproduces Fern's
-/// enum-value name generation, whose cased forms drive both the member name and
-/// the `visit` parameter (`0: Active` → words `[zero, active]`; `1: InActive` →
-/// `[one, in, active]`).
+/// single-digit word is spelled out (`0` → `zero`). This is the general enum path;
+/// UUID-shaped values use Fern's separate smart-casing quirk in
+/// [`uuid_enum_identifier`].
 fn enum_words(value: &str) -> Vec<String> {
     if value.is_empty() {
         return vec!["empty".to_string()];
@@ -267,6 +276,60 @@ fn enum_words(value: &str) -> Vec<String> {
     words
 }
 
+fn enum_identifier(value: &str) -> String {
+    if is_uuid(value) {
+        uuid_enum_identifier(value)
+    } else {
+        enum_words(value).join("_")
+    }
+}
+
+fn is_uuid(value: &str) -> bool {
+    let parts: Vec<&str> = value.split('-').collect();
+    parts.len() == 5
+        && parts.iter().zip([8, 4, 4, 4, 12]).all(|(part, len)| {
+            part.len() == len && part.bytes().all(|byte| byte.is_ascii_hexdigit())
+        })
+}
+
+/// Fern's smart-casing path handles UUID-shaped enum values differently from
+/// ordinary digit-leading values: a leading digit is wordified, longer numeric
+/// prefixes use its literal `undefined` fallback, and digit-adjacent separators
+/// collapse. Keep this scoped to canonical UUIDs so Crozier's established legal
+/// fallback for enums Fern rejects (`_01_00_AM`) remains intact.
+fn uuid_enum_identifier(value: &str) -> String {
+    let mut words = split_words(value);
+    if let Some(first) = words.first_mut() {
+        let digit_len = first.bytes().take_while(u8::is_ascii_digit).count();
+        if digit_len > 0 {
+            let suffix = first[digit_len..].to_string();
+            let numeric = &first[..digit_len];
+            *first = digit_word(numeric).unwrap_or("undefined").to_string();
+            if !suffix.is_empty() {
+                words.insert(1, suffix);
+            }
+        }
+    }
+    let collapsed = collapse_digit_boundaries(&words.join("_"));
+    let chars: Vec<char> = collapsed.chars().collect();
+    chars
+        .iter()
+        .enumerate()
+        .filter_map(|(index, &ch)| {
+            // Fern's smart casing also joins single-letter fragments bracketed by
+            // numeric runs (`466d-b0` -> `466db0`) after digit-boundary folding.
+            let numeric_single_letter_bridge = ch == '_'
+                && index >= 2
+                && index + 2 < chars.len()
+                && chars[index - 2].is_ascii_digit()
+                && chars[index - 1].is_ascii_alphabetic()
+                && chars[index + 1].is_ascii_alphabetic()
+                && chars[index + 2].is_ascii_digit();
+            (!numeric_single_letter_bridge).then_some(ch)
+        })
+        .collect()
+}
+
 /// Coerce a cased enum identifier into a legal, non-empty Python name: a value
 /// with no usable characters falls back to `_`, a leading digit (a multi-digit
 /// token Fern would reject) is prefixed with `_`, and a reserved word gets the
@@ -290,7 +353,7 @@ fn finalize_enum_ident(mut name: String) -> String {
 /// `GLOBAL`, `0: Active` → `ZERO_ACTIVE`.
 #[must_use]
 pub fn enum_member_name(value: &str) -> String {
-    finalize_enum_ident(enum_words(value).join("_").to_ascii_uppercase())
+    finalize_enum_ident(enum_identifier(value).to_ascii_uppercase())
 }
 
 /// The `snake_case` `visit` callback parameter for an enum wire value, sanitized
@@ -304,7 +367,7 @@ pub fn enum_member_name(value: &str) -> String {
 /// — Fern leaves it alone, and matching Fern is the contract.
 #[must_use]
 pub fn enum_visit_param(value: &str) -> String {
-    let mut name = finalize_enum_ident(enum_words(value).join("_"));
+    let mut name = finalize_enum_ident(enum_identifier(value));
     if name == "self" {
         name.push('_');
     }
@@ -473,6 +536,26 @@ mod tests {
         assert_eq!(enum_visit_param("ID_CUSIP_8_CHR"), "id_cusip8chr");
         assert_eq!(enum_member_name("SCHEDULE5MANUAL"), "SCHEDULE5MANUAL");
         assert_eq!(enum_visit_param("SCHEDULE5MANUAL"), "schedule5manual");
+        assert_eq!(
+            enum_member_name("fbf35668-96a0-4baa-bcde-ab18d6b1b329"),
+            "FBF3566896A04BAA_BCDE_AB18D6B1B329"
+        );
+        assert_eq!(
+            enum_member_name("6a9dfcad-600b-46c8-9e08-ce6e5057921e"),
+            "SIX_A9DFCAD600B46C89E08CE6E5057921E"
+        );
+        assert_eq!(
+            enum_member_name("98777886-76d0-44c8-865e-bb40e669e934"),
+            "UNDEFINED76D044C8865E_BB40E669E934"
+        );
+        assert_eq!(
+            enum_member_name("ac5b9c1e-dc78-466d-b0b3-7cf712967a48"),
+            "AC5B9C1E_DC78466DB0B37CF712967A48"
+        );
+        assert_eq!(
+            enum_visit_param("ac5b9c1e-dc78-466d-b0b3-7cf712967a48"),
+            "ac5b9c1e_dc78466db0b37cf712967a48"
+        );
         assert_eq!(enum_member_name(""), "EMPTY");
         assert_eq!(enum_visit_param(""), "empty");
         assert_eq!(enum_visit_param("1: InActive"), "one_in_active");
@@ -496,8 +579,8 @@ mod tests {
 
     #[test]
     fn enum_names_stay_legal_where_fern_would_error() {
-        // A multi-digit leading token is not spelled out (Fern rejects it); crozier
-        // prefixes `_` so the identifier is still legal Python.
+        // Outside the UUID-specific smart-casing path, multi-digit leading tokens
+        // retain Crozier's legal-identifier guard for values Fern rejects.
         assert_eq!(enum_member_name("_01_00_AM"), "_01_00_AM");
         assert_eq!(enum_visit_param("_01_00_AM"), "_01_00_am");
         assert_eq!(enum_member_name("2fa"), "_2FA");
@@ -517,6 +600,14 @@ mod tests {
         assert_eq!(
             prose_identifier("The /content endpoint"),
             "the_content_endpoint"
+        );
+        assert_eq!(
+            prose_identifier("Get seller's feedback"),
+            "get_sellers_feedback"
+        );
+        assert_eq!(
+            prose_identifier("Returns 200 on success or 422 on failure"),
+            "returns200on_success_or422on_failure"
         );
         assert_eq!(
             sanitize_identifier("endpoints_container"),

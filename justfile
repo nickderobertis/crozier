@@ -110,6 +110,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e redhat_catalog_inventory_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e xero_payroll_au_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e traccar_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e reverb_com_matches_fern_output
 
 # Format the codebase in place.
 format:

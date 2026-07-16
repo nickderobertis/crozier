@@ -391,7 +391,13 @@ fn oauth_scope_enum(doc: &OpenApi) -> Option<EnumType> {
             name: dedupe(naming::enum_member_name(value), &mut seen_members),
             visit_param: dedupe(naming::enum_visit_param(value), &mut seen_params),
             value: value.clone(),
-            docstring: clean_doc(Some(doc)),
+            // OAuth scope descriptions are map values, so even an empty string is
+            // explicitly declared. Fern preserves that as an empty member docstring.
+            docstring: if doc.trim().is_empty() {
+                Some(String::new())
+            } else {
+                clean_doc(Some(doc))
+            },
         })
         .collect();
     Some(EnumType {
@@ -1462,14 +1468,16 @@ fn endpoints(
                 &global_names,
             );
             // Fern exposes one method for duplicate synthesized/declared names in
-            // the same client, with the later operation replacing the earlier one.
-            // Keep all already-hoisted response types, but only the winning endpoint.
+            // the same client, with the later operation replacing the earlier one's
+            // contents while retaining its first-seen position. Keep all
+            // already-hoisted response types, but only the winning endpoint.
             if let Some(index) = out.iter().position(|existing: &Endpoint| {
                 existing.module == endpoint.module && existing.method_name == endpoint.method_name
             }) {
-                out.remove(index);
+                out[index] = endpoint;
+            } else {
+                out.push(endpoint);
             }
-            out.push(endpoint);
         }
     }
     (out, tag_types)
@@ -4906,6 +4914,7 @@ mod tests {
                                 "authorizationUrl": "https://example.com/auth",
                                 "tokenUrl": "https://example.com/token",
                                 "scopes": {
+                                    "Public": "",
                                     "ReadData": "Read data",
                                     "WriteData": "Write data"
                                 }
@@ -4925,6 +4934,7 @@ mod tests {
                 .map(|m| (m.name.as_str(), m.value.as_str(), m.docstring.as_deref()))
                 .collect::<Vec<_>>(),
             [
+                ("PUBLIC", "Public", Some("")),
                 ("READ_DATA", "ReadData", Some("Read data")),
                 ("WRITE_DATA", "WriteData", Some("Write data")),
             ]
@@ -5312,6 +5322,45 @@ mod tests {
         assert_eq!(
             synthesized_method_name("PUT", "/widgets/{id}"),
             "put_widgets_id"
+        );
+    }
+
+    #[test]
+    fn duplicate_endpoint_replaces_contents_in_first_seen_position() {
+        let doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "paths": {
+                "/a-first": {
+                    "post": {
+                        "tags": ["widgets"],
+                        "summary": "Same method",
+                        "responses": { "200": { "description": "OK" } }
+                    }
+                },
+                "/b-between": {
+                    "get": {
+                        "tags": ["widgets"],
+                        "summary": "Between",
+                        "responses": { "200": { "description": "OK" } }
+                    }
+                },
+                "/c-last": {
+                    "post": {
+                        "tags": ["widgets"],
+                        "summary": "Same method",
+                        "responses": { "200": { "description": "OK" } }
+                    }
+                }
+            }
+        }))
+        .expect("document deserializes");
+
+        let (endpoints, _) = super::endpoints(&doc, &[], &[]);
+        assert_eq!(
+            endpoints
+                .iter()
+                .map(|endpoint| endpoint.path.as_str())
+                .collect::<Vec<_>>(),
+            ["/c-last", "/b-between"]
         );
     }
 

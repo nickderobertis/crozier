@@ -1240,11 +1240,12 @@ fn root_init_file(
 /// (`gettoken`), unless its request-body declaration is documented (Red Hat's
 /// GraphQL request). An undocumented referenced body of only scalar fields with any
 /// optional one (`createaccount`), a single-field reference (`create`), or a
-/// union/enum/scalar/no body renders empty parens. A legacy codegen-named body is
-/// always represented by a placeholder because Fern preserves its Swagger body
-/// semantics even after flattening it into keyword arguments.
+/// union/enum/scalar/no body renders empty parens. A request-body component reference
+/// or legacy codegen-named body is always represented by a placeholder because Fern
+/// preserves its declared-body semantics even after flattening it into keyword
+/// arguments.
 fn complex_body(ep: &Endpoint, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) -> bool {
-    if ep.body_codegen_named && ep.request_body.is_some()
+    if (ep.body_codegen_named || ep.body_component_ref) && ep.request_body.is_some()
         || ep.body_media_has_example
         || ep.body_all_of
         || (ep.body_schema_ref
@@ -1785,6 +1786,18 @@ fn reference_param_annotation(annotation: &str) -> String {
                     "typing.Optional[\n    typing.Union[\n        {item},\n        typing.Sequence[{item}],\n    ]\n]"
                 );
             }
+        }
+    }
+
+    // Fern's reference type writer wraps a long optional container at its outer
+    // brackets once the annotation itself exceeds 80 columns. Method signatures
+    // are formatted separately by Ruff and retain the ordinary one-line type.
+    if annotation.len() > 80 {
+        if let Some(inner) = annotation
+            .strip_prefix("typing.Optional[")
+            .and_then(|value| value.strip_suffix(']'))
+        {
+            return format!("typing.Optional[\n    {inner}\n]");
         }
     }
 
@@ -5658,9 +5671,10 @@ mod tests {
     use super::{
         abbrev_call, auth_client_parts, auth_example_args, auth_wrapper_parts, build_example,
         client_method, complex_body, environment, escape_py_str, example_from_json, field_decl,
-        raw_method, raw_type_str, readme_endpoint, render, render_class_body, render_enum,
-        render_type_decl, url_arg, ClientCtx, Example, ExampleCtx, FieldView, Imports, ParamRow,
-        RefLoc, ReferenceEntryView, RenderedField, RootClientView, RootModuleView, Slot,
+        raw_method, raw_type_str, readme_endpoint, reference_param_annotation, render,
+        render_class_body, render_enum, render_type_decl, url_arg, ClientCtx, Example, ExampleCtx,
+        FieldView, Imports, ParamRow, RefLoc, ReferenceEntryView, RenderedField, RootClientView,
+        RootModuleView, Slot,
     };
     use crate::ir::{
         AliasType, Auth, BodyField, DiscriminatedUnion, Endpoint, EnumMember, EnumType,
@@ -5945,6 +5959,28 @@ mod tests {
     }
 
     #[test]
+    fn component_request_body_keeps_abbreviated_placeholder() {
+        let mut ep = endpoint("/offers/{id}", Vec::new(), None);
+        ep.body_component_ref = true;
+        ep.request_body = Some(RequestBody::Inline(vec![BodyField {
+            wire_name: "message".to_string(),
+            py_name: "message".to_string(),
+            type_ref: TypeRef::Primitive(Prim::Str),
+            optional: true,
+            nullable: false,
+            spec_required: false,
+            docstring: None,
+            convert: false,
+            is_file: false,
+            collision_prefix: None,
+            example: None,
+            media_example: false,
+        }]));
+
+        assert!(complex_body(&ep, &[], &[]));
+    }
+
+    #[test]
     fn media_example_keeps_abbreviated_placeholder_for_inline_collection_body() {
         let mut ep = endpoint("/batch", Vec::new(), None);
         ep.body_media_has_example = true;
@@ -6223,6 +6259,20 @@ mod tests {
         assert_eq!(escape_py_str("X-Tenant"), "X-Tenant");
         // A quote/backslash/newline that would break out of the literal is escaped.
         assert_eq!(escape_py_str("a\"b\\c\nd\re"), "a\\\"b\\\\c\\nd\\re");
+    }
+
+    #[test]
+    fn reference_wraps_long_optional_container_annotations() {
+        let long =
+            "typing.Optional[typing.Sequence[PostMyNegotiationsIdCounterRequestOfferItemsItem]]";
+        assert_eq!(
+            reference_param_annotation(long),
+            "typing.Optional[\n    typing.Sequence[PostMyNegotiationsIdCounterRequestOfferItemsItem]\n]"
+        );
+        assert_eq!(
+            reference_param_annotation("typing.Optional[typing.Sequence[str]]"),
+            "typing.Optional[typing.Sequence[str]]"
+        );
     }
 
     #[test]
