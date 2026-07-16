@@ -278,35 +278,27 @@ def select_rows(root: Path, rows: list[CorpusRow], requested: list[str]) -> list
     return selected
 
 
-def cache_path(root: Path, row: CorpusRow) -> Path:
-    suffix = Path(urlsplit(row.url).path).suffix.lower()
-    return root / ".local" / "corpus" / row.fixture / f"openapi{suffix}"
-
-
 def fetch_spec(root: Path, row: CorpusRow, *, force: bool) -> Path:
-    destination = cache_path(root, row)
-    if not force and destination.is_file() and destination.stat().st_size > 0:
-        return destination
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    fd, temporary_name = tempfile.mkstemp(prefix=".openapi.", dir=destination.parent)
-    os.close(fd)
-    temporary = Path(temporary_name)
-    try:
-        result = run_command(
-            ["curl", "-fsSL", "-A", "crozier-fern-goldens", row.url, "-o", str(temporary)],
-            cwd=root,
+    argv = [
+        "just",
+        "--justfile",
+        str(root / "justfile"),
+        "fetch-corpus",
+        "--fixture",
+        row.name,
+    ]
+    if not force:
+        argv.append("--if-missing")
+    result = run_command(argv, cwd=root)
+    if result.returncode != 0:
+        detail = ((result.stderr or "") + (result.stdout or "")).strip()
+        raise GoldensError(
+            f"spec fetch failed: {detail or f'fetch-corpus exited {result.returncode}'}"
         )
-        if result.returncode != 0:
-            detail = (result.stderr or "").strip()
-            raise GoldensError(
-                f"spec fetch failed: {detail or f'curl exited {result.returncode}'}"
-            )
-        if not temporary.is_file() or temporary.stat().st_size == 0:
-            raise GoldensError("spec fetch produced an empty file")
-        temporary.replace(destination)
-        return destination
-    finally:
-        temporary.unlink(missing_ok=True)
+    destination = root / ".local" / "corpus" / row.name / "openapi.json"
+    if not destination.is_file() or destination.stat().st_size == 0:
+        raise GoldensError(f"fetch-corpus returned success without {destination}")
+    return destination
 
 
 def atomic_replace_directory(staged: Path, destination: Path) -> None:
@@ -391,7 +383,6 @@ def generate(root: Path, version_arg: str | None, selectors: list[str]) -> int:
                 log_path.write_text(
                     f"current: {row.fixture} at {GENERATOR}:{version}\n", encoding="utf-8"
                 )
-                print(f"fern-goldens: current {row.fixture}; generation skipped")
                 continue
 
             fixture_dir.mkdir(parents=True, exist_ok=True)
@@ -659,6 +650,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     run_parser = commands.add_parser("run", help="generate then compare without fail-fast")
     add_generation_arguments(run_parser)
     commands.add_parser("compare", help="aggregate all available golden differences")
+    commands.add_parser("latest-version", help=f"print the latest stable {GENERATOR} tag")
     publish_parser = commands.add_parser("publish", help="commit/push successful outputs")
     publish_parser.add_argument("--branch", required=True)
     result_parser = commands.add_parser("result", help="emit the final deferred workflow status")
@@ -676,6 +668,9 @@ def main(argv: list[str]) -> int:
             return generate(root, args.version, selectors_from(args))
         if args.command == "compare":
             return compare(root)
+        if args.command == "latest-version":
+            print(resolve_latest_version(root))
+            return 0
         if args.command == "publish":
             return publish(root, args.branch)
         if args.command == "result":

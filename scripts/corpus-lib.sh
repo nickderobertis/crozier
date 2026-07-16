@@ -66,10 +66,23 @@ corpus_is_direct_spec_url() {
 corpus_fetch_source() {
   local fetch_root="$1" name="$2" url="$3" ref="$4"
   if corpus_is_direct_spec_url "$url"; then
-    local ext="${url##*.}" target_dir="$fetch_root/$name" target
+    local target_dir="$fetch_root/$name" target temporary
     mkdir -p "$target_dir"
-    target="$target_dir/openapi.$ext"
-    curl -fsSL -A crozier-fixture-builder "$url" -o "$target"
+    # The Rust corpus runner and every fixture command consume this canonical
+    # cache path. The document parser detects JSON/YAML from its contents, so the
+    # source URL's suffix must not create a second, invisible cache layout.
+    target="$target_dir/openapi.json"
+    temporary="$(mktemp "$target_dir/.openapi.XXXXXX")"
+    if ! curl -fsSL -A crozier-fixture-builder "$url" -o "$temporary"; then
+      rm -f "$temporary"
+      return 1
+    fi
+    if [ ! -s "$temporary" ]; then
+      echo "corpus: fetched an empty spec for $name from $url" >&2
+      rm -f "$temporary"
+      return 1
+    fi
+    mv "$temporary" "$target"
     printf '%s\n' "$target"
   else
     corpus_fetch_repo "$fetch_root" "$name" "$url" "$ref"

@@ -77,6 +77,24 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             r"""
             #!/usr/bin/env python3
             import os
+            import pathlib
+            import sys
+
+            args = sys.argv[1:]
+            if "fetch-corpus" in args:
+                fixture = args[args.index("--fixture") + 1]
+                root = pathlib.Path(os.environ["CROZIER_FERN_GOLDENS_ROOT"])
+                destination = root / ".local" / "corpus" / fixture / "openapi.json"
+                with (root / ".fetch-calls").open("a", encoding="utf-8") as calls:
+                    calls.write(" ".join(args[args.index("fetch-corpus"):]) + "\n")
+                if fixture in os.environ.get("FAIL_FETCH", "").split(","):
+                    print("synthetic fetch failure", file=sys.stderr)
+                    raise SystemExit(22)
+                if "--if-missing" not in args or not destination.is_file():
+                    destination.parent.mkdir(parents=True, exist_ok=True)
+                    destination.write_text('{"openapi":"3.0.3"}\n', encoding="utf-8")
+                print(destination)
+                raise SystemExit(0)
 
             if os.environ.get("CROZIER_DIFF_LINK_ONLY") != "1":
                 print("managed-corpus filter was not set")
@@ -160,6 +178,10 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         path = self.root / ".generator-calls"
         return path.read_text(encoding="utf-8").splitlines() if path.exists() else []
 
+    def fetch_calls(self) -> list[str]:
+        path = self.root / ".fetch-calls"
+        return path.read_text(encoding="utf-8").splitlines() if path.exists() else []
+
     def state(self, fixture: str) -> dict[str, str]:
         path = self.root / "tests" / "fixtures" / fixture / "expected" / STATE
         return json.loads(path.read_text(encoding="utf-8"))
@@ -179,7 +201,8 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         current = self.run_tool(
             "generate", "--version", "4.9.0", "--fixture", "alpha", check=True
         )
-        self.assertIn("generation skipped", current.stdout)
+        self.assertEqual(current.stdout.count("Fern generation summary:"), 1)
+        self.assertNotIn("generation skipped", current.stdout)
         self.assertEqual(len(self.calls()), 1)
 
         self.run_tool(
@@ -201,21 +224,60 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         self.assertEqual(len(self.calls()), 5)
         no_op = self.run_tool("generate", "--version", "4.10.0", check=True)
         self.assertIn("0 generated, 3 current, 0 failed", no_op.stdout)
+        self.assertEqual(no_op.stdout.count("Fern generation summary:"), 1)
         self.assertEqual(len(self.calls()), 5)
         self.assertFalse(
             (self.root / ".local" / "fern-goldens" / "generated-goldens.tar.gz").exists()
         )
 
     def test_latest_tag_and_spec_identity_change_regenerate(self) -> None:
+        latest = self.run_tool("latest-version", check=True)
+        self.assertEqual(latest.stdout, "4.10.0\n")
         self.run_tool("generate", "--fixture", "alpha", check=True)
         self.assertEqual(self.state("alpha")["fern_python_sdk_version"], "4.10.0")
-        self.write_manifest(alpha_url="https://example.test/alpha/replacement.json")
+        self.write_manifest(alpha_url="https://example.test/alpha/replacement.yaml")
         self.run_tool("generate", "--fixture", "alpha", check=True)
         self.assertEqual(len(self.calls()), 2)
         self.assertEqual(
             self.state("alpha")["corpus_spec_url"],
-            "https://example.test/alpha/replacement.json",
+            "https://example.test/alpha/replacement.yaml",
         )
+        self.assertTrue(
+            (self.root / ".local" / "corpus" / "alpha" / "openapi.json").is_file()
+        )
+        self.assertTrue(all("fetch-corpus --fixture alpha" in call for call in self.fetch_calls()))
+
+    def test_shared_fetch_command_uses_canonical_cache_and_reuses_it(self) -> None:
+        destination = Path(self.temporary.name) / "corpus-cache"
+        command = [
+            str(REPO / "scripts" / "fetch-corpus.sh"),
+            "--fixture",
+            "apideck.com-crm",
+            str(destination),
+        ]
+        first = subprocess.run(
+            command,
+            cwd=REPO,
+            env=self.environment(),
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        self.assertEqual(first.returncode, 0, first.stderr)
+        canonical = destination / "apideck.com-crm" / "openapi.json"
+        self.assertEqual(first.stdout, f"{canonical}\n")
+        self.assertTrue(canonical.is_file())
+
+        second = subprocess.run(
+            [*command[:-1], "--if-missing", command[-1]],
+            cwd=REPO,
+            env=self.environment(FAIL_FETCH="api.apis.guru"),
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        self.assertEqual(second.returncode, 0, second.stderr)
+        self.assertEqual(second.stdout, f"{canonical}\n")
 
     def test_partial_failures_preserve_prior_goldens_and_state(self) -> None:
         self.run_tool(
@@ -369,6 +431,22 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             self.run_tool("publish", "--branch", "-unsafe").returncode,
             2,
         )
+
+        invalid_fetch = subprocess.run(
+            [str(REPO / "scripts" / "fetch-corpus.sh"), "--fixture", "../unsafe"],
+            cwd=REPO,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        self.assertNotEqual(invalid_fetch.returncode, 0)
+        self.assertIn("invalid fixture name", invalid_fetch.stderr)
+
+        generator_source = (REPO / "scripts" / "generate-fern-fixture.sh").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn('"$repo_root/scripts/fern-goldens" latest-version', generator_source)
+        self.assertNotIn('${2:-4.35.0}', generator_source)
 
         outside = Path(self.temporary.name) / "outside"
         outside.mkdir()

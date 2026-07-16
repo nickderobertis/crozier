@@ -21,7 +21,8 @@
 # Usage:  scripts/generate-fern-fixture.sh [FIXTURE] [FERN_PYTHON_VERSION] [SPEC_PATH] [DEST_PATH]
 #   FIXTURE             fixture dir under tests/fixtures/ (default: exhaustive).
 #                       e.g. auth-schemes, inline-request-response, integer-enums.
-#   FERN_PYTHON_VERSION defaults to the pin below (matches the vendored specs).
+#   FERN_PYTHON_VERSION defaults to the latest stable tag resolved by the same
+#                       Docker Hub distribution lookup as `fern-goldens`.
 #   SPEC_PATH           optional OpenAPI file to generate from instead of
 #                       tests/fixtures/<fixture>/openapi.yml; useful for fetched,
 #                       unvendored source specs.
@@ -32,6 +33,8 @@ set -euo pipefail
 
 . "$(cd "$(dirname "$0")" && pwd)/lib.sh"
 
+repo_root="$(cd "$(dirname "$0")/.." && pwd)"
+
 FIXTURE="${1:-exhaustive}"
 # FIXTURE is spliced into paths that are later `rm -rf`'d, so hold it to a single
 # safe path segment (shared valid_fixture_name; rejects traversal/option injection).
@@ -40,10 +43,10 @@ valid_fixture_name "$FIXTURE" || {
        "path segment matching [A-Za-z0-9][A-Za-z0-9._-]* (a dir under tests/fixtures/)" >&2
   exit 1
 }
-# The fern-python-sdk generator version whose output we target. Bump together
-# with the vendored spec + fixtures so the corpus stays internally consistent.
-FERN_PYTHON_VERSION="${2:-4.35.0}"
-valid_fern_version "$FERN_PYTHON_VERSION" || {
+# fern-goldens always supplies its already-resolved exact version. Direct local
+# calls use that tool's identical Docker Hub resolver instead of a second pin.
+FERN_PYTHON_VERSION="${2:-}"
+[ -z "$FERN_PYTHON_VERSION" ] || valid_fern_version "$FERN_PYTHON_VERSION" || {
   echo "generate-fern-fixture: invalid Fern version '$FERN_PYTHON_VERSION' — use an exact semantic version such as 4.35.0" >&2
   exit 1
 }
@@ -54,7 +57,6 @@ SPEC_OVERRIDE="${3:-}"
 # consistent; a `*` here would float to the latest CLI and can drift the output.
 FERN_CLI_VERSION="${FERN_CLI_VERSION:-5.67.1}"
 
-repo_root="$(cd "$(dirname "$0")/.." && pwd)"
 spec="${SPEC_OVERRIDE:-$repo_root/tests/fixtures/$FIXTURE/openapi.yml}"
 fixture_dir="$repo_root/tests/fixtures/$FIXTURE"
 dest="${4:-$fixture_dir/expected}"
@@ -77,6 +79,14 @@ case "$dest_parent" in
     exit 1
     ;;
 esac
+
+if [ -z "$FERN_PYTHON_VERSION" ]; then
+  FERN_PYTHON_VERSION="$("$repo_root/scripts/fern-goldens" latest-version)"
+  valid_fern_version "$FERN_PYTHON_VERSION" || {
+    echo "generate-fern-fixture: latest-version returned invalid Fern version '$FERN_PYTHON_VERSION'" >&2
+    exit 1
+  }
+fi
 
 need() { command -v "$1" >/dev/null 2>&1 || { echo "generate-fern-fixture: '$1' not found — $2" >&2; exit 1; }; }
 need fern "install it: npm i -g fern-api"
