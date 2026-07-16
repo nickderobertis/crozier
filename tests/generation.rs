@@ -4,7 +4,7 @@
 //! cannot, while still driving real parsing over real temp files.
 
 use std::collections::HashMap;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use crozier::{generate, render_files, GenerateArgs};
 
@@ -4294,5 +4294,312 @@ paths:
             .count()
             >= 2,
         "{readme}"
+    );
+}
+
+#[test]
+fn response_path_refs_resolve_escaped_nested_schema_pointers() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Path Response Refs, version: 1.0.0 }
+paths:
+  /source/~data:
+    get:
+      operationId: sources_get
+      tags: [Sources]
+      responses:
+        '200':
+          description: Source shapes
+          content:
+            application/vnd.test+json:
+              schema:
+                type: object
+                properties:
+                  scalar/name~: { type: string }
+                  nested:
+                    type: object
+                    properties:
+                      code: { type: integer }
+                  list:
+                    type: array
+                    items: { type: boolean }
+                  map:
+                    type: object
+                    additionalProperties: { type: number }
+                  choice:
+                    oneOf:
+                      - { type: string }
+                      - { type: integer }
+                  alternate:
+                    anyOf:
+                      - { type: boolean }
+                      - { type: string }
+                  combined:
+                    allOf:
+                      - type: object
+                        properties:
+                          id: { type: string }
+  /consumer:
+    get:
+      operationId: consumers_get
+      tags: [Consumers]
+      responses:
+        '200':
+          description: Resolved shapes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  direct:
+                    $ref: '#/paths/~1source~1~0data/get/responses/200/content/application~1vnd.test+json/schema/properties/scalar~1name~0'
+                  nested:
+                    type: object
+                    properties:
+                      code_ref:
+                        $ref: '#/paths/~1source~1~0data/get/responses/200/content/application~1vnd.test+json/schema/properties/nested/properties/code'
+                  list_refs:
+                    type: array
+                    items:
+                      $ref: '#/paths/~1source~1~0data/get/responses/200/content/application~1vnd.test+json/schema/properties/list/items'
+                  map_refs:
+                    type: object
+                    additionalProperties:
+                      $ref: '#/paths/~1source~1~0data/get/responses/200/content/application~1vnd.test+json/schema/properties/map/additionalProperties'
+                  choice_ref:
+                    oneOf:
+                      - $ref: '#/paths/~1source~1~0data/get/responses/200/content/application~1vnd.test+json/schema/properties/choice/oneOf/0'
+                      - $ref: '#/paths/~1source~1~0data/get/responses/200/content/application~1vnd.test+json/schema/properties/choice/oneOf/1'
+                  alternate_ref:
+                    anyOf:
+                      - $ref: '#/paths/~1source~1~0data/get/responses/200/content/application~1vnd.test+json/schema/properties/alternate/anyOf/0'
+                      - $ref: '#/paths/~1source~1~0data/get/responses/200/content/application~1vnd.test+json/schema/properties/alternate/anyOf/1'
+                  combined_ref:
+                    allOf:
+                      - $ref: '#/paths/~1source~1~0data/get/responses/200/content/application~1vnd.test+json/schema/properties/combined/allOf/0'
+"##,
+    );
+    let rendered = files
+        .values()
+        .map(String::as_str)
+        .collect::<Vec<_>>()
+        .join("\n");
+    assert!(
+        rendered.contains("direct: typing.Optional[str]"),
+        "{rendered}"
+    );
+    assert!(
+        rendered.contains("code_ref: typing.Optional[int]"),
+        "{rendered}"
+    );
+    assert!(
+        rendered.contains("list_refs: typing.Optional[typing.List[bool]]"),
+        "{rendered}"
+    );
+    assert!(
+        rendered.contains("map_refs: typing.Optional[typing.Dict[str, float]]"),
+        "{rendered}"
+    );
+    assert!(rendered.contains("typing.Union[str, int]"), "{rendered}");
+    assert!(rendered.contains("typing.Union[bool, str]"), "{rendered}");
+    assert!(rendered.contains("id: typing.Optional[str]"), "{rendered}");
+}
+
+#[test]
+fn explicit_empty_properties_and_omitted_properties_have_distinct_request_shapes() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: Empty Objects, version: 1.0.0 }
+paths:
+  /closed:
+    post:
+      operationId: bodies_closed
+      tags: [Bodies]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+      responses: { '204': { description: Done } }
+  /open:
+    post:
+      operationId: bodies_open
+      tags: [Bodies]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses: { '204': { description: Done } }
+"#,
+    );
+    let raw = &files["src/acme/bodies/raw_client.py"];
+    let closed_start = raw.find("def closed(").expect("closed method");
+    let open_start = raw.find("def open(").expect("open method");
+    let closed = &raw[closed_start..open_start];
+    assert!(!closed.contains("request:"), "{closed}");
+    assert!(
+        raw[open_start..].contains("request: typing.Dict[str, typing.Optional[typing.Any]]"),
+        "{raw}"
+    );
+}
+
+#[test]
+fn default_package_name_sanitizes_title_punctuation_in_process() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let spec = dir.path().join("api.yml");
+    std::fs::write(
+        &spec,
+        "openapi: 3.0.3\ninfo: { title: 'Airflow API (Stable)', version: 1.0.0 }\npaths: {}\n",
+    )
+    .unwrap();
+    let files = render_files(GenerateArgs {
+        spec,
+        output: PathBuf::from("unused"),
+        package_name: None,
+        project_name: None,
+        client_class_name: None,
+        audiences: Vec::new(),
+        audience_strict: false,
+        extra_fields: crozier::settings::ExtraFields::Allow,
+    })
+    .expect("render succeeds");
+    assert!(files
+        .iter()
+        .any(|file| file.path.starts_with("src/airflow_api_stable")));
+    let pyproject = files
+        .iter()
+        .find(|file| file.path.as_path() == Path::new("pyproject.toml"))
+        .expect("pyproject emitted");
+    assert!(
+        pyproject.contents.contains("name = \"airflow_api_stable\""),
+        "{}",
+        pyproject.contents
+    );
+    let version = files
+        .iter()
+        .find(|file| file.path.as_path() == Path::new("src/airflow_api_stable/version.py"))
+        .expect("version module emitted");
+    assert!(
+        version
+            .contents
+            .contains("metadata.version(\"airflow_api_stable\")"),
+        "{}",
+        version.contents
+    );
+}
+
+#[test]
+fn relative_server_urls_use_the_default_environment_member() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: Relative Server, version: 1.0.0 }
+servers:
+  - url: api/v1/
+    description: Internal route
+paths:
+  /health:
+    get:
+      operationId: health_get
+      responses: { '204': { description: Healthy } }
+"#,
+    );
+    let environment = &files["src/acme/environment.py"];
+    assert!(
+        environment.contains("DEFAULT = \"api/v1\""),
+        "{environment}"
+    );
+    let client = &files["src/acme/client.py"];
+    assert!(client.contains("AcmeApiEnvironment.DEFAULT"), "{client}");
+}
+
+#[test]
+fn explicit_empty_operation_id_is_distinct_and_keeps_readme_calls_simple() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: Empty Operation Id, version: 1.0.0 }
+paths:
+  /explicit:
+    post:
+      operationId: ''
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [left, right]
+              properties:
+                left: { type: string }
+                right: { type: string }
+      responses: { '204': { description: Done } }
+  /widgets:
+    get:
+      responses: { '204': { description: Done } }
+"#,
+    );
+    let client = &files["src/acme/client.py"];
+    assert!(client.contains("def _("), "{client}");
+    assert!(client.contains("def list_widgets("), "{client}");
+    let readme = &files["README.md"];
+    assert!(readme.contains("client._()"), "{readme}");
+    assert!(!readme.contains("client._(...)"), "{readme}");
+}
+
+#[test]
+fn reference_preserves_a_terminal_description_space() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: Reference Spacing, version: 1.0.0 }
+paths:
+  /notes:
+    get:
+      operationId: notes_get
+      tags: [Notes]
+      description: "Preserve this space "
+      responses: { '204': { description: Done } }
+"#,
+    );
+    let reference = &files["reference.md"];
+    assert!(
+        reference.contains("Preserve this space \n</dd>"),
+        "{reference}"
+    );
+}
+
+#[test]
+fn root_client_future_annotations_follow_subclient_presence() {
+    let root_only = render(
+        r#"openapi: 3.0.3
+info: { title: Root Only, version: 1.0.0 }
+paths:
+  /status:
+    get:
+      operationId: status
+      responses: { '204': { description: Done } }
+"#,
+    );
+    assert!(
+        !root_only["src/acme/client.py"].contains("from __future__ import annotations"),
+        "{}",
+        root_only["src/acme/client.py"]
+    );
+
+    let with_subclient = render(
+        r#"openapi: 3.0.3
+info: { title: With Subclient, version: 1.0.0 }
+paths:
+  /widgets:
+    get:
+      operationId: widgets_list
+      tags: [Widgets]
+      responses: { '204': { description: Done } }
+"#,
+    );
+    assert!(
+        with_subclient["src/acme/client.py"].contains("from __future__ import annotations"),
+        "{}",
+        with_subclient["src/acme/client.py"]
     );
 }

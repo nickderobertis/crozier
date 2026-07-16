@@ -89,7 +89,10 @@ fn environment_model(doc: &OpenApi, client_name: &str) -> Option<Environment> {
     // member value is the variables resolved to their defaults (bunq). A concrete-URL
     // server takes its member name from its description, even across several servers
     // (the `servers-webhooks` seed's Production/Staging pair keeps `PRODUCTION`).
-    let member_name = if !first.variables.is_empty() || first.url.starts_with('/') {
+    let member_name = if !first.variables.is_empty()
+        || first.url.starts_with('/')
+        || !first.url.contains("://")
+    {
         "DEFAULT".to_string()
     } else {
         first
@@ -592,6 +595,9 @@ pub struct Endpoint {
     /// Whether the source description ended with a blank paragraph, which Fern
     /// preserves in reference documentation after trimming method docstrings.
     pub reference_description_trailing_blank: bool,
+    /// Whether the source description ended with a space, which Fern preserves in
+    /// reference documentation after trimming method docstrings.
+    pub reference_description_trailing_space: bool,
     /// Whether the success response is a Server-Sent-Events stream
     /// (`text/event-stream`). A streaming operation is emitted as a
     /// context-managed iterator of chunks rather than a buffered response.
@@ -1800,6 +1806,9 @@ fn build_endpoint(
             .description
             .as_deref()
             .is_some_and(|description| description.ends_with("\n\n")),
+        reference_description_trailing_space: op.description.as_deref().is_some_and(
+            |description| !description.trim().is_empty() && description.ends_with(' '),
+        ),
         streaming: is_streaming(op),
         text_response: has_text_response(op),
         markdown_response: has_markdown_response(op),
@@ -2263,10 +2272,11 @@ fn resolve_request_body(
     }
     if schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("object")
         && schema.properties.is_empty()
-        && matches!(
-            schema.additional_properties,
-            Some(AdditionalProperties::Bool(false))
-        )
+        && (schema.properties.declared()
+            || matches!(
+                schema.additional_properties,
+                Some(AdditionalProperties::Bool(false))
+            ))
     {
         return Some(RequestBody::Inline(Vec::new()));
     }
@@ -2935,8 +2945,14 @@ fn first_tag(op: &Operation) -> Option<&str> {
 /// - missing: [`synthesized_method_name`] infers a verb from the HTTP method and
 ///   route (`GET /widgets` → `list_widgets`).
 fn endpoint_method_name(op: &Operation, http_method: &str, url: &str) -> String {
-    let id = op.operation_id.trim();
-    let method = if id.is_empty() {
+    let id = op.operation_id.as_deref().unwrap_or_default().trim();
+    let method = if op
+        .operation_id
+        .as_deref()
+        .is_some_and(|operation_id| operation_id.trim().is_empty())
+    {
+        "_".to_string()
+    } else if id.is_empty() {
         op.summary
             .as_deref()
             .filter(|summary| !summary.trim().is_empty())
@@ -3059,7 +3075,7 @@ fn stripped_suffix_has_acronym(id: &str, tag: Option<&str>) -> bool {
 /// `VerifyCode` — never prefixing the tag, so a tag-grouped operation's hoisted
 /// type stays `VerifyCodeResponse`, not `WidgetsVerifyCodeResponse`.
 fn endpoint_pascal_context(op: &Operation, http_method: &str, url: &str) -> String {
-    let id = op.operation_id.trim();
+    let id = op.operation_id.as_deref().unwrap_or_default().trim();
     if id.is_empty() {
         let path = url
             .split('/')
@@ -3175,7 +3191,7 @@ fn endpoint_module_titles(doc: &OpenApi) -> std::collections::BTreeMap<String, S
 /// (`attachment-public`, `content`). An untagged group falls back to the PascalCase
 /// operationId/path prefix (`EndpointsContainer`).
 fn module_title(doc: &OpenApi, op: &Operation, url: &str) -> String {
-    let id = op.operation_id.trim();
+    let id = op.operation_id.as_deref().unwrap_or_default().trim();
     if id.is_empty() {
         if let Some(tag) = first_tag(op) {
             return naming::to_pascal_case(tag);
@@ -3224,7 +3240,7 @@ fn title_from_tag(doc: &OpenApi, tag: &str) -> String {
 /// operationId prefix *does* equal the tag (`widgets_getWidget` under `Widgets`),
 /// both rules agree, so tag-grouped corpora already matched stay byte-identical.
 fn endpoint_module(op: &Operation, url: &str) -> String {
-    let id = op.operation_id.trim();
+    let id = op.operation_id.as_deref().unwrap_or_default().trim();
     if first_tag(op).is_some_and(|tag| alnum_lower(tag) == alnum_lower(id)) {
         return String::new();
     }

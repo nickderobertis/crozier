@@ -124,3 +124,49 @@ for n in \
   just fixtures-generate-corpus --only "$n" || echo "FAILED: $n"
 done
 ```
+
+## Batch 4 — byte-matched (issue #77)
+
+Native Fern CLI 5.67.1 screening exhausted the manifest's remaining unused
+entries. Exactly eight specs genuinely passed Fern and were selected below;
+Docker-backed golden generation succeeded for seven, and all seven are now
+byte-matched. `codesearch.debian.net` failed Fern golden generation. Twelve
+corpora were dropped in total: that one golden-generation failure plus eleven
+screening failures, all marked do not retry. All 50 manifest rows are accounted
+for, with no backups to invent.
+
+| name | selected for | status |
+|---|---|---|
+| `apache.org-airflow` | 50 paths / 85 schemas; 22 allOf, anyOf, discriminator; invalid title-derived `airflow_api_(stable)` package naming made this an intentional generator-gap target | ✅ matched (182) — fixed invalid title-derived package naming |
+| `apideck.com-lead` | anyOf/allOf, free-form maps, two deepObject params | ✅ matched (84) |
+| `apideck.com-ecosystem` | 12 paths / 32 schemas; 17 free-form maps | ✅ matched (86) |
+| `apideck.com-customer-support` | anyOf plus maps | ✅ matched (89) |
+| `apideck.com-sms` | compact anyOf corpus | ✅ matched (73) |
+| `eos.local` | four paths, all-inline / zero named schemas | ✅ matched (35) |
+| `codesearch.debian.net` | compact conventional two-schema baseline | **DROPPED** — Fern golden generation failed (do not retry) |
+| `calorieninjas.com` | minimal one-path / zero-schema boundary case | ✅ matched (30) |
+| `conjur.local` | screened but Fern did not produce a usable result | **DROPPED** — Fern falsely returned success while stderr reported an OpenAPI parse failure and an unresolved response reference (do not retry) |
+| `asana.com` | screened but failed Fern validation | **DROPPED** — Fern check failed with 17 fatal diagnostics (do not retry) |
+| `apideck.com-pos` | screened but failed Fern validation | **DROPPED** — Fern check failed with 4 fatal diagnostics (do not retry) |
+| `atlassian.com-jira` | screened but failed Fern validation | **DROPPED** — Fern check failed with 3 fatal diagnostics (do not retry) |
+| `axesso.de` | screened but failed Fern validation | **DROPPED** — Fern check failed with 1 fatal diagnostic (do not retry) |
+| `box.com` | screened but failed Fern validation | **DROPPED** — Fern check failed with 25 fatal diagnostics (do not retry) |
+| `corrently.io` | screened but failed Fern validation | **DROPPED** — Fern check failed with 2 fatal diagnostics and 1 error (do not retry) |
+| `esgenterprise.com` | screened but failed Fern validation | **DROPPED** — Fern check failed with 1 fatal diagnostic (do not retry) |
+| `etherpad.local` | screened but failed Fern validation | **DROPPED** — Fern check failed with 5 fatal diagnostics (do not retry) |
+| `github.com` | screened but failed Fern validation | **DROPPED** — Fern check failed with 29 fatal diagnostics (do not retry) |
+| `gov.bc.ca-news` | screened but failed Fern validation | **DROPPED** — Fern check failed with 4 fatal diagnostics (do not retry) |
+
+```sh
+for n in \
+  apache.org-airflow \
+  apideck.com-lead \
+  apideck.com-ecosystem \
+  apideck.com-customer-support \
+  apideck.com-sms \
+  eos.local \
+  codesearch.debian.net \
+  calorieninjas.com; do
+  just fixtures-generate-corpus --only "$n" || echo "FAILED: $n"
+done
+```

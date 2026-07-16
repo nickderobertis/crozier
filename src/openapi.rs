@@ -25,6 +25,7 @@
 //! [`Operation::ignored`], [`Schema::ignored`]); the paired serde fields exist only
 //! to carry the two raw spellings.
 
+use std::ops::{Deref, DerefMut};
 use std::path::Path;
 
 use indexmap::IndexMap;
@@ -280,9 +281,10 @@ impl PathItem {
 /// A single API operation.
 #[derive(Debug, Deserialize)]
 pub struct Operation {
-    /// The operation identifier, `{group}_{camelMethodName}`.
+    /// The operation identifier, `{group}_{camelMethodName}`. `None` distinguishes
+    /// an omitted identifier from an explicitly empty one, which Fern names `_`.
     #[serde(rename = "operationId", default)]
-    pub operation_id: String,
+    pub operation_id: Option<String>,
     /// Tags; the first groups the operation into a client.
     #[serde(default)]
     pub tags: Vec<String>,
@@ -531,7 +533,7 @@ pub struct Schema {
     /// whose value is not a schema object degrades to a malformed unknown node
     /// rather than aborting the parse (issue #86).
     #[serde(default, deserialize_with = "de_properties")]
-    pub properties: IndexMap<String, Schema>,
+    pub properties: SchemaProperties,
     /// Required property names.
     #[serde(default)]
     pub required: Vec<String>,
@@ -616,6 +618,47 @@ impl Schema {
     }
 }
 
+/// An object schema's ordered properties plus whether the source explicitly
+/// declared the `properties` key. Fern distinguishes `properties: {}` (a closed,
+/// argument-free request payload) from an object with no `properties` key (an
+/// open-map request argument), even though both maps are empty after parsing.
+#[derive(Debug, Default, Clone)]
+pub struct SchemaProperties {
+    values: IndexMap<String, Schema>,
+    declared: bool,
+}
+
+impl SchemaProperties {
+    /// Whether the source schema explicitly carried a `properties` key.
+    #[must_use]
+    pub fn declared(&self) -> bool {
+        self.declared
+    }
+}
+
+impl Deref for SchemaProperties {
+    type Target = IndexMap<String, Schema>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.values
+    }
+}
+
+impl DerefMut for SchemaProperties {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.values
+    }
+}
+
+impl<'a> IntoIterator for &'a SchemaProperties {
+    type Item = (&'a String, &'a Schema);
+    type IntoIter = indexmap::map::Iter<'a, String, Schema>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.values.iter()
+    }
+}
+
 fn de_composition<'de, D>(deserializer: D) -> std::result::Result<Option<Vec<Schema>>, D::Error>
 where
     D: serde::Deserializer<'de>,
@@ -656,12 +699,15 @@ where
 /// bogus `$ref` (issue #86). Instead, any non-map value degrades to a malformed
 /// node that renders as Fern's unknown type — matching Fern's tolerance of the
 /// same document.
-fn de_properties<'de, D>(deserializer: D) -> std::result::Result<IndexMap<String, Schema>, D::Error>
+fn de_properties<'de, D>(deserializer: D) -> std::result::Result<SchemaProperties, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
     let raw: IndexMap<String, MaybeSchema> = IndexMap::deserialize(deserializer)?;
-    Ok(raw.into_iter().map(|(k, v)| (k, v.0)).collect())
+    Ok(SchemaProperties {
+        values: raw.into_iter().map(|(k, v)| (k, v.0)).collect(),
+        declared: true,
+    })
 }
 
 /// A property value that is either a real schema object or — when the document put
@@ -844,9 +890,121 @@ pub fn load(path: &Path) -> Result<OpenApi> {
 
     normalize_parameters(&mut doc);
     normalize_responses(&mut doc);
+    normalize_response_schema_refs(&mut doc);
     normalize_request_bodies(&mut doc);
 
     Ok(doc)
+}
+
+/// Resolve response-schema `$ref`s that point into another operation response
+/// rather than `components.schemas`. OpenAPI permits any local JSON Pointer, and
+/// EOS uses this form to share string constraints among inline response models.
+fn normalize_response_schema_refs(doc: &mut OpenApi) {
+    let mut schemas = IndexMap::new();
+    for (path, item) in &doc.paths {
+        for (method, operation) in item.operations() {
+            for (status, response) in &operation.responses {
+                for (media_type, media) in &response.content {
+                    let Some(schema) = &media.schema else {
+                        continue;
+                    };
+                    let pointer = format!(
+                        "#/paths/{}/{}/responses/{}/content/{}/schema",
+                        json_pointer_segment(path),
+                        method.to_ascii_lowercase(),
+                        json_pointer_segment(status),
+                        json_pointer_segment(media_type),
+                    );
+                    index_schema_pointers(schema, &pointer, &mut schemas);
+                }
+            }
+        }
+    }
+
+    for item in doc.paths.values_mut() {
+        for slot in item.operation_slots() {
+            let Some(operation) = slot else { continue };
+            for response in operation.responses.values_mut() {
+                for media in response.content.values_mut() {
+                    if let Some(schema) = &mut media.schema {
+                        resolve_response_schema_refs(
+                            schema,
+                            &schemas,
+                            &mut std::collections::BTreeSet::new(),
+                        );
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn json_pointer_segment(segment: &str) -> String {
+    segment.replace('~', "~0").replace('/', "~1")
+}
+
+fn index_schema_pointers(schema: &Schema, pointer: &str, schemas: &mut IndexMap<String, Schema>) {
+    schemas.insert(pointer.to_string(), schema.clone());
+    for (name, property) in &schema.properties {
+        index_schema_pointers(
+            property,
+            &format!("{pointer}/properties/{}", json_pointer_segment(name)),
+            schemas,
+        );
+    }
+    if let Some(items) = &schema.items {
+        index_schema_pointers(items, &format!("{pointer}/items"), schemas);
+    }
+    if let Some(AdditionalProperties::Schema(value)) = &schema.additional_properties {
+        index_schema_pointers(value, &format!("{pointer}/additionalProperties"), schemas);
+    }
+    for (name, members) in [
+        ("oneOf", &schema.one_of),
+        ("anyOf", &schema.any_of),
+        ("allOf", &schema.all_of),
+    ] {
+        for (index, member) in members.iter().flatten().enumerate() {
+            index_schema_pointers(member, &format!("{pointer}/{name}/{index}"), schemas);
+        }
+    }
+}
+
+fn resolve_response_schema_refs(
+    schema: &mut Schema,
+    schemas: &IndexMap<String, Schema>,
+    resolving: &mut std::collections::BTreeSet<String>,
+) {
+    if let Some(reference) = schema
+        .reference
+        .as_deref()
+        .filter(|reference| reference.starts_with("#/paths/"))
+        .map(str::to_string)
+    {
+        if resolving.insert(reference.clone()) {
+            if let Some(target) = schemas.get(&reference) {
+                *schema = target.clone();
+                resolve_response_schema_refs(schema, schemas, resolving);
+            }
+            resolving.remove(&reference);
+        }
+        return;
+    }
+    for property in schema.properties.values_mut() {
+        resolve_response_schema_refs(property, schemas, resolving);
+    }
+    if let Some(items) = &mut schema.items {
+        resolve_response_schema_refs(items, schemas, resolving);
+    }
+    if let Some(AdditionalProperties::Schema(value)) = &mut schema.additional_properties {
+        resolve_response_schema_refs(value, schemas, resolving);
+    }
+    for member in [&mut schema.one_of, &mut schema.any_of, &mut schema.all_of]
+        .into_iter()
+        .flatten()
+        .flatten()
+    {
+        resolve_response_schema_refs(member, schemas, resolving);
+    }
 }
 
 fn resolve_request_body(
@@ -1197,7 +1355,7 @@ mod tests {
         doc.paths
             .values()
             .flat_map(|i| i.operations())
-            .map(|(_, op)| op.operation_id.clone())
+            .map(|(_, op)| op.operation_id.clone().unwrap_or_default())
             .collect()
     }
 
