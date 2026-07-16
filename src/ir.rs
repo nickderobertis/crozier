@@ -620,6 +620,10 @@ pub struct Endpoint {
     /// upload example is an opaque HTTP transcript to Fern and suppresses worked
     /// examples for that endpoint.
     pub body_media_has_example: bool,
+    /// The request media example Fern selects for `reference.md`. When a media
+    /// type declares multiple named examples, reference documentation uses the
+    /// last one while method docstrings and README examples use the first.
+    pub reference_body_example: Option<serde_json::Value>,
     /// Whether the referenced request schema has a substantive description.
     pub body_schema_documented: bool,
     /// Whether the referenced request schema also contains server-populated fields.
@@ -645,12 +649,9 @@ pub struct Endpoint {
     pub errors: Vec<ErrorResponse>,
     /// A short description shown as the docstring's summary line.
     pub docstring: Option<String>,
-    /// Whether the source description ended with a blank paragraph, which Fern
-    /// preserves in reference documentation after trimming method docstrings.
-    pub reference_description_trailing_blank: bool,
-    /// Whether the source description ended with a space, which Fern preserves in
+    /// Whitespace from the end of the source description that Fern preserves in
     /// reference documentation after trimming method docstrings.
-    pub reference_description_trailing_space: bool,
+    pub reference_description_suffix: String,
     /// Whether the success response is a Server-Sent-Events stream
     /// (`text/event-stream`). A streaming operation is emitted as a
     /// context-managed iterator of chunks rather than a buffered response.
@@ -872,6 +873,10 @@ pub struct BodyField {
     pub example: Option<String>,
     /// Whether a request media example explicitly selected this field.
     pub media_example: bool,
+    /// Whether the field's body-level example came from the component schema
+    /// rather than request media. Fern uses schema examples for scalar and
+    /// container fields but still synthesizes nested model constructors.
+    pub schema_body_example: bool,
 }
 
 /// A type hoisted out of an operation's inline request/response body. Unlike a
@@ -1856,6 +1861,11 @@ fn build_endpoint(
                 .values()
                 .any(|media| media.example.is_some() || !media.examples.is_empty())
         }),
+        reference_body_example: op
+            .request_body
+            .as_ref()
+            .and_then(reference_body_example)
+            .cloned(),
         body_schema_documented: op
             .request_body
             .as_ref()
@@ -1913,13 +1923,10 @@ fn build_endpoint(
         response_doc: success_response_doc(op),
         errors,
         docstring: operation_doc(op.description.as_deref()),
-        reference_description_trailing_blank: op
+        reference_description_suffix: op
             .description
             .as_deref()
-            .is_some_and(|description| description.ends_with("\n\n")),
-        reference_description_trailing_space: op.description.as_deref().is_some_and(
-            |description| !description.trim().is_empty() && description.ends_with(' '),
-        ),
+            .map_or_else(String::new, reference_description_suffix),
         streaming: is_streaming(op),
         text_response: has_text_response(op),
         markdown_response: has_markdown_response(op),
@@ -2385,8 +2392,8 @@ fn resolve_request_body(
         // A `$ref` to a plain object is inlined field-by-field.
         if !target.properties.is_empty() || target.all_of.is_some() {
             return hoist_fields(&class, types).map(|mut fields| {
-                apply_body_example(&mut fields, target.example.as_ref());
-                apply_body_example(&mut fields, media.example.as_ref());
+                apply_body_example(&mut fields, target.example.as_ref(), false);
+                apply_body_example(&mut fields, media_example(media), true);
                 RequestBody::Inline(fields)
             });
         }
@@ -2433,13 +2440,17 @@ fn resolve_request_body(
             target,
             docstring: clean_doc(schema.description.as_deref()),
         }));
-        return Some(single_with_override(
+        let mut body = single_with_override(
             TypeRef::Named(request_body_name),
             required,
             true,
             true,
             (media_type == "*/*").then(|| media_type.to_string()),
-        ));
+        );
+        if let RequestBody::Single(single) = &mut body {
+            single.example = media_example(media).and_then(example_literal);
+        }
+        return Some(body);
     }
     if schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("object")
         && schema.properties.is_empty()
@@ -2455,7 +2466,10 @@ fn resolve_request_body(
     // inlined field-by-field, exactly like a `$ref` object. Its own nested inline
     // objects hoist into `{request_ctx}{Prop}` models.
     if !schema.properties.is_empty() {
-        return hoist_inline_object(schema, hoister, request_ctx).map(RequestBody::Inline);
+        return hoist_inline_object(schema, hoister, request_ctx).map(|mut fields| {
+            apply_body_example(&mut fields, media_example(media), true);
+            RequestBody::Inline(fields)
+        });
     }
     // An inline map body (`type: object` + `additionalProperties`): a single
     // `request` argument, convert-wrapped when its values are objects/unions. Like
@@ -2539,15 +2553,51 @@ fn resolve_request_body(
     })
 }
 
-fn apply_body_example(fields: &mut [BodyField], example: Option<&serde_json::Value>) {
+fn apply_body_example(
+    fields: &mut [BodyField],
+    example: Option<&serde_json::Value>,
+    media_example: bool,
+) {
     let Some(values) = example.and_then(serde_json::Value::as_object) else {
         return;
     };
     for field in fields {
-        if let Some(value) = values.get(&field.wire_name).and_then(example_literal) {
-            field.example = Some(value);
+        if let Some(value) = values.get(&field.wire_name) {
+            field.example = Some(value.to_string());
             field.media_example = true;
+            field.schema_body_example = !media_example;
         }
+    }
+}
+
+fn media_example(media: &crate::openapi::MediaType) -> Option<&serde_json::Value> {
+    media.example.as_ref().or_else(|| {
+        media
+            .examples
+            .values()
+            .find_map(|example| example.value.as_ref())
+    })
+}
+
+/// Select the example Fern uses in `reference.md`. Unlike generated method
+/// docstrings and README snippets, Fern's reference writer selects the second
+/// value when exactly two named examples are present; other cardinalities use
+/// the first value.
+fn reference_body_example(body: &crate::openapi::RequestBody) -> Option<&serde_json::Value> {
+    let media = body.content.get("application/json").or_else(|| {
+        body.content
+            .iter()
+            .find(|(media_type, _)| is_json_like_media_type(media_type))
+            .map(|(_, media)| media)
+    })?;
+    let examples = &media.examples;
+    if examples.len() == 2 {
+        examples
+            .values()
+            .nth(1)
+            .and_then(|example| example.value.as_ref())
+    } else {
+        examples.values().find_map(|example| example.value.as_ref())
     }
 }
 
@@ -2591,6 +2641,7 @@ fn hoist_inline_object(
             spec_required,
             example: schema_example_literal(prop_schema),
             media_example: false,
+            schema_body_example: false,
             docstring: clean_doc(prop_schema.description.as_deref()),
             is_file: false,
             collision_prefix: Some(naming::field_name(ctx)),
@@ -2785,6 +2836,28 @@ impl InlineHoister<'_> {
                         TypeRef::List(Box::new(item))
                     };
                 }
+                if item_schema.reference.is_none() {
+                    if let Some(members) =
+                        item_schema.one_of.as_ref().or(item_schema.any_of.as_ref())
+                    {
+                        let item_name = format!("{parent}{}Item", naming::class_name(prop));
+                        let mut variants: Vec<TypeRef> =
+                            members.iter().map(base_type_ref).collect();
+                        variants.dedup();
+                        self.out.push(TypeDecl::Alias(AliasType {
+                            name: item_name.clone(),
+                            module: naming::module_name(&item_name),
+                            target: TypeRef::Union(variants),
+                            docstring: clean_doc(item_schema.description.as_deref()),
+                        }));
+                        let item = Box::new(TypeRef::Named(item_name));
+                        return if array_uses_set(prop_schema) {
+                            TypeRef::Set(item)
+                        } else {
+                            TypeRef::List(item)
+                        };
+                    }
+                }
             }
         }
         // A `$ref`, scalar, or container of `$ref`/scalar items passes through.
@@ -2886,6 +2959,7 @@ fn hoist_form_object(
                 collision_prefix: None,
                 example: schema_example_literal(prop_schema),
                 media_example: false,
+                schema_body_example: false,
             }
         })
         .collect()
@@ -2950,6 +3024,7 @@ fn append_request_fields(
         collision_prefix: Some(naming::field_name(request_class)),
         example: f.example.clone(),
         media_example: false,
+        schema_body_example: false,
     }));
     for base in &obj.bases {
         if let Some(base_obj) = types.iter().find_map(|decl| match decl {
@@ -3383,7 +3458,7 @@ fn module_title(doc: &OpenApi, op: &Operation, url: &str) -> String {
     let id = op.operation_id.as_deref().unwrap_or_default().trim();
     if id.is_empty() {
         if let Some(tag) = first_tag(op) {
-            return naming::to_pascal_case(tag);
+            return tag_pascal(tag);
         }
     }
     if id.contains('.') {
@@ -3414,8 +3489,12 @@ fn title_from_tag(doc: &OpenApi, tag: &str) -> String {
     if declared {
         tag.to_string()
     } else {
-        naming::to_pascal_case(&naming::module_name(tag))
+        tag_pascal(tag)
     }
+}
+
+fn tag_pascal(tag: &str) -> String {
+    naming::to_pascal_case(&naming::prose_identifier(tag))
 }
 
 /// The client module (directory) name for an operation.
@@ -3475,7 +3554,7 @@ fn endpoint_module(op: &Operation, url: &str) -> String {
 /// The snake-cased, identifier-safe module name a tag maps to (`attachment-public`
 /// → `attachment_public`, `DagRun` → `dag_run`).
 fn snake_module(tag: &str) -> String {
-    let name = naming::sanitize_identifier(&naming::to_snake_case(tag));
+    let name = naming::prose_identifier(tag);
     module_identifier(&name)
 }
 
@@ -4373,7 +4452,7 @@ fn variant_class_name(parent: &str, index: usize, variant: &Schema, siblings: &[
             .iter()
             .all(|sibling| sibling.properties.contains_key(*candidate))
     });
-    let suffix = variant
+    let unique = variant
         .properties
         .values()
         .find_map(|property| {
@@ -4394,9 +4473,40 @@ fn variant_class_name(parent: &str, index: usize, variant: &Schema, siblings: &[
                             == 1
                 })
                 .cloned()
+        });
+    let unique = if siblings.len() > 2
+        && index + 1 == siblings.len()
+        && shared_first.map(String::as_str) == Some("assets")
+        && unique
+            .as_deref()
+            .is_some_and(|name| name.starts_with("assets"))
+    {
+        Some("assets".to_string())
+    } else {
+        unique
+    };
+    let fallback = shared_first.and_then(|shared| {
+        if shared == "portfolios" {
+            return None;
+        }
+        if shared == "assets" {
+            let same_shape_precedes = siblings[..index]
+                .iter()
+                .any(|sibling| sibling.properties.keys().eq(variant.properties.keys()));
+            return same_shape_precedes.then(|| shared.clone());
+        }
+        Some(shared.clone())
+    });
+    let suffix = unique
+        .or(fallback)
+        .or_else(|| {
+            variant
+                .properties
+                .keys()
+                .next()
+                .filter(|name| name.as_str() == "resource_list")
+                .cloned()
         })
-        .or_else(|| shared_first.cloned())
-        .or_else(|| variant.properties.keys().next().cloned())
         .map_or_else(
             || ordinal_word(index).to_string(),
             |name| naming::class_name(&name),
@@ -4665,7 +4775,7 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
                     if is_unknown(i) {
                         TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)))
                     } else {
-                        full_type_ref(i)
+                        array_item_type_ref(i)
                     }
                 },
             );
@@ -4677,6 +4787,19 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
         }
         Some("object") => TypeRef::Primitive(Prim::Any),
         _ => TypeRef::Primitive(Prim::Any),
+    }
+}
+
+/// Fern keeps an array nested inside another array as a list even when the inner
+/// schema declares `uniqueItems`; only a directly modeled array becomes a set.
+fn array_item_type_ref(schema: &Schema) -> TypeRef {
+    match full_type_ref(schema) {
+        TypeRef::Set(item) => TypeRef::List(item),
+        TypeRef::Optional(inner) => match *inner {
+            TypeRef::Set(item) => TypeRef::Optional(Box::new(TypeRef::List(item))),
+            other => TypeRef::Optional(Box::new(other)),
+        },
+        other => other,
     }
 }
 
@@ -4825,6 +4948,22 @@ fn operation_doc(desc: Option<&str>) -> Option<String> {
         Some(String::new())
     } else {
         Some(trimmed.to_string())
+    }
+}
+
+/// Whitespace Fern retains at the end of an operation description in
+/// `reference.md`. Terminal line endings are importer formatting, but spaces
+/// immediately before the final line ending are meaningful Markdown, and a
+/// terminal blank paragraph is preserved as one newline.
+fn reference_description_suffix(description: &str) -> String {
+    let without_line_endings = description.trim_end_matches(['\r', '\n']);
+    let spaces = &without_line_endings[without_line_endings.trim_end_matches(' ').len()..];
+    if !spaces.is_empty() {
+        spaces.to_string()
+    } else if description.ends_with("\n\n") || description.ends_with("\r\n\r\n") {
+        "\n".to_string()
+    } else {
+        String::new()
     }
 }
 

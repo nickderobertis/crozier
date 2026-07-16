@@ -478,11 +478,9 @@ pub struct MediaType {
     /// Optional example value for the media payload.
     #[serde(default)]
     pub example: Option<serde_json::Value>,
-    /// Named examples for the media payload. Generation only needs to distinguish
-    /// their presence when Fern cannot turn an opaque multipart example into a
-    /// worked Python call.
+    /// Named examples for the media payload, in declaration order.
     #[serde(default)]
-    pub examples: IndexMap<String, serde_json::Value>,
+    pub examples: IndexMap<String, ParameterExample>,
 }
 
 /// The `info` block.
