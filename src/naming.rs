@@ -279,9 +279,75 @@ fn enum_words(value: &str) -> Vec<String> {
 fn enum_identifier(value: &str) -> String {
     if is_uuid(value) {
         uuid_enum_identifier(value)
+    } else if let Some(number) = numeric_enum_identifier(value) {
+        number
     } else {
         enum_words(value).join("_")
     }
+}
+
+/// Fern spells a canonical, entirely numeric enum value as English words. This
+/// path is distinct from digit-leading alphanumeric values, which keep Crozier's
+/// legal-identifier fallback when Fern rejects them.
+fn numeric_enum_identifier(value: &str) -> Option<String> {
+    if value.is_empty()
+        || (value.len() > 1 && value.starts_with('0'))
+        || !value.bytes().all(|byte| byte.is_ascii_digit())
+    {
+        return None;
+    }
+    let value: u16 = value.parse().ok()?;
+    if value > 999 {
+        return None;
+    }
+
+    const SMALL: [&str; 20] = [
+        "zero",
+        "one",
+        "two",
+        "three",
+        "four",
+        "five",
+        "six",
+        "seven",
+        "eight",
+        "nine",
+        "ten",
+        "eleven",
+        "twelve",
+        "thirteen",
+        "fourteen",
+        "fifteen",
+        "sixteen",
+        "seventeen",
+        "eighteen",
+        "nineteen",
+    ];
+    const TENS: [&str; 10] = [
+        "", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety",
+    ];
+
+    fn below_hundred(value: u16) -> String {
+        if value < 20 {
+            return SMALL[usize::from(value)].to_string();
+        }
+        let mut words = TENS[usize::from(value / 10)].to_string();
+        if !value.is_multiple_of(10) {
+            words.push('_');
+            words.push_str(SMALL[usize::from(value % 10)]);
+        }
+        words
+    }
+
+    if value < 100 {
+        return Some(below_hundred(value));
+    }
+    let mut words = format!("{}_hundred", SMALL[usize::from(value / 100)]);
+    if !value.is_multiple_of(100) {
+        words.push('_');
+        words.push_str(&below_hundred(value % 100));
+    }
+    Some(words)
 }
 
 fn is_uuid(value: &str) -> bool {
@@ -536,6 +602,8 @@ mod tests {
         assert_eq!(enum_visit_param("ID_CUSIP_8_CHR"), "id_cusip8chr");
         assert_eq!(enum_member_name("SCHEDULE5MANUAL"), "SCHEDULE5MANUAL");
         assert_eq!(enum_visit_param("SCHEDULE5MANUAL"), "schedule5manual");
+        assert_eq!(enum_member_name("200"), "TWO_HUNDRED");
+        assert_eq!(enum_visit_param("201"), "two_hundred_one");
         assert_eq!(
             enum_member_name("fbf35668-96a0-4baa-bcde-ab18d6b1b329"),
             "FBF3566896A04BAA_BCDE_AB18D6B1B329"

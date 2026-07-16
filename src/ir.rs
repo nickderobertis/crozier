@@ -596,6 +596,13 @@ pub struct Endpoint {
     /// Whether the body came through `components.requestBodies`, which Fern treats
     /// like a reusable declaration for content-type emission.
     pub body_component_ref: bool,
+    /// A JSON-compatible request media type that must be emitted verbatim instead
+    /// of `application/json` (for example `application/ndjson`).
+    pub body_content_type_override: Option<String>,
+    /// Whether the operation uses HTTP Basic authentication. Fern leaves the
+    /// ordinary JSON content type to httpx for undocumented Basic-auth bodies
+    /// without a path/header parameter.
+    pub basic_auth: bool,
     /// Whether the selected request media schema was declared by component `$ref`.
     pub body_schema_ref: bool,
     /// Whether that referenced schema is omitted from the public type layer
@@ -1679,6 +1686,10 @@ fn build_endpoint(
             .hoist_array_item_enum(&format!("{pascal_ctx}Response"), schema)
             .or_else(|| {
                 hoister
+                    .hoist_response_array_item_union(&format!("{pascal_ctx}ResponseItem"), schema)
+            })
+            .or_else(|| {
+                hoister
                     .hoist_response_array_item_object(&format!("{pascal_ctx}ResponseItem"), schema)
             })
             .or_else(|| success_response(op)),
@@ -1697,9 +1708,19 @@ fn build_endpoint(
     let mut request_body = if matches!(http_method, "GET" | "HEAD") {
         None
     } else {
-        op.request_body
-            .as_ref()
-            .and_then(|rb| resolve_request_body(doc, types, rb, &mut hoister, &request_ctx))
+        op.request_body.as_ref().and_then(|rb| {
+            resolve_request_body(
+                doc,
+                types,
+                rb,
+                &mut hoister,
+                &request_ctx,
+                !op.parameters.is_empty()
+                    || !path_params.is_empty()
+                    || !query_params.is_empty()
+                    || !header_params.is_empty(),
+            )
+        })
     };
     if matches!(request_body, Some(RequestBody::Bytes { .. })) {
         header_params.clear();
@@ -1774,6 +1795,13 @@ fn build_endpoint(
             .as_ref()
             .is_some_and(|body| body.description.is_none()),
         body_component_ref: op.request_body.as_ref().is_some_and(|rb| rb.component_ref),
+        body_content_type_override: op.request_body.as_ref().and_then(|body| {
+            body.content
+                .keys()
+                .find(|media| media.ends_with("/ndjson"))
+                .cloned()
+        }),
+        basic_auth: operation_uses_basic_auth(doc, op),
         body_schema_ref: op
             .request_body
             .as_ref()
@@ -1961,6 +1989,18 @@ fn schema_example(schema: &Schema) -> Option<&serde_json::Value> {
     schema.example.as_ref().or_else(|| schema.examples.first())
 }
 
+/// Render a schema example for a generated call. Arrays commonly put the example
+/// on `items` rather than on the array itself; Fern promotes that to a one-element
+/// list in worked examples.
+fn schema_example_literal(schema: &Schema) -> Option<String> {
+    schema_example(schema)
+        .and_then(example_literal)
+        .or_else(|| {
+            let item = schema.items.as_deref().and_then(schema_example)?;
+            Some(format!("[{}]", example_literal(item)?))
+        })
+}
+
 fn request_body_has_all_of(doc: &OpenApi, op: &Operation) -> bool {
     op.request_body
         .as_ref()
@@ -1971,15 +2011,17 @@ fn request_body_has_all_of(doc: &OpenApi, op: &Operation) -> bool {
         .is_some_and(|schema| schema.all_of.is_some())
 }
 
-/// Whether the operation's success response is a Server-Sent-Events stream. Fern
-/// models a `text/event-stream` 2xx response as an iterator of chunks; crozier
-/// keys off the same content type (the `x-fern-streaming` extension is not needed —
-/// Fern's OpenAPI importer does not resolve its `chunk-schema-ref`, so the chunk is
-/// `typing.Optional[typing.Any]` regardless).
+/// Whether the operation's selected success response is a Server-Sent-Events
+/// stream. Fern prefers an `application/json` representation when a response
+/// advertises both it and `text/event-stream`; an SSE-only response becomes an
+/// iterator of chunks. The `x-fern-streaming` extension is not needed — Fern's
+/// OpenAPI importer does not resolve its `chunk-schema-ref`, so the chunk is
+/// `typing.Optional[typing.Any]` regardless.
 fn is_streaming(op: &Operation) -> bool {
-    op.responses
-        .iter()
-        .any(|(code, resp)| code.starts_with('2') && resp.content.contains_key("text/event-stream"))
+    success_response_entry(op).is_some_and(|response| {
+        response.content.contains_key("text/event-stream")
+            && !response.content.contains_key("application/json")
+    })
 }
 
 fn body_response_same_ref(doc: &OpenApi, op: &Operation) -> bool {
@@ -2002,6 +2044,25 @@ fn body_response_same_ref(doc: &OpenApi, op: &Operation) -> bool {
         return false;
     }
     request_and_response_refs_match(op)
+}
+
+fn operation_uses_basic_auth(doc: &OpenApi, op: &Operation) -> bool {
+    op.security
+        .as_ref()
+        .or(doc.security.as_ref())
+        .is_some_and(|requirements| {
+            requirements.iter().any(|requirement| {
+                requirement.keys().any(|name| {
+                    doc.components
+                        .security_schemes
+                        .get(name)
+                        .is_some_and(|scheme| {
+                            scheme.ty == crate::openapi::SecuritySchemeType::Http
+                                && scheme.scheme == Some(crate::openapi::HttpAuthScheme::Basic)
+                        })
+                })
+            })
+        })
 }
 
 fn request_and_response_refs_match(op: &Operation) -> bool {
@@ -2226,6 +2287,7 @@ fn resolve_request_body(
     rb: &crate::openapi::RequestBody,
     hoister: &mut InlineHoister,
     request_ctx: &str,
+    union_body_suffix: bool,
 ) -> Option<RequestBody> {
     // A raw `application/octet-stream` body is a bytes stream, independent of its
     // schema — Fern types it as a fixed `Union[bytes, ...]` and sends `content=`.
@@ -2346,7 +2408,11 @@ fn resolve_request_body(
     // tag's `types/` package. The request accepts that alias as one argument and
     // serializes its selected model variant through the annotation converter.
     if schema.one_of.is_some() || schema.any_of.is_some() {
-        let request_body_name = format!("{request_ctx}Body");
+        let request_body_name = if union_body_suffix {
+            format!("{request_ctx}Body")
+        } else {
+            request_ctx.to_string()
+        };
         let variants = schema
             .one_of
             .as_ref()
@@ -2486,7 +2552,7 @@ fn apply_body_example(fields: &mut [BodyField], example: Option<&serde_json::Val
 }
 
 fn is_json_like_media_type(media_type: &str) -> bool {
-    media_type.ends_with("+json")
+    media_type.ends_with("+json") || media_type.ends_with("/ndjson")
 }
 
 fn request_body_ignored(rb: &crate::openapi::RequestBody) -> bool {
@@ -2494,6 +2560,10 @@ fn request_body_ignored(rb: &crate::openapi::RequestBody) -> bool {
         && !rb.content.contains_key("application/octet-stream")
         && !rb.content.contains_key("multipart/form-data")
         && !rb.content.contains_key("application/x-www-form-urlencoded")
+        && !rb
+            .content
+            .keys()
+            .any(|media| is_json_like_media_type(media))
 }
 
 /// Hoist an inline object body's properties into request [`BodyField`]s. Mirrors
@@ -2519,7 +2589,7 @@ fn hoist_inline_object(
             optional,
             nullable: false,
             spec_required,
-            example: schema_example(prop_schema).and_then(example_literal),
+            example: schema_example_literal(prop_schema),
             media_example: false,
             docstring: clean_doc(prop_schema.description.as_deref()),
             is_file: false,
@@ -2543,6 +2613,41 @@ struct InlineHoister<'a> {
 }
 
 impl InlineHoister<'_> {
+    /// Hoist an inline union used as a top-level response array item. Fern coins
+    /// `{Operation}ResponseItem` and exposes the response as a list of that alias.
+    fn hoist_response_array_item_union(
+        &mut self,
+        item_name: &str,
+        schema: &Schema,
+    ) -> Option<TypeRef> {
+        if schema.ty.as_ref().and_then(|ty| ty.primary()) != Some("array") {
+            return None;
+        }
+        let item_schema = schema.items.as_deref()?;
+        let variants = item_schema
+            .one_of
+            .as_ref()
+            .or(item_schema.any_of.as_ref())?;
+        let target = TypeRef::Union(
+            variants
+                .iter()
+                .enumerate()
+                .map(|(index, variant)| {
+                    self.hoist_union_variant(item_name, index, variant, variants)
+                })
+                .collect(),
+        );
+        self.out.push(TypeDecl::Alias(AliasType {
+            name: item_name.to_string(),
+            module: naming::module_name(item_name),
+            target,
+            docstring: clean_doc(item_schema.description.as_deref()),
+        }));
+        Some(TypeRef::List(Box::new(TypeRef::Named(
+            item_name.to_string(),
+        ))))
+    }
+
     /// Hoist an inline object used as a top-level response array item. Fern coins
     /// `{Operation}ResponseItem` and exposes the response as a list of that model.
     fn hoist_response_array_item_object(
@@ -2638,7 +2743,7 @@ impl InlineHoister<'_> {
                 nullable: is_optional(prop_schema) && prop_schema.read_only == Some(true),
                 spec_required,
                 docstring: declared_doc(prop_schema.description.as_deref()),
-                example: schema_example(prop_schema).and_then(example_literal),
+                example: schema_example_literal(prop_schema),
             });
         }
     }
@@ -2779,7 +2884,7 @@ fn hoist_form_object(
                 convert: false,
                 is_file,
                 collision_prefix: None,
-                example: schema_example(prop_schema).and_then(example_literal),
+                example: schema_example_literal(prop_schema),
                 media_example: false,
             }
         })
@@ -3159,7 +3264,7 @@ fn operation_id_tag_prefix<'a>(id: &'a str, tag: &str) -> Option<(&'a str, &'a s
     let prefix = id.get(..tag.len())?;
     let suffix = id.get(tag.len()..)?;
     if suffix.is_empty()
-        || !prefix.eq_ignore_ascii_case(tag)
+        || !operation_id_matches_tag_spelling(prefix, tag)
         || !suffix
             .chars()
             .next()
@@ -3168,6 +3273,16 @@ fn operation_id_tag_prefix<'a>(id: &'a str, tag: &str) -> Option<(&'a str, &'a s
         return None;
     }
     Some((prefix, suffix))
+}
+
+/// Case-insensitive tag matching is valid when the tag itself records word
+/// boundaries (`Activities`, `APIs`) or both spellings snake-case identically.
+/// An all-lowercase tag does not invent boundaries: `apiKeys` under `apikeys`
+/// remains the full method name in the `apikeys` client.
+fn operation_id_matches_tag_spelling(id: &str, tag: &str) -> bool {
+    id.eq_ignore_ascii_case(tag)
+        && (tag.chars().any(|ch| ch.is_ascii_uppercase())
+            || naming::to_snake_case(id) == naming::to_snake_case(tag))
 }
 
 fn stripped_suffix_has_acronym(id: &str, tag: Option<&str>) -> bool {
@@ -3315,7 +3430,7 @@ fn title_from_tag(doc: &OpenApi, tag: &str) -> String {
 /// both rules agree, so tag-grouped corpora already matched stay byte-identical.
 fn endpoint_module(op: &Operation, url: &str) -> String {
     let id = op.operation_id.as_deref().unwrap_or_default().trim();
-    if first_tag(op).is_some_and(|tag| alnum_lower(tag) == alnum_lower(id)) {
+    if first_tag(op).is_some_and(|tag| operation_id_matches_tag_spelling(id, tag)) {
         return String::new();
     }
     if first_tag(op).is_none() && !id.contains('.') {
@@ -3629,7 +3744,7 @@ fn append_member_fields(
             nullable: is_optional(prop_schema) && prop_schema.read_only == Some(true),
             spec_required,
             docstring: None,
-            example: schema_example(prop_schema).and_then(example_literal),
+            example: schema_example_literal(prop_schema),
         });
     }
 }
@@ -3890,16 +4005,14 @@ impl Builder<'_> {
                             || prop_schema.read_only == Some(true))),
                 spec_required,
                 docstring: declared_doc(prop_schema.description.as_deref()),
-                example: schema_example(prop_schema)
-                    .or_else(|| {
-                        prop_schema
-                            .reference
-                            .as_deref()
-                            .and_then(|reference| reference.rsplit('/').next())
-                            .and_then(|key| self.schemas.get(key))
-                            .and_then(schema_example)
-                    })
-                    .and_then(example_literal),
+                example: schema_example_literal(prop_schema).or_else(|| {
+                    prop_schema
+                        .reference
+                        .as_deref()
+                        .and_then(|reference| reference.rsplit('/').next())
+                        .and_then(|key| self.schemas.get(key))
+                        .and_then(schema_example_literal)
+                }),
             });
         }
     }
@@ -4006,7 +4119,11 @@ impl Builder<'_> {
     /// The type of a property, hoisting an inline string enum to a named
     /// `enum.Enum` class `{Owner}{Prop}` (as Fern does for `typesAnimal`).
     fn field_type_ref(&mut self, owner: &str, prop: &str, prop_schema: &Schema) -> TypeRef {
-        if prop == "metadata" && is_unknown(prop_schema) {
+        // Fern preserves the unknown schema's intrinsic `Optional[Any]` for a
+        // handful of semantic catch-all fields. Property absence then adds the
+        // outer `Optional`; ordinary unknown fields stay `Any` here so they do
+        // not become double-optional.
+        if matches!(prop, "metadata" | "value") && is_unknown(prop_schema) {
             return TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)));
         }
         if prop_schema.reference.is_none() {
@@ -5114,6 +5231,16 @@ mod tests {
             endpoint_method_name(&o, "GET", "/x"),
             "endpoints_container_get_and_return_list_of_primitives"
         );
+
+        // A lowercase tag does not infer camel-case word boundaries it did not
+        // declare: Otoroshi keeps both operations in `apikeys` and retains the
+        // full `api_keys...` method name.
+        let o = op("apiKeysFromGroup", "apikeys");
+        assert_eq!(endpoint_module(&o, "/x"), "apikeys");
+        assert_eq!(endpoint_method_name(&o, "GET", "/x"), "api_keys_from_group");
+        let o = op("apiKeys", "apikeys");
+        assert_eq!(endpoint_module(&o, "/x"), "apikeys");
+        assert_eq!(endpoint_method_name(&o, "GET", "/x"), "api_keys");
     }
 
     #[test]
@@ -5913,6 +6040,7 @@ mod tests {
             &referenced_array,
             &mut hoister,
             "ListNamesRequest",
+            true,
         )
         .expect("referenced array is supported") else {
             panic!("referenced array should be a single request argument")
@@ -5929,10 +6057,15 @@ mod tests {
             } }
         }))
         .expect("request body deserializes");
-        let RequestBody::Single(bag) =
-            resolve_request_body(&doc, &types, &vendor_bag, &mut hoister, "PutBagRequest")
-                .expect("bare object is supported")
-        else {
+        let RequestBody::Single(bag) = resolve_request_body(
+            &doc,
+            &types,
+            &vendor_bag,
+            &mut hoister,
+            "PutBagRequest",
+            true,
+        )
+        .expect("bare object is supported") else {
             panic!("bare object should be a single request argument")
         };
         assert_eq!(bag.type_ref, TypeRef::Named("OpenBag".to_string()));
@@ -5956,6 +6089,7 @@ mod tests {
             &wildcard_binary,
             &mut hoister,
             "UploadRequest",
+            true,
         )
         .expect("wildcard binary is supported") else {
             panic!("wildcard binary should be a single request argument")

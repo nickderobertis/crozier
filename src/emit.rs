@@ -376,7 +376,12 @@ struct FieldView {
 /// Compute a field's annotation + default, registering imports.
 fn render_field(field: &Field, imports: &mut Imports) -> RenderedField {
     let inner = render_type(&field.type_ref, imports);
-    let typ = if field.optional {
+    // An unknown schema already contributes its own `Optional[Any]`. A required
+    // unknown field keeps that single wrapper; a non-required unknown field adds
+    // a second wrapper for property absence, matching Fern's distinction.
+    let required_unknown = field.spec_required
+        && matches!(field.type_ref, TypeRef::Optional(ref inner) if matches!(inner.as_ref(), TypeRef::Primitive(Prim::Any)));
+    let typ = if field.optional && !required_unknown {
         imports.add_plain("typing");
         Doc::group("typing.Optional[", vec![inner], "]")
     } else {
@@ -1471,9 +1476,24 @@ fn readme_endpoint(ir: &Ir) -> Option<&Endpoint> {
     if ir.openapi_31 {
         return select_readme_endpoint(ir.endpoints.iter());
     }
+    // Fern builds client modules in first-seen module order and selects the README
+    // example from that grouped view. Keep operations within each module in source
+    // order, but do not let a POST from a later module leapfrog one from the first
+    // module merely because their paths were interleaved.
+    let grouped: Vec<&Endpoint> = ir
+        .endpoint_modules
+        .iter()
+        .flat_map(|module| ir.endpoints.iter().filter(move |ep| &ep.module == module))
+        .collect();
     select_readme_endpoint(ir.endpoints.iter().filter(|e| e.module.is_empty()))
         .filter(|e| e.http_method != "GET" || e.request_body.is_some())
-        .or_else(|| select_readme_endpoint(ir.endpoints.iter()))
+        .or_else(|| {
+            if grouped.is_empty() {
+                select_readme_endpoint(ir.endpoints.iter())
+            } else {
+                select_readme_endpoint(grouped.iter().copied())
+            }
+        })
 }
 
 fn client_call_prefix(ep: &Endpoint) -> String {
@@ -1512,11 +1532,11 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     // for a bodyless endpoint with required path/query/header arguments, or an
     // endpoint with a complex (object/container/union) body, else empty parens; the
     // error/raw-response calls are ruff-wrapped at the snippet width 88.
-    let has_required_non_body_params = first.request_body.is_none()
-        && (!first.path_params.is_empty()
-            || first.query_params.iter().any(|param| param.required)
-            || first.query_params.iter().any(|param| param.convert)
-            || first.header_params.iter().any(|param| param.required));
+    let has_required_non_body_params = !first.path_params.is_empty()
+        || first.request_body.is_none()
+            && (first.query_params.iter().any(|param| param.required)
+                || first.query_params.iter().any(|param| param.convert)
+                || first.header_params.iter().any(|param| param.required));
     let has_map_response = first
         .response
         .as_ref()
@@ -3276,6 +3296,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
     // or is accompanied by path/header parameters. Header parameters follow,
     // rendered as `str(x) if x is not None else None`.
     let content_type: Option<String> = match &ep.request_body {
+        Some(_) if ep.body_content_type_override.is_some() => ep.body_content_type_override.clone(),
         Some(RequestBody::Bytes { content_type }) => Some(content_type.clone()),
         // A multipart form uses `force_multipart=True` (no content-type header);
         // a urlencoded form carries its own content-type.
@@ -3300,6 +3321,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                 && (!ep.header_params.is_empty()
                     || !ep.path_params.is_empty()
                     || (body.content_type_header()
+                        && (!ep.basic_auth || !ep.body_description_missing)
                         && !ep.body_codegen_named
                         && !ep.body_component_ref
                         && !(matches!(body, RequestBody::Inline(_))
@@ -6132,6 +6154,8 @@ mod tests {
             body_description_empty: false,
             body_description_missing: false,
             body_component_ref: false,
+            body_content_type_override: None,
+            basic_auth: false,
             body_schema_ref: false,
             body_schema_dropped: false,
             body_schema_shared: false,
@@ -6246,6 +6270,28 @@ mod tests {
         assert_eq!(
             readme_endpoint(&ir).map(|e| e.method_name.as_str()),
             Some("no_arg_post")
+        );
+
+        let mut first_module_get = endpoint("/a", Vec::new(), None);
+        first_module_get.module = "first".to_string();
+        first_module_get.method_name = "first_get".to_string();
+        let mut second_module_post = endpoint("/b", Vec::new(), None);
+        second_module_post.module = "second".to_string();
+        second_module_post.http_method = "POST";
+        second_module_post.method_name = "second_post".to_string();
+        let mut first_module_post = endpoint("/c", Vec::new(), None);
+        first_module_post.module = "first".to_string();
+        first_module_post.http_method = "POST";
+        first_module_post.method_name = "first_post".to_string();
+        let mut ir = ir_with(vec![
+            first_module_get,
+            second_module_post,
+            first_module_post,
+        ]);
+        ir.endpoint_modules = vec!["first".to_string(), "second".to_string()];
+        assert_eq!(
+            readme_endpoint(&ir).map(|e| e.method_name.as_str()),
+            Some("first_post")
         );
     }
 

@@ -347,13 +347,24 @@ fn unknown_schema_maps_to_optional_any() {
     // An empty schema is an unknown type: an `Optional[Any]` alias, and an
     // always-optional `Optional[Any]` field even when listed as required.
     let files = render(
-        "openapi: 3.0.0\ninfo:\n  title: U\ncomponents:\n  schemas:\n    Unknown: {}\n    Holder:\n      type: object\n      required: [value]\n      properties:\n        value: {}\n",
+        "openapi: 3.0.0\ninfo:\n  title: U\ncomponents:\n  schemas:\n    Unknown: {}\n    Holder:\n      type: object\n      required: [value]\n      properties:\n        value: {}\n        other: {}\n    Patch:\n      type: object\n      properties:\n        value: {}\n",
     );
     assert!(files["src/acme/types/unknown.py"].contains("Unknown = typing.Optional[typing.Any]"));
     assert!(
         files["src/acme/types/holder.py"].contains("value: typing.Optional[typing.Any] = None"),
         "{}",
         files["src/acme/types/holder.py"]
+    );
+    assert!(
+        files["src/acme/types/holder.py"].contains("other: typing.Optional[typing.Any] = None"),
+        "{}",
+        files["src/acme/types/holder.py"]
+    );
+    assert!(
+        files["src/acme/types/patch.py"]
+            .contains("value: typing.Optional[typing.Optional[typing.Any]] = None"),
+        "{}",
+        files["src/acme/types/patch.py"]
     );
 }
 
@@ -1144,6 +1155,51 @@ fn sse_response_generates_a_streaming_client() {
     assert!(client.contains("async for _chunk in r.data:"), "{client}");
 }
 
+/// Fern selects the JSON representation when a success response advertises the
+/// same model as both JSON and SSE, rather than turning the method into a stream.
+#[test]
+fn json_response_takes_precedence_over_an_sse_alternative() {
+    let files = render(
+        r##"openapi: 3.0.0
+info: { title: E }
+paths:
+  /stats:
+    get:
+      operationId: getStats
+      responses:
+        "200":
+          description: Current stats.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Stats" }
+            text/event-stream:
+              schema: { $ref: "#/components/schemas/Stats" }
+components:
+  schemas:
+    Stats:
+      type: object
+      properties:
+        calls: { type: integer }
+"##,
+    );
+    let raw = &files["src/acme/raw_client.py"];
+    assert!(
+        raw.contains("def get_stats(") && raw.contains("-> HttpResponse[Stats]:"),
+        "{raw}"
+    );
+    assert!(
+        raw.contains("self._client_wrapper.httpx_client.request("),
+        "{raw}"
+    );
+    assert!(!raw.contains("@contextlib.contextmanager"), "{raw}");
+    let client = &files["src/acme/client.py"];
+    assert!(
+        client.contains("def get_stats(") && client.contains("-> Stats:"),
+        "{client}"
+    );
+    assert!(client.contains("return _response.data"), "{client}");
+}
+
 /// An inline-object success response on an untagged operation is hoisted into the
 /// package-root `types/` package, and the root client becomes emittable.
 #[test]
@@ -1334,6 +1390,35 @@ fn readme_shows_dots_for_a_container_body_endpoint() {
     assert!(readme.contains("client.items_bulk(...)"));
     assert!(readme.contains("client.items_bulk(..., request_options={"));
     assert!(!readme.contains("health_ping"));
+}
+
+#[test]
+fn readme_abbreviates_a_body_endpoint_with_required_path_arguments() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: Path Body, version: 1.0.0 }
+paths:
+  /groups/{groupId}/items:
+    post:
+      operationId: items_create
+      tags: [Items]
+      parameters:
+        - { name: groupId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: { label: { type: string } }
+      responses: { '204': { description: Created } }
+"#,
+    );
+    let readme = &files["README.md"];
+    assert!(readme.contains("client.items.create(..."), "{readme}");
+    assert!(
+        readme.contains("client.items.with_raw_response.create(..."),
+        "{readme}"
+    );
 }
 
 /// A `readOnly` property is optional even when listed in `required` (it is
@@ -3634,12 +3719,35 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Message" }
+  /basic:
+    post:
+      operationId: basic_create
+      tags: [Basic]
+      security: [ { Basic: [] } ]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Message" }
+      responses: { '204': { description: Created } }
+  /basic-described:
+    post:
+      operationId: basic_described_create
+      tags: [BasicDescribed]
+      security: [ { Basic: [] } ]
+      requestBody:
+        description: A documented request.
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Message" }
+      responses: { '204': { description: Created } }
 components:
   securitySchemes:
     Bearer: { type: http, scheme: bearer }
+    Basic: { type: http, scheme: basic }
   schemas:
     Message:
       type: object
+      description: An echo message.
       properties: { text: { type: string } }
 "##,
     );
@@ -3657,6 +3765,16 @@ components:
     );
     assert!(files["src/acme/client.py"]
         .contains("token: typing.Optional[typing.Union[str, typing.Callable[[], str]]]"));
+    let basic = &files["src/acme/basic/raw_client.py"];
+    assert!(
+        !basic.contains("\"content-type\": \"application/json\""),
+        "Basic-auth JSON bodies without transport parameters leave the header to httpx: {basic}"
+    );
+    let basic_described = &files["src/acme/basic_described/raw_client.py"];
+    assert!(
+        basic_described.contains("\"content-type\": \"application/json\""),
+        "documented Basic-auth JSON bodies retain the header: {basic_described}"
+    );
 }
 
 #[test]
@@ -4171,10 +4289,12 @@ paths:
                 - { type: string }
                 - { type: integer, format: int64 }
       responses: { '204': { description: Done } }
-  /any:
+  /any/{id}:
     post:
       operationId: unions_any
       tags: [Unions]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
       requestBody:
         content:
           application/json:
@@ -4186,14 +4306,14 @@ paths:
 "##,
     );
     let raw = &files["src/acme/unions/raw_client.py"];
-    let one = &files["src/acme/unions/types/unions_one_request_body.py"];
+    let one = &files["src/acme/unions/types/unions_one_request.py"];
     let any = &files["src/acme/unions/types/unions_any_request_body.py"];
     assert!(one.contains("typing.Union[str, int]"), "{one}");
     assert!(any.contains("typing.Union[bool, typing.Dict"), "{any}");
-    assert!(raw.contains("request: UnionsOneRequestBody"), "{raw}");
+    assert!(raw.contains("request: UnionsOneRequest"), "{raw}");
     assert!(raw.contains("request: UnionsAnyRequestBody"), "{raw}");
     assert!(
-        raw.contains("object_=request, annotation=UnionsOneRequestBody"),
+        raw.contains("object_=request, annotation=UnionsOneRequest"),
         "{raw}"
     );
 }
@@ -4259,6 +4379,91 @@ paths:
     assert!(
         wild_method.contains(") -> HttpResponse[int]:") && wild_method.contains("type_=int,"),
         "{wild_method}"
+    );
+}
+
+#[test]
+fn ndjson_request_bodies_use_the_json_compatible_request_path() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: NDJSON, version: 1.0.0 }
+paths:
+  /bulk:
+    post:
+      operationId: records_create_bulk
+      tags: [Records]
+      requestBody:
+        content:
+          application/ndjson:
+            schema:
+              $ref: '#/components/schemas/Record'
+      responses: { '204': { description: Done } }
+  /vendor:
+    post:
+      operationId: records_create_vendor
+      tags: [Records]
+      requestBody:
+        content:
+          application/vnd.acme+json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+      responses: { '204': { description: Done } }
+components:
+  schemas:
+    Record:
+      type: object
+      properties:
+        name: { type: string }
+"#,
+    );
+    let raw = &files["src/acme/records/raw_client.py"];
+    assert!(raw.contains("name: typing.Optional[str] = OMIT"), "{raw}");
+    assert!(
+        raw.contains("json={\n                \"name\": name,"),
+        "{raw}"
+    );
+    assert!(
+        raw.contains("\"content-type\": \"application/ndjson\""),
+        "{raw}"
+    );
+    assert!(
+        !raw.contains("\"content-type\": \"application/vnd.acme+json\""),
+        "{raw}"
+    );
+}
+
+#[test]
+fn array_item_examples_seed_generated_calls() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: Item Examples, version: 1.0.0 }
+paths:
+  /config:
+    put:
+      operationId: config_update
+      tags: [Config]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Config' }
+      responses: { '204': { description: Done } }
+components:
+  schemas:
+    Config:
+      type: object
+      required: [emails]
+      properties:
+        emails:
+          type: array
+          items: { type: string, example: admin@example.com }
+"#,
+    );
+    let client = &files["src/acme/config/client.py"];
+    assert!(
+        client.contains("emails=[\"admin@example.com\"]"),
+        "{client}"
     );
 }
 
