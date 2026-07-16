@@ -8770,6 +8770,126 @@ const MICROCKS_LOCAL: Corpus = Corpus {
     ],
 };
 
+const REDHAT_CATALOG_INVENTORY: Corpus = Corpus {
+    api: "redhat.com-catalog_inventory",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[
+        ".fern/metadata.json",
+        "README.md",
+        "pyproject.toml",
+        "reference.md",
+        "requirements.txt",
+        "src/fern/__init__.py",
+        "src/fern/client.py",
+        "src/fern/core/__init__.py",
+        "src/fern/core/api_error.py",
+        "src/fern/core/client_wrapper.py",
+        "src/fern/core/datetime_utils.py",
+        "src/fern/core/file.py",
+        "src/fern/core/force_multipart.py",
+        "src/fern/core/http_client.py",
+        "src/fern/core/http_response.py",
+        "src/fern/core/http_sse/__init__.py",
+        "src/fern/core/http_sse/_api.py",
+        "src/fern/core/http_sse/_decoders.py",
+        "src/fern/core/http_sse/_exceptions.py",
+        "src/fern/core/http_sse/_models.py",
+        "src/fern/core/jsonable_encoder.py",
+        "src/fern/core/pydantic_utilities.py",
+        "src/fern/core/query_encoder.py",
+        "src/fern/core/remove_none_from_dict.py",
+        "src/fern/core/request_options.py",
+        "src/fern/core/serialization.py",
+        "src/fern/environment.py",
+        "src/fern/errors/__init__.py",
+        "src/fern/errors/bad_request_error.py",
+        "src/fern/errors/not_found_error.py",
+        "src/fern/errors/too_many_requests_error.py",
+        "src/fern/py.typed",
+        "src/fern/raw_client.py",
+        "src/fern/service_credential/__init__.py",
+        "src/fern/service_credential/client.py",
+        "src/fern/service_credential/raw_client.py",
+        "src/fern/service_credential_type/__init__.py",
+        "src/fern/service_credential_type/client.py",
+        "src/fern/service_credential_type/raw_client.py",
+        "src/fern/service_instance/__init__.py",
+        "src/fern/service_instance/client.py",
+        "src/fern/service_instance/raw_client.py",
+        "src/fern/service_inventory/__init__.py",
+        "src/fern/service_inventory/client.py",
+        "src/fern/service_inventory/raw_client.py",
+        "src/fern/service_offering/__init__.py",
+        "src/fern/service_offering/client.py",
+        "src/fern/service_offering/raw_client.py",
+        "src/fern/service_offering/types/__init__.py",
+        "src/fern/service_offering/types/order_service_offering_response.py",
+        "src/fern/service_offering_node/__init__.py",
+        "src/fern/service_offering_node/client.py",
+        "src/fern/service_offering_node/raw_client.py",
+        "src/fern/service_plan/__init__.py",
+        "src/fern/service_plan/client.py",
+        "src/fern/service_plan/raw_client.py",
+        "src/fern/source/__init__.py",
+        "src/fern/source/client.py",
+        "src/fern/source/raw_client.py",
+        "src/fern/tags/__init__.py",
+        "src/fern/tags/client.py",
+        "src/fern/tags/raw_client.py",
+        "src/fern/task/__init__.py",
+        "src/fern/task/client.py",
+        "src/fern/task/raw_client.py",
+        "src/fern/types/__init__.py",
+        "src/fern/types/check_availability_task.py",
+        "src/fern/types/collection_links.py",
+        "src/fern/types/collection_metadata.py",
+        "src/fern/types/error_not_found.py",
+        "src/fern/types/error_not_found_errors_item.py",
+        "src/fern/types/full_refresh_persister_task.py",
+        "src/fern/types/full_refresh_upload_task.py",
+        "src/fern/types/graph_ql_response.py",
+        "src/fern/types/id.py",
+        "src/fern/types/incremental_refresh_upload_task.py",
+        "src/fern/types/launch_job_task.py",
+        "src/fern/types/order_parameters_service_plan.py",
+        "src/fern/types/service_credential.py",
+        "src/fern/types/service_credential_type.py",
+        "src/fern/types/service_credential_types_collection.py",
+        "src/fern/types/service_credentials_collection.py",
+        "src/fern/types/service_instance.py",
+        "src/fern/types/service_instance_node.py",
+        "src/fern/types/service_instance_nodes_collection.py",
+        "src/fern/types/service_instances_collection.py",
+        "src/fern/types/service_inventories_collection.py",
+        "src/fern/types/service_inventory.py",
+        "src/fern/types/service_offering.py",
+        "src/fern/types/service_offering_icon.py",
+        "src/fern/types/service_offering_icons_collection.py",
+        "src/fern/types/service_offering_node.py",
+        "src/fern/types/service_offering_nodes_collection.py",
+        "src/fern/types/service_offerings_collection.py",
+        "src/fern/types/service_plan.py",
+        "src/fern/types/service_plans_collection.py",
+        "src/fern/types/source.py",
+        "src/fern/types/sources_collection.py",
+        "src/fern/types/tag.py",
+        "src/fern/types/tags_collection.py",
+        "src/fern/types/task.py",
+        "src/fern/types/task_state.py",
+        "src/fern/types/task_status.py",
+        "src/fern/types/tasks_collection.py",
+        "src/fern/types/tenant.py",
+        "src/fern/types/towing_task.py",
+        "src/fern/types/uuid_.py",
+        "src/fern/version.py",
+    ],
+};
+
 const CORPORA: &[&Corpus] = &[
     &QUERY_PARAMETERS,
     &EXHAUSTIVE,
@@ -8811,6 +8931,7 @@ const CORPORA: &[&Corpus] = &[
     &OPENFIGI,
     &TWILIO_VOICE_V1,
     &MICROCKS_LOCAL,
+    &REDHAT_CATALOG_INVENTORY,
 ];
 
 #[test]
@@ -9316,6 +9437,18 @@ fn microcks_local_matches_fern_output() {
 }
 
 #[test]
+fn redhat_catalog_inventory_matches_fern_output() {
+    if corpus_spec(REDHAT_CATALOG_INVENTORY.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the Red Hat Catalog Inventory corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+        );
+        return;
+    }
+    assert_corpus_matches(&REDHAT_CATALOG_INVENTORY);
+}
+
+#[test]
 fn feature_target_specs_generate_without_panicking() {
     // A feature-coverage target with a populated `matched` list is byte-compared
     // file-by-file; one with an empty `matched` list asserts only that crozier
@@ -9392,6 +9525,7 @@ fn report_matched_candidates() {
         &OPENFIGI,
         &TWILIO_VOICE_V1,
         &MICROCKS_LOCAL,
+        &REDHAT_CATALOG_INVENTORY,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
@@ -9539,6 +9673,7 @@ fn report_fixture_diffs() {
         &OPENFIGI,
         &TWILIO_VOICE_V1,
         &MICROCKS_LOCAL,
+        &REDHAT_CATALOG_INVENTORY,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);

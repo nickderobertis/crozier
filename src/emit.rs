@@ -1237,8 +1237,9 @@ fn root_init_file(
 /// `inline`'s `filter`) or has at least two required fields. A fully-required
 /// literal inline object retains the placeholder even with one field, while a
 /// flattened referenced object must have at least two fields and no optional ones
-/// (`gettoken`). A referenced body of only scalar fields with any optional one
-/// (`createaccount`), a single-field reference (`create`), or a
+/// (`gettoken`), unless its request-body declaration is documented (Red Hat's
+/// GraphQL request). An undocumented referenced body of only scalar fields with any
+/// optional one (`createaccount`), a single-field reference (`create`), or a
 /// union/enum/scalar/no body renders empty parens.
 fn complex_body(ep: &Endpoint, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) -> bool {
     if ep.body_all_of
@@ -1248,6 +1249,10 @@ fn complex_body(ep: &Endpoint, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) ->
             && matches!(ep.request_body, Some(RequestBody::Inline(_))))
         || (ep.body_schema_ref
             && ep.body_schema_has_example
+            && matches!(ep.request_body, Some(RequestBody::Inline(_))))
+        || (ep.body_schema_ref
+            && ep.body_schema_dropped
+            && !ep.body_description_missing
             && matches!(ep.request_body, Some(RequestBody::Inline(_))))
     {
         return true;

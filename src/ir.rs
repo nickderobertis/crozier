@@ -109,12 +109,16 @@ fn environment_model(doc: &OpenApi, client_name: &str) -> Option<Environment> {
     })
 }
 
-/// Substitute a server URL's `{var}` placeholders with each variable's `default`
-/// (`https://.../{basePath}` → `https://.../v1`), matching Fern.
+/// Substitute a server URL's `{var}` placeholders with each percent-encoded
+/// variable `default` (`https://.../{basePath}` + `/v1` →
+/// `https://.../%2Fv1`), matching Fern's URI-template expansion.
 fn resolve_server_url(server: &crate::openapi::Server) -> String {
     let mut url = server.url.clone();
     for (name, var) in &server.variables {
-        url = url.replace(&format!("{{{name}}}"), &var.default);
+        url = url.replace(
+            &format!("{{{name}}}"),
+            &percent_encode_server_variable(&var.default),
+        );
     }
     if url == "/" {
         return String::new();
@@ -123,6 +127,23 @@ fn resolve_server_url(server: &crate::openapi::Server) -> String {
         url.pop();
     }
     url
+}
+
+/// Percent-encode a server-variable value as one URI-template expression. RFC 3986
+/// unreserved bytes remain literal; every other UTF-8 byte uses uppercase hex.
+fn percent_encode_server_variable(value: &str) -> String {
+    const HEX: &[u8; 16] = b"0123456789ABCDEF";
+    let mut encoded = String::with_capacity(value.len());
+    for byte in value.bytes() {
+        if byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'.' | b'_' | b'~') {
+            encoded.push(char::from(byte));
+        } else {
+            encoded.push('%');
+            encoded.push(char::from(HEX[usize::from(byte >> 4)]));
+            encoded.push(char::from(HEX[usize::from(byte & 0x0f)]));
+        }
+    }
+    encoded
 }
 
 /// Turn a server description into a Python enum member identifier: uppercased,
@@ -4770,6 +4791,19 @@ mod tests {
         let env = environment_model(&doc, "FernApi").expect("server yields environment");
         assert_eq!(env.member.0, "DEFAULT");
         assert_eq!(env.default_ref(), "FernApiEnvironment.DEFAULT");
+    }
+
+    #[test]
+    fn server_variable_defaults_are_percent_encoded_before_substitution() {
+        let doc: crate::openapi::OpenApi = serde_json::from_value(serde_json::json!({
+            "servers": [{
+                "url": "https://api.example.com/{basePath}",
+                "variables": { "basePath": { "default": "/api/v1" } }
+            }]
+        }))
+        .expect("document deserializes");
+        let env = environment_model(&doc, "FernApi").expect("server yields environment");
+        assert_eq!(env.member.1, "https://api.example.com/%2Fapi%2Fv1");
     }
 
     #[test]
