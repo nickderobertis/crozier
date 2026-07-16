@@ -1242,7 +1242,8 @@ fn root_init_file(
 /// optional one (`createaccount`), a single-field reference (`create`), or a
 /// union/enum/scalar/no body renders empty parens.
 fn complex_body(ep: &Endpoint, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) -> bool {
-    if ep.body_all_of
+    if ep.body_media_has_example
+        || ep.body_all_of
         || (ep.body_schema_ref
             && !ep.body_schema_dropped
             && !ep.body_schema_is_success_response
@@ -5119,7 +5120,7 @@ fn build_example(
         .request_body
         .as_ref()
         .is_some_and(RequestBody::is_wildcard_media);
-    let mut optional_query_example_used = false;
+    let mut optional_query_example_type: Option<&TypeRef> = None;
     for qp in ep
         .query_params
         .iter()
@@ -5189,13 +5190,19 @@ fn build_example(
         .iter()
         .filter(|qp| !ep.wildcard_binary_response && !qp.required)
     {
-        if qp.example.is_none()
-            || !qp.example_is_scalar
-            || (ep.request_body.is_none() && optional_query_example_used)
-        {
+        if qp.example.is_none() || !qp.example_is_scalar {
             continue;
         }
-        optional_query_example_used = true;
+        // For a bodyless operation, Fern keeps optional examples matching the
+        // first example's type (Xero's `where` + `order` strings), but omits other
+        // types (Discourse omits the integer `page` after its string `q`).
+        // Body-bearing operations retain every optional example.
+        if ep.request_body.is_none() {
+            if optional_query_example_type.is_some_and(|first| first != &qp.type_ref) {
+                continue;
+            }
+            optional_query_example_type.get_or_insert(&qp.type_ref);
+        }
         args.push((
             Some(qp.py_name.clone()),
             Example::Atom(qp.example.clone().unwrap_or_default()),
@@ -5931,6 +5938,22 @@ mod tests {
         }));
 
         assert!(complex_body(&ep, &[item, batch], &[]));
+    }
+
+    #[test]
+    fn media_example_keeps_abbreviated_placeholder_for_inline_collection_body() {
+        let mut ep = endpoint("/batch", Vec::new(), None);
+        ep.body_media_has_example = true;
+        ep.request_body = Some(RequestBody::Single(SingleBody {
+            type_ref: TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
+            required: true,
+            convert: false,
+            content_type: true,
+            content_type_override: None,
+            example: Some("[\"item\"]".to_string()),
+        }));
+
+        assert!(complex_body(&ep, &[], &[]));
     }
 
     #[test]
@@ -6930,6 +6953,51 @@ mod tests {
             "{rendered}"
         );
         assert!(rendered.contains("await client.widgets.op("), "{rendered}");
+    }
+
+    #[test]
+    fn worked_example_keeps_same_typed_optional_query_examples() {
+        let mut ep = endpoint("/widgets", Vec::new(), Some(TypeRef::Primitive(Prim::Str)));
+        ep.query_params = vec![
+            QueryParam {
+                wire_name: "where".to_string(),
+                py_name: "where_".to_string(),
+                type_ref: TypeRef::Primitive(Prim::Str),
+                required: false,
+                convert: false,
+                example: Some("\"active\"".to_string()),
+                example_is_scalar: true,
+                docstring: None,
+            },
+            QueryParam {
+                wire_name: "order".to_string(),
+                py_name: "order".to_string(),
+                type_ref: TypeRef::Primitive(Prim::Str),
+                required: false,
+                convert: false,
+                example: Some("\"name\"".to_string()),
+                example_is_scalar: true,
+                docstring: None,
+            },
+            QueryParam {
+                wire_name: "page".to_string(),
+                py_name: "page".to_string(),
+                type_ref: TypeRef::Primitive(Prim::Int),
+                required: false,
+                convert: false,
+                example: Some("1".to_string()),
+                example_is_scalar: true,
+                docstring: None,
+            },
+        ];
+
+        let mut ctx = example_ctx(&[], &[], &Auth::None);
+        let rendered = build_example(&ep, false, "widgets", "acme", "AcmeApi", &mut ctx)
+            .expect("bodyless query endpoint has a worked example")
+            .join("\n");
+        assert!(rendered.contains("where_=\"active\""), "{rendered}");
+        assert!(rendered.contains("order=\"name\""), "{rendered}");
+        assert!(!rendered.contains("page=1"), "{rendered}");
     }
 
     #[test]

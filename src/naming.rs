@@ -225,6 +225,9 @@ fn digit_word(word: &str) -> Option<&'static str> {
 /// the `visit` parameter (`0: Active` → words `[zero, active]`; `1: InActive` →
 /// `[one, in, active]`).
 fn enum_words(value: &str) -> Vec<String> {
+    if value.is_empty() {
+        return vec!["empty".to_string()];
+    }
     let mut spaced = String::new();
     for c in value.chars() {
         if c == '*' {
@@ -241,6 +244,8 @@ fn enum_words(value: &str) -> Vec<String> {
     let mut join_after_digit = false;
     for word in split_words(&spaced) {
         if words.is_empty() {
+            join_after_digit = word.ends_with(|c: char| c.is_ascii_digit())
+                && word.chars().any(|c| c.is_ascii_alphabetic());
             words.push(digit_word(&word).map_or(word, str::to_string));
         } else if word.len() == 1 && word.as_bytes()[0].is_ascii_digit() {
             // Fern keeps a leading numeric enum token readable (`0: Active` ->
@@ -254,6 +259,8 @@ fn enum_words(value: &str) -> Vec<String> {
             words.last_mut().expect("checked non-empty").push_str(&word);
             join_after_digit = false;
         } else {
+            join_after_digit = word.ends_with(|c: char| c.is_ascii_digit())
+                && word.chars().any(|c| c.is_ascii_alphabetic());
             words.push(word);
         }
     }
@@ -464,6 +471,10 @@ mod tests {
         assert_eq!(enum_member_name("oauth2.0"), "OAUTH20");
         assert_eq!(enum_member_name("ID_CUSIP_8_CHR"), "ID_CUSIP8CHR");
         assert_eq!(enum_visit_param("ID_CUSIP_8_CHR"), "id_cusip8chr");
+        assert_eq!(enum_member_name("SCHEDULE5MANUAL"), "SCHEDULE5MANUAL");
+        assert_eq!(enum_visit_param("SCHEDULE5MANUAL"), "schedule5manual");
+        assert_eq!(enum_member_name(""), "EMPTY");
+        assert_eq!(enum_visit_param(""), "empty");
         assert_eq!(enum_visit_param("1: InActive"), "one_in_active");
     }
 

@@ -8890,6 +8890,135 @@ const REDHAT_CATALOG_INVENTORY: Corpus = Corpus {
     ],
 };
 
+const XERO_PAYROLL_AU: Corpus = Corpus {
+    api: "xero.com-xero-payroll-au",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[
+        ".fern/metadata.json",
+        "README.md",
+        "pyproject.toml",
+        "reference.md",
+        "requirements.txt",
+        "src/fern/__init__.py",
+        "src/fern/client.py",
+        "src/fern/core/__init__.py",
+        "src/fern/core/api_error.py",
+        "src/fern/core/client_wrapper.py",
+        "src/fern/core/datetime_utils.py",
+        "src/fern/core/file.py",
+        "src/fern/core/force_multipart.py",
+        "src/fern/core/http_client.py",
+        "src/fern/core/http_response.py",
+        "src/fern/core/http_sse/__init__.py",
+        "src/fern/core/http_sse/_api.py",
+        "src/fern/core/http_sse/_decoders.py",
+        "src/fern/core/http_sse/_exceptions.py",
+        "src/fern/core/http_sse/_models.py",
+        "src/fern/core/jsonable_encoder.py",
+        "src/fern/core/pydantic_utilities.py",
+        "src/fern/core/query_encoder.py",
+        "src/fern/core/remove_none_from_dict.py",
+        "src/fern/core/request_options.py",
+        "src/fern/core/serialization.py",
+        "src/fern/environment.py",
+        "src/fern/errors/__init__.py",
+        "src/fern/errors/bad_request_error.py",
+        "src/fern/payroll_au/__init__.py",
+        "src/fern/payroll_au/client.py",
+        "src/fern/payroll_au/raw_client.py",
+        "src/fern/py.typed",
+        "src/fern/types/__init__.py",
+        "src/fern/types/account.py",
+        "src/fern/types/account_type.py",
+        "src/fern/types/allowance_type.py",
+        "src/fern/types/api_exception.py",
+        "src/fern/types/bank_account.py",
+        "src/fern/types/calendar_type.py",
+        "src/fern/types/deduction_line.py",
+        "src/fern/types/deduction_type.py",
+        "src/fern/types/deduction_type_calculation_type.py",
+        "src/fern/types/deduction_type_deduction_category.py",
+        "src/fern/types/earnings_line.py",
+        "src/fern/types/earnings_rate.py",
+        "src/fern/types/earnings_rate_calculation_type.py",
+        "src/fern/types/earnings_type.py",
+        "src/fern/types/employee.py",
+        "src/fern/types/employee_gender.py",
+        "src/fern/types/employee_status.py",
+        "src/fern/types/employees.py",
+        "src/fern/types/employment_basis.py",
+        "src/fern/types/employment_termination_payment_type.py",
+        "src/fern/types/entitlement_final_pay_payout_type.py",
+        "src/fern/types/home_address.py",
+        "src/fern/types/leave_accrual_line.py",
+        "src/fern/types/leave_application.py",
+        "src/fern/types/leave_applications.py",
+        "src/fern/types/leave_balance.py",
+        "src/fern/types/leave_earnings_line.py",
+        "src/fern/types/leave_line.py",
+        "src/fern/types/leave_line_calculation_type.py",
+        "src/fern/types/leave_lines.py",
+        "src/fern/types/leave_period.py",
+        "src/fern/types/leave_period_status.py",
+        "src/fern/types/leave_type.py",
+        "src/fern/types/leave_type_contribution_type.py",
+        "src/fern/types/manual_tax_type.py",
+        "src/fern/types/oauth_scope.py",
+        "src/fern/types/opening_balances.py",
+        "src/fern/types/pay_item.py",
+        "src/fern/types/pay_items.py",
+        "src/fern/types/pay_run.py",
+        "src/fern/types/pay_run_status.py",
+        "src/fern/types/pay_runs.py",
+        "src/fern/types/pay_template.py",
+        "src/fern/types/payment_frequency_type.py",
+        "src/fern/types/payroll_calendar.py",
+        "src/fern/types/payroll_calendars.py",
+        "src/fern/types/payslip.py",
+        "src/fern/types/payslip_lines.py",
+        "src/fern/types/payslip_object.py",
+        "src/fern/types/payslip_summary.py",
+        "src/fern/types/payslips.py",
+        "src/fern/types/rate_type.py",
+        "src/fern/types/reimbursement_line.py",
+        "src/fern/types/reimbursement_lines.py",
+        "src/fern/types/reimbursement_type.py",
+        "src/fern/types/residency_status.py",
+        "src/fern/types/settings.py",
+        "src/fern/types/settings_object.py",
+        "src/fern/types/settings_tracking_categories.py",
+        "src/fern/types/settings_tracking_categories_employee_groups.py",
+        "src/fern/types/settings_tracking_categories_timesheet_categories.py",
+        "src/fern/types/state.py",
+        "src/fern/types/super_fund.py",
+        "src/fern/types/super_fund_product.py",
+        "src/fern/types/super_fund_products.py",
+        "src/fern/types/super_fund_type.py",
+        "src/fern/types/super_funds.py",
+        "src/fern/types/super_line.py",
+        "src/fern/types/super_membership.py",
+        "src/fern/types/superannuation_calculation_type.py",
+        "src/fern/types/superannuation_contribution_type.py",
+        "src/fern/types/superannuation_line.py",
+        "src/fern/types/tax_declaration.py",
+        "src/fern/types/tax_line.py",
+        "src/fern/types/tfn_exemption_type.py",
+        "src/fern/types/timesheet.py",
+        "src/fern/types/timesheet_line.py",
+        "src/fern/types/timesheet_lines.py",
+        "src/fern/types/timesheet_object.py",
+        "src/fern/types/timesheet_status.py",
+        "src/fern/types/timesheets.py",
+        "src/fern/types/validation_error.py",
+        "src/fern/version.py",
+    ],
+};
+
 const CORPORA: &[&Corpus] = &[
     &QUERY_PARAMETERS,
     &EXHAUSTIVE,
@@ -8932,6 +9061,7 @@ const CORPORA: &[&Corpus] = &[
     &TWILIO_VOICE_V1,
     &MICROCKS_LOCAL,
     &REDHAT_CATALOG_INVENTORY,
+    &XERO_PAYROLL_AU,
 ];
 
 #[test]
@@ -9449,6 +9579,18 @@ fn redhat_catalog_inventory_matches_fern_output() {
 }
 
 #[test]
+fn xero_payroll_au_matches_fern_output() {
+    if corpus_spec(XERO_PAYROLL_AU.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the Xero Payroll AU corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+        );
+        return;
+    }
+    assert_corpus_matches(&XERO_PAYROLL_AU);
+}
+
+#[test]
 fn feature_target_specs_generate_without_panicking() {
     // A feature-coverage target with a populated `matched` list is byte-compared
     // file-by-file; one with an empty `matched` list asserts only that crozier
@@ -9526,6 +9668,7 @@ fn report_matched_candidates() {
         &TWILIO_VOICE_V1,
         &MICROCKS_LOCAL,
         &REDHAT_CATALOG_INVENTORY,
+        &XERO_PAYROLL_AU,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
@@ -9674,6 +9817,7 @@ fn report_fixture_diffs() {
         &TWILIO_VOICE_V1,
         &MICROCKS_LOCAL,
         &REDHAT_CATALOG_INVENTORY,
+        &XERO_PAYROLL_AU,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);

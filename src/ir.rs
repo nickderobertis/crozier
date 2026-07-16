@@ -81,8 +81,9 @@ impl Environment {
 /// Derive the [`Environment`] model from the document's `servers`. Reproduces
 /// Fern's single-member behavior: the first server only, its member named by
 /// uppercasing the description (non-identifier characters → `_`). A templated
-/// server, or a single concrete server with no usable description, is `DEFAULT`;
-/// described concrete servers keep their description-derived name.
+/// server, a single concrete server with no usable description, or a description
+/// that merely repeats the API title is `DEFAULT`; other described concrete
+/// servers keep their description-derived name.
 fn environment_model(doc: &OpenApi, client_name: &str) -> Option<Environment> {
     let first = doc.servers.first()?;
     // A server with a templated URL (`{basePath}` variables) is named `DEFAULT` — its
@@ -98,7 +99,10 @@ fn environment_model(doc: &OpenApi, client_name: &str) -> Option<Environment> {
         first
             .description
             .as_deref()
-            .filter(|description| !description.eq_ignore_ascii_case("production server"))
+            .filter(|description| {
+                !description.eq_ignore_ascii_case("production server")
+                    && !description.eq_ignore_ascii_case(&doc.info.title)
+            })
             .map(env_member_name)
             .filter(|n| !n.is_empty())
             .unwrap_or_else(|| "DEFAULT".to_string())
@@ -1912,6 +1916,14 @@ fn parameter_example(doc: &OpenApi, parameter: &crate::openapi::Parameter) -> Op
                 .and_then(schema_example)
         })?;
     let schema = parameter.schema.as_ref();
+    // Fern discards an example whose JSON kind contradicts the declared scalar
+    // type instead of rendering invalid Python for the generated annotation (for
+    // example, a numeric OpenAPI example on a `type: string` query parameter).
+    if schema.and_then(|schema| schema.ty.as_ref()?.primary()) == Some("string")
+        && !value.is_string()
+    {
+        return None;
+    }
     if schema.and_then(|schema| schema.ty.as_ref()?.primary()) == Some("integer") {
         if let Some(minimum) = schema.and_then(|schema| schema.minimum.as_ref()) {
             return example_literal(minimum)
@@ -4739,13 +4751,13 @@ mod tests {
     use super::{
         auth_model, base_type_ref, build_endpoint, build_enum, endpoint_module, environment_model,
         extensible_enum, full_type_ref_resolved, int_prim, method_from_grouped_id,
-        module_from_grouped_id, module_identifier, oauth_scope_enum, optional_type_ref, path_group,
-        ref_to_class, request_and_response_refs_match, request_schema_use_count,
-        resolve_request_body, resolve_schema_pointer, response_schema, scalar_body,
-        success_response_entry, synthesized_method_name, title_from_tag, variant_class_name, Auth,
-        Builder, InlineHoister, Prim, RequestBody, TypeDecl, TypeRef,
+        module_from_grouped_id, module_identifier, oauth_scope_enum, optional_type_ref,
+        parameter_example, path_group, ref_to_class, request_and_response_refs_match,
+        request_schema_use_count, resolve_request_body, resolve_schema_pointer, response_schema,
+        scalar_body, success_response_entry, synthesized_method_name, title_from_tag,
+        variant_class_name, Auth, Builder, InlineHoister, Prim, RequestBody, TypeDecl, TypeRef,
     };
-    use crate::openapi::{OpenApi, Operation, Response, Schema, TypeField};
+    use crate::openapi::{OpenApi, Operation, Parameter, Response, Schema, TypeField};
 
     #[test]
     fn integer_formats_select_distinct_ir_primitives() {
@@ -4791,6 +4803,42 @@ mod tests {
         let env = environment_model(&doc, "FernApi").expect("server yields environment");
         assert_eq!(env.member.0, "DEFAULT");
         assert_eq!(env.default_ref(), "FernApiEnvironment.DEFAULT");
+    }
+
+    #[test]
+    fn server_description_repeating_api_title_defaults_to_default_environment() {
+        let doc: crate::openapi::OpenApi = serde_json::from_value(serde_json::json!({
+            "info": { "title": "Payroll API" },
+            "servers": [{
+                "description": "Payroll API",
+                "url": "https://api.example.com"
+            }]
+        }))
+        .expect("document deserializes");
+        let env = environment_model(&doc, "FernApi").expect("server yields environment");
+        assert_eq!(env.member.0, "DEFAULT");
+        assert_eq!(env.default_ref(), "FernApiEnvironment.DEFAULT");
+    }
+
+    #[test]
+    fn parameter_example_rejects_a_value_with_the_wrong_scalar_kind() {
+        let doc: OpenApi =
+            serde_json::from_value(serde_json::json!({})).expect("document deserializes");
+        let mut parameter = Parameter {
+            schema: Some(Schema {
+                ty: Some(TypeField::Single("string".to_string())),
+                ..Schema::default()
+            }),
+            example: Some(serde_json::json!(40022701955_u64)),
+            ..Parameter::default()
+        };
+        assert_eq!(parameter_example(&doc, &parameter), None);
+
+        parameter.example = Some(serde_json::json!("OSF0001AU"));
+        assert_eq!(
+            parameter_example(&doc, &parameter).as_deref(),
+            Some("\"OSF0001AU\"")
+        );
     }
 
     #[test]
