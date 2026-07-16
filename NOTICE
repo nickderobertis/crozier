@@ -11,17 +11,14 @@ Vendored runtime (shipped and redistributed as product):
     pydantic utilities, serialization, SSE, request options). crozier embeds it
     and emits it verbatim into every generated SDK, exactly as Fern ships it into
     its own output. It is generator boilerplate, not derived from any OpenAPI
-    document. Provenance and the statement of changes are in assets/README.md;
-    the only changes are comment stripping (as with the fixtures below) and
-    templating the SDK name/version header in client_wrapper.py.
+    document. The runtime is from fernapi/fern-python-sdk:5.20.0. Provenance and
+    the statement of changes are in assets/README.md; the Python assets are
+    comment-stripped as with the fixtures below.
 
-  * assets/scaffolding/ is Fern's project-root scaffolding (pyproject.toml,
-    requirements.txt, and the .fern/metadata.json marker), emitted verbatim into
-    every generated SDK. The only change is templating the project/package name
-    and version in pyproject.toml with the same @@CROZIER_...@@ placeholders. It
-    also holds README.md.tmpl, the static prose of Fern's generated README, with
-    the SDK name and worked usage examples replaced by @@...@@ placeholders the
-    emitter fills in. See assets/README.md.
+  * assets/scaffolding/ is Fern 5.20.0's project scaffolding, including packaging,
+    documentation, contribution guidance, default async clients, and generated
+    tests. Project/package names, the SDK version, and worked examples use @@...@@
+    placeholders that the emitter fills in. See assets/README.md.
 
 Test fixtures (attribution and statement of changes, per Apache-2.0 §4(b), §4(c)):
 

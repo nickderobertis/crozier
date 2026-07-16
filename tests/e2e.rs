@@ -2271,10 +2271,12 @@ const APIDECK_HRIS: Corpus = Corpus {
     extra_fields: None,
     matched: &[
         ".fern/metadata.json",
+        "CONTRIBUTING.md",
         "README.md",
         "pyproject.toml",
         "reference.md",
         "requirements.txt",
+        "src/fern/_default_clients.py",
         "src/fern/__init__.py",
         "src/fern/client.py",
         "src/fern/companies/__init__.py",
@@ -2284,6 +2286,7 @@ const APIDECK_HRIS: Corpus = Corpus {
         "src/fern/core/api_error.py",
         "src/fern/core/client_wrapper.py",
         "src/fern/core/datetime_utils.py",
+        "src/fern/core/enum.py",
         "src/fern/core/file.py",
         "src/fern/core/force_multipart.py",
         "src/fern/core/http_client.py",
@@ -2294,6 +2297,8 @@ const APIDECK_HRIS: Corpus = Corpus {
         "src/fern/core/http_sse/_exceptions.py",
         "src/fern/core/http_sse/_models.py",
         "src/fern/core/jsonable_encoder.py",
+        "src/fern/core/logging.py",
+        "src/fern/core/parse_error.py",
         "src/fern/core/pydantic_utilities.py",
         "src/fern/core/query_encoder.py",
         "src/fern/core/remove_none_from_dict.py",
@@ -6199,6 +6204,8 @@ const AUTHENTIQIO: Corpus = Corpus {
         "src/fern/types/error.py",
         "src/fern/types/push_token.py",
         "src/fern/version.py",
+        "tests/conftest.py",
+        "tests/test_aiohttp_autodetect.py",
     ],
 };
 

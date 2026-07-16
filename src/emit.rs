@@ -1934,6 +1934,7 @@ const CORE_ASSETS: &[(&str, &str)] = &[
         "datetime_utils.py",
         include_str!("../assets/core/datetime_utils.py"),
     ),
+    ("enum.py", include_str!("../assets/core/enum.py")),
     ("file.py", include_str!("../assets/core/file.py")),
     (
         "force_multipart.py",
@@ -1971,6 +1972,11 @@ const CORE_ASSETS: &[(&str, &str)] = &[
         "jsonable_encoder.py",
         include_str!("../assets/core/jsonable_encoder.py"),
     ),
+    ("logging.py", include_str!("../assets/core/logging.py")),
+    (
+        "parse_error.py",
+        include_str!("../assets/core/parse_error.py"),
+    ),
     (
         "pydantic_utilities.py",
         include_str!("../assets/core/pydantic_utilities.py"),
@@ -2002,15 +2008,20 @@ const PACKAGE_PLACEHOLDER: &str = "@@CROZIER_PACKAGE@@";
 /// configured). Not yet exposed as a flag.
 const DEFAULT_SDK_VERSION: &str = "0.0.0";
 
-/// Project-root scaffolding Fern emits verbatim apart from the project/package
-/// name and version. `.fern/metadata.json` and `requirements.txt` are fully
-/// static; `pyproject.toml` carries the substitutions. Vendored under
+/// Project scaffolding Fern emits verbatim apart from project/package names and
+/// the SDK version. The Python test/default-client templates carry the same
+/// substitutions so non-`fern` package names remain importable. Vendored under
 /// `assets/scaffolding/` (Apache-2.0; see `NOTICE`).
 fn scaffolding_files(pkg: &str, project_name: &str) -> Vec<GeneratedFile> {
     let pyproject = include_str!("../assets/scaffolding/pyproject.toml")
         .replace(SDK_NAME_PLACEHOLDER, project_name)
         .replace(PACKAGE_PLACEHOLDER, pkg)
         .replace(SDK_VERSION_PLACEHOLDER, DEFAULT_SDK_VERSION);
+    let substitute_names = |contents: &str| {
+        contents
+            .replace(SDK_NAME_PLACEHOLDER, project_name)
+            .replace(PACKAGE_PLACEHOLDER, pkg)
+    };
     vec![
         GeneratedFile {
             path: PathBuf::from("pyproject.toml"),
@@ -2023,6 +2034,26 @@ fn scaffolding_files(pkg: &str, project_name: &str) -> Vec<GeneratedFile> {
         GeneratedFile {
             path: PathBuf::from(".fern/metadata.json"),
             contents: include_str!("../assets/scaffolding/metadata.json").to_string(),
+        },
+        GeneratedFile {
+            path: PathBuf::from("CONTRIBUTING.md"),
+            contents: include_str!("../assets/scaffolding/CONTRIBUTING.md").to_string(),
+        },
+        GeneratedFile {
+            path: PathBuf::from(format!("src/{pkg}/_default_clients.py")),
+            contents: substitute_names(include_str!(
+                "../assets/scaffolding/default_clients.py.tmpl"
+            )),
+        },
+        GeneratedFile {
+            path: PathBuf::from("tests/conftest.py"),
+            contents: include_str!("../assets/scaffolding/conftest.py").to_string(),
+        },
+        GeneratedFile {
+            path: PathBuf::from("tests/test_aiohttp_autodetect.py"),
+            contents: substitute_names(include_str!(
+                "../assets/scaffolding/test_aiohttp_autodetect.py.tmpl"
+            )),
         },
     ]
 }
@@ -5921,10 +5952,9 @@ pub fn clean_package_tree(root: &std::path::Path, package: &str) -> Result<()> {
 /// delegating line-wrapping to the tool Fern uses. Two classes of file are left
 /// untouched:
 ///
-/// - **Vendored `core/` runtime** — emitted verbatim from `assets/core/` (Fern's
-///   own already-`ruff`-formatted source). Re-formatting would change it: since
-///   these carry comments, `ruff format` then comment-strip does not commute with
-///   Fern's strip-only fixture, so formatting them breaks the byte match.
+/// - **Vendored Python assets** — the `core/` runtime, default-client helper, and
+///   generated aiohttp tests are already Fern-formatted. Re-formatting would
+///   change their post-comment-strip whitespace and break the byte match.
 /// - **Whitespace-only files** — the empty `py.typed` marker and the comment-only
 ///   endpoint `__init__.py` (emitted in its four-blank-line stripped form): there
 ///   is nothing to wrap and `ruff` would collapse them.
@@ -5938,6 +5968,9 @@ fn format_python_files(pkg: &str, files: &mut [GeneratedFile]) -> Result<()> {
     let core_root = PathBuf::from(format!("src/{pkg}/core"));
     let root_client = PathBuf::from(format!("src/{pkg}/client.py"));
     let root_raw_client = PathBuf::from(format!("src/{pkg}/raw_client.py"));
+    let default_clients = PathBuf::from(format!("src/{pkg}/_default_clients.py"));
+    let generated_aiohttp_test = PathBuf::from("tests/test_aiohttp_autodetect.py");
+    let generated_conftest = PathBuf::from("tests/conftest.py");
     for file in files.iter_mut() {
         let is_py = file.path.extension().and_then(|e| e.to_str()) == Some("py");
         // The `core/` tree is vendored verbatim (already ruff-formatted) EXCEPT
@@ -5945,8 +5978,11 @@ fn format_python_files(pkg: &str, files: &mut [GeneratedFile]) -> Result<()> {
         // model and so must be wrapped like every other generated file.
         let is_vendored = file.path.starts_with(&core_root)
             && file.path.file_name().and_then(|n| n.to_str()) != Some("client_wrapper.py");
+        let is_vendored_scaffolding = file.path == default_clients
+            || file.path == generated_aiohttp_test
+            || file.path == generated_conftest;
         let has_code = file.contents.chars().any(|c| !c.is_whitespace());
-        if is_py && !is_vendored && has_code {
+        if is_py && !is_vendored && !is_vendored_scaffolding && has_code {
             let name = file.path.to_string_lossy();
             file.contents =
                 crate::pyfmt::format_source(&name, &file.contents, crate::pyfmt::LINE_LENGTH)?;
