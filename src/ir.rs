@@ -5322,10 +5322,11 @@ fn example_literal(value: &serde_json::Value) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::{
-        auth_model, base_type_ref, build_endpoint, build_enum, endpoint_module, environment_model,
-        extensible_enum, full_type_ref_resolved, global_headers, int_prim, method_from_grouped_id,
+        array_item_type_ref, auth_model, base_type_ref, build_endpoint, build_enum,
+        described_all_of_ref, endpoint_module, environment_model, extensible_enum,
+        full_type_ref_resolved, global_headers, int_prim, method_from_grouped_id,
         module_from_grouped_id, module_identifier, oauth_scope_enum, optional_type_ref,
-        parameter_example, path_group, query_parameter_example, ref_to_class,
+        parameter_example, path_group, property_description, query_parameter_example, ref_to_class,
         request_and_response_refs_match, request_schema_use_count, resolve_request_body,
         resolve_schema_pointer, response_schema, scalar_body, success_response_entry,
         synthesized_method_name, title_from_tag, variant_class_name, Auth, Builder, InlineHoister,
@@ -6852,6 +6853,249 @@ mod tests {
         assert!(builder.types.iter().any(|decl| matches!(
             decl,
             TypeDecl::DiscriminatedUnion(union) if union.name == "RecordEventsItem"
+        )));
+    }
+
+    #[test]
+    fn described_allof_validates_annotation_only_compositions() {
+        let valid = schema(serde_json::json!({
+            "allOf": [
+                { "$ref": "#/components/schemas/Target" },
+                { "description": "Use-site docs." }
+            ]
+        }));
+        assert_eq!(
+            described_all_of_ref(&valid),
+            Some(("#/components/schemas/Target", Some("Use-site docs.")))
+        );
+        assert_eq!(property_description(&valid), Some("Use-site docs."));
+
+        let outer_description = schema(serde_json::json!({
+            "description": "Outer docs.",
+            "allOf": [
+                { "description": "Inner docs." },
+                { "$ref": "#/components/schemas/Target" },
+                {}
+            ]
+        }));
+        assert_eq!(
+            described_all_of_ref(&outer_description),
+            Some(("#/components/schemas/Target", Some("Outer docs.")))
+        );
+
+        for invalid in [
+            serde_json::json!({}),
+            serde_json::json!({ "allOf": [{ "$ref": "#/components/schemas/Target" }] }),
+            serde_json::json!({ "allOf": [{}, { "description": "No reference." }] }),
+            serde_json::json!({
+                "allOf": [
+                    { "$ref": "#/components/schemas/One" },
+                    { "$ref": "#/components/schemas/Two" }
+                ]
+            }),
+            serde_json::json!({
+                "allOf": [
+                    { "$ref": "#/components/schemas/Target" },
+                    { "type": "string", "description": "Adds a shape." }
+                ]
+            }),
+        ] {
+            assert!(described_all_of_ref(&schema(invalid)).is_none());
+        }
+
+        assert_eq!(
+            array_item_type_ref(&schema(serde_json::json!({
+                "type": "string",
+                "nullable": true
+            }))),
+            TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Str)))
+        );
+        assert_eq!(
+            array_item_type_ref(&schema(serde_json::json!({ "type": "integer" }))),
+            TypeRef::Primitive(Prim::Int)
+        );
+    }
+
+    #[test]
+    fn described_allof_clones_object_enum_and_alias_targets_at_each_use_site() {
+        let doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "components": { "schemas": {
+                "Details": {
+                    "type": "object",
+                    "nullable": true,
+                    "required": ["id"],
+                    "properties": { "id": { "type": "integer" } }
+                },
+                "State": { "type": "string", "enum": ["ready", "done"] },
+                "Token": { "type": "string" },
+                "Labels": {
+                    "type": "object",
+                    "additionalProperties": { "type": "string" }
+                },
+                "Envelope": {
+                    "type": "object",
+                    "required": ["details", "state", "token", "labels"],
+                    "properties": {
+                        "details": {
+                            "allOf": [
+                                { "$ref": "#/components/schemas/Details" },
+                                { "description": "Contextual details." }
+                            ]
+                        },
+                        "state": {
+                            "allOf": [
+                                { "$ref": "#/components/schemas/State" },
+                                { "description": "Contextual state." }
+                            ]
+                        },
+                        "token": {
+                            "allOf": [
+                                { "$ref": "#/components/schemas/Token" },
+                                { "description": "Contextual token." }
+                            ]
+                        },
+                        "labels": {
+                            "allOf": [
+                                { "$ref": "#/components/schemas/Labels" },
+                                { "description": "Contextual labels." }
+                            ]
+                        }
+                    }
+                }
+            } }
+        }))
+        .expect("components deserialize");
+        let schemas = &doc.components.schemas;
+        let mut builder = Builder {
+            types: Vec::new(),
+            schemas,
+            strip_discriminant: std::collections::HashMap::new(),
+            building_types: std::collections::HashSet::new(),
+        };
+        builder.add_named("Envelope", &schemas["Envelope"]);
+
+        let envelope = builder
+            .types
+            .iter()
+            .find_map(|decl| match decl {
+                TypeDecl::Object(object) if object.name == "Envelope" => Some(object),
+                _ => None,
+            })
+            .expect("envelope object is built");
+        assert_eq!(
+            envelope
+                .fields
+                .iter()
+                .map(|field| {
+                    (
+                        field.wire_name.as_str(),
+                        field.type_ref.clone(),
+                        field.optional,
+                        field.nullable,
+                    )
+                })
+                .collect::<Vec<_>>(),
+            [
+                (
+                    "details",
+                    TypeRef::Named("EnvelopeDetails".to_string()),
+                    true,
+                    true,
+                ),
+                (
+                    "labels",
+                    TypeRef::Dict(
+                        Box::new(TypeRef::Primitive(Prim::Str)),
+                        Box::new(TypeRef::Primitive(Prim::Str)),
+                    ),
+                    false,
+                    false,
+                ),
+                (
+                    "state",
+                    TypeRef::Named("EnvelopeState".to_string()),
+                    false,
+                    false,
+                ),
+                ("token", TypeRef::Primitive(Prim::Str), false, false,),
+            ]
+        );
+        assert!(builder.types.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::Object(object)
+                if object.name == "EnvelopeDetails"
+                    && object.docstring.as_deref() == Some("Contextual details.")
+        )));
+        assert!(builder.types.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::Enum(enum_type)
+                if enum_type.name == "EnvelopeState"
+                    && enum_type.docstring.as_deref() == Some("Contextual state.")
+        )));
+
+        let mut hoister = InlineHoister {
+            root_types: &[],
+            schemas: Some(schemas),
+            out: Vec::new(),
+        };
+        hoister.hoist_object("Request", &schemas["Envelope"]);
+        let request = hoister
+            .out
+            .iter()
+            .find_map(|decl| match decl {
+                TypeDecl::Object(object) if object.name == "Request" => Some(object),
+                _ => None,
+            })
+            .expect("request object is hoisted");
+        assert_eq!(
+            request
+                .fields
+                .iter()
+                .map(|field| {
+                    (
+                        field.wire_name.as_str(),
+                        field.type_ref.clone(),
+                        field.optional,
+                        field.nullable,
+                    )
+                })
+                .collect::<Vec<_>>(),
+            [
+                (
+                    "details",
+                    TypeRef::Named("RequestDetails".to_string()),
+                    true,
+                    true,
+                ),
+                (
+                    "labels",
+                    TypeRef::Dict(
+                        Box::new(TypeRef::Primitive(Prim::Str)),
+                        Box::new(TypeRef::Primitive(Prim::Str)),
+                    ),
+                    false,
+                    false,
+                ),
+                (
+                    "state",
+                    TypeRef::Named("RequestState".to_string()),
+                    false,
+                    false,
+                ),
+                ("token", TypeRef::Primitive(Prim::Str), false, false,),
+            ]
+        );
+        assert!(hoister.out.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::Object(object)
+                if object.name == "RequestDetails"
+                    && object.docstring.as_deref() == Some("Contextual details.")
+        )));
+        assert!(hoister.out.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::Enum(enum_type)
+                if enum_type.name == "RequestState"
+                    && enum_type.docstring.as_deref() == Some("Contextual state.")
         )));
     }
 

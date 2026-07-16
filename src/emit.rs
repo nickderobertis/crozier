@@ -5949,9 +5949,11 @@ pub fn write_files(root: &std::path::Path, files: &[GeneratedFile]) -> Result<()
 mod tests {
     use super::{
         abbrev_call, auth_client_parts, auth_example_args, auth_wrapper_parts, build_example,
-        client_method, complex_body, environment, escape_py_str, example_from_json, field_decl,
-        raw_method, raw_type_str, readme_endpoint, reference_param_annotation, render,
-        render_class_body, render_enum, render_type_decl, url_arg, ClientCtx, Example, ExampleCtx,
+        client_method, complex_body, container_element_object, environment, escape_py_str,
+        example_from_json, field_decl, is_complex_type, natural_cmp, object_body_complex,
+        raw_method, raw_type_str, readme_endpoint, readme_endpoint_eligible,
+        reference_param_annotation, render, render_class_body, render_enum, render_type_decl,
+        resolves_to_container, resolves_to_dict, url_arg, ClientCtx, Example, ExampleCtx,
         FieldView, Imports, ParamRow, RefLoc, ReferenceEntryView, RenderedField, RootClientView,
         RootModuleView, Slot,
     };
@@ -6214,6 +6216,288 @@ mod tests {
             abbrev_call(0, fitting_prefix, true),
             "response = client.attachment_public.with_raw_response.create_attachment_public(\n    ...\n)"
         );
+    }
+
+    #[test]
+    fn natural_comparison_orders_numeric_runs_and_leading_zero_ties() {
+        use std::cmp::Ordering::{Equal, Greater, Less};
+
+        assert_eq!(natural_cmp("item9", "item10"), Less);
+        assert_eq!(natural_cmp("item10", "item9"), Greater);
+        assert_eq!(natural_cmp("item1", "item01"), Less);
+        assert_eq!(natural_cmp("item001", "item01"), Greater);
+        assert_eq!(natural_cmp("item0", "item00"), Less);
+        assert_eq!(natural_cmp("item12a", "item12b"), Less);
+        assert_eq!(natural_cmp("alpha2", "beta1"), Less);
+        assert_eq!(natural_cmp("item", "item0"), Less);
+        assert_eq!(natural_cmp("same007tail", "same007tail"), Equal);
+    }
+
+    #[test]
+    fn body_complexity_resolves_root_and_tag_alias_edges() {
+        let required_object = TypeDecl::Object(ObjectType {
+            name: "RequiredObject".to_string(),
+            module: "required_object".to_string(),
+            bases: Vec::new(),
+            fields: vec![
+                model_field("first", TypeRef::Primitive(Prim::Str), true),
+                model_field("second", TypeRef::Primitive(Prim::Int), true),
+            ],
+            docstring: None,
+        });
+        let optional_object = TypeDecl::Object(ObjectType {
+            name: "OptionalObject".to_string(),
+            module: "optional_object".to_string(),
+            bases: Vec::new(),
+            fields: vec![model_field("maybe", TypeRef::Primitive(Prim::Str), false)],
+            docstring: None,
+        });
+        let list_alias = TypeDecl::Alias(AliasType {
+            name: "ListAlias".to_string(),
+            module: "list_alias".to_string(),
+            target: TypeRef::Optional(Box::new(TypeRef::List(Box::new(TypeRef::Named(
+                "OptionalObject".to_string(),
+            ))))),
+            docstring: None,
+        });
+        let dict_alias = TypeDecl::Alias(AliasType {
+            name: "DictAlias".to_string(),
+            module: "dict_alias".to_string(),
+            target: TypeRef::Optional(Box::new(TypeRef::Dict(
+                Box::new(TypeRef::Primitive(Prim::Str)),
+                Box::new(TypeRef::Primitive(Prim::Int)),
+            ))),
+            docstring: None,
+        });
+        let cyclic_alias = TypeDecl::Alias(AliasType {
+            name: "CyclicAlias".to_string(),
+            module: "cyclic_alias".to_string(),
+            target: TypeRef::Named("CyclicAlias".to_string()),
+            docstring: None,
+        });
+        let root_union_alias = TypeDecl::Alias(AliasType {
+            name: "RootUnion".to_string(),
+            module: "root_union".to_string(),
+            target: TypeRef::Union(vec![
+                TypeRef::Primitive(Prim::Str),
+                TypeRef::Primitive(Prim::Int),
+            ]),
+            docstring: None,
+        });
+        let enum_decl = TypeDecl::Enum(EnumType {
+            name: "Choice".to_string(),
+            module: "choice".to_string(),
+            members: Vec::new(),
+            docstring: None,
+        });
+        let union_decl = TypeDecl::DiscriminatedUnion(DiscriminatedUnion {
+            name: "Shape".to_string(),
+            module: "shape".to_string(),
+            discriminant_property: "kind".to_string(),
+            members: Vec::new(),
+            variant_targets: Vec::new(),
+            docstring: None,
+        });
+        let types = vec![
+            required_object,
+            optional_object,
+            list_alias,
+            dict_alias,
+            cyclic_alias,
+            root_union_alias,
+            enum_decl,
+            union_decl,
+        ];
+        let tag_types = vec![
+            TagTypeDecl {
+                module: "tagged".to_string(),
+                decl: TypeDecl::Object(ObjectType {
+                    name: "TaggedObject".to_string(),
+                    module: "tagged_object".to_string(),
+                    bases: Vec::new(),
+                    fields: vec![
+                        model_field("one", TypeRef::Primitive(Prim::Str), true),
+                        model_field("two", TypeRef::Primitive(Prim::Str), true),
+                    ],
+                    docstring: None,
+                }),
+            },
+            TagTypeDecl {
+                module: "tagged".to_string(),
+                decl: TypeDecl::Alias(AliasType {
+                    name: "TaggedUnion".to_string(),
+                    module: "tagged_union".to_string(),
+                    target: TypeRef::Union(vec![
+                        TypeRef::Primitive(Prim::Bool),
+                        TypeRef::Primitive(Prim::Str),
+                    ]),
+                    docstring: None,
+                }),
+            },
+            TagTypeDecl {
+                module: "tagged".to_string(),
+                decl: TypeDecl::Alias(AliasType {
+                    name: "TaggedList".to_string(),
+                    module: "tagged_list".to_string(),
+                    target: TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
+                    docstring: None,
+                }),
+            },
+        ];
+
+        assert!(resolves_to_container(
+            &TypeRef::Optional(Box::new(TypeRef::Named("ListAlias".to_string()))),
+            &types,
+            &tag_types,
+        ));
+        assert!(resolves_to_container(
+            &TypeRef::Named("TaggedList".to_string()),
+            &types,
+            &tag_types,
+        ));
+        assert!(resolves_to_container(
+            &TypeRef::Set(Box::new(TypeRef::Primitive(Prim::Str))),
+            &types,
+            &tag_types,
+        ));
+        assert!(!resolves_to_container(
+            &TypeRef::Named("RequiredObject".to_string()),
+            &types,
+            &tag_types,
+        ));
+        assert!(!resolves_to_container(
+            &TypeRef::Primitive(Prim::Bool),
+            &types,
+            &tag_types,
+        ));
+
+        assert!(object_body_complex(match &types[0] {
+            TypeDecl::Object(object) => object,
+            _ => unreachable!(),
+        }));
+        assert!(!object_body_complex(match &types[1] {
+            TypeDecl::Object(object) => object,
+            _ => unreachable!(),
+        }));
+        assert!(container_element_object(
+            &TypeRef::Optional(Box::new(TypeRef::Named("TaggedObject".to_string()))),
+            &types,
+            &tag_types,
+        )
+        .is_some());
+        assert!(container_element_object(
+            &TypeRef::Named("ListAlias".to_string()),
+            &types,
+            &tag_types,
+        )
+        .is_none());
+        assert!(
+            container_element_object(&TypeRef::Primitive(Prim::Str), &types, &tag_types,).is_none()
+        );
+
+        assert!(is_complex_type(
+            &TypeRef::List(Box::new(TypeRef::Named("RequiredObject".to_string()))),
+            &types,
+            &tag_types,
+        ));
+        assert!(!is_complex_type(
+            &TypeRef::List(Box::new(TypeRef::Named("OptionalObject".to_string()))),
+            &types,
+            &tag_types,
+        ));
+        assert!(is_complex_type(
+            &TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
+            &types,
+            &tag_types,
+        ));
+        assert!(is_complex_type(
+            &TypeRef::Dict(
+                Box::new(TypeRef::Primitive(Prim::Str)),
+                Box::new(TypeRef::Primitive(Prim::Any)),
+            ),
+            &types,
+            &tag_types,
+        ));
+        assert!(is_complex_type(
+            &TypeRef::Optional(Box::new(TypeRef::Named("RequiredObject".to_string()))),
+            &types,
+            &tag_types,
+        ));
+        assert!(is_complex_type(
+            &TypeRef::Named("TaggedUnion".to_string()),
+            &types,
+            &tag_types,
+        ));
+        for name in ["RootUnion", "Choice", "Shape", "Missing"] {
+            assert!(!is_complex_type(
+                &TypeRef::Named(name.to_string()),
+                &types,
+                &tag_types,
+            ));
+        }
+        assert!(!is_complex_type(
+            &TypeRef::Literal(vec!["x".to_string()]),
+            &types,
+            &tag_types,
+        ));
+
+        assert!(resolves_to_dict(
+            &TypeRef::Named("DictAlias".to_string()),
+            &types,
+        ));
+        assert!(!resolves_to_dict(
+            &TypeRef::Named("CyclicAlias".to_string()),
+            &types,
+        ));
+        assert!(!resolves_to_dict(
+            &TypeRef::Named("RequiredObject".to_string()),
+            &types,
+        ));
+
+        let mut bytes = endpoint("/bytes", Vec::new(), None);
+        bytes.request_body = Some(RequestBody::Bytes {
+            content_type: "application/octet-stream".to_string(),
+        });
+        assert!(complex_body(&bytes, &types, &tag_types));
+        assert!(!readme_endpoint_eligible(&bytes));
+
+        let mut inline = endpoint("/inline", Vec::new(), None);
+        inline.request_body = Some(RequestBody::Inline(vec![BodyField {
+            wire_name: "payload".to_string(),
+            py_name: "payload".to_string(),
+            type_ref: TypeRef::Named("RequiredObject".to_string()),
+            optional: true,
+            nullable: false,
+            spec_required: false,
+            docstring: None,
+            convert: true,
+            is_file: false,
+            collision_prefix: None,
+            example: None,
+            media_example: false,
+            schema_body_example: false,
+        }]));
+        assert!(complex_body(&inline, &types, &tag_types));
+
+        let mut form = endpoint("/form", Vec::new(), None);
+        form.module.clear();
+        form.request_body = Some(RequestBody::Form(FormBody {
+            fields: Vec::new(),
+            multipart: false,
+        }));
+        assert!(complex_body(&form, &types, &tag_types));
+
+        let mut single = endpoint("/single", Vec::new(), None);
+        single.body_schema_ref = true;
+        single.request_body = Some(RequestBody::Single(SingleBody {
+            type_ref: TypeRef::Named("ListAlias".to_string()),
+            required: true,
+            convert: false,
+            content_type: true,
+            content_type_override: None,
+            example: None,
+        }));
+        assert!(complex_body(&single, &types, &tag_types));
     }
 
     #[test]
@@ -7193,6 +7477,253 @@ mod tests {
             "items": ["x", 2, false, null]
         }));
         assert_eq!(json.flat(), r#"{"items": ["x", 2, False, None]}"#);
+    }
+
+    #[test]
+    fn example_context_covers_composite_examples_and_type_matching_edges() {
+        let payload = TypeDecl::Object(ObjectType {
+            name: "Payload".to_string(),
+            module: "payload".to_string(),
+            bases: Vec::new(),
+            fields: vec![
+                model_field("id", TypeRef::Primitive(Prim::Int), true),
+                model_field("label", TypeRef::Primitive(Prim::Str), false),
+            ],
+            docstring: None,
+        });
+        let types = vec![
+            payload,
+            TypeDecl::Alias(AliasType {
+                name: "PayloadAlias".to_string(),
+                module: "payload_alias".to_string(),
+                target: TypeRef::Named("Payload".to_string()),
+                docstring: None,
+            }),
+            TypeDecl::Alias(AliasType {
+                name: "CompositeAlias".to_string(),
+                module: "composite_alias".to_string(),
+                target: TypeRef::Dict(
+                    Box::new(TypeRef::Primitive(Prim::Str)),
+                    Box::new(TypeRef::Primitive(Prim::Bool)),
+                ),
+                docstring: None,
+            }),
+            TypeDecl::Alias(AliasType {
+                name: "BoolAlias".to_string(),
+                module: "bool_alias".to_string(),
+                target: TypeRef::Primitive(Prim::Bool),
+                docstring: None,
+            }),
+            TypeDecl::Enum(EnumType {
+                name: "Color".to_string(),
+                module: "color".to_string(),
+                members: vec![EnumMember {
+                    name: "RED".to_string(),
+                    visit_param: "red".to_string(),
+                    value: "red".to_string(),
+                    docstring: None,
+                }],
+                docstring: None,
+            }),
+            TypeDecl::DiscriminatedUnion(DiscriminatedUnion {
+                name: "Shape".to_string(),
+                module: "shape".to_string(),
+                discriminant_property: "kind".to_string(),
+                members: Vec::new(),
+                variant_targets: Vec::new(),
+                docstring: None,
+            }),
+        ];
+        let auth = Auth::None;
+        let mut ctx = example_ctx(&types, &[], &auth);
+
+        assert!(ctx.example_is_scalar(&TypeRef::Named("BoolAlias".to_string())));
+        assert!(!ctx.example_is_scalar(&TypeRef::Named("Payload".to_string())));
+        assert!(ctx.example_is_composite(&TypeRef::Named("CompositeAlias".to_string())));
+        assert!(ctx.example_is_composite(&TypeRef::Set(Box::new(TypeRef::Primitive(Prim::Str)))));
+        assert!(!ctx.example_is_composite(&TypeRef::Primitive(Prim::Int)));
+        assert!(
+            ctx.example_is_object(&TypeRef::Optional(Box::new(TypeRef::Named(
+                "PayloadAlias".to_string()
+            ))))
+        );
+        assert!(!ctx.example_is_object(&TypeRef::Named("Color".to_string())));
+        assert!(!ctx.example_is_object(&TypeRef::Primitive(Prim::Any)));
+        assert!(
+            ctx.example_is_temporal(&TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Date))))
+        );
+        assert!(!ctx.example_is_temporal(&TypeRef::Primitive(Prim::Str)));
+
+        assert_eq!(
+            ctx.value_from_example(&TypeRef::Primitive(Prim::Float), "2")
+                .expect("integer-shaped float is accepted")
+                .flat(),
+            "2.0"
+        );
+        assert_eq!(
+            ctx.value_from_example(&TypeRef::Primitive(Prim::Float), "2.5")
+                .expect("decimal float is accepted")
+                .flat(),
+            "2.5"
+        );
+        for (literal, expected) in [("true", "True"), ("false", "False"), ("other", "other")] {
+            assert_eq!(
+                ctx.value_from_example(&TypeRef::Primitive(Prim::Bool), literal)
+                    .expect("boolean example branch returns an atom")
+                    .flat(),
+                expected
+            );
+        }
+        assert_eq!(
+            ctx.value_from_example(
+                &TypeRef::Set(Box::new(TypeRef::Primitive(Prim::Int))),
+                "[1,null]",
+            )
+            .expect("set example is accepted")
+            .flat(),
+            "[1, 1]"
+        );
+        assert!(ctx
+            .value_from_example(
+                &TypeRef::List(Box::new(TypeRef::Primitive(Prim::Int))),
+                "not-json",
+            )
+            .is_none());
+        assert_eq!(
+            ctx.value_from_example(
+                &TypeRef::Union(vec![
+                    TypeRef::Primitive(Prim::Int),
+                    TypeRef::Primitive(Prim::Str),
+                ]),
+                "\"chosen\"",
+            )
+            .expect("the matching union variant is selected")
+            .flat(),
+            "\"chosen\""
+        );
+        assert!(ctx
+            .value_from_example(
+                &TypeRef::Union(vec![
+                    TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
+                    TypeRef::Dict(
+                        Box::new(TypeRef::Primitive(Prim::Str)),
+                        Box::new(TypeRef::Primitive(Prim::Str)),
+                    ),
+                ]),
+                "false",
+            )
+            .is_none());
+        assert_eq!(
+            ctx.value_from_example(
+                &TypeRef::Named("CompositeAlias".to_string()),
+                r#"{"enabled":true}"#,
+            )
+            .expect("composite alias accepts JSON")
+            .flat(),
+            r#"{"enabled": True}"#
+        );
+        assert_eq!(
+            ctx.value_from_example(
+                &TypeRef::Named("PayloadAlias".to_string()),
+                r#"{"id":7,"label":"sample"}"#,
+            )
+            .expect("object alias constructs the target")
+            .flat(),
+            "Payload(id=7, label=\"sample\")"
+        );
+        assert_eq!(
+            ctx.value_from_example(&TypeRef::Named("Payload".to_string()), r#"{"id":7}"#)
+                .expect("missing optional fields are omitted")
+                .flat(),
+            "Payload(id=7)"
+        );
+        assert!(ctx
+            .value_from_example(&TypeRef::Named("Shape".to_string()), "{}")
+            .is_none());
+
+        let payload_type = TypeRef::Named("Payload".to_string());
+        assert!(ctx.example_matches_type(&payload_type, &serde_json::json!({ "id": 1 })));
+        assert!(!ctx.example_matches_type(&payload_type, &serde_json::json!({})));
+        assert!(!ctx.example_matches_type(
+            &payload_type,
+            &serde_json::json!({ "id": 1, "extra": true }),
+        ));
+        assert!(!ctx.example_matches_type(&payload_type, &serde_json::json!(1)));
+        assert!(ctx.example_matches_type(
+            &TypeRef::Named("PayloadAlias".to_string()),
+            &serde_json::json!({ "id": 1 }),
+        ));
+        assert!(ctx.example_matches_type(
+            &TypeRef::Named("Color".to_string()),
+            &serde_json::json!(false),
+        ));
+        assert!(ctx.example_matches_type(
+            &TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Int))),
+            &serde_json::Value::Null,
+        ));
+        assert!(ctx.example_matches_type(
+            &TypeRef::Union(vec![
+                TypeRef::Primitive(Prim::Bool),
+                TypeRef::Primitive(Prim::Str),
+            ]),
+            &serde_json::json!("value"),
+        ));
+
+        let cases = [
+            (
+                TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
+                serde_json::json!([]),
+            ),
+            (
+                TypeRef::Set(Box::new(TypeRef::Primitive(Prim::Str))),
+                serde_json::json!([]),
+            ),
+            (
+                TypeRef::Dict(
+                    Box::new(TypeRef::Primitive(Prim::Str)),
+                    Box::new(TypeRef::Primitive(Prim::Str)),
+                ),
+                serde_json::json!({}),
+            ),
+            (TypeRef::Primitive(Prim::Str), serde_json::json!("x")),
+            (TypeRef::Primitive(Prim::Datetime), serde_json::json!("x")),
+            (TypeRef::Primitive(Prim::Date), serde_json::json!("x")),
+            (
+                TypeRef::Literal(vec!["x".to_string()]),
+                serde_json::json!("x"),
+            ),
+            (TypeRef::Primitive(Prim::Int), serde_json::json!(1)),
+            (TypeRef::Primitive(Prim::Long), serde_json::json!(1)),
+            (TypeRef::Primitive(Prim::Float), serde_json::json!(1.5)),
+            (TypeRef::Primitive(Prim::Bool), serde_json::json!(true)),
+            (TypeRef::Primitive(Prim::Any), serde_json::Value::Null),
+        ];
+        for (type_ref, value) in cases {
+            assert!(ctx.example_matches_type(&type_ref, &value));
+        }
+
+        let matrix = Example::ExplicitList(vec![
+            Example::List(vec![Example::Atom("1".to_string())]),
+            Example::ExplicitList(vec![Example::Atom("2".to_string())]),
+            Example::List(vec![Example::Atom("3".to_string())]),
+        ]);
+        assert_eq!(matrix.render(0), "[\n    [1],\n    [2],\n    [3],\n]");
+        let single_call = Example::ExplicitList(vec![Example::Call(
+            "Payload".to_string(),
+            vec![(Some("id".to_string()), Example::Atom("1".to_string()))],
+        )]);
+        assert_eq!(
+            single_call.render(0),
+            "[\n    Payload(\n        id=1,\n    )\n]"
+        );
+        assert_eq!(
+            Example::Call("Empty".to_string(), Vec::new()).render(0),
+            "Empty()"
+        );
+        assert_eq!(
+            Example::List(vec![Example::Atom("1".to_string())]).render(0),
+            "[1]"
+        );
     }
 
     #[test]
