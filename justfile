@@ -2,6 +2,8 @@
 # `just bootstrap` must work from a clean clone; `just check` is the full gate
 # and must fail on any issue (no warnings-only mode).
 
+set positional-arguments := true
+
 # List available recipes.
 default:
     @just --list
@@ -147,21 +149,21 @@ fixtures-generate-corpus *args:
 # every selected corpus independently, then aggregate all Crozier byte diffs.
 # `--fixture NAME` may be repeated; omitting it refreshes existing corpus goldens.
 fern-goldens *args:
-    ./scripts/fern-goldens run {{args}}
+    ./scripts/fern-goldens run "$@"
 
 # Phase recipes used by the workflow so successful goldens can be published
 # before generation/diff failures determine the final status.
 fern-goldens-generate *args:
-    ./scripts/fern-goldens generate {{args}}
+    ./scripts/fern-goldens generate "$@"
 
 fern-goldens-compare:
     ./scripts/fern-goldens compare
 
 fern-goldens-publish branch:
-    ./scripts/fern-goldens publish --branch "{{branch}}"
+    ./scripts/fern-goldens publish --branch "$1"
 
 fern-goldens-result *args:
-    ./scripts/fern-goldens result {{args}}
+    ./scripts/fern-goldens result "$@"
 
 # Process/filesystem/workflow-boundary coverage for the automation itself.
 test-fern-goldens:

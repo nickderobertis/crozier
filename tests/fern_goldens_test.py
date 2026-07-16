@@ -756,6 +756,55 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         self.assertNotEqual(generator.returncode, 0)
         self.assertIn("it must stay below", generator.stderr)
 
+    def test_just_recipes_preserve_untrusted_arguments_without_shell_evaluation(self) -> None:
+        just = shutil.which("just", path=os.environ.get("PATH"))
+        self.assertIsNotNone(just)
+        marker = Path(self.temporary.name) / "dispatch-injection"
+        injected_version = f"latest; : > {marker}; #"
+        generation = subprocess.run(
+            [
+                just,
+                "--justfile",
+                str(REPO / "justfile"),
+                "fern-goldens-generate",
+                "--version",
+                injected_version,
+                "--fixture",
+                "alpha",
+            ],
+            cwd=REPO,
+            env=self.environment(),
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        self.assertNotEqual(generation.returncode, 0)
+        self.assertIn(
+            "invalid Fern version", generation.stdout + generation.stderr
+        )
+        self.assertFalse(marker.exists())
+
+        branch_marker = Path(self.temporary.name) / "branch-injection"
+        publication = subprocess.run(
+            [
+                just,
+                "--justfile",
+                str(REPO / "justfile"),
+                "fern-goldens-publish",
+                f"$(touch {branch_marker})",
+            ],
+            cwd=REPO,
+            env=self.environment(),
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        self.assertNotEqual(publication.returncode, 0)
+        self.assertIn(
+            "invalid branch name", publication.stdout + publication.stderr
+        )
+        self.assertFalse(branch_marker.exists())
+
 
 if __name__ == "__main__":
     unittest.main()
