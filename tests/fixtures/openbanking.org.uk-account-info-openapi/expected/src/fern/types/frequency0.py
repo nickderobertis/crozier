@@ -1,0 +1,3 @@
+
+
+Frequency0 = str

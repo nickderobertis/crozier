@@ -1,0 +1,170 @@
+
+
+import typing
+from json.decoder import JSONDecodeError
+
+from .core.api_error import ApiError
+from .core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from .core.http_response import AsyncHttpResponse, HttpResponse
+from .core.jsonable_encoder import jsonable_encoder
+from .core.pydantic_utilities import parse_obj_as
+from .core.request_options import RequestOptions
+from .types.resource import Resource
+
+
+class RawFernApi:
+    def __init__(self, *, client_wrapper: SyncClientWrapper):
+        self._client_wrapper = client_wrapper
+
+    def get_resources_by_service(
+        self, service_id: str, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> HttpResponse[typing.List[Resource]]:
+        """
+        Parameters
+        ----------
+        service_id : str
+            Unique identifier of the Service or API the resources are attached to
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[typing.List[Resource]]
+            List the resources attached to a Service or API
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"resources/service/{jsonable_encoder(service_id)}",
+            method="GET",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    typing.List[Resource],
+                    parse_obj_as(
+                        type_=typing.List[Resource],
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    def get_resource(
+        self, name: str, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> HttpResponse[Resource]:
+        """
+        Parameters
+        ----------
+        name : str
+            Unique name/business identifier of the Service or API resource
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[Resource]
+            Retrieve the resource having this name
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"resources/{jsonable_encoder(name)}",
+            method="GET",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    Resource,
+                    parse_obj_as(
+                        type_=Resource,
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+
+class AsyncRawFernApi:
+    def __init__(self, *, client_wrapper: AsyncClientWrapper):
+        self._client_wrapper = client_wrapper
+
+    async def get_resources_by_service(
+        self, service_id: str, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> AsyncHttpResponse[typing.List[Resource]]:
+        """
+        Parameters
+        ----------
+        service_id : str
+            Unique identifier of the Service or API the resources are attached to
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[typing.List[Resource]]
+            List the resources attached to a Service or API
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"resources/service/{jsonable_encoder(service_id)}",
+            method="GET",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    typing.List[Resource],
+                    parse_obj_as(
+                        type_=typing.List[Resource],
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def get_resource(
+        self, name: str, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> AsyncHttpResponse[Resource]:
+        """
+        Parameters
+        ----------
+        name : str
+            Unique name/business identifier of the Service or API resource
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[Resource]
+            Retrieve the resource having this name
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"resources/{jsonable_encoder(name)}",
+            method="GET",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    Resource,
+                    parse_obj_as(
+                        type_=Resource,
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

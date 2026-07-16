@@ -1,0 +1,220 @@
+
+
+
+
+import typing
+from importlib import import_module
+
+if typing.TYPE_CHECKING:
+    from .types import (
+        AbstractExchange,
+        AbstractExchangeType,
+        Binding,
+        BindingType,
+        Counter,
+        CounterMap,
+        DailyInvocationStatistic,
+        EventMessage,
+        Exchange,
+        Exchange_ReqRespPair,
+        Exchange_UnidirEvent,
+        FeaturesConfig,
+        FeaturesConfigAsyncApi,
+        FeaturesConfigMicrocksHub,
+        FeaturesConfigRepositoryFilter,
+        FeaturesConfigRepositoryTenancy,
+        Header,
+        HeaderDto,
+        ImportJob,
+        KeycloakConfig,
+        KeycloakConfigSslRequired,
+        LabelsMap,
+        MessageArray,
+        Metadata,
+        OauthScope,
+        Operation,
+        OperationHeaders,
+        ParameterConstraint,
+        ParameterConstraintIn,
+        Request,
+        RequestResponsePair,
+        Resource,
+        ResourceType,
+        Response,
+        Secret,
+        SecretRef,
+        Service,
+        ServiceRef,
+        ServiceType,
+        ServiceView,
+        StringArray,
+        TestCaseResult,
+        TestConformanceMetric,
+        TestResult,
+        TestResultSummary,
+        TestReturn,
+        TestRunnerType,
+        TestStepResult,
+        Trend,
+        UnidirectionalEvent,
+        WeightedMetricValue,
+    )
+    from .errors import BadRequestError, InternalServerError
+    from . import config, job, metrics, mock, test
+    from .client import AsyncFernApi, FernApi
+    from .environment import FernApiEnvironment
+    from .mock import GetServiceResponse
+    from .version import __version__
+_dynamic_imports: typing.Dict[str, str] = {
+    "AbstractExchange": ".types",
+    "AbstractExchangeType": ".types",
+    "AsyncFernApi": ".client",
+    "BadRequestError": ".errors",
+    "Binding": ".types",
+    "BindingType": ".types",
+    "Counter": ".types",
+    "CounterMap": ".types",
+    "DailyInvocationStatistic": ".types",
+    "EventMessage": ".types",
+    "Exchange": ".types",
+    "Exchange_ReqRespPair": ".types",
+    "Exchange_UnidirEvent": ".types",
+    "FeaturesConfig": ".types",
+    "FeaturesConfigAsyncApi": ".types",
+    "FeaturesConfigMicrocksHub": ".types",
+    "FeaturesConfigRepositoryFilter": ".types",
+    "FeaturesConfigRepositoryTenancy": ".types",
+    "FernApi": ".client",
+    "FernApiEnvironment": ".environment",
+    "GetServiceResponse": ".mock",
+    "Header": ".types",
+    "HeaderDto": ".types",
+    "ImportJob": ".types",
+    "InternalServerError": ".errors",
+    "KeycloakConfig": ".types",
+    "KeycloakConfigSslRequired": ".types",
+    "LabelsMap": ".types",
+    "MessageArray": ".types",
+    "Metadata": ".types",
+    "OauthScope": ".types",
+    "Operation": ".types",
+    "OperationHeaders": ".types",
+    "ParameterConstraint": ".types",
+    "ParameterConstraintIn": ".types",
+    "Request": ".types",
+    "RequestResponsePair": ".types",
+    "Resource": ".types",
+    "ResourceType": ".types",
+    "Response": ".types",
+    "Secret": ".types",
+    "SecretRef": ".types",
+    "Service": ".types",
+    "ServiceRef": ".types",
+    "ServiceType": ".types",
+    "ServiceView": ".types",
+    "StringArray": ".types",
+    "TestCaseResult": ".types",
+    "TestConformanceMetric": ".types",
+    "TestResult": ".types",
+    "TestResultSummary": ".types",
+    "TestReturn": ".types",
+    "TestRunnerType": ".types",
+    "TestStepResult": ".types",
+    "Trend": ".types",
+    "UnidirectionalEvent": ".types",
+    "WeightedMetricValue": ".types",
+    "__version__": ".version",
+    "config": ".config",
+    "job": ".job",
+    "metrics": ".metrics",
+    "mock": ".mock",
+    "test": ".test",
+}
+
+
+def __getattr__(attr_name: str) -> typing.Any:
+    module_name = _dynamic_imports.get(attr_name)
+    if module_name is None:
+        raise AttributeError(f"No {attr_name} found in _dynamic_imports for module name -> {__name__}")
+    try:
+        module = import_module(module_name, __package__)
+        if module_name == f".{attr_name}":
+            return module
+        else:
+            return getattr(module, attr_name)
+    except ImportError as e:
+        raise ImportError(f"Failed to import {attr_name} from {module_name}: {e}") from e
+    except AttributeError as e:
+        raise AttributeError(f"Failed to get {attr_name} from {module_name}: {e}") from e
+
+
+def __dir__():
+    lazy_attrs = list(_dynamic_imports.keys())
+    return sorted(lazy_attrs)
+
+
+__all__ = [
+    "AbstractExchange",
+    "AbstractExchangeType",
+    "AsyncFernApi",
+    "BadRequestError",
+    "Binding",
+    "BindingType",
+    "Counter",
+    "CounterMap",
+    "DailyInvocationStatistic",
+    "EventMessage",
+    "Exchange",
+    "Exchange_ReqRespPair",
+    "Exchange_UnidirEvent",
+    "FeaturesConfig",
+    "FeaturesConfigAsyncApi",
+    "FeaturesConfigMicrocksHub",
+    "FeaturesConfigRepositoryFilter",
+    "FeaturesConfigRepositoryTenancy",
+    "FernApi",
+    "FernApiEnvironment",
+    "GetServiceResponse",
+    "Header",
+    "HeaderDto",
+    "ImportJob",
+    "InternalServerError",
+    "KeycloakConfig",
+    "KeycloakConfigSslRequired",
+    "LabelsMap",
+    "MessageArray",
+    "Metadata",
+    "OauthScope",
+    "Operation",
+    "OperationHeaders",
+    "ParameterConstraint",
+    "ParameterConstraintIn",
+    "Request",
+    "RequestResponsePair",
+    "Resource",
+    "ResourceType",
+    "Response",
+    "Secret",
+    "SecretRef",
+    "Service",
+    "ServiceRef",
+    "ServiceType",
+    "ServiceView",
+    "StringArray",
+    "TestCaseResult",
+    "TestConformanceMetric",
+    "TestResult",
+    "TestResultSummary",
+    "TestReturn",
+    "TestRunnerType",
+    "TestStepResult",
+    "Trend",
+    "UnidirectionalEvent",
+    "WeightedMetricValue",
+    "__version__",
+    "config",
+    "job",
+    "metrics",
+    "mock",
+    "test",
+]

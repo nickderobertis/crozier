@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .batch_describe_type_configurations_error import BatchDescribeTypeConfigurationsError
+
+BatchDescribeTypeConfigurationsErrors = typing.List[BatchDescribeTypeConfigurationsError]

@@ -1,0 +1,15 @@
+
+
+import typing
+
+from .post_portfolio_analysis_sharpe_ratio_probabilistic_minimum_track_record_length_request_benchmark_sharpe_ratio import (
+    PostPortfolioAnalysisSharpeRatioProbabilisticMinimumTrackRecordLengthRequestBenchmarkSharpeRatio,
+)
+from .post_portfolio_analysis_sharpe_ratio_probabilistic_minimum_track_record_length_request_benchmark_values import (
+    PostPortfolioAnalysisSharpeRatioProbabilisticMinimumTrackRecordLengthRequestBenchmarkValues,
+)
+
+PostPortfolioAnalysisSharpeRatioProbabilisticMinimumTrackRecordLengthRequest = typing.Union[
+    PostPortfolioAnalysisSharpeRatioProbabilisticMinimumTrackRecordLengthRequestBenchmarkSharpeRatio,
+    PostPortfolioAnalysisSharpeRatioProbabilisticMinimumTrackRecordLengthRequestBenchmarkValues,
+]

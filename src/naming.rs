@@ -75,7 +75,17 @@ pub fn to_snake_case(input: &str) -> String {
 /// `the_content_endpoint` rather than retaining the slash.
 #[must_use]
 pub fn prose_identifier(input: &str) -> String {
-    sanitize_identifier(&to_snake_case(&fold_non_identifier(input)))
+    let folded: String = input
+        .chars()
+        .filter_map(|c| match c {
+            // Possessives are contractions, not word boundaries: Fern derives
+            // `seller's feedback` as `sellers_feedback`.
+            '\'' | '\u{2019}' => None,
+            c if c.is_ascii_alphanumeric() => Some(c),
+            _ => Some(' '),
+        })
+        .collect();
+    sanitize_identifier(&collapse_digit_boundaries(&to_snake_case(&folded)))
 }
 
 /// `PascalCase` of an identifier.
@@ -84,11 +94,17 @@ pub fn to_pascal_case(input: &str) -> String {
     split_words(input)
         .into_iter()
         .map(|w| {
-            let mut chars = w.chars();
-            match chars.next() {
-                Some(first) => first.to_ascii_uppercase().to_string() + chars.as_str(),
-                None => String::new(),
+            let mut out = String::with_capacity(w.len());
+            let mut after_digit = false;
+            for (index, c) in w.chars().enumerate() {
+                if index == 0 || after_digit && c.is_ascii_alphabetic() {
+                    out.push(c.to_ascii_uppercase());
+                } else {
+                    out.push(c);
+                }
+                after_digit = c.is_ascii_digit();
             }
+            out
         })
         .collect()
 }
@@ -218,13 +234,15 @@ fn digit_word(word: &str) -> Option<&'static str> {
     })
 }
 
-/// Split an enum wire value into Fern's identifier words: every non-alphanumeric
-/// run separates, `camelCase`/`PascalCase` boundaries split, and a bare
-/// single-digit word is spelled out (`0` → `zero`). This reproduces Fern's
-/// enum-value name generation, whose cased forms drive both the member name and
-/// the `visit` parameter (`0: Active` → words `[zero, active]`; `1: InActive` →
-/// `[one, in, active]`).
-fn enum_words(value: &str) -> Vec<String> {
+/// Smart-case an enum wire value into Fern's identifier: every non-alphanumeric
+/// run separates, `camelCase`/`PascalCase` boundaries split, a leading canonical
+/// number is spelled out (`1200 bps` → `one_thousand_two_hundred_bps`), and word
+/// boundaries touching a numeric token collapse (`DB-25` → `db25`). UUID-shaped
+/// values use Fern's separate quirk in [`uuid_enum_identifier`].
+fn enum_words(value: &str) -> String {
+    if value.is_empty() {
+        return "empty".to_string();
+    }
     let mut spaced = String::new();
     for c in value.chars() {
         if c == '*' {
@@ -237,20 +255,223 @@ fn enum_words(value: &str) -> Vec<String> {
             spaced.push(' ');
         }
     }
-    let mut words = Vec::new();
-    for word in split_words(&spaced) {
-        if words.is_empty() {
-            words.push(digit_word(&word).map_or(word, str::to_string));
-        } else if word.len() == 1 && word.as_bytes()[0].is_ascii_digit() {
-            // Fern keeps a leading numeric enum token readable (`0: Active` ->
-            // `ZERO_ACTIVE`), but concatenates a numeric suffix split by
-            // punctuation (`oauth2.0` -> `OAUTH20`).
-            words.last_mut().expect("checked non-empty").push_str(&word);
-        } else {
-            words.push(word);
+    let mut words = split_words(&spaced);
+    let has_leading_zero_identifier_segment = value.contains('_')
+        && words.iter().any(|word| {
+            word.len() > 1
+                && word.starts_with('0')
+                && word.bytes().all(|byte| byte.is_ascii_digit())
+        });
+    if let Some(first) = words.first_mut() {
+        let digits = first.bytes().take_while(u8::is_ascii_digit).count();
+        if digits > 0 {
+            let suffix = first[digits..].to_string();
+            if let Some(number) = numeric_enum_identifier(&first[..digits]) {
+                *first = if suffix.is_empty() {
+                    number
+                } else {
+                    format!("{number}_{suffix}")
+                };
+            }
         }
     }
-    words
+    // Fern joins letter-only connector runs in hardware-style values, but keeps
+    // ordinary lowercase words separated (`a-b` remains `A_B`). Digits are the
+    // signal for the former; all-uppercase wire values take the same path for
+    // connector spellings such as `P+N+E` and `E/F`.
+    let join_single_letters = value.bytes().any(|byte| byte.is_ascii_digit())
+        || value
+            .bytes()
+            .filter(|byte| byte.is_ascii_alphabetic())
+            .all(|byte| byte.is_ascii_uppercase());
+    let mut merged_words: Vec<String> = Vec::with_capacity(words.len());
+    let mut single_letter_run = false;
+    for word in words {
+        let is_single_letter =
+            word.len() == 1 && word.bytes().all(|byte| byte.is_ascii_alphabetic());
+        if join_single_letters && is_single_letter && single_letter_run {
+            merged_words
+                .last_mut()
+                .expect("a single-letter run has a previous word")
+                .push_str(&word);
+        } else {
+            merged_words.push(word);
+        }
+        single_letter_run = is_single_letter;
+    }
+    let mut words = merged_words;
+    let mut index = 1usize;
+    while index < words.len() {
+        let previous = &words[index - 1];
+        let current = &words[index];
+        let current_is_short_letter_run =
+            current.len() <= 2 && current.bytes().all(|byte| byte.is_ascii_alphabetic());
+        let previous_is_numeric_letter =
+            previous
+                .as_bytes()
+                .split_last()
+                .is_some_and(|(last, prefix)| {
+                    last.is_ascii_alphabetic()
+                        && !prefix.is_empty()
+                        && prefix.iter().all(u8::is_ascii_digit)
+                });
+        let previous_is_single_letter =
+            previous.len() == 1 && previous.bytes().all(|byte| byte.is_ascii_alphabetic());
+        let current_is_letter_digits =
+            current
+                .as_bytes()
+                .split_first()
+                .is_some_and(|(first, rest)| {
+                    first.is_ascii_alphabetic()
+                        && !rest.is_empty()
+                        && rest.iter().all(u8::is_ascii_digit)
+                });
+        if current_is_short_letter_run && previous_is_numeric_letter
+            || previous_is_single_letter && current_is_letter_digits
+        {
+            let current = words.remove(index);
+            words[index - 1].push_str(&current);
+        } else {
+            index += 1;
+        }
+    }
+    let identifier = words.join("_");
+    if has_leading_zero_identifier_segment {
+        // Fern rejects this shape; keep Crozier's existing legal fallback stable.
+        identifier
+    } else {
+        collapse_digit_boundaries(&identifier)
+    }
+}
+
+fn enum_identifier(value: &str) -> String {
+    if is_uuid(value) {
+        uuid_enum_identifier(value)
+    } else {
+        enum_words(value)
+    }
+}
+
+/// Fern spells a canonical, entirely numeric enum value as English words. This
+/// The same spelling is applied to a leading numeric run in an alphanumeric value
+/// (`100base` → `one_hundred_base`).
+fn numeric_enum_identifier(value: &str) -> Option<String> {
+    if value.is_empty()
+        || (value.len() > 1 && value.starts_with('0'))
+        || !value.bytes().all(|byte| byte.is_ascii_digit())
+    {
+        return None;
+    }
+    let value: u16 = value.parse().ok()?;
+    if value > 9_999 {
+        return None;
+    }
+
+    const SMALL: [&str; 20] = [
+        "zero",
+        "one",
+        "two",
+        "three",
+        "four",
+        "five",
+        "six",
+        "seven",
+        "eight",
+        "nine",
+        "ten",
+        "eleven",
+        "twelve",
+        "thirteen",
+        "fourteen",
+        "fifteen",
+        "sixteen",
+        "seventeen",
+        "eighteen",
+        "nineteen",
+    ];
+    const TENS: [&str; 10] = [
+        "", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety",
+    ];
+
+    fn below_hundred(value: u16) -> String {
+        if value < 20 {
+            return SMALL[usize::from(value)].to_string();
+        }
+        let mut words = TENS[usize::from(value / 10)].to_string();
+        if !value.is_multiple_of(10) {
+            words.push('_');
+            words.push_str(SMALL[usize::from(value % 10)]);
+        }
+        words
+    }
+
+    fn below_thousand(value: u16) -> String {
+        if value < 100 {
+            return below_hundred(value);
+        }
+        let mut words = format!("{}_hundred", SMALL[usize::from(value / 100)]);
+        if !value.is_multiple_of(100) {
+            words.push('_');
+            words.push_str(&below_hundred(value % 100));
+        }
+        words
+    }
+
+    if value < 1_000 {
+        return Some(below_thousand(value));
+    }
+    let mut words = format!("{}_thousand", SMALL[usize::from(value / 1_000)]);
+    if !value.is_multiple_of(1_000) {
+        words.push('_');
+        words.push_str(&below_thousand(value % 1_000));
+    }
+    Some(words)
+}
+
+fn is_uuid(value: &str) -> bool {
+    let parts: Vec<&str> = value.split('-').collect();
+    parts.len() == 5
+        && parts.iter().zip([8, 4, 4, 4, 12]).all(|(part, len)| {
+            part.len() == len && part.bytes().all(|byte| byte.is_ascii_hexdigit())
+        })
+}
+
+/// Fern's smart-casing path handles UUID-shaped enum values differently from
+/// ordinary digit-leading values: a leading digit is wordified, longer numeric
+/// prefixes use its literal `undefined` fallback, and digit-adjacent separators
+/// collapse. Keep this scoped to canonical UUIDs so Crozier's established legal
+/// fallback for enums Fern rejects (`_01_00_AM`) remains intact.
+fn uuid_enum_identifier(value: &str) -> String {
+    let mut words = split_words(value);
+    if let Some(first) = words.first_mut() {
+        let digit_len = first.bytes().take_while(u8::is_ascii_digit).count();
+        if digit_len > 0 {
+            let suffix = first[digit_len..].to_string();
+            let numeric = &first[..digit_len];
+            *first = digit_word(numeric).unwrap_or("undefined").to_string();
+            if !suffix.is_empty() {
+                words.insert(1, suffix);
+            }
+        }
+    }
+    let collapsed = collapse_digit_boundaries(&words.join("_"));
+    let chars: Vec<char> = collapsed.chars().collect();
+    chars
+        .iter()
+        .enumerate()
+        .filter_map(|(index, &ch)| {
+            // Fern's smart casing also joins single-letter fragments bracketed by
+            // numeric runs (`466d-b0` -> `466db0`) after digit-boundary folding.
+            let numeric_single_letter_bridge = ch == '_'
+                && index >= 2
+                && index + 2 < chars.len()
+                && chars[index - 2].is_ascii_digit()
+                && chars[index - 1].is_ascii_alphabetic()
+                && chars[index + 1].is_ascii_alphabetic()
+                && chars[index + 2].is_ascii_digit();
+            (!numeric_single_letter_bridge).then_some(ch)
+        })
+        .collect()
 }
 
 /// Coerce a cased enum identifier into a legal, non-empty Python name: a value
@@ -276,7 +497,7 @@ fn finalize_enum_ident(mut name: String) -> String {
 /// `GLOBAL`, `0: Active` → `ZERO_ACTIVE`.
 #[must_use]
 pub fn enum_member_name(value: &str) -> String {
-    finalize_enum_ident(enum_words(value).join("_").to_ascii_uppercase())
+    finalize_enum_ident(enum_identifier(value).to_ascii_uppercase())
 }
 
 /// The `snake_case` `visit` callback parameter for an enum wire value, sanitized
@@ -290,7 +511,7 @@ pub fn enum_member_name(value: &str) -> String {
 /// — Fern leaves it alone, and matching Fern is the contract.
 #[must_use]
 pub fn enum_visit_param(value: &str) -> String {
-    let mut name = finalize_enum_ident(enum_words(value).join("_"));
+    let mut name = finalize_enum_ident(enum_identifier(value));
     if name == "self" {
         name.push('_');
     }
@@ -455,6 +676,52 @@ mod tests {
         assert_eq!(enum_visit_param("0: Active"), "zero_active");
         assert_eq!(enum_member_name("1: InActive"), "ONE_IN_ACTIVE");
         assert_eq!(enum_member_name("oauth2.0"), "OAUTH20");
+        assert_eq!(enum_member_name("ID_CUSIP_8_CHR"), "ID_CUSIP8CHR");
+        assert_eq!(enum_visit_param("ID_CUSIP_8_CHR"), "id_cusip8chr");
+        assert_eq!(enum_member_name("SCHEDULE5MANUAL"), "SCHEDULE5MANUAL");
+        assert_eq!(enum_visit_param("SCHEDULE5MANUAL"), "schedule5manual");
+        assert_eq!(enum_member_name("200"), "TWO_HUNDRED");
+        assert_eq!(enum_visit_param("201"), "two_hundred_one");
+        assert_eq!(enum_member_name("1200 bps"), "ONE_THOUSAND_TWO_HUNDRED_BPS");
+        assert_eq!(enum_member_name("19.2 kbps"), "NINETEEN2KBPS");
+        assert_eq!(enum_member_name("DB-25"), "DB25");
+        assert_eq!(enum_member_name("SFP+ (10GE)"), "SFP10GE");
+        assert_eq!(enum_member_name("IEEE 802.11a"), "IEEE80211A");
+        assert_eq!(enum_member_name("IEEE 802.11b/g"), "IEEE80211BG");
+        assert_eq!(enum_member_name("10gbase-x-x2"), "TEN_GBASE_XX2");
+        assert_eq!(enum_member_name("P+N+E 4H"), "PNE4H");
+        assert_eq!(enum_member_name("2P+E 4H"), "TWO_PE4H");
+        assert_eq!(
+            enum_member_name("ITA Type E/F (CEE 7/7)"),
+            "ITA_TYPE_EF_CEE77"
+        );
+        assert_eq!(enum_member_name("iec-60309-3p-n-e-4h"), "IEC603093PNE4H");
+        assert_eq!(
+            enum_member_name("100BASE-FX (10/100ME FIBER)"),
+            "ONE_HUNDRED_BASE_FX10100ME_FIBER"
+        );
+        assert_eq!(
+            enum_member_name("fbf35668-96a0-4baa-bcde-ab18d6b1b329"),
+            "FBF3566896A04BAA_BCDE_AB18D6B1B329"
+        );
+        assert_eq!(
+            enum_member_name("6a9dfcad-600b-46c8-9e08-ce6e5057921e"),
+            "SIX_A9DFCAD600B46C89E08CE6E5057921E"
+        );
+        assert_eq!(
+            enum_member_name("98777886-76d0-44c8-865e-bb40e669e934"),
+            "UNDEFINED76D044C8865E_BB40E669E934"
+        );
+        assert_eq!(
+            enum_member_name("ac5b9c1e-dc78-466d-b0b3-7cf712967a48"),
+            "AC5B9C1E_DC78466DB0B37CF712967A48"
+        );
+        assert_eq!(
+            enum_visit_param("ac5b9c1e-dc78-466d-b0b3-7cf712967a48"),
+            "ac5b9c1e_dc78466db0b37cf712967a48"
+        );
+        assert_eq!(enum_member_name(""), "EMPTY");
+        assert_eq!(enum_visit_param(""), "empty");
         assert_eq!(enum_visit_param("1: InActive"), "one_in_active");
     }
 
@@ -476,12 +743,12 @@ mod tests {
 
     #[test]
     fn enum_names_stay_legal_where_fern_would_error() {
-        // A multi-digit leading token is not spelled out (Fern rejects it); crozier
-        // prefixes `_` so the identifier is still legal Python.
+        // A leading-zero token retains Crozier's legal-identifier guard where
+        // Fern would reject the enum name.
         assert_eq!(enum_member_name("_01_00_AM"), "_01_00_AM");
         assert_eq!(enum_visit_param("_01_00_AM"), "_01_00_am");
-        assert_eq!(enum_member_name("2fa"), "_2FA");
-        assert_eq!(enum_visit_param("2fa"), "_2fa");
+        assert_eq!(enum_member_name("2fa"), "TWO_FA");
+        assert_eq!(enum_visit_param("2fa"), "two_fa");
         // A value with no identifier characters still yields a legal name.
         assert_eq!(enum_member_name("!!!"), "_");
         assert_eq!(enum_visit_param("!!!"), "_");
@@ -492,11 +759,20 @@ mod tests {
         assert_eq!(sanitize_identifier("get-all-widgets"), "get_all_widgets");
         assert_eq!(sanitize_identifier("verify code"), "verify_code");
         assert_eq!(sanitize_identifier("2fa"), "_2fa");
+        assert_eq!(to_pascal_case("ipam_l2vpns_list"), "IpamL2VpnsList");
         // Already-legal identifiers pass through unchanged.
         assert_eq!(sanitize_identifier("postwithnoauth"), "postwithnoauth");
         assert_eq!(
             prose_identifier("The /content endpoint"),
             "the_content_endpoint"
+        );
+        assert_eq!(
+            prose_identifier("Get seller's feedback"),
+            "get_sellers_feedback"
+        );
+        assert_eq!(
+            prose_identifier("Returns 200 on success or 422 on failure"),
+            "returns200on_success_or422on_failure"
         );
         assert_eq!(
             sanitize_identifier("endpoints_container"),

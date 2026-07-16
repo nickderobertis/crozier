@@ -1,0 +1,42 @@
+
+
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from .bank_account import BankAccount
+from .error import Error
+
+
+class ListBankAccountsResponse(UniversalBaseModel):
+    """
+    Response object returned by ListBankAccounts.
+    """
+
+    bank_accounts: typing.Optional[typing.List[BankAccount]] = pydantic.Field(default=None)
+    """
+    List of BankAccounts associated with this account.
+    """
+
+    cursor: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    When a response is truncated, it includes a cursor that you can 
+    use in a subsequent request to fetch next set of bank accounts.
+    If empty, this is the final response.
+    
+    For more information, see [Pagination](https://developer.squareup.com/docs/working-with-apis/pagination).
+    """
+
+    errors: typing.Optional[typing.List[Error]] = pydantic.Field(default=None)
+    """
+    Information on errors encountered during the request.
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

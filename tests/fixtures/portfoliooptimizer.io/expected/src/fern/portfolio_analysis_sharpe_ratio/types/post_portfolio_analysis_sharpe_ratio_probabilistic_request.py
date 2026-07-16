@@ -1,0 +1,15 @@
+
+
+import typing
+
+from .post_portfolio_analysis_sharpe_ratio_probabilistic_request_benchmark_sharpe_ratio import (
+    PostPortfolioAnalysisSharpeRatioProbabilisticRequestBenchmarkSharpeRatio,
+)
+from .post_portfolio_analysis_sharpe_ratio_probabilistic_request_benchmark_values import (
+    PostPortfolioAnalysisSharpeRatioProbabilisticRequestBenchmarkValues,
+)
+
+PostPortfolioAnalysisSharpeRatioProbabilisticRequest = typing.Union[
+    PostPortfolioAnalysisSharpeRatioProbabilisticRequestBenchmarkSharpeRatio,
+    PostPortfolioAnalysisSharpeRatioProbabilisticRequestBenchmarkValues,
+]

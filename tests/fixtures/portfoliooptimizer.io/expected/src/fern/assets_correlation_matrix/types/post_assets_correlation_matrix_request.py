@@ -1,0 +1,12 @@
+
+
+import typing
+
+from .post_assets_correlation_matrix_request_assets_covariance_matrix import (
+    PostAssetsCorrelationMatrixRequestAssetsCovarianceMatrix,
+)
+from .post_assets_correlation_matrix_request_zero import PostAssetsCorrelationMatrixRequestZero
+
+PostAssetsCorrelationMatrixRequest = typing.Union[
+    PostAssetsCorrelationMatrixRequestZero, PostAssetsCorrelationMatrixRequestAssetsCovarianceMatrix
+]

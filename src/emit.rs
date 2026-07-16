@@ -8,6 +8,7 @@
 //! handles the line wrapping. The template layout is covered directly by render
 //! tests (see this module's `tests`), so it iterates without the full pipeline.
 
+use std::cmp::Ordering;
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::PathBuf;
 
@@ -234,8 +235,11 @@ impl Imports {
     fn render(&self) -> String {
         let (mut g1, mut g2): (Vec<String>, Vec<String>) = (Vec::new(), Vec::new());
 
-        // Plain imports first within each group (BTreeMap iterates sorted).
-        for (module, alias) in &self.plain {
+        // Fern orders generated modules naturally (`type9` before `type10`), while
+        // the maps provide deterministic collection and de-duplication.
+        let mut plain: Vec<_> = self.plain.iter().collect();
+        plain.sort_by(|(a, _), (b, _)| natural_cmp(a, b));
+        for (module, alias) in plain {
             let line = match alias {
                 Some(a) => format!("import {module} as {a}"),
                 None => format!("import {module}"),
@@ -247,7 +251,9 @@ impl Imports {
             }
         }
         // Then `from` imports within each group.
-        for (module, names) in &self.from {
+        let mut from: Vec<_> = self.from.iter().collect();
+        from.sort_by(|(a, _), (b, _)| natural_cmp(a, b));
+        for (module, names) in from {
             let joined = names.iter().cloned().collect::<Vec<_>>().join(", ");
             let line = format!("from {module} import {joined}");
             if Self::is_stdlib(module) {
@@ -264,6 +270,51 @@ impl Imports {
             .collect();
         groups.join("\n\n")
     }
+}
+
+/// Compare strings with digit runs treated as integers, matching Fern's import
+/// ordering for generated names with numeric suffixes (`item9`, `item10`).
+fn natural_cmp(left: &str, right: &str) -> Ordering {
+    let (mut left_index, mut right_index) = (0, 0);
+    let (left_bytes, right_bytes) = (left.as_bytes(), right.as_bytes());
+    while left_index < left_bytes.len() && right_index < right_bytes.len() {
+        let left_digit = left_bytes[left_index].is_ascii_digit();
+        let right_digit = right_bytes[right_index].is_ascii_digit();
+        if left_digit && right_digit {
+            let left_end = left_index
+                + left_bytes[left_index..]
+                    .iter()
+                    .take_while(|byte| byte.is_ascii_digit())
+                    .count();
+            let right_end = right_index
+                + right_bytes[right_index..]
+                    .iter()
+                    .take_while(|byte| byte.is_ascii_digit())
+                    .count();
+            let left_digits = &left[left_index..left_end];
+            let right_digits = &right[right_index..right_end];
+            let left_value = left_digits.trim_start_matches('0');
+            let right_value = right_digits.trim_start_matches('0');
+            let ordering = left_value
+                .len()
+                .cmp(&right_value.len())
+                .then_with(|| left_value.cmp(right_value))
+                .then_with(|| left_digits.len().cmp(&right_digits.len()));
+            if ordering != Ordering::Equal {
+                return ordering;
+            }
+            left_index = left_end;
+            right_index = right_end;
+        } else {
+            let ordering = left_bytes[left_index].cmp(&right_bytes[right_index]);
+            if ordering != Ordering::Equal {
+                return ordering;
+            }
+            left_index += 1;
+            right_index += 1;
+        }
+    }
+    left_bytes.len().cmp(&right_bytes.len())
 }
 
 /// Render a resolved type to a [`Doc`] expression, registering needed imports.
@@ -376,7 +427,12 @@ struct FieldView {
 /// Compute a field's annotation + default, registering imports.
 fn render_field(field: &Field, imports: &mut Imports) -> RenderedField {
     let inner = render_type(&field.type_ref, imports);
-    let typ = if field.optional {
+    // An unknown schema already contributes its own `Optional[Any]`. A required
+    // unknown field keeps that single wrapper; a non-required unknown field adds
+    // a second wrapper for property absence, matching Fern's distinction.
+    let required_unknown = field.spec_required
+        && matches!(field.type_ref, TypeRef::Optional(ref inner) if matches!(inner.as_ref(), TypeRef::Primitive(Prim::Any)));
+    let typ = if field.optional && !required_unknown {
         imports.add_plain("typing");
         Doc::group("typing.Optional[", vec![inner], "]")
     } else {
@@ -1237,17 +1293,27 @@ fn root_init_file(
 /// `inline`'s `filter`) or has at least two required fields. A fully-required
 /// literal inline object retains the placeholder even with one field, while a
 /// flattened referenced object must have at least two fields and no optional ones
-/// (`gettoken`). A referenced body of only scalar fields with any optional one
-/// (`createaccount`), a single-field reference (`create`), or a
-/// union/enum/scalar/no body renders empty parens.
+/// (`gettoken`), unless its request-body declaration is documented (Red Hat's
+/// GraphQL request). An undocumented referenced body of only scalar fields with any
+/// optional one (`createaccount`), a single-field reference (`create`), or a
+/// union/enum/scalar/no body renders empty parens. A request-body component reference
+/// or legacy codegen-named body is always represented by a placeholder because Fern
+/// preserves its declared-body semantics even after flattening it into keyword
+/// arguments.
 fn complex_body(ep: &Endpoint, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) -> bool {
-    if ep.body_all_of
+    if (ep.body_codegen_named || ep.body_component_ref) && ep.request_body.is_some()
+        || ep.body_media_has_example
+        || ep.body_all_of
         || (ep.body_schema_ref
             && !ep.body_schema_dropped
             && !ep.body_schema_is_success_response
             && matches!(ep.request_body, Some(RequestBody::Inline(_))))
         || (ep.body_schema_ref
             && ep.body_schema_has_example
+            && matches!(ep.request_body, Some(RequestBody::Inline(_))))
+        || (ep.body_schema_ref
+            && ep.body_schema_dropped
+            && !ep.body_description_missing
             && matches!(ep.request_body, Some(RequestBody::Inline(_))))
     {
         return true;
@@ -1269,7 +1335,34 @@ fn complex_body(ep: &Endpoint, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) ->
                 || form.fields.iter().any(|f| f.is_file)
                 || form.fields.iter().all(|f| f.spec_required)
         }
-        Some(RequestBody::Single(s)) => is_complex_type(&s.type_ref, types, tag_decls),
+        Some(RequestBody::Single(s)) => {
+            (ep.body_schema_ref && resolves_to_container(&s.type_ref, types, tag_decls))
+                || is_complex_type(&s.type_ref, types, tag_decls)
+        }
+    }
+}
+
+/// Whether a type resolves through aliases/optionals to a collection. Fern keeps
+/// the `...` placeholder for a component-referenced collection body even when an
+/// object element has optional fields (OpenFIGI's `BulkMappingJob`); inline array
+/// bodies continue to use the element-shape heuristic below.
+fn resolves_to_container(t: &TypeRef, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) -> bool {
+    match t {
+        TypeRef::List(_) | TypeRef::Set(_) | TypeRef::Dict(..) => true,
+        TypeRef::Optional(inner) => resolves_to_container(inner, types, tag_decls),
+        TypeRef::Named(name) => types
+            .iter()
+            .find(|decl| decl.name() == name)
+            .or_else(|| {
+                tag_decls
+                    .iter()
+                    .find_map(|decl| (decl.decl.name() == name).then_some(&decl.decl))
+            })
+            .is_some_and(|decl| match decl {
+                TypeDecl::Alias(alias) => resolves_to_container(&alias.target, types, tag_decls),
+                _ => false,
+            }),
+        _ => false,
     }
 }
 
@@ -1379,7 +1472,8 @@ fn abbrev_call(indent: usize, prefix: &str, complex: bool) -> String {
     if flat.len() <= 80 {
         flat
     } else if indent == 0
-        && prefix.starts_with("response = client.with_raw_response.")
+        && prefix.starts_with("response = client.")
+        && prefix.len() > 80
         && prefix
             .strip_prefix("response = ")
             .is_some_and(|call| format!("    {call}(...)").len() <= 80)
@@ -1393,22 +1487,25 @@ fn abbrev_call(indent: usize, prefix: &str, complex: bool) -> String {
     }
 }
 
+/// Whether an endpoint can anchor the README's representative calls. Fern skips
+/// referenced file-form declarations here even though their methods may still have
+/// a deliberately argument-free worked example in `reference.md`.
+fn readme_endpoint_eligible(ep: &Endpoint) -> bool {
+    endpoint_has_worked_example(ep)
+        && !matches!(ep.request_body, Some(RequestBody::Bytes { .. }))
+        && !matches!(&ep.request_body, Some(RequestBody::Form(form)) if ep.body_schema_ref && form.fields.iter().any(|field| field.is_file))
+}
+
 fn select_readme_endpoint<'a>(
     endpoints: impl Clone + Iterator<Item = &'a Endpoint>,
 ) -> Option<&'a Endpoint> {
     endpoints
         .clone()
-        .find(|e| {
-            e.emittable
-                && e.http_method == "POST"
-                && !matches!(e.request_body, Some(RequestBody::Bytes { .. }))
-        })
+        .find(|e| e.emittable && e.http_method == "POST" && readme_endpoint_eligible(e))
         .or_else(|| {
-            endpoints.clone().find(|e| {
-                e.emittable
-                    && e.request_body.is_some()
-                    && !matches!(e.request_body, Some(RequestBody::Bytes { .. }))
-            })
+            endpoints
+                .clone()
+                .find(|e| e.emittable && e.request_body.is_some() && readme_endpoint_eligible(e))
         })
         .or_else(|| {
             endpoints.clone().find(|e| {
@@ -1423,7 +1520,7 @@ fn select_readme_endpoint<'a>(
         .or_else(|| {
             endpoints
                 .clone()
-                .find(|e| e.emittable && !matches!(e.request_body, Some(RequestBody::Bytes { .. })))
+                .find(|e| e.emittable && readme_endpoint_eligible(e))
         })
 }
 
@@ -1431,9 +1528,24 @@ fn readme_endpoint(ir: &Ir) -> Option<&Endpoint> {
     if ir.openapi_31 {
         return select_readme_endpoint(ir.endpoints.iter());
     }
+    // Fern builds client modules in first-seen module order and selects the README
+    // example from that grouped view. Keep operations within each module in source
+    // order, but do not let a POST from a later module leapfrog one from the first
+    // module merely because their paths were interleaved.
+    let grouped: Vec<&Endpoint> = ir
+        .endpoint_modules
+        .iter()
+        .flat_map(|module| ir.endpoints.iter().filter(move |ep| &ep.module == module))
+        .collect();
     select_readme_endpoint(ir.endpoints.iter().filter(|e| e.module.is_empty()))
         .filter(|e| e.http_method != "GET" || e.request_body.is_some())
-        .or_else(|| select_readme_endpoint(ir.endpoints.iter()))
+        .or_else(|| {
+            if grouped.is_empty() {
+                select_readme_endpoint(ir.endpoints.iter())
+            } else {
+                select_readme_endpoint(grouped.iter().copied())
+            }
+        })
 }
 
 fn client_call_prefix(ep: &Endpoint) -> String {
@@ -1472,11 +1584,11 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     // for a bodyless endpoint with required path/query/header arguments, or an
     // endpoint with a complex (object/container/union) body, else empty parens; the
     // error/raw-response calls are ruff-wrapped at the snippet width 88.
-    let has_required_non_body_params = first.request_body.is_none()
-        && (!first.path_params.is_empty()
-            || first.query_params.iter().any(|param| param.required)
-            || first.query_params.iter().any(|param| param.convert)
-            || first.header_params.iter().any(|param| param.required));
+    let has_required_non_body_params = !first.path_params.is_empty()
+        || first.request_body.is_none()
+            && (first.query_params.iter().any(|param| param.required)
+                || first.query_params.iter().any(|param| param.convert)
+                || first.header_params.iter().any(|param| param.required));
     let has_map_response = first
         .response
         .as_ref()
@@ -1613,7 +1725,12 @@ struct ParamRow {
 
 fn reference_param_suffix(description: Option<&str>) -> String {
     match description {
-        Some(d) if d.contains('\n') => format!(" \n\n{d}"),
+        // Importers sometimes retain leading blank lines around a one-line
+        // description. Fern still renders those through the ordinary em-dash
+        // form; only multiple substantive lines become a separate paragraph.
+        Some(d) if d.trim().contains('\n') => {
+            format!(" \n\n{}", d.trim_matches(['\r', '\n']))
+        }
         Some(d) => format!(" — {d}"),
         None => " ".to_string(),
     }
@@ -1657,9 +1774,17 @@ fn reference_entry(
         global_headers: &ir.global_headers,
         building: Default::default(),
     };
-    let example = build_example(ep, false, module, pkg, &ir.client_name, &mut ctx)
-        .unwrap_or_default()
-        .join("\n");
+    let example = build_example_with_body_example(
+        ep,
+        false,
+        module,
+        pkg,
+        &ir.client_name,
+        &mut ctx,
+        ep.reference_body_example.as_ref(),
+    )
+    .unwrap_or_default()
+    .join("\n");
 
     // The parameter rows, in signature order, then `request_options`.
     let mut params: Vec<ParamRow> = Vec::new();
@@ -1710,15 +1835,10 @@ fn reference_entry(
         pkg: pkg.to_string(),
         method: ep.method_name.clone(),
         dots: if has_args { "..." } else { "" },
-        description: ep.docstring.as_ref().map(|description| {
-            if ep.reference_description_trailing_blank {
-                format!("{description}\n")
-            } else if ep.reference_description_trailing_space {
-                format!("{description} ")
-            } else {
-                description.clone()
-            }
-        }),
+        description: ep
+            .docstring
+            .as_ref()
+            .map(|description| format!("{description}{}", ep.reference_description_suffix)),
         example,
         params,
     };
@@ -1732,8 +1852,10 @@ fn reference_entry(
 }
 
 fn reference_param_annotation(annotation: &str) -> String {
-    // Fern wraps the generated scalar-or-sequence type for array query params in
-    // reference tables, while leaving the method signature on one line.
+    // Fern recursively wraps a generated scalar-or-sequence type for array query
+    // params only when the annotation exceeds the reference writer's 80 columns.
+    // A moderately long union fits after the outer Optional breaks; a longer one
+    // needs its Union members broken as well.
     if let Some(inner) = annotation
         .strip_prefix("typing.Optional[typing.Union[")
         .and_then(|s| s.strip_suffix("]]"))
@@ -1741,11 +1863,36 @@ fn reference_param_annotation(annotation: &str) -> String {
         if let Some((item, sequence_item)) = inner.split_once(", typing.Sequence[") {
             if sequence_item.strip_suffix(']') == Some(item)
                 && item.chars().next().is_some_and(char::is_uppercase)
+                && annotation.len() > 80
+                && 4 + "typing.Union[".len() + inner.len() + 1 > 80
             {
+                if 8 + inner.len() <= 80 {
+                    return format!(
+                        "typing.Optional[\n    typing.Union[\n        {inner}\n    ]\n]"
+                    );
+                }
                 return format!(
                     "typing.Optional[\n    typing.Union[\n        {item},\n        typing.Sequence[{item}],\n    ]\n]"
                 );
             }
+        }
+    }
+
+    // Fern's reference type writer wraps a long optional container at its outer
+    // brackets once the annotation itself exceeds 80 columns. Method signatures
+    // are formatted separately by Ruff and retain the ordinary one-line type.
+    if annotation.len() > 80 {
+        if let Some(inner) = annotation
+            .strip_prefix("typing.Optional[")
+            .and_then(|value| value.strip_suffix(']'))
+        {
+            return format!("typing.Optional[\n    {inner}\n]");
+        }
+        if let Some(inner) = annotation
+            .strip_prefix("typing.Sequence[")
+            .and_then(|value| value.strip_suffix(']'))
+        {
+            return format!("typing.Sequence[\n    {inner}\n]");
         }
     }
 
@@ -2981,7 +3128,7 @@ fn push_param_doc(lines: &mut Vec<String>, description: &str) {
     lines.extend(
         description
             .split('\n')
-            .map(|line| format!("            {line}")),
+            .map(|line| format!("            {}", line.replace('\t', "    "))),
     );
 }
 
@@ -3095,7 +3242,14 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         for qp in &ep.query_params {
             if qp.convert {
                 imports.add_core("serialization", "convert_and_respect_annotation_metadata");
-                let annotation = raw_type_str_ctx(&qp.type_ref, imports, true);
+                // Fern converts collections per element: a query
+                // `Sequence[Model]` passes `annotation=Model`, while a direct
+                // object parameter passes its model unchanged.
+                let annotation_type = match &qp.type_ref {
+                    TypeRef::List(inner) | TypeRef::Set(inner) => inner.as_ref(),
+                    other => other,
+                };
+                let annotation = raw_type_str_ctx(annotation_type, imports, true);
                 let call = Doc::group(
                     format!(
                         "                \"{}\": convert_and_respect_annotation_metadata(",
@@ -3224,6 +3378,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
     // or is accompanied by path/header parameters. Header parameters follow,
     // rendered as `str(x) if x is not None else None`.
     let content_type: Option<String> = match &ep.request_body {
+        Some(_) if ep.body_content_type_override.is_some() => ep.body_content_type_override.clone(),
         Some(RequestBody::Bytes { content_type }) => Some(content_type.clone()),
         // A multipart form uses `force_multipart=True` (no content-type header);
         // a urlencoded form carries its own content-type.
@@ -3240,14 +3395,18 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         // path/header param, is *undocumented*, or is *always sent whole* (every field
         // required, so no `OMIT`). Fern drops the explicit header only for a
         // documented body with at least one optional field — which may serialize to
-        // nothing — that rides no header-forcing param (bunq's `CREATE_Avatar`,
-        // `CREATE_DeviceServer`), leaving the content-type to httpx; an all-required
-        // body (`CREATE_SessionServer`) keeps it.
+        // nothing — or a legacy codegen-named body that rides no header-forcing
+        // param, leaving the content-type to httpx. An all-required body
+        // (`CREATE_SessionServer`) keeps it.
         Some(body)
             if !body.is_wildcard_media()
-                && (!ep.header_params.is_empty()
+                && (ep.reference_body_example.is_some()
+                    && matches!(body, RequestBody::Inline(_))
+                    || !ep.header_params.is_empty()
                     || !ep.path_params.is_empty()
                     || (body.content_type_header()
+                        && (!ep.basic_auth || !ep.body_description_missing)
+                        && !ep.body_codegen_named
                         && !ep.body_component_ref
                         && !(matches!(body, RequestBody::Inline(_))
                             && (ep.body_all_of || ep.body_response_same_ref))
@@ -3262,7 +3421,16 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                                         && ep.body_description_missing
                                         && fields.iter().filter(|field| field.spec_required).count() == 1))
                         && (!(ep.body_description_empty
-                            || ep.body_schema_has_example && ep.body_schema_documented)
+                            || ep.body_schema_has_example
+                                && ep.body_schema_documented
+                                && !ep.body_schema_example_wrapped
+                            || ep.body_schema_example_wrapped
+                                && matches!(body, RequestBody::Inline(fields)
+                                    if !fields.is_empty()
+                                        && fields.len() > 1
+                                        && fields.iter().all(|field| field.optional)
+                                        && ep.body_schema_example_covers_all_fields
+                                        && fields.iter().any(|field| field.convert)))
                             || body.all_fields_required()))) =>
         {
             Some("application/json".to_string())
@@ -3685,6 +3853,7 @@ fn root_client_file(
         tag_decls,
         tag_map,
         auth,
+        global_headers,
         false,
         &mut imports,
     )?;
@@ -3697,6 +3866,7 @@ fn root_client_file(
         tag_decls,
         tag_map,
         auth,
+        global_headers,
         true,
         &mut imports,
     )?;
@@ -3777,6 +3947,7 @@ fn root_client_methods(
     tag_decls: &[TagTypeDecl],
     tag_map: &BTreeMap<String, String>,
     auth: &Auth,
+    global_headers: &[GlobalHeader],
     is_async: bool,
     imports: &mut Imports,
 ) -> Result<Vec<String>> {
@@ -3792,7 +3963,7 @@ fn root_client_methods(
         auth,
         has_environment: true,
         tag_types: tag_map,
-        global_headers: &[],
+        global_headers,
     };
     let mut method_imports = Imports::at(RefLoc::PackageRoot, tag_map);
     let methods = endpoints
@@ -4539,6 +4710,13 @@ impl Example {
     /// the awaited expression, whereas Fern leaves the long `await …(` line and
     /// only explodes the call arguments. This renderer reproduces Fern's form.
     fn render(&self, indent: usize) -> String {
+        self.render_at(indent, indent)
+    }
+
+    /// Render with separate physical indentation and starting column. A keyword
+    /// value starts after `name=`, which affects Fern's 88-column wrapping without
+    /// changing the indentation of any continuation lines.
+    fn render_at(&self, indent: usize, column: usize) -> String {
         match self {
             Example::Atom(s) => s.clone(),
             Example::Call(name, args) => {
@@ -4554,7 +4732,8 @@ impl Example {
                         None => inner_pad.clone(),
                     };
                     out.push_str(&head);
-                    out.push_str(&v.render(indent + 4));
+                    let value_column = indent + 4 + kw.as_ref().map_or(0, |key| key.len() + 1);
+                    out.push_str(&v.render_at(indent + 4, value_column));
                     out.push_str(",\n");
                 }
                 out.push_str(&pad);
@@ -4569,20 +4748,34 @@ impl Example {
                 let inner_pad = " ".repeat(indent + 4);
                 let body = items
                     .iter()
-                    .map(|it| format!("{inner_pad}{}", it.render(indent + 4)))
+                    .map(|it| format!("{inner_pad}{}", it.render_at(indent + 4, indent + 4)))
                     .collect::<Vec<_>>()
                     .join("\n");
                 format!("[\n{body}\n{pad}]")
             }
             Example::ExplicitList(items) => {
-                if !self.forces_multiline() && indent + self.flat().len() <= 88 {
+                let matrix = items.len() >= 3
+                    && items
+                        .iter()
+                        .all(|item| matches!(item, Example::List(_) | Example::ExplicitList(_)));
+                if !matrix && !self.forces_multiline() && column + self.flat().len() <= 80 {
                     return self.flat();
                 }
                 let pad = " ".repeat(indent);
                 let inner_pad = " ".repeat(indent + 4);
+                let trailing_comma = if matches!(items.as_slice(), [Example::Call(_, _)]) {
+                    ""
+                } else {
+                    ","
+                };
                 let body = items
                     .iter()
-                    .map(|it| format!("{inner_pad}{},", it.render(indent + 4)))
+                    .map(|it| {
+                        format!(
+                            "{inner_pad}{}{trailing_comma}",
+                            it.render_at(indent + 4, indent + 4)
+                        )
+                    })
                     .collect::<Vec<_>>()
                     .join("\n");
                 format!("[\n{body}\n{pad}]")
@@ -4595,7 +4788,12 @@ impl Example {
                 let inner_pad = " ".repeat(indent + 4);
                 let body = pairs
                     .iter()
-                    .map(|(k, v)| format!("{inner_pad}\"{k}\": {}", v.render(indent + 4)))
+                    .map(|(k, v)| {
+                        format!(
+                            "{inner_pad}\"{k}\": {}",
+                            v.render_at(indent + 4, indent + k.len() + 8)
+                        )
+                    })
                     .collect::<Vec<_>>()
                     .join("\n");
                 format!("{{\n{body}\n{pad}}}")
@@ -4664,6 +4862,18 @@ impl<'a> ExampleCtx<'a> {
         }
     }
 
+    fn example_is_object(&self, t: &TypeRef) -> bool {
+        match t {
+            TypeRef::Optional(inner) => self.example_is_object(inner),
+            TypeRef::Named(name) => match self.find(name) {
+                Some(TypeDecl::Object(_)) => true,
+                Some(TypeDecl::Alias(alias)) => self.example_is_object(&alias.target),
+                _ => false,
+            },
+            _ => false,
+        }
+    }
+
     fn example_is_temporal(&self, t: &TypeRef) -> bool {
         match t {
             TypeRef::Optional(inner) => self.example_is_temporal(inner),
@@ -4695,7 +4905,18 @@ impl<'a> ExampleCtx<'a> {
             ));
         }
         if self.example_is_scalar(t) {
-            return Some(Example::Atom(example.to_string()));
+            let literal = match t {
+                TypeRef::Primitive(Prim::Float) if example.parse::<i64>().is_ok() => {
+                    format!("{example}.0")
+                }
+                TypeRef::Primitive(Prim::Bool) => match example {
+                    "true" => "True".to_string(),
+                    "false" => "False".to_string(),
+                    _ => example.to_string(),
+                },
+                _ => example.to_string(),
+            };
+            return Some(Example::Atom(literal));
         }
         if example.starts_with('{') && self.resolves_to_any(t) {
             return serde_json::from_str(example).ok().map(example_from_json);
@@ -4705,6 +4926,9 @@ impl<'a> ExampleCtx<'a> {
             let items = values
                 .into_iter()
                 .map(|value| {
+                    if value.is_null() {
+                        return self.value(inner, Slot::Plain);
+                    }
                     let literal = value.to_string();
                     self.value_from_example(inner, &literal)
                         .unwrap_or_else(|| example_from_json(value))
@@ -4712,23 +4936,90 @@ impl<'a> ExampleCtx<'a> {
                 .collect();
             return Some(Example::ExplicitList(items));
         }
+        if let TypeRef::Union(variants) = t {
+            let value: serde_json::Value = serde_json::from_str(example).ok()?;
+            for variant in variants {
+                if self.example_matches_type(variant, &value) {
+                    return self.value_from_example(variant, example);
+                }
+            }
+            return None;
+        }
         if self.example_is_composite(t) && (example.starts_with('[') || example.starts_with('{')) {
             return serde_json::from_str(example).ok().map(example_from_json);
         }
         let TypeRef::Named(name) = t else {
             return None;
         };
-        let TypeDecl::Enum(enum_type) = self.find(name)? else {
-            return None;
-        };
-        let value = example.strip_prefix('"')?.strip_suffix('"')?;
-        let member = enum_type
-            .members
-            .iter()
-            .find(|member| member.value == value)?;
-        let member_name = member.name.clone();
-        self.record_ref(name);
-        Some(Example::Atom(format!("{name}.{member_name}")))
+        match self.find(name)? {
+            TypeDecl::Object(object) => {
+                let fields = self.object_fields(object);
+                let values = serde_json::from_str::<serde_json::Value>(example).ok()?;
+                let values = values.as_object()?;
+                self.record_ref(name);
+                let args = fields
+                    .into_iter()
+                    .filter_map(|(py_name, wire_name, type_ref, _, _)| {
+                        let value = values.get(&wire_name)?;
+                        let literal = value.to_string();
+                        let rendered = self
+                            .value_from_example(&type_ref, &literal)
+                            .unwrap_or_else(|| example_from_json(value.clone()));
+                        Some((Some(py_name), rendered))
+                    })
+                    .collect();
+                Some(Example::Call(name.clone(), args))
+            }
+            TypeDecl::Alias(alias) => {
+                let target = alias.target.clone();
+                self.value_from_example(&target, example)
+            }
+            TypeDecl::Enum(enum_type) => {
+                let value = example.strip_prefix('"')?.strip_suffix('"')?;
+                let member = enum_type
+                    .members
+                    .iter()
+                    .find(|member| member.value == value)?;
+                let member_name = member.name.clone();
+                self.record_ref(name);
+                Some(Example::Atom(format!("{name}.{member_name}")))
+            }
+            TypeDecl::DiscriminatedUnion(_) => None,
+        }
+    }
+
+    fn example_matches_type(&self, t: &TypeRef, value: &serde_json::Value) -> bool {
+        match t {
+            TypeRef::Optional(inner) => value.is_null() || self.example_matches_type(inner, value),
+            TypeRef::Named(name) => match self.find(name) {
+                Some(TypeDecl::Object(object)) => value.as_object().is_some_and(|values| {
+                    let fields = self.object_fields(object);
+                    fields
+                        .iter()
+                        .filter(|(_, _, _, required, _)| *required)
+                        .all(|(_, wire_name, _, _, _)| values.contains_key(wire_name))
+                        && values.keys().all(|key| {
+                            fields
+                                .iter()
+                                .any(|(_, wire_name, _, _, _)| wire_name == key)
+                        })
+                }),
+                Some(TypeDecl::Alias(alias)) => self.example_matches_type(&alias.target, value),
+                _ => true,
+            },
+            TypeRef::Union(variants) => variants
+                .iter()
+                .any(|variant| self.example_matches_type(variant, value)),
+            TypeRef::List(_) | TypeRef::Set(_) => value.is_array(),
+            TypeRef::Dict(_, _) => value.is_object(),
+            TypeRef::Primitive(Prim::Str | Prim::Datetime | Prim::Date) | TypeRef::Literal(_) => {
+                value.is_string()
+            }
+            TypeRef::Primitive(Prim::Int | Prim::Long) => value.as_i64().is_some(),
+            TypeRef::Primitive(Prim::Float) => value.is_number(),
+            TypeRef::Primitive(Prim::Bool) => value.is_boolean(),
+            TypeRef::Primitive(Prim::Any) => true,
+        }
     }
 
     /// Look up a generated type by name — a package-root type, else a hoisted
@@ -4853,7 +5144,7 @@ impl<'a> ExampleCtx<'a> {
                     Example::Dict(vec![("key".to_string(), val)])
                 }
             }
-            TypeRef::Union(variants) => self.union_value(variants),
+            TypeRef::Union(variants) => self.union_value(variants, slot),
             TypeRef::Literal(values) => {
                 Example::Atom(format!("\"{}\"", values.first().map_or("", String::as_str)))
             }
@@ -4863,9 +5154,9 @@ impl<'a> ExampleCtx<'a> {
 
     /// The example for a union: its first variant (an extensible enum's first
     /// literal, else the first variant's own example).
-    fn union_value(&mut self, variants: &[TypeRef]) -> Example {
+    fn union_value(&mut self, variants: &[TypeRef], slot: Slot<'_>) -> Example {
         match variants.first() {
-            Some(first) => self.value(first, Slot::Plain),
+            Some(first) => self.value(first, slot),
             None => Example::Dict(vec![(
                 "key".to_string(),
                 Example::Atom("\"value\"".to_string()),
@@ -5050,6 +5341,18 @@ fn build_example(
     client_name: &str,
     ctx: &mut ExampleCtx,
 ) -> Option<Vec<String>> {
+    build_example_with_body_example(ep, is_async, module, pkg, client_name, ctx, None)
+}
+
+fn build_example_with_body_example(
+    ep: &Endpoint,
+    is_async: bool,
+    module: &str,
+    pkg: &str,
+    client_name: &str,
+    ctx: &mut ExampleCtx,
+    body_example: Option<&serde_json::Value>,
+) -> Option<Vec<String>> {
     if matches!(ep.request_body, Some(RequestBody::Bytes { .. }))
         || !endpoint_has_worked_example(ep)
     {
@@ -5084,16 +5387,31 @@ fn build_example(
         .request_body
         .as_ref()
         .is_some_and(RequestBody::is_wildcard_media);
-    let mut optional_query_example_used = false;
+    let mut optional_query_example_type: Option<&TypeRef> = None;
     for qp in ep
         .query_params
         .iter()
         .filter(|qp| !ep.wildcard_binary_response && !wildcard_request && qp.required)
     {
+        // Fern omits required collections of referenced shapes from worked
+        // examples; their query encoding has no inline scalar placeholder.
+        if matches!(
+            &qp.type_ref,
+            TypeRef::List(inner) | TypeRef::Set(inner)
+                if matches!(inner.as_ref(), TypeRef::Named(_))
+                    || ctx.example_is_object(inner)
+        ) {
+            continue;
+        }
         let v = if let Some(ex) = qp.example.as_ref().filter(|_| qp.example_is_scalar) {
             Example::Atom(ex.clone())
         } else if let TypeRef::List(inner) = &qp.type_ref {
             Example::List(vec![ctx.value(inner, Slot::Named(&qp.wire_name))])
+        } else if let TypeRef::Dict(_, value) = &qp.type_ref {
+            Example::Dict(vec![(
+                qp.wire_name.clone(),
+                ctx.value(value, Slot::Named(&qp.wire_name)),
+            )])
         } else {
             ctx.value(&qp.type_ref, Slot::Named(&qp.wire_name))
         };
@@ -5149,13 +5467,19 @@ fn build_example(
         .iter()
         .filter(|qp| !ep.wildcard_binary_response && !qp.required)
     {
-        if qp.example.is_none()
-            || !qp.example_is_scalar
-            || (ep.request_body.is_none() && optional_query_example_used)
-        {
+        if qp.example.is_none() || !qp.example_is_scalar {
             continue;
         }
-        optional_query_example_used = true;
+        // For a bodyless operation, Fern keeps optional examples matching the
+        // first example's type (Xero's `where` + `order` strings), but omits other
+        // types (Discourse omits the integer `page` after its string `q`).
+        // Body-bearing operations retain every optional example.
+        if ep.request_body.is_none() {
+            if optional_query_example_type.is_some_and(|first| first != &qp.type_ref) {
+                continue;
+            }
+            optional_query_example_type.get_or_insert(&qp.type_ref);
+        }
         args.push((
             Some(qp.py_name.clone()),
             Example::Atom(qp.example.clone().unwrap_or_default()),
@@ -5179,10 +5503,15 @@ fn build_example(
     }
     match &ep.request_body {
         Some(RequestBody::Single(s)) => {
-            let v = s.example.as_ref().map_or_else(
-                || ctx.value(&s.type_ref, Slot::Plain),
-                |example| Example::Atom(example.clone()),
-            );
+            let v = if let Some(example) = body_example {
+                ctx.value_from_example(&s.type_ref, &example.to_string())
+                    .unwrap_or_else(|| ctx.value(&s.type_ref, Slot::Plain))
+            } else {
+                s.example
+                    .as_deref()
+                    .and_then(|example| ctx.value_from_example(&s.type_ref, example))
+                    .unwrap_or_else(|| ctx.value(&s.type_ref, Slot::Plain))
+            };
             args.push((Some("request".to_string()), v));
         }
         Some(RequestBody::Inline(fields)) => {
@@ -5191,15 +5520,29 @@ fn build_example(
             // omitted). A required field with an unknown (`Any`) type is still shown
             // (exhaustive's `unknown`), so the exclusion keys on nullability — an
             // `optional` field with a concrete (non-`Any`) type — not `optional` alone.
+            let reference_fields = body_example.and_then(serde_json::Value::as_object);
             for f in fields.iter().filter(|f| {
-                f.media_example || (f.spec_required && (!f.optional || is_any_type(&f.type_ref)))
+                reference_fields.is_some_and(|values| values.contains_key(&f.wire_name))
+                    || f.spec_required && (!f.optional || is_any_type(&f.type_ref))
+                    || reference_fields.is_none() && f.media_example
             }) {
                 let v = f
                     .example
                     .as_deref()
+                    .filter(|_| reference_fields.is_none())
+                    .map(str::to_string)
+                    .or_else(|| {
+                        reference_fields
+                            .and_then(|values| values.get(&f.wire_name))
+                            .map(serde_json::Value::to_string)
+                    })
+                    .as_deref()
                     .and_then(|example| {
-                        if f.media_example
-                            || example.starts_with('{')
+                        if reference_fields.is_some()
+                            || ep.body_schema_is_beta && !ep.body_schema_example_wrapped
+                            || f.media_example
+                                && (!f.schema_body_example || !ctx.example_is_object(&f.type_ref))
+                            || example.starts_with('{') && ctx.resolves_to_any(&f.type_ref)
                             || ctx.example_is_scalar(&f.type_ref)
                             || ctx.example_is_composite(&f.type_ref)
                             || ctx.example_is_temporal(&f.type_ref)
@@ -5276,13 +5619,13 @@ fn build_example(
     }
 
     // `from <pkg> import <client + referenced types>`, alphabetical, wrapped at
-    // the snippet's default line length (88). Fern's examples are laid out by hand
+    // the snippet's import width (80). Fern's examples are laid out by hand
     // (not `ruff format`) — see `Example::render` for why.
     let mut names: Vec<String> = ctx.referenced.iter().cloned().collect();
     names.push(example_name.clone());
     names.sort();
     let import_flat = format!("from {pkg} import {}", names.join(", "));
-    let import_lines: Vec<String> = if import_flat.len() <= 88 {
+    let import_lines: Vec<String> = if import_flat.len() <= 80 {
         vec![import_flat]
     } else {
         let mut v = vec![format!("from {pkg} import (")];
@@ -5364,11 +5707,18 @@ fn build_example(
 }
 
 fn endpoint_has_worked_example(ep: &Endpoint) -> bool {
-    !(ep.binary_response
-        && ep.path_params.is_empty()
-        && ep.query_params.is_empty()
+    // Array query params always default to `None` in the generated signature, so a
+    // binary download with only those params has no exampleable required argument.
+    let binary_has_no_required_arguments = ep.path_params.is_empty()
+        && ep
+            .query_params
+            .iter()
+            .all(|param| matches!(param.type_ref, TypeRef::List(_)))
         && ep.header_params.is_empty()
-        && ep.request_body.is_none())
+        && ep.request_body.is_none();
+    let opaque_multipart_example = ep.body_media_has_example
+        && matches!(&ep.request_body, Some(RequestBody::Form(form)) if form.fields.iter().any(|field| field.is_file));
+    !(ep.binary_response && binary_has_no_required_arguments || opaque_multipart_example)
 }
 
 /// Assemble the `raw_client.py` file for one client module: the sync and async
@@ -5599,10 +5949,13 @@ pub fn write_files(root: &std::path::Path, files: &[GeneratedFile]) -> Result<()
 mod tests {
     use super::{
         abbrev_call, auth_client_parts, auth_example_args, auth_wrapper_parts, build_example,
-        client_method, environment, escape_py_str, example_from_json, field_decl, raw_method,
-        raw_type_str, readme_endpoint, render, render_class_body, render_enum, render_type_decl,
-        url_arg, ClientCtx, Example, ExampleCtx, FieldView, Imports, ParamRow, RefLoc,
-        ReferenceEntryView, RenderedField, RootClientView, RootModuleView, Slot,
+        client_method, complex_body, container_element_object, environment, escape_py_str,
+        example_from_json, field_decl, is_complex_type, natural_cmp, object_body_complex,
+        raw_method, raw_type_str, readme_endpoint, readme_endpoint_eligible,
+        reference_param_annotation, render, render_class_body, render_enum, render_type_decl,
+        resolves_to_container, resolves_to_dict, url_arg, ClientCtx, Example, ExampleCtx,
+        FieldView, Imports, ParamRow, RefLoc, ReferenceEntryView, RenderedField, RootClientView,
+        RootModuleView, Slot,
     };
     use crate::ir::{
         AliasType, Auth, BodyField, DiscriminatedUnion, Endpoint, EnumMember, EnumType,
@@ -5851,6 +6204,372 @@ mod tests {
             abbrev_call(0, root_raw, true),
             "response = (\n    client.with_raw_response.get_all_colors_of_the_default_color_name_list(...)\n)"
         );
+        let nested_raw =
+            "response = client.account_access.with_raw_response.create_account_access_consents";
+        assert_eq!(
+            abbrev_call(0, nested_raw, true),
+            "response = (\n    client.account_access.with_raw_response.create_account_access_consents(...)\n)"
+        );
+        let fitting_prefix =
+            "response = client.attachment_public.with_raw_response.create_attachment_public";
+        assert_eq!(
+            abbrev_call(0, fitting_prefix, true),
+            "response = client.attachment_public.with_raw_response.create_attachment_public(\n    ...\n)"
+        );
+    }
+
+    #[test]
+    fn natural_comparison_orders_numeric_runs_and_leading_zero_ties() {
+        use std::cmp::Ordering::{Equal, Greater, Less};
+
+        assert_eq!(natural_cmp("item9", "item10"), Less);
+        assert_eq!(natural_cmp("item10", "item9"), Greater);
+        assert_eq!(natural_cmp("item1", "item01"), Less);
+        assert_eq!(natural_cmp("item001", "item01"), Greater);
+        assert_eq!(natural_cmp("item0", "item00"), Less);
+        assert_eq!(natural_cmp("item12a", "item12b"), Less);
+        assert_eq!(natural_cmp("alpha2", "beta1"), Less);
+        assert_eq!(natural_cmp("item", "item0"), Less);
+        assert_eq!(natural_cmp("same007tail", "same007tail"), Equal);
+    }
+
+    #[test]
+    fn body_complexity_resolves_root_and_tag_alias_edges() {
+        let required_object = TypeDecl::Object(ObjectType {
+            name: "RequiredObject".to_string(),
+            module: "required_object".to_string(),
+            bases: Vec::new(),
+            fields: vec![
+                model_field("first", TypeRef::Primitive(Prim::Str), true),
+                model_field("second", TypeRef::Primitive(Prim::Int), true),
+            ],
+            docstring: None,
+        });
+        let optional_object = TypeDecl::Object(ObjectType {
+            name: "OptionalObject".to_string(),
+            module: "optional_object".to_string(),
+            bases: Vec::new(),
+            fields: vec![model_field("maybe", TypeRef::Primitive(Prim::Str), false)],
+            docstring: None,
+        });
+        let list_alias = TypeDecl::Alias(AliasType {
+            name: "ListAlias".to_string(),
+            module: "list_alias".to_string(),
+            target: TypeRef::Optional(Box::new(TypeRef::List(Box::new(TypeRef::Named(
+                "OptionalObject".to_string(),
+            ))))),
+            docstring: None,
+        });
+        let dict_alias = TypeDecl::Alias(AliasType {
+            name: "DictAlias".to_string(),
+            module: "dict_alias".to_string(),
+            target: TypeRef::Optional(Box::new(TypeRef::Dict(
+                Box::new(TypeRef::Primitive(Prim::Str)),
+                Box::new(TypeRef::Primitive(Prim::Int)),
+            ))),
+            docstring: None,
+        });
+        let cyclic_alias = TypeDecl::Alias(AliasType {
+            name: "CyclicAlias".to_string(),
+            module: "cyclic_alias".to_string(),
+            target: TypeRef::Named("CyclicAlias".to_string()),
+            docstring: None,
+        });
+        let root_union_alias = TypeDecl::Alias(AliasType {
+            name: "RootUnion".to_string(),
+            module: "root_union".to_string(),
+            target: TypeRef::Union(vec![
+                TypeRef::Primitive(Prim::Str),
+                TypeRef::Primitive(Prim::Int),
+            ]),
+            docstring: None,
+        });
+        let enum_decl = TypeDecl::Enum(EnumType {
+            name: "Choice".to_string(),
+            module: "choice".to_string(),
+            members: Vec::new(),
+            docstring: None,
+        });
+        let union_decl = TypeDecl::DiscriminatedUnion(DiscriminatedUnion {
+            name: "Shape".to_string(),
+            module: "shape".to_string(),
+            discriminant_property: "kind".to_string(),
+            members: Vec::new(),
+            variant_targets: Vec::new(),
+            docstring: None,
+        });
+        let types = vec![
+            required_object,
+            optional_object,
+            list_alias,
+            dict_alias,
+            cyclic_alias,
+            root_union_alias,
+            enum_decl,
+            union_decl,
+        ];
+        let tag_types = vec![
+            TagTypeDecl {
+                module: "tagged".to_string(),
+                decl: TypeDecl::Object(ObjectType {
+                    name: "TaggedObject".to_string(),
+                    module: "tagged_object".to_string(),
+                    bases: Vec::new(),
+                    fields: vec![
+                        model_field("one", TypeRef::Primitive(Prim::Str), true),
+                        model_field("two", TypeRef::Primitive(Prim::Str), true),
+                    ],
+                    docstring: None,
+                }),
+            },
+            TagTypeDecl {
+                module: "tagged".to_string(),
+                decl: TypeDecl::Alias(AliasType {
+                    name: "TaggedUnion".to_string(),
+                    module: "tagged_union".to_string(),
+                    target: TypeRef::Union(vec![
+                        TypeRef::Primitive(Prim::Bool),
+                        TypeRef::Primitive(Prim::Str),
+                    ]),
+                    docstring: None,
+                }),
+            },
+            TagTypeDecl {
+                module: "tagged".to_string(),
+                decl: TypeDecl::Alias(AliasType {
+                    name: "TaggedList".to_string(),
+                    module: "tagged_list".to_string(),
+                    target: TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
+                    docstring: None,
+                }),
+            },
+        ];
+
+        assert!(resolves_to_container(
+            &TypeRef::Optional(Box::new(TypeRef::Named("ListAlias".to_string()))),
+            &types,
+            &tag_types,
+        ));
+        assert!(resolves_to_container(
+            &TypeRef::Named("TaggedList".to_string()),
+            &types,
+            &tag_types,
+        ));
+        assert!(resolves_to_container(
+            &TypeRef::Set(Box::new(TypeRef::Primitive(Prim::Str))),
+            &types,
+            &tag_types,
+        ));
+        assert!(!resolves_to_container(
+            &TypeRef::Named("RequiredObject".to_string()),
+            &types,
+            &tag_types,
+        ));
+        assert!(!resolves_to_container(
+            &TypeRef::Primitive(Prim::Bool),
+            &types,
+            &tag_types,
+        ));
+
+        assert!(object_body_complex(match &types[0] {
+            TypeDecl::Object(object) => object,
+            _ => unreachable!(),
+        }));
+        assert!(!object_body_complex(match &types[1] {
+            TypeDecl::Object(object) => object,
+            _ => unreachable!(),
+        }));
+        assert!(container_element_object(
+            &TypeRef::Optional(Box::new(TypeRef::Named("TaggedObject".to_string()))),
+            &types,
+            &tag_types,
+        )
+        .is_some());
+        assert!(container_element_object(
+            &TypeRef::Named("ListAlias".to_string()),
+            &types,
+            &tag_types,
+        )
+        .is_none());
+        assert!(
+            container_element_object(&TypeRef::Primitive(Prim::Str), &types, &tag_types,).is_none()
+        );
+
+        assert!(is_complex_type(
+            &TypeRef::List(Box::new(TypeRef::Named("RequiredObject".to_string()))),
+            &types,
+            &tag_types,
+        ));
+        assert!(!is_complex_type(
+            &TypeRef::List(Box::new(TypeRef::Named("OptionalObject".to_string()))),
+            &types,
+            &tag_types,
+        ));
+        assert!(is_complex_type(
+            &TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
+            &types,
+            &tag_types,
+        ));
+        assert!(is_complex_type(
+            &TypeRef::Dict(
+                Box::new(TypeRef::Primitive(Prim::Str)),
+                Box::new(TypeRef::Primitive(Prim::Any)),
+            ),
+            &types,
+            &tag_types,
+        ));
+        assert!(is_complex_type(
+            &TypeRef::Optional(Box::new(TypeRef::Named("RequiredObject".to_string()))),
+            &types,
+            &tag_types,
+        ));
+        assert!(is_complex_type(
+            &TypeRef::Named("TaggedUnion".to_string()),
+            &types,
+            &tag_types,
+        ));
+        for name in ["RootUnion", "Choice", "Shape", "Missing"] {
+            assert!(!is_complex_type(
+                &TypeRef::Named(name.to_string()),
+                &types,
+                &tag_types,
+            ));
+        }
+        assert!(!is_complex_type(
+            &TypeRef::Literal(vec!["x".to_string()]),
+            &types,
+            &tag_types,
+        ));
+
+        assert!(resolves_to_dict(
+            &TypeRef::Named("DictAlias".to_string()),
+            &types,
+        ));
+        assert!(!resolves_to_dict(
+            &TypeRef::Named("CyclicAlias".to_string()),
+            &types,
+        ));
+        assert!(!resolves_to_dict(
+            &TypeRef::Named("RequiredObject".to_string()),
+            &types,
+        ));
+
+        let mut bytes = endpoint("/bytes", Vec::new(), None);
+        bytes.request_body = Some(RequestBody::Bytes {
+            content_type: "application/octet-stream".to_string(),
+        });
+        assert!(complex_body(&bytes, &types, &tag_types));
+        assert!(!readme_endpoint_eligible(&bytes));
+
+        let mut inline = endpoint("/inline", Vec::new(), None);
+        inline.request_body = Some(RequestBody::Inline(vec![BodyField {
+            wire_name: "payload".to_string(),
+            py_name: "payload".to_string(),
+            type_ref: TypeRef::Named("RequiredObject".to_string()),
+            optional: true,
+            nullable: false,
+            spec_required: false,
+            docstring: None,
+            convert: true,
+            is_file: false,
+            collision_prefix: None,
+            example: None,
+            media_example: false,
+            schema_body_example: false,
+        }]));
+        assert!(complex_body(&inline, &types, &tag_types));
+
+        let mut form = endpoint("/form", Vec::new(), None);
+        form.module.clear();
+        form.request_body = Some(RequestBody::Form(FormBody {
+            fields: Vec::new(),
+            multipart: false,
+        }));
+        assert!(complex_body(&form, &types, &tag_types));
+
+        let mut single = endpoint("/single", Vec::new(), None);
+        single.body_schema_ref = true;
+        single.request_body = Some(RequestBody::Single(SingleBody {
+            type_ref: TypeRef::Named("ListAlias".to_string()),
+            required: true,
+            convert: false,
+            content_type: true,
+            content_type_override: None,
+            example: None,
+        }));
+        assert!(complex_body(&single, &types, &tag_types));
+    }
+
+    #[test]
+    fn referenced_collection_body_keeps_abbreviated_placeholder() {
+        let item = TypeDecl::Object(ObjectType {
+            name: "Item".to_string(),
+            module: "item".to_string(),
+            bases: Vec::new(),
+            fields: vec![model_field(
+                "optional",
+                TypeRef::Primitive(Prim::Str),
+                false,
+            )],
+            docstring: None,
+        });
+        let batch = TypeDecl::Alias(AliasType {
+            name: "Batch".to_string(),
+            module: "batch".to_string(),
+            target: TypeRef::List(Box::new(TypeRef::Named("Item".to_string()))),
+            docstring: None,
+        });
+        let mut ep = endpoint("/batch", Vec::new(), None);
+        ep.body_schema_ref = true;
+        ep.request_body = Some(RequestBody::Single(SingleBody {
+            type_ref: TypeRef::Named("Batch".to_string()),
+            required: true,
+            convert: true,
+            content_type: true,
+            content_type_override: None,
+            example: None,
+        }));
+
+        assert!(complex_body(&ep, &[item, batch], &[]));
+    }
+
+    #[test]
+    fn component_request_body_keeps_abbreviated_placeholder() {
+        let mut ep = endpoint("/offers/{id}", Vec::new(), None);
+        ep.body_component_ref = true;
+        ep.request_body = Some(RequestBody::Inline(vec![BodyField {
+            wire_name: "message".to_string(),
+            py_name: "message".to_string(),
+            type_ref: TypeRef::Primitive(Prim::Str),
+            optional: true,
+            nullable: false,
+            spec_required: false,
+            docstring: None,
+            convert: false,
+            is_file: false,
+            collision_prefix: None,
+            example: None,
+            media_example: false,
+            schema_body_example: false,
+        }]));
+
+        assert!(complex_body(&ep, &[], &[]));
+    }
+
+    #[test]
+    fn media_example_keeps_abbreviated_placeholder_for_inline_collection_body() {
+        let mut ep = endpoint("/batch", Vec::new(), None);
+        ep.body_media_has_example = true;
+        ep.request_body = Some(RequestBody::Single(SingleBody {
+            type_ref: TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
+            required: true,
+            convert: false,
+            content_type: true,
+            content_type_override: None,
+            example: Some("[\"item\"]".to_string()),
+        }));
+
+        assert!(complex_body(&ep, &[], &[]));
     }
 
     #[test]
@@ -5985,14 +6704,22 @@ mod tests {
             query_params: Vec::new(),
             header_params: Vec::new(),
             request_body: None,
+            body_codegen_named: false,
             body_description_empty: false,
             body_description_missing: false,
             body_component_ref: false,
+            body_content_type_override: None,
+            basic_auth: false,
             body_schema_ref: false,
             body_schema_dropped: false,
             body_schema_shared: false,
             body_schema_metadata_missing: false,
             body_schema_has_example: false,
+            body_schema_example_wrapped: false,
+            body_schema_is_beta: false,
+            body_schema_example_covers_all_fields: false,
+            body_media_has_example: false,
+            reference_body_example: None,
             body_schema_documented: false,
             body_schema_is_response_heavy: false,
             body_schema_is_open: false,
@@ -6004,8 +6731,7 @@ mod tests {
             response_doc: None,
             errors: Vec::new(),
             docstring: None,
-            reference_description_trailing_blank: false,
-            reference_description_trailing_space: false,
+            reference_description_suffix: String::new(),
             streaming: false,
             text_response: false,
             markdown_response: false,
@@ -6102,6 +6828,28 @@ mod tests {
             readme_endpoint(&ir).map(|e| e.method_name.as_str()),
             Some("no_arg_post")
         );
+
+        let mut first_module_get = endpoint("/a", Vec::new(), None);
+        first_module_get.module = "first".to_string();
+        first_module_get.method_name = "first_get".to_string();
+        let mut second_module_post = endpoint("/b", Vec::new(), None);
+        second_module_post.module = "second".to_string();
+        second_module_post.http_method = "POST";
+        second_module_post.method_name = "second_post".to_string();
+        let mut first_module_post = endpoint("/c", Vec::new(), None);
+        first_module_post.module = "first".to_string();
+        first_module_post.http_method = "POST";
+        first_module_post.method_name = "first_post".to_string();
+        let mut ir = ir_with(vec![
+            first_module_get,
+            second_module_post,
+            first_module_post,
+        ]);
+        ir.endpoint_modules = vec!["first".to_string(), "second".to_string()];
+        assert_eq!(
+            readme_endpoint(&ir).map(|e| e.method_name.as_str()),
+            Some("first_post")
+        );
     }
 
     #[test]
@@ -6114,6 +6862,44 @@ mod tests {
         assert_eq!(escape_py_str("X-Tenant"), "X-Tenant");
         // A quote/backslash/newline that would break out of the literal is escaped.
         assert_eq!(escape_py_str("a\"b\\c\nd\re"), "a\\\"b\\\\c\\nd\\re");
+    }
+
+    #[test]
+    fn reference_wraps_long_optional_container_annotations() {
+        let long =
+            "typing.Optional[typing.Sequence[PostMyNegotiationsIdCounterRequestOfferItemsItem]]";
+        assert_eq!(
+            reference_param_annotation(long),
+            "typing.Optional[\n    typing.Sequence[PostMyNegotiationsIdCounterRequestOfferItemsItem]\n]"
+        );
+        assert_eq!(
+            reference_param_annotation("typing.Optional[typing.Sequence[str]]"),
+            "typing.Optional[typing.Sequence[str]]"
+        );
+        assert_eq!(
+            reference_param_annotation(
+                "typing.Optional[typing.Union[ResourceToSkip, typing.Sequence[ResourceToSkip]]]"
+            ),
+            "typing.Optional[typing.Union[ResourceToSkip, typing.Sequence[ResourceToSkip]]]"
+        );
+        assert_eq!(
+            reference_param_annotation(
+                "typing.Optional[typing.Union[ResourceToImport, typing.Sequence[ResourceToImport]]]"
+            ),
+            "typing.Optional[\n    typing.Union[ResourceToImport, typing.Sequence[ResourceToImport]]\n]"
+        );
+        assert_eq!(
+            reference_param_annotation(
+                "typing.Optional[typing.Union[TypeConfigurationIdentifier, typing.Sequence[TypeConfigurationIdentifier]]]"
+            ),
+            "typing.Optional[\n    typing.Union[\n        TypeConfigurationIdentifier,\n        typing.Sequence[TypeConfigurationIdentifier],\n    ]\n]"
+        );
+        assert_eq!(
+            reference_param_annotation(
+                "typing.Optional[typing.Union[StackResourceDriftStatus, typing.Sequence[StackResourceDriftStatus]]]"
+            ),
+            "typing.Optional[\n    typing.Union[\n        StackResourceDriftStatus, typing.Sequence[StackResourceDriftStatus]\n    ]\n]"
+        );
     }
 
     #[test]
@@ -6236,6 +7022,7 @@ mod tests {
                 collision_prefix: None,
                 example: None,
                 media_example: false,
+                schema_body_example: false,
                 nullable: false,
             },
             // An optional list → `Optional[Sequence[..]] = OMIT` in request context.
@@ -6251,6 +7038,7 @@ mod tests {
                 collision_prefix: None,
                 example: None,
                 media_example: false,
+                schema_body_example: false,
                 nullable: false,
             },
             // A convert field → convert-wrapped json entry keyed by the wire name.
@@ -6266,6 +7054,7 @@ mod tests {
                 collision_prefix: None,
                 example: None,
                 media_example: false,
+                schema_body_example: false,
                 nullable: false,
             },
         ]));
@@ -6290,6 +7079,70 @@ mod tests {
         assert!(
             out.contains("\"content-type\": \"application/json\","),
             "{out}"
+        );
+    }
+
+    #[test]
+    fn wrapped_schema_example_keeps_content_type_for_optional_fields() {
+        let mut ep = endpoint("/widgets", vec![], Some(TypeRef::Primitive(Prim::Str)));
+        ep.http_method = "POST";
+        ep.request_body = Some(RequestBody::Inline(vec![
+            BodyField {
+                wire_name: "name".to_string(),
+                py_name: "name".to_string(),
+                type_ref: TypeRef::Primitive(Prim::Str),
+                optional: true,
+                spec_required: false,
+                docstring: None,
+                convert: false,
+                is_file: false,
+                collision_prefix: None,
+                example: None,
+                media_example: false,
+                schema_body_example: true,
+                nullable: false,
+            },
+            BodyField {
+                wire_name: "note".to_string(),
+                py_name: "note".to_string(),
+                type_ref: TypeRef::Primitive(Prim::Str),
+                optional: true,
+                spec_required: false,
+                docstring: None,
+                convert: false,
+                is_file: false,
+                collision_prefix: None,
+                example: None,
+                media_example: false,
+                schema_body_example: true,
+                nullable: false,
+            },
+        ]));
+        ep.body_schema_has_example = true;
+        ep.body_schema_example_wrapped = true;
+        ep.body_schema_example_covers_all_fields = true;
+        ep.body_schema_documented = true;
+
+        let documented = raw_method(&ep, false, &mut Imports::default());
+        assert!(
+            documented.contains("\"content-type\": \"application/json\","),
+            "{documented}"
+        );
+
+        ep.body_schema_documented = false;
+        let undocumented = raw_method(&ep, false, &mut Imports::default());
+        assert!(
+            undocumented.contains("\"content-type\": \"application/json\","),
+            "{undocumented}"
+        );
+
+        if let Some(RequestBody::Inline(fields)) = &mut ep.request_body {
+            fields[0].convert = true;
+        }
+        let nested_undocumented = raw_method(&ep, false, &mut Imports::default());
+        assert!(
+            !nested_undocumented.contains("\"content-type\": \"application/json\","),
+            "{nested_undocumented}"
         );
     }
 
@@ -6627,6 +7480,253 @@ mod tests {
     }
 
     #[test]
+    fn example_context_covers_composite_examples_and_type_matching_edges() {
+        let payload = TypeDecl::Object(ObjectType {
+            name: "Payload".to_string(),
+            module: "payload".to_string(),
+            bases: Vec::new(),
+            fields: vec![
+                model_field("id", TypeRef::Primitive(Prim::Int), true),
+                model_field("label", TypeRef::Primitive(Prim::Str), false),
+            ],
+            docstring: None,
+        });
+        let types = vec![
+            payload,
+            TypeDecl::Alias(AliasType {
+                name: "PayloadAlias".to_string(),
+                module: "payload_alias".to_string(),
+                target: TypeRef::Named("Payload".to_string()),
+                docstring: None,
+            }),
+            TypeDecl::Alias(AliasType {
+                name: "CompositeAlias".to_string(),
+                module: "composite_alias".to_string(),
+                target: TypeRef::Dict(
+                    Box::new(TypeRef::Primitive(Prim::Str)),
+                    Box::new(TypeRef::Primitive(Prim::Bool)),
+                ),
+                docstring: None,
+            }),
+            TypeDecl::Alias(AliasType {
+                name: "BoolAlias".to_string(),
+                module: "bool_alias".to_string(),
+                target: TypeRef::Primitive(Prim::Bool),
+                docstring: None,
+            }),
+            TypeDecl::Enum(EnumType {
+                name: "Color".to_string(),
+                module: "color".to_string(),
+                members: vec![EnumMember {
+                    name: "RED".to_string(),
+                    visit_param: "red".to_string(),
+                    value: "red".to_string(),
+                    docstring: None,
+                }],
+                docstring: None,
+            }),
+            TypeDecl::DiscriminatedUnion(DiscriminatedUnion {
+                name: "Shape".to_string(),
+                module: "shape".to_string(),
+                discriminant_property: "kind".to_string(),
+                members: Vec::new(),
+                variant_targets: Vec::new(),
+                docstring: None,
+            }),
+        ];
+        let auth = Auth::None;
+        let mut ctx = example_ctx(&types, &[], &auth);
+
+        assert!(ctx.example_is_scalar(&TypeRef::Named("BoolAlias".to_string())));
+        assert!(!ctx.example_is_scalar(&TypeRef::Named("Payload".to_string())));
+        assert!(ctx.example_is_composite(&TypeRef::Named("CompositeAlias".to_string())));
+        assert!(ctx.example_is_composite(&TypeRef::Set(Box::new(TypeRef::Primitive(Prim::Str)))));
+        assert!(!ctx.example_is_composite(&TypeRef::Primitive(Prim::Int)));
+        assert!(
+            ctx.example_is_object(&TypeRef::Optional(Box::new(TypeRef::Named(
+                "PayloadAlias".to_string()
+            ))))
+        );
+        assert!(!ctx.example_is_object(&TypeRef::Named("Color".to_string())));
+        assert!(!ctx.example_is_object(&TypeRef::Primitive(Prim::Any)));
+        assert!(
+            ctx.example_is_temporal(&TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Date))))
+        );
+        assert!(!ctx.example_is_temporal(&TypeRef::Primitive(Prim::Str)));
+
+        assert_eq!(
+            ctx.value_from_example(&TypeRef::Primitive(Prim::Float), "2")
+                .expect("integer-shaped float is accepted")
+                .flat(),
+            "2.0"
+        );
+        assert_eq!(
+            ctx.value_from_example(&TypeRef::Primitive(Prim::Float), "2.5")
+                .expect("decimal float is accepted")
+                .flat(),
+            "2.5"
+        );
+        for (literal, expected) in [("true", "True"), ("false", "False"), ("other", "other")] {
+            assert_eq!(
+                ctx.value_from_example(&TypeRef::Primitive(Prim::Bool), literal)
+                    .expect("boolean example branch returns an atom")
+                    .flat(),
+                expected
+            );
+        }
+        assert_eq!(
+            ctx.value_from_example(
+                &TypeRef::Set(Box::new(TypeRef::Primitive(Prim::Int))),
+                "[1,null]",
+            )
+            .expect("set example is accepted")
+            .flat(),
+            "[1, 1]"
+        );
+        assert!(ctx
+            .value_from_example(
+                &TypeRef::List(Box::new(TypeRef::Primitive(Prim::Int))),
+                "not-json",
+            )
+            .is_none());
+        assert_eq!(
+            ctx.value_from_example(
+                &TypeRef::Union(vec![
+                    TypeRef::Primitive(Prim::Int),
+                    TypeRef::Primitive(Prim::Str),
+                ]),
+                "\"chosen\"",
+            )
+            .expect("the matching union variant is selected")
+            .flat(),
+            "\"chosen\""
+        );
+        assert!(ctx
+            .value_from_example(
+                &TypeRef::Union(vec![
+                    TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
+                    TypeRef::Dict(
+                        Box::new(TypeRef::Primitive(Prim::Str)),
+                        Box::new(TypeRef::Primitive(Prim::Str)),
+                    ),
+                ]),
+                "false",
+            )
+            .is_none());
+        assert_eq!(
+            ctx.value_from_example(
+                &TypeRef::Named("CompositeAlias".to_string()),
+                r#"{"enabled":true}"#,
+            )
+            .expect("composite alias accepts JSON")
+            .flat(),
+            r#"{"enabled": True}"#
+        );
+        assert_eq!(
+            ctx.value_from_example(
+                &TypeRef::Named("PayloadAlias".to_string()),
+                r#"{"id":7,"label":"sample"}"#,
+            )
+            .expect("object alias constructs the target")
+            .flat(),
+            "Payload(id=7, label=\"sample\")"
+        );
+        assert_eq!(
+            ctx.value_from_example(&TypeRef::Named("Payload".to_string()), r#"{"id":7}"#)
+                .expect("missing optional fields are omitted")
+                .flat(),
+            "Payload(id=7)"
+        );
+        assert!(ctx
+            .value_from_example(&TypeRef::Named("Shape".to_string()), "{}")
+            .is_none());
+
+        let payload_type = TypeRef::Named("Payload".to_string());
+        assert!(ctx.example_matches_type(&payload_type, &serde_json::json!({ "id": 1 })));
+        assert!(!ctx.example_matches_type(&payload_type, &serde_json::json!({})));
+        assert!(!ctx.example_matches_type(
+            &payload_type,
+            &serde_json::json!({ "id": 1, "extra": true }),
+        ));
+        assert!(!ctx.example_matches_type(&payload_type, &serde_json::json!(1)));
+        assert!(ctx.example_matches_type(
+            &TypeRef::Named("PayloadAlias".to_string()),
+            &serde_json::json!({ "id": 1 }),
+        ));
+        assert!(ctx.example_matches_type(
+            &TypeRef::Named("Color".to_string()),
+            &serde_json::json!(false),
+        ));
+        assert!(ctx.example_matches_type(
+            &TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Int))),
+            &serde_json::Value::Null,
+        ));
+        assert!(ctx.example_matches_type(
+            &TypeRef::Union(vec![
+                TypeRef::Primitive(Prim::Bool),
+                TypeRef::Primitive(Prim::Str),
+            ]),
+            &serde_json::json!("value"),
+        ));
+
+        let cases = [
+            (
+                TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
+                serde_json::json!([]),
+            ),
+            (
+                TypeRef::Set(Box::new(TypeRef::Primitive(Prim::Str))),
+                serde_json::json!([]),
+            ),
+            (
+                TypeRef::Dict(
+                    Box::new(TypeRef::Primitive(Prim::Str)),
+                    Box::new(TypeRef::Primitive(Prim::Str)),
+                ),
+                serde_json::json!({}),
+            ),
+            (TypeRef::Primitive(Prim::Str), serde_json::json!("x")),
+            (TypeRef::Primitive(Prim::Datetime), serde_json::json!("x")),
+            (TypeRef::Primitive(Prim::Date), serde_json::json!("x")),
+            (
+                TypeRef::Literal(vec!["x".to_string()]),
+                serde_json::json!("x"),
+            ),
+            (TypeRef::Primitive(Prim::Int), serde_json::json!(1)),
+            (TypeRef::Primitive(Prim::Long), serde_json::json!(1)),
+            (TypeRef::Primitive(Prim::Float), serde_json::json!(1.5)),
+            (TypeRef::Primitive(Prim::Bool), serde_json::json!(true)),
+            (TypeRef::Primitive(Prim::Any), serde_json::Value::Null),
+        ];
+        for (type_ref, value) in cases {
+            assert!(ctx.example_matches_type(&type_ref, &value));
+        }
+
+        let matrix = Example::ExplicitList(vec![
+            Example::List(vec![Example::Atom("1".to_string())]),
+            Example::ExplicitList(vec![Example::Atom("2".to_string())]),
+            Example::List(vec![Example::Atom("3".to_string())]),
+        ]);
+        assert_eq!(matrix.render(0), "[\n    [1],\n    [2],\n    [3],\n]");
+        let single_call = Example::ExplicitList(vec![Example::Call(
+            "Payload".to_string(),
+            vec![(Some("id".to_string()), Example::Atom("1".to_string()))],
+        )]);
+        assert_eq!(
+            single_call.render(0),
+            "[\n    Payload(\n        id=1,\n    )\n]"
+        );
+        assert_eq!(
+            Example::Call("Empty".to_string(), Vec::new()).render(0),
+            "Empty()"
+        );
+        assert_eq!(
+            Example::List(vec![Example::Atom("1".to_string())]).render(0),
+            "[1]"
+        );
+    }
+
+    #[test]
     fn example_context_constructs_inherited_recursive_and_union_models() {
         let mut base_id = model_field("id", TypeRef::Primitive(Prim::Int), true);
         base_id.example = Some("7".to_string());
@@ -6719,7 +7819,10 @@ mod tests {
                 .flat(),
             r#"{"key": "value"}"#
         );
-        assert_eq!(ctx.union_value(&[]).flat(), r#"{"key": "value"}"#);
+        assert_eq!(
+            ctx.union_value(&[], Slot::Plain).flat(),
+            r#"{"key": "value"}"#
+        );
         assert_eq!(
             ctx.value(&TypeRef::Literal(Vec::new()), Slot::Plain).flat(),
             "\"\""
@@ -6815,6 +7918,7 @@ mod tests {
                 collision_prefix: None,
                 example: Some("\"2024-01-15T09:30:00Z\"".to_string()),
                 media_example: false,
+                schema_body_example: false,
             },
             BodyField {
                 wire_name: "metadata".to_string(),
@@ -6829,6 +7933,7 @@ mod tests {
                 collision_prefix: None,
                 example: Some(r#"{"source":"test"}"#.to_string()),
                 media_example: true,
+                schema_body_example: false,
             },
         ]));
         let mut ctx = example_ctx(&[], &[], &Auth::None);
@@ -6846,6 +7951,51 @@ mod tests {
             "{rendered}"
         );
         assert!(rendered.contains("await client.widgets.op("), "{rendered}");
+    }
+
+    #[test]
+    fn worked_example_keeps_same_typed_optional_query_examples() {
+        let mut ep = endpoint("/widgets", Vec::new(), Some(TypeRef::Primitive(Prim::Str)));
+        ep.query_params = vec![
+            QueryParam {
+                wire_name: "where".to_string(),
+                py_name: "where_".to_string(),
+                type_ref: TypeRef::Primitive(Prim::Str),
+                required: false,
+                convert: false,
+                example: Some("\"active\"".to_string()),
+                example_is_scalar: true,
+                docstring: None,
+            },
+            QueryParam {
+                wire_name: "order".to_string(),
+                py_name: "order".to_string(),
+                type_ref: TypeRef::Primitive(Prim::Str),
+                required: false,
+                convert: false,
+                example: Some("\"name\"".to_string()),
+                example_is_scalar: true,
+                docstring: None,
+            },
+            QueryParam {
+                wire_name: "page".to_string(),
+                py_name: "page".to_string(),
+                type_ref: TypeRef::Primitive(Prim::Int),
+                required: false,
+                convert: false,
+                example: Some("1".to_string()),
+                example_is_scalar: true,
+                docstring: None,
+            },
+        ];
+
+        let mut ctx = example_ctx(&[], &[], &Auth::None);
+        let rendered = build_example(&ep, false, "widgets", "acme", "AcmeApi", &mut ctx)
+            .expect("bodyless query endpoint has a worked example")
+            .join("\n");
+        assert!(rendered.contains("where_=\"active\""), "{rendered}");
+        assert!(rendered.contains("order=\"name\""), "{rendered}");
+        assert!(!rendered.contains("page=1"), "{rendered}");
     }
 
     #[test]
@@ -6896,6 +8046,7 @@ mod tests {
                 collision_prefix: None,
                 example: Some("\"open\"".to_string()),
                 media_example: false,
+                schema_body_example: false,
             }],
             multipart: false,
         }));

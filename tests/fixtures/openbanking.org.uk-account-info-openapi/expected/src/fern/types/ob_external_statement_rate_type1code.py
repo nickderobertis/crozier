@@ -1,0 +1,3 @@
+
+
+ObExternalStatementRateType1Code = str

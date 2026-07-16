@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .physical_resource_id_context_key_value_pair import PhysicalResourceIdContextKeyValuePair
+
+PhysicalResourceIdContext = typing.List[PhysicalResourceIdContextKeyValuePair]

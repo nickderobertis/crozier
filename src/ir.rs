@@ -81,8 +81,9 @@ impl Environment {
 /// Derive the [`Environment`] model from the document's `servers`. Reproduces
 /// Fern's single-member behavior: the first server only, its member named by
 /// uppercasing the description (non-identifier characters → `_`). A templated
-/// server, or a single concrete server with no usable description, is `DEFAULT`;
-/// described concrete servers keep their description-derived name.
+/// server, a single concrete server with no usable description, or a description
+/// that merely repeats the API title, or a numbered demo-server description is
+/// `DEFAULT`; other described concrete servers keep their description-derived name.
 fn environment_model(doc: &OpenApi, client_name: &str) -> Option<Environment> {
     let first = doc.servers.first()?;
     // A server with a templated URL (`{basePath}` variables) is named `DEFAULT` — its
@@ -92,13 +93,20 @@ fn environment_model(doc: &OpenApi, client_name: &str) -> Option<Environment> {
     let member_name = if !first.variables.is_empty()
         || first.url.starts_with('/')
         || !first.url.contains("://")
+        || first
+            .description
+            .as_deref()
+            .is_some_and(|description| description.to_ascii_lowercase().starts_with("demo server"))
     {
         "DEFAULT".to_string()
     } else {
         first
             .description
             .as_deref()
-            .filter(|description| !description.eq_ignore_ascii_case("production server"))
+            .filter(|description| {
+                !description.eq_ignore_ascii_case("production server")
+                    && !description.eq_ignore_ascii_case(&doc.info.title)
+            })
             .map(env_member_name)
             .filter(|n| !n.is_empty())
             .unwrap_or_else(|| "DEFAULT".to_string())
@@ -109,12 +117,16 @@ fn environment_model(doc: &OpenApi, client_name: &str) -> Option<Environment> {
     })
 }
 
-/// Substitute a server URL's `{var}` placeholders with each variable's `default`
-/// (`https://.../{basePath}` → `https://.../v1`), matching Fern.
+/// Substitute a server URL's `{var}` placeholders with each percent-encoded
+/// variable `default` (`https://.../{basePath}` + `/v1` →
+/// `https://.../%2Fv1`), matching Fern's URI-template expansion.
 fn resolve_server_url(server: &crate::openapi::Server) -> String {
     let mut url = server.url.clone();
     for (name, var) in &server.variables {
-        url = url.replace(&format!("{{{name}}}"), &var.default);
+        url = url.replace(
+            &format!("{{{name}}}"),
+            &percent_encode_server_variable(&var.default),
+        );
     }
     if url == "/" {
         return String::new();
@@ -123,6 +135,23 @@ fn resolve_server_url(server: &crate::openapi::Server) -> String {
         url.pop();
     }
     url
+}
+
+/// Percent-encode a server-variable value as one URI-template expression. RFC 3986
+/// unreserved bytes remain literal; every other UTF-8 byte uses uppercase hex.
+fn percent_encode_server_variable(value: &str) -> String {
+    const HEX: &[u8; 16] = b"0123456789ABCDEF";
+    let mut encoded = String::with_capacity(value.len());
+    for byte in value.bytes() {
+        if byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'.' | b'_' | b'~') {
+            encoded.push(char::from(byte));
+        } else {
+            encoded.push('%');
+            encoded.push(char::from(HEX[usize::from(byte >> 4)]));
+            encoded.push(char::from(HEX[usize::from(byte & 0x0f)]));
+        }
+    }
+    encoded
 }
 
 /// Turn a server description into a Python enum member identifier: uppercased,
@@ -166,7 +195,8 @@ pub struct GlobalHeader {
 /// stays a per-method parameter. Ordinary promoted headers retain first-appearance
 /// order; header api-key schemes follow them in scheme declaration order. Fern never
 /// promotes a transport-managed header (`User-Agent`, which the HTTP client sets
-/// itself), even when it rides every operation.
+/// itself), or an `Authorization` parameter already supplied by the selected auth
+/// scheme, even when it rides every operation.
 fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
     let mut total = 0usize;
     // wire name → (operations carrying it, required in every one so far), first-seen.
@@ -202,6 +232,7 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
                 && *count == total
                 && (!*required || total > 1)
                 && !is_transport_managed_header(wire_name)
+                && !is_auth_managed_header(doc, wire_name)
                 && !api_key_wire_names.contains(wire_name.as_str())
         })
         .map(|(wire_name, (_, required))| GlobalHeader {
@@ -224,7 +255,21 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
 fn additional_api_key_global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
     use crate::openapi::SecuritySchemeType;
 
-    let mut skipped_primary = false;
+    // Only the first *declared scheme* is the primary auth credential. If that
+    // scheme is OAuth/HTTP auth, every later header apiKey is an additional
+    // constructor field (Square declares OAuth first and an Authorization apiKey
+    // second). When the first scheme itself is a header apiKey, it is represented
+    // by `Auth::ApiKey` and must be skipped here to avoid a duplicate field.
+    let skip_first_api_key =
+        doc.components
+            .security_schemes
+            .values()
+            .next()
+            .is_some_and(|scheme| {
+                scheme.ty == SecuritySchemeType::ApiKey
+                    && scheme.location == Some(ParameterLocation::Header)
+            });
+    let mut skipped_primary = !skip_first_api_key;
     doc.components
         .security_schemes
         .values()
@@ -258,10 +303,33 @@ fn is_transport_managed_header(wire_name: &str) -> bool {
     wire_name.eq_ignore_ascii_case("user-agent")
 }
 
+/// Whether the SDK's auth credential already owns this header. OAuth and HTTP
+/// auth schemes write `Authorization` through the client wrapper, so an explicit
+/// operation parameter with that wire name must not become a second constructor
+/// or method argument. A declared `apiKey` scheme named `Authorization` remains a
+/// distinct global header (Square uses it alongside OAuth), matching Fern.
+fn is_auth_managed_header(doc: &OpenApi, wire_name: &str) -> bool {
+    use crate::openapi::SecuritySchemeType;
+
+    if !wire_name.eq_ignore_ascii_case("authorization") {
+        return false;
+    }
+    let schemes = doc.components.security_schemes.values();
+    let declared_api_key = schemes.clone().any(|scheme| {
+        scheme.ty == SecuritySchemeType::ApiKey
+            && scheme.location == Some(ParameterLocation::Header)
+            && scheme
+                .name
+                .as_deref()
+                .is_some_and(|name| name.eq_ignore_ascii_case(wire_name))
+    });
+    !declared_api_key && matches!(auth_model(doc), Auth::Bearer { .. } | Auth::Basic { .. })
+}
+
 /// The SDK's authentication model, derived from `components.securitySchemes` and
 /// how operations reference them. Only the schemes crozier reproduces byte-for-byte
-/// are distinguished; anything else (oauth2 or no scheme) falls back to an optional
-/// bearer `token`, matching Fern's default client wrapper.
+/// are distinguished; OAuth2 uses the bearer-token surface, and anything else
+/// falls back to an optional bearer `token`, matching Fern's default client wrapper.
 #[derive(Debug, Clone)]
 pub enum Auth {
     /// A `type: apiKey` header credential: a required-or-optional `api_key: str`
@@ -323,7 +391,10 @@ fn auth_model(doc: &OpenApi) -> Auth {
                 required: all_operations_authenticated(doc),
             }
         }
-        // oauth2/unknown/no scheme → Fern's default optional bearer token.
+        Some(s) if s.ty == SecuritySchemeType::OAuth2 => Auth::Bearer {
+            required: all_operations_authenticated(doc),
+        },
+        // Unknown scheme → Fern's default optional bearer token.
         _ => Auth::Bearer { required: false },
     }
 }
@@ -359,7 +430,13 @@ fn oauth_scope_enum(doc: &OpenApi) -> Option<EnumType> {
             name: dedupe(naming::enum_member_name(value), &mut seen_members),
             visit_param: dedupe(naming::enum_visit_param(value), &mut seen_params),
             value: value.clone(),
-            docstring: clean_doc(Some(doc)),
+            // OAuth scope descriptions are map values, so even an empty string is
+            // explicitly declared. Fern preserves that as an empty member docstring.
+            docstring: if doc.trim().is_empty() {
+                Some(String::new())
+            } else {
+                clean_doc(Some(doc))
+            },
         })
         .collect();
     Some(EnumType {
@@ -451,8 +528,8 @@ fn referenced_type_names(
 
 /// Class names of schemas used as an inlined (plain-object `$ref`) request body by
 /// **exactly one** operation — the candidates Fern omits from the type layer.
-/// Mirrors the `$ref`-object branch of [`resolve_request_body`]. A schema shared as
-/// the body of two or more operations (bunq's create+update pairs share
+/// Mirrors the `$ref`-object and form branches of [`resolve_request_body`]. A schema
+/// shared as the body of two or more operations (bunq's create+update pairs share
 /// `PermittedIp`, `CardGeneratedCvc2`, …) is kept as a standalone type even though it
 /// is still inlined into each method, so only single-use bodies are returned.
 fn inline_body_source_names(doc: &OpenApi) -> std::collections::HashSet<String> {
@@ -463,6 +540,8 @@ fn inline_body_source_names(doc: &OpenApi) -> std::collections::HashSet<String> 
             let Some(schema) = rb
                 .content
                 .get("application/json")
+                .or_else(|| rb.content.get("multipart/form-data"))
+                .or_else(|| rb.content.get("application/x-www-form-urlencoded"))
                 .and_then(|mt| mt.schema.as_ref())
             else {
                 continue;
@@ -546,6 +625,8 @@ pub struct Endpoint {
     pub header_params: Vec<HeaderParam>,
     /// The JSON request body, when the operation has one crozier can emit.
     pub request_body: Option<RequestBody>,
+    /// Whether the operation carried the legacy OpenAPI Generator body-name hint.
+    pub body_codegen_named: bool,
     /// Whether `requestBody.description` is explicitly present but empty. Fern
     /// treats that importer sentinel as suppressing an explicit JSON content type.
     pub body_description_empty: bool,
@@ -554,6 +635,13 @@ pub struct Endpoint {
     /// Whether the body came through `components.requestBodies`, which Fern treats
     /// like a reusable declaration for content-type emission.
     pub body_component_ref: bool,
+    /// A JSON-compatible request media type that must be emitted verbatim instead
+    /// of `application/json` (for example `application/ndjson`).
+    pub body_content_type_override: Option<String>,
+    /// Whether the operation uses HTTP Basic authentication. Fern leaves the
+    /// ordinary JSON content type to httpx for undocumented Basic-auth bodies
+    /// without a path/header parameter.
+    pub basic_auth: bool,
     /// Whether the selected request media schema was declared by component `$ref`.
     pub body_schema_ref: bool,
     /// Whether that referenced schema is omitted from the public type layer
@@ -567,6 +655,25 @@ pub struct Endpoint {
     pub body_schema_metadata_missing: bool,
     /// Whether the referenced request schema declares an example payload.
     pub body_schema_has_example: bool,
+    /// Whether the schema example uses the legacy Square wrapper shape
+    /// (`{ "request_body": ... }`). Fern's importer uses that wrapper as request
+    /// declaration metadata when deciding whether to emit an explicit JSON header.
+    pub body_schema_example_wrapped: bool,
+    /// Whether the referenced request schema carries Square's legacy beta marker.
+    /// Fern uses unwrapped schema examples for worked calls only on this shape.
+    pub body_schema_is_beta: bool,
+    /// Whether that wrapped `request_body` example supplies every declared
+    /// request property. Fern uses this as another request-declaration sentinel,
+    /// but does not use the wrapped values in worked Python examples.
+    pub body_schema_example_covers_all_fields: bool,
+    /// Whether the selected request media declares an example payload. A multipart
+    /// upload example is an opaque HTTP transcript to Fern and suppresses worked
+    /// examples for that endpoint.
+    pub body_media_has_example: bool,
+    /// The request media example Fern selects for `reference.md`. When a media
+    /// type declares multiple named examples, reference documentation uses the
+    /// last one while method docstrings and README examples use the first.
+    pub reference_body_example: Option<serde_json::Value>,
     /// Whether the referenced request schema has a substantive description.
     pub body_schema_documented: bool,
     /// Whether the referenced request schema also contains server-populated fields.
@@ -592,12 +699,9 @@ pub struct Endpoint {
     pub errors: Vec<ErrorResponse>,
     /// A short description shown as the docstring's summary line.
     pub docstring: Option<String>,
-    /// Whether the source description ended with a blank paragraph, which Fern
-    /// preserves in reference documentation after trimming method docstrings.
-    pub reference_description_trailing_blank: bool,
-    /// Whether the source description ended with a space, which Fern preserves in
+    /// Whitespace from the end of the source description that Fern preserves in
     /// reference documentation after trimming method docstrings.
-    pub reference_description_trailing_space: bool,
+    pub reference_description_suffix: String,
     /// Whether the success response is a Server-Sent-Events stream
     /// (`text/event-stream`). A streaming operation is emitted as a
     /// context-managed iterator of chunks rather than a buffered response.
@@ -819,6 +923,10 @@ pub struct BodyField {
     pub example: Option<String>,
     /// Whether a request media example explicitly selected this field.
     pub media_example: bool,
+    /// Whether the field's body-level example came from the component schema
+    /// rather than request media. Fern uses schema examples for scalar and
+    /// container fields but still synthesizes nested model constructors.
+    pub schema_body_example: bool,
 }
 
 /// A type hoisted out of an operation's inline request/response body. Unlike a
@@ -1029,15 +1137,17 @@ fn dedupe(ident: String, seen: &mut std::collections::HashMap<String, usize>) ->
 fn build_enum(name: &str, values: Vec<String>, docstring: Option<String>) -> EnumType {
     // Fern derives the member name and `visit` parameter from each wire value,
     // sanitizing both into legal Python identifiers (issue #50): `global` →
-    // `GLOBAL`/`global_`, `0: Active` → `ZERO_ACTIVE`/`zero_active`. Two values
-    // that collapse to the same identifier would emit duplicate members/params
-    // (invalid Python), so a suffix disambiguates any collision.
+    // `GLOBAL`/`global_`, `0: Active` → `ZERO_ACTIVE`/`zero_active`. Exact duplicate
+    // wire values are omitted; distinct values that collapse to the same identifier
+    // are suffixed so the generated members and parameters remain valid Python.
     let mut seen_members: std::collections::HashMap<String, usize> =
         std::collections::HashMap::new();
     let mut seen_params: std::collections::HashMap<String, usize> =
         std::collections::HashMap::new();
+    let mut seen_values = std::collections::HashSet::new();
     let members = values
         .into_iter()
+        .filter(|value| seen_values.insert(value.clone()))
         .map(|value| EnumMember {
             name: dedupe(naming::enum_member_name(&value), &mut seen_members),
             visit_param: dedupe(naming::enum_visit_param(&value), &mut seen_params),
@@ -1111,6 +1221,7 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
     if let Some(oauth_scope) = oauth_scope_enum(doc) {
         builder.types.push(TypeDecl::Enum(oauth_scope));
     }
+    deduplicate_type_names(&mut builder.types);
     // Endpoint resolution consults the built types to hoist a plain-object `$ref`
     // body's fields and to decide which of them serialize through the convert
     // wrapper, so it runs after the type layer is built. It also hoists inline
@@ -1344,6 +1455,17 @@ fn move_inline_body_enums_to_tags(
     moved
 }
 
+/// Collapse schemas whose source names normalize to the same Python class name.
+/// Fern keeps the later declaration, which is also the file that wins when both
+/// declarations map to the same module path; removing the earlier declaration
+/// keeps lazy-loader exports and type analysis aligned with that winning file.
+fn deduplicate_type_names(types: &mut Vec<TypeDecl>) {
+    let mut seen = std::collections::HashSet::new();
+    types.reverse();
+    types.retain(|decl| seen.insert(decl.name().to_string()));
+    types.reverse();
+}
+
 /// Collect the distinct exception classes an SDK needs, one per error class name
 /// used across its (emittable) endpoints, sorted by class name so the `errors/`
 /// package `__init__` aggregator is deterministic.
@@ -1420,14 +1542,16 @@ fn endpoints(
                 &global_names,
             );
             // Fern exposes one method for duplicate synthesized/declared names in
-            // the same client, with the later operation replacing the earlier one.
-            // Keep all already-hoisted response types, but only the winning endpoint.
+            // the same client, with the later operation replacing the earlier one's
+            // contents while retaining its first-seen position. Keep all
+            // already-hoisted response types, but only the winning endpoint.
             if let Some(index) = out.iter().position(|existing: &Endpoint| {
                 existing.module == endpoint.module && existing.method_name == endpoint.method_name
             }) {
-                out.remove(index);
+                out[index] = endpoint;
+            } else {
+                out.push(endpoint);
             }
-            out.push(endpoint);
         }
     }
     (out, tag_types)
@@ -1451,6 +1575,7 @@ fn build_endpoint(
     // `types/` package; the hoister accumulates them, keyed to the tag below.
     let mut hoister = InlineHoister {
         root_types: types,
+        schemas: Some(&doc.components.schemas),
         out: Vec::new(),
     };
     // The operation's PascalCase context (from the operationId, never the tag) —
@@ -1498,20 +1623,23 @@ fn build_endpoint(
                 .map_or(TypeRef::Primitive(Prim::Any), |s| {
                     hoister.hoist_param_enum(&request_ctx, &p.name, s)
                 });
-            let convert = type_needs_convert(&type_ref, types);
+            let convert = hoister.needs_convert(&type_ref);
             // A parameter-level `example` wins; otherwise the schema's own.
-            let example = if p.required != Some(true)
+            let without_declared_example = parameter_example_value(doc, p).is_none();
+            let omit_synthesized_example = without_declared_example
+                && (p.required != Some(true) || success_response(op).is_none());
+            let optional_referenced_enum = p.required != Some(true)
                 && p.example.is_none()
                 && p.examples.is_empty()
                 && p.schema
                     .as_ref()
                     .and_then(|schema| schema.reference.as_deref())
                     .and_then(|reference| resolve_ref(doc, reference))
-                    .is_some_and(|schema| string_enum_values(schema).is_some())
-            {
+                    .is_some_and(|schema| string_enum_values(schema).is_some());
+            let example = if omit_synthesized_example || optional_referenced_enum {
                 None
             } else {
-                parameter_example(doc, p)
+                query_parameter_example(doc, p)
             };
             let example_is_scalar = p.schema.as_ref().is_some_and(|schema| {
                 let schema = schema
@@ -1532,7 +1660,7 @@ fn build_endpoint(
                 convert,
                 example,
                 example_is_scalar,
-                docstring: clean_doc(p.description.as_deref()),
+                docstring: declared_doc(p.description.as_deref()),
             }
         })
         .collect();
@@ -1548,6 +1676,7 @@ fn build_endpoint(
             p.location == Some(ParameterLocation::Header)
                 && !global_headers.contains(p.name.as_str())
                 && !is_transport_managed_header(&p.name)
+                && !is_auth_managed_header(doc, &p.name)
         })
         .map(|p| {
             let type_ref = if p.schema.is_none() && !p.content.is_empty() {
@@ -1564,7 +1693,7 @@ fn build_endpoint(
                 py_name: naming::field_name(header_param_stem(&p.name)),
                 type_ref,
                 required: p.required == Some(true),
-                docstring: clean_doc(p.description.as_deref()),
+                docstring: declared_doc(p.description.as_deref()),
                 example: parameter_example(doc, p),
             }
         })
@@ -1593,6 +1722,33 @@ fn build_endpoint(
     // inline object body is hoisted into a `{Ctx}Response` model, where `Ctx` is
     // the operation's PascalCase context (computed above, from the operationId).
     let response = match success_response_schema(op) {
+        Some(schema)
+            if schema.reference.is_none()
+                && (schema.one_of.is_some() || schema.any_of.is_some()) =>
+        {
+            let name = format!("{pascal_ctx}Response");
+            let variants = schema
+                .one_of
+                .as_ref()
+                .or(schema.any_of.as_ref())
+                .expect("union branch checked above");
+            let target = TypeRef::Union(
+                variants
+                    .iter()
+                    .enumerate()
+                    .map(|(index, variant)| {
+                        hoister.hoist_union_variant(&name, index, variant, variants)
+                    })
+                    .collect(),
+            );
+            hoister.out.push(TypeDecl::Alias(AliasType {
+                name: name.clone(),
+                module: naming::module_name(&name),
+                target,
+                docstring: clean_doc(schema.description.as_deref()),
+            }));
+            Some(TypeRef::Named(name))
+        }
         Some(schema) if is_inline_struct(schema) => {
             let name = format!("{pascal_ctx}Response");
             hoister.hoist_object(&name, schema);
@@ -1602,14 +1758,18 @@ fn build_endpoint(
             .hoist_array_item_enum(&format!("{pascal_ctx}Response"), schema)
             .or_else(|| {
                 hoister
+                    .hoist_response_array_item_union(&format!("{pascal_ctx}ResponseItem"), schema)
+            })
+            .or_else(|| {
+                hoister
                     .hoist_response_array_item_object(&format!("{pascal_ctx}ResponseItem"), schema)
             })
             .or_else(|| success_response(op)),
         _ => success_response(op),
     };
     let response = response.map(|response| {
-        if has_bodyless_success(op) {
-            TypeRef::Optional(Box::new(response))
+        if has_bodyless_success(op) && !has_text_response(op) {
+            optional_type_ref(response)
         } else {
             response
         }
@@ -1620,9 +1780,19 @@ fn build_endpoint(
     let mut request_body = if matches!(http_method, "GET" | "HEAD") {
         None
     } else {
-        op.request_body
-            .as_ref()
-            .and_then(|rb| resolve_request_body(doc, types, rb, &mut hoister, &request_ctx))
+        op.request_body.as_ref().and_then(|rb| {
+            resolve_request_body(
+                doc,
+                types,
+                rb,
+                &mut hoister,
+                &request_ctx,
+                !op.parameters.is_empty()
+                    || !path_params.is_empty()
+                    || !query_params.is_empty()
+                    || !header_params.is_empty(),
+            )
+        })
     };
     if matches!(request_body, Some(RequestBody::Bytes { .. })) {
         header_params.clear();
@@ -1686,6 +1856,7 @@ fn build_endpoint(
         query_params,
         header_params,
         request_body,
+        body_codegen_named: op.codegen_request_body_name.is_some(),
         body_description_empty: op.request_body.as_ref().is_some_and(|body| {
             body.description
                 .as_deref()
@@ -1696,6 +1867,16 @@ fn build_endpoint(
             .as_ref()
             .is_some_and(|body| body.description.is_none()),
         body_component_ref: op.request_body.as_ref().is_some_and(|rb| rb.component_ref),
+        body_content_type_override: op
+            .request_body
+            .as_ref()
+            .and_then(selected_json_request_media)
+            .and_then(|(media_type, _)| {
+                media_type
+                    .ends_with("/ndjson")
+                    .then(|| media_type.to_string())
+            }),
+        basic_auth: operation_uses_basic_auth(doc, op),
         body_schema_ref: op
             .request_body
             .as_ref()
@@ -1745,6 +1926,64 @@ fn build_endpoint(
             .and_then(|schema| schema.reference.as_deref())
             .and_then(|reference| resolve_ref(doc, reference))
             .is_some_and(|schema| schema_example(schema).is_some()),
+        body_schema_example_wrapped: op
+            .request_body
+            .as_ref()
+            .and_then(|body| {
+                body.content
+                    .values()
+                    .find_map(|media| media.schema.as_ref())
+            })
+            .and_then(|schema| schema.reference.as_deref())
+            .and_then(|reference| resolve_ref(doc, reference))
+            .and_then(schema_example)
+            .and_then(serde_json::Value::as_object)
+            .is_some_and(|example| example.contains_key("request_body")),
+        body_schema_is_beta: op
+            .request_body
+            .as_ref()
+            .and_then(|body| {
+                body.content
+                    .values()
+                    .find_map(|media| media.schema.as_ref())
+            })
+            .and_then(|schema| schema.reference.as_deref())
+            .and_then(|reference| resolve_ref(doc, reference))
+            .is_some_and(|schema| schema.is_beta == Some(true)),
+        body_schema_example_covers_all_fields: op
+            .request_body
+            .as_ref()
+            .and_then(|body| {
+                body.content
+                    .values()
+                    .find_map(|media| media.schema.as_ref())
+            })
+            .and_then(|schema| schema.reference.as_deref())
+            .and_then(|reference| resolve_ref(doc, reference))
+            .is_some_and(|schema| {
+                let Some(request_body) = schema_example(schema)
+                    .and_then(serde_json::Value::as_object)
+                    .and_then(|example| example.get("request_body"))
+                    .and_then(serde_json::Value::as_object)
+                else {
+                    return false;
+                };
+                !schema.properties.is_empty()
+                    && schema
+                        .properties
+                        .keys()
+                        .all(|property| request_body.contains_key(property))
+            }),
+        body_media_has_example: op.request_body.as_ref().is_some_and(|body| {
+            body.content
+                .values()
+                .any(|media| media.example.is_some() || !media.examples.is_empty())
+        }),
+        reference_body_example: op
+            .request_body
+            .as_ref()
+            .and_then(reference_body_example)
+            .cloned(),
         body_schema_documented: op
             .request_body
             .as_ref()
@@ -1802,13 +2041,10 @@ fn build_endpoint(
         response_doc: success_response_doc(op),
         errors,
         docstring: operation_doc(op.description.as_deref()),
-        reference_description_trailing_blank: op
+        reference_description_suffix: op
             .description
             .as_deref()
-            .is_some_and(|description| description.ends_with("\n\n")),
-        reference_description_trailing_space: op.description.as_deref().is_some_and(
-            |description| !description.trim().is_empty() && description.ends_with(' '),
-        ),
+            .map_or_else(String::new, reference_description_suffix),
         streaming: is_streaming(op),
         text_response: has_text_response(op),
         markdown_response: has_markdown_response(op),
@@ -1828,8 +2064,11 @@ fn schema_property_is_read_only(doc: &OpenApi, schema: &Schema, property: &str) 
     })
 }
 
-fn parameter_example(doc: &OpenApi, parameter: &crate::openapi::Parameter) -> Option<String> {
-    let value = parameter
+fn parameter_example_value<'a>(
+    doc: &'a OpenApi,
+    parameter: &'a crate::openapi::Parameter,
+) -> Option<&'a serde_json::Value> {
+    parameter
         .example
         .as_ref()
         .or_else(|| {
@@ -1846,8 +2085,20 @@ fn parameter_example(doc: &OpenApi, parameter: &crate::openapi::Parameter) -> Op
                 .and_then(|schema| schema.reference.as_deref())
                 .and_then(|reference| resolve_ref(doc, reference))
                 .and_then(schema_example)
-        })?;
+        })
+}
+
+fn parameter_example(doc: &OpenApi, parameter: &crate::openapi::Parameter) -> Option<String> {
+    let value = parameter_example_value(doc, parameter)?;
     let schema = parameter.schema.as_ref();
+    // Fern discards an example whose JSON kind contradicts the declared scalar
+    // type instead of rendering invalid Python for the generated annotation (for
+    // example, a numeric OpenAPI example on a `type: string` query parameter).
+    if schema.and_then(|schema| schema.ty.as_ref()?.primary()) == Some("string")
+        && !value.is_string()
+    {
+        return None;
+    }
     if schema.and_then(|schema| schema.ty.as_ref()?.primary()) == Some("integer") {
         if let Some(minimum) = schema.and_then(|schema| schema.minimum.as_ref()) {
             return example_literal(minimum)
@@ -1866,8 +2117,37 @@ fn parameter_example(doc: &OpenApi, parameter: &crate::openapi::Parameter) -> Op
     example_literal(value)
 }
 
+fn query_parameter_example(doc: &OpenApi, parameter: &crate::openapi::Parameter) -> Option<String> {
+    parameter_example(doc, parameter).or_else(|| {
+        // Fern synthesizes constrained query-string placeholders from the
+        // minimum length: its short `"x"` sample or a ten-character sample.
+        let minimum = parameter
+            .schema
+            .as_ref()
+            .filter(|schema| schema.ty.as_ref().and_then(TypeField::primary) == Some("string"))
+            .and_then(|schema| schema.min_length)?;
+        Some(if minimum > 1 {
+            "\"strawberry\"".to_string()
+        } else {
+            "\"x\"".to_string()
+        })
+    })
+}
+
 fn schema_example(schema: &Schema) -> Option<&serde_json::Value> {
     schema.example.as_ref().or_else(|| schema.examples.first())
+}
+
+/// Render a schema example for a generated call. Arrays commonly put the example
+/// on `items` rather than on the array itself; Fern promotes that to a one-element
+/// list in worked examples.
+fn schema_example_literal(schema: &Schema) -> Option<String> {
+    schema_example(schema)
+        .and_then(example_literal)
+        .or_else(|| {
+            let item = schema.items.as_deref().and_then(schema_example)?;
+            Some(format!("[{}]", example_literal(item)?))
+        })
 }
 
 fn request_body_has_all_of(doc: &OpenApi, op: &Operation) -> bool {
@@ -1880,23 +2160,58 @@ fn request_body_has_all_of(doc: &OpenApi, op: &Operation) -> bool {
         .is_some_and(|schema| schema.all_of.is_some())
 }
 
-/// Whether the operation's success response is a Server-Sent-Events stream. Fern
-/// models a `text/event-stream` 2xx response as an iterator of chunks; crozier
-/// keys off the same content type (the `x-fern-streaming` extension is not needed —
-/// Fern's OpenAPI importer does not resolve its `chunk-schema-ref`, so the chunk is
-/// `typing.Optional[typing.Any]` regardless).
+/// Whether the operation's selected success response is a Server-Sent-Events
+/// stream. Fern prefers an `application/json` representation when a response
+/// advertises both it and `text/event-stream`; an SSE-only response becomes an
+/// iterator of chunks. The `x-fern-streaming` extension is not needed — Fern's
+/// OpenAPI importer does not resolve its `chunk-schema-ref`, so the chunk is
+/// `typing.Optional[typing.Any]` regardless.
 fn is_streaming(op: &Operation) -> bool {
-    op.responses
-        .iter()
-        .any(|(code, resp)| code.starts_with('2') && resp.content.contains_key("text/event-stream"))
+    success_response_entry(op).is_some_and(|response| {
+        response.content.contains_key("text/event-stream")
+            && !response.content.contains_key("application/json")
+    })
 }
 
 fn body_response_same_ref(doc: &OpenApi, op: &Operation) -> bool {
     let effective_security = op.security.as_ref().or(doc.security.as_ref());
-    if effective_security.is_some_and(|reqs| reqs.iter().any(|r| !r.is_empty())) {
+    // Fern's OAuth2 importer treats an echo schema as a shared model even on an
+    // authenticated operation; HTTP bearer/API-key importers retain their older
+    // content-type behavior. Check the schemes the operation actually names so an
+    // unrelated OAuth2 declaration cannot change a bearer-authenticated endpoint.
+    let oauth2 = effective_security.is_some_and(|requirements| {
+        requirements.iter().any(|requirement| {
+            requirement.keys().any(|name| {
+                doc.components
+                    .security_schemes
+                    .get(name)
+                    .is_some_and(|scheme| scheme.ty == crate::openapi::SecuritySchemeType::OAuth2)
+            })
+        })
+    });
+    if !oauth2 && effective_security.is_some_and(|reqs| reqs.iter().any(|r| !r.is_empty())) {
         return false;
     }
     request_and_response_refs_match(op)
+}
+
+fn operation_uses_basic_auth(doc: &OpenApi, op: &Operation) -> bool {
+    op.security
+        .as_ref()
+        .or(doc.security.as_ref())
+        .is_some_and(|requirements| {
+            requirements.iter().any(|requirement| {
+                requirement.keys().any(|name| {
+                    doc.components
+                        .security_schemes
+                        .get(name)
+                        .is_some_and(|scheme| {
+                            scheme.ty == crate::openapi::SecuritySchemeType::Http
+                                && scheme.scheme == Some(crate::openapi::HttpAuthScheme::Basic)
+                        })
+                })
+            })
+        })
 }
 
 fn request_and_response_refs_match(op: &Operation) -> bool {
@@ -2121,6 +2436,7 @@ fn resolve_request_body(
     rb: &crate::openapi::RequestBody,
     hoister: &mut InlineHoister,
     request_ctx: &str,
+    union_body_suffix: bool,
 ) -> Option<RequestBody> {
     // A raw `application/octet-stream` body is a bytes stream, independent of its
     // schema — Fern types it as a fixed `Union[bytes, ...]` and sends `content=`.
@@ -2164,15 +2480,7 @@ fn resolve_request_body(
             content_type: media_type.clone(),
         });
     }
-    let (media_type, media) = rb
-        .content
-        .get_key_value("application/json")
-        .or_else(|| rb.content.get_key_value("*/*"))
-        .or_else(|| {
-            rb.content
-                .iter()
-                .find(|(media_type, _)| is_json_like_media_type(media_type))
-        })?;
+    let (media_type, media) = selected_json_request_media(rb)?;
     let schema = media.schema.as_ref()?;
     // Fern treats a schema-bearing request body as required unless the document
     // explicitly opts out. Wildcard request schemas remain required even when the
@@ -2218,8 +2526,24 @@ fn resolve_request_body(
         // A `$ref` to a plain object is inlined field-by-field.
         if !target.properties.is_empty() || target.all_of.is_some() {
             return hoist_fields(&class, types).map(|mut fields| {
-                apply_body_example(&mut fields, target.example.as_ref());
-                apply_body_example(&mut fields, media.example.as_ref());
+                for field in &mut fields {
+                    if field.example.is_none()
+                        && target.is_beta == Some(true)
+                        && target.properties.len() > 1
+                        && target
+                            .properties
+                            .get(&field.wire_name)
+                            .is_some_and(|property| {
+                                property.ty.as_ref().and_then(|ty| ty.primary()) == Some("string")
+                                    && property.min_length.is_some_and(|minimum| minimum > 0)
+                                    && property.max_length.is_none_or(|maximum| maximum <= 128)
+                            })
+                    {
+                        field.example = Some("\"x\"".to_string());
+                    }
+                }
+                apply_body_example(&mut fields, target.example.as_ref(), false);
+                apply_body_example(&mut fields, media_example(media), true);
                 RequestBody::Inline(fields)
             });
         }
@@ -2241,7 +2565,11 @@ fn resolve_request_body(
     // tag's `types/` package. The request accepts that alias as one argument and
     // serializes its selected model variant through the annotation converter.
     if schema.one_of.is_some() || schema.any_of.is_some() {
-        let request_body_name = format!("{request_ctx}Body");
+        let request_body_name = if union_body_suffix {
+            format!("{request_ctx}Body")
+        } else {
+            request_ctx.to_string()
+        };
         let variants = schema
             .one_of
             .as_ref()
@@ -2262,13 +2590,17 @@ fn resolve_request_body(
             target,
             docstring: clean_doc(schema.description.as_deref()),
         }));
-        return Some(single_with_override(
+        let mut body = single_with_override(
             TypeRef::Named(request_body_name),
             required,
             true,
             true,
             (media_type == "*/*").then(|| media_type.to_string()),
-        ));
+        );
+        if let RequestBody::Single(single) = &mut body {
+            single.example = media_example(media).and_then(example_literal);
+        }
+        return Some(body);
     }
     if schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("object")
         && schema.properties.is_empty()
@@ -2284,7 +2616,10 @@ fn resolve_request_body(
     // inlined field-by-field, exactly like a `$ref` object. Its own nested inline
     // objects hoist into `{request_ctx}{Prop}` models.
     if !schema.properties.is_empty() {
-        return hoist_inline_object(schema, hoister, request_ctx).map(RequestBody::Inline);
+        return hoist_inline_object(schema, hoister, request_ctx).map(|mut fields| {
+            apply_body_example(&mut fields, media_example(media), true);
+            RequestBody::Inline(fields)
+        });
     }
     // An inline map body (`type: object` + `additionalProperties`): a single
     // `request` argument, convert-wrapped when its values are objects/unions. Like
@@ -2368,20 +2703,71 @@ fn resolve_request_body(
     })
 }
 
-fn apply_body_example(fields: &mut [BodyField], example: Option<&serde_json::Value>) {
+fn apply_body_example(
+    fields: &mut [BodyField],
+    example: Option<&serde_json::Value>,
+    media_example: bool,
+) {
     let Some(values) = example.and_then(serde_json::Value::as_object) else {
         return;
     };
     for field in fields {
-        if let Some(value) = values.get(&field.wire_name).and_then(example_literal) {
-            field.example = Some(value);
+        if let Some(value) = values.get(&field.wire_name) {
+            field.example = Some(value.to_string());
             field.media_example = true;
+            field.schema_body_example = !media_example;
         }
     }
 }
 
+fn media_example(media: &crate::openapi::MediaType) -> Option<&serde_json::Value> {
+    media.example.as_ref().or_else(|| {
+        media
+            .examples
+            .values()
+            .find_map(|example| example.value.as_ref())
+    })
+}
+
+/// Select the example Fern uses in `reference.md`. Unlike generated method
+/// docstrings and README snippets, Fern's reference writer selects the second
+/// value when exactly two named examples are present; other cardinalities use
+/// the first value.
+fn reference_body_example(body: &crate::openapi::RequestBody) -> Option<&serde_json::Value> {
+    let media = body.content.get("application/json").or_else(|| {
+        body.content
+            .iter()
+            .find(|(media_type, _)| is_json_like_media_type(media_type))
+            .map(|(_, media)| media)
+    })?;
+    let examples = &media.examples;
+    if examples.len() == 2 {
+        examples
+            .values()
+            .nth(1)
+            .and_then(|example| example.value.as_ref())
+    } else {
+        examples.values().find_map(|example| example.value.as_ref())
+    }
+}
+
 fn is_json_like_media_type(media_type: &str) -> bool {
-    media_type.ends_with("+json")
+    media_type.ends_with("+json") || media_type.ends_with("/ndjson")
+}
+
+fn selected_json_request_media(
+    body: &crate::openapi::RequestBody,
+) -> Option<(&str, &crate::openapi::MediaType)> {
+    body.content
+        .get("application/json")
+        .map(|media| ("application/json", media))
+        .or_else(|| body.content.get("*/*").map(|media| ("*/*", media)))
+        .or_else(|| {
+            body.content
+                .iter()
+                .find(|(media_type, _)| is_json_like_media_type(media_type))
+                .map(|(media_type, media)| (media_type.as_str(), media))
+        })
 }
 
 fn request_body_ignored(rb: &crate::openapi::RequestBody) -> bool {
@@ -2389,6 +2775,10 @@ fn request_body_ignored(rb: &crate::openapi::RequestBody) -> bool {
         && !rb.content.contains_key("application/octet-stream")
         && !rb.content.contains_key("multipart/form-data")
         && !rb.content.contains_key("application/x-www-form-urlencoded")
+        && !rb
+            .content
+            .keys()
+            .any(|media| is_json_like_media_type(media))
 }
 
 /// Hoist an inline object body's properties into request [`BodyField`]s. Mirrors
@@ -2414,8 +2804,9 @@ fn hoist_inline_object(
             optional,
             nullable: false,
             spec_required,
-            example: schema_example(prop_schema).and_then(example_literal),
+            example: schema_example_literal(prop_schema),
             media_example: false,
+            schema_body_example: false,
             docstring: clean_doc(prop_schema.description.as_deref()),
             is_file: false,
             collision_prefix: Some(naming::field_name(ctx)),
@@ -2433,11 +2824,50 @@ struct InlineHoister<'a> {
     /// The package-root types, consulted to decide whether a `$ref` field needs
     /// the `convert_and_respect_annotation_metadata` wrapper.
     root_types: &'a [TypeDecl],
+    /// Component schemas, available in real generation so annotation-only
+    /// `allOf` property references can be resolved at their use site. Focused
+    /// unit helpers that do not exercise references leave this as `None`.
+    schemas: Option<&'a IndexMap<String, Schema>>,
     /// The hoisted object types accumulated for the current operation's tag.
     out: Vec<TypeDecl>,
 }
 
 impl InlineHoister<'_> {
+    /// Hoist an inline union used as a top-level response array item. Fern coins
+    /// `{Operation}ResponseItem` and exposes the response as a list of that alias.
+    fn hoist_response_array_item_union(
+        &mut self,
+        item_name: &str,
+        schema: &Schema,
+    ) -> Option<TypeRef> {
+        if schema.ty.as_ref().and_then(|ty| ty.primary()) != Some("array") {
+            return None;
+        }
+        let item_schema = schema.items.as_deref()?;
+        let variants = item_schema
+            .one_of
+            .as_ref()
+            .or(item_schema.any_of.as_ref())?;
+        let target = TypeRef::Union(
+            variants
+                .iter()
+                .enumerate()
+                .map(|(index, variant)| {
+                    self.hoist_union_variant(item_name, index, variant, variants)
+                })
+                .collect(),
+        );
+        self.out.push(TypeDecl::Alias(AliasType {
+            name: item_name.to_string(),
+            module: naming::module_name(item_name),
+            target,
+            docstring: clean_doc(item_schema.description.as_deref()),
+        }));
+        Some(TypeRef::List(Box::new(TypeRef::Named(
+            item_name.to_string(),
+        ))))
+    }
+
     /// Hoist an inline object used as a top-level response array item. Fern coins
     /// `{Operation}ResponseItem` and exposes the response as a list of that model.
     fn hoist_response_array_item_object(
@@ -2461,6 +2891,10 @@ impl InlineHoister<'_> {
     /// Build a named [`ObjectType`] from an inline object schema, recursively
     /// hoisting its nested inline-object properties, and push it to `out`.
     fn hoist_object(&mut self, name: &str, schema: &Schema) {
+        self.hoist_object_with_doc(name, schema, clean_doc(schema.description.as_deref()));
+    }
+
+    fn hoist_object_with_doc(&mut self, name: &str, schema: &Schema, docstring: Option<String>) {
         let required: Vec<&str> = schema
             .required
             .iter()
@@ -2485,7 +2919,7 @@ impl InlineHoister<'_> {
             module: naming::module_name(name),
             bases,
             fields,
-            docstring: clean_doc(schema.description.as_deref()),
+            docstring,
         }));
     }
 
@@ -2524,16 +2958,25 @@ impl InlineHoister<'_> {
         for (prop, prop_schema) in &schema.properties {
             let spec_required =
                 required.contains(&prop.as_str()) && prop_schema.read_only != Some(true);
-            let optional = is_optional(prop_schema) || !spec_required;
+            let referenced_nullable = self
+                .schemas
+                .and_then(|schemas| {
+                    described_all_of_ref(prop_schema)
+                        .and_then(|(reference, _)| resolve_ref_from_schemas(schemas, reference))
+                        .map(|target| schema_accepts_none(target, schemas))
+                })
+                .unwrap_or(false);
+            let optional = is_optional(prop_schema) || referenced_nullable || !spec_required;
             fields.push(Field {
                 wire_name: prop.clone(),
                 py_name: naming::model_field_name(prop),
                 type_ref: self.prop_type_ref(owner, prop, prop_schema),
                 optional,
-                nullable: is_optional(prop_schema) && prop_schema.read_only == Some(true),
+                nullable: referenced_nullable
+                    || (is_optional(prop_schema) && prop_schema.read_only == Some(true)),
                 spec_required,
-                docstring: declared_doc(prop_schema.description.as_deref()),
-                example: schema_example(prop_schema).and_then(example_literal),
+                docstring: declared_doc(property_description(prop_schema)),
+                example: schema_example_literal(prop_schema),
             });
         }
     }
@@ -2542,6 +2985,31 @@ impl InlineHoister<'_> {
     /// item) into `{parent}{PascalCase(prop)}`. A `$ref` or scalar passes through
     /// [`base_type_ref`].
     fn prop_type_ref(&mut self, parent: &str, prop: &str, prop_schema: &Schema) -> TypeRef {
+        if let (Some(schemas), Some((reference, description))) =
+            (self.schemas, described_all_of_ref(prop_schema))
+        {
+            if let Some(target) = resolve_ref_from_schemas(schemas, reference).cloned() {
+                let name = format!("{parent}{}", naming::class_name(prop));
+                if let Some(values) = string_enum_values(&target) {
+                    self.out.push(TypeDecl::Enum(build_enum(
+                        &name,
+                        values,
+                        clean_doc(description),
+                    )));
+                    return TypeRef::Named(name);
+                }
+                if !is_map(&target)
+                    && !is_bare_object(&target)
+                    && (!target.properties.is_empty()
+                        || target.all_of.is_some()
+                        || is_object_type(&target))
+                {
+                    self.hoist_object_with_doc(&name, &target, clean_doc(description));
+                    return TypeRef::Named(name);
+                }
+                return full_type_ref_resolved(&target, schemas);
+            }
+        }
         if prop_schema.reference.is_none() {
             if let Some(values) = string_enum_values(prop_schema) {
                 let name = format!("{parent}{}", naming::class_name(prop));
@@ -2575,6 +3043,28 @@ impl InlineHoister<'_> {
                         TypeRef::List(Box::new(item))
                     };
                 }
+                if item_schema.reference.is_none() {
+                    if let Some(members) =
+                        item_schema.one_of.as_ref().or(item_schema.any_of.as_ref())
+                    {
+                        let item_name = format!("{parent}{}Item", naming::class_name(prop));
+                        let mut variants: Vec<TypeRef> =
+                            members.iter().map(base_type_ref).collect();
+                        variants.dedup();
+                        self.out.push(TypeDecl::Alias(AliasType {
+                            name: item_name.clone(),
+                            module: naming::module_name(&item_name),
+                            target: TypeRef::Union(variants),
+                            docstring: clean_doc(item_schema.description.as_deref()),
+                        }));
+                        let item = Box::new(TypeRef::Named(item_name));
+                        return if array_uses_set(prop_schema) {
+                            TypeRef::Set(item)
+                        } else {
+                            TypeRef::List(item)
+                        };
+                    }
+                }
             }
         }
         // A `$ref`, scalar, or container of `$ref`/scalar items passes through.
@@ -2603,6 +3093,11 @@ impl InlineHoister<'_> {
                 schema,
             ) {
                 return array;
+            }
+            if is_object_type(schema) && is_inline_struct(schema) {
+                let name = format!("{request_ctx}{}", naming::class_name(param));
+                self.hoist_object(&name, schema);
+                return TypeRef::Named(name);
             }
         }
         base_type_ref(schema)
@@ -2674,8 +3169,9 @@ fn hoist_form_object(
                 convert: false,
                 is_file,
                 collision_prefix: None,
-                example: schema_example(prop_schema).and_then(example_literal),
+                example: schema_example_literal(prop_schema),
                 media_example: false,
+                schema_body_example: false,
             }
         })
         .collect()
@@ -2740,6 +3236,7 @@ fn append_request_fields(
         collision_prefix: Some(naming::field_name(request_class)),
         example: f.example.clone(),
         media_example: false,
+        schema_body_example: false,
     }));
     for base in &obj.bases {
         if let Some(base_obj) = types.iter().find_map(|decl| match decl {
@@ -2853,8 +3350,16 @@ fn success_response(op: &Operation) -> Option<TypeRef> {
                 .content
                 .get("text/plain")
                 .or_else(|| response.content.get("text/markdown"))
+                .or_else(|| response.content.get("text/xml"))
                 .and_then(|media| media.schema.as_ref())
                 .map(|_| TypeRef::Primitive(Prim::Str))
+        })
+        .or_else(|| {
+            success_response_entry(op)?
+                .content
+                .get("application/json")
+                .filter(|media| media.schema.is_none())?;
+            Some(TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any))))
         })
 }
 
@@ -2863,7 +3368,8 @@ fn has_text_response(op: &Operation) -> bool {
         !response.content.contains_key("application/json")
             && !response.content.contains_key("*/*")
             && (response.content.contains_key("text/plain")
-                || response.content.contains_key("text/markdown"))
+                || response.content.contains_key("text/markdown")
+                || response.content.contains_key("text/xml"))
     })
 }
 
@@ -2942,8 +3448,9 @@ fn first_tag(op: &Operation) -> Option<&str> {
 ///   (`endpoints_put_add`);
 /// - groupless (`get-all-widgets`, `verify code`, `getThing`): the whole id is
 ///   `snake_case`d (→ `get_all_widgets`, `verify_code`, `get_thing`);
-/// - missing: [`synthesized_method_name`] infers a verb from the HTTP method and
-///   route (`GET /widgets` → `list_widgets`).
+/// - missing: a non-empty summary becomes the method name; without one,
+///   [`synthesized_method_name`] joins the HTTP method and full route
+///   (`GET /widgets/{id}` → `get_widgets_id`).
 fn endpoint_method_name(op: &Operation, http_method: &str, url: &str) -> String {
     let id = op.operation_id.as_deref().unwrap_or_default().trim();
     let method = if op
@@ -3012,9 +3519,15 @@ fn method_from_dotted_id(id: &str) -> String {
 fn method_from_groupless_id(id: &str, tag: Option<&str>) -> String {
     let snake = naming::to_snake_case(id);
     let tag_snake = tag.map(naming::to_snake_case).unwrap_or_default();
-    let method = if tag_snake.is_empty() || stripped_suffix_has_acronym(id, tag) {
+    let tag_suffix = tag.and_then(|tag| operation_id_tag_prefix(id, tag));
+    let method = if tag_snake.is_empty()
+        || stripped_suffix_has_acronym(id, tag)
+        // Fern retains the group on a generic `Info` method (`CatalogInfo` →
+        // `catalog_info`) instead of producing the overly broad `info`.
+        || tag_suffix.is_some_and(|(_, suffix)| suffix.eq_ignore_ascii_case("info"))
+    {
         snake.clone()
-    } else if let Some((_, suffix)) = tag.and_then(|tag| operation_id_tag_prefix(id, tag)) {
+    } else if let Some((_, suffix)) = tag_suffix {
         naming::to_snake_case(suffix)
     } else {
         snake
@@ -3046,7 +3559,7 @@ fn operation_id_tag_prefix<'a>(id: &'a str, tag: &str) -> Option<(&'a str, &'a s
     let prefix = id.get(..tag.len())?;
     let suffix = id.get(tag.len()..)?;
     if suffix.is_empty()
-        || !prefix.eq_ignore_ascii_case(tag)
+        || !operation_id_matches_tag_spelling(prefix, tag)
         || !suffix
             .chars()
             .next()
@@ -3055,6 +3568,16 @@ fn operation_id_tag_prefix<'a>(id: &'a str, tag: &str) -> Option<(&'a str, &'a s
         return None;
     }
     Some((prefix, suffix))
+}
+
+/// Case-insensitive tag matching is valid when the tag itself records word
+/// boundaries (`Activities`, `APIs`) or both spellings snake-case identically.
+/// An all-lowercase tag does not invent boundaries: `apiKeys` under `apikeys`
+/// remains the full method name in the `apikeys` client.
+fn operation_id_matches_tag_spelling(id: &str, tag: &str) -> bool {
+    id.eq_ignore_ascii_case(tag)
+        && (tag.chars().any(|ch| ch.is_ascii_uppercase())
+            || naming::to_snake_case(id) == naming::to_snake_case(tag))
 }
 
 fn stripped_suffix_has_acronym(id: &str, tag: Option<&str>) -> bool {
@@ -3093,61 +3616,22 @@ fn endpoint_pascal_context(op: &Operation, http_method: &str, url: &str) -> Stri
     }
 }
 
-/// Fern's fallback endpoint name for an operation that declares no `operationId`:
-/// an action verb inferred from the HTTP method and whether the route addresses a
-/// collection or a single item, joined to the trailing resource. `GET /widgets` →
-/// `list_widgets`, `GET /widgets/{id}` → `get_widget`, `POST /widgets` →
-/// `create_widget`. Item routes (ending in a `{param}`) singularize the noun.
+/// Fern's fallback endpoint name for an operation that declares neither an
+/// `operationId` nor a summary: the lowercase HTTP method followed by every path
+/// segment, including path-parameter names (`POST /mapping` → `post_mapping`,
+/// `GET /mapping/values/{key}` → `get_mapping_values_key`).
 fn synthesized_method_name(http_method: &str, url: &str) -> String {
-    let is_param = |s: &str| s.starts_with('{') && s.ends_with('}');
-    let segments: Vec<&str> = url.split('/').filter(|s| !s.is_empty()).collect();
-    if http_method.eq_ignore_ascii_case("HEAD") {
-        let path = segments
-            .iter()
-            .map(|segment| segment.trim_matches(['{', '}']))
-            .collect::<Vec<_>>()
-            .join("_");
-        return naming::sanitize_identifier(&format!("head_{}", naming::to_snake_case(&path)));
-    }
-    let ends_with_param = segments.last().is_some_and(|s| is_param(s));
-    let verb = match http_method.to_ascii_uppercase().as_str() {
-        "GET" => {
-            if ends_with_param {
-                "get"
-            } else {
-                "list"
-            }
-        }
-        "POST" => "create",
-        "PUT" | "PATCH" => "update",
-        "DELETE" => "delete",
-        "HEAD" => "head",
-        _ => "call",
-    };
-    match segments.iter().rev().find(|s| !is_param(s)) {
-        Some(resource) => {
-            let noun = naming::to_snake_case(resource);
-            let noun = if ends_with_param {
-                singularize(&noun)
-            } else {
-                noun
-            };
-            naming::sanitize_identifier(&format!("{verb}_{noun}"))
-        }
-        None => verb.to_string(),
-    }
-}
-
-/// A naive English singularizer for the resource noun of an inferred item-route
-/// name (`users` → `user`, `entries` → `entry`). Only exercised for operations
-/// with no `operationId` on a `{param}`-terminated route.
-fn singularize(word: &str) -> String {
-    if let Some(stem) = word.strip_suffix("ies") {
-        format!("{stem}y")
-    } else if word.ends_with("ss") || !word.ends_with('s') {
-        word.to_string()
+    let path = url
+        .split('/')
+        .filter(|segment| !segment.is_empty())
+        .map(|segment| segment.trim_matches(['{', '}']))
+        .collect::<Vec<_>>()
+        .join("_");
+    let method = http_method.to_ascii_lowercase();
+    if path.is_empty() {
+        naming::sanitize_identifier(&method)
     } else {
-        word[..word.len() - 1].to_string()
+        naming::sanitize_identifier(&format!("{method}_{}", naming::to_snake_case(&path)))
     }
 }
 
@@ -3194,7 +3678,7 @@ fn module_title(doc: &OpenApi, op: &Operation, url: &str) -> String {
     let id = op.operation_id.as_deref().unwrap_or_default().trim();
     if id.is_empty() {
         if let Some(tag) = first_tag(op) {
-            return naming::to_pascal_case(tag);
+            return tag_pascal(tag);
         }
     }
     if id.contains('.') {
@@ -3225,8 +3709,12 @@ fn title_from_tag(doc: &OpenApi, tag: &str) -> String {
     if declared {
         tag.to_string()
     } else {
-        naming::to_pascal_case(&naming::module_name(tag))
+        tag_pascal(tag)
     }
+}
+
+fn tag_pascal(tag: &str) -> String {
+    naming::to_pascal_case(&naming::prose_identifier(tag))
 }
 
 /// The client module (directory) name for an operation.
@@ -3241,7 +3729,7 @@ fn title_from_tag(doc: &OpenApi, tag: &str) -> String {
 /// both rules agree, so tag-grouped corpora already matched stay byte-identical.
 fn endpoint_module(op: &Operation, url: &str) -> String {
     let id = op.operation_id.as_deref().unwrap_or_default().trim();
-    if first_tag(op).is_some_and(|tag| alnum_lower(tag) == alnum_lower(id)) {
+    if first_tag(op).is_some_and(|tag| operation_id_matches_tag_spelling(id, tag)) {
         return String::new();
     }
     if first_tag(op).is_none() && !id.contains('.') {
@@ -3286,7 +3774,7 @@ fn endpoint_module(op: &Operation, url: &str) -> String {
 /// The snake-cased, identifier-safe module name a tag maps to (`attachment-public`
 /// → `attachment_public`, `DagRun` → `dag_run`).
 fn snake_module(tag: &str) -> String {
-    let name = naming::sanitize_identifier(&naming::to_snake_case(tag));
+    let name = naming::prose_identifier(tag);
     module_identifier(&name)
 }
 
@@ -3497,7 +3985,11 @@ fn collect_discriminant_strips(
 /// Collect a discriminated-union member's fields (the referenced model's
 /// properties minus the discriminant). Inline hoisting is intentionally skipped:
 /// the member model is emitted separately and owns any hoisted property types.
-fn member_fields(schema: &Schema, discriminant: &str) -> Vec<Field> {
+fn member_fields(
+    schema: &Schema,
+    discriminant: &str,
+    schemas: &IndexMap<String, Schema>,
+) -> Vec<Field> {
     let required: Vec<&str> = schema
         .required
         .iter()
@@ -3506,11 +3998,19 @@ fn member_fields(schema: &Schema, discriminant: &str) -> Vec<Field> {
         .collect();
     let mut fields = Vec::new();
     for member in schema.all_of.iter().flatten() {
-        if member.reference.is_none() {
-            append_member_fields(member, discriminant, &required, &mut fields);
+        if let Some(base) = member
+            .reference
+            .as_deref()
+            .and_then(|reference| resolve_ref_from_schemas(schemas, reference))
+        {
+            let base_required: Vec<&str> = base.required.iter().map(String::as_str).collect();
+            let base_name = member.reference.as_deref().map(ref_to_class);
+            append_member_fields(base, "", &base_required, base_name.as_deref(), &mut fields);
+        } else {
+            append_member_fields(member, discriminant, &required, None, &mut fields);
         }
     }
-    append_member_fields(schema, discriminant, &required, &mut fields);
+    append_member_fields(schema, discriminant, &required, None, &mut fields);
     fields
 }
 
@@ -3519,6 +4019,7 @@ fn append_member_fields(
     schema: &Schema,
     discriminant: &str,
     required: &[&str],
+    enum_owner: Option<&str>,
     fields: &mut Vec<Field>,
 ) {
     for (prop, prop_schema) in &schema.properties {
@@ -3526,15 +4027,23 @@ fn append_member_fields(
             continue;
         }
         let spec_required = required.contains(&prop.as_str());
+        let type_ref = if string_enum_values(prop_schema).is_some() {
+            enum_owner.map_or_else(
+                || base_type_ref(prop_schema),
+                |owner| TypeRef::Named(format!("{owner}{}", naming::class_name(prop))),
+            )
+        } else {
+            base_type_ref(prop_schema)
+        };
         fields.push(Field {
             wire_name: prop.clone(),
             py_name: naming::model_field_name(prop),
-            type_ref: base_type_ref(prop_schema),
+            type_ref,
             optional: is_optional(prop_schema) || !spec_required,
             nullable: is_optional(prop_schema) && prop_schema.read_only == Some(true),
             spec_required,
-            docstring: declared_doc(prop_schema.description.as_deref()),
-            example: schema_example(prop_schema).and_then(example_literal),
+            docstring: None,
+            example: schema_example_literal(prop_schema),
         });
     }
 }
@@ -3589,6 +4098,7 @@ impl Builder<'_> {
         // is a free-form object: Fern aliases it to `Dict[str, Optional[Any]]` (bunq's
         // `AttachmentPublic`, `Whitelist`, …), not an empty model class.
         if is_bare_object(schema)
+            && !schema.properties.declared()
             && !schema_example(schema).is_some_and(|example| {
                 example.is_object() && !example_is_schema_definition(example)
             })
@@ -3781,7 +4291,10 @@ impl Builder<'_> {
                 && prop_schema.read_only != Some(true)
                 && !referenced_read_only;
             let referenced_nullable = prop_schema.reference.is_some()
-                && referenced_schema_accepts_none(prop_schema, self.schemas);
+                && referenced_schema_accepts_none(prop_schema, self.schemas)
+                || described_all_of_ref(prop_schema)
+                    .and_then(|(reference, _)| resolve_ref_from_schemas(self.schemas, reference))
+                    .is_some_and(|target| schema_accepts_none(target, self.schemas));
             let optional = is_optional(prop_schema) || referenced_nullable || !spec_required;
             fields.push(Field {
                 wire_name: prop.clone(),
@@ -3793,17 +4306,15 @@ impl Builder<'_> {
                         && (prop_schema.reference.is_none()
                             || prop_schema.read_only == Some(true))),
                 spec_required,
-                docstring: declared_doc(prop_schema.description.as_deref()),
-                example: schema_example(prop_schema)
-                    .or_else(|| {
-                        prop_schema
-                            .reference
-                            .as_deref()
-                            .and_then(|reference| reference.rsplit('/').next())
-                            .and_then(|key| self.schemas.get(key))
-                            .and_then(schema_example)
-                    })
-                    .and_then(example_literal),
+                docstring: declared_doc(property_description(prop_schema)),
+                example: schema_example_literal(prop_schema).or_else(|| {
+                    prop_schema
+                        .reference
+                        .as_deref()
+                        .and_then(|reference| reference.rsplit('/').next())
+                        .and_then(|key| self.schemas.get(key))
+                        .and_then(schema_example_literal)
+                }),
             });
         }
     }
@@ -3864,7 +4375,7 @@ impl Builder<'_> {
                 members.push(UnionMember {
                     class_name: format!("{name}_{}", naming::class_name(&value)),
                     discriminant: value,
-                    fields: member_fields(target, &property_name),
+                    fields: member_fields(target, &property_name, self.schemas),
                     docstring: variant
                         .reference
                         .is_none()
@@ -3892,8 +4403,8 @@ impl Builder<'_> {
                 // coincide only when the mapping key equals the schema name.
                 class_name: format!("{name}_{}", naming::class_name(value)),
                 discriminant: value.clone(),
-                fields: member_fields(target, &property_name),
-                docstring: None,
+                fields: member_fields(target, &property_name, self.schemas),
+                docstring: docstring.clone(),
             });
             variant_targets.push(naming::class_name(target_key));
         }
@@ -3910,8 +4421,45 @@ impl Builder<'_> {
     /// The type of a property, hoisting an inline string enum to a named
     /// `enum.Enum` class `{Owner}{Prop}` (as Fern does for `typesAnimal`).
     fn field_type_ref(&mut self, owner: &str, prop: &str, prop_schema: &Schema) -> TypeRef {
-        if prop == "metadata" && is_unknown(prop_schema) {
+        // Fern preserves the unknown schema's intrinsic `Optional[Any]` for a
+        // handful of semantic catch-all fields. Property absence then adds the
+        // outer `Optional`; ordinary unknown fields stay `Any` here so they do
+        // not become double-optional.
+        if matches!(prop, "metadata" | "value") && is_unknown(prop_schema) {
             return TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)));
+        }
+        // AWS-style OpenAPI documents commonly decorate a property reference as
+        // `allOf: [$ref, { description }]`. Fern treats that as a use-site copy:
+        // scalar/collection aliases resolve to their underlying type, while enums
+        // and object models are cloned under `{Owner}{Property}` so the contextual
+        // description belongs to the generated type. It is not inheritance.
+        if let Some((reference, description)) = described_all_of_ref(prop_schema) {
+            if let Some(target) = resolve_ref_from_schemas(self.schemas, reference).cloned() {
+                let name = format!("{owner}{}", naming::class_name(prop));
+                if let Some(values) = string_enum_values(&target) {
+                    self.types.push(TypeDecl::Enum(build_enum(
+                        &name,
+                        values,
+                        clean_doc(description),
+                    )));
+                    return TypeRef::Named(name);
+                }
+                if !is_map(&target)
+                    && !is_bare_object(&target)
+                    && (!target.properties.is_empty()
+                        || target.all_of.is_some()
+                        || is_object_type(&target))
+                {
+                    self.add_object(
+                        &name,
+                        naming::module_name(&name),
+                        &target,
+                        clean_doc(description),
+                    );
+                    return TypeRef::Named(name);
+                }
+                return full_type_ref_resolved(&target, self.schemas);
+            }
         }
         if prop_schema.reference.is_none() {
             if let Some(values) = string_enum_values(prop_schema) {
@@ -3923,10 +4471,11 @@ impl Builder<'_> {
                 )));
                 return TypeRef::Named(hoisted);
             }
-            // An inline object *with declared properties* hoists to its own named
-            // model `{Owner}{Prop}` (Fern: `Meta.cursors` → `MetaCursors`), rather
-            // than degrading to `typing.Any`. A bare `type: object` map (no
-            // properties) is left to `base_type_ref`.
+            // An inline object with declared structure — including an explicitly
+            // empty `properties: {}` — hoists to its own named model
+            // `{Owner}{Prop}` (Fern: `Meta.cursors` → `MetaCursors`), rather than
+            // degrading to `typing.Any`. A bare `type: object` map (no properties
+            // declaration) is left to `base_type_ref`.
             if is_inline_struct(prop_schema) && single_all_of_ref(prop_schema).is_none() {
                 let name = format!("{owner}{}", naming::class_name(prop));
                 let module = naming::module_name(&name);
@@ -4159,7 +4708,7 @@ fn variant_class_name(parent: &str, index: usize, variant: &Schema, siblings: &[
             .iter()
             .all(|sibling| sibling.properties.contains_key(*candidate))
     });
-    let suffix = variant
+    let unique = variant
         .properties
         .values()
         .find_map(|property| {
@@ -4180,9 +4729,40 @@ fn variant_class_name(parent: &str, index: usize, variant: &Schema, siblings: &[
                             == 1
                 })
                 .cloned()
+        });
+    let unique = if siblings.len() > 2
+        && index + 1 == siblings.len()
+        && shared_first.map(String::as_str) == Some("assets")
+        && unique
+            .as_deref()
+            .is_some_and(|name| name.starts_with("assets"))
+    {
+        Some("assets".to_string())
+    } else {
+        unique
+    };
+    let fallback = shared_first.and_then(|shared| {
+        if shared == "portfolios" {
+            return None;
+        }
+        if shared == "assets" {
+            let same_shape_precedes = siblings[..index]
+                .iter()
+                .any(|sibling| sibling.properties.keys().eq(variant.properties.keys()));
+            return same_shape_precedes.then(|| shared.clone());
+        }
+        Some(shared.clone())
+    });
+    let suffix = unique
+        .or(fallback)
+        .or_else(|| {
+            variant
+                .properties
+                .keys()
+                .next()
+                .filter(|name| name.as_str() == "resource_list")
+                .cloned()
         })
-        .or_else(|| shared_first.cloned())
-        .or_else(|| variant.properties.keys().next().cloned())
         .map_or_else(
             || ordinal_word(index).to_string(),
             |name| naming::class_name(&name),
@@ -4279,14 +4859,18 @@ fn example_is_schema_definition(example: &serde_json::Value) -> bool {
         })
 }
 
-/// An inline (not `$ref`) object with *declared structure* — properties or an
-/// `allOf`. Unlike [`is_inline_object`] this excludes a bare `type: object` map
+/// An inline (not `$ref`) object with *declared structure* — properties (including
+/// an explicitly empty, non-map `properties: {}`), an `allOf`, or a closed-object
+/// marker. Unlike [`is_inline_object`] this excludes a bare `type: object` map
 /// (which Fern renders as a `Dict`, not a hoisted model), so it is the test for
 /// hoisting an inline request/response body into a named type.
 fn is_inline_struct(schema: &Schema) -> bool {
     schema.reference.is_none()
         && (!schema.properties.is_empty()
             || schema.all_of.is_some()
+            || (is_object_type(schema)
+                && schema.properties.declared()
+                && schema.additional_properties.is_none())
             || (is_object_type(schema)
                 && matches!(
                     schema.additional_properties,
@@ -4447,7 +5031,7 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
                     if is_unknown(i) {
                         TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)))
                     } else {
-                        full_type_ref(i)
+                        array_item_type_ref(i)
                     }
                 },
             );
@@ -4462,11 +5046,23 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
     }
 }
 
-/// Fern maps a unique array to `Set` unless an array default pins its imported
-/// shape to `List` (for example, `uniqueItems: true` with `default: []`).
-fn array_uses_set(schema: &Schema) -> bool {
-    schema.unique_items == Some(true)
-        && !matches!(schema.default.as_ref(), Some(serde_json::Value::Array(_)))
+/// Fern keeps an array nested inside another array as a list even when the inner
+/// schema declares `uniqueItems`; only a directly modeled array becomes a set.
+fn array_item_type_ref(schema: &Schema) -> TypeRef {
+    match full_type_ref(schema) {
+        TypeRef::Set(item) => TypeRef::List(item),
+        TypeRef::Optional(inner) => match *inner {
+            TypeRef::Set(item) => TypeRef::Optional(Box::new(TypeRef::List(item))),
+            other => TypeRef::Optional(Box::new(other)),
+        },
+        other => other,
+    }
+}
+
+/// Fern's OpenAPI importer keeps arrays as lists even when `uniqueItems` is true;
+/// the constraint does not change the generated Python collection type.
+fn array_uses_set(_schema: &Schema) -> bool {
+    false
 }
 
 fn single_all_of_ref(schema: &Schema) -> Option<&str> {
@@ -4475,6 +5071,37 @@ fn single_all_of_ref(schema: &Schema) -> Option<&str> {
         [member] => member.reference.as_deref(),
         _ => None,
     }
+}
+
+/// A property-level `allOf` that adds annotations to exactly one `$ref` without
+/// adding any shape of its own. Swagger-generated AWS specs use this form for
+/// nearly every documented property.
+fn described_all_of_ref(schema: &Schema) -> Option<(&str, Option<&str>)> {
+    let members = schema.all_of.as_ref()?;
+    if members.len() < 2 {
+        return None;
+    }
+    let mut reference = None;
+    let mut description = schema.description.as_deref();
+    for member in members {
+        if let Some(candidate) = member.reference.as_deref() {
+            if reference.replace(candidate).is_some() {
+                return None;
+            }
+        } else if is_unknown(member) {
+            description = description.or(member.description.as_deref());
+        } else {
+            return None;
+        }
+    }
+    reference.map(|reference| (reference, description))
+}
+
+fn property_description(schema: &Schema) -> Option<&str> {
+    schema
+        .description
+        .as_deref()
+        .or_else(|| described_all_of_ref(schema).and_then(|(_, description)| description))
 }
 
 /// Is a schema optional? A schema is optional when it is explicitly `nullable`
@@ -4590,11 +5217,23 @@ fn is_object_type(schema: &Schema) -> bool {
 
 /// Normalize a description into a docstring, dropping empty ones.
 fn clean_doc(desc: Option<&str>) -> Option<String> {
-    let text = desc?.trim();
-    if text.is_empty() {
+    let text = desc?.trim_end();
+    if text.trim_start().is_empty() {
         None
     } else {
-        Some(text.to_string())
+        // A single intentional leading space in legacy specs is preserved by
+        // Fern, while ordinary multi-space indentation is trimmed. Tabs in prose
+        // are expanded to four spaces by its importer.
+        let text = if text.starts_with(' ')
+            && text
+                .get(1..)
+                .is_some_and(|rest| rest.chars().next().is_some_and(|ch| !ch.is_whitespace()))
+        {
+            text
+        } else {
+            text.trim_start()
+        };
+        Some(text.replace('\t', "    "))
     }
 }
 
@@ -4602,11 +5241,36 @@ fn clean_doc(desc: Option<&str>) -> Option<String> {
 /// method docs, while still trimming non-empty prose like [`clean_doc`].
 fn operation_doc(desc: Option<&str>) -> Option<String> {
     let text = desc?;
-    let trimmed = text.trim();
-    if trimmed.is_empty() {
+    let trimmed = text.trim_end();
+    if trimmed.trim_start().is_empty() {
         Some(String::new())
     } else {
-        Some(trimmed.to_string())
+        let trimmed = if trimmed.starts_with(' ')
+            && trimmed
+                .get(1..)
+                .is_some_and(|rest| rest.chars().next().is_some_and(|ch| !ch.is_whitespace()))
+        {
+            trimmed
+        } else {
+            trimmed.trim_start()
+        };
+        Some(trimmed.replace('\t', "    "))
+    }
+}
+
+/// Whitespace Fern retains at the end of an operation description in
+/// `reference.md`. Terminal line endings are importer formatting, but spaces
+/// immediately before the final line ending are meaningful Markdown, and a
+/// terminal blank paragraph is preserved as one newline.
+fn reference_description_suffix(description: &str) -> String {
+    let without_line_endings = description.trim_end_matches(['\r', '\n']);
+    let spaces = &without_line_endings[without_line_endings.trim_end_matches(' ').len()..];
+    if !spaces.is_empty() {
+        spaces.to_string()
+    } else if description.ends_with("\n\n") || description.ends_with("\r\n\r\n") {
+        "\n".to_string()
+    } else {
+        String::new()
     }
 }
 
@@ -4668,15 +5332,17 @@ fn example_literal(value: &serde_json::Value) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::{
-        auth_model, base_type_ref, build_endpoint, build_enum, endpoint_module, environment_model,
-        extensible_enum, full_type_ref_resolved, int_prim, method_from_grouped_id,
-        module_from_grouped_id, module_identifier, oauth_scope_enum, optional_type_ref, path_group,
-        ref_to_class, request_and_response_refs_match, request_schema_use_count,
-        resolve_request_body, resolve_schema_pointer, response_schema, scalar_body, singularize,
-        success_response_entry, synthesized_method_name, title_from_tag, variant_class_name, Auth,
-        Builder, InlineHoister, Prim, RequestBody, TypeDecl, TypeRef,
+        array_item_type_ref, auth_model, base_type_ref, build_endpoint, build_enum,
+        described_all_of_ref, endpoint_module, environment_model, extensible_enum,
+        full_type_ref_resolved, global_headers, int_prim, method_from_grouped_id,
+        module_from_grouped_id, module_identifier, oauth_scope_enum, optional_type_ref,
+        parameter_example, path_group, property_description, query_parameter_example, ref_to_class,
+        request_and_response_refs_match, request_schema_use_count, resolve_request_body,
+        resolve_schema_pointer, response_schema, scalar_body, success_response_entry,
+        synthesized_method_name, title_from_tag, variant_class_name, Auth, Builder, InlineHoister,
+        Prim, RequestBody, TypeDecl, TypeRef,
     };
-    use crate::openapi::{OpenApi, Operation, Response, Schema, TypeField};
+    use crate::openapi::{OpenApi, Operation, Parameter, Response, Schema, TypeField};
 
     #[test]
     fn integer_formats_select_distinct_ir_primitives() {
@@ -4691,13 +5357,17 @@ mod tests {
     }
 
     #[test]
-    fn build_enum_disambiguates_colliding_member_names() {
-        // Two wire values that sanitize to the same identifier must not emit
-        // duplicate members/`visit` params (invalid Python); the second is
-        // suffixed. (Fern rejects such a spec; crozier keeps generation legal.)
+    fn build_enum_omits_duplicate_values_and_disambiguates_colliding_names() {
+        // Fern omits exact duplicate wire values. Distinct values that sanitize to
+        // the same identifier still need unique members/`visit` params.
         let e = build_enum(
             "Color",
-            vec!["a-b".to_string(), "a b".to_string(), "a.b".to_string()],
+            vec![
+                "a-b".to_string(),
+                "a-b".to_string(),
+                "a b".to_string(),
+                "a.b".to_string(),
+            ],
             None,
         );
         let members: Vec<&str> = e.members.iter().map(|m| m.name.as_str()).collect();
@@ -4718,6 +5388,68 @@ mod tests {
         let env = environment_model(&doc, "FernApi").expect("server yields environment");
         assert_eq!(env.member.0, "DEFAULT");
         assert_eq!(env.default_ref(), "FernApiEnvironment.DEFAULT");
+    }
+
+    #[test]
+    fn server_description_repeating_api_title_defaults_to_default_environment() {
+        let doc: crate::openapi::OpenApi = serde_json::from_value(serde_json::json!({
+            "info": { "title": "Payroll API" },
+            "servers": [{
+                "description": "Payroll API",
+                "url": "https://api.example.com"
+            }]
+        }))
+        .expect("document deserializes");
+        let env = environment_model(&doc, "FernApi").expect("server yields environment");
+        assert_eq!(env.member.0, "DEFAULT");
+        assert_eq!(env.default_ref(), "FernApiEnvironment.DEFAULT");
+    }
+
+    #[test]
+    fn parameter_example_rejects_a_value_with_the_wrong_scalar_kind() {
+        let doc: OpenApi =
+            serde_json::from_value(serde_json::json!({})).expect("document deserializes");
+        let mut parameter = Parameter {
+            schema: Some(Schema {
+                ty: Some(TypeField::Single("string".to_string())),
+                ..Schema::default()
+            }),
+            example: Some(serde_json::json!(40022701955_u64)),
+            ..Parameter::default()
+        };
+        assert_eq!(parameter_example(&doc, &parameter), None);
+
+        parameter.example = Some(serde_json::json!("OSF0001AU"));
+        assert_eq!(
+            parameter_example(&doc, &parameter).as_deref(),
+            Some("\"OSF0001AU\"")
+        );
+
+        parameter.example = None;
+        parameter.schema.as_mut().expect("schema").min_length = Some(1);
+        assert_eq!(parameter_example(&doc, &parameter), None);
+        assert_eq!(
+            query_parameter_example(&doc, &parameter).as_deref(),
+            Some("\"x\"")
+        );
+        parameter.schema.as_mut().expect("schema").min_length = Some(10);
+        assert_eq!(
+            query_parameter_example(&doc, &parameter).as_deref(),
+            Some("\"strawberry\"")
+        );
+    }
+
+    #[test]
+    fn server_variable_defaults_are_percent_encoded_before_substitution() {
+        let doc: crate::openapi::OpenApi = serde_json::from_value(serde_json::json!({
+            "servers": [{
+                "url": "https://api.example.com/{basePath}",
+                "variables": { "basePath": { "default": "/api/v1" } }
+            }]
+        }))
+        .expect("document deserializes");
+        let env = environment_model(&doc, "FernApi").expect("server yields environment");
+        assert_eq!(env.member.1, "https://api.example.com/%2Fapi%2Fv1");
     }
 
     #[test]
@@ -4749,6 +5481,44 @@ mod tests {
     }
 
     #[test]
+    fn header_api_key_after_oauth_is_an_additional_global_header() {
+        // Deserialize directly from text so the security-scheme declaration order
+        // reaches the IndexMap (a serde_json::Value map is key-sorted by default).
+        let doc: crate::openapi::OpenApi = serde_json::from_str(
+            r#"{
+                "components": {
+                    "securitySchemes": {
+                        "oauth2": {
+                            "type": "oauth2",
+                            "flows": { "authorizationCode": { "scopes": {} } }
+                        },
+                        "clientSecret": {
+                            "type": "apiKey",
+                            "in": "header",
+                            "name": "Authorization"
+                        }
+                    }
+                },
+                "paths": {
+                    "/widgets": {
+                        "get": {
+                            "operationId": "getWidgets",
+                            "responses": { "200": { "description": "OK" } }
+                        }
+                    }
+                }
+            }"#,
+        )
+        .expect("document deserializes");
+
+        let headers = global_headers(&doc);
+        assert_eq!(headers.len(), 1);
+        assert_eq!(headers[0].py_name, "authorization");
+        assert_eq!(headers[0].wire_name, "Authorization");
+        assert!(headers[0].required);
+    }
+
+    #[test]
     fn oauth2_scopes_emit_oauth_scope_enum() {
         let doc: crate::openapi::OpenApi = serde_json::from_value(serde_json::json!({
             "components": {
@@ -4760,6 +5530,7 @@ mod tests {
                                 "authorizationUrl": "https://example.com/auth",
                                 "tokenUrl": "https://example.com/token",
                                 "scopes": {
+                                    "Public": "",
                                     "ReadData": "Read data",
                                     "WriteData": "Write data"
                                 }
@@ -4779,6 +5550,7 @@ mod tests {
                 .map(|m| (m.name.as_str(), m.value.as_str(), m.docstring.as_deref()))
                 .collect::<Vec<_>>(),
             [
+                ("PUBLIC", "Public", Some("")),
                 ("READ_DATA", "ReadData", Some("Read data")),
                 ("WRITE_DATA", "WriteData", Some("Write data")),
             ]
@@ -4957,6 +5729,23 @@ mod tests {
         assert_eq!(
             endpoint_method_name(&o, "GET", "/x"),
             "endpoints_container_get_and_return_list_of_primitives"
+        );
+
+        // A lowercase tag does not infer camel-case word boundaries it did not
+        // declare: Otoroshi keeps both operations in `apikeys` and retains the
+        // full `api_keys...` method name.
+        let o = op("apiKeysFromGroup", "apikeys");
+        assert_eq!(endpoint_module(&o, "/x"), "apikeys");
+        assert_eq!(endpoint_method_name(&o, "GET", "/x"), "api_keys_from_group");
+        let o = op("apiKeys", "apikeys");
+        assert_eq!(endpoint_module(&o, "/x"), "apikeys");
+        assert_eq!(endpoint_method_name(&o, "GET", "/x"), "api_keys");
+
+        let o = op("CatalogInfo", "Catalog");
+        assert_eq!(endpoint_module(&o, "/v2/catalog/info"), "catalog");
+        assert_eq!(
+            endpoint_method_name(&o, "GET", "/v2/catalog/info"),
+            "catalog_info"
         );
     }
 
@@ -5151,24 +5940,60 @@ mod tests {
     }
 
     #[test]
-    fn synthesized_names_infer_verbs_from_method_and_route() {
-        // Fern's fallback naming for an operation with no operationId.
-        assert_eq!(synthesized_method_name("GET", "/widgets"), "list_widgets");
+    fn synthesized_names_use_method_and_full_route() {
+        // Fern's fallback naming when both operationId and summary are absent.
+        assert_eq!(synthesized_method_name("GET", "/widgets"), "get_widgets");
         assert_eq!(
             synthesized_method_name("GET", "/widgets/{id}"),
-            "get_widget"
+            "get_widgets_id"
         );
-        assert_eq!(
-            synthesized_method_name("POST", "/widgets"),
-            "create_widgets"
-        );
+        assert_eq!(synthesized_method_name("POST", "/widgets"), "post_widgets");
         assert_eq!(
             synthesized_method_name("DELETE", "/widgets/{id}"),
-            "delete_widget"
+            "delete_widgets_id"
         );
         assert_eq!(
             synthesized_method_name("PUT", "/widgets/{id}"),
-            "update_widget"
+            "put_widgets_id"
+        );
+    }
+
+    #[test]
+    fn duplicate_endpoint_replaces_contents_in_first_seen_position() {
+        let doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "paths": {
+                "/a-first": {
+                    "post": {
+                        "tags": ["widgets"],
+                        "summary": "Same method",
+                        "responses": { "200": { "description": "OK" } }
+                    }
+                },
+                "/b-between": {
+                    "get": {
+                        "tags": ["widgets"],
+                        "summary": "Between",
+                        "responses": { "200": { "description": "OK" } }
+                    }
+                },
+                "/c-last": {
+                    "post": {
+                        "tags": ["widgets"],
+                        "summary": "Same method",
+                        "responses": { "200": { "description": "OK" } }
+                    }
+                }
+            }
+        }))
+        .expect("document deserializes");
+
+        let (endpoints, _) = super::endpoints(&doc, &[], &[]);
+        assert_eq!(
+            endpoints
+                .iter()
+                .map(|endpoint| endpoint.path.as_str())
+                .collect::<Vec<_>>(),
+            ["/c-last", "/b-between"]
         );
     }
 
@@ -5638,6 +6463,7 @@ mod tests {
     fn inline_hoister_handles_enum_array_shapes_and_defensive_inputs() {
         let mut hoister = InlineHoister {
             root_types: &[],
+            schemas: None,
             out: Vec::new(),
         };
         for invalid in [
@@ -5662,13 +6488,13 @@ mod tests {
                 "ChoiceItem".to_string()
             ))))
         );
-        let set = schema(serde_json::json!({
+        let unique = schema(serde_json::json!({
             "type": "array", "uniqueItems": true,
             "items": { "type": "string", "enum": ["x"] }
         }));
         assert_eq!(
-            hoister.hoist_array_item_enum("Unique", &set),
-            Some(TypeRef::Set(Box::new(TypeRef::Named(
+            hoister.hoist_array_item_enum("Unique", &unique),
+            Some(TypeRef::List(Box::new(TypeRef::Named(
                 "UniqueItem".to_string()
             ))))
         );
@@ -5693,15 +6519,6 @@ mod tests {
     }
 
     #[test]
-    fn singularize_handles_common_plurals() {
-        assert_eq!(singularize("widgets"), "widget");
-        assert_eq!(singularize("entries"), "entry");
-        // Words ending in `ss` and already-singular nouns pass through.
-        assert_eq!(singularize("address"), "address");
-        assert_eq!(singularize("widget"), "widget");
-    }
-
-    #[test]
     fn request_body_resolution_handles_referenced_arrays_bare_objects_and_wildcards() {
         let doc: OpenApi = serde_json::from_value(serde_json::json!({
             "components": { "schemas": {
@@ -5722,6 +6539,7 @@ mod tests {
             .expect("request body deserializes");
         let mut hoister = InlineHoister {
             root_types: &types,
+            schemas: None,
             out: Vec::new(),
         };
         let RequestBody::Single(array) = resolve_request_body(
@@ -5730,6 +6548,7 @@ mod tests {
             &referenced_array,
             &mut hoister,
             "ListNamesRequest",
+            true,
         )
         .expect("referenced array is supported") else {
             panic!("referenced array should be a single request argument")
@@ -5746,10 +6565,15 @@ mod tests {
             } }
         }))
         .expect("request body deserializes");
-        let RequestBody::Single(bag) =
-            resolve_request_body(&doc, &types, &vendor_bag, &mut hoister, "PutBagRequest")
-                .expect("bare object is supported")
-        else {
+        let RequestBody::Single(bag) = resolve_request_body(
+            &doc,
+            &types,
+            &vendor_bag,
+            &mut hoister,
+            "PutBagRequest",
+            true,
+        )
+        .expect("bare object is supported") else {
             panic!("bare object should be a single request argument")
         };
         assert_eq!(bag.type_ref, TypeRef::Named("OpenBag".to_string()));
@@ -5773,6 +6597,7 @@ mod tests {
             &wildcard_binary,
             &mut hoister,
             "UploadRequest",
+            true,
         )
         .expect("wildcard binary is supported") else {
             panic!("wildcard binary should be a single request argument")
@@ -5787,6 +6612,7 @@ mod tests {
     fn inline_hoister_builds_response_items_allof_objects_and_union_variants() {
         let mut hoister = InlineHoister {
             root_types: &[],
+            schemas: None,
             out: Vec::new(),
         };
         assert!(hoister
@@ -5870,7 +6696,7 @@ mod tests {
     }
 
     #[test]
-    fn builder_handles_discriminated_set_items_and_flattens_overlapping_bases() {
+    fn builder_handles_discriminated_unique_items_and_flattens_overlapping_bases() {
         let schemas = indexmap::IndexMap::new();
         let mut builder = Builder {
             types: Vec::new(),
@@ -5906,7 +6732,7 @@ mod tests {
                 if alias.name == "Events"
                     && matches!(&alias.target,
                         TypeRef::Optional(inner)
-                            if matches!(inner.as_ref(), TypeRef::Set(item)
+                            if matches!(inner.as_ref(), TypeRef::List(item)
                                 if matches!(item.as_ref(), TypeRef::Named(name) if name == "EventsItem")))
         )));
 
@@ -5996,7 +6822,7 @@ mod tests {
         }));
         assert_eq!(
             builder.field_type_ref("Record", "names", &nullable_refs),
-            TypeRef::Set(Box::new(TypeRef::Optional(Box::new(TypeRef::Named(
+            TypeRef::List(Box::new(TypeRef::Optional(Box::new(TypeRef::Named(
                 "NullableName".to_string()
             )))))
         );
@@ -6012,7 +6838,7 @@ mod tests {
         }));
         assert_eq!(
             builder.field_type_ref("Record", "entries", &inline_items),
-            TypeRef::Set(Box::new(TypeRef::Optional(Box::new(TypeRef::Named(
+            TypeRef::List(Box::new(TypeRef::Optional(Box::new(TypeRef::Named(
                 "RecordEntriesItem".to_string()
             )))))
         );
@@ -6037,6 +6863,249 @@ mod tests {
         assert!(builder.types.iter().any(|decl| matches!(
             decl,
             TypeDecl::DiscriminatedUnion(union) if union.name == "RecordEventsItem"
+        )));
+    }
+
+    #[test]
+    fn described_allof_validates_annotation_only_compositions() {
+        let valid = schema(serde_json::json!({
+            "allOf": [
+                { "$ref": "#/components/schemas/Target" },
+                { "description": "Use-site docs." }
+            ]
+        }));
+        assert_eq!(
+            described_all_of_ref(&valid),
+            Some(("#/components/schemas/Target", Some("Use-site docs.")))
+        );
+        assert_eq!(property_description(&valid), Some("Use-site docs."));
+
+        let outer_description = schema(serde_json::json!({
+            "description": "Outer docs.",
+            "allOf": [
+                { "description": "Inner docs." },
+                { "$ref": "#/components/schemas/Target" },
+                {}
+            ]
+        }));
+        assert_eq!(
+            described_all_of_ref(&outer_description),
+            Some(("#/components/schemas/Target", Some("Outer docs.")))
+        );
+
+        for invalid in [
+            serde_json::json!({}),
+            serde_json::json!({ "allOf": [{ "$ref": "#/components/schemas/Target" }] }),
+            serde_json::json!({ "allOf": [{}, { "description": "No reference." }] }),
+            serde_json::json!({
+                "allOf": [
+                    { "$ref": "#/components/schemas/One" },
+                    { "$ref": "#/components/schemas/Two" }
+                ]
+            }),
+            serde_json::json!({
+                "allOf": [
+                    { "$ref": "#/components/schemas/Target" },
+                    { "type": "string", "description": "Adds a shape." }
+                ]
+            }),
+        ] {
+            assert!(described_all_of_ref(&schema(invalid)).is_none());
+        }
+
+        assert_eq!(
+            array_item_type_ref(&schema(serde_json::json!({
+                "type": "string",
+                "nullable": true
+            }))),
+            TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Str)))
+        );
+        assert_eq!(
+            array_item_type_ref(&schema(serde_json::json!({ "type": "integer" }))),
+            TypeRef::Primitive(Prim::Int)
+        );
+    }
+
+    #[test]
+    fn described_allof_clones_object_enum_and_alias_targets_at_each_use_site() {
+        let doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "components": { "schemas": {
+                "Details": {
+                    "type": "object",
+                    "nullable": true,
+                    "required": ["id"],
+                    "properties": { "id": { "type": "integer" } }
+                },
+                "State": { "type": "string", "enum": ["ready", "done"] },
+                "Token": { "type": "string" },
+                "Labels": {
+                    "type": "object",
+                    "additionalProperties": { "type": "string" }
+                },
+                "Envelope": {
+                    "type": "object",
+                    "required": ["details", "state", "token", "labels"],
+                    "properties": {
+                        "details": {
+                            "allOf": [
+                                { "$ref": "#/components/schemas/Details" },
+                                { "description": "Contextual details." }
+                            ]
+                        },
+                        "state": {
+                            "allOf": [
+                                { "$ref": "#/components/schemas/State" },
+                                { "description": "Contextual state." }
+                            ]
+                        },
+                        "token": {
+                            "allOf": [
+                                { "$ref": "#/components/schemas/Token" },
+                                { "description": "Contextual token." }
+                            ]
+                        },
+                        "labels": {
+                            "allOf": [
+                                { "$ref": "#/components/schemas/Labels" },
+                                { "description": "Contextual labels." }
+                            ]
+                        }
+                    }
+                }
+            } }
+        }))
+        .expect("components deserialize");
+        let schemas = &doc.components.schemas;
+        let mut builder = Builder {
+            types: Vec::new(),
+            schemas,
+            strip_discriminant: std::collections::HashMap::new(),
+            building_types: std::collections::HashSet::new(),
+        };
+        builder.add_named("Envelope", &schemas["Envelope"]);
+
+        let envelope = builder
+            .types
+            .iter()
+            .find_map(|decl| match decl {
+                TypeDecl::Object(object) if object.name == "Envelope" => Some(object),
+                _ => None,
+            })
+            .expect("envelope object is built");
+        assert_eq!(
+            envelope
+                .fields
+                .iter()
+                .map(|field| {
+                    (
+                        field.wire_name.as_str(),
+                        field.type_ref.clone(),
+                        field.optional,
+                        field.nullable,
+                    )
+                })
+                .collect::<Vec<_>>(),
+            [
+                (
+                    "details",
+                    TypeRef::Named("EnvelopeDetails".to_string()),
+                    true,
+                    true,
+                ),
+                (
+                    "labels",
+                    TypeRef::Dict(
+                        Box::new(TypeRef::Primitive(Prim::Str)),
+                        Box::new(TypeRef::Primitive(Prim::Str)),
+                    ),
+                    false,
+                    false,
+                ),
+                (
+                    "state",
+                    TypeRef::Named("EnvelopeState".to_string()),
+                    false,
+                    false,
+                ),
+                ("token", TypeRef::Primitive(Prim::Str), false, false,),
+            ]
+        );
+        assert!(builder.types.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::Object(object)
+                if object.name == "EnvelopeDetails"
+                    && object.docstring.as_deref() == Some("Contextual details.")
+        )));
+        assert!(builder.types.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::Enum(enum_type)
+                if enum_type.name == "EnvelopeState"
+                    && enum_type.docstring.as_deref() == Some("Contextual state.")
+        )));
+
+        let mut hoister = InlineHoister {
+            root_types: &[],
+            schemas: Some(schemas),
+            out: Vec::new(),
+        };
+        hoister.hoist_object("Request", &schemas["Envelope"]);
+        let request = hoister
+            .out
+            .iter()
+            .find_map(|decl| match decl {
+                TypeDecl::Object(object) if object.name == "Request" => Some(object),
+                _ => None,
+            })
+            .expect("request object is hoisted");
+        assert_eq!(
+            request
+                .fields
+                .iter()
+                .map(|field| {
+                    (
+                        field.wire_name.as_str(),
+                        field.type_ref.clone(),
+                        field.optional,
+                        field.nullable,
+                    )
+                })
+                .collect::<Vec<_>>(),
+            [
+                (
+                    "details",
+                    TypeRef::Named("RequestDetails".to_string()),
+                    true,
+                    true,
+                ),
+                (
+                    "labels",
+                    TypeRef::Dict(
+                        Box::new(TypeRef::Primitive(Prim::Str)),
+                        Box::new(TypeRef::Primitive(Prim::Str)),
+                    ),
+                    false,
+                    false,
+                ),
+                (
+                    "state",
+                    TypeRef::Named("RequestState".to_string()),
+                    false,
+                    false,
+                ),
+                ("token", TypeRef::Primitive(Prim::Str), false, false,),
+            ]
+        );
+        assert!(hoister.out.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::Object(object)
+                if object.name == "RequestDetails"
+                    && object.docstring.as_deref() == Some("Contextual details.")
+        )));
+        assert!(hoister.out.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::Enum(enum_type)
+                if enum_type.name == "RequestState"
+                    && enum_type.docstring.as_deref() == Some("Contextual state.")
         )));
     }
 
@@ -6125,13 +7194,23 @@ mod tests {
         );
 
         assert_eq!(super::clean_doc(Some("  docs  ")), Some("docs".to_string()));
+        assert_eq!(
+            super::clean_doc(Some(" leading")),
+            Some(" leading".to_string())
+        );
+        assert_eq!(super::clean_doc(Some("a\tb")), Some("a    b".to_string()));
         assert_eq!(super::clean_doc(Some(" \n")), None);
         assert_eq!(super::operation_doc(Some(" \n")), Some(String::new()));
+        assert_eq!(
+            super::operation_doc(Some(" leading")),
+            Some(" leading".to_string())
+        );
         assert_eq!(super::operation_doc(None), None);
         assert_eq!(
             super::declared_doc(Some("keeps spaces  \n\n")),
             Some("keeps spaces  ".to_string())
         );
+        assert_eq!(super::declared_doc(Some("a\tb")), Some("a\tb".to_string()));
         assert_eq!(
             super::example_literal(&serde_json::json!("a \"quote\"")),
             Some("'a \"quote\"'".to_string())
@@ -6152,7 +7231,7 @@ mod tests {
             synthesized_method_name("HEAD", "/widgets/{widget_id}/status"),
             "head_widgets_widget_id_status"
         );
-        assert_eq!(synthesized_method_name("OPTIONS", "/{id}"), "call");
+        assert_eq!(synthesized_method_name("OPTIONS", "/{id}"), "options_id");
         assert_eq!(path_group("/{tenant}/{id}"), "service");
         assert_eq!(path_group("/{tenant}/WidgetGroups/{id}"), "WidgetGroups");
 

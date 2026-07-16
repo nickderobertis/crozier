@@ -1,0 +1,3 @@
+
+
+DisableRollback = bool

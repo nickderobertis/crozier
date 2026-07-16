@@ -1,0 +1,3 @@
+
+
+ObExternalLegalStructureType1Code = str

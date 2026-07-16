@@ -1,0 +1,29 @@
+
+
+import enum
+import typing
+
+T_Result = typing.TypeVar("T_Result")
+
+
+class TestTypeInputType(str, enum.Enum):
+    """
+    <p>The type of the extension to test.</p> <p>Conditional: You must specify <code>Arn</code>, or <code>TypeName</code> and <code>Type</code>.</p>
+    """
+
+    RESOURCE = "RESOURCE"
+    MODULE = "MODULE"
+    HOOK = "HOOK"
+
+    def visit(
+        self,
+        resource: typing.Callable[[], T_Result],
+        module: typing.Callable[[], T_Result],
+        hook: typing.Callable[[], T_Result],
+    ) -> T_Result:
+        if self is TestTypeInputType.RESOURCE:
+            return resource()
+        if self is TestTypeInputType.MODULE:
+            return module()
+        if self is TestTypeInputType.HOOK:
+            return hook()

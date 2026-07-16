@@ -1,0 +1,13 @@
+
+
+import typing
+
+from .post_portfolio_analysis_correlation_spectrum_request_assets_covariance_matrix import (
+    PostPortfolioAnalysisCorrelationSpectrumRequestAssetsCovarianceMatrix,
+)
+from .post_portfolio_analysis_correlation_spectrum_request_one import PostPortfolioAnalysisCorrelationSpectrumRequestOne
+
+PostPortfolioAnalysisCorrelationSpectrumRequest = typing.Union[
+    PostPortfolioAnalysisCorrelationSpectrumRequestAssetsCovarianceMatrix,
+    PostPortfolioAnalysisCorrelationSpectrumRequestOne,
+]

@@ -321,6 +321,10 @@ pub struct Operation {
     /// The request body, if any.
     #[serde(rename = "requestBody", default)]
     pub request_body: Option<RequestBody>,
+    /// Legacy OpenAPI Generator body-name hint. Fern's importer preserves the
+    /// body semantics of Swagger-derived operations carrying this extension.
+    #[serde(rename = "x-codegen-request-body-name", default)]
+    pub codegen_request_body_name: Option<String>,
     /// Responses, keyed by status code (or `default`), in document order.
     #[serde(default)]
     pub responses: IndexMap<String, Response>,
@@ -474,6 +478,9 @@ pub struct MediaType {
     /// Optional example value for the media payload.
     #[serde(default)]
     pub example: Option<serde_json::Value>,
+    /// Named examples for the media payload, in declaration order.
+    #[serde(default)]
+    pub examples: IndexMap<String, ParameterExample>,
 }
 
 /// The `info` block.
@@ -540,12 +547,11 @@ pub struct Schema {
     /// Array item schema.
     #[serde(default)]
     pub items: Option<Box<Schema>>,
-    /// `uniqueItems` — a `true` array usually maps to `typing.Set` rather than
-    /// `List` (Fern retains `List` when the schema declares an array default).
+    /// `uniqueItems` is accepted at the boundary; Fern's OpenAPI importer still
+    /// emits a list, so generation does not change collection type for this flag.
     #[serde(rename = "uniqueItems", default)]
     pub unique_items: Option<bool>,
-    /// Schema default. Fern uses an array default to retain list semantics even
-    /// when `uniqueItems` is true.
+    /// Schema default.
     #[serde(default)]
     pub default: Option<serde_json::Value>,
     /// `additionalProperties` — a bool or a schema.
@@ -576,6 +582,18 @@ pub struct Schema {
     /// Inclusive lower bound used when Fern synthesizes integer examples.
     #[serde(default)]
     pub minimum: Option<serde_json::Value>,
+    /// Minimum string length. Fern uses `"x"` for constrained request-string
+    /// examples instead of repeating the field name.
+    #[serde(rename = "minLength", default)]
+    pub min_length: Option<u64>,
+    /// Maximum string length, paired with `minLength` for Fern's constrained
+    /// request-example placeholder heuristic.
+    #[serde(rename = "maxLength", default)]
+    pub max_length: Option<u64>,
+    /// Legacy Square beta marker. Its importer uses constrained placeholder
+    /// values in worked request examples for these schemas.
+    #[serde(rename = "x-is-beta", default)]
+    pub is_beta: Option<bool>,
     /// OpenAPI 3.0 nullability.
     #[serde(default)]
     pub nullable: Option<bool>,
