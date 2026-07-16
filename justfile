@@ -113,6 +113,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e reverb_com_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e maif_otoroshi_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e portfoliooptimizer_io_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e openbanking_org_uk_account_info_openapi_matches_fern_output
 
 # Format the codebase in place.
 format:

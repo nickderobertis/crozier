@@ -8,6 +8,7 @@
 //! handles the line wrapping. The template layout is covered directly by render
 //! tests (see this module's `tests`), so it iterates without the full pipeline.
 
+use std::cmp::Ordering;
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::PathBuf;
 
@@ -234,8 +235,11 @@ impl Imports {
     fn render(&self) -> String {
         let (mut g1, mut g2): (Vec<String>, Vec<String>) = (Vec::new(), Vec::new());
 
-        // Plain imports first within each group (BTreeMap iterates sorted).
-        for (module, alias) in &self.plain {
+        // Fern orders generated modules naturally (`type9` before `type10`), while
+        // the maps provide deterministic collection and de-duplication.
+        let mut plain: Vec<_> = self.plain.iter().collect();
+        plain.sort_by(|(a, _), (b, _)| natural_cmp(a, b));
+        for (module, alias) in plain {
             let line = match alias {
                 Some(a) => format!("import {module} as {a}"),
                 None => format!("import {module}"),
@@ -247,7 +251,9 @@ impl Imports {
             }
         }
         // Then `from` imports within each group.
-        for (module, names) in &self.from {
+        let mut from: Vec<_> = self.from.iter().collect();
+        from.sort_by(|(a, _), (b, _)| natural_cmp(a, b));
+        for (module, names) in from {
             let joined = names.iter().cloned().collect::<Vec<_>>().join(", ");
             let line = format!("from {module} import {joined}");
             if Self::is_stdlib(module) {
@@ -264,6 +270,51 @@ impl Imports {
             .collect();
         groups.join("\n\n")
     }
+}
+
+/// Compare strings with digit runs treated as integers, matching Fern's import
+/// ordering for generated names with numeric suffixes (`item9`, `item10`).
+fn natural_cmp(left: &str, right: &str) -> Ordering {
+    let (mut left_index, mut right_index) = (0, 0);
+    let (left_bytes, right_bytes) = (left.as_bytes(), right.as_bytes());
+    while left_index < left_bytes.len() && right_index < right_bytes.len() {
+        let left_digit = left_bytes[left_index].is_ascii_digit();
+        let right_digit = right_bytes[right_index].is_ascii_digit();
+        if left_digit && right_digit {
+            let left_end = left_index
+                + left_bytes[left_index..]
+                    .iter()
+                    .take_while(|byte| byte.is_ascii_digit())
+                    .count();
+            let right_end = right_index
+                + right_bytes[right_index..]
+                    .iter()
+                    .take_while(|byte| byte.is_ascii_digit())
+                    .count();
+            let left_digits = &left[left_index..left_end];
+            let right_digits = &right[right_index..right_end];
+            let left_value = left_digits.trim_start_matches('0');
+            let right_value = right_digits.trim_start_matches('0');
+            let ordering = left_value
+                .len()
+                .cmp(&right_value.len())
+                .then_with(|| left_value.cmp(right_value))
+                .then_with(|| left_digits.len().cmp(&right_digits.len()));
+            if ordering != Ordering::Equal {
+                return ordering;
+            }
+            left_index = left_end;
+            right_index = right_end;
+        } else {
+            let ordering = left_bytes[left_index].cmp(&right_bytes[right_index]);
+            if ordering != Ordering::Equal {
+                return ordering;
+            }
+            left_index += 1;
+            right_index += 1;
+        }
+    }
+    left_bytes.len().cmp(&right_bytes.len())
 }
 
 /// Render a resolved type to a [`Doc`] expression, registering needed imports.
@@ -1421,7 +1472,8 @@ fn abbrev_call(indent: usize, prefix: &str, complex: bool) -> String {
     if flat.len() <= 80 {
         flat
     } else if indent == 0
-        && prefix.starts_with("response = client.with_raw_response.")
+        && prefix.starts_with("response = client.")
+        && prefix.len() > 80
         && prefix
             .strip_prefix("response = ")
             .is_some_and(|call| format!("    {call}(...)").len() <= 80)
@@ -6105,6 +6157,18 @@ mod tests {
         assert_eq!(
             abbrev_call(0, root_raw, true),
             "response = (\n    client.with_raw_response.get_all_colors_of_the_default_color_name_list(...)\n)"
+        );
+        let nested_raw =
+            "response = client.account_access.with_raw_response.create_account_access_consents";
+        assert_eq!(
+            abbrev_call(0, nested_raw, true),
+            "response = (\n    client.account_access.with_raw_response.create_account_access_consents(...)\n)"
+        );
+        let fitting_prefix =
+            "response = client.attachment_public.with_raw_response.create_attachment_public";
+        assert_eq!(
+            abbrev_call(0, fitting_prefix, true),
+            "response = client.attachment_public.with_raw_response.create_attachment_public(\n    ...\n)"
         );
     }
 

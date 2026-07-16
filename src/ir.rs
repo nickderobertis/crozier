@@ -195,7 +195,8 @@ pub struct GlobalHeader {
 /// stays a per-method parameter. Ordinary promoted headers retain first-appearance
 /// order; header api-key schemes follow them in scheme declaration order. Fern never
 /// promotes a transport-managed header (`User-Agent`, which the HTTP client sets
-/// itself), even when it rides every operation.
+/// itself), or an `Authorization` parameter already supplied by the selected auth
+/// scheme, even when it rides every operation.
 fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
     let mut total = 0usize;
     // wire name → (operations carrying it, required in every one so far), first-seen.
@@ -231,6 +232,7 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
                 && *count == total
                 && (!*required || total > 1)
                 && !is_transport_managed_header(wire_name)
+                && !is_auth_managed_header(doc, wire_name)
                 && !api_key_wire_names.contains(wire_name.as_str())
         })
         .map(|(wire_name, (_, required))| GlobalHeader {
@@ -285,6 +287,29 @@ fn additional_api_key_global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
 /// when it rides every operation (the generated client sets its own).
 fn is_transport_managed_header(wire_name: &str) -> bool {
     wire_name.eq_ignore_ascii_case("user-agent")
+}
+
+/// Whether the SDK's auth credential already owns this header. OAuth and HTTP
+/// auth schemes write `Authorization` through the client wrapper, so an explicit
+/// operation parameter with that wire name must not become a second constructor
+/// or method argument. A declared `apiKey` scheme named `Authorization` remains a
+/// distinct global header (Square uses it alongside OAuth), matching Fern.
+fn is_auth_managed_header(doc: &OpenApi, wire_name: &str) -> bool {
+    use crate::openapi::SecuritySchemeType;
+
+    if !wire_name.eq_ignore_ascii_case("authorization") {
+        return false;
+    }
+    let schemes = doc.components.security_schemes.values();
+    let declared_api_key = schemes.clone().any(|scheme| {
+        scheme.ty == SecuritySchemeType::ApiKey
+            && scheme.location == Some(ParameterLocation::Header)
+            && scheme
+                .name
+                .as_deref()
+                .is_some_and(|name| name.eq_ignore_ascii_case(wire_name))
+    });
+    !declared_api_key && matches!(auth_model(doc), Auth::Bearer { .. } | Auth::Basic { .. })
 }
 
 /// The SDK's authentication model, derived from `components.securitySchemes` and
@@ -1171,6 +1196,7 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
     if let Some(oauth_scope) = oauth_scope_enum(doc) {
         builder.types.push(TypeDecl::Enum(oauth_scope));
     }
+    deduplicate_type_names(&mut builder.types);
     // Endpoint resolution consults the built types to hoist a plain-object `$ref`
     // body's fields and to decide which of them serialize through the convert
     // wrapper, so it runs after the type layer is built. It also hoists inline
@@ -1404,6 +1430,17 @@ fn move_inline_body_enums_to_tags(
     moved
 }
 
+/// Collapse schemas whose source names normalize to the same Python class name.
+/// Fern keeps the later declaration, which is also the file that wins when both
+/// declarations map to the same module path; removing the earlier declaration
+/// keeps lazy-loader exports and type analysis aligned with that winning file.
+fn deduplicate_type_names(types: &mut Vec<TypeDecl>) {
+    let mut seen = std::collections::HashSet::new();
+    types.reverse();
+    types.retain(|decl| seen.insert(decl.name().to_string()));
+    types.reverse();
+}
+
 /// Collect the distinct exception classes an SDK needs, one per error class name
 /// used across its (emittable) endpoints, sorted by class name so the `errors/`
 /// package `__init__` aggregator is deterministic.
@@ -1610,6 +1647,7 @@ fn build_endpoint(
             p.location == Some(ParameterLocation::Header)
                 && !global_headers.contains(p.name.as_str())
                 && !is_transport_managed_header(&p.name)
+                && !is_auth_managed_header(doc, &p.name)
         })
         .map(|p| {
             let type_ref = if p.schema.is_none() && !p.content.is_empty() {
