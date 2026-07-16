@@ -1852,8 +1852,10 @@ fn reference_entry(
 }
 
 fn reference_param_annotation(annotation: &str) -> String {
-    // Fern wraps the generated scalar-or-sequence type for array query params in
-    // reference tables, while leaving the method signature on one line.
+    // Fern recursively wraps a generated scalar-or-sequence type for array query
+    // params only when the annotation exceeds the reference writer's 80 columns.
+    // A moderately long union fits after the outer Optional breaks; a longer one
+    // needs its Union members broken as well.
     if let Some(inner) = annotation
         .strip_prefix("typing.Optional[typing.Union[")
         .and_then(|s| s.strip_suffix("]]"))
@@ -1861,7 +1863,14 @@ fn reference_param_annotation(annotation: &str) -> String {
         if let Some((item, sequence_item)) = inner.split_once(", typing.Sequence[") {
             if sequence_item.strip_suffix(']') == Some(item)
                 && item.chars().next().is_some_and(char::is_uppercase)
+                && annotation.len() > 80
+                && 4 + "typing.Union[".len() + inner.len() + 1 > 80
             {
+                if 8 + inner.len() <= 80 {
+                    return format!(
+                        "typing.Optional[\n    typing.Union[\n        {inner}\n    ]\n]"
+                    );
+                }
                 return format!(
                     "typing.Optional[\n    typing.Union[\n        {item},\n        typing.Sequence[{item}],\n    ]\n]"
                 );
@@ -3233,7 +3242,14 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         for qp in &ep.query_params {
             if qp.convert {
                 imports.add_core("serialization", "convert_and_respect_annotation_metadata");
-                let annotation = raw_type_str_ctx(&qp.type_ref, imports, true);
+                // Fern converts collections per element: a query
+                // `Sequence[Model]` passes `annotation=Model`, while a direct
+                // object parameter passes its model unchanged.
+                let annotation_type = match &qp.type_ref {
+                    TypeRef::List(inner) | TypeRef::Set(inner) => inner.as_ref(),
+                    other => other,
+                };
+                let annotation = raw_type_str_ctx(annotation_type, imports, true);
                 let call = Doc::group(
                     format!(
                         "                \"{}\": convert_and_respect_annotation_metadata(",
@@ -3837,6 +3853,7 @@ fn root_client_file(
         tag_decls,
         tag_map,
         auth,
+        global_headers,
         false,
         &mut imports,
     )?;
@@ -3849,6 +3866,7 @@ fn root_client_file(
         tag_decls,
         tag_map,
         auth,
+        global_headers,
         true,
         &mut imports,
     )?;
@@ -3929,6 +3947,7 @@ fn root_client_methods(
     tag_decls: &[TagTypeDecl],
     tag_map: &BTreeMap<String, String>,
     auth: &Auth,
+    global_headers: &[GlobalHeader],
     is_async: bool,
     imports: &mut Imports,
 ) -> Result<Vec<String>> {
@@ -3944,7 +3963,7 @@ fn root_client_methods(
         auth,
         has_environment: true,
         tag_types: tag_map,
-        global_headers: &[],
+        global_headers,
     };
     let mut method_imports = Imports::at(RefLoc::PackageRoot, tag_map);
     let methods = endpoints
@@ -5374,6 +5393,16 @@ fn build_example_with_body_example(
         .iter()
         .filter(|qp| !ep.wildcard_binary_response && !wildcard_request && qp.required)
     {
+        // Fern omits required collections of referenced shapes from worked
+        // examples; their query encoding has no inline scalar placeholder.
+        if matches!(
+            &qp.type_ref,
+            TypeRef::List(inner) | TypeRef::Set(inner)
+                if matches!(inner.as_ref(), TypeRef::Named(_))
+                    || ctx.example_is_object(inner)
+        ) {
+            continue;
+        }
         let v = if let Some(ex) = qp.example.as_ref().filter(|_| qp.example_is_scalar) {
             Example::Atom(ex.clone())
         } else if let TypeRef::List(inner) = &qp.type_ref {
@@ -5590,13 +5619,13 @@ fn build_example_with_body_example(
     }
 
     // `from <pkg> import <client + referenced types>`, alphabetical, wrapped at
-    // the snippet's default line length (88). Fern's examples are laid out by hand
+    // the snippet's import width (80). Fern's examples are laid out by hand
     // (not `ruff format`) — see `Example::render` for why.
     let mut names: Vec<String> = ctx.referenced.iter().cloned().collect();
     names.push(example_name.clone());
     names.sort();
     let import_flat = format!("from {pkg} import {}", names.join(", "));
-    let import_lines: Vec<String> = if import_flat.len() <= 88 {
+    let import_lines: Vec<String> = if import_flat.len() <= 80 {
         vec![import_flat]
     } else {
         let mut v = vec![format!("from {pkg} import (")];
@@ -6562,6 +6591,30 @@ mod tests {
         assert_eq!(
             reference_param_annotation("typing.Optional[typing.Sequence[str]]"),
             "typing.Optional[typing.Sequence[str]]"
+        );
+        assert_eq!(
+            reference_param_annotation(
+                "typing.Optional[typing.Union[ResourceToSkip, typing.Sequence[ResourceToSkip]]]"
+            ),
+            "typing.Optional[typing.Union[ResourceToSkip, typing.Sequence[ResourceToSkip]]]"
+        );
+        assert_eq!(
+            reference_param_annotation(
+                "typing.Optional[typing.Union[ResourceToImport, typing.Sequence[ResourceToImport]]]"
+            ),
+            "typing.Optional[\n    typing.Union[ResourceToImport, typing.Sequence[ResourceToImport]]\n]"
+        );
+        assert_eq!(
+            reference_param_annotation(
+                "typing.Optional[typing.Union[TypeConfigurationIdentifier, typing.Sequence[TypeConfigurationIdentifier]]]"
+            ),
+            "typing.Optional[\n    typing.Union[\n        TypeConfigurationIdentifier,\n        typing.Sequence[TypeConfigurationIdentifier],\n    ]\n]"
+        );
+        assert_eq!(
+            reference_param_annotation(
+                "typing.Optional[typing.Union[StackResourceDriftStatus, typing.Sequence[StackResourceDriftStatus]]]"
+            ),
+            "typing.Optional[\n    typing.Union[\n        StackResourceDriftStatus, typing.Sequence[StackResourceDriftStatus]\n    ]\n]"
         );
     }
 

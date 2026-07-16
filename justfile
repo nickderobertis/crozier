@@ -88,6 +88,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e bintable_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apis_guru_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e color_pizza_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e amazonaws_com_cloudformation_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e byautomata_io_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_proxy_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_connector_matches_fern_output

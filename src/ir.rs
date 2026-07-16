@@ -1575,6 +1575,7 @@ fn build_endpoint(
     // `types/` package; the hoister accumulates them, keyed to the tag below.
     let mut hoister = InlineHoister {
         root_types: types,
+        schemas: Some(&doc.components.schemas),
         out: Vec::new(),
     };
     // The operation's PascalCase context (from the operationId, never the tag) —
@@ -1622,20 +1623,23 @@ fn build_endpoint(
                 .map_or(TypeRef::Primitive(Prim::Any), |s| {
                     hoister.hoist_param_enum(&request_ctx, &p.name, s)
                 });
-            let convert = type_needs_convert(&type_ref, types);
+            let convert = hoister.needs_convert(&type_ref);
             // A parameter-level `example` wins; otherwise the schema's own.
-            let example = if p.required != Some(true)
+            let without_declared_example = parameter_example_value(doc, p).is_none();
+            let omit_synthesized_example = without_declared_example
+                && (p.required != Some(true) || success_response(op).is_none());
+            let optional_referenced_enum = p.required != Some(true)
                 && p.example.is_none()
                 && p.examples.is_empty()
                 && p.schema
                     .as_ref()
                     .and_then(|schema| schema.reference.as_deref())
                     .and_then(|reference| resolve_ref(doc, reference))
-                    .is_some_and(|schema| string_enum_values(schema).is_some())
-            {
+                    .is_some_and(|schema| string_enum_values(schema).is_some());
+            let example = if omit_synthesized_example || optional_referenced_enum {
                 None
             } else {
-                parameter_example(doc, p)
+                query_parameter_example(doc, p)
             };
             let example_is_scalar = p.schema.as_ref().is_some_and(|schema| {
                 let schema = schema
@@ -2057,8 +2061,11 @@ fn schema_property_is_read_only(doc: &OpenApi, schema: &Schema, property: &str) 
     })
 }
 
-fn parameter_example(doc: &OpenApi, parameter: &crate::openapi::Parameter) -> Option<String> {
-    let value = parameter
+fn parameter_example_value<'a>(
+    doc: &'a OpenApi,
+    parameter: &'a crate::openapi::Parameter,
+) -> Option<&'a serde_json::Value> {
+    parameter
         .example
         .as_ref()
         .or_else(|| {
@@ -2075,7 +2082,11 @@ fn parameter_example(doc: &OpenApi, parameter: &crate::openapi::Parameter) -> Op
                 .and_then(|schema| schema.reference.as_deref())
                 .and_then(|reference| resolve_ref(doc, reference))
                 .and_then(schema_example)
-        })?;
+        })
+}
+
+fn parameter_example(doc: &OpenApi, parameter: &crate::openapi::Parameter) -> Option<String> {
+    let value = parameter_example_value(doc, parameter)?;
     let schema = parameter.schema.as_ref();
     // Fern discards an example whose JSON kind contradicts the declared scalar
     // type instead of rendering invalid Python for the generated annotation (for
@@ -2101,6 +2112,23 @@ fn parameter_example(doc: &OpenApi, parameter: &crate::openapi::Parameter) -> Op
         });
     }
     example_literal(value)
+}
+
+fn query_parameter_example(doc: &OpenApi, parameter: &crate::openapi::Parameter) -> Option<String> {
+    parameter_example(doc, parameter).or_else(|| {
+        // Fern synthesizes constrained query-string placeholders from the
+        // minimum length: its short `"x"` sample or a ten-character sample.
+        let minimum = parameter
+            .schema
+            .as_ref()
+            .filter(|schema| schema.ty.as_ref().and_then(TypeField::primary) == Some("string"))
+            .and_then(|schema| schema.min_length)?;
+        Some(if minimum > 1 {
+            "\"strawberry\"".to_string()
+        } else {
+            "\"x\"".to_string()
+        })
+    })
 }
 
 fn schema_example(schema: &Schema) -> Option<&serde_json::Value> {
@@ -2786,6 +2814,10 @@ struct InlineHoister<'a> {
     /// The package-root types, consulted to decide whether a `$ref` field needs
     /// the `convert_and_respect_annotation_metadata` wrapper.
     root_types: &'a [TypeDecl],
+    /// Component schemas, available in real generation so annotation-only
+    /// `allOf` property references can be resolved at their use site. Focused
+    /// unit helpers that do not exercise references leave this as `None`.
+    schemas: Option<&'a IndexMap<String, Schema>>,
     /// The hoisted object types accumulated for the current operation's tag.
     out: Vec<TypeDecl>,
 }
@@ -2849,6 +2881,10 @@ impl InlineHoister<'_> {
     /// Build a named [`ObjectType`] from an inline object schema, recursively
     /// hoisting its nested inline-object properties, and push it to `out`.
     fn hoist_object(&mut self, name: &str, schema: &Schema) {
+        self.hoist_object_with_doc(name, schema, clean_doc(schema.description.as_deref()));
+    }
+
+    fn hoist_object_with_doc(&mut self, name: &str, schema: &Schema, docstring: Option<String>) {
         let required: Vec<&str> = schema
             .required
             .iter()
@@ -2873,7 +2909,7 @@ impl InlineHoister<'_> {
             module: naming::module_name(name),
             bases,
             fields,
-            docstring: clean_doc(schema.description.as_deref()),
+            docstring,
         }));
     }
 
@@ -2912,15 +2948,24 @@ impl InlineHoister<'_> {
         for (prop, prop_schema) in &schema.properties {
             let spec_required =
                 required.contains(&prop.as_str()) && prop_schema.read_only != Some(true);
-            let optional = is_optional(prop_schema) || !spec_required;
+            let referenced_nullable = self
+                .schemas
+                .and_then(|schemas| {
+                    described_all_of_ref(prop_schema)
+                        .and_then(|(reference, _)| resolve_ref_from_schemas(schemas, reference))
+                        .map(|target| schema_accepts_none(target, schemas))
+                })
+                .unwrap_or(false);
+            let optional = is_optional(prop_schema) || referenced_nullable || !spec_required;
             fields.push(Field {
                 wire_name: prop.clone(),
                 py_name: naming::model_field_name(prop),
                 type_ref: self.prop_type_ref(owner, prop, prop_schema),
                 optional,
-                nullable: is_optional(prop_schema) && prop_schema.read_only == Some(true),
+                nullable: referenced_nullable
+                    || (is_optional(prop_schema) && prop_schema.read_only == Some(true)),
                 spec_required,
-                docstring: declared_doc(prop_schema.description.as_deref()),
+                docstring: declared_doc(property_description(prop_schema)),
                 example: schema_example_literal(prop_schema),
             });
         }
@@ -2930,6 +2975,31 @@ impl InlineHoister<'_> {
     /// item) into `{parent}{PascalCase(prop)}`. A `$ref` or scalar passes through
     /// [`base_type_ref`].
     fn prop_type_ref(&mut self, parent: &str, prop: &str, prop_schema: &Schema) -> TypeRef {
+        if let (Some(schemas), Some((reference, description))) =
+            (self.schemas, described_all_of_ref(prop_schema))
+        {
+            if let Some(target) = resolve_ref_from_schemas(schemas, reference).cloned() {
+                let name = format!("{parent}{}", naming::class_name(prop));
+                if let Some(values) = string_enum_values(&target) {
+                    self.out.push(TypeDecl::Enum(build_enum(
+                        &name,
+                        values,
+                        clean_doc(description),
+                    )));
+                    return TypeRef::Named(name);
+                }
+                if !is_map(&target)
+                    && !is_bare_object(&target)
+                    && (!target.properties.is_empty()
+                        || target.all_of.is_some()
+                        || is_object_type(&target))
+                {
+                    self.hoist_object_with_doc(&name, &target, clean_doc(description));
+                    return TypeRef::Named(name);
+                }
+                return full_type_ref_resolved(&target, schemas);
+            }
+        }
         if prop_schema.reference.is_none() {
             if let Some(values) = string_enum_values(prop_schema) {
                 let name = format!("{parent}{}", naming::class_name(prop));
@@ -3013,6 +3083,11 @@ impl InlineHoister<'_> {
                 schema,
             ) {
                 return array;
+            }
+            if is_object_type(schema) && is_inline_struct(schema) {
+                let name = format!("{request_ctx}{}", naming::class_name(param));
+                self.hoist_object(&name, schema);
+                return TypeRef::Named(name);
             }
         }
         base_type_ref(schema)
@@ -3265,6 +3340,7 @@ fn success_response(op: &Operation) -> Option<TypeRef> {
                 .content
                 .get("text/plain")
                 .or_else(|| response.content.get("text/markdown"))
+                .or_else(|| response.content.get("text/xml"))
                 .and_then(|media| media.schema.as_ref())
                 .map(|_| TypeRef::Primitive(Prim::Str))
         })
@@ -3282,7 +3358,8 @@ fn has_text_response(op: &Operation) -> bool {
         !response.content.contains_key("application/json")
             && !response.content.contains_key("*/*")
             && (response.content.contains_key("text/plain")
-                || response.content.contains_key("text/markdown"))
+                || response.content.contains_key("text/markdown")
+                || response.content.contains_key("text/xml"))
     })
 }
 
@@ -4204,7 +4281,10 @@ impl Builder<'_> {
                 && prop_schema.read_only != Some(true)
                 && !referenced_read_only;
             let referenced_nullable = prop_schema.reference.is_some()
-                && referenced_schema_accepts_none(prop_schema, self.schemas);
+                && referenced_schema_accepts_none(prop_schema, self.schemas)
+                || described_all_of_ref(prop_schema)
+                    .and_then(|(reference, _)| resolve_ref_from_schemas(self.schemas, reference))
+                    .is_some_and(|target| schema_accepts_none(target, self.schemas));
             let optional = is_optional(prop_schema) || referenced_nullable || !spec_required;
             fields.push(Field {
                 wire_name: prop.clone(),
@@ -4216,7 +4296,7 @@ impl Builder<'_> {
                         && (prop_schema.reference.is_none()
                             || prop_schema.read_only == Some(true))),
                 spec_required,
-                docstring: declared_doc(prop_schema.description.as_deref()),
+                docstring: declared_doc(property_description(prop_schema)),
                 example: schema_example_literal(prop_schema).or_else(|| {
                     prop_schema
                         .reference
@@ -4337,6 +4417,39 @@ impl Builder<'_> {
         // not become double-optional.
         if matches!(prop, "metadata" | "value") && is_unknown(prop_schema) {
             return TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)));
+        }
+        // AWS-style OpenAPI documents commonly decorate a property reference as
+        // `allOf: [$ref, { description }]`. Fern treats that as a use-site copy:
+        // scalar/collection aliases resolve to their underlying type, while enums
+        // and object models are cloned under `{Owner}{Property}` so the contextual
+        // description belongs to the generated type. It is not inheritance.
+        if let Some((reference, description)) = described_all_of_ref(prop_schema) {
+            if let Some(target) = resolve_ref_from_schemas(self.schemas, reference).cloned() {
+                let name = format!("{owner}{}", naming::class_name(prop));
+                if let Some(values) = string_enum_values(&target) {
+                    self.types.push(TypeDecl::Enum(build_enum(
+                        &name,
+                        values,
+                        clean_doc(description),
+                    )));
+                    return TypeRef::Named(name);
+                }
+                if !is_map(&target)
+                    && !is_bare_object(&target)
+                    && (!target.properties.is_empty()
+                        || target.all_of.is_some()
+                        || is_object_type(&target))
+                {
+                    self.add_object(
+                        &name,
+                        naming::module_name(&name),
+                        &target,
+                        clean_doc(description),
+                    );
+                    return TypeRef::Named(name);
+                }
+                return full_type_ref_resolved(&target, self.schemas);
+            }
         }
         if prop_schema.reference.is_none() {
             if let Some(values) = string_enum_values(prop_schema) {
@@ -4950,6 +5063,37 @@ fn single_all_of_ref(schema: &Schema) -> Option<&str> {
     }
 }
 
+/// A property-level `allOf` that adds annotations to exactly one `$ref` without
+/// adding any shape of its own. Swagger-generated AWS specs use this form for
+/// nearly every documented property.
+fn described_all_of_ref(schema: &Schema) -> Option<(&str, Option<&str>)> {
+    let members = schema.all_of.as_ref()?;
+    if members.len() < 2 {
+        return None;
+    }
+    let mut reference = None;
+    let mut description = schema.description.as_deref();
+    for member in members {
+        if let Some(candidate) = member.reference.as_deref() {
+            if reference.replace(candidate).is_some() {
+                return None;
+            }
+        } else if is_unknown(member) {
+            description = description.or(member.description.as_deref());
+        } else {
+            return None;
+        }
+    }
+    reference.map(|reference| (reference, description))
+}
+
+fn property_description(schema: &Schema) -> Option<&str> {
+    schema
+        .description
+        .as_deref()
+        .or_else(|| described_all_of_ref(schema).and_then(|(_, description)| description))
+}
+
 /// Is a schema optional? A schema is optional when it is explicitly `nullable`
 /// or when it is an unknown (untyped) schema, which Fern always renders as
 /// `Optional[Any]`.
@@ -5181,10 +5325,11 @@ mod tests {
         auth_model, base_type_ref, build_endpoint, build_enum, endpoint_module, environment_model,
         extensible_enum, full_type_ref_resolved, global_headers, int_prim, method_from_grouped_id,
         module_from_grouped_id, module_identifier, oauth_scope_enum, optional_type_ref,
-        parameter_example, path_group, ref_to_class, request_and_response_refs_match,
-        request_schema_use_count, resolve_request_body, resolve_schema_pointer, response_schema,
-        scalar_body, success_response_entry, synthesized_method_name, title_from_tag,
-        variant_class_name, Auth, Builder, InlineHoister, Prim, RequestBody, TypeDecl, TypeRef,
+        parameter_example, path_group, query_parameter_example, ref_to_class,
+        request_and_response_refs_match, request_schema_use_count, resolve_request_body,
+        resolve_schema_pointer, response_schema, scalar_body, success_response_entry,
+        synthesized_method_name, title_from_tag, variant_class_name, Auth, Builder, InlineHoister,
+        Prim, RequestBody, TypeDecl, TypeRef,
     };
     use crate::openapi::{OpenApi, Operation, Parameter, Response, Schema, TypeField};
 
@@ -5267,6 +5412,19 @@ mod tests {
         assert_eq!(
             parameter_example(&doc, &parameter).as_deref(),
             Some("\"OSF0001AU\"")
+        );
+
+        parameter.example = None;
+        parameter.schema.as_mut().expect("schema").min_length = Some(1);
+        assert_eq!(parameter_example(&doc, &parameter), None);
+        assert_eq!(
+            query_parameter_example(&doc, &parameter).as_deref(),
+            Some("\"x\"")
+        );
+        parameter.schema.as_mut().expect("schema").min_length = Some(10);
+        assert_eq!(
+            query_parameter_example(&doc, &parameter).as_deref(),
+            Some("\"strawberry\"")
         );
     }
 
@@ -6294,6 +6452,7 @@ mod tests {
     fn inline_hoister_handles_enum_array_shapes_and_defensive_inputs() {
         let mut hoister = InlineHoister {
             root_types: &[],
+            schemas: None,
             out: Vec::new(),
         };
         for invalid in [
@@ -6369,6 +6528,7 @@ mod tests {
             .expect("request body deserializes");
         let mut hoister = InlineHoister {
             root_types: &types,
+            schemas: None,
             out: Vec::new(),
         };
         let RequestBody::Single(array) = resolve_request_body(
@@ -6441,6 +6601,7 @@ mod tests {
     fn inline_hoister_builds_response_items_allof_objects_and_union_variants() {
         let mut hoister = InlineHoister {
             root_types: &[],
+            schemas: None,
             out: Vec::new(),
         };
         assert!(hoister
