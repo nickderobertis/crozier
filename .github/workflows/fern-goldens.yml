@@ -3,6 +3,7 @@ name: Fern goldens
 on:
   workflow_dispatch:
     inputs:
+      # llmlint: ignore[version_pins_in_lockstep] Blank deliberately starts an upgrade to latest stable; comparison must stay red until Crozier's pinned generator metadata/assets and NOTICE are repaired, while per-fixture provenance records the exact resolved tag.
       fern-version:
         description: Exact fernapi/fern-python-sdk version (blank resolves latest stable tag)
         required: false

@@ -704,6 +704,7 @@ def main(argv: list[str]) -> int:
         return result(
             "success" if generation_status == 0 else "failure",
             "success" if comparison_status == 0 else "failure",
+            # llmlint: ignore[tool_output_is_signal] `result` has the workflow's binary publication contract; local `run` uses success as its neutral, non-blocking value even though it never invokes publication, as docs/fern-goldens.md states. Preserve that established output in this documentation-only branch.
             "success",
         )
     except (GoldensError, OSError, ValueError) as error:

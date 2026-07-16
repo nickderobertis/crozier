@@ -901,8 +901,9 @@ same PR family: the corpus was bumped 4.34.0 → 4.35.0 and
 issue-#43 gap #2 note above for why the bump is minimal (4.35.0's only output change
 over 4.34.0 is this annotation).
 
-> **How these golden trees are produced.** The workflow's generator helper pins
-> the Fern CLI via `fern.config.json` and installs the *packaged*
+> **How these golden trees are produced.** The workflow resolves and passes an
+> exact Python generator version, records it in each fixture's provenance, pins
+> the Fern CLI via `fern.config.json`, and installs the *packaged*
 > SDK (a pip package: `src/<pkg>/…` + `pyproject.toml` + `README.md`/`reference.md` +
 > `.fern/`). It gets the packaged form from `fern generate --preview --output`, which
 > — unlike a plain `--local` `local-file-system` run, that emits only the flat module
@@ -920,6 +921,11 @@ over 4.34.0 is this annotation).
 > `CROZIER_FERN_DOCKER_CA`; disable the shim with `CROZIER_FERN_NO_DOCKER_SHIM=1`);
 > (3) on a sandbox whose Docker daemon can't see the host `mktemp` dir, point
 > `TMPDIR` at a Docker-visible path.
+>
+> Resolving latest stable is an explicit upgrade: comparison remains red until
+> Crozier's Fern-derived runtime/scaffolding metadata and `NOTICE` are moved to
+> that same exact version. It is never treated as a no-diff refresh of the old
+> pin.
 
 ## Configurable client class name (issue #61)
 

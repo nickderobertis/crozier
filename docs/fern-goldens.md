@@ -18,8 +18,9 @@ Work on one corpus row at a time:
 3. Commit and push the branch, then open **Actions → Fern goldens → Run
    workflow** and select that branch. The workflow inputs are:
 
-   - `fern-version` — an exact `fernapi/fern-python-sdk` semantic version. Leave
-     it blank to resolve the latest stable image tag.
+   - `fern-version` — an exact `fernapi/fern-python-sdk` semantic version. Leaving
+     it blank deliberately starts an upgrade to the latest stable image tag; it
+     is not a request to preserve the current shared runtime/scaffolding pin.
    - `fixtures` — comma-separated `CORPUS.md` names. Select the new or changed
      fixture explicitly; leave this blank only when refreshing all corpus rows
      that already have committed goldens.
@@ -49,9 +50,10 @@ Work on one corpus row at a time:
 Once a fixture's exact generator version and manifest identity are current, a
 rerun fetches the source but skips Fern generation. A fully repaired rerun then
 compares green and publication is a no-op. When `fern-version` was initially
-blank, use the exact resolved version shown in the run evidence on later reruns
-if you need to prevent a newly released Fern version from joining the repair
-cycle.
+blank, the expected repair includes updating Crozier's pinned Fern-derived
+runtime/scaffolding metadata and `NOTICE` when the aggregate diff requires it.
+Use the exact resolved version shown in the run evidence on later reruns so a
+newly released Fern version cannot join the same repair cycle.
 
 Red is expected during this loop. Successful fixtures are committed and remain
 usable even when another selection fails generation or Crozier still differs.
