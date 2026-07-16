@@ -27,20 +27,24 @@ Work on one corpus row at a time:
 
 4. Expect the first run for a new fixture, a changed URL/ref, or a Fern upgrade
    to be red. Generation runs each selection independently. Every successful
-   fixture is installed atomically, then the publication phase commits all
-   successful fixture trees together and pushes them with
+   fixture is installed atomically. Before comparison starts, the publication
+   job commits all successful fixture trees together, pushes them with
    `expected/.crozier-fern-golden.json`, which records the exact generator
-   version and the manifest name, ref, and URL. A failed fixture preserves its
-   prior complete golden and provenance; it does not discard successful sibling
-   results.
-5. Inspect the run summary and the generation, comparison, and publication step
-   logs. Download the `fern-goldens-<run-id>-<attempt>` artifact for the aggregate
+   version and the manifest name, ref, and URL, and uploads immutable generation
+   evidence. A failed fixture preserves its prior complete golden and provenance;
+   it does not discard successful sibling results.
+5. Inspect the run summary and the generation, publication, and comparison job
+   logs. The `fern-goldens-generation-<run-id>-<attempt>` artifact contains
    `generation-summary.txt`, `generation-failures.txt`, per-fixture generation
-   logs, `comparison-summary.txt`, `comparison.log`, spec-fetch failures, and the
-   patch/archive of successful output. Comparison covers every available managed
-   corpus golden, not only the fixtures selected for generation, and reports all
-   missing, unexpected, changed, generation-failed, and processing-failed cases
-   without fail-fast.
+   logs, and the patch/archive of successful output. The later
+   `fern-goldens-comparison-<run-id>-<attempt>` artifact contains
+   `comparison-summary.txt`, `comparison.log`, and separate spec-fetch and
+   comparison-process failure reports. Comparison covers every available managed
+   corpus golden, not only the fixtures selected for generation. It runs one
+   fixture per process with progress heartbeats and reports differing paths,
+   Crozier generation failures, processing failures, and fetch failures without
+   fail-fast. Run `just fixtures-diff <fixture>` locally when a full unified diff
+   is needed.
 6. Repair Crozier on the same feature branch. Use `just fixtures-candidates` to
    add only newly byte-matched paths to each `matched` list; never edit Fern's
    output to make Crozier pass. Commit and push the repair, then dispatch the
@@ -57,8 +61,12 @@ newly released Fern version cannot join the same repair cycle.
 
 Red is expected during this loop. Successful fixtures are committed and remain
 usable even when another selection fails generation or Crozier still differs.
-The final job status is deferred until evidence upload and publication have both
-been attempted.
+Publication and generation evidence complete before the isolated comparison job
+can start, so a terminated comparison runner cannot lose successful Fern output.
+The final status job accounts for generation, publication, comparison, and both
+required evidence uploads; a missing/failed phase stays red. If the comparison
+runner is terminated before its upload step, the comparison artifact may be
+absent, but the earlier generation artifact and published fixture commit remain.
 
 ## Publication safety
 
