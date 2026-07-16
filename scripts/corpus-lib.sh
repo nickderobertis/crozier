@@ -19,12 +19,56 @@ corpus_rows() {
   ' "$manifest"
 }
 
+corpus_aliases_file() {
+  local corpus_lib_dir
+  corpus_lib_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  printf '%s\n' "$corpus_lib_dir/../tests/fixtures/corpus-aliases.tsv"
+}
+
 corpus_fixture_for() {
-  case "$1" in
-    fern-seed-query-parameters) printf '%s\n' query-parameters-openapi ;;
-    fern-exhaustive) printf '%s\n' exhaustive ;;
-    *) printf '%s\n' "$1" ;;
-  esac
+  local aliases
+  aliases="$(corpus_aliases_file)"
+  [ -f "$aliases" ] || {
+    echo "corpus: missing fixture alias file $aliases" >&2
+    return 1
+  }
+  awk -F '\t' -v requested="$1" '
+    function valid_fixture(value) {
+      return value ~ /^[A-Za-z0-9][A-Za-z0-9._-]*$/ \
+        && value !~ /^[.-]/ && index(value, "..") == 0;
+    }
+    function fail(reason) {
+      printf "corpus: invalid fixture alias file %s line %d: %s\n", \
+        FILENAME, NR, reason > "/dev/stderr";
+      invalid=1;
+      exit 2;
+    }
+    BEGIN { resolved=requested; }
+    /^[[:space:]]*(#|$)/ { next; }
+    {
+      if (NF != 2 || !valid_fixture($1) || !valid_fixture($2))
+        fail("expected two safe fixture names separated by one tab");
+      if ($1 == $2)
+        fail("alias source and fixture directory must differ");
+      if ($1 in sources)
+        fail("duplicate alias source " $1);
+      if ($2 in fixtures)
+        fail("duplicate fixture directory " $2);
+      sources[$1]=1;
+      fixtures[$2]=1;
+      count++;
+      if ($1 == requested)
+        resolved=$2;
+    }
+    END {
+      if (!invalid && count == 0) {
+        printf "corpus: fixture alias file %s has no aliases\n", FILENAME > "/dev/stderr";
+        exit 2;
+      }
+      if (!invalid)
+        print resolved;
+    }
+  ' "$aliases"
 }
 
 corpus_github_clone_url() {

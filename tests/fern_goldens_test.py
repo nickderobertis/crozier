@@ -13,6 +13,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 TOOL = REPO / "scripts" / "fern-goldens"
 STATE = ".crozier-fern-golden.json"
+ALIASES = REPO / "tests" / "fixtures" / "corpus-aliases.tsv"
 
 
 @unittest.skipIf(os.name == "nt", "Fern golden workflow scripts run on Linux")
@@ -24,6 +25,9 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         (self.root / "tests" / "fixtures").mkdir(parents=True)
         (self.root / "fake-bin").mkdir()
         shutil.copy2(TOOL, self.root / "scripts" / "fern-goldens")
+        for script in ("corpus-lib.sh", "fetch-corpus.sh", "lib.sh"):
+            shutil.copy2(REPO / "scripts" / script, self.root / "scripts" / script)
+        shutil.copy2(ALIASES, self.root / "tests" / "fixtures" / ALIASES.name)
         (self.root / "justfile").write_text("default:\n    @true\n", encoding="utf-8")
         (self.root / ".gitignore").write_text("/.local\n", encoding="utf-8")
         self.write_manifest()
@@ -216,6 +220,15 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         path = self.root / "tests" / "fixtures" / fixture / "expected" / STATE
         return json.loads(path.read_text(encoding="utf-8"))
 
+    def fixture_aliases(self) -> list[tuple[str, str]]:
+        return [
+            tuple(line.split("\t"))
+            for line in (self.root / "tests" / "fixtures" / ALIASES.name)
+            .read_text(encoding="utf-8")
+            .splitlines()
+            if line and not line.startswith("#")
+        ]
+
     def initialize_remote(self) -> tuple[Path, str]:
         remote = Path(self.temporary.name) / "remote.git"
         subprocess.run(["git", "init", "--bare", str(remote)], check=True, capture_output=True)
@@ -294,6 +307,55 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         self.assertFalse(
             (self.root / ".local" / "fern-goldens" / "generated-goldens.tar.gz").exists()
         )
+
+    def test_authoritative_aliases_drive_python_workflow_and_bash_helper(self) -> None:
+        aliases = self.fixture_aliases()
+        rows = [
+            f"| {number} | `{name}` | test | https://example.test/{name}/openapi.json "
+            f"| `1` | MIT | link-ok | alias |"
+            for number, (name, _) in enumerate(aliases, start=1)
+        ]
+        manifest = "\n".join(
+            [
+                "# Corpus",
+                "",
+                "| # | name | method | source | pinned ref | license | decision | shapes |",
+                "|---:|---|---|---|---|---|---|---|",
+                *rows,
+                "",
+            ]
+        )
+        (self.root / "tests" / "fixtures" / "CORPUS.md").write_text(
+            manifest, encoding="utf-8"
+        )
+
+        for name, fixture in aliases:
+            with self.subTest(consumer="python", name=name):
+                generated = self.run_tool(
+                    "generate", "--version", "4.9.0", "--fixture", name, check=True
+                )
+                self.assertIn(f"generated {fixture}", generated.stdout)
+                self.assertEqual(self.state(fixture)["corpus_spec_name"], name)
+                current = self.run_tool(
+                    "generate", "--version", "4.9.0", "--fixture", fixture, check=True
+                )
+                self.assertIn("0 generated, 1 current", current.stdout)
+
+            with self.subTest(consumer="bash", name=name):
+                resolved = subprocess.run(
+                    [
+                        self.root / "scripts" / "fetch-corpus.sh",
+                        "--dry-run",
+                        "--fixture",
+                        fixture,
+                    ],
+                    cwd=self.root,
+                    text=True,
+                    capture_output=True,
+                    check=False,
+                )
+                self.assertEqual(resolved.returncode, 0, resolved.stderr)
+                self.assertTrue(resolved.stdout.startswith(f"{name}\t"), resolved.stdout)
 
     def test_latest_tag_and_every_spec_identity_change_regenerate(self) -> None:
         latest = self.run_tool("latest-version", check=True)

@@ -25,6 +25,7 @@ TAGS_URL = (
     "?page_size=100&ordering=name"
 )
 STATE_FILE = ".crozier-fern-golden.json"
+FIXTURE_ALIASES_FILE = "corpus-aliases.tsv"
 VERSION_RE = re.compile(
     r"[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z]+(?:[.-][0-9A-Za-z]+)*)?"
 )
@@ -106,11 +107,43 @@ def unquote_cell(value: str, label: str, line_number: int) -> str:
     return value[1:-1]
 
 
-def fixture_for(name: str) -> str:
-    return {
-        "fern-seed-query-parameters": "query-parameters-openapi",
-        "fern-exhaustive": "exhaustive",
-    }.get(name, name)
+def load_fixture_aliases(root: Path) -> dict[str, str]:
+    path = root / "tests" / "fixtures" / FIXTURE_ALIASES_FILE
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError as error:
+        raise GoldensError(f"could not read fixture aliases {path}: {error}") from error
+
+    aliases: dict[str, str] = {}
+    fixtures: set[str] = set()
+    for line_number, line in enumerate(lines, start=1):
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        cells = line.split("\t")
+        if len(cells) != 2:
+            raise GoldensError(
+                f"{path} line {line_number}: expected name and fixture separated by one tab"
+            )
+        try:
+            name = validate_fixture(cells[0])
+            fixture = validate_fixture(cells[1])
+        except GoldensError as error:
+            raise GoldensError(f"{path} line {line_number}: {error}") from error
+        if name == fixture:
+            raise GoldensError(
+                f"{path} line {line_number}: alias source and fixture directory must differ"
+            )
+        if name in aliases:
+            raise GoldensError(f"{path} line {line_number}: duplicate alias source {name!r}")
+        if fixture in fixtures:
+            raise GoldensError(
+                f"{path} line {line_number}: duplicate fixture directory {fixture!r}"
+            )
+        aliases[name] = fixture
+        fixtures.add(fixture)
+    if not aliases:
+        raise GoldensError(f"fixture alias file {path} has no aliases")
+    return aliases
 
 
 def load_manifest(root: Path) -> list[CorpusRow]:
@@ -120,6 +153,7 @@ def load_manifest(root: Path) -> list[CorpusRow]:
     except OSError as error:
         raise GoldensError(f"could not read corpus manifest {manifest}: {error}") from error
 
+    aliases = load_fixture_aliases(root)
     rows: list[CorpusRow] = []
     names: set[str] = set()
     fixtures: set[str] = set()
@@ -132,7 +166,7 @@ def load_manifest(root: Path) -> list[CorpusRow]:
                 f"CORPUS.md line {line_number}: numbered row has {len(cells)} cells; expected 8"
             )
         name = validate_fixture(unquote_cell(cells[1], "name", line_number))
-        fixture = validate_fixture(fixture_for(name))
+        fixture = validate_fixture(aliases.get(name, name))
         url = validate_url(cells[3])
         ref = unquote_cell(cells[4], "pinned ref", line_number)
         if not ref or any(ord(char) < 33 for char in ref):

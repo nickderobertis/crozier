@@ -14421,8 +14421,96 @@ fn exact_comparison_scope_reports_unregistered_managed_fixtures() {
     assert!(failures[0].1.contains("not registered"));
 }
 
+fn safe_fixture_name(value: &str) -> bool {
+    value
+        .chars()
+        .next()
+        .is_some_and(|first| first.is_ascii_alphanumeric())
+        && value
+            .chars()
+            .all(|character| character.is_ascii_alphanumeric() || "._-".contains(character))
+        && !value.contains("..")
+}
+
+fn corpus_fixture_aliases() -> Result<Vec<(&'static str, &'static str)>, String> {
+    let mut aliases = Vec::new();
+    let mut sources = std::collections::HashSet::new();
+    let mut fixtures = std::collections::HashSet::new();
+    for (index, line) in include_str!("fixtures/corpus-aliases.tsv")
+        .lines()
+        .enumerate()
+    {
+        if line.trim().is_empty() || line.trim_start().starts_with('#') {
+            continue;
+        }
+        let cells: Vec<&str> = line.split('\t').collect();
+        if cells.len() != 2 || !safe_fixture_name(cells[0]) || !safe_fixture_name(cells[1]) {
+            return Err(format!(
+                "corpus-aliases.tsv line {} must contain two safe fixture names separated by one tab",
+                index + 1
+            ));
+        }
+        let (name, fixture) = (cells[0], cells[1]);
+        if name == fixture {
+            return Err(format!(
+                "corpus-aliases.tsv line {} maps a fixture name to itself",
+                index + 1
+            ));
+        }
+        if !sources.insert(name) {
+            return Err(format!(
+                "corpus-aliases.tsv line {} duplicates alias source {name:?}",
+                index + 1
+            ));
+        }
+        if !fixtures.insert(fixture) {
+            return Err(format!(
+                "corpus-aliases.tsv line {} duplicates fixture directory {fixture:?}",
+                index + 1
+            ));
+        }
+        aliases.push((name, fixture));
+    }
+    if aliases.is_empty() {
+        return Err("corpus-aliases.tsv contains no aliases".to_string());
+    }
+    Ok(aliases)
+}
+
+fn corpus_fixture_for<'a>(name: &'a str, aliases: &[(&'a str, &'a str)]) -> &'a str {
+    aliases
+        .iter()
+        .find_map(|(source, fixture)| (*source == name).then_some(*fixture))
+        .unwrap_or(name)
+}
+
+#[test]
+fn corpus_fixture_aliases_resolve_to_registered_goldens() {
+    let aliases = corpus_fixture_aliases().expect("valid corpus fixture aliases");
+    let registered: std::collections::HashSet<&str> = registered_diff_corpora()
+        .into_iter()
+        .map(|corpus| corpus.api)
+        .collect();
+    for (name, fixture) in &aliases {
+        assert_eq!(corpus_fixture_for(name, &aliases), *fixture);
+        assert!(
+            fixture_dir(fixture).join("expected").is_dir(),
+            "fixture alias {name:?} points at missing golden {fixture:?}"
+        );
+        assert!(
+            registered.contains(fixture),
+            "fixture alias {name:?} points at unregistered golden {fixture:?}"
+        );
+    }
+    assert_eq!(
+        corpus_fixture_for("unaliased-corpus", &aliases),
+        "unaliased-corpus"
+    );
+}
+
 #[test]
 fn every_existing_manifest_golden_is_registered_for_aggregate_comparison() {
+    let aliases = corpus_fixture_aliases().expect("valid corpus fixture aliases");
     let registered: std::collections::HashSet<&str> = registered_diff_corpora()
         .into_iter()
         .map(|corpus| corpus.api)
@@ -14442,11 +14530,7 @@ fn every_existing_manifest_golden_is_registered_for_aggregate_comparison() {
             continue;
         }
         let name = cells[1].trim_matches('`');
-        let fixture = match name {
-            "fern-seed-query-parameters" => "query-parameters-openapi",
-            "fern-exhaustive" => "exhaustive",
-            name => name,
-        };
+        let fixture = corpus_fixture_for(name, &aliases);
         if fixture_dir(fixture).join("expected").is_dir() && !registered.contains(fixture) {
             missing.push(fixture);
         }
