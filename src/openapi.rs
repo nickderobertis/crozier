@@ -582,6 +582,18 @@ pub struct Schema {
     /// Inclusive lower bound used when Fern synthesizes integer examples.
     #[serde(default)]
     pub minimum: Option<serde_json::Value>,
+    /// Minimum string length. Fern uses `"x"` for constrained request-string
+    /// examples instead of repeating the field name.
+    #[serde(rename = "minLength", default)]
+    pub min_length: Option<u64>,
+    /// Maximum string length, paired with `minLength` for Fern's constrained
+    /// request-example placeholder heuristic.
+    #[serde(rename = "maxLength", default)]
+    pub max_length: Option<u64>,
+    /// Legacy Square beta marker. Its importer uses constrained placeholder
+    /// values in worked request examples for these schemas.
+    #[serde(rename = "x-is-beta", default)]
+    pub is_beta: Option<bool>,
     /// OpenAPI 3.0 nullability.
     #[serde(default)]
     pub nullable: Option<bool>,

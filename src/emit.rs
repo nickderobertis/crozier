@@ -3119,7 +3119,7 @@ fn push_param_doc(lines: &mut Vec<String>, description: &str) {
     lines.extend(
         description
             .split('\n')
-            .map(|line| format!("            {line}")),
+            .map(|line| format!("            {}", line.replace('\t', "    "))),
     );
 }
 
@@ -3405,7 +3405,16 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                                         && ep.body_description_missing
                                         && fields.iter().filter(|field| field.spec_required).count() == 1))
                         && (!(ep.body_description_empty
-                            || ep.body_schema_has_example && ep.body_schema_documented)
+                            || ep.body_schema_has_example
+                                && ep.body_schema_documented
+                                && !ep.body_schema_example_wrapped
+                            || ep.body_schema_example_wrapped
+                                && matches!(body, RequestBody::Inline(fields)
+                                    if !fields.is_empty()
+                                        && fields.len() > 1
+                                        && fields.iter().all(|field| field.optional)
+                                        && ep.body_schema_example_covers_all_fields
+                                        && fields.iter().any(|field| field.convert)))
                             || body.all_fields_required()))) =>
         {
             Some("application/json".to_string())
@@ -5501,6 +5510,7 @@ fn build_example_with_body_example(
                     .as_deref()
                     .and_then(|example| {
                         if reference_fields.is_some()
+                            || ep.body_schema_is_beta && !ep.body_schema_example_wrapped
                             || f.media_example
                                 && (!f.schema_body_example || !ctx.example_is_object(&f.type_ref))
                             || example.starts_with('{') && ctx.resolves_to_any(&f.type_ref)
@@ -6392,6 +6402,9 @@ mod tests {
             body_schema_shared: false,
             body_schema_metadata_missing: false,
             body_schema_has_example: false,
+            body_schema_example_wrapped: false,
+            body_schema_is_beta: false,
+            body_schema_example_covers_all_fields: false,
             body_media_has_example: false,
             reference_body_example: None,
             body_schema_documented: false,
@@ -6729,6 +6742,70 @@ mod tests {
         assert!(
             out.contains("\"content-type\": \"application/json\","),
             "{out}"
+        );
+    }
+
+    #[test]
+    fn wrapped_schema_example_keeps_content_type_for_optional_fields() {
+        let mut ep = endpoint("/widgets", vec![], Some(TypeRef::Primitive(Prim::Str)));
+        ep.http_method = "POST";
+        ep.request_body = Some(RequestBody::Inline(vec![
+            BodyField {
+                wire_name: "name".to_string(),
+                py_name: "name".to_string(),
+                type_ref: TypeRef::Primitive(Prim::Str),
+                optional: true,
+                spec_required: false,
+                docstring: None,
+                convert: false,
+                is_file: false,
+                collision_prefix: None,
+                example: None,
+                media_example: false,
+                schema_body_example: true,
+                nullable: false,
+            },
+            BodyField {
+                wire_name: "note".to_string(),
+                py_name: "note".to_string(),
+                type_ref: TypeRef::Primitive(Prim::Str),
+                optional: true,
+                spec_required: false,
+                docstring: None,
+                convert: false,
+                is_file: false,
+                collision_prefix: None,
+                example: None,
+                media_example: false,
+                schema_body_example: true,
+                nullable: false,
+            },
+        ]));
+        ep.body_schema_has_example = true;
+        ep.body_schema_example_wrapped = true;
+        ep.body_schema_example_covers_all_fields = true;
+        ep.body_schema_documented = true;
+
+        let documented = raw_method(&ep, false, &mut Imports::default());
+        assert!(
+            documented.contains("\"content-type\": \"application/json\","),
+            "{documented}"
+        );
+
+        ep.body_schema_documented = false;
+        let undocumented = raw_method(&ep, false, &mut Imports::default());
+        assert!(
+            undocumented.contains("\"content-type\": \"application/json\","),
+            "{undocumented}"
+        );
+
+        if let Some(RequestBody::Inline(fields)) = &mut ep.request_body {
+            fields[0].convert = true;
+        }
+        let nested_undocumented = raw_method(&ep, false, &mut Imports::default());
+        assert!(
+            !nested_undocumented.contains("\"content-type\": \"application/json\","),
+            "{nested_undocumented}"
         );
     }
 

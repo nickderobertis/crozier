@@ -255,7 +255,21 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
 fn additional_api_key_global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
     use crate::openapi::SecuritySchemeType;
 
-    let mut skipped_primary = false;
+    // Only the first *declared scheme* is the primary auth credential. If that
+    // scheme is OAuth/HTTP auth, every later header apiKey is an additional
+    // constructor field (Square declares OAuth first and an Authorization apiKey
+    // second). When the first scheme itself is a header apiKey, it is represented
+    // by `Auth::ApiKey` and must be skipped here to avoid a duplicate field.
+    let skip_first_api_key =
+        doc.components
+            .security_schemes
+            .values()
+            .next()
+            .is_some_and(|scheme| {
+                scheme.ty == SecuritySchemeType::ApiKey
+                    && scheme.location == Some(ParameterLocation::Header)
+            });
+    let mut skipped_primary = !skip_first_api_key;
     doc.components
         .security_schemes
         .values()
@@ -641,6 +655,17 @@ pub struct Endpoint {
     pub body_schema_metadata_missing: bool,
     /// Whether the referenced request schema declares an example payload.
     pub body_schema_has_example: bool,
+    /// Whether the schema example uses the legacy Square wrapper shape
+    /// (`{ "request_body": ... }`). Fern's importer uses that wrapper as request
+    /// declaration metadata when deciding whether to emit an explicit JSON header.
+    pub body_schema_example_wrapped: bool,
+    /// Whether the referenced request schema carries Square's legacy beta marker.
+    /// Fern uses unwrapped schema examples for worked calls only on this shape.
+    pub body_schema_is_beta: bool,
+    /// Whether that wrapped `request_body` example supplies every declared
+    /// request property. Fern uses this as another request-declaration sentinel,
+    /// but does not use the wrapped values in worked Python examples.
+    pub body_schema_example_covers_all_fields: bool,
     /// Whether the selected request media declares an example payload. A multipart
     /// upload example is an opaque HTTP transcript to Fern and suppresses worked
     /// examples for that endpoint.
@@ -1894,6 +1919,54 @@ fn build_endpoint(
             .and_then(|schema| schema.reference.as_deref())
             .and_then(|reference| resolve_ref(doc, reference))
             .is_some_and(|schema| schema_example(schema).is_some()),
+        body_schema_example_wrapped: op
+            .request_body
+            .as_ref()
+            .and_then(|body| {
+                body.content
+                    .values()
+                    .find_map(|media| media.schema.as_ref())
+            })
+            .and_then(|schema| schema.reference.as_deref())
+            .and_then(|reference| resolve_ref(doc, reference))
+            .and_then(schema_example)
+            .and_then(serde_json::Value::as_object)
+            .is_some_and(|example| example.contains_key("request_body")),
+        body_schema_is_beta: op
+            .request_body
+            .as_ref()
+            .and_then(|body| {
+                body.content
+                    .values()
+                    .find_map(|media| media.schema.as_ref())
+            })
+            .and_then(|schema| schema.reference.as_deref())
+            .and_then(|reference| resolve_ref(doc, reference))
+            .is_some_and(|schema| schema.is_beta == Some(true)),
+        body_schema_example_covers_all_fields: op
+            .request_body
+            .as_ref()
+            .and_then(|body| {
+                body.content
+                    .values()
+                    .find_map(|media| media.schema.as_ref())
+            })
+            .and_then(|schema| schema.reference.as_deref())
+            .and_then(|reference| resolve_ref(doc, reference))
+            .is_some_and(|schema| {
+                let Some(request_body) = schema_example(schema)
+                    .and_then(serde_json::Value::as_object)
+                    .and_then(|example| example.get("request_body"))
+                    .and_then(serde_json::Value::as_object)
+                else {
+                    return false;
+                };
+                !schema.properties.is_empty()
+                    && schema
+                        .properties
+                        .keys()
+                        .all(|property| request_body.contains_key(property))
+            }),
         body_media_has_example: op.request_body.as_ref().is_some_and(|body| {
             body.content
                 .values()
@@ -2430,6 +2503,22 @@ fn resolve_request_body(
         // A `$ref` to a plain object is inlined field-by-field.
         if !target.properties.is_empty() || target.all_of.is_some() {
             return hoist_fields(&class, types).map(|mut fields| {
+                for field in &mut fields {
+                    if field.example.is_none()
+                        && target.is_beta == Some(true)
+                        && target.properties.len() > 1
+                        && target
+                            .properties
+                            .get(&field.wire_name)
+                            .is_some_and(|property| {
+                                property.ty.as_ref().and_then(|ty| ty.primary()) == Some("string")
+                                    && property.min_length.is_some_and(|minimum| minimum > 0)
+                                    && property.max_length.is_none_or(|maximum| maximum <= 128)
+                            })
+                    {
+                        field.example = Some("\"x\"".to_string());
+                    }
+                }
                 apply_body_example(&mut fields, target.example.as_ref(), false);
                 apply_body_example(&mut fields, media_example(media), true);
                 RequestBody::Inline(fields)
@@ -3343,9 +3432,15 @@ fn method_from_dotted_id(id: &str) -> String {
 fn method_from_groupless_id(id: &str, tag: Option<&str>) -> String {
     let snake = naming::to_snake_case(id);
     let tag_snake = tag.map(naming::to_snake_case).unwrap_or_default();
-    let method = if tag_snake.is_empty() || stripped_suffix_has_acronym(id, tag) {
+    let tag_suffix = tag.and_then(|tag| operation_id_tag_prefix(id, tag));
+    let method = if tag_snake.is_empty()
+        || stripped_suffix_has_acronym(id, tag)
+        // Fern retains the group on a generic `Info` method (`CatalogInfo` →
+        // `catalog_info`) instead of producing the overly broad `info`.
+        || tag_suffix.is_some_and(|(_, suffix)| suffix.eq_ignore_ascii_case("info"))
+    {
         snake.clone()
-    } else if let Some((_, suffix)) = tag.and_then(|tag| operation_id_tag_prefix(id, tag)) {
+    } else if let Some((_, suffix)) = tag_suffix {
         naming::to_snake_case(suffix)
     } else {
         snake
@@ -4968,11 +5063,23 @@ fn is_object_type(schema: &Schema) -> bool {
 
 /// Normalize a description into a docstring, dropping empty ones.
 fn clean_doc(desc: Option<&str>) -> Option<String> {
-    let text = desc?.trim();
-    if text.is_empty() {
+    let text = desc?.trim_end();
+    if text.trim_start().is_empty() {
         None
     } else {
-        Some(text.to_string())
+        // A single intentional leading space in legacy specs is preserved by
+        // Fern, while ordinary multi-space indentation is trimmed. Tabs in prose
+        // are expanded to four spaces by its importer.
+        let text = if text.starts_with(' ')
+            && text
+                .get(1..)
+                .is_some_and(|rest| rest.chars().next().is_some_and(|ch| !ch.is_whitespace()))
+        {
+            text
+        } else {
+            text.trim_start()
+        };
+        Some(text.replace('\t', "    "))
     }
 }
 
@@ -4980,11 +5087,20 @@ fn clean_doc(desc: Option<&str>) -> Option<String> {
 /// method docs, while still trimming non-empty prose like [`clean_doc`].
 fn operation_doc(desc: Option<&str>) -> Option<String> {
     let text = desc?;
-    let trimmed = text.trim();
-    if trimmed.is_empty() {
+    let trimmed = text.trim_end();
+    if trimmed.trim_start().is_empty() {
         Some(String::new())
     } else {
-        Some(trimmed.to_string())
+        let trimmed = if trimmed.starts_with(' ')
+            && trimmed
+                .get(1..)
+                .is_some_and(|rest| rest.chars().next().is_some_and(|ch| !ch.is_whitespace()))
+        {
+            trimmed
+        } else {
+            trimmed.trim_start()
+        };
+        Some(trimmed.replace('\t', "    "))
     }
 }
 
@@ -5063,7 +5179,7 @@ fn example_literal(value: &serde_json::Value) -> Option<String> {
 mod tests {
     use super::{
         auth_model, base_type_ref, build_endpoint, build_enum, endpoint_module, environment_model,
-        extensible_enum, full_type_ref_resolved, int_prim, method_from_grouped_id,
+        extensible_enum, full_type_ref_resolved, global_headers, int_prim, method_from_grouped_id,
         module_from_grouped_id, module_identifier, oauth_scope_enum, optional_type_ref,
         parameter_example, path_group, ref_to_class, request_and_response_refs_match,
         request_schema_use_count, resolve_request_body, resolve_schema_pointer, response_schema,
@@ -5193,6 +5309,44 @@ mod tests {
             panic!("header api key should select api-key auth");
         };
         assert!(required);
+    }
+
+    #[test]
+    fn header_api_key_after_oauth_is_an_additional_global_header() {
+        // Deserialize directly from text so the security-scheme declaration order
+        // reaches the IndexMap (a serde_json::Value map is key-sorted by default).
+        let doc: crate::openapi::OpenApi = serde_json::from_str(
+            r#"{
+                "components": {
+                    "securitySchemes": {
+                        "oauth2": {
+                            "type": "oauth2",
+                            "flows": { "authorizationCode": { "scopes": {} } }
+                        },
+                        "clientSecret": {
+                            "type": "apiKey",
+                            "in": "header",
+                            "name": "Authorization"
+                        }
+                    }
+                },
+                "paths": {
+                    "/widgets": {
+                        "get": {
+                            "operationId": "getWidgets",
+                            "responses": { "200": { "description": "OK" } }
+                        }
+                    }
+                }
+            }"#,
+        )
+        .expect("document deserializes");
+
+        let headers = global_headers(&doc);
+        assert_eq!(headers.len(), 1);
+        assert_eq!(headers[0].py_name, "authorization");
+        assert_eq!(headers[0].wire_name, "Authorization");
+        assert!(headers[0].required);
     }
 
     #[test]
@@ -5417,6 +5571,13 @@ mod tests {
         let o = op("apiKeys", "apikeys");
         assert_eq!(endpoint_module(&o, "/x"), "apikeys");
         assert_eq!(endpoint_method_name(&o, "GET", "/x"), "api_keys");
+
+        let o = op("CatalogInfo", "Catalog");
+        assert_eq!(endpoint_module(&o, "/v2/catalog/info"), "catalog");
+        assert_eq!(
+            endpoint_method_name(&o, "GET", "/v2/catalog/info"),
+            "catalog_info"
+        );
     }
 
     #[test]
@@ -6618,13 +6779,23 @@ mod tests {
         );
 
         assert_eq!(super::clean_doc(Some("  docs  ")), Some("docs".to_string()));
+        assert_eq!(
+            super::clean_doc(Some(" leading")),
+            Some(" leading".to_string())
+        );
+        assert_eq!(super::clean_doc(Some("a\tb")), Some("a    b".to_string()));
         assert_eq!(super::clean_doc(Some(" \n")), None);
         assert_eq!(super::operation_doc(Some(" \n")), Some(String::new()));
+        assert_eq!(
+            super::operation_doc(Some(" leading")),
+            Some(" leading".to_string())
+        );
         assert_eq!(super::operation_doc(None), None);
         assert_eq!(
             super::declared_doc(Some("keeps spaces  \n\n")),
             Some("keeps spaces  ".to_string())
         );
+        assert_eq!(super::declared_doc(Some("a\tb")), Some("a\tb".to_string()));
         assert_eq!(
             super::example_literal(&serde_json::json!("a \"quote\"")),
             Some("'a \"quote\"'".to_string())
