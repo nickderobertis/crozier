@@ -547,12 +547,11 @@ pub struct Schema {
     /// Array item schema.
     #[serde(default)]
     pub items: Option<Box<Schema>>,
-    /// `uniqueItems` — a `true` array usually maps to `typing.Set` rather than
-    /// `List` (Fern retains `List` when the schema declares an array default).
+    /// `uniqueItems` is accepted at the boundary; Fern's OpenAPI importer still
+    /// emits a list, so generation does not change collection type for this flag.
     #[serde(rename = "uniqueItems", default)]
     pub unique_items: Option<bool>,
-    /// Schema default. Fern uses an array default to retain list semantics even
-    /// when `uniqueItems` is true.
+    /// Schema default.
     #[serde(default)]
     pub default: Option<serde_json::Value>,
     /// `additionalProperties` — a bool or a schema.

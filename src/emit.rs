@@ -1725,7 +1725,12 @@ struct ParamRow {
 
 fn reference_param_suffix(description: Option<&str>) -> String {
     match description {
-        Some(d) if d.contains('\n') => format!(" \n\n{d}"),
+        // Importers sometimes retain leading blank lines around a one-line
+        // description. Fern still renders those through the ordinary em-dash
+        // form; only multiple substantive lines become a separate paragraph.
+        Some(d) if d.trim().contains('\n') => {
+            format!(" \n\n{}", d.trim_matches(['\r', '\n']))
+        }
         Some(d) => format!(" — {d}"),
         None => " ".to_string(),
     }

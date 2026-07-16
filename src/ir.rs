@@ -1631,7 +1631,7 @@ fn build_endpoint(
                 convert,
                 example,
                 example_is_scalar,
-                docstring: clean_doc(p.description.as_deref()),
+                docstring: declared_doc(p.description.as_deref()),
             }
         })
         .collect();
@@ -1664,7 +1664,7 @@ fn build_endpoint(
                 py_name: naming::field_name(header_param_stem(&p.name)),
                 type_ref,
                 required: p.required == Some(true),
-                docstring: clean_doc(p.description.as_deref()),
+                docstring: declared_doc(p.description.as_deref()),
                 example: parameter_example(doc, p),
             }
         })
@@ -4841,11 +4841,10 @@ fn array_item_type_ref(schema: &Schema) -> TypeRef {
     }
 }
 
-/// Fern maps a unique array to `Set` unless an array default pins its imported
-/// shape to `List` (for example, `uniqueItems: true` with `default: []`).
-fn array_uses_set(schema: &Schema) -> bool {
-    schema.unique_items == Some(true)
-        && !matches!(schema.default.as_ref(), Some(serde_json::Value::Array(_)))
+/// Fern's OpenAPI importer keeps arrays as lists even when `uniqueItems` is true;
+/// the constraint does not change the generated Python collection type.
+fn array_uses_set(_schema: &Schema) -> bool {
+    false
 }
 
 fn single_all_of_ref(schema: &Schema) -> Option<&str> {
@@ -6158,13 +6157,13 @@ mod tests {
                 "ChoiceItem".to_string()
             ))))
         );
-        let set = schema(serde_json::json!({
+        let unique = schema(serde_json::json!({
             "type": "array", "uniqueItems": true,
             "items": { "type": "string", "enum": ["x"] }
         }));
         assert_eq!(
-            hoister.hoist_array_item_enum("Unique", &set),
-            Some(TypeRef::Set(Box::new(TypeRef::Named(
+            hoister.hoist_array_item_enum("Unique", &unique),
+            Some(TypeRef::List(Box::new(TypeRef::Named(
                 "UniqueItem".to_string()
             ))))
         );
@@ -6364,7 +6363,7 @@ mod tests {
     }
 
     #[test]
-    fn builder_handles_discriminated_set_items_and_flattens_overlapping_bases() {
+    fn builder_handles_discriminated_unique_items_and_flattens_overlapping_bases() {
         let schemas = indexmap::IndexMap::new();
         let mut builder = Builder {
             types: Vec::new(),
@@ -6400,7 +6399,7 @@ mod tests {
                 if alias.name == "Events"
                     && matches!(&alias.target,
                         TypeRef::Optional(inner)
-                            if matches!(inner.as_ref(), TypeRef::Set(item)
+                            if matches!(inner.as_ref(), TypeRef::List(item)
                                 if matches!(item.as_ref(), TypeRef::Named(name) if name == "EventsItem")))
         )));
 
@@ -6490,7 +6489,7 @@ mod tests {
         }));
         assert_eq!(
             builder.field_type_ref("Record", "names", &nullable_refs),
-            TypeRef::Set(Box::new(TypeRef::Optional(Box::new(TypeRef::Named(
+            TypeRef::List(Box::new(TypeRef::Optional(Box::new(TypeRef::Named(
                 "NullableName".to_string()
             )))))
         );
@@ -6506,7 +6505,7 @@ mod tests {
         }));
         assert_eq!(
             builder.field_type_ref("Record", "entries", &inline_items),
-            TypeRef::Set(Box::new(TypeRef::Optional(Box::new(TypeRef::Named(
+            TypeRef::List(Box::new(TypeRef::Optional(Box::new(TypeRef::Named(
                 "RecordEntriesItem".to_string()
             )))))
         );
