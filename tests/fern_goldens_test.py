@@ -89,7 +89,14 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             if "fetch-corpus" in args:
                 fixture = args[args.index("--fixture") + 1]
                 root = pathlib.Path(os.environ["CROZIER_FERN_GOLDENS_ROOT"])
-                destination = root / ".local" / "corpus" / fixture / "openapi.json"
+                manifest = root / "tests" / "fixtures" / "CORPUS.md"
+                row = next(
+                    line for line in manifest.read_text(encoding="utf-8").splitlines()
+                    if f"`{fixture}`" in line and line.lstrip().startswith("|")
+                )
+                url = [cell.strip() for cell in row.strip().strip("|").split("|")][3]
+                suffix = pathlib.PurePosixPath(url).suffix.lower()
+                destination = root / ".local" / "corpus" / fixture / f"openapi{suffix}"
                 with (root / ".fetch-calls").open("a", encoding="utf-8") as calls:
                     calls.write(" ".join(args[args.index("fetch-corpus"):]) + "\n")
                 if fixture in os.environ.get("FAIL_FETCH", "").split(","):
@@ -377,7 +384,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         self.assertEqual(len(self.calls()), 3)
         self.assertEqual(self.state("alpha")["corpus_spec_ref"], "2")
         self.assertTrue(
-            (self.root / ".local" / "corpus" / "alpha" / "openapi.json").is_file()
+            (self.root / ".local" / "corpus" / "alpha" / "openapi.yaml").is_file()
         )
         self.assertTrue(all("fetch-corpus --fixture alpha" in call for call in self.fetch_calls()))
 
@@ -404,37 +411,43 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         self.assertEqual(len(self.calls()), 2)
         self.assertTrue(generated.is_file())
 
-    def test_shared_fetch_command_uses_canonical_cache_and_reuses_it(self) -> None:
+    def test_shared_fetch_command_preserves_source_suffix_and_reuses_cache(self) -> None:
         destination = Path(self.temporary.name) / "corpus-cache"
-        command = self.script_command(
-            REPO / "scripts" / "fetch-corpus.sh",
-            "--fixture",
-            "apideck.com-crm",
-            str(destination),
+        cases = (
+            ("apideck.com-crm", "openapi.json", "api.apis.guru"),
+            ("redocly.com-museum", "openapi.yaml", "raw.githubusercontent.com"),
         )
-        first = subprocess.run(
-            command,
-            cwd=REPO,
-            env=self.environment(),
-            text=True,
-            capture_output=True,
-            check=False,
-        )
-        self.assertEqual(first.returncode, 0, first.stderr)
-        canonical = destination / "apideck.com-crm" / "openapi.json"
-        self.assertEqual(first.stdout, f"{canonical}\n")
-        self.assertTrue(canonical.is_file())
+        for fixture, filename, failed_host in cases:
+            with self.subTest(fixture=fixture):
+                command = self.script_command(
+                    REPO / "scripts" / "fetch-corpus.sh",
+                    "--fixture",
+                    fixture,
+                    str(destination),
+                )
+                first = subprocess.run(
+                    command,
+                    cwd=REPO,
+                    env=self.environment(),
+                    text=True,
+                    capture_output=True,
+                    check=False,
+                )
+                self.assertEqual(first.returncode, 0, first.stderr)
+                canonical = destination / fixture / filename
+                self.assertEqual(first.stdout, f"{canonical}\n")
+                self.assertTrue(canonical.is_file())
 
-        second = subprocess.run(
-            [*command[:-1], "--if-missing", command[-1]],
-            cwd=REPO,
-            env=self.environment(FAIL_FETCH="api.apis.guru"),
-            text=True,
-            capture_output=True,
-            check=False,
-        )
-        self.assertEqual(second.returncode, 0, second.stderr)
-        self.assertEqual(second.stdout, f"{canonical}\n")
+                second = subprocess.run(
+                    [*command[:-1], "--if-missing", command[-1]],
+                    cwd=REPO,
+                    env=self.environment(FAIL_FETCH=failed_host),
+                    text=True,
+                    capture_output=True,
+                    check=False,
+                )
+                self.assertEqual(second.returncode, 0, second.stderr)
+                self.assertEqual(second.stdout, f"{canonical}\n")
 
     def test_partial_failures_preserve_prior_goldens_and_state(self) -> None:
         self.run_tool(

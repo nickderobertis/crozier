@@ -71,8 +71,11 @@ while IFS=$'\t' read -r name url ref decision; do
     printf '%s\t%s\t%s\n' "$name" "$url" "$ref"
     continue
   fi
-  cached="$dest_root/$name/openapi.json"
-  if [ "$if_missing" -eq 1 ] && [ -s "$cached" ]; then
+  cached=""
+  if corpus_is_direct_spec_url "$url"; then
+    cached="$dest_root/$name/$(corpus_spec_cache_filename "$url")"
+  fi
+  if [ "$if_missing" -eq 1 ] && [ -n "$cached" ] && [ -s "$cached" ]; then
     source_path="$cached"
   else
     source_path="$(corpus_fetch_source "$dest_root" "$name" "$url" "$ref")"

@@ -107,15 +107,26 @@ corpus_is_direct_spec_url() {
   esac
 }
 
+corpus_spec_cache_filename() {
+  case "$1" in
+    *.json) printf '%s\n' openapi.json ;;
+    *.yaml) printf '%s\n' openapi.yaml ;;
+    *.yml) printf '%s\n' openapi.yml ;;
+    *)
+      echo "corpus: direct spec URL has no supported OpenAPI suffix: $1" >&2
+      return 1
+      ;;
+  esac
+}
+
 corpus_fetch_source() {
   local fetch_root="$1" name="$2" url="$3" ref="$4"
   if corpus_is_direct_spec_url "$url"; then
-    local target_dir="$fetch_root/$name" target temporary
+    local target_dir="$fetch_root/$name" target temporary stale
     mkdir -p "$target_dir"
-    # The Rust corpus runner and every fixture command consume this canonical
-    # cache path. The document parser detects JSON/YAML from its contents, so the
-    # source URL's suffix must not create a second, invisible cache layout.
-    target="$target_dir/openapi.json"
+    # Crozier deliberately dispatches JSON/YAML parsing by extension. Preserve the
+    # raw source suffix while keeping one canonical basename for every consumer.
+    target="$target_dir/$(corpus_spec_cache_filename "$url")"
     temporary="$(mktemp "$target_dir/.openapi.XXXXXX")"
     if ! curl -fsSL -A crozier-fixture-builder "$url" -o "$temporary"; then
       rm -f "$temporary"
@@ -127,6 +138,9 @@ corpus_fetch_source() {
       return 1
     fi
     mv "$temporary" "$target"
+    for stale in "$target_dir/openapi.json" "$target_dir/openapi.yaml" "$target_dir/openapi.yml"; do
+      [ "$stale" = "$target" ] || rm -f "$stale"
+    done
     printf '%s\n' "$target"
   else
     corpus_fetch_repo "$fetch_root" "$name" "$url" "$ref"

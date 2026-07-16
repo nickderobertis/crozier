@@ -1658,8 +1658,8 @@ fn fixture_dir(api: &str) -> PathBuf {
 
 /// The OpenAPI spec a corpus generates from. A vendored corpus ships its
 /// `openapi.yml`; a `link-ok` corpus (`tests/fixtures/CORPUS.md`, spec not
-/// redistributed) is fetched into `.local/corpus/<api>/openapi.json` by
-/// `scripts/fetch-corpus.sh` — `None` when that fetch has not run.
+/// redistributed) is fetched into `.local/corpus/<api>/openapi.<source suffix>`
+/// by `scripts/fetch-corpus.sh` — `None` when that fetch has not run.
 fn corpus_spec(api: &str) -> Option<PathBuf> {
     let vendored = fixture_dir(api).join("openapi.yml");
     if vendored.exists() {
@@ -1667,9 +1667,11 @@ fn corpus_spec(api: &str) -> Option<PathBuf> {
     }
     let fetched = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join(".local/corpus")
-        .join(api)
-        .join("openapi.json");
-    fetched.exists().then_some(fetched)
+        .join(api);
+    ["openapi.json", "openapi.yaml", "openapi.yml"]
+        .into_iter()
+        .map(|name| fetched.join(name))
+        .find(|path| path.exists())
 }
 
 /// Fresh `crozier` command bound to the built binary.
@@ -11354,6 +11356,7 @@ const CORPORA: &[&Corpus] = &[
     &NETBOX_DEV,
     &SQUAREUP_COM,
     &AMAZONAWS_COM_CLOUDFORMATION,
+    &REDOCLY_COM_MUSEUM,
 ];
 
 #[test]
@@ -13882,6 +13885,20 @@ const AMAZONAWS_COM_CLOUDFORMATION: Corpus = Corpus {
     ],
 };
 
+/// `redocly.com-museum`: a compact OpenAPI 3.1 corpus spanning eight operations,
+/// `allOf`, string formats, binary responses, and non-JSON media types. Its Fern
+/// golden is intentionally workflow-owned and has not been generated yet.
+const REDOCLY_COM_MUSEUM: Corpus = Corpus {
+    api: "redocly.com-museum",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[],
+};
+
 #[test]
 fn squareup_com_matches_fern_output() {
     if corpus_spec(SQUAREUP_COM.api).is_none() {
@@ -13904,6 +13921,18 @@ fn amazonaws_com_cloudformation_matches_fern_output() {
         return;
     }
     assert_corpus_matches(&AMAZONAWS_COM_CLOUDFORMATION);
+}
+
+#[test]
+fn redocly_com_museum_matches_fern_output() {
+    if corpus_spec(REDOCLY_COM_MUSEUM.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the Redocly Museum corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+        );
+        return;
+    }
+    assert_corpus_matches(&REDOCLY_COM_MUSEUM);
 }
 
 #[test]
@@ -13993,6 +14022,7 @@ fn report_matched_candidates() {
         &NETBOX_DEV,
         &SQUAREUP_COM,
         &AMAZONAWS_COM_CLOUDFORMATION,
+        &REDOCLY_COM_MUSEUM,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);

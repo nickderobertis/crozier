@@ -62,8 +62,7 @@ test-live-e2e *args:
 
 # Enforce the real-world corpus byte-match: fetch the `link-ok` corpus specs (not
 # vendored; see tests/fixtures/CORPUS.md) and byte-compare crozier's output for the
-# vendored Fern goldens (apideck-crm, appwrite, and bungie fully; bunq's matched
-# subset).
+# vendored Fern goldens and require every registered source to generate.
 # SEPARATE from `check` because it needs network to
 # fetch the specs; CI runs it in the live-e2e leg. `CROZIER_REQUIRE_CORPUS` turns a
 # missing spec from a skip into a hard failure so the leg can't no-op. One
@@ -119,6 +118,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e openbanking_org_uk_account_info_openapi_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e netbox_dev_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e squareup_com_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e redocly_com_museum_matches_fern_output
 
 # Format the codebase in place.
 format:
