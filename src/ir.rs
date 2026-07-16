@@ -5897,7 +5897,7 @@ mod tests {
                 .iter()
                 .map(|field| field.wire_name.as_str())
                 .collect::<Vec<_>>(),
-            ["ErrorCode", "Response"]
+            ["Response", "ErrorCode"]
         );
     }
 
@@ -7040,6 +7040,13 @@ mod tests {
                     true,
                 ),
                 (
+                    "state",
+                    TypeRef::Named("EnvelopeState".to_string()),
+                    false,
+                    false,
+                ),
+                ("token", TypeRef::Primitive(Prim::Str), false, false,),
+                (
                     "labels",
                     TypeRef::Dict(
                         Box::new(TypeRef::Primitive(Prim::Str)),
@@ -7048,13 +7055,6 @@ mod tests {
                     false,
                     false,
                 ),
-                (
-                    "state",
-                    TypeRef::Named("EnvelopeState".to_string()),
-                    false,
-                    false,
-                ),
-                ("token", TypeRef::Primitive(Prim::Str), false, false,),
             ]
         );
         assert!(builder.types.iter().any(|decl| matches!(
@@ -7105,6 +7105,13 @@ mod tests {
                     true,
                 ),
                 (
+                    "state",
+                    TypeRef::Named("RequestState".to_string()),
+                    false,
+                    false,
+                ),
+                ("token", TypeRef::Primitive(Prim::Str), false, false,),
+                (
                     "labels",
                     TypeRef::Dict(
                         Box::new(TypeRef::Primitive(Prim::Str)),
@@ -7113,13 +7120,6 @@ mod tests {
                     false,
                     false,
                 ),
-                (
-                    "state",
-                    TypeRef::Named("RequestState".to_string()),
-                    false,
-                    false,
-                ),
-                ("token", TypeRef::Primitive(Prim::Str), false, false,),
             ]
         );
         assert!(hoister.out.iter().any(|decl| matches!(
