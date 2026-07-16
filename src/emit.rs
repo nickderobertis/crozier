@@ -1420,22 +1420,25 @@ fn abbrev_call(indent: usize, prefix: &str, complex: bool) -> String {
     }
 }
 
+/// Whether an endpoint can anchor the README's representative calls. Fern skips
+/// referenced file-form declarations here even though their methods may still have
+/// a deliberately argument-free worked example in `reference.md`.
+fn readme_endpoint_eligible(ep: &Endpoint) -> bool {
+    endpoint_has_worked_example(ep)
+        && !matches!(ep.request_body, Some(RequestBody::Bytes { .. }))
+        && !matches!(&ep.request_body, Some(RequestBody::Form(form)) if ep.body_schema_ref && form.fields.iter().any(|field| field.is_file))
+}
+
 fn select_readme_endpoint<'a>(
     endpoints: impl Clone + Iterator<Item = &'a Endpoint>,
 ) -> Option<&'a Endpoint> {
     endpoints
         .clone()
-        .find(|e| {
-            e.emittable
-                && e.http_method == "POST"
-                && !matches!(e.request_body, Some(RequestBody::Bytes { .. }))
-        })
+        .find(|e| e.emittable && e.http_method == "POST" && readme_endpoint_eligible(e))
         .or_else(|| {
-            endpoints.clone().find(|e| {
-                e.emittable
-                    && e.request_body.is_some()
-                    && !matches!(e.request_body, Some(RequestBody::Bytes { .. }))
-            })
+            endpoints
+                .clone()
+                .find(|e| e.emittable && e.request_body.is_some() && readme_endpoint_eligible(e))
         })
         .or_else(|| {
             endpoints.clone().find(|e| {
@@ -1450,7 +1453,7 @@ fn select_readme_endpoint<'a>(
         .or_else(|| {
             endpoints
                 .clone()
-                .find(|e| e.emittable && !matches!(e.request_body, Some(RequestBody::Bytes { .. })))
+                .find(|e| e.emittable && readme_endpoint_eligible(e))
         })
 }
 
@@ -5121,6 +5124,11 @@ fn build_example(
             Example::Atom(ex.clone())
         } else if let TypeRef::List(inner) = &qp.type_ref {
             Example::List(vec![ctx.value(inner, Slot::Named(&qp.wire_name))])
+        } else if let TypeRef::Dict(_, value) = &qp.type_ref {
+            Example::Dict(vec![(
+                qp.wire_name.clone(),
+                ctx.value(value, Slot::Named(&qp.wire_name)),
+            )])
         } else {
             ctx.value(&qp.type_ref, Slot::Named(&qp.wire_name))
         };
@@ -5391,11 +5399,18 @@ fn build_example(
 }
 
 fn endpoint_has_worked_example(ep: &Endpoint) -> bool {
-    !(ep.binary_response
-        && ep.path_params.is_empty()
-        && ep.query_params.is_empty()
+    // Array query params always default to `None` in the generated signature, so a
+    // binary download with only those params has no exampleable required argument.
+    let binary_has_no_required_arguments = ep.path_params.is_empty()
+        && ep
+            .query_params
+            .iter()
+            .all(|param| matches!(param.type_ref, TypeRef::List(_)))
         && ep.header_params.is_empty()
-        && ep.request_body.is_none())
+        && ep.request_body.is_none();
+    let opaque_multipart_example = ep.body_media_has_example
+        && matches!(&ep.request_body, Some(RequestBody::Form(form)) if form.fields.iter().any(|field| field.is_file));
+    !(ep.binary_response && binary_has_no_required_arguments || opaque_multipart_example)
 }
 
 /// Assemble the `raw_client.py` file for one client module: the sync and async
@@ -6053,6 +6068,7 @@ mod tests {
             body_schema_shared: false,
             body_schema_metadata_missing: false,
             body_schema_has_example: false,
+            body_media_has_example: false,
             body_schema_documented: false,
             body_schema_is_response_heavy: false,
             body_schema_is_open: false,

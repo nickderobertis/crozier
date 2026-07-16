@@ -260,8 +260,8 @@ fn is_transport_managed_header(wire_name: &str) -> bool {
 
 /// The SDK's authentication model, derived from `components.securitySchemes` and
 /// how operations reference them. Only the schemes crozier reproduces byte-for-byte
-/// are distinguished; anything else (oauth2 or no scheme) falls back to an optional
-/// bearer `token`, matching Fern's default client wrapper.
+/// are distinguished; OAuth2 uses the bearer-token surface, and anything else
+/// falls back to an optional bearer `token`, matching Fern's default client wrapper.
 #[derive(Debug, Clone)]
 pub enum Auth {
     /// A `type: apiKey` header credential: a required-or-optional `api_key: str`
@@ -323,7 +323,10 @@ fn auth_model(doc: &OpenApi) -> Auth {
                 required: all_operations_authenticated(doc),
             }
         }
-        // oauth2/unknown/no scheme → Fern's default optional bearer token.
+        Some(s) if s.ty == SecuritySchemeType::OAuth2 => Auth::Bearer {
+            required: all_operations_authenticated(doc),
+        },
+        // Unknown scheme → Fern's default optional bearer token.
         _ => Auth::Bearer { required: false },
     }
 }
@@ -451,8 +454,8 @@ fn referenced_type_names(
 
 /// Class names of schemas used as an inlined (plain-object `$ref`) request body by
 /// **exactly one** operation — the candidates Fern omits from the type layer.
-/// Mirrors the `$ref`-object branch of [`resolve_request_body`]. A schema shared as
-/// the body of two or more operations (bunq's create+update pairs share
+/// Mirrors the `$ref`-object and form branches of [`resolve_request_body`]. A schema
+/// shared as the body of two or more operations (bunq's create+update pairs share
 /// `PermittedIp`, `CardGeneratedCvc2`, …) is kept as a standalone type even though it
 /// is still inlined into each method, so only single-use bodies are returned.
 fn inline_body_source_names(doc: &OpenApi) -> std::collections::HashSet<String> {
@@ -463,6 +466,8 @@ fn inline_body_source_names(doc: &OpenApi) -> std::collections::HashSet<String> 
             let Some(schema) = rb
                 .content
                 .get("application/json")
+                .or_else(|| rb.content.get("multipart/form-data"))
+                .or_else(|| rb.content.get("application/x-www-form-urlencoded"))
                 .and_then(|mt| mt.schema.as_ref())
             else {
                 continue;
@@ -567,6 +572,10 @@ pub struct Endpoint {
     pub body_schema_metadata_missing: bool,
     /// Whether the referenced request schema declares an example payload.
     pub body_schema_has_example: bool,
+    /// Whether the selected request media declares an example payload. A multipart
+    /// upload example is an opaque HTTP transcript to Fern and suppresses worked
+    /// examples for that endpoint.
+    pub body_media_has_example: bool,
     /// Whether the referenced request schema has a substantive description.
     pub body_schema_documented: bool,
     /// Whether the referenced request schema also contains server-populated fields.
@@ -1595,6 +1604,33 @@ fn build_endpoint(
     // inline object body is hoisted into a `{Ctx}Response` model, where `Ctx` is
     // the operation's PascalCase context (computed above, from the operationId).
     let response = match success_response_schema(op) {
+        Some(schema)
+            if schema.reference.is_none()
+                && (schema.one_of.is_some() || schema.any_of.is_some()) =>
+        {
+            let name = format!("{pascal_ctx}Response");
+            let variants = schema
+                .one_of
+                .as_ref()
+                .or(schema.any_of.as_ref())
+                .expect("union branch checked above");
+            let target = TypeRef::Union(
+                variants
+                    .iter()
+                    .enumerate()
+                    .map(|(index, variant)| {
+                        hoister.hoist_union_variant(&name, index, variant, variants)
+                    })
+                    .collect(),
+            );
+            hoister.out.push(TypeDecl::Alias(AliasType {
+                name: name.clone(),
+                module: naming::module_name(&name),
+                target,
+                docstring: clean_doc(schema.description.as_deref()),
+            }));
+            Some(TypeRef::Named(name))
+        }
         Some(schema) if is_inline_struct(schema) => {
             let name = format!("{pascal_ctx}Response");
             hoister.hoist_object(&name, schema);
@@ -1610,8 +1646,8 @@ fn build_endpoint(
         _ => success_response(op),
     };
     let response = response.map(|response| {
-        if has_bodyless_success(op) {
-            TypeRef::Optional(Box::new(response))
+        if has_bodyless_success(op) && !has_text_response(op) {
+            optional_type_ref(response)
         } else {
             response
         }
@@ -1747,6 +1783,11 @@ fn build_endpoint(
             .and_then(|schema| schema.reference.as_deref())
             .and_then(|reference| resolve_ref(doc, reference))
             .is_some_and(|schema| schema_example(schema).is_some()),
+        body_media_has_example: op.request_body.as_ref().is_some_and(|body| {
+            body.content
+                .values()
+                .any(|media| media.example.is_some() || !media.examples.is_empty())
+        }),
         body_schema_documented: op
             .request_body
             .as_ref()
@@ -1895,7 +1936,21 @@ fn is_streaming(op: &Operation) -> bool {
 
 fn body_response_same_ref(doc: &OpenApi, op: &Operation) -> bool {
     let effective_security = op.security.as_ref().or(doc.security.as_ref());
-    if effective_security.is_some_and(|reqs| reqs.iter().any(|r| !r.is_empty())) {
+    // Fern's OAuth2 importer treats an echo schema as a shared model even on an
+    // authenticated operation; HTTP bearer/API-key importers retain their older
+    // content-type behavior. Check the schemes the operation actually names so an
+    // unrelated OAuth2 declaration cannot change a bearer-authenticated endpoint.
+    let oauth2 = effective_security.is_some_and(|requirements| {
+        requirements.iter().any(|requirement| {
+            requirement.keys().any(|name| {
+                doc.components
+                    .security_schemes
+                    .get(name)
+                    .is_some_and(|scheme| scheme.ty == crate::openapi::SecuritySchemeType::OAuth2)
+            })
+        })
+    });
+    if !oauth2 && effective_security.is_some_and(|reqs| reqs.iter().any(|r| !r.is_empty())) {
         return false;
     }
     request_and_response_refs_match(op)
@@ -2858,6 +2913,13 @@ fn success_response(op: &Operation) -> Option<TypeRef> {
                 .and_then(|media| media.schema.as_ref())
                 .map(|_| TypeRef::Primitive(Prim::Str))
         })
+        .or_else(|| {
+            success_response_entry(op)?
+                .content
+                .get("application/json")
+                .filter(|media| media.schema.is_none())?;
+            Some(TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any))))
+        })
 }
 
 fn has_text_response(op: &Operation) -> bool {
@@ -3461,7 +3523,11 @@ fn collect_discriminant_strips(
 /// Collect a discriminated-union member's fields (the referenced model's
 /// properties minus the discriminant). Inline hoisting is intentionally skipped:
 /// the member model is emitted separately and owns any hoisted property types.
-fn member_fields(schema: &Schema, discriminant: &str) -> Vec<Field> {
+fn member_fields(
+    schema: &Schema,
+    discriminant: &str,
+    schemas: &IndexMap<String, Schema>,
+) -> Vec<Field> {
     let required: Vec<&str> = schema
         .required
         .iter()
@@ -3470,11 +3536,19 @@ fn member_fields(schema: &Schema, discriminant: &str) -> Vec<Field> {
         .collect();
     let mut fields = Vec::new();
     for member in schema.all_of.iter().flatten() {
-        if member.reference.is_none() {
-            append_member_fields(member, discriminant, &required, &mut fields);
+        if let Some(base) = member
+            .reference
+            .as_deref()
+            .and_then(|reference| resolve_ref_from_schemas(schemas, reference))
+        {
+            let base_required: Vec<&str> = base.required.iter().map(String::as_str).collect();
+            let base_name = member.reference.as_deref().map(ref_to_class);
+            append_member_fields(base, "", &base_required, base_name.as_deref(), &mut fields);
+        } else {
+            append_member_fields(member, discriminant, &required, None, &mut fields);
         }
     }
-    append_member_fields(schema, discriminant, &required, &mut fields);
+    append_member_fields(schema, discriminant, &required, None, &mut fields);
     fields
 }
 
@@ -3483,6 +3557,7 @@ fn append_member_fields(
     schema: &Schema,
     discriminant: &str,
     required: &[&str],
+    enum_owner: Option<&str>,
     fields: &mut Vec<Field>,
 ) {
     for (prop, prop_schema) in &schema.properties {
@@ -3490,14 +3565,22 @@ fn append_member_fields(
             continue;
         }
         let spec_required = required.contains(&prop.as_str());
+        let type_ref = if string_enum_values(prop_schema).is_some() {
+            enum_owner.map_or_else(
+                || base_type_ref(prop_schema),
+                |owner| TypeRef::Named(format!("{owner}{}", naming::class_name(prop))),
+            )
+        } else {
+            base_type_ref(prop_schema)
+        };
         fields.push(Field {
             wire_name: prop.clone(),
             py_name: naming::model_field_name(prop),
-            type_ref: base_type_ref(prop_schema),
+            type_ref,
             optional: is_optional(prop_schema) || !spec_required,
             nullable: is_optional(prop_schema) && prop_schema.read_only == Some(true),
             spec_required,
-            docstring: declared_doc(prop_schema.description.as_deref()),
+            docstring: None,
             example: schema_example(prop_schema).and_then(example_literal),
         });
     }
@@ -3829,7 +3912,7 @@ impl Builder<'_> {
                 members.push(UnionMember {
                     class_name: format!("{name}_{}", naming::class_name(&value)),
                     discriminant: value,
-                    fields: member_fields(target, &property_name),
+                    fields: member_fields(target, &property_name, self.schemas),
                     docstring: variant
                         .reference
                         .is_none()
@@ -3857,8 +3940,8 @@ impl Builder<'_> {
                 // coincide only when the mapping key equals the schema name.
                 class_name: format!("{name}_{}", naming::class_name(value)),
                 discriminant: value.clone(),
-                fields: member_fields(target, &property_name),
-                docstring: None,
+                fields: member_fields(target, &property_name, self.schemas),
+                docstring: docstring.clone(),
             });
             variant_targets.push(naming::class_name(target_key));
         }

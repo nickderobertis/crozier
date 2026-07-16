@@ -106,6 +106,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apache_org_airflow_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e openfigi_com_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e twilio_voice_v1_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e microcks_local_matches_fern_output
 
 # Format the codebase in place.
 format:

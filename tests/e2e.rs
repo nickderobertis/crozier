@@ -8658,6 +8658,118 @@ const TWILIO_VOICE_V1: Corpus = Corpus {
     ],
 };
 
+const MICROCKS_LOCAL: Corpus = Corpus {
+    api: "microcks.local",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[
+        ".fern/metadata.json",
+        "README.md",
+        "pyproject.toml",
+        "reference.md",
+        "requirements.txt",
+        "src/fern/__init__.py",
+        "src/fern/client.py",
+        "src/fern/config/__init__.py",
+        "src/fern/config/client.py",
+        "src/fern/config/raw_client.py",
+        "src/fern/core/__init__.py",
+        "src/fern/core/api_error.py",
+        "src/fern/core/client_wrapper.py",
+        "src/fern/core/datetime_utils.py",
+        "src/fern/core/file.py",
+        "src/fern/core/force_multipart.py",
+        "src/fern/core/http_client.py",
+        "src/fern/core/http_response.py",
+        "src/fern/core/http_sse/__init__.py",
+        "src/fern/core/http_sse/_api.py",
+        "src/fern/core/http_sse/_decoders.py",
+        "src/fern/core/http_sse/_exceptions.py",
+        "src/fern/core/http_sse/_models.py",
+        "src/fern/core/jsonable_encoder.py",
+        "src/fern/core/pydantic_utilities.py",
+        "src/fern/core/query_encoder.py",
+        "src/fern/core/remove_none_from_dict.py",
+        "src/fern/core/request_options.py",
+        "src/fern/core/serialization.py",
+        "src/fern/environment.py",
+        "src/fern/errors/__init__.py",
+        "src/fern/errors/bad_request_error.py",
+        "src/fern/errors/internal_server_error.py",
+        "src/fern/job/__init__.py",
+        "src/fern/job/client.py",
+        "src/fern/job/raw_client.py",
+        "src/fern/metrics/__init__.py",
+        "src/fern/metrics/client.py",
+        "src/fern/metrics/raw_client.py",
+        "src/fern/mock/__init__.py",
+        "src/fern/mock/client.py",
+        "src/fern/mock/raw_client.py",
+        "src/fern/mock/types/__init__.py",
+        "src/fern/mock/types/get_service_response.py",
+        "src/fern/py.typed",
+        "src/fern/raw_client.py",
+        "src/fern/test/__init__.py",
+        "src/fern/test/client.py",
+        "src/fern/test/raw_client.py",
+        "src/fern/types/__init__.py",
+        "src/fern/types/abstract_exchange.py",
+        "src/fern/types/abstract_exchange_type.py",
+        "src/fern/types/binding.py",
+        "src/fern/types/binding_type.py",
+        "src/fern/types/counter.py",
+        "src/fern/types/counter_map.py",
+        "src/fern/types/daily_invocation_statistic.py",
+        "src/fern/types/event_message.py",
+        "src/fern/types/exchange.py",
+        "src/fern/types/features_config.py",
+        "src/fern/types/features_config_async_api.py",
+        "src/fern/types/features_config_microcks_hub.py",
+        "src/fern/types/features_config_repository_filter.py",
+        "src/fern/types/features_config_repository_tenancy.py",
+        "src/fern/types/header.py",
+        "src/fern/types/header_dto.py",
+        "src/fern/types/import_job.py",
+        "src/fern/types/keycloak_config.py",
+        "src/fern/types/keycloak_config_ssl_required.py",
+        "src/fern/types/labels_map.py",
+        "src/fern/types/message_array.py",
+        "src/fern/types/metadata.py",
+        "src/fern/types/oauth_scope.py",
+        "src/fern/types/operation.py",
+        "src/fern/types/operation_headers.py",
+        "src/fern/types/parameter_constraint.py",
+        "src/fern/types/parameter_constraint_in.py",
+        "src/fern/types/request.py",
+        "src/fern/types/request_response_pair.py",
+        "src/fern/types/resource.py",
+        "src/fern/types/resource_type.py",
+        "src/fern/types/response.py",
+        "src/fern/types/secret.py",
+        "src/fern/types/secret_ref.py",
+        "src/fern/types/service.py",
+        "src/fern/types/service_ref.py",
+        "src/fern/types/service_type.py",
+        "src/fern/types/service_view.py",
+        "src/fern/types/string_array.py",
+        "src/fern/types/test_case_result.py",
+        "src/fern/types/test_conformance_metric.py",
+        "src/fern/types/test_result.py",
+        "src/fern/types/test_result_summary.py",
+        "src/fern/types/test_return.py",
+        "src/fern/types/test_runner_type.py",
+        "src/fern/types/test_step_result.py",
+        "src/fern/types/trend.py",
+        "src/fern/types/unidirectional_event.py",
+        "src/fern/types/weighted_metric_value.py",
+        "src/fern/version.py",
+    ],
+};
+
 const CORPORA: &[&Corpus] = &[
     &QUERY_PARAMETERS,
     &EXHAUSTIVE,
@@ -8698,6 +8810,7 @@ const CORPORA: &[&Corpus] = &[
     &APACHE_ORG_AIRFLOW,
     &OPENFIGI,
     &TWILIO_VOICE_V1,
+    &MICROCKS_LOCAL,
 ];
 
 #[test]
@@ -9191,6 +9304,18 @@ fn twilio_voice_v1_matches_fern_output() {
 }
 
 #[test]
+fn microcks_local_matches_fern_output() {
+    if corpus_spec(MICROCKS_LOCAL.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the Microcks corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+        );
+        return;
+    }
+    assert_corpus_matches(&MICROCKS_LOCAL);
+}
+
+#[test]
 fn feature_target_specs_generate_without_panicking() {
     // A feature-coverage target with a populated `matched` list is byte-compared
     // file-by-file; one with an empty `matched` list asserts only that crozier
@@ -9266,6 +9391,7 @@ fn report_matched_candidates() {
         &APACHE_ORG_AIRFLOW,
         &OPENFIGI,
         &TWILIO_VOICE_V1,
+        &MICROCKS_LOCAL,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
@@ -9412,6 +9538,7 @@ fn report_fixture_diffs() {
         &APACHE_ORG_AIRFLOW,
         &OPENFIGI,
         &TWILIO_VOICE_V1,
+        &MICROCKS_LOCAL,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
