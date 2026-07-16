@@ -256,6 +256,11 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         self.assertFalse(list((self.root / "tests" / "fixtures" / "alpha").glob(".fern-goldens-stage.*")))
 
     def test_compare_aggregates_differences_and_generation_failures(self) -> None:
+        green = self.run_tool("compare")
+        self.assertEqual(green.returncode, 0)
+        self.assertNotIn("comparison generation failure(s)", green.stdout)
+        self.assertEqual(green.stdout.count("Fern comparison summary:"), 1)
+
         differing = self.run_tool("compare", COMPARE_MODE="diff")
         self.assertEqual(differing.returncode, 1)
         self.assertIn("=== alpha ===", differing.stdout)
