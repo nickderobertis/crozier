@@ -1,6 +1,6 @@
 # Reference
 ## Operations
-<details><summary><code>client.operations.<a href="src/fern/operations/client.py">get_museum_hours</a>(...)</code></summary>
+<details><summary><code>client.operations.<a href="src/fern/operations/client.py">get_museum_hours</a>(...) -> MuseumHours</code></summary>
 <dl>
 <dd>
 
@@ -27,18 +27,18 @@ Get upcoming museum operating hours.
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 import datetime
 
-from fern import FernApi
-
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.operations.get_museum_hours(
-    start_date=datetime.date.fromisoformat(
-        "2023-02-23",
-    ),
+    start_date=datetime.date.fromisoformat("2023-02-23"),
     page=2,
     limit=15,
 )
@@ -57,7 +57,7 @@ client.operations.get_museum_hours(
 <dl>
 <dd>
 
-**start_date:** `typing.Optional[dt.date]` — Starting date to retrieve future operating hours from. Defaults to today's date.
+**start_date:** `typing.Optional[datetime.date]` — Starting date to retrieve future operating hours from. Defaults to today's date.
     
 </dd>
 </dl>
@@ -94,7 +94,7 @@ client.operations.get_museum_hours(
 </details>
 
 ## Events
-<details><summary><code>client.events.<a href="src/fern/events/client.py">list_special_events</a>(...)</code></summary>
+<details><summary><code>client.events.<a href="src/fern/events/client.py">list_special_events</a>(...) -> SpecialEventCollection</code></summary>
 <dl>
 <dd>
 
@@ -121,21 +121,19 @@ Return a list of upcoming special events at the museum.
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 import datetime
 
-from fern import FernApi
-
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.events.list_special_events(
-    start_date=datetime.date.fromisoformat(
-        "2023-02-23",
-    ),
-    end_date=datetime.date.fromisoformat(
-        "2023-04-18",
-    ),
+    start_date=datetime.date.fromisoformat("2023-02-23"),
+    end_date=datetime.date.fromisoformat("2023-04-18"),
     page=2,
     limit=15,
 )
@@ -154,7 +152,7 @@ client.events.list_special_events(
 <dl>
 <dd>
 
-**start_date:** `typing.Optional[dt.date]` — Starting date to retrieve future operating hours from. Defaults to today's date.
+**start_date:** `typing.Optional[datetime.date]` — Starting date to retrieve future operating hours from. Defaults to today's date.
     
 </dd>
 </dl>
@@ -162,7 +160,7 @@ client.events.list_special_events(
 <dl>
 <dd>
 
-**end_date:** `typing.Optional[dt.date]` — End of a date range to retrieve special events for. Defaults to 7 days after `startDate`.
+**end_date:** `typing.Optional[datetime.date]` — End of a date range to retrieve special events for. Defaults to 7 days after `startDate`.
     
 </dd>
 </dl>
@@ -198,7 +196,7 @@ client.events.list_special_events(
 </dl>
 </details>
 
-<details><summary><code>client.events.<a href="src/fern/events/client.py">create_special_event</a>(...)</code></summary>
+<details><summary><code>client.events.<a href="src/fern/events/client.py">create_special_event</a>(...) -> SpecialEvent</code></summary>
 <dl>
 <dd>
 
@@ -225,27 +223,25 @@ Creates a new special event for the museum.
 <dd>
 
 ```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
 import datetime
 
-from fern import FernApi
-
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.events.create_special_event(
     name="Mermaid Treasure Identification and Analysis",
     location="Under the seaaa 🦀 🎶 🌊.",
     event_description="Join us as we review and classify a rare collection of 20 thingamabobs, gadgets, gizmos, whoosits, and whatsits, kindly donated by Ariel.",
     dates=[
-        datetime.date.fromisoformat(
-            "2023-09-05",
-        ),
-        datetime.date.fromisoformat(
-            "2023-09-08",
-        ),
+        datetime.date.fromisoformat("2023-09-05"),
+        datetime.date.fromisoformat("2023-09-08")
     ],
-    price=0.0,
+    price=0,
 )
 
 ```
@@ -262,47 +258,7 @@ client.events.create_special_event(
 <dl>
 <dd>
 
-**name:** `EventName` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**location:** `EventLocation` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**event_description:** `EventDescription` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**dates:** `EventDates` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**price:** `EventPrice` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**event_id:** `typing.Optional[EventId]` 
+**request:** `SpecialEvent` 
     
 </dd>
 </dl>
@@ -322,7 +278,7 @@ client.events.create_special_event(
 </dl>
 </details>
 
-<details><summary><code>client.events.<a href="src/fern/events/client.py">get_special_event</a>(...)</code></summary>
+<details><summary><code>client.events.<a href="src/fern/events/client.py">get_special_event</a>(...) -> SpecialEvent</code></summary>
 <dl>
 <dd>
 
@@ -350,11 +306,14 @@ Get details about a special event.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.events.get_special_event(
     event_id="dad4bce8-f5cb-4078-a211-995864315e39",
 )
@@ -421,11 +380,14 @@ Delete a special event from the collection. Allows museum to cancel planned even
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.events.delete_special_event(
     event_id="dad4bce8-f5cb-4078-a211-995864315e39",
 )
@@ -464,7 +426,7 @@ client.events.delete_special_event(
 </dl>
 </details>
 
-<details><summary><code>client.events.<a href="src/fern/events/client.py">update_special_event</a>(...)</code></summary>
+<details><summary><code>client.events.<a href="src/fern/events/client.py">update_special_event</a>(...) -> SpecialEvent</code></summary>
 <dl>
 <dd>
 
@@ -492,15 +454,18 @@ Update the details of a special event.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.events.update_special_event(
     event_id="dad4bce8-f5cb-4078-a211-995864315e39",
     location="On the beach.",
-    price=15.0,
+    price=15,
 )
 
 ```
@@ -578,7 +543,7 @@ client.events.update_special_event(
 </details>
 
 ## Tickets
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">buy_museum_tickets</a>(...)</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">buy_museum_tickets</a>(...) -> MuseumTicketsConfirmation</code></summary>
 <dl>
 <dd>
 
@@ -605,20 +570,19 @@ Purchase museum tickets for general entry or special events.
 <dd>
 
 ```python
+from fern import FernApi, TicketType
+from fern.environment import FernApiEnvironment
 import datetime
 
-from fern import FernApi, TicketType
-
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tickets.buy_museum_tickets(
-    ticket_date=datetime.date.fromisoformat(
-        "2023-09-05",
-    ),
-    ticket_type=TicketType.EVENT,
-    event_id="dad4bce8-f5cb-4078-a211-995864315e39",
+    ticket_date=datetime.date.fromisoformat("2023-09-07"),
+    ticket_type=TicketType.GENERAL,
     email="todd@example.com",
 )
 
@@ -652,14 +616,6 @@ client.tickets.buy_museum_tickets(
 <dl>
 <dd>
 
-**email:** `typing.Optional[Email]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **ticket_id:** `typing.Optional[TicketId]` 
     
 </dd>
@@ -669,6 +625,14 @@ client.tickets.buy_museum_tickets(
 <dd>
 
 **event_id:** `typing.Optional[EventId]` — Unique identifier for a special event. Required if purchasing tickets for the museum's special events.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**email:** `typing.Optional[Email]` 
     
 </dd>
 </dl>
@@ -688,7 +652,7 @@ client.tickets.buy_museum_tickets(
 </dl>
 </details>
 
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">get_ticket_code</a>(...)</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">get_ticket_code</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -716,11 +680,14 @@ Return an image of your ticket with scannable QR code. Used for event entry.
 
 ```python
 from fern import FernApi
+from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    username="YOUR_USERNAME",
-    password="YOUR_PASSWORD",
+    username="<username>",
+    password="<password>",
+    environment=FernApiEnvironment.DEFAULT,
 )
+
 client.tickets.get_ticket_code(
     ticket_id="ticketId",
 )
@@ -747,7 +714,7 @@ client.tickets.get_ticket_code(
 <dl>
 <dd>
 
-**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response.
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
     
 </dd>
 </dl>

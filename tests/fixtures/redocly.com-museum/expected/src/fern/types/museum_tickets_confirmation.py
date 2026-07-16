@@ -17,7 +17,9 @@ class MuseumTicketsConfirmation(Ticket):
     """
 
     message: TicketMessage
-    confirmation_code: typing_extensions.Annotated[TicketConfirmation, FieldMetadata(alias="confirmationCode")]
+    confirmation_code: typing_extensions.Annotated[
+        TicketConfirmation, FieldMetadata(alias="confirmationCode"), pydantic.Field(alias="confirmationCode")
+    ]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

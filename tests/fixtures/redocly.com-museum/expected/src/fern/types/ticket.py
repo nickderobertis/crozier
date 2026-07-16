@@ -17,16 +17,29 @@ class Ticket(UniversalBaseModel):
     Ticket for museum entry, can be general admission or special event.
     """
 
-    ticket_id: typing_extensions.Annotated[typing.Optional[TicketId], FieldMetadata(alias="ticketId")] = None
-    ticket_date: typing_extensions.Annotated[Date, FieldMetadata(alias="ticketDate")] = pydantic.Field()
+    ticket_id: typing_extensions.Annotated[
+        typing.Optional[TicketId], FieldMetadata(alias="ticketId"), pydantic.Field(alias="ticketId")
+    ] = None
+    ticket_date: typing_extensions.Annotated[
+        Date,
+        FieldMetadata(alias="ticketDate"),
+        pydantic.Field(alias="ticketDate", description="Date when this ticket can be used for museum entry."),
+    ]
     """
     Date when this ticket can be used for museum entry.
     """
 
-    ticket_type: typing_extensions.Annotated[TicketType, FieldMetadata(alias="ticketType")]
-    event_id: typing_extensions.Annotated[typing.Optional[EventId], FieldMetadata(alias="eventId")] = pydantic.Field(
-        default=None
-    )
+    ticket_type: typing_extensions.Annotated[
+        TicketType, FieldMetadata(alias="ticketType"), pydantic.Field(alias="ticketType")
+    ]
+    event_id: typing_extensions.Annotated[
+        typing.Optional[EventId],
+        FieldMetadata(alias="eventId"),
+        pydantic.Field(
+            alias="eventId",
+            description="Unique identifier for a special event. Required if purchasing tickets for the museum's special events.",
+        ),
+    ] = None
     """
     Unique identifier for a special event. Required if purchasing tickets for the museum's special events.
     """

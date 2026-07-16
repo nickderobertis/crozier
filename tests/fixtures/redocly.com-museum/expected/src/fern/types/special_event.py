@@ -15,10 +15,14 @@ from .event_price import EventPrice
 
 
 class SpecialEvent(UniversalBaseModel):
-    event_id: typing_extensions.Annotated[typing.Optional[EventId], FieldMetadata(alias="eventId")] = None
+    event_id: typing_extensions.Annotated[
+        typing.Optional[EventId], FieldMetadata(alias="eventId"), pydantic.Field(alias="eventId")
+    ] = None
     name: EventName
     location: EventLocation
-    event_description: typing_extensions.Annotated[EventDescription, FieldMetadata(alias="eventDescription")]
+    event_description: typing_extensions.Annotated[
+        EventDescription, FieldMetadata(alias="eventDescription"), pydantic.Field(alias="eventDescription")
+    ]
     dates: EventDates
     price: EventPrice
 

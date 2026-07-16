@@ -30,6 +30,7 @@ if typing.TYPE_CHECKING:
     )
     from .errors import BadRequestError, NotFoundError, UnauthorizedError
     from . import events, operations, tickets
+    from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .environment import FernApiEnvironment
     from .version import __version__
@@ -37,6 +38,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "AsyncFernApi": ".client",
     "BadRequestError": ".errors",
     "Date": ".types",
+    "DefaultAioHttpClient": "._default_clients",
+    "DefaultAsyncHttpxClient": "._default_clients",
     "Email": ".types",
     "Error": ".types",
     "EventDates": ".types",
@@ -92,6 +95,8 @@ __all__ = [
     "AsyncFernApi",
     "BadRequestError",
     "Date",
+    "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
     "Email",
     "Error",
     "EventDates",

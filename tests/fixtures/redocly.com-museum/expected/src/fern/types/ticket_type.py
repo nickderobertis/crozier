@@ -1,12 +1,13 @@
 
 
-import enum
 import typing
+
+from ..core import enum
 
 T_Result = typing.TypeVar("T_Result")
 
 
-class TicketType(str, enum.Enum):
+class TicketType(enum.StrEnum):
     """
     Type of ticket being purchased. Use `general` for regular museum entry and `event` for tickets to special events.
     """

@@ -7,7 +7,8 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
-from ..core.jsonable_encoder import jsonable_encoder
+from ..core.jsonable_encoder import encode_path_param
+from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
@@ -19,6 +20,7 @@ from ..types.event_id import EventId
 from ..types.museum_tickets_confirmation import MuseumTicketsConfirmation
 from ..types.ticket_id import TicketId
 from ..types.ticket_type import TicketType
+from pydantic import ValidationError
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -114,6 +116,10 @@ class RawTicketsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     @contextlib.contextmanager
@@ -137,7 +143,7 @@ class RawTicketsClient:
             Scannable event ticket in image format.
         """
         with self._client_wrapper.httpx_client.stream(
-            f"tickets/{jsonable_encoder(ticket_id)}/qr",
+            f"tickets/{encode_path_param(ticket_id)}/qr",
             method="GET",
             request_options=request_options,
         ) as _response:
@@ -176,6 +182,13 @@ class RawTicketsClient:
                 except JSONDecodeError:
                     raise ApiError(
                         status_code=_response.status_code, headers=dict(_response.headers), body=_response.text
+                    )
+                except ValidationError as e:
+                    raise ParsingError(
+                        status_code=_response.status_code,
+                        headers=dict(_response.headers),
+                        body=_response.json(),
+                        cause=e,
                     )
                 raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
@@ -272,6 +285,10 @@ class AsyncRawTicketsClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     @contextlib.asynccontextmanager
@@ -295,7 +312,7 @@ class AsyncRawTicketsClient:
             Scannable event ticket in image format.
         """
         async with self._client_wrapper.httpx_client.stream(
-            f"tickets/{jsonable_encoder(ticket_id)}/qr",
+            f"tickets/{encode_path_param(ticket_id)}/qr",
             method="GET",
             request_options=request_options,
         ) as _response:
@@ -335,6 +352,13 @@ class AsyncRawTicketsClient:
                 except JSONDecodeError:
                     raise ApiError(
                         status_code=_response.status_code, headers=dict(_response.headers), body=_response.text
+                    )
+                except ValidationError as e:
+                    raise ParsingError(
+                        status_code=_response.status_code,
+                        headers=dict(_response.headers),
+                        body=_response.json(),
+                        cause=e,
                     )
                 raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 

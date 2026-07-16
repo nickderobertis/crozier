@@ -19,12 +19,26 @@ class MuseumDailyHours(UniversalBaseModel):
     Date the operating hours apply to.
     """
 
-    time_open: typing_extensions.Annotated[str, FieldMetadata(alias="timeOpen")] = pydantic.Field()
+    time_open: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="timeOpen"),
+        pydantic.Field(
+            alias="timeOpen",
+            description="Time the museum opens on a specific date. Uses 24 hour time format (`HH:mm`).",
+        ),
+    ]
     """
     Time the museum opens on a specific date. Uses 24 hour time format (`HH:mm`).
     """
 
-    time_close: typing_extensions.Annotated[str, FieldMetadata(alias="timeClose")] = pydantic.Field()
+    time_close: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="timeClose"),
+        pydantic.Field(
+            alias="timeClose",
+            description="Time the museum closes on a specific date. Uses 24 hour time format (`HH:mm`).",
+        ),
+    ]
     """
     Time the museum closes on a specific date. Uses 24 hour time format (`HH:mm`).
     """
