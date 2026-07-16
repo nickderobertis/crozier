@@ -462,17 +462,19 @@ def compare(root: Path) -> int:
     report.mkdir(parents=True, exist_ok=True)
     rows = load_manifest(root)
     fetch_failures: list[str] = []
+    managed_fixtures: list[str] = []
     for row in rows:
         expected = root / "tests" / "fixtures" / row.fixture / "expected"
         if not expected.is_dir():
             continue
+        managed_fixtures.append(row.fixture)
         try:
             fetch_spec(root, row, force=False)
         except (GoldensError, OSError) as error:
             fetch_failures.append(f"{row.fixture}: {error}")
 
     environment = os.environ.copy()
-    environment["CROZIER_DIFF_LINK_ONLY"] = "1"
+    environment["CROZIER_DIFF_CORPORA"] = ",".join(managed_fixtures)
     result = run_command(
         ["just", "--justfile", str(root / "justfile"), "fixtures-diff"],
         cwd=root,
@@ -487,14 +489,30 @@ def compare(root: Path) -> int:
         r"(?m)^(\d+) comparison generation failure\(s\) across the reported corpora\.$",
         output,
     )
-    infrastructure_failure = result.returncode != 0 or match is None
+    processing_match = re.search(
+        r"(?m)^(\d+) comparison processing failure\(s\) across the reported corpora\.$",
+        output,
+    )
+    infrastructure_failure = (
+        result.returncode != 0
+        or match is None
+        or generation_match is None
+        or processing_match is None
+    )
     differences = int(match.group(1)) if match else 0
     generation_failures = int(generation_match.group(1)) if generation_match else 0
-    if output and (infrastructure_failure or differences > 0 or generation_failures > 0):
+    processing_failures = int(processing_match.group(1)) if processing_match else 0
+    if output and (
+        infrastructure_failure
+        or differences > 0
+        or generation_failures > 0
+        or processing_failures > 0
+    ):
         print(output, end="" if output.endswith("\n") else "\n")
     summary = (
         f"Fern comparison summary: {differences} differing files, "
         f"{generation_failures} Crozier generation failures, "
+        f"{processing_failures} comparison processing failures, "
         f"{len(fetch_failures)} spec fetch failures.\n"
     )
     (report / "comparison-summary.txt").write_text(summary, encoding="utf-8")
@@ -513,6 +531,7 @@ def compare(root: Path) -> int:
         infrastructure_failure
         or differences > 0
         or generation_failures > 0
+        or processing_failures > 0
         or bool(fetch_failures)
     )
 

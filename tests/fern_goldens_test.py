@@ -96,9 +96,17 @@ class FernGoldensBoundaryTests(unittest.TestCase):
                 print(destination)
                 raise SystemExit(0)
 
-            if os.environ.get("CROZIER_DIFF_LINK_ONLY") != "1":
-                print("managed-corpus filter was not set")
+            root = pathlib.Path(os.environ["CROZIER_FERN_GOLDENS_ROOT"])
+            managed = os.environ.get("CROZIER_DIFF_CORPORA", "").split(",")
+            expected_managed = sorted(
+                path.name
+                for path in (root / "tests" / "fixtures").iterdir()
+                if (path / "expected").is_dir()
+            )
+            if managed != expected_managed:
+                print(f"exact managed-corpus filter was not set: {managed}")
                 raise SystemExit(8)
+            (root / ".compare-scope").write_text(",".join(managed), encoding="utf-8")
             mode = os.environ.get("COMPARE_MODE", "green")
             if mode == "infrastructure":
                 print("comparison crashed")
@@ -107,13 +115,21 @@ class FernGoldensBoundaryTests(unittest.TestCase):
                 print("=== alpha ===\n--- src/fern/a.py ---\n- Fern\n+ Crozier")
                 print("=== beta ===\n--- src/fern/b.py ---\n- Fern\n+ Crozier")
                 print("0 comparison generation failure(s) across the reported corpora.")
+                print("0 comparison processing failure(s) across the reported corpora.")
                 print("2 differing file(s) across the reported corpora.")
             elif mode == "generation-failure":
                 print("=== alpha ===\n  Crozier generation failed: synthetic")
                 print("1 comparison generation failure(s) across the reported corpora.")
+                print("0 comparison processing failure(s) across the reported corpora.")
+                print("0 differing file(s) across the reported corpora.")
+            elif mode == "processing-failure":
+                print("=== new-fixture ===\n  Comparison setup failed: not registered")
+                print("0 comparison generation failure(s) across the reported corpora.")
+                print("1 comparison processing failure(s) across the reported corpora.")
                 print("0 differing file(s) across the reported corpora.")
             else:
                 print("0 comparison generation failure(s) across the reported corpora.")
+                print("0 comparison processing failure(s) across the reported corpora.")
                 print("0 differing file(s) across the reported corpora.")
             """,
         )
@@ -370,6 +386,23 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         self.assertIn("1 Crozier generation failures", failed.stdout)
         self.assertTrue(
             (self.root / ".local" / "fern-goldens" / "comparison.log").is_file()
+        )
+
+    def test_same_version_new_fixture_is_in_exact_comparison_scope(self) -> None:
+        self.run_tool(
+            "generate",
+            "--version",
+            "4.9.0",
+            "--fixture",
+            "new-fixture",
+            check=True,
+        )
+        compared = self.run_tool("compare", COMPARE_MODE="processing-failure")
+        self.assertEqual(compared.returncode, 1)
+        self.assertIn("1 comparison processing failures", compared.stdout)
+        self.assertEqual(
+            (self.root / ".compare-scope").read_text(encoding="utf-8"),
+            "alpha,beta,new-fixture",
         )
 
     def test_publish_success_before_red_then_fixed_current_rerun_is_green(self) -> None:

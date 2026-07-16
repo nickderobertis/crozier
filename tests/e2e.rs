@@ -1707,12 +1707,12 @@ fn normalize_sdk_headers(content: &str) -> String {
 /// Normalize a lazy-loader `__init__.py` for comparison: drop leading blank lines
 /// (a comment-strip artifact) and canonicalize the import order with `ruff` isort,
 /// so the semantically-irrelevant `TYPE_CHECKING` ordering does not gate the match.
-fn normalize_init(content: &str) -> String {
+fn try_normalize_init(content: &str) -> Result<String, String> {
     let trimmed: String = content
         .split_inclusive('\n')
         .skip_while(|line| line.trim().is_empty())
         .collect();
-    ruff_isort(&trimmed)
+    try_ruff_isort(&trimmed)
 }
 
 /// Drop Fern's `generatorConfig` block from `.fern/metadata.json`. Because the
@@ -1753,7 +1753,7 @@ fn normalize_metadata(content: &str) -> String {
 
 /// Run `ruff check --select I --fix` over a source string, returning the
 /// import-sorted result. Uses the same `ruff` the generator depends on.
-fn ruff_isort(source: &str) -> String {
+fn try_ruff_isort(source: &str) -> Result<String, String> {
     use std::io::Write;
     use std::process::{Command as PCommand, Stdio};
     let mut child = PCommand::new("ruff")
@@ -1770,23 +1770,26 @@ fn ruff_isort(source: &str) -> String {
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
-        .expect("ruff is on PATH for the e2e (see docs/matching.md)");
+        .map_err(|error| format!("could not run ruff (see docs/matching.md): {error}"))?;
     child
         .stdin
         .take()
-        .expect("piped stdin")
+        .ok_or_else(|| "ruff stdin was not piped".to_string())?
         .write_all(source.as_bytes())
-        .expect("write to ruff");
-    let out = child.wait_with_output().expect("ruff ran");
+        .map_err(|error| format!("could not write to ruff: {error}"))?;
+    let out = child
+        .wait_with_output()
+        .map_err(|error| format!("could not wait for ruff: {error}"))?;
     // Trust ruff's stdout only when it exited cleanly — a non-zero exit (e.g. a
     // syntax error in the input) must surface, not silently yield wrong text.
-    assert!(
-        out.status.success(),
-        "ruff isort failed ({}): {}",
-        out.status,
-        String::from_utf8_lossy(&out.stderr)
-    );
-    String::from_utf8(out.stdout).expect("ruff output is UTF-8")
+    if !out.status.success() {
+        return Err(format!(
+            "ruff isort failed ({}): {}",
+            out.status,
+            String::from_utf8_lossy(&out.stderr).trim()
+        ));
+    }
+    String::from_utf8(out.stdout).map_err(|error| format!("ruff output is not UTF-8: {error}"))
 }
 
 /// Drive the compiled binary over a corpus's spec and require every file in its
@@ -1909,22 +1912,30 @@ fn generated_matches_fixture(rel: &str, generated: &str, expected: &str) -> bool
 /// never a raw diff polluted by comments, SDK-identity headers, or `__init__.py`
 /// import order that the gate already normalizes away.
 fn normalized_pair(rel: &str, generated: &str, expected: &str) -> (String, String) {
+    try_normalized_pair(rel, generated, expected).unwrap_or_else(|error| panic!("{error}"))
+}
+
+fn try_normalized_pair(
+    rel: &str,
+    generated: &str,
+    expected: &str,
+) -> Result<(String, String), String> {
     let generated = normalize_sdk_headers(generated);
     let expected = normalize_sdk_headers(expected);
     if rel.ends_with("__init__.py") {
-        (
-            normalize_init(&crozier::strip_python_comments(&generated)),
-            normalize_init(&expected),
-        )
+        Ok((
+            try_normalize_init(&crozier::strip_python_comments(&generated))?,
+            try_normalize_init(&expected)?,
+        ))
     } else if rel.ends_with(".py") {
-        (crozier::strip_python_comments(&generated), expected)
+        Ok((crozier::strip_python_comments(&generated), expected))
     } else if rel.ends_with("metadata.json") {
-        (
+        Ok((
             normalize_metadata(&generated),
             normalize_metadata(&expected),
-        )
+        ))
     } else {
-        (generated, expected)
+        Ok((generated, expected))
     }
 }
 
@@ -9197,6 +9208,158 @@ fn report_matched_candidates() {
     println!("\n{total} new candidate file(s) across all corpora.");
 }
 
+fn registered_diff_corpora() -> Vec<&'static Corpus> {
+    let mut seen = std::collections::HashSet::new();
+    CORPORA
+        .iter()
+        .copied()
+        .chain(FEATURE_TARGETS.iter())
+        .filter(|corpus| seen.insert(corpus.api))
+        .collect()
+}
+
+fn select_diff_corpora(requested: Option<&str>) -> (Vec<&'static Corpus>, Vec<(String, String)>) {
+    let registered = registered_diff_corpora();
+    let mut failures = Vec::new();
+    let mut selected = Vec::new();
+    let mut seen = std::collections::HashSet::new();
+
+    let names: Vec<&str> = match requested {
+        Some(value) => value.split(',').collect(),
+        None => registered.iter().map(|corpus| corpus.api).collect(),
+    };
+    for name in names {
+        if name.is_empty() || !seen.insert(name) {
+            failures.push((
+                name.to_string(),
+                "empty or duplicate requested corpus name".to_string(),
+            ));
+            continue;
+        }
+        let Some(corpus) = registered.iter().copied().find(|corpus| corpus.api == name) else {
+            failures.push((
+                name.to_string(),
+                "fixture is not registered in the e2e Corpus registry".to_string(),
+            ));
+            continue;
+        };
+        if !fixture_dir(corpus.api).join("expected").is_dir() {
+            if requested.is_some() {
+                failures.push((
+                    name.to_string(),
+                    "fixture has no expected/ golden tree".to_string(),
+                ));
+            }
+            continue;
+        }
+        if corpus_spec(corpus.api).is_none() {
+            if requested.is_some() {
+                failures.push((
+                    name.to_string(),
+                    "fixture spec is unavailable after the fetch phase".to_string(),
+                ));
+            }
+            continue;
+        }
+        selected.push(corpus);
+    }
+    (selected, failures)
+}
+
+#[derive(Debug, PartialEq, Eq)]
+enum FixtureDifference {
+    MissingGenerated,
+    UnexpectedGenerated,
+    Text(String),
+    Binary { expected: usize, generated: usize },
+    Processing(String),
+}
+
+fn fixture_differences(
+    expected_root: &Path,
+    generated_root: &Path,
+    file_filter: Option<&str>,
+) -> Result<Vec<(String, FixtureDifference)>, String> {
+    let expected_files: std::collections::BTreeSet<String> =
+        try_walk_files(expected_root)?.into_iter().collect();
+    if expected_files.is_empty() && file_filter.is_none() {
+        return Err(format!(
+            "no Fern files under {} — the fixture walk is broken",
+            expected_root.display()
+        ));
+    }
+    let generated_files: std::collections::BTreeSet<String> =
+        try_walk_files(generated_root)?.into_iter().collect();
+    let paths: std::collections::BTreeSet<&String> =
+        expected_files.union(&generated_files).collect();
+    let mut differences = Vec::new();
+
+    for rel in paths {
+        if file_filter.is_some_and(|filter| !rel.contains(filter)) {
+            continue;
+        }
+        let expected_present = expected_files.contains(rel);
+        let generated_present = generated_files.contains(rel);
+        let difference = match (expected_present, generated_present) {
+            (true, false) => Some(FixtureDifference::MissingGenerated),
+            (false, true) => Some(FixtureDifference::UnexpectedGenerated),
+            (true, true) => {
+                let expected = match std::fs::read(expected_root.join(rel)) {
+                    Ok(content) => content,
+                    Err(error) => {
+                        differences.push((
+                            rel.clone(),
+                            FixtureDifference::Processing(format!(
+                                "could not read Fern golden: {error}"
+                            )),
+                        ));
+                        continue;
+                    }
+                };
+                let generated = match std::fs::read(generated_root.join(rel)) {
+                    Ok(content) => content,
+                    Err(error) => {
+                        differences.push((
+                            rel.clone(),
+                            FixtureDifference::Processing(format!(
+                                "could not read Crozier output: {error}"
+                            )),
+                        ));
+                        continue;
+                    }
+                };
+                if expected == generated {
+                    None
+                } else {
+                    match (
+                        std::str::from_utf8(&expected),
+                        std::str::from_utf8(&generated),
+                    ) {
+                        (Ok(expected), Ok(generated)) => {
+                            match try_normalized_pair(rel, generated, expected) {
+                                Ok((actual, expected)) if actual == expected => None,
+                                Ok((actual, expected)) => Some(FixtureDifference::Text(
+                                    unified_diff(&expected, &actual).unwrap_or_default(),
+                                )),
+                                Err(error) => Some(FixtureDifference::Processing(error)),
+                            }
+                        }
+                        _ => Some(FixtureDifference::Binary {
+                            expected: expected.len(),
+                            generated: generated.len(),
+                        }),
+                    }
+                }
+            }
+            (false, false) => unreachable!("path came from the union"),
+        };
+        if let Some(difference) = difference {
+            differences.push((rel.clone(), difference));
+        }
+    }
+    Ok(differences)
+}
+
 /// Mismatch-investigation aid — NOT a gate (ignored by default). The inverse of
 /// [`report_matched_candidates`]: instead of reporting files that now match, it
 /// prints the normalized unified diff of every committed fixture file crozier does
@@ -9207,9 +9370,10 @@ fn report_matched_candidates() {
 ///
 /// Scope with two env vars (the `just` recipe forwards its positional args):
 /// `CROZIER_DIFF_CORPUS=<api>` limits to one corpus, `CROZIER_DIFF_FILE=<substr>`
-/// to fixture paths containing `<substr>`. Pure reporter — it never asserts on a
-/// diff (a diff is the point), but it guards against a silently-broken walk that
-/// would print "no differences" as a false negative.
+/// to fixture paths containing `<substr>`. The Fern refresh automation instead
+/// passes `CROZIER_DIFF_CORPORA=<api>,...`, an exact manifest-derived set; missing
+/// registry entries are aggregated as processing failures rather than silently
+/// omitted. Pure reporter — it never asserts on a diff (a diff is the point).
 #[test]
 #[ignore = "mismatch-investigation aid, not a gate; run via `just fixtures-diff`"]
 fn report_fixture_diffs() {
@@ -9220,67 +9384,8 @@ fn report_fixture_diffs() {
         .ok()
         .filter(|s| !s.is_empty());
 
-    let mut corpora: Vec<&Corpus> = vec![&QUERY_PARAMETERS, &EXHAUSTIVE];
-    corpora.extend(FEATURE_TARGETS.iter());
-    // apideck's spec is fetched, not vendored; include it only when present, so the
-    // reporter skips it exactly as the byte-diff gate does on an offline checkout.
-    if corpus_spec(APIDECK_CRM.api).is_some() {
-        corpora.push(&APIDECK_CRM);
-    }
-    if corpus_spec(BUNQ.api).is_some() {
-        corpora.push(&BUNQ);
-    }
-    if corpus_spec(BUNGIE.api).is_some() {
-        corpora.push(&BUNGIE);
-    }
-    // The five batch corpora (issue #77): fetched, not vendored — include each only
-    // when its source spec is present, exactly as the byte-diff gate skips it offline.
-    for c in [
-        &ANCHORE,
-        &APACHE_AIRFLOW,
-        &DISCOURSE,
-        &APPWRITE_SERVER,
-        &APICURIO,
-        &GAMBITCOMM_MIMIC,
-        &DND5EAPI,
-        &APACHE_QAKKA,
-        &AUTHENTIQIO,
-        &ETSI_MEC010_2,
-        &APIDECK_WEBHOOK,
-        &APIDECK_VAULT,
-        &AIRBYTE_CONFIG,
-        &BINTABLE,
-        &APIS_GURU,
-        &COLOR_PIZZA,
-        &BYAUTOMATA_IO,
-        &APIDECK_PROXY,
-        &APIDECK_CONNECTOR,
-        &APIDECK_ECOMMERCE,
-        &APIDECK_ISSUE_TRACKING,
-        &APPWRITE_CLIENT,
-        &APIDECK_FILE_STORAGE,
-        &APIDECK_HRIS,
-        &APIDECK_ACCOUNTING,
-        &CALORIENINJAS,
-        &EOS,
-        &APIDECK_SMS,
-        &APIDECK_ECOSYSTEM,
-        &APIDECK_CUSTOMER_SUPPORT,
-        &APIDECK_LEAD,
-        &APACHE_ORG_AIRFLOW,
-    ] {
-        if corpus_spec(c.api).is_some() {
-            corpora.push(c);
-        }
-    }
-    // Fern golden automation owns the link-only CORPUS.md fixtures. Its
-    // aggregate comparison sets this flag so intentionally-unmatched vendored
-    // feature targets do not make an otherwise-current corpus refresh
-    // permanently red. The ordinary `just fixtures-diff` diagnostic retains
-    // its broader all-fixture behavior.
-    if std::env::var_os("CROZIER_DIFF_LINK_ONLY").is_some() {
-        corpora.retain(|c| !fixture_dir(c.api).join("openapi.yml").is_file());
-    }
+    let requested = std::env::var("CROZIER_DIFF_CORPORA").ok();
+    let (mut corpora, selection_failures) = select_diff_corpora(requested.as_deref());
     if let Some(f) = &corpus_filter {
         corpora.retain(|c| c.api == f.as_str());
         assert!(
@@ -9291,6 +9396,11 @@ fn report_fixture_diffs() {
 
     let mut total = 0usize;
     let mut generation_failures = 0usize;
+    let mut processing_failures = selection_failures.len();
+    for (fixture, error) in selection_failures {
+        println!("\n=== {fixture} ===");
+        println!("  Comparison setup failed: {error}");
+    }
     for c in corpora {
         let expected_root = fixture_dir(c.api).join("expected");
         let matched: std::collections::HashSet<&str> = c.matched.iter().copied().collect();
@@ -9304,43 +9414,17 @@ fn report_fixture_diffs() {
             }
         };
 
-        let files = walk_files(&expected_root);
-        // Guard the pipeline: a corpus always has expected files, so an empty walk
-        // means a broken path — fail loudly rather than reporting "no differences".
-        // Skipped when a file filter is set (it may legitimately match nothing).
-        if file_filter.is_none() {
-            assert!(
-                !files.is_empty(),
-                "{}: no files under {} — the fixture walk is broken",
-                c.api,
-                expected_root.display()
-            );
-        }
-
         println!("\n=== {} ===", c.api);
-        let mut printed = 0usize;
-        for rel in files {
-            if let Some(f) = &file_filter {
-                if !rel.contains(f.as_str()) {
-                    continue;
-                }
-            }
-            let Ok(expected) = std::fs::read_to_string(expected_root.join(&rel)) else {
-                continue; // binary/unreadable — nothing in the corpus is today.
-            };
-            let generated = match std::fs::read_to_string(out.path().join(&rel)) {
-                Ok(g) => g,
-                Err(_) => {
-                    println!("\n--- {rel} ---\n  crozier did not emit this file.");
-                    printed += 1;
+        let differences =
+            match fixture_differences(&expected_root, out.path(), file_filter.as_deref()) {
+                Ok(differences) => differences,
+                Err(error) => {
+                    println!("  Comparison processing failed: {error}");
+                    processing_failures += 1;
                     continue;
                 }
             };
-            if generated_matches_fixture(&rel, &generated, &expected) {
-                continue;
-            }
-            let (actual, expected) = normalized_pair(&rel, &generated, &expected);
-            let diff = unified_diff(&expected, &actual).unwrap_or_default();
+        for (rel, difference) in &differences {
             // A file already in `matched` differing is a regression, not a coverage
             // gap — flag it so it reads differently from a not-yet-matched file.
             let tag = if matched.contains(rel.as_str()) {
@@ -9348,17 +9432,39 @@ fn report_fixture_diffs() {
             } else {
                 ""
             };
-            println!("\n--- {rel}{tag} (`-` Fern golden, `+` crozier) ---\n{diff}");
-            printed += 1;
+            println!("\n--- {rel}{tag} ---");
+            match difference {
+                FixtureDifference::MissingGenerated => {
+                    println!("  Crozier did not emit this Fern file.");
+                }
+                FixtureDifference::UnexpectedGenerated => {
+                    println!("  Crozier emitted this file, but Fern did not.");
+                }
+                FixtureDifference::Text(diff) => {
+                    println!("  (`-` Fern golden, `+` crozier)\n{diff}");
+                }
+                FixtureDifference::Binary {
+                    expected,
+                    generated,
+                } => {
+                    println!(
+                        "  Binary bytes differ (Fern: {expected} bytes; Crozier: {generated} bytes)."
+                    );
+                }
+                FixtureDifference::Processing(error) => {
+                    println!("  Could not normalize/compare this file: {error}");
+                }
+            }
         }
-        if printed == 0 {
+        if differences.is_empty() {
             println!("  no differences.");
         }
-        total += printed;
+        total += differences.len();
     }
     println!(
         "\n{generation_failures} comparison generation failure(s) across the reported corpora."
     );
+    println!("{processing_failures} comparison processing failure(s) across the reported corpora.");
     println!("\n{total} differing file(s) across the reported corpora.");
 }
 
@@ -9388,20 +9494,78 @@ fn unified_diff_reports_only_real_changes() {
     assert!(!d.contains("\n  20\n"), "middle should be elided: {d}");
 }
 
+#[test]
+fn aggregate_fixture_diff_includes_missing_unexpected_and_changed_files() {
+    let expected = tempfile::tempdir().expect("expected tempdir");
+    let generated = tempfile::tempdir().expect("generated tempdir");
+    std::fs::write(expected.path().join("same.txt"), "same\n").unwrap();
+    std::fs::write(generated.path().join("same.txt"), "same\n").unwrap();
+    std::fs::write(expected.path().join("changed.txt"), "Fern\n").unwrap();
+    std::fs::write(generated.path().join("changed.txt"), "Crozier\n").unwrap();
+    std::fs::write(expected.path().join("missing.txt"), "Fern only\n").unwrap();
+    std::fs::write(generated.path().join("unexpected.txt"), "Crozier only\n").unwrap();
+    std::fs::write(
+        expected.path().join(".crozier-fern-golden.json"),
+        "provenance is not Fern output\n",
+    )
+    .unwrap();
+
+    let differences = fixture_differences(expected.path(), generated.path(), None).unwrap();
+    assert_eq!(differences.len(), 3, "{differences:?}");
+    assert!(differences.iter().any(|(path, difference)| {
+        path == "changed.txt" && matches!(difference, FixtureDifference::Text(_))
+    }));
+    assert!(differences.iter().any(|(path, difference)| {
+        path == "missing.txt" && difference == &FixtureDifference::MissingGenerated
+    }));
+    assert!(differences.iter().any(|(path, difference)| {
+        path == "unexpected.txt" && difference == &FixtureDifference::UnexpectedGenerated
+    }));
+}
+
+#[test]
+fn exact_comparison_scope_reports_unregistered_managed_fixtures() {
+    let (selected, failures) =
+        select_diff_corpora(Some("query-parameters-openapi,new-unregistered-fixture"));
+    assert_eq!(
+        selected.iter().map(|corpus| corpus.api).collect::<Vec<_>>(),
+        ["query-parameters-openapi"]
+    );
+    assert_eq!(failures.len(), 1, "{failures:?}");
+    assert_eq!(failures[0].0, "new-unregistered-fixture");
+    assert!(failures[0].1.contains("not registered"));
+}
+
 /// Every file under `root`, as `/`-separated paths relative to `root`, sorted.
 /// A small hand-rolled walk to avoid a `walkdir` dev-dependency for one use.
 fn walk_files(root: &Path) -> Vec<String> {
-    fn rec(base: &Path, dir: &Path, out: &mut Vec<String>) {
-        let mut entries: Vec<PathBuf> = std::fs::read_dir(dir)
-            .unwrap_or_else(|e| panic!("read_dir {}: {e}", dir.display()))
-            .map(|e| e.expect("dir entry").path())
-            .collect();
+    try_walk_files(root).unwrap_or_else(|error| panic!("{error}"))
+}
+
+fn try_walk_files(root: &Path) -> Result<Vec<String>, String> {
+    fn rec(base: &Path, dir: &Path, out: &mut Vec<String>) -> Result<(), String> {
+        let mut entries = Vec::new();
+        let directory = std::fs::read_dir(dir)
+            .map_err(|error| format!("read_dir {}: {error}", dir.display()))?;
+        for entry in directory {
+            entries.push(
+                entry
+                    .map_err(|error| format!("read_dir entry in {}: {error}", dir.display()))?
+                    .path(),
+            );
+        }
         entries.sort();
         for path in entries {
             if path.is_dir() {
-                rec(base, &path, out);
+                rec(base, &path, out)?;
             } else {
-                let rel = path.strip_prefix(base).expect("path is under base");
+                let rel = path.strip_prefix(base).map_err(|error| {
+                    format!(
+                        "{} is not below {}: {error}",
+                        path.display(),
+                        base.display()
+                    )
+                })?;
                 let rel = rel.to_string_lossy().replace('\\', "/");
                 // Automation provenance is committed atomically inside the
                 // golden directory, but it is not Fern output and Crozier must
@@ -9411,12 +9575,13 @@ fn walk_files(root: &Path) -> Vec<String> {
                 }
             }
         }
+        Ok(())
     }
     let mut out = Vec::new();
     if root.is_dir() {
-        rec(root, root, &mut out);
+        rec(root, root, &mut out)?;
     }
-    out
+    Ok(out)
 }
 
 #[test]
