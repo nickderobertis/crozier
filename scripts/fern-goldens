@@ -510,7 +510,7 @@ def compare(root: Path) -> int:
 
     for index, row in enumerate(managed_rows, start=1):
         progress = f"{index}/{len(managed_rows)} {row.fixture}"
-        print(f"fern-goldens: comparing {progress}", flush=True)
+        print(f"fern-goldens: comparing {progress}", file=sys.stderr, flush=True)
         try:
             fetch_spec(root, row, force=False)
         except (GoldensError, OSError) as error:
@@ -592,13 +592,21 @@ def compare(root: Path) -> int:
                 processing_failures += 1
                 fixture_processing_failures += 1
 
-        print(
-            f"fern-goldens: compared {progress}: "
-            f"{fixture_differences} differences, "
-            f"{fixture_generation_failures} Crozier generation failures, "
-            f"{fixture_processing_failures} processing failures",
-            flush=True,
-        )
+        if any(
+            count > 0
+            for count in (
+                fixture_differences,
+                fixture_generation_failures,
+                fixture_processing_failures,
+            )
+        ):
+            print(
+                f"fern-goldens: compared {progress}: "
+                f"{fixture_differences} differences, "
+                f"{fixture_generation_failures} Crozier generation failures, "
+                f"{fixture_processing_failures} processing failures",
+                flush=True,
+            )
 
     summary = (
         f"Fern comparison summary: {differences} differing files, "

@@ -490,8 +490,10 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         self.assertEqual(green.returncode, 0)
         self.assertNotIn("comparison generation failure(s)", green.stdout)
         self.assertEqual(green.stdout.count("Fern comparison summary:"), 1)
-        self.assertIn("comparing 1/2 alpha", green.stdout)
-        self.assertIn("compared 2/2 beta", green.stdout)
+        self.assertEqual(green.stdout.count("\n"), 1)
+        self.assertIn("comparing 1/2 alpha", green.stderr)
+        self.assertIn("comparing 2/2 beta", green.stderr)
+        self.assertNotIn("compared 2/2 beta", green.stdout + green.stderr)
 
         differing = self.run_tool("compare", COMPARE_MODE="diff")
         self.assertEqual(differing.returncode, 1)
