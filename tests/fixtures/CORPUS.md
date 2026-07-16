@@ -184,29 +184,28 @@ for n in \
 done
 ```
 
-## Batch 5 — selected (issue #77)
+## Batch 5 — byte-matched (issue #77)
 
 Native Fern CLI 5.75.0 screening covered 49 new non-Apideck permissively
 licensed OpenAPI 3 candidates. Exactly 10 primaries plus 3 Fern-passing backups
-are registered; all 13 passed native Fern check and were independently rerun.
-Crozier generated compilable Python for 12. Open Banking is an intentional
-generator-gap target because Crozier exits 0 but emits invalid Python.
+are registered; all 13 passed native Fern check, generated Fern goldens, and are
+now byte-matched byte-for-byte.
 
 | name | role | selected for | status |
 |---|---|---|---|
-| `amazonaws.com-cloudformation` | primary | 132 ops, 465 schemas, 859 allOf, 1,523 header/query params, XML request/response, server variables | Fern check passed — awaiting golden generation |
-| `netbox.dev` | primary | 844 ops, 233 schemas, 823 nullable, 1,318 readOnly, 6,867 params, custom formats/numeric enums | Fern check passed — awaiting golden generation |
-| `squareup.com` | primary | 200 ops, 807 schemas, mutually recursive four-schema graph, two security schemes | Fern check passed — awaiting golden generation |
-| `redhat.com-catalog_inventory` | primary | 40 deepObject params, 113 readOnly, multiple servers/server variables, inline bodies | Fern check passed — awaiting golden generation |
-| `microcks.local` | primary | discriminator with two mappings, oneOf/allOf, binary multipart bodies | Fern check passed — awaiting golden generation |
-| `xero.com-xero-payroll-au` | primary | UUID-heavy graph, readOnly fields, inline request bodies, header/path/query mix | Fern check passed — awaiting golden generation |
-| `openfigi.com` | primary | simple-style path param, wildcard response media, oneOf, alternative document security, server variable | Fern check passed — awaiting golden generation |
-| `openbanking.org.uk-account-info-openapi` | primary | 209 schemas, 1,188 refs, application/jose+jwe, dual security schemes; Crozier invalid-Python gap | Fern check passed — awaiting golden generation |
-| `maif.local-otoroshi` | primary | 22 oneOf, NDJSON request bodies, SSE response, 102 ops, format diversity | Fern check passed — awaiting golden generation |
-| `traccar.org` | primary | GPX/XML, CSV, XLSX media, urlencoded request, six servers/two variables | Fern check passed — awaiting golden generation |
-| `twilio.com-twilio_voice_v1` | backup | 17 path-level servers, 87 nullable nodes, urlencoded bodies, custom formats | Fern check passed — awaiting golden generation |
-| `portfoliooptimizer.io` | backup | 83 operations and 15 oneOf across an all-inline zero-component-schema surface | Fern check passed — awaiting golden generation |
-| `reverb.com` | backup | 163 operations, 126 paths, zero component schemas, 21 inline request bodies | Fern check passed — awaiting golden generation |
+| `amazonaws.com-cloudformation` | primary | 132 ops, 465 schemas, 859 allOf, 1,523 header/query params, XML request/response, server variables | ✅ matched (1044) |
+| `netbox.dev` | primary | 844 ops, 233 schemas, 823 nullable, 1,318 readOnly, 6,867 params, custom formats/numeric enums | ✅ matched (705) |
+| `squareup.com` | primary | 200 ops, 807 schemas, mutually recursive four-schema graph, two security schemes | ✅ matched (860) |
+| `redhat.com-catalog_inventory` | primary | 40 deepObject params, 113 readOnly, multiple servers/server variables, inline bodies | ✅ matched (108) |
+| `microcks.local` | primary | discriminator with two mappings, oneOf/allOf, binary multipart bodies | ✅ matched (100) |
+| `xero.com-xero-payroll-au` | primary | UUID-heavy graph, readOnly fields, inline request bodies, header/path/query mix | ✅ matched (117) |
+| `openfigi.com` | primary | simple-style path param, wildcard response media, oneOf, alternative document security, server variable | ✅ matched (52) |
+| `openbanking.org.uk-account-info-openapi` | primary | 209 schemas, 1,188 refs, application/jose+jwe, dual security schemes; Crozier invalid-Python gap | ✅ matched (597) |
+| `maif.local-otoroshi` | primary | 22 oneOf, NDJSON request bodies, SSE response, 102 ops, format diversity | ✅ matched (208) |
+| `traccar.org` | primary | GPX/XML, CSV, XLSX media, urlencoded request, six servers/two variables | ✅ matched (118) |
+| `twilio.com-twilio_voice_v1` | backup | 17 path-level servers, 87 nullable nodes, urlencoded bodies, custom formats | ✅ matched (66) |
+| `portfoliooptimizer.io` | backup | 83 operations and 15 oneOf across an all-inline zero-component-schema surface | ✅ matched (379) |
+| `reverb.com` | backup | 163 operations, 126 paths, zero component schemas, 21 inline request bodies | ✅ matched (153) |
 
 ### Screened failures
 

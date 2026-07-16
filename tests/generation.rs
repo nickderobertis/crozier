@@ -4435,6 +4435,48 @@ components:
 }
 
 #[test]
+fn standard_json_request_media_wins_over_earlier_ndjson() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: Mixed JSON Media, version: 1.0.0 }
+paths:
+  /records:
+    post:
+      operationId: records_create
+      tags: [Records]
+      requestBody:
+        required: true
+        content:
+          application/ndjson:
+            schema:
+              type: object
+              required: [ndjson_value]
+              properties:
+                ndjson_value: { type: integer }
+          application/json:
+            schema:
+              type: object
+              required: [json_value]
+              properties:
+                json_value: { type: string }
+      responses: { '204': { description: Done } }
+"#,
+    );
+    let raw = &files["src/acme/records/raw_client.py"];
+    assert!(raw.contains("json_value: str"), "{raw}");
+    assert!(
+        raw.contains("json={\n                \"json_value\": json_value,"),
+        "{raw}"
+    );
+    assert!(!raw.contains("ndjson_value"), "{raw}");
+    assert!(
+        raw.contains("\"content-type\": \"application/json\""),
+        "{raw}"
+    );
+    assert!(!raw.contains("application/ndjson"), "{raw}");
+}
+
+#[test]
 fn array_item_examples_seed_generated_calls() {
     let files = render(
         r#"openapi: 3.0.3

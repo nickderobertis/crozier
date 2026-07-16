@@ -1867,12 +1867,15 @@ fn build_endpoint(
             .as_ref()
             .is_some_and(|body| body.description.is_none()),
         body_component_ref: op.request_body.as_ref().is_some_and(|rb| rb.component_ref),
-        body_content_type_override: op.request_body.as_ref().and_then(|body| {
-            body.content
-                .keys()
-                .find(|media| media.ends_with("/ndjson"))
-                .cloned()
-        }),
+        body_content_type_override: op
+            .request_body
+            .as_ref()
+            .and_then(selected_json_request_media)
+            .and_then(|(media_type, _)| {
+                media_type
+                    .ends_with("/ndjson")
+                    .then(|| media_type.to_string())
+            }),
         basic_auth: operation_uses_basic_auth(doc, op),
         body_schema_ref: op
             .request_body
@@ -2477,15 +2480,7 @@ fn resolve_request_body(
             content_type: media_type.clone(),
         });
     }
-    let (media_type, media) = rb
-        .content
-        .get_key_value("application/json")
-        .or_else(|| rb.content.get_key_value("*/*"))
-        .or_else(|| {
-            rb.content
-                .iter()
-                .find(|(media_type, _)| is_json_like_media_type(media_type))
-        })?;
+    let (media_type, media) = selected_json_request_media(rb)?;
     let schema = media.schema.as_ref()?;
     // Fern treats a schema-bearing request body as required unless the document
     // explicitly opts out. Wildcard request schemas remain required even when the
@@ -2758,6 +2753,21 @@ fn reference_body_example(body: &crate::openapi::RequestBody) -> Option<&serde_j
 
 fn is_json_like_media_type(media_type: &str) -> bool {
     media_type.ends_with("+json") || media_type.ends_with("/ndjson")
+}
+
+fn selected_json_request_media(
+    body: &crate::openapi::RequestBody,
+) -> Option<(&str, &crate::openapi::MediaType)> {
+    body.content
+        .get("application/json")
+        .map(|media| ("application/json", media))
+        .or_else(|| body.content.get("*/*").map(|media| ("*/*", media)))
+        .or_else(|| {
+            body.content
+                .iter()
+                .find(|(media_type, _)| is_json_like_media_type(media_type))
+                .map(|(media_type, media)| (media_type.as_str(), media))
+        })
 }
 
 fn request_body_ignored(rb: &crate::openapi::RequestBody) -> bool {
