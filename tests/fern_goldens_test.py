@@ -182,9 +182,17 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         env.update(updates)
         return env
 
+    def script_command(self, script: Path, *args: str) -> list[str]:
+        command = [script.as_posix(), *args]
+        if os.name != "nt":
+            return command
+        bash = shutil.which("bash")
+        self.assertIsNotNone(bash, "Git Bash is required to exercise workflow scripts on Windows")
+        return [str(bash), *command]
+
     def run_tool(self, *args: str, check: bool = False, **env: str) -> subprocess.CompletedProcess[str]:
         result = subprocess.run(
-            [str(self.root / "scripts" / "fern-goldens"), *args],
+            self.script_command(self.root / "scripts" / "fern-goldens", *args),
             cwd=self.root,
             env=self.environment(**env),
             text=True,
@@ -335,12 +343,12 @@ class FernGoldensBoundaryTests(unittest.TestCase):
 
     def test_shared_fetch_command_uses_canonical_cache_and_reuses_it(self) -> None:
         destination = Path(self.temporary.name) / "corpus-cache"
-        command = [
-            str(REPO / "scripts" / "fetch-corpus.sh"),
+        command = self.script_command(
+            REPO / "scripts" / "fetch-corpus.sh",
             "--fixture",
             "apideck.com-crm",
             str(destination),
-        ]
+        )
         first = subprocess.run(
             command,
             cwd=REPO,
@@ -655,12 +663,12 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             sys.stdout.buffer.write(pathlib.Path(sys.argv[2]).read_bytes())
             """,
         )
-        command = [
-            str(scripts / "generate-fern-fixture.sh"),
+        command = self.script_command(
+            scripts / "generate-fern-fixture.sh",
             "alpha",
             "4.35.0",
             str(spec),
-        ]
+        )
         environment = self.environment(
             CROZIER_FERN_NO_DOCKER_SHIM="1",
             PATH=f"{fake_bin}{os.pathsep}{os.environ['PATH']}",
@@ -723,7 +731,9 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         )
 
         invalid_fetch = subprocess.run(
-            [str(REPO / "scripts" / "fetch-corpus.sh"), "--fixture", "../unsafe"],
+            self.script_command(
+                REPO / "scripts" / "fetch-corpus.sh", "--fixture", "../unsafe"
+            ),
             cwd=REPO,
             text=True,
             capture_output=True,
@@ -741,13 +751,13 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         outside = Path(self.temporary.name) / "outside"
         outside.mkdir()
         generator = subprocess.run(
-            [
-                str(REPO / "scripts" / "generate-fern-fixture.sh"),
+            self.script_command(
+                REPO / "scripts" / "generate-fern-fixture.sh",
                 "exhaustive",
                 "4.35.0",
                 str(REPO / "tests" / "fixtures" / "exhaustive" / "openapi.yml"),
                 str(outside / "expected"),
-            ],
+            ),
             cwd=REPO,
             text=True,
             capture_output=True,
