@@ -12,3 +12,10 @@ valid_fixture_name() {
     *) return 0 ;;
   esac
 }
+
+# Fern generator image tags are exact semantic versions. Keeping this strict
+# prevents a version argument from becoming YAML syntax in generators.yml and
+# ensures provenance never records a floating tag such as `latest`.
+valid_fern_version() {
+  [[ "${1:-}" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z]+([.-][0-9A-Za-z]+)*)?$ ]]
+}

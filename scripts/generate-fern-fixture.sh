@@ -18,16 +18,22 @@
 #   - fern CLI:  npm i -g fern-api    (invoked as `fern`)
 #   - crozier built (for the comment stripper):  cargo build --release
 #
-# Usage:  scripts/generate-fern-fixture.sh [FIXTURE] [FERN_PYTHON_VERSION] [SPEC_PATH]
+# Usage:  scripts/generate-fern-fixture.sh [FIXTURE] [FERN_PYTHON_VERSION] [SPEC_PATH] [DEST_PATH]
 #   FIXTURE             fixture dir under tests/fixtures/ (default: exhaustive).
 #                       e.g. auth-schemes, inline-request-response, integer-enums.
-#   FERN_PYTHON_VERSION defaults to the pin below (matches the vendored specs).
+#   FERN_PYTHON_VERSION defaults to the latest stable tag resolved by the same
+#                       Docker Hub distribution lookup as `fern-goldens`.
 #   SPEC_PATH           optional OpenAPI file to generate from instead of
 #                       tests/fixtures/<fixture>/openapi.yml; useful for fetched,
 #                       unvendored source specs.
+#   DEST_PATH           optional automation-only destination. It must be an
+#                       `expected` directory below this fixture; the default is
+#                       tests/fixtures/<fixture>/expected.
 set -euo pipefail
 
 . "$(cd "$(dirname "$0")" && pwd)/lib.sh"
+
+repo_root="$(cd "$(dirname "$0")/.." && pwd)"
 
 FIXTURE="${1:-exhaustive}"
 # FIXTURE is spliced into paths that are later `rm -rf`'d, so hold it to a single
@@ -37,9 +43,13 @@ valid_fixture_name "$FIXTURE" || {
        "path segment matching [A-Za-z0-9][A-Za-z0-9._-]* (a dir under tests/fixtures/)" >&2
   exit 1
 }
-# The fern-python-sdk generator version whose output we target. Bump together
-# with the vendored spec + fixtures so the corpus stays internally consistent.
-FERN_PYTHON_VERSION="${2:-4.35.0}"
+# fern-goldens always supplies its already-resolved exact version. Direct local
+# calls use that tool's identical Docker Hub resolver instead of a second pin.
+FERN_PYTHON_VERSION="${2:-}"
+[ -z "$FERN_PYTHON_VERSION" ] || valid_fern_version "$FERN_PYTHON_VERSION" || {
+  echo "generate-fern-fixture: invalid Fern version '$FERN_PYTHON_VERSION' — use an exact semantic version such as 4.35.0" >&2
+  exit 1
+}
 SPEC_OVERRIDE="${3:-}"
 # The Fern CLI version, pinned via fern.config.json's `version` (the `fern` npm
 # package is only a launcher; this field selects the actual CLI it runs). Matches
@@ -47,9 +57,36 @@ SPEC_OVERRIDE="${3:-}"
 # consistent; a `*` here would float to the latest CLI and can drift the output.
 FERN_CLI_VERSION="${FERN_CLI_VERSION:-5.67.1}"
 
-repo_root="$(cd "$(dirname "$0")/.." && pwd)"
 spec="${SPEC_OVERRIDE:-$repo_root/tests/fixtures/$FIXTURE/openapi.yml}"
-dest="$repo_root/tests/fixtures/$FIXTURE/expected"
+fixture_dir="$repo_root/tests/fixtures/$FIXTURE"
+dest="${4:-$fixture_dir/expected}"
+[ "$(basename "$dest")" = expected ] || {
+  echo "generate-fern-fixture: invalid destination '$dest' — its final path segment must be expected" >&2
+  exit 1
+}
+fixture_dir="$(cd "$fixture_dir" 2>/dev/null && pwd -P)" || {
+  echo "generate-fern-fixture: fixture directory does not exist: $fixture_dir" >&2
+  exit 1
+}
+dest_parent="$(cd "$(dirname "$dest")" 2>/dev/null && pwd -P)" || {
+  echo "generate-fern-fixture: destination parent does not exist: $(dirname "$dest")" >&2
+  exit 1
+}
+case "$dest_parent" in
+  "$fixture_dir" | "$fixture_dir"/*) dest="$dest_parent/expected" ;;
+  *)
+    echo "generate-fern-fixture: invalid destination '$dest' — it must stay below $fixture_dir" >&2
+    exit 1
+    ;;
+esac
+
+if [ -z "$FERN_PYTHON_VERSION" ]; then
+  FERN_PYTHON_VERSION="$("$repo_root/scripts/fern-goldens" latest-version)"
+  valid_fern_version "$FERN_PYTHON_VERSION" || {
+    echo "generate-fern-fixture: latest-version returned invalid Fern version '$FERN_PYTHON_VERSION'" >&2
+    exit 1
+  }
+fi
 
 need() { command -v "$1" >/dev/null 2>&1 || { echo "generate-fern-fixture: '$1' not found — $2" >&2; exit 1; }; }
 need fern "install it: npm i -g fern-api"
@@ -60,7 +97,12 @@ crozier_bin="$repo_root/target/release/crozier"
 [ -x "$crozier_bin" ] || { echo "generate-fern-fixture: build crozier first (cargo build --release)" >&2; exit 1; }
 
 workdir="$(mktemp -d)"
-trap 'rm -rf "$workdir"' EXIT
+publish_stage=""
+cleanup() {
+  rm -rf "$workdir"
+  [ -z "$publish_stage" ] || rm -rf "$publish_stage"
+}
+trap cleanup EXIT
 
 # Scaffold a minimal Fern workspace around the vendored OpenAPI spec. We ignore
 # Fern's definition files by construction: only the OpenAPI document is wired in.
@@ -195,16 +237,18 @@ if [ ! -d "$src/src" ]; then
   exit 1
 fi
 
-# Strip comments from every generated .py, mirroring the offline corpus, and
-# install into the fixture tree. Non-.py files (pyproject.toml, README.md,
-# reference.md, .fern/metadata.json, …) are copied verbatim.
-rm -rf "$dest"
-mkdir -p "$dest"
+# Strip comments from every generated .py, mirroring the offline corpus, into a
+# same-filesystem staging directory. Only a complete tree is renamed into place;
+# a failed strip/copy therefore cannot damage the prior valid golden.
+mkdir -p "$(dirname "$dest")"
+publish_stage="$(mktemp -d "$(dirname "$dest")/.fern-output.XXXXXX")"
+staged_dest="$publish_stage/expected"
+mkdir -p "$staged_dest"
 ( cd "$src" && find . -type f -print0 ) | while IFS= read -r -d '' rel; do
   rel="${rel#./}"
   case "$rel" in
-    .fern/*) target="$dest/$rel" ;;
-    *)       target="$dest/$prefix$rel" ;;
+    .fern/*) target="$staged_dest/$rel" ;;
+    *)       target="$staged_dest/$prefix$rel" ;;
   esac
   mkdir -p "$(dirname "$target")"
   case "$rel" in
@@ -212,6 +256,27 @@ mkdir -p "$dest"
     *)    cp "$src/$rel" "$target" ;;
   esac
 done
+
+backup="$(dirname "$dest")/.expected.backup.$$"
+[ ! -e "$backup" ] || {
+  echo "generate-fern-fixture: stale backup blocks atomic install: $backup" >&2
+  exit 1
+}
+had_dest=0
+if [ -e "$dest" ]; then
+  [ ! -L "$dest" ] || {
+    echo "generate-fern-fixture: refusing to replace symlinked destination $dest" >&2
+    exit 1
+  }
+  mv "$dest" "$backup"
+  had_dest=1
+fi
+if ! mv "$staged_dest" "$dest"; then
+  [ "$had_dest" -eq 0 ] || mv "$backup" "$dest"
+  echo "generate-fern-fixture: could not atomically install the staged golden" >&2
+  exit 1
+fi
+[ "$had_dest" -eq 0 ] || rm -rf "$backup"
 
 echo "generate-fern-fixture: wrote $(find "$dest" -type f | wc -l | tr -d ' ') files to $dest" >&2
 echo "generate-fern-fixture: review, then wire files into the e2e manifest (see docs/matching.md)." >&2

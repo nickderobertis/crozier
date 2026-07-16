@@ -1,6 +1,11 @@
 # Canonical real-world OpenAPI corpus (issue #77)
 
-This manifest tracks 63 real-world OpenAPI specs with redistribution-compatible license metadata. `decision` is `link-ok` when the source spec declares a permissive license, is fetched directly at refresh time, and is intentionally not vendored; generated Fern output comes from `just fixtures-generate-corpus`.
+This manifest tracks 63 real-world OpenAPI specs with redistribution-compatible
+license metadata. `decision` is `link-ok` when the permissively licensed source
+is fetched at generation time rather than vendored. Add or change one numbered
+row per feature branch and maintain its golden through the manually dispatched
+**Fern goldens** workflow; see
+[`../../docs/fern-goldens.md`](../../docs/fern-goldens.md).
 
 | # | name | method | source | pinned ref | license | decision | shapes |
 |---:|---|---|---|---|---|---|---|
@@ -72,8 +77,7 @@ This manifest tracks 63 real-world OpenAPI specs with redistribution-compatible 
 
 Ten corpora were selected as the next Fern byte-match targets, chosen for OpenAPI
 shapes the prior corpora under-exercise. All are `link-ok` rows in the table above
-(specs fetched, not vendored); goldens are generated with
-`just fixtures-generate-corpus --only <name>` (needs Docker).
+(specs fetched, not vendored); their goldens are workflow-managed.
 
 **Eight are now byte-matched byte-for-byte** — wired into `tests/e2e.rs` +
 `test-corpus-match`, with every generator fix on the `src/*.rs` side (no golden edited).
@@ -117,26 +121,8 @@ matching. `groundhog-day.com` failed Fern golden generation and is dropped.
 | `apideck.com-issue-tracking` | 65 schemas; anyOf/allOf, maps, deepObject | Fern golden generated — byte matching pending |
 | `bintable.com` | wildcard response media | Fern golden generated — byte matching pending |
 
-Fern golden generation was attempted in Docker with:
-
-```sh
-for n in \
-  apideck.com-accounting \
-  apideck.com-file-storage \
-  appwrite.io-client \
-  apideck.com-hris \
-  byautomata.io \
-  groundhog-day.com \
-  apideck.com-connector \
-  color.pizza \
-  apideck.com-proxy \
-  apis.guru \
-  apideck.com-ecommerce \
-  apideck.com-issue-tracking \
-  bintable.com; do
-  just fixtures-generate-corpus --only "$n" || echo "FAILED: $n"
-done
-```
+The status table is the durable result of that generation pass; use the standard
+workflow for any future source change or Fern upgrade.
 
 ## Batch 4 — byte-matched (issue #77)
 
@@ -170,19 +156,8 @@ for, with no backups to invent.
 | `github.com` | screened but failed Fern validation | **DROPPED** — Fern check failed with 29 fatal diagnostics (do not retry) |
 | `gov.bc.ca-news` | screened but failed Fern validation | **DROPPED** — Fern check failed with 4 fatal diagnostics (do not retry) |
 
-```sh
-for n in \
-  apache.org-airflow \
-  apideck.com-lead \
-  apideck.com-ecosystem \
-  apideck.com-customer-support \
-  apideck.com-sms \
-  eos.local \
-  codesearch.debian.net \
-  calorieninjas.com; do
-  just fixtures-generate-corpus --only "$n" || echo "FAILED: $n"
-done
-```
+The status table is the durable result of that generation pass; use the standard
+workflow for any future source change or Fern upgrade.
 
 ## Batch 5 — byte-matched (issue #77)
 
@@ -230,24 +205,5 @@ now byte-matched byte-for-byte.
 | `xero.com-xero_bankfeeds` | DROPPED — 13 unsupported-property and statementID/statementId collision errors (do not retry) |
 | `xtrf.eu` | DROPPED — 7 response example property/type errors (do not retry) |
 
-Docker is required for golden generation. Run all primaries and passing backups,
-then commit and push the generated goldens to `agent/openapi-corpus-batch-5`:
-
-```sh
-for n in \
-  amazonaws.com-cloudformation \
-  netbox.dev \
-  squareup.com \
-  redhat.com-catalog_inventory \
-  microcks.local \
-  xero.com-xero-payroll-au \
-  openfigi.com \
-  openbanking.org.uk-account-info-openapi \
-  maif.local-otoroshi \
-  traccar.org \
-  twilio.com-twilio_voice_v1 \
-  portfoliooptimizer.io \
-  reverb.com; do
-  just fixtures-generate-corpus --only "$n" || echo "FAILED: $n"
-done
-```
+The status tables are the durable results of that generation pass; use the
+standard workflow for any future source change or Fern upgrade.

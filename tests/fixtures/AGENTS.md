@@ -2,31 +2,25 @@
 
 Folder-scoped notes for the golden fixture corpus. Layout, provenance, and the
 matched manifest live in [`README.md`](README.md) and
-[`../../docs/matching.md`](../../docs/matching.md) — this file is the judgment a
-script can't encode. See the root [`AGENTS.md`](../../AGENTS.md) for the rest.
+[`../../docs/matching.md`](../../docs/matching.md); the maintenance lifecycle is
+[`../../docs/fern-goldens.md`](../../docs/fern-goldens.md). This file is the
+judgment a script can't encode. See the root [`AGENTS.md`](../../AGENTS.md) for
+the rest.
 
 ## Adding a fixture
 
-A fixture is `<name>/` holding `openapi.yml` (the spec crozier consumes) and
-`expected/**` (Fern's output, comment-stripped). The mechanical steps are
-scripted; the two `expected/`-producing paths differ by source:
+Add one numbered [`CORPUS.md`](CORPUS.md) row and source URL per feature branch,
+then wire a `Corpus { api, package_name, project_name, matched: &[] }` into
+`tests/e2e.rs`. Start `matched` **empty**. Push the branch and manually dispatch
+the **Fern goldens** workflow for that fixture; red comparison is expected until
+Crozier is repaired. The complete selection, provenance, partial-success,
+publication, and rerun contract is in
+[`../../docs/fern-goldens.md`](../../docs/fern-goldens.md).
 
-- **Offline corpus** (Fern commits the output, no Docker): add a `<name>:<spec>:<seed>`
-  entry to `CORPUS` in `scripts/fixtures-refresh.sh`, then `just fixtures-refresh`.
-- **Feature target / exhaustive** (Fern's committed output isn't OpenAPI-derived,
-  needs a container runtime): `scripts/fixture-new.sh <name>` scaffolds the dir;
-  drop in the real spec, then `scripts/generate-fern-fixture.sh <name>` (Docker +
-  the `fern` CLI) generates and installs `expected/`. Two env vars drive Fern's
-  optional generator config for the spec/flag a fixture exercises:
-  `FERN_AUDIENCES=public[,internal]` (audience filtering), `CLIENT_CLASS_NAME=<Name>`
-  (the root client class name, issue #61), and `EXTRA_FIELDS=allow|ignore|forbid`
-  (pydantic extra-fields behavior, issue #63) — match them to the crozier flags the
-  corpus is driven with (`--audience`, `--client-class-name`, `--extra-fields`).
-
-Then wire a `Corpus { api, package_name, project_name, matched: &[] }` into
-`tests/e2e.rs` (`FEATURE_TARGETS`, or a `const` for a headline corpus). Start
-`matched` **empty** — the smoke test then only asserts crozier consumes the spec
-without panicking.
+The managed workflow uses Fern's standard corpus generator configuration. A new
+fixture that requires non-default audience, client-class-name, or extra-fields
+configuration needs that input modeled and tested in the automation first; do
+not silently regenerate it with different settings.
 
 ## Choosing a real-world spec — Fern must accept it FIRST
 
@@ -44,9 +38,10 @@ that kill most specs:
   is a full datetime (or an integer `enum` value with no `x-fern-enum` name) is a
   hard error. Screen `format: date` examples and numeric `enum`s.
 
-`scripts/`-free pre-screen: parse the spec and count, per operation, request bodies
-without a `$ref` schema, plus `format: date` fields whose example contains a time.
-Zero of both is the green light; then run `scripts/generate-fern-fixture.sh`.
+An optional pre-screen can count, per operation, request bodies without a `$ref`
+schema and `format: date` fields whose example contains a time. Zero of both is a
+good signal, but the dispatched workflow is the authoritative Fern check and
+retains any successful sibling results when another selection fails.
 
 ### Specs already tried and REJECTED (do not re-attempt without a fix upstream)
 
@@ -59,17 +54,8 @@ these is built from a spec with Fern overrides applied, not the raw document.
 | `deepgram` | `deepgram/deepgram-api-specs@main/openapi.yml` | 342 errors: duplicate inline `ListRequest` across sub-clients, and integer enums (`16000`, `48000`, …) with no `x-fern-enum` names |
 | `asana` (api-guru `asana.com/1.0`) | already attempted by a prior agent too | 17 errors: inline request-body collisions (`AddFollowersRequest`, `RemoveFollowersRequest`, `ProjectSaveAsTemplateRequest`) and `date` fields with datetime examples |
 
-Accepted (fully matched): `apideck.com-crm` (167 files), `bunq.com` (956 files),
-and `bungie.net` (1082 files) — see [`../../docs/matching.md`](../../docs/matching.md).
-
-Accepted, byte-match **in progress** (a batch of five harder, feature-diverse
-targets added together; each passes `fern check`, Fern golden pending Docker
-generation): `anchore.io`, `apache.org` (Airflow), `discourse.local`,
-`appwrite.io-server`, `apicurio.local-registry`. Three surfaced generator gaps the
-byte-match pass closes — a **duplicate coined method parameter** (anchore's
-`policies`, apache's `dag`) and a **paths-level `x-*` extension** crozier's parser
-rejects (`apicurio`'s `x-codegen-contextRoot`); discourse and appwrite already
-consume cleanly. See [`../../docs/matching.md`](../../docs/matching.md).
+Accepted and matched corpus status lives in [`CORPUS.md`](CORPUS.md); do not
+duplicate its batch ledger here.
 
 ## Growing `matched` — don't diff by hand
 

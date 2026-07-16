@@ -4,23 +4,71 @@
 corpus_rows() {
   local manifest="$1"
   awk -F '|' '
-    NR > 6 {
+    # CORPUS.md contains status tables after the canonical numbered manifest.
+    # Accept only numbered rows from that first table; otherwise prose/status
+    # cells are misread as fixture names and URLs.
+    $2 ~ /^[[:space:]]*[0-9]+[[:space:]]*$/ {
       name=$3; url=$5; ref=$6; decision=$8;
       gsub(/^[ `]+|[ `]+$/, "", name);
       gsub(/^[ ]+|[ ]+$/, "", url);
       gsub(/^[ `]+|[ `]+$/, "", ref);
       gsub(/^[ ]+|[ ]+$/, "", decision);
-      if (name != "") print name "\t" url "\t" ref "\t" decision;
+      if (name != "" && (decision == "link-ok" || decision == "committed"))
+        print name "\t" url "\t" ref "\t" decision;
     }
   ' "$manifest"
 }
 
+corpus_aliases_file() {
+  local corpus_lib_dir
+  corpus_lib_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  printf '%s\n' "$corpus_lib_dir/../tests/fixtures/corpus-aliases.tsv"
+}
+
 corpus_fixture_for() {
-  case "$1" in
-    fern-seed-query-parameters) printf '%s\n' query-parameters-openapi ;;
-    fern-exhaustive) printf '%s\n' exhaustive ;;
-    *) printf '%s\n' "$1" ;;
-  esac
+  local aliases
+  aliases="$(corpus_aliases_file)"
+  [ -f "$aliases" ] || {
+    echo "corpus: missing fixture alias file $aliases" >&2
+    return 1
+  }
+  awk -F '\t' -v requested="$1" '
+    function valid_fixture(value) {
+      return value ~ /^[A-Za-z0-9][A-Za-z0-9._-]*$/ \
+        && value !~ /^[.-]/ && index(value, "..") == 0;
+    }
+    function fail(reason) {
+      printf "corpus: invalid fixture alias file %s line %d: %s\n", \
+        FILENAME, NR, reason > "/dev/stderr";
+      invalid=1;
+      exit 2;
+    }
+    BEGIN { resolved=requested; }
+    /^[[:space:]]*(#|$)/ { next; }
+    {
+      if (NF != 2 || !valid_fixture($1) || !valid_fixture($2))
+        fail("expected two safe fixture names separated by one tab");
+      if ($1 == $2)
+        fail("alias source and fixture directory must differ");
+      if ($1 in sources)
+        fail("duplicate alias source " $1);
+      if ($2 in fixtures)
+        fail("duplicate fixture directory " $2);
+      sources[$1]=1;
+      fixtures[$2]=1;
+      count++;
+      if ($1 == requested)
+        resolved=$2;
+    }
+    END {
+      if (!invalid && count == 0) {
+        printf "corpus: fixture alias file %s has no aliases\n", FILENAME > "/dev/stderr";
+        exit 2;
+      }
+      if (!invalid)
+        print resolved;
+    }
+  ' "$aliases"
 }
 
 corpus_github_clone_url() {
@@ -38,7 +86,8 @@ corpus_github_clone_url() {
 }
 
 corpus_fetch_repo() {
-  local fetch_root="$1" name="$2" url="$3" ref="$4" target="$fetch_root/$name"
+  local fetch_root="$1" name="$2" url="$3" ref="$4" target
+  target="$fetch_root/$name"
   mkdir -p "$fetch_root"
   if [ -d "$target/.git" ]; then
     git -C "$target" fetch --quiet --tags origin
@@ -61,10 +110,23 @@ corpus_is_direct_spec_url() {
 corpus_fetch_source() {
   local fetch_root="$1" name="$2" url="$3" ref="$4"
   if corpus_is_direct_spec_url "$url"; then
-    local ext="${url##*.}" target_dir="$fetch_root/$name" target
+    local target_dir="$fetch_root/$name" target temporary
     mkdir -p "$target_dir"
-    target="$target_dir/openapi.$ext"
-    curl -fsSL -A crozier-fixture-builder "$url" -o "$target"
+    # The Rust corpus runner and every fixture command consume this canonical
+    # cache path. The document parser detects JSON/YAML from its contents, so the
+    # source URL's suffix must not create a second, invisible cache layout.
+    target="$target_dir/openapi.json"
+    temporary="$(mktemp "$target_dir/.openapi.XXXXXX")"
+    if ! curl -fsSL -A crozier-fixture-builder "$url" -o "$temporary"; then
+      rm -f "$temporary"
+      return 1
+    fi
+    if [ ! -s "$temporary" ]; then
+      echo "corpus: fetched an empty spec for $name from $url" >&2
+      rm -f "$temporary"
+      return 1
+    fi
+    mv "$temporary" "$target"
     printf '%s\n' "$target"
   else
     corpus_fetch_repo "$fetch_root" "$name" "$url" "$ref"
