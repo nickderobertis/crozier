@@ -9273,6 +9273,14 @@ fn report_fixture_diffs() {
             corpora.push(c);
         }
     }
+    // Fern golden automation owns the link-only CORPUS.md fixtures. Its
+    // aggregate comparison sets this flag so intentionally-unmatched vendored
+    // feature targets do not make an otherwise-current corpus refresh
+    // permanently red. The ordinary `just fixtures-diff` diagnostic retains
+    // its broader all-fixture behavior.
+    if std::env::var_os("CROZIER_DIFF_LINK_ONLY").is_some() {
+        corpora.retain(|c| !fixture_dir(c.api).join("openapi.yml").is_file());
+    }
     if let Some(f) = &corpus_filter {
         corpora.retain(|c| c.api == f.as_str());
         assert!(

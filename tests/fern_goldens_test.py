@@ -78,6 +78,9 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             #!/usr/bin/env python3
             import os
 
+            if os.environ.get("CROZIER_DIFF_LINK_ONLY") != "1":
+                print("managed-corpus filter was not set")
+                raise SystemExit(8)
             mode = os.environ.get("COMPARE_MODE", "green")
             if mode == "infrastructure":
                 print("comparison crashed")

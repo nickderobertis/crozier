@@ -170,6 +170,7 @@ def run_command(
     cwd: Path,
     stdout: int | io.TextIOBase = subprocess.PIPE,
     stderr: int | io.TextIOBase = subprocess.PIPE,
+    env: dict[str, str] | None = None,
 ) -> subprocess.CompletedProcess[str]:
     try:
         return subprocess.run(
@@ -179,6 +180,7 @@ def run_command(
             text=True,
             stdout=stdout,
             stderr=stderr,
+            env=env,
         )
     except OSError as error:
         raise GoldensError(f"could not run {argv[0]!r}: {error}") from error
@@ -468,8 +470,12 @@ def compare(root: Path) -> int:
         except (GoldensError, OSError) as error:
             fetch_failures.append(f"{row.fixture}: {error}")
 
+    environment = os.environ.copy()
+    environment["CROZIER_DIFF_LINK_ONLY"] = "1"
     result = run_command(
-        ["just", "--justfile", str(root / "justfile"), "fixtures-diff"], cwd=root
+        ["just", "--justfile", str(root / "justfile"), "fixtures-diff"],
+        cwd=root,
+        env=environment,
     )
     output = (result.stdout or "") + (result.stderr or "")
     (report / "comparison.log").write_text(output, encoding="utf-8")
