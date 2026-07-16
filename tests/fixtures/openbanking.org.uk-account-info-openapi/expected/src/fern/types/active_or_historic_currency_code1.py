@@ -1,0 +1,3 @@
+
+
+ActiveOrHistoricCurrencyCode1 = str

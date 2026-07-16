@@ -1,0 +1,3 @@
+
+
+ObExternalStatementFeeFrequency1Code = str

@@ -1,0 +1,3 @@
+
+
+TypeConfigurationAlias = str

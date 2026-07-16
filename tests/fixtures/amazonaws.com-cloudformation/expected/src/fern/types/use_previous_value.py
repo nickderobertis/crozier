@@ -1,0 +1,3 @@
+
+
+UsePreviousValue = bool

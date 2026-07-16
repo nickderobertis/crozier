@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .post_portfolio_analysis_sharpe_ratio_request_assets import PostPortfolioAnalysisSharpeRatioRequestAssets
+from .post_portfolio_analysis_sharpe_ratio_request_one import PostPortfolioAnalysisSharpeRatioRequestOne
+
+PostPortfolioAnalysisSharpeRatioRequest = typing.Union[
+    PostPortfolioAnalysisSharpeRatioRequestAssets, PostPortfolioAnalysisSharpeRatioRequestOne
+]

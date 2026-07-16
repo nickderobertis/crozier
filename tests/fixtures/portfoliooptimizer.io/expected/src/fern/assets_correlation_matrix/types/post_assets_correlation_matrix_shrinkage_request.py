@@ -1,0 +1,15 @@
+
+
+import typing
+
+from .post_assets_correlation_matrix_shrinkage_request_target_correlation_matrix import (
+    PostAssetsCorrelationMatrixShrinkageRequestTargetCorrelationMatrix,
+)
+from .post_assets_correlation_matrix_shrinkage_request_target_equicorrelation_matrix import (
+    PostAssetsCorrelationMatrixShrinkageRequestTargetEquicorrelationMatrix,
+)
+
+PostAssetsCorrelationMatrixShrinkageRequest = typing.Union[
+    PostAssetsCorrelationMatrixShrinkageRequestTargetEquicorrelationMatrix,
+    PostAssetsCorrelationMatrixShrinkageRequestTargetCorrelationMatrix,
+]

@@ -1,0 +1,3 @@
+
+
+PhysicalResourceId = str

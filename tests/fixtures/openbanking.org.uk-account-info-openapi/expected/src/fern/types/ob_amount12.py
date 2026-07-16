@@ -1,0 +1,3 @@
+
+
+ObAmount12 = str

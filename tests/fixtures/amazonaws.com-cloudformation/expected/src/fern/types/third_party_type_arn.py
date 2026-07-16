@@ -1,0 +1,3 @@
+
+
+ThirdPartyTypeArn = str

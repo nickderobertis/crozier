@@ -1,0 +1,3 @@
+
+
+TypeConfigurationArn = str

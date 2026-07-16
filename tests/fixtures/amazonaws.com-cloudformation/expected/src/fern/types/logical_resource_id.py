@@ -1,0 +1,3 @@
+
+
+LogicalResourceId = str

@@ -1,0 +1,3 @@
+
+
+InProgressStackInstancesCount = int

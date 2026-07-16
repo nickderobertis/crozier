@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .post_portfolio_analysis_volatility_request_assets import PostPortfolioAnalysisVolatilityRequestAssets
+from .post_portfolio_analysis_volatility_request_one import PostPortfolioAnalysisVolatilityRequestOne
+
+PostPortfolioAnalysisVolatilityRequest = typing.Union[
+    PostPortfolioAnalysisVolatilityRequestAssets, PostPortfolioAnalysisVolatilityRequestOne
+]

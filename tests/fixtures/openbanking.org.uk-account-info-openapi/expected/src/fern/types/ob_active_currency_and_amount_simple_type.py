@@ -1,0 +1,3 @@
+
+
+ObActiveCurrencyAndAmountSimpleType = str

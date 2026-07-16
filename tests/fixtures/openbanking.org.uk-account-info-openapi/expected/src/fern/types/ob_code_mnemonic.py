@@ -1,0 +1,3 @@
+
+
+ObCodeMnemonic = str

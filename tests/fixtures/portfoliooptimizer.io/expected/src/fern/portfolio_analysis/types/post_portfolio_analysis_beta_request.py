@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .post_portfolio_analysis_beta_request_risk_free_rate import PostPortfolioAnalysisBetaRequestRiskFreeRate
+from .post_portfolio_analysis_beta_request_risk_free_returns import PostPortfolioAnalysisBetaRequestRiskFreeReturns
+
+PostPortfolioAnalysisBetaRequest = typing.Union[
+    PostPortfolioAnalysisBetaRequestRiskFreeRate, PostPortfolioAnalysisBetaRequestRiskFreeReturns
+]

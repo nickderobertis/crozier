@@ -1,0 +1,3 @@
+
+
+ObExternalSwitchStatusCode = str
