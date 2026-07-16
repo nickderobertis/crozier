@@ -13886,8 +13886,8 @@ const AMAZONAWS_COM_CLOUDFORMATION: Corpus = Corpus {
 };
 
 /// `redocly.com-museum`: a compact OpenAPI 3.1 corpus spanning eight operations,
-/// `allOf`, string formats, binary responses, and non-JSON media types. Its Fern
-/// golden is intentionally workflow-owned and has not been generated yet.
+/// `allOf`, string formats, reusable examples, binary responses, and non-JSON
+/// media types. Fully matched: all 63 Fern output files reproduce byte-for-byte.
 const REDOCLY_COM_MUSEUM: Corpus = Corpus {
     api: "redocly.com-museum",
     package_name: "fern",
@@ -13896,7 +13896,71 @@ const REDOCLY_COM_MUSEUM: Corpus = Corpus {
     audience_strict: false,
     client_class_name: None,
     extra_fields: None,
-    matched: &[],
+    matched: &[
+        ".fern/metadata.json",
+        "README.md",
+        "pyproject.toml",
+        "reference.md",
+        "requirements.txt",
+        "src/fern/__init__.py",
+        "src/fern/client.py",
+        "src/fern/core/__init__.py",
+        "src/fern/core/api_error.py",
+        "src/fern/core/client_wrapper.py",
+        "src/fern/core/datetime_utils.py",
+        "src/fern/core/file.py",
+        "src/fern/core/force_multipart.py",
+        "src/fern/core/http_client.py",
+        "src/fern/core/http_response.py",
+        "src/fern/core/http_sse/__init__.py",
+        "src/fern/core/http_sse/_api.py",
+        "src/fern/core/http_sse/_decoders.py",
+        "src/fern/core/http_sse/_exceptions.py",
+        "src/fern/core/http_sse/_models.py",
+        "src/fern/core/jsonable_encoder.py",
+        "src/fern/core/pydantic_utilities.py",
+        "src/fern/core/query_encoder.py",
+        "src/fern/core/remove_none_from_dict.py",
+        "src/fern/core/request_options.py",
+        "src/fern/core/serialization.py",
+        "src/fern/environment.py",
+        "src/fern/errors/__init__.py",
+        "src/fern/errors/bad_request_error.py",
+        "src/fern/errors/not_found_error.py",
+        "src/fern/errors/unauthorized_error.py",
+        "src/fern/events/__init__.py",
+        "src/fern/events/client.py",
+        "src/fern/events/raw_client.py",
+        "src/fern/operations/__init__.py",
+        "src/fern/operations/client.py",
+        "src/fern/operations/raw_client.py",
+        "src/fern/py.typed",
+        "src/fern/tickets/__init__.py",
+        "src/fern/tickets/client.py",
+        "src/fern/tickets/raw_client.py",
+        "src/fern/types/__init__.py",
+        "src/fern/types/date.py",
+        "src/fern/types/email.py",
+        "src/fern/types/error.py",
+        "src/fern/types/event_dates.py",
+        "src/fern/types/event_description.py",
+        "src/fern/types/event_id.py",
+        "src/fern/types/event_location.py",
+        "src/fern/types/event_name.py",
+        "src/fern/types/event_price.py",
+        "src/fern/types/museum_daily_hours.py",
+        "src/fern/types/museum_hours.py",
+        "src/fern/types/museum_tickets_confirmation.py",
+        "src/fern/types/special_event.py",
+        "src/fern/types/special_event_collection.py",
+        "src/fern/types/ticket.py",
+        "src/fern/types/ticket_code_image.py",
+        "src/fern/types/ticket_confirmation.py",
+        "src/fern/types/ticket_id.py",
+        "src/fern/types/ticket_message.py",
+        "src/fern/types/ticket_type.py",
+        "src/fern/version.py",
+    ],
 };
 
 #[test]
@@ -16037,6 +16101,191 @@ fn request_media_examples_populate_optional_body_fields() {
     assert!(
         client.contains("client.widgets.patch_widget(\n            active=True,\n        )"),
         "request media examples should populate optional body arguments in worked examples: {client}"
+    );
+}
+
+#[test]
+fn referenced_request_examples_drive_typed_worked_examples() {
+    let (_dir, out) = generate_ok(
+        r##"openapi: 3.1.0
+info: { title: Events API, version: 1.0.0 }
+paths:
+  /events:
+    post:
+      operationId: createEvent
+      tags: [events]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Event' }
+            examples:
+              primary: { $ref: '#/components/examples/PrimaryEvent' }
+              alternate: { $ref: '#/components/examples/AlternateEvent' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Event' }
+components:
+  schemas:
+    EventDate: { type: string, format: date }
+    EventDates:
+      type: array
+      items: { $ref: '#/components/schemas/EventDate' }
+    EventPrice: { type: number, format: float }
+    Event:
+      type: object
+      required: [name, dates, price]
+      properties:
+        note: { type: string }
+        code: { type: string }
+        name: { type: string }
+        dates: { $ref: '#/components/schemas/EventDates' }
+        price: { $ref: '#/components/schemas/EventPrice' }
+  examples:
+    PrimaryEvent:
+      value:
+        name: Primary event
+        dates: ['2024-02-03', '2024-02-03', '2024-02-04']
+        price: 0
+        note: Primary note
+    AlternateEvent:
+      value:
+        name: Alternate event
+        dates: ['2024-03-05']
+        price: 15
+        code: ALT-1
+        note: Alternate note
+"##,
+    );
+    let readme = std::fs::read_to_string(out.join("README.md")).expect("README is generated");
+    let client = std::fs::read_to_string(out.join("src/acme/events/client.py"))
+        .expect("events client is generated");
+    let reference =
+        std::fs::read_to_string(out.join("reference.md")).expect("reference is generated");
+
+    for rendered in [&readme, &client] {
+        assert!(rendered.contains("name=\"Primary event\""), "{rendered}");
+        assert!(rendered.contains("price=0.0"), "{rendered}");
+        assert!(rendered.contains("note=\"Primary note\""), "{rendered}");
+        assert_eq!(
+            rendered.matches("\"2024-02-03\"").count(),
+            2,
+            "duplicate dates should be omitted once per sync/async example: {rendered}"
+        );
+        assert!(!rendered.contains("code=\"ALT-1\""), "{rendered}");
+    }
+    assert!(
+        reference.contains("name=\"Alternate event\""),
+        "{reference}"
+    );
+    assert!(reference.contains("price=15.0"), "{reference}");
+    let code = reference.find("code=\"ALT-1\"").expect("alternate code");
+    let note = reference
+        .find("note=\"Alternate note\"")
+        .expect("alternate note");
+    assert!(
+        code < note,
+        "optional example fields retain declaration order: {reference}"
+    );
+}
+
+#[test]
+fn date_query_examples_use_dates_while_wire_values_use_str() {
+    let (_dir, out) = generate_ok(
+        r#"openapi: 3.0.3
+info: { title: Events API, version: 1.0.0 }
+paths:
+  /events:
+    get:
+      operationId: listEvents
+      tags: [events]
+      parameters:
+        - name: startDate
+          in: query
+          schema: { type: string, format: date, example: '2024-02-03' }
+        - name: page
+          in: query
+          schema: { type: integer, example: 2 }
+        - name: limit
+          in: query
+          schema: { type: integer, example: 15 }
+        - name: updatedAfter
+          in: query
+          schema: { type: string, format: date-time }
+      responses:
+        '204': { description: Found }
+"#,
+    );
+    let client = std::fs::read_to_string(out.join("src/acme/events/client.py"))
+        .expect("events client is generated");
+    let raw = std::fs::read_to_string(out.join("src/acme/events/raw_client.py"))
+        .expect("events raw client is generated");
+
+    assert!(
+        client.contains(
+            "start_date=datetime.date.fromisoformat(\n                \"2024-02-03\",\n            ),\n            page=2,\n            limit=15,"
+        ),
+        "date examples should be typed without suppressing later scalar examples: {client}"
+    );
+    assert!(
+        raw.contains("\"startDate\": str(start_date) if start_date is not None else None,")
+            && !raw.contains("serialize_datetime(start_date)")
+            && raw.contains(
+                "\"updatedAfter\": serialize_datetime(updated_after) if updated_after is not None else None,"
+            )
+            && raw.contains("from ..core.datetime_utils import serialize_datetime"),
+        "date and date-time query serialization should remain distinct: {raw}"
+    );
+}
+
+#[test]
+fn referenced_request_examples_force_json_content_type_for_composed_bodies() {
+    let (_dir, out) = generate_ok(
+        r##"openapi: 3.0.3
+info: { title: Tickets API, version: 1.0.0 }
+paths:
+  /tickets:
+    post:
+      operationId: buyTicket
+      tags: [tickets]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BuyTicket' }
+            examples:
+              general: { $ref: '#/components/examples/GeneralTicket' }
+              event: { $ref: '#/components/examples/EventTicket' }
+      responses:
+        '204': { description: Purchased }
+components:
+  schemas:
+    Ticket:
+      type: object
+      required: [kind]
+      properties:
+        kind: { type: string }
+    BuyTicket:
+      allOf:
+        - { $ref: '#/components/schemas/Ticket' }
+        - type: object
+          properties:
+            email: { type: string }
+  examples:
+    GeneralTicket: { value: { kind: general } }
+    EventTicket: { value: { kind: event, email: buyer@example.com } }
+"##,
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/tickets/raw_client.py"))
+        .expect("tickets raw client is generated");
+    assert_eq!(
+        raw.matches("\"content-type\": \"application/json\"")
+            .count(),
+        2,
+        "both sync and async requests need the explicit JSON content type: {raw}"
     );
 }
 

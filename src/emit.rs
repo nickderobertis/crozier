@@ -3263,7 +3263,17 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                     ")",
                 );
                 lines.push(format!("{},", call.flat()));
-            } else if type_serializes_as_datetime(&qp.type_ref) {
+            } else if type_serializes_as(&qp.type_ref, Prim::Date) {
+                let value = if qp.required {
+                    format!("str({})", qp.py_name)
+                } else {
+                    format!(
+                        "str({}) if {} is not None else None",
+                        qp.py_name, qp.py_name
+                    )
+                };
+                lines.push(format!("                \"{}\": {value},", qp.wire_name));
+            } else if type_serializes_as(&qp.type_ref, Prim::Datetime) {
                 imports.add_core("datetime_utils", "serialize_datetime");
                 let value = if qp.required {
                     format!("serialize_datetime({})", qp.py_name)
@@ -3366,10 +3376,10 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         }
     }
 
-    fn type_serializes_as_datetime(t: &TypeRef) -> bool {
+    fn type_serializes_as(t: &TypeRef, primitive: Prim) -> bool {
         match t {
-            TypeRef::Primitive(Prim::Date | Prim::Datetime) => true,
-            TypeRef::Optional(inner) => type_serializes_as_datetime(inner),
+            TypeRef::Primitive(value) => *value == primitive,
+            TypeRef::Optional(inner) => type_serializes_as(inner, primitive),
             _ => false,
         }
     }
@@ -3401,6 +3411,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         Some(body)
             if !body.is_wildcard_media()
                 && (ep.reference_body_example.is_some()
+                    && !ep.body_schema_is_success_response
                     && matches!(body, RequestBody::Inline(_))
                     || !ep.header_params.is_empty()
                     || !ep.path_params.is_empty()
@@ -4886,6 +4897,12 @@ impl<'a> ExampleCtx<'a> {
         if let TypeRef::Optional(inner) = t {
             return self.value_from_example(inner, example);
         }
+        if let TypeRef::Named(name) = t {
+            if let Some(TypeDecl::Alias(alias)) = self.find(name) {
+                let target = alias.target.clone();
+                return self.value_from_example(&target, example);
+            }
+        }
         if matches!(t, TypeRef::Primitive(Prim::Datetime | Prim::Date)) {
             let mut value: String = serde_json::from_str(example).ok()?;
             self.uses_datetime = true;
@@ -4923,7 +4940,13 @@ impl<'a> ExampleCtx<'a> {
         }
         if let TypeRef::List(inner) | TypeRef::Set(inner) = t {
             let values: Vec<serde_json::Value> = serde_json::from_str(example).ok()?;
-            let items = values
+            let mut unique = Vec::with_capacity(values.len());
+            for value in values {
+                if !unique.contains(&value) {
+                    unique.push(value);
+                }
+            }
+            let items = unique
                 .into_iter()
                 .map(|value| {
                     if value.is_null() {
@@ -5404,7 +5427,8 @@ fn build_example_with_body_example(
             continue;
         }
         let v = if let Some(ex) = qp.example.as_ref().filter(|_| qp.example_is_scalar) {
-            Example::Atom(ex.clone())
+            ctx.value_from_example(&qp.type_ref, ex)
+                .unwrap_or_else(|| Example::Atom(ex.clone()))
         } else if let TypeRef::List(inner) = &qp.type_ref {
             Example::List(vec![ctx.value(inner, Slot::Named(&qp.wire_name))])
         } else if let TypeRef::Dict(_, value) = &qp.type_ref {
@@ -5453,7 +5477,8 @@ fn build_example_with_body_example(
         {
             let value = if let Some(example) = qp.example.as_ref().filter(|_| qp.example_is_scalar)
             {
-                Example::Atom(example.clone())
+                ctx.value_from_example(&qp.type_ref, example)
+                    .unwrap_or_else(|| Example::Atom(example.clone()))
             } else if let TypeRef::List(inner) = &qp.type_ref {
                 Example::List(vec![ctx.value(inner, Slot::Named(&qp.wire_name))])
             } else {
@@ -5474,15 +5499,17 @@ fn build_example_with_body_example(
         // first example's type (Xero's `where` + `order` strings), but omits other
         // types (Discourse omits the integer `page` after its string `q`).
         // Body-bearing operations retain every optional example.
-        if ep.request_body.is_none() {
+        if ep.request_body.is_none() && !ctx.example_is_temporal(&qp.type_ref) {
             if optional_query_example_type.is_some_and(|first| first != &qp.type_ref) {
                 continue;
             }
             optional_query_example_type.get_or_insert(&qp.type_ref);
         }
+        let example = qp.example.as_deref().unwrap_or_default();
         args.push((
             Some(qp.py_name.clone()),
-            Example::Atom(qp.example.clone().unwrap_or_default()),
+            ctx.value_from_example(&qp.type_ref, example)
+                .unwrap_or_else(|| Example::Atom(example.to_string())),
         ));
     }
     for hp in ep.header_params.iter().filter(|header| {
@@ -5521,11 +5548,32 @@ fn build_example_with_body_example(
             // (exhaustive's `unknown`), so the exclusion keys on nullability — an
             // `optional` field with a concrete (non-`Any`) type — not `optional` alone.
             let reference_fields = body_example.and_then(serde_json::Value::as_object);
-            for f in fields.iter().filter(|f| {
+            let selected = |f: &&BodyField| {
                 reference_fields.is_some_and(|values| values.contains_key(&f.wire_name))
                     || f.spec_required && (!f.optional || is_any_type(&f.type_ref))
                     || reference_fields.is_none() && f.media_example
-            }) {
+            };
+            let mut example_fields: Vec<&BodyField> = fields
+                .iter()
+                .filter(|field| field.spec_required)
+                .filter(selected)
+                .collect();
+            if let Some(values) = reference_fields {
+                example_fields.extend(values.keys().filter_map(|wire_name| {
+                    fields
+                        .iter()
+                        .find(|field| !field.spec_required && field.wire_name == *wire_name)
+                        .filter(selected)
+                }));
+            } else {
+                example_fields.extend(
+                    fields
+                        .iter()
+                        .filter(|field| !field.spec_required)
+                        .filter(selected),
+                );
+            }
+            for f in example_fields {
                 let v = f
                     .example
                     .as_deref()

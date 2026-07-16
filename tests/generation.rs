@@ -4130,6 +4130,107 @@ paths:
 }
 
 #[test]
+fn reusable_request_examples_and_date_queries_keep_fern_semantics() {
+    let files = render(
+        r##"openapi: 3.1.0
+info: { title: Museum, version: 1.0.0 }
+paths:
+  /events:
+    get:
+      operationId: events_list
+      tags: [Events]
+      parameters:
+        - name: startDate
+          in: query
+          schema: { type: string, format: date, example: '2024-02-03' }
+        - name: page
+          in: query
+          schema: { type: integer, example: 2 }
+        - name: limit
+          in: query
+          schema: { type: integer, example: 15 }
+        - name: updatedAfter
+          in: query
+          schema: { type: string, format: date-time }
+      responses: { '204': { description: Found } }
+    post:
+      operationId: events_create
+      tags: [Events]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateEvent' }
+            examples:
+              primary: { $ref: '#/components/examples/PrimaryEvent' }
+              alternate: { $ref: '#/components/examples/AlternateEvent' }
+      responses: { '204': { description: Created } }
+components:
+  schemas:
+    Date: { type: string, format: date }
+    Dates: { type: array, items: { $ref: '#/components/schemas/Date' } }
+    Price: { type: number, format: float }
+    BaseEvent:
+      type: object
+      required: [dates, price]
+      properties:
+        dates: { $ref: '#/components/schemas/Dates' }
+        price: { $ref: '#/components/schemas/Price' }
+    CreateEvent:
+      allOf:
+        - { $ref: '#/components/schemas/BaseEvent' }
+        - type: object
+          properties:
+            note: { type: string }
+            code: { type: string }
+  examples:
+    PrimaryEvent:
+      value:
+        dates: ['2024-02-03', '2024-02-03', '2024-02-04']
+        price: 0
+        note: Primary
+    AlternateEvent:
+      value:
+        dates: ['2024-03-05']
+        price: 15
+        code: ALT-1
+        note: Alternate
+"##,
+    );
+
+    let client = &files["src/acme/events/client.py"];
+    let raw = &files["src/acme/events/raw_client.py"];
+    let reference = &files["reference.md"];
+    assert_eq!(client.matches("\"2024-02-03\"").count(), 4, "{client}");
+    assert!(
+        client.contains("price=0.0") && client.contains("note=\"Primary\""),
+        "{client}"
+    );
+    assert!(
+        client.contains("start_date=datetime.date.fromisoformat(")
+            && client.contains("page=2")
+            && client.contains("limit=15"),
+        "{client}"
+    );
+    assert!(
+        raw.contains("\"startDate\": str(start_date) if start_date is not None else None,")
+            && raw.contains(
+                "\"updatedAfter\": serialize_datetime(updated_after) if updated_after is not None else None,"
+            )
+            && raw.matches("\"content-type\": \"application/json\"").count() == 2,
+        "{raw}"
+    );
+    let code = reference.find("code=\"ALT-1\"").expect("alternate code");
+    let note = reference
+        .find("note=\"Alternate\"")
+        .expect("alternate note");
+    assert!(
+        code < note && reference.contains("price=15.0"),
+        "{reference}"
+    );
+}
+
+#[test]
 fn single_use_request_components_move_their_synthetic_type_graph_to_the_tag() {
     let files = render(
         r##"openapi: 3.0.3

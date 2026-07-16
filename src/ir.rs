@@ -1982,7 +1982,7 @@ fn build_endpoint(
         reference_body_example: op
             .request_body
             .as_ref()
-            .and_then(reference_body_example)
+            .and_then(|body| reference_body_example(doc, body))
             .cloned(),
         body_schema_documented: op
             .request_body
@@ -2075,7 +2075,7 @@ fn parameter_example_value<'a>(
             parameter
                 .examples
                 .values()
-                .find_map(|example| example.value.as_ref())
+                .find_map(|example| component_example_value(doc, example))
         })
         .or_else(|| parameter.schema.as_ref().and_then(schema_example))
         .or_else(|| {
@@ -2543,7 +2543,7 @@ fn resolve_request_body(
                     }
                 }
                 apply_body_example(&mut fields, target.example.as_ref(), false);
-                apply_body_example(&mut fields, media_example(media), true);
+                apply_body_example(&mut fields, media_example(doc, media), true);
                 RequestBody::Inline(fields)
             });
         }
@@ -2598,7 +2598,7 @@ fn resolve_request_body(
             (media_type == "*/*").then(|| media_type.to_string()),
         );
         if let RequestBody::Single(single) = &mut body {
-            single.example = media_example(media).and_then(example_literal);
+            single.example = media_example(doc, media).and_then(example_literal);
         }
         return Some(body);
     }
@@ -2617,7 +2617,7 @@ fn resolve_request_body(
     // objects hoist into `{request_ctx}{Prop}` models.
     if !schema.properties.is_empty() {
         return hoist_inline_object(schema, hoister, request_ctx).map(|mut fields| {
-            apply_body_example(&mut fields, media_example(media), true);
+            apply_body_example(&mut fields, media_example(doc, media), true);
             RequestBody::Inline(fields)
         });
     }
@@ -2720,12 +2720,34 @@ fn apply_body_example(
     }
 }
 
-fn media_example(media: &crate::openapi::MediaType) -> Option<&serde_json::Value> {
+fn component_example_value<'a>(
+    doc: &'a OpenApi,
+    example: &'a crate::openapi::ParameterExample,
+) -> Option<&'a serde_json::Value> {
+    let mut current = example;
+    let mut seen = std::collections::HashSet::new();
+    loop {
+        if let Some(value) = current.value.as_ref() {
+            return Some(value);
+        }
+        let reference = current.reference.as_deref()?;
+        let name = reference.strip_prefix("#/components/examples/")?;
+        if !seen.insert(name) {
+            return None;
+        }
+        current = doc.components.examples.get(name)?;
+    }
+}
+
+fn media_example<'a>(
+    doc: &'a OpenApi,
+    media: &'a crate::openapi::MediaType,
+) -> Option<&'a serde_json::Value> {
     media.example.as_ref().or_else(|| {
         media
             .examples
             .values()
-            .find_map(|example| example.value.as_ref())
+            .find_map(|example| component_example_value(doc, example))
     })
 }
 
@@ -2733,7 +2755,10 @@ fn media_example(media: &crate::openapi::MediaType) -> Option<&serde_json::Value
 /// docstrings and README snippets, Fern's reference writer selects the second
 /// value when exactly two named examples are present; other cardinalities use
 /// the first value.
-fn reference_body_example(body: &crate::openapi::RequestBody) -> Option<&serde_json::Value> {
+fn reference_body_example<'a>(
+    doc: &'a OpenApi,
+    body: &'a crate::openapi::RequestBody,
+) -> Option<&'a serde_json::Value> {
     let media = body.content.get("application/json").or_else(|| {
         body.content
             .iter()
@@ -2745,9 +2770,11 @@ fn reference_body_example(body: &crate::openapi::RequestBody) -> Option<&serde_j
         examples
             .values()
             .nth(1)
-            .and_then(|example| example.value.as_ref())
+            .and_then(|example| component_example_value(doc, example))
     } else {
-        examples.values().find_map(|example| example.value.as_ref())
+        examples
+            .values()
+            .find_map(|example| component_example_value(doc, example))
     }
 }
 

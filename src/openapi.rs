@@ -403,6 +403,9 @@ pub struct Parameter {
 /// The value-bearing portion of an OpenAPI parameter example.
 #[derive(Debug, Default, Clone, Deserialize)]
 pub struct ParameterExample {
+    /// A local `$ref` to a reusable `components.examples` entry.
+    #[serde(rename = "$ref", default)]
+    pub reference: Option<String>,
     /// The example value. External examples have no inline value.
     #[serde(default)]
     pub value: Option<serde_json::Value>,
@@ -514,6 +517,10 @@ pub struct Components {
     /// A `$ref` request body on an operation resolves against this map at load time.
     #[serde(rename = "requestBodies", default)]
     pub request_bodies: IndexMap<String, RequestBody>,
+    /// Reusable examples (`components.examples`), in document order. Named media
+    /// and parameter examples may refer to these entries with a local `$ref`.
+    #[serde(default)]
+    pub examples: IndexMap<String, ParameterExample>,
     /// Declared authentication schemes, in document order.
     #[serde(rename = "securitySchemes", default)]
     pub security_schemes: IndexMap<String, SecurityScheme>,
