@@ -14232,7 +14232,7 @@ fn select_diff_corpora(requested: Option<&str>) -> (Vec<&'static Corpus>, Vec<(S
 enum FixtureDifference {
     MissingGenerated,
     UnexpectedGenerated,
-    Text(String),
+    Text(Option<String>),
     Binary { expected: usize, generated: usize },
     Processing(String),
 }
@@ -14241,6 +14241,7 @@ fn fixture_differences(
     expected_root: &Path,
     generated_root: &Path,
     file_filter: Option<&str>,
+    include_text_diffs: bool,
 ) -> Result<Vec<(String, FixtureDifference)>, String> {
     let expected_files: std::collections::BTreeSet<String> =
         try_walk_files(expected_root)?.into_iter().collect();
@@ -14300,9 +14301,11 @@ fn fixture_differences(
                         (Ok(expected), Ok(generated)) => {
                             match try_normalized_pair(rel, generated, expected) {
                                 Ok((actual, expected)) if actual == expected => None,
-                                Ok((actual, expected)) => Some(FixtureDifference::Text(
-                                    unified_diff(&expected, &actual).unwrap_or_default(),
-                                )),
+                                Ok((actual, expected)) => {
+                                    Some(FixtureDifference::Text(include_text_diffs.then(|| {
+                                        unified_diff(&expected, &actual).unwrap_or_default()
+                                    })))
+                                }
                                 Err(error) => Some(FixtureDifference::Processing(error)),
                             }
                         }
@@ -14333,9 +14336,11 @@ fn fixture_differences(
 /// Scope with two env vars (the `just` recipe forwards its positional args):
 /// `CROZIER_DIFF_CORPUS=<api>` limits to one corpus, `CROZIER_DIFF_FILE=<substr>`
 /// to fixture paths containing `<substr>`. The Fern refresh automation instead
-/// passes `CROZIER_DIFF_CORPORA=<api>,...`, an exact manifest-derived set; missing
-/// registry entries are aggregated as processing failures rather than silently
-/// omitted. Pure reporter — it never asserts on a diff (a diff is the point).
+/// invokes one exact corpus at a time with `CROZIER_DIFF_SUMMARY_ONLY=1`; that
+/// reports every differing path without retaining potentially huge unified diffs.
+/// `CROZIER_DIFF_CORPORA=<api>,...` remains available for exact multi-corpus
+/// callers. Missing registry entries are processing failures rather than silent
+/// omissions. Pure reporter — it never asserts on a diff (a diff is the point).
 #[test]
 #[ignore = "mismatch-investigation aid, not a gate; run via `just fixtures-diff`"]
 fn report_fixture_diffs() {
@@ -14345,6 +14350,7 @@ fn report_fixture_diffs() {
     let file_filter = std::env::var("CROZIER_DIFF_FILE")
         .ok()
         .filter(|s| !s.is_empty());
+    let include_text_diffs = std::env::var_os("CROZIER_DIFF_SUMMARY_ONLY").is_none();
 
     let requested = std::env::var("CROZIER_DIFF_CORPORA").ok();
     let (mut corpora, selection_failures) = select_diff_corpora(requested.as_deref());
@@ -14377,15 +14383,19 @@ fn report_fixture_diffs() {
         };
 
         println!("\n=== {} ===", c.api);
-        let differences =
-            match fixture_differences(&expected_root, out.path(), file_filter.as_deref()) {
-                Ok(differences) => differences,
-                Err(error) => {
-                    println!("  Comparison processing failed: {error}");
-                    processing_failures += 1;
-                    continue;
-                }
-            };
+        let differences = match fixture_differences(
+            &expected_root,
+            out.path(),
+            file_filter.as_deref(),
+            include_text_diffs,
+        ) {
+            Ok(differences) => differences,
+            Err(error) => {
+                println!("  Comparison processing failed: {error}");
+                processing_failures += 1;
+                continue;
+            }
+        };
         for (rel, difference) in &differences {
             // A file already in `matched` differing is a regression, not a coverage
             // gap — flag it so it reads differently from a not-yet-matched file.
@@ -14402,8 +14412,11 @@ fn report_fixture_diffs() {
                 FixtureDifference::UnexpectedGenerated => {
                     println!("  Crozier emitted this file, but Fern did not.");
                 }
-                FixtureDifference::Text(diff) => {
+                FixtureDifference::Text(Some(diff)) => {
                     println!("  (`-` Fern golden, `+` crozier)\n{diff}");
+                }
+                FixtureDifference::Text(None) => {
+                    println!("  Normalized text differs; unified diff omitted in summary mode.");
                 }
                 FixtureDifference::Binary {
                     expected,
@@ -14472,7 +14485,7 @@ fn aggregate_fixture_diff_includes_missing_unexpected_and_changed_files() {
     )
     .unwrap();
 
-    let differences = fixture_differences(expected.path(), generated.path(), None).unwrap();
+    let differences = fixture_differences(expected.path(), generated.path(), None, true).unwrap();
     assert_eq!(differences.len(), 3, "{differences:?}");
     assert!(differences.iter().any(|(path, difference)| {
         path == "changed.txt" && matches!(difference, FixtureDifference::Text(_))
@@ -14482,6 +14495,11 @@ fn aggregate_fixture_diff_includes_missing_unexpected_and_changed_files() {
     }));
     assert!(differences.iter().any(|(path, difference)| {
         path == "unexpected.txt" && difference == &FixtureDifference::UnexpectedGenerated
+    }));
+
+    let summary = fixture_differences(expected.path(), generated.path(), None, false).unwrap();
+    assert!(summary.iter().any(|(path, difference)| {
+        path == "changed.txt" && difference == &FixtureDifference::Text(None)
     }));
 }
 
@@ -14495,7 +14513,7 @@ fn aggregate_fixture_diff_refuses_to_follow_symlinks() {
     let outside = tempfile::NamedTempFile::new().expect("outside file");
     symlink(outside.path(), expected.path().join("outside-link")).expect("create symlink");
 
-    let error = fixture_differences(expected.path(), generated.path(), None).unwrap_err();
+    let error = fixture_differences(expected.path(), generated.path(), None, true).unwrap_err();
     assert!(
         error.contains("refusing to follow symbolic link"),
         "{error}"
