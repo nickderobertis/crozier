@@ -4888,6 +4888,10 @@ impl<'a> ExampleCtx<'a> {
     fn example_is_temporal(&self, t: &TypeRef) -> bool {
         match t {
             TypeRef::Optional(inner) => self.example_is_temporal(inner),
+            TypeRef::Named(name) => match self.find(name) {
+                Some(TypeDecl::Alias(alias)) => self.example_is_temporal(&alias.target),
+                _ => false,
+            },
             TypeRef::Primitive(Prim::Datetime | Prim::Date) => true,
             _ => false,
         }
@@ -4942,7 +4946,7 @@ impl<'a> ExampleCtx<'a> {
             let values: Vec<serde_json::Value> = serde_json::from_str(example).ok()?;
             let mut unique = Vec::with_capacity(values.len());
             for value in values {
-                if !unique.contains(&value) {
+                if !self.example_is_temporal(inner) || !unique.contains(&value) {
                     unique.push(value);
                 }
             }
@@ -5553,10 +5557,11 @@ fn build_example_with_body_example(
                     || f.spec_required && (!f.optional || is_any_type(&f.type_ref))
                     || reference_fields.is_none() && f.media_example
             };
-            let request_media_example = fields
-                .iter()
-                .any(|field| field.media_example && !field.schema_body_example);
-            let mut example_fields: Vec<&BodyField> = if request_media_example {
+            let composed_request_media_example = ep.body_all_of
+                && fields
+                    .iter()
+                    .any(|field| field.media_example && !field.schema_body_example);
+            let mut example_fields: Vec<&BodyField> = if composed_request_media_example {
                 fields
                     .iter()
                     .filter(|field| field.spec_required)
@@ -5565,7 +5570,7 @@ fn build_example_with_body_example(
             } else {
                 fields.iter().filter(selected).collect()
             };
-            if request_media_example {
+            if composed_request_media_example {
                 if let Some(values) = reference_fields {
                     // The reference writer takes required arguments in signature
                     // order, then optional arguments in the selected named

@@ -16135,15 +16135,20 @@ components:
       type: array
       items: { $ref: '#/components/schemas/EventDate' }
     EventPrice: { type: number, format: float }
-    Event:
+    EventBase:
       type: object
       required: [name, dates, price]
       properties:
-        note: { type: string }
-        code: { type: string }
         name: { type: string }
         dates: { $ref: '#/components/schemas/EventDates' }
         price: { $ref: '#/components/schemas/EventPrice' }
+    Event:
+      allOf:
+        - { $ref: '#/components/schemas/EventBase' }
+        - type: object
+          properties:
+            note: { type: string }
+            code: { type: string }
   examples:
     PrimaryEvent:
       value:
