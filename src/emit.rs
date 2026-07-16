@@ -1240,9 +1240,12 @@ fn root_init_file(
 /// (`gettoken`), unless its request-body declaration is documented (Red Hat's
 /// GraphQL request). An undocumented referenced body of only scalar fields with any
 /// optional one (`createaccount`), a single-field reference (`create`), or a
-/// union/enum/scalar/no body renders empty parens.
+/// union/enum/scalar/no body renders empty parens. A legacy codegen-named body is
+/// always represented by a placeholder because Fern preserves its Swagger body
+/// semantics even after flattening it into keyword arguments.
 fn complex_body(ep: &Endpoint, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) -> bool {
-    if ep.body_media_has_example
+    if ep.body_codegen_named && ep.request_body.is_some()
+        || ep.body_media_has_example
         || ep.body_all_of
         || (ep.body_schema_ref
             && !ep.body_schema_dropped
@@ -3276,14 +3279,15 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         // path/header param, is *undocumented*, or is *always sent whole* (every field
         // required, so no `OMIT`). Fern drops the explicit header only for a
         // documented body with at least one optional field — which may serialize to
-        // nothing — that rides no header-forcing param (bunq's `CREATE_Avatar`,
-        // `CREATE_DeviceServer`), leaving the content-type to httpx; an all-required
-        // body (`CREATE_SessionServer`) keeps it.
+        // nothing — or a legacy codegen-named body that rides no header-forcing
+        // param, leaving the content-type to httpx. An all-required body
+        // (`CREATE_SessionServer`) keeps it.
         Some(body)
             if !body.is_wildcard_media()
                 && (!ep.header_params.is_empty()
                     || !ep.path_params.is_empty()
                     || (body.content_type_header()
+                        && !ep.body_codegen_named
                         && !ep.body_component_ref
                         && !(matches!(body, RequestBody::Inline(_))
                             && (ep.body_all_of || ep.body_response_same_ref))
@@ -6088,6 +6092,7 @@ mod tests {
             query_params: Vec::new(),
             header_params: Vec::new(),
             request_body: None,
+            body_codegen_named: false,
             body_description_empty: false,
             body_description_missing: false,
             body_component_ref: false,

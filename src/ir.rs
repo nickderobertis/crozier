@@ -82,8 +82,8 @@ impl Environment {
 /// Fern's single-member behavior: the first server only, its member named by
 /// uppercasing the description (non-identifier characters → `_`). A templated
 /// server, a single concrete server with no usable description, or a description
-/// that merely repeats the API title is `DEFAULT`; other described concrete
-/// servers keep their description-derived name.
+/// that merely repeats the API title, or a numbered demo-server description is
+/// `DEFAULT`; other described concrete servers keep their description-derived name.
 fn environment_model(doc: &OpenApi, client_name: &str) -> Option<Environment> {
     let first = doc.servers.first()?;
     // A server with a templated URL (`{basePath}` variables) is named `DEFAULT` — its
@@ -93,6 +93,10 @@ fn environment_model(doc: &OpenApi, client_name: &str) -> Option<Environment> {
     let member_name = if !first.variables.is_empty()
         || first.url.starts_with('/')
         || !first.url.contains("://")
+        || first
+            .description
+            .as_deref()
+            .is_some_and(|description| description.to_ascii_lowercase().starts_with("demo server"))
     {
         "DEFAULT".to_string()
     } else {
@@ -576,6 +580,8 @@ pub struct Endpoint {
     pub header_params: Vec<HeaderParam>,
     /// The JSON request body, when the operation has one crozier can emit.
     pub request_body: Option<RequestBody>,
+    /// Whether the operation carried the legacy OpenAPI Generator body-name hint.
+    pub body_codegen_named: bool,
     /// Whether `requestBody.description` is explicitly present but empty. Fern
     /// treats that importer sentinel as suppressing an explicit JSON content type.
     pub body_description_empty: bool,
@@ -1749,6 +1755,7 @@ fn build_endpoint(
         query_params,
         header_params,
         request_body,
+        body_codegen_named: op.codegen_request_body_name.is_some(),
         body_description_empty: op.request_body.as_ref().is_some_and(|body| {
             body.description
                 .as_deref()
@@ -4004,10 +4011,11 @@ impl Builder<'_> {
                 )));
                 return TypeRef::Named(hoisted);
             }
-            // An inline object *with declared properties* hoists to its own named
-            // model `{Owner}{Prop}` (Fern: `Meta.cursors` → `MetaCursors`), rather
-            // than degrading to `typing.Any`. A bare `type: object` map (no
-            // properties) is left to `base_type_ref`.
+            // An inline object with declared structure — including an explicitly
+            // empty `properties: {}` — hoists to its own named model
+            // `{Owner}{Prop}` (Fern: `Meta.cursors` → `MetaCursors`), rather than
+            // degrading to `typing.Any`. A bare `type: object` map (no properties
+            // declaration) is left to `base_type_ref`.
             if is_inline_struct(prop_schema) && single_all_of_ref(prop_schema).is_none() {
                 let name = format!("{owner}{}", naming::class_name(prop));
                 let module = naming::module_name(&name);
@@ -4360,14 +4368,18 @@ fn example_is_schema_definition(example: &serde_json::Value) -> bool {
         })
 }
 
-/// An inline (not `$ref`) object with *declared structure* — properties or an
-/// `allOf`. Unlike [`is_inline_object`] this excludes a bare `type: object` map
+/// An inline (not `$ref`) object with *declared structure* — properties (including
+/// an explicitly empty, non-map `properties: {}`), an `allOf`, or a closed-object
+/// marker. Unlike [`is_inline_object`] this excludes a bare `type: object` map
 /// (which Fern renders as a `Dict`, not a hoisted model), so it is the test for
 /// hoisting an inline request/response body into a named type.
 fn is_inline_struct(schema: &Schema) -> bool {
     schema.reference.is_none()
         && (!schema.properties.is_empty()
             || schema.all_of.is_some()
+            || (is_object_type(schema)
+                && schema.properties.declared()
+                && schema.additional_properties.is_none())
             || (is_object_type(schema)
                 && matches!(
                     schema.additional_properties,

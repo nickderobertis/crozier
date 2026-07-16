@@ -9019,6 +9019,136 @@ const XERO_PAYROLL_AU: Corpus = Corpus {
     ],
 };
 
+const TRACCAR: Corpus = Corpus {
+    api: "traccar.org",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    matched: &[
+        ".fern/metadata.json",
+        "pyproject.toml",
+        "README.md",
+        "reference.md",
+        "requirements.txt",
+        "src/fern/__init__.py",
+        "src/fern/attributes/__init__.py",
+        "src/fern/attributes/client.py",
+        "src/fern/attributes/raw_client.py",
+        "src/fern/calendars/__init__.py",
+        "src/fern/calendars/client.py",
+        "src/fern/calendars/raw_client.py",
+        "src/fern/client.py",
+        "src/fern/commands/__init__.py",
+        "src/fern/commands/client.py",
+        "src/fern/commands/raw_client.py",
+        "src/fern/core/__init__.py",
+        "src/fern/core/api_error.py",
+        "src/fern/core/client_wrapper.py",
+        "src/fern/core/datetime_utils.py",
+        "src/fern/core/file.py",
+        "src/fern/core/force_multipart.py",
+        "src/fern/core/http_client.py",
+        "src/fern/core/http_response.py",
+        "src/fern/core/http_sse/__init__.py",
+        "src/fern/core/http_sse/_api.py",
+        "src/fern/core/http_sse/_decoders.py",
+        "src/fern/core/http_sse/_exceptions.py",
+        "src/fern/core/http_sse/_models.py",
+        "src/fern/core/jsonable_encoder.py",
+        "src/fern/core/pydantic_utilities.py",
+        "src/fern/core/query_encoder.py",
+        "src/fern/core/remove_none_from_dict.py",
+        "src/fern/core/request_options.py",
+        "src/fern/core/serialization.py",
+        "src/fern/devices/__init__.py",
+        "src/fern/devices/client.py",
+        "src/fern/devices/raw_client.py",
+        "src/fern/drivers/__init__.py",
+        "src/fern/drivers/client.py",
+        "src/fern/drivers/raw_client.py",
+        "src/fern/environment.py",
+        "src/fern/errors/__init__.py",
+        "src/fern/errors/bad_request_error.py",
+        "src/fern/errors/not_found_error.py",
+        "src/fern/errors/unauthorized_error.py",
+        "src/fern/events/__init__.py",
+        "src/fern/events/client.py",
+        "src/fern/events/raw_client.py",
+        "src/fern/geofences/__init__.py",
+        "src/fern/geofences/client.py",
+        "src/fern/geofences/raw_client.py",
+        "src/fern/groups/__init__.py",
+        "src/fern/groups/client.py",
+        "src/fern/groups/raw_client.py",
+        "src/fern/maintenance/__init__.py",
+        "src/fern/maintenance/client.py",
+        "src/fern/maintenance/raw_client.py",
+        "src/fern/notifications/__init__.py",
+        "src/fern/notifications/client.py",
+        "src/fern/notifications/raw_client.py",
+        "src/fern/permissions/__init__.py",
+        "src/fern/permissions/client.py",
+        "src/fern/permissions/raw_client.py",
+        "src/fern/positions/__init__.py",
+        "src/fern/positions/client.py",
+        "src/fern/positions/raw_client.py",
+        "src/fern/py.typed",
+        "src/fern/reports/__init__.py",
+        "src/fern/reports/client.py",
+        "src/fern/reports/raw_client.py",
+        "src/fern/server/__init__.py",
+        "src/fern/server/client.py",
+        "src/fern/server/raw_client.py",
+        "src/fern/session/__init__.py",
+        "src/fern/session/client.py",
+        "src/fern/session/raw_client.py",
+        "src/fern/statistics/__init__.py",
+        "src/fern/statistics/client.py",
+        "src/fern/statistics/raw_client.py",
+        "src/fern/types/attribute.py",
+        "src/fern/types/calendar.py",
+        "src/fern/types/calendar_attributes.py",
+        "src/fern/types/command.py",
+        "src/fern/types/command_attributes.py",
+        "src/fern/types/command_type.py",
+        "src/fern/types/device.py",
+        "src/fern/types/device_attributes.py",
+        "src/fern/types/driver.py",
+        "src/fern/types/driver_attributes.py",
+        "src/fern/types/event.py",
+        "src/fern/types/event_attributes.py",
+        "src/fern/types/geofence.py",
+        "src/fern/types/geofence_attributes.py",
+        "src/fern/types/group.py",
+        "src/fern/types/group_attributes.py",
+        "src/fern/types/__init__.py",
+        "src/fern/types/maintenance.py",
+        "src/fern/types/maintenance_attributes.py",
+        "src/fern/types/notification.py",
+        "src/fern/types/notification_attributes.py",
+        "src/fern/types/notification_type.py",
+        "src/fern/types/permission.py",
+        "src/fern/types/position.py",
+        "src/fern/types/position_attributes.py",
+        "src/fern/types/position_network.py",
+        "src/fern/types/report_stops.py",
+        "src/fern/types/report_summary.py",
+        "src/fern/types/report_trips.py",
+        "src/fern/types/server.py",
+        "src/fern/types/server_attributes.py",
+        "src/fern/types/statistics.py",
+        "src/fern/types/user.py",
+        "src/fern/types/user_attributes.py",
+        "src/fern/users/__init__.py",
+        "src/fern/users/client.py",
+        "src/fern/users/raw_client.py",
+        "src/fern/version.py",
+    ],
+};
+
 const CORPORA: &[&Corpus] = &[
     &QUERY_PARAMETERS,
     &EXHAUSTIVE,
@@ -9062,6 +9192,7 @@ const CORPORA: &[&Corpus] = &[
     &MICROCKS_LOCAL,
     &REDHAT_CATALOG_INVENTORY,
     &XERO_PAYROLL_AU,
+    &TRACCAR,
 ];
 
 #[test]
@@ -9591,6 +9722,18 @@ fn xero_payroll_au_matches_fern_output() {
 }
 
 #[test]
+fn traccar_matches_fern_output() {
+    if corpus_spec(TRACCAR.api).is_none() {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the Traccar corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+        );
+        return;
+    }
+    assert_corpus_matches(&TRACCAR);
+}
+
+#[test]
 fn feature_target_specs_generate_without_panicking() {
     // A feature-coverage target with a populated `matched` list is byte-compared
     // file-by-file; one with an empty `matched` list asserts only that crozier
@@ -9669,6 +9812,7 @@ fn report_matched_candidates() {
         &MICROCKS_LOCAL,
         &REDHAT_CATALOG_INVENTORY,
         &XERO_PAYROLL_AU,
+        &TRACCAR,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);
@@ -9818,6 +9962,7 @@ fn report_fixture_diffs() {
         &MICROCKS_LOCAL,
         &REDHAT_CATALOG_INVENTORY,
         &XERO_PAYROLL_AU,
+        &TRACCAR,
     ] {
         if corpus_spec(c.api).is_some() {
             corpora.push(c);

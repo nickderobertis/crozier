@@ -321,6 +321,10 @@ pub struct Operation {
     /// The request body, if any.
     #[serde(rename = "requestBody", default)]
     pub request_body: Option<RequestBody>,
+    /// Legacy OpenAPI Generator body-name hint. Fern's importer preserves the
+    /// body semantics of Swagger-derived operations carrying this extension.
+    #[serde(rename = "x-codegen-request-body-name", default)]
+    pub codegen_request_body_name: Option<String>,
     /// Responses, keyed by status code (or `default`), in document order.
     #[serde(default)]
     pub responses: IndexMap<String, Response>,
