@@ -1,0 +1,3 @@
+
+
+EventPrice = float

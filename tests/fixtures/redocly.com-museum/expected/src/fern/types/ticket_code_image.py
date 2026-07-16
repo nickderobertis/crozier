@@ -1,0 +1,3 @@
+
+
+TicketCodeImage = str

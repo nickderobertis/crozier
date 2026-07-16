@@ -1,0 +1,3 @@
+
+
+TicketMessage = str
