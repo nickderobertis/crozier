@@ -1,0 +1,385 @@
+from __future__ import annotations
+
+import json
+import os
+import shutil
+import subprocess
+import tempfile
+import textwrap
+import unittest
+from pathlib import Path
+
+
+REPO = Path(__file__).resolve().parent.parent
+TOOL = REPO / "scripts" / "fern-goldens"
+STATE = ".crozier-fern-golden.json"
+
+
+class FernGoldensBoundaryTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temporary = tempfile.TemporaryDirectory()
+        self.root = Path(self.temporary.name) / "repo"
+        (self.root / "scripts").mkdir(parents=True)
+        (self.root / "tests" / "fixtures").mkdir(parents=True)
+        (self.root / "fake-bin").mkdir()
+        shutil.copy2(TOOL, self.root / "scripts" / "fern-goldens")
+        (self.root / "justfile").write_text("default:\n    @true\n", encoding="utf-8")
+        (self.root / ".gitignore").write_text("/.local\n", encoding="utf-8")
+        self.write_manifest()
+        self.write_executable(
+            self.root / "scripts" / "generate-fern-fixture.sh",
+            r"""
+            #!/usr/bin/env python3
+            import os
+            import pathlib
+            import sys
+
+            fixture, version, spec, destination = sys.argv[1:]
+            root = pathlib.Path(os.environ["CROZIER_FERN_GOLDENS_ROOT"])
+            with (root / ".generator-calls").open("a", encoding="utf-8") as calls:
+                calls.write(f"{fixture} {version} {spec} {destination}\n")
+            output = pathlib.Path(destination)
+            (output / "src" / "fern").mkdir(parents=True)
+            if fixture in os.environ.get("FAIL_FIXTURES", "").split(","):
+                (output / "src" / "fern" / "partial.py").write_text("partial\n")
+                raise SystemExit(19)
+            (output / "src" / "fern" / "version.py").write_text(
+                f"{fixture}:{version}\n", encoding="utf-8"
+            )
+            """,
+        )
+        self.write_executable(
+            self.root / "fake-bin" / "curl",
+            r"""
+            #!/usr/bin/env python3
+            import json
+            import os
+            import pathlib
+            import sys
+
+            args = sys.argv[1:]
+            if "-o" not in args:
+                print(json.dumps({"results": [
+                    {"name": "4.9.0"}, {"name": "4.10.0"},
+                    {"name": "4.11.0-rc.1"}, {"name": "latest"}
+                ], "next": None}))
+                raise SystemExit(0)
+            destination = pathlib.Path(args[args.index("-o") + 1])
+            url = next(arg for arg in args if arg.startswith("https://"))
+            if any(name and name in url for name in os.environ.get("FAIL_FETCH", "").split(",")):
+                print("synthetic fetch failure", file=sys.stderr)
+                raise SystemExit(22)
+            destination.write_text('{"openapi":"3.0.3"}\n', encoding="utf-8")
+            """,
+        )
+        self.write_executable(
+            self.root / "fake-bin" / "just",
+            r"""
+            #!/usr/bin/env python3
+            import os
+
+            mode = os.environ.get("COMPARE_MODE", "green")
+            if mode == "infrastructure":
+                print("comparison crashed")
+                raise SystemExit(7)
+            if mode == "diff":
+                print("=== alpha ===\n--- src/fern/a.py ---\n- Fern\n+ Crozier")
+                print("=== beta ===\n--- src/fern/b.py ---\n- Fern\n+ Crozier")
+                print("0 comparison generation failure(s) across the reported corpora.")
+                print("2 differing file(s) across the reported corpora.")
+            elif mode == "generation-failure":
+                print("=== alpha ===\n  Crozier generation failed: synthetic")
+                print("1 comparison generation failure(s) across the reported corpora.")
+                print("0 differing file(s) across the reported corpora.")
+            else:
+                print("0 comparison generation failure(s) across the reported corpora.")
+                print("0 differing file(s) across the reported corpora.")
+            """,
+        )
+        for fixture in ("alpha", "beta"):
+            expected = self.root / "tests" / "fixtures" / fixture / "expected"
+            (expected / "src" / "fern").mkdir(parents=True)
+            (expected / "src" / "fern" / "version.py").write_text(
+                f"prior-{fixture}\n", encoding="utf-8"
+            )
+
+    def tearDown(self) -> None:
+        self.temporary.cleanup()
+
+    def write_manifest(self, *, alpha_url: str = "https://example.test/alpha/openapi.json") -> None:
+        manifest = f"""\
+        # Corpus
+
+        | # | name | method | source | pinned ref | license | decision | shapes |
+        |---:|---|---|---|---|---|---|---|
+        | 1 | `alpha` | test | {alpha_url} | `1` | MIT | link-ok | alpha |
+        | 2 | `beta` | test | https://example.test/beta/openapi.json | `1` | MIT | link-ok | beta |
+        | 3 | `new-fixture` | test | https://example.test/new-fixture/openapi.json | `1` | MIT | link-ok | new |
+
+        | name | status |
+        |---|---|
+        | `not-a-row` | documentation only |
+        """
+        (self.root / "tests" / "fixtures" / "CORPUS.md").write_text(
+            textwrap.dedent(manifest), encoding="utf-8"
+        )
+
+    @staticmethod
+    def write_executable(path: Path, source: str) -> None:
+        path.write_text(textwrap.dedent(source).lstrip(), encoding="utf-8")
+        path.chmod(0o755)
+
+    def environment(self, **updates: str) -> dict[str, str]:
+        env = os.environ.copy()
+        env.update(
+            {
+                "CROZIER_FERN_GOLDENS_ROOT": str(self.root),
+                "PATH": f"{self.root / 'fake-bin'}{os.pathsep}{env['PATH']}",
+            }
+        )
+        env.update(updates)
+        return env
+
+    def run_tool(self, *args: str, check: bool = False, **env: str) -> subprocess.CompletedProcess[str]:
+        result = subprocess.run(
+            [str(self.root / "scripts" / "fern-goldens"), *args],
+            cwd=self.root,
+            env=self.environment(**env),
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if check and result.returncode != 0:
+            self.fail(f"command failed ({result.returncode}):\n{result.stdout}\n{result.stderr}")
+        return result
+
+    def calls(self) -> list[str]:
+        path = self.root / ".generator-calls"
+        return path.read_text(encoding="utf-8").splitlines() if path.exists() else []
+
+    def state(self, fixture: str) -> dict[str, str]:
+        path = self.root / "tests" / "fixtures" / fixture / "expected" / STATE
+        return json.loads(path.read_text(encoding="utf-8"))
+
+    def test_explicit_state_current_new_upgrade_and_no_op(self) -> None:
+        first = self.run_tool(
+            "generate", "--version", "4.9.0", "--fixture", "alpha", check=True
+        )
+        self.assertIn("1 generated, 0 current, 0 failed", first.stdout)
+        self.assertEqual(self.state("alpha")["fern_python_sdk_version"], "4.9.0")
+        self.assertEqual(self.state("alpha")["corpus_spec_name"], "alpha")
+        self.assertEqual(
+            self.state("alpha")["corpus_spec_url"],
+            "https://example.test/alpha/openapi.json",
+        )
+
+        current = self.run_tool(
+            "generate", "--version", "4.9.0", "--fixture", "alpha", check=True
+        )
+        self.assertIn("generation skipped", current.stdout)
+        self.assertEqual(len(self.calls()), 1)
+
+        self.run_tool(
+            "generate", "--version", "4.9.0", "--fixture", "new-fixture", check=True
+        )
+        self.assertEqual(self.state("new-fixture")["fern_python_sdk_version"], "4.9.0")
+        self.assertEqual(len(self.calls()), 2)
+
+        self.run_tool(
+            "generate", "--version", "4.10.0", "--fixture", "alpha", check=True
+        )
+        self.assertEqual(self.state("alpha")["fern_python_sdk_version"], "4.10.0")
+        self.assertEqual(len(self.calls()), 3)
+
+        # Default selection includes every existing corpus golden. Alpha is
+        # exact and skips; beta has no state and new-fixture is stale, so both
+        # generate at the requested upgrade.
+        self.run_tool("generate", "--version", "4.10.0", check=True)
+        self.assertEqual(len(self.calls()), 5)
+        no_op = self.run_tool("generate", "--version", "4.10.0", check=True)
+        self.assertIn("0 generated, 3 current, 0 failed", no_op.stdout)
+        self.assertEqual(len(self.calls()), 5)
+        self.assertFalse(
+            (self.root / ".local" / "fern-goldens" / "generated-goldens.tar.gz").exists()
+        )
+
+    def test_latest_tag_and_spec_identity_change_regenerate(self) -> None:
+        self.run_tool("generate", "--fixture", "alpha", check=True)
+        self.assertEqual(self.state("alpha")["fern_python_sdk_version"], "4.10.0")
+        self.write_manifest(alpha_url="https://example.test/alpha/replacement.json")
+        self.run_tool("generate", "--fixture", "alpha", check=True)
+        self.assertEqual(len(self.calls()), 2)
+        self.assertEqual(
+            self.state("alpha")["corpus_spec_url"],
+            "https://example.test/alpha/replacement.json",
+        )
+
+    def test_partial_failures_preserve_prior_goldens_and_state(self) -> None:
+        self.run_tool(
+            "generate", "--version", "4.9.0", "--fixture", "alpha", check=True
+        )
+        alpha = self.root / "tests" / "fixtures" / "alpha" / "expected"
+        before = {
+            path.relative_to(alpha).as_posix(): path.read_bytes()
+            for path in alpha.rglob("*")
+            if path.is_file()
+        }
+        failed = self.run_tool(
+            "generate",
+            "--version",
+            "4.10.0",
+            "--fixture",
+            "alpha",
+            "--fixture",
+            "beta",
+            FAIL_FIXTURES="alpha,beta",
+        )
+        self.assertEqual(failed.returncode, 1)
+        self.assertIn("alpha:", failed.stderr)
+        self.assertIn("beta:", failed.stderr)
+        after = {
+            path.relative_to(alpha).as_posix(): path.read_bytes()
+            for path in alpha.rglob("*")
+            if path.is_file()
+        }
+        self.assertEqual(after, before)
+        self.assertEqual(
+            (self.root / "tests" / "fixtures" / "beta" / "expected" / "src" / "fern" / "version.py").read_text(),
+            "prior-beta\n",
+        )
+        self.assertFalse(
+            (self.root / "tests" / "fixtures" / "beta" / "expected" / STATE).exists()
+        )
+        self.assertFalse(list((self.root / "tests" / "fixtures" / "alpha").glob(".fern-goldens-stage.*")))
+
+    def test_compare_aggregates_differences_and_generation_failures(self) -> None:
+        differing = self.run_tool("compare", COMPARE_MODE="diff")
+        self.assertEqual(differing.returncode, 1)
+        self.assertIn("=== alpha ===", differing.stdout)
+        self.assertIn("=== beta ===", differing.stdout)
+        self.assertIn("2 differing files", differing.stdout)
+
+        failed = self.run_tool("compare", COMPARE_MODE="generation-failure")
+        self.assertEqual(failed.returncode, 1)
+        self.assertIn("1 Crozier generation failures", failed.stdout)
+        self.assertTrue(
+            (self.root / ".local" / "fern-goldens" / "comparison.log").is_file()
+        )
+
+    def test_publish_success_before_red_then_fixed_current_rerun_is_green(self) -> None:
+        remote = Path(self.temporary.name) / "remote.git"
+        subprocess.run(["git", "init", "--bare", str(remote)], check=True, capture_output=True)
+        subprocess.run(
+            ["git", "init", "-b", "goldens/test"], cwd=self.root, check=True, capture_output=True
+        )
+        for key, value in (("user.name", "Test"), ("user.email", "test@example.test")):
+            subprocess.run(["git", "config", key, value], cwd=self.root, check=True)
+        subprocess.run(["git", "add", "-A"], cwd=self.root, check=True)
+        subprocess.run(["git", "commit", "-m", "test: baseline"], cwd=self.root, check=True, capture_output=True)
+        subprocess.run(["git", "remote", "add", "origin", str(remote)], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "push", "-u", "origin", "goldens/test"],
+            cwd=self.root,
+            check=True,
+            capture_output=True,
+        )
+
+        generation = self.run_tool(
+            "generate",
+            "--version",
+            "4.9.0",
+            "--fixture",
+            "alpha",
+            "--fixture",
+            "beta",
+            FAIL_FIXTURES="beta",
+        )
+        self.assertEqual(generation.returncode, 1)
+        self.assertEqual(self.state("alpha")["fern_python_sdk_version"], "4.9.0")
+        self.assertFalse(
+            (self.root / "tests" / "fixtures" / "beta" / "expected" / STATE).exists()
+        )
+        comparison = self.run_tool("compare", COMPARE_MODE="diff")
+        self.assertEqual(comparison.returncode, 1)
+        self.run_tool("publish", "--branch", "goldens/test", check=True)
+        remote_subject = subprocess.run(
+            ["git", f"--git-dir={remote}", "log", "-1", "--format=%s", "goldens/test"],
+            text=True,
+            capture_output=True,
+            check=True,
+        ).stdout.strip()
+        self.assertEqual(remote_subject, "test(fixtures): refresh Fern goldens at 4.9.0")
+        red = self.run_tool(
+            "result",
+            "--generation",
+            "failure",
+            "--comparison",
+            "failure",
+            "--publication",
+            "success",
+        )
+        self.assertEqual(red.returncode, 1)
+
+        # The Crozier repair changes only comparison behavior. Exact Fern state
+        # skips costly generation, publication is a no-op, and the rerun is green.
+        rerun = self.run_tool(
+            "generate", "--version", "4.9.0", "--fixture", "alpha", check=True
+        )
+        self.assertIn("0 generated, 1 current", rerun.stdout)
+        self.run_tool("compare", COMPARE_MODE="green", check=True)
+        published = self.run_tool("publish", "--branch", "goldens/test", check=True)
+        self.assertIn("no-op", published.stdout)
+        green = self.run_tool(
+            "result",
+            "--generation",
+            "success",
+            "--comparison",
+            "success",
+            "--publication",
+            "success",
+        )
+        self.assertEqual(green.returncode, 0)
+
+    def test_invalid_inputs_fail_before_generation_or_publication(self) -> None:
+        cases = [
+            ("generate", "--version", "latest", "--fixture", "alpha"),
+            ("generate", "--version", "4.9.0; touch nope", "--fixture", "alpha"),
+            ("generate", "--version", "4.9.0", "--fixture", "../alpha"),
+            ("generate", "--version", "4.9.0", "--fixture", "missing"),
+        ]
+        for args in cases:
+            with self.subTest(args=args):
+                self.assertEqual(self.run_tool(*args).returncode, 2)
+        self.assertEqual(self.calls(), [])
+
+        self.write_manifest(alpha_url="http://example.test/alpha/openapi.json")
+        self.assertEqual(
+            self.run_tool("generate", "--version", "4.9.0", "--fixture", "alpha").returncode,
+            2,
+        )
+        self.assertEqual(
+            self.run_tool("publish", "--branch", "-unsafe").returncode,
+            2,
+        )
+
+        outside = Path(self.temporary.name) / "outside"
+        outside.mkdir()
+        generator = subprocess.run(
+            [
+                str(REPO / "scripts" / "generate-fern-fixture.sh"),
+                "exhaustive",
+                "4.35.0",
+                str(REPO / "tests" / "fixtures" / "exhaustive" / "openapi.yml"),
+                str(outside / "expected"),
+            ],
+            cwd=REPO,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        self.assertNotEqual(generator.returncode, 0)
+        self.assertIn("it must stay below", generator.stderr)
+
+
+if __name__ == "__main__":
+    unittest.main()

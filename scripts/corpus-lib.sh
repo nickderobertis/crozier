@@ -4,13 +4,17 @@
 corpus_rows() {
   local manifest="$1"
   awk -F '|' '
-    NR > 6 {
+    # CORPUS.md contains status tables after the canonical numbered manifest.
+    # Accept only numbered rows from that first table; otherwise prose/status
+    # cells are misread as fixture names and URLs.
+    $2 ~ /^[[:space:]]*[0-9]+[[:space:]]*$/ {
       name=$3; url=$5; ref=$6; decision=$8;
       gsub(/^[ `]+|[ `]+$/, "", name);
       gsub(/^[ ]+|[ ]+$/, "", url);
       gsub(/^[ `]+|[ `]+$/, "", ref);
       gsub(/^[ ]+|[ ]+$/, "", decision);
-      if (name != "") print name "\t" url "\t" ref "\t" decision;
+      if (name != "" && (decision == "link-ok" || decision == "committed"))
+        print name "\t" url "\t" ref "\t" decision;
     }
   ' "$manifest"
 }
@@ -38,7 +42,8 @@ corpus_github_clone_url() {
 }
 
 corpus_fetch_repo() {
-  local fetch_root="$1" name="$2" url="$3" ref="$4" target="$fetch_root/$name"
+  local fetch_root="$1" name="$2" url="$3" ref="$4" target
+  target="$fetch_root/$name"
   mkdir -p "$fetch_root"
   if [ -d "$target/.git" ]; then
     git -C "$target" fetch --quiet --tags origin

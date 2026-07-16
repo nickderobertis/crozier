@@ -1825,11 +1825,23 @@ fn assert_corpus_matches(c: &Corpus) {
 /// identically.
 fn generate_corpus(c: &Corpus) -> tempfile::TempDir {
     let out = tempfile::tempdir().expect("tempdir");
-    crozier()
+    corpus_command(c, out.path())
+        .assert()
+        .success()
+        .stderr(predicate::str::contains("generated"));
+    out
+}
+
+/// The exact public CLI invocation used for a corpus. Reporters call the same
+/// command without assert_cmd's fail-fast assertion so one broken corpus cannot
+/// hide differences in its siblings.
+fn corpus_command(c: &Corpus, output: &Path) -> Command {
+    let mut command = crozier();
+    command
         .args(["generate", "--spec"])
         .arg(corpus_spec(c.api).unwrap_or_else(|| fixture_dir(c.api).join("openapi.yml")))
         .arg("--output")
-        .arg(out.path())
+        .arg(output)
         .args([
             "--package-name",
             c.package_name,
@@ -1843,11 +1855,27 @@ fn generate_corpus(c: &Corpus) -> tempfile::TempDir {
                 .iter()
                 .flat_map(|n| ["--client-class-name", n]),
         )
-        .args(c.extra_fields.iter().flat_map(|e| ["--extra-fields", e]))
-        .assert()
-        .success()
-        .stderr(predicate::str::contains("generated"));
-    out
+        .args(c.extra_fields.iter().flat_map(|e| ["--extra-fields", e]));
+    command
+}
+
+fn try_generate_corpus(c: &Corpus) -> Result<tempfile::TempDir, String> {
+    let out = tempfile::tempdir().map_err(|error| format!("tempdir: {error}"))?;
+    let result = corpus_command(c, out.path())
+        .output()
+        .map_err(|error| format!("could not run crozier: {error}"))?;
+    let stderr = String::from_utf8_lossy(&result.stderr);
+    if !result.status.success() || !stderr.contains("generated") {
+        return Err(format!(
+            "crozier exited {}: {}",
+            result
+                .status
+                .code()
+                .map_or_else(|| "without a status".to_string(), |code| code.to_string()),
+            stderr.trim()
+        ));
+    }
+    Ok(out)
 }
 
 /// Whether crozier's `generated` output for `rel` equals the committed fixture
@@ -9254,10 +9282,19 @@ fn report_fixture_diffs() {
     }
 
     let mut total = 0usize;
+    let mut generation_failures = 0usize;
     for c in corpora {
         let expected_root = fixture_dir(c.api).join("expected");
         let matched: std::collections::HashSet<&str> = c.matched.iter().copied().collect();
-        let out = generate_corpus(c);
+        let out = match try_generate_corpus(c) {
+            Ok(out) => out,
+            Err(error) => {
+                println!("\n=== {} ===", c.api);
+                println!("  Crozier generation failed: {error}");
+                generation_failures += 1;
+                continue;
+            }
+        };
 
         let files = walk_files(&expected_root);
         // Guard the pipeline: a corpus always has expected files, so an empty walk
@@ -9311,6 +9348,9 @@ fn report_fixture_diffs() {
         }
         total += printed;
     }
+    println!(
+        "\n{generation_failures} comparison generation failure(s) across the reported corpora."
+    );
     println!("\n{total} differing file(s) across the reported corpora.");
 }
 
@@ -9354,7 +9394,13 @@ fn walk_files(root: &Path) -> Vec<String> {
                 rec(base, &path, out);
             } else {
                 let rel = path.strip_prefix(base).expect("path is under base");
-                out.push(rel.to_string_lossy().replace('\\', "/"));
+                let rel = rel.to_string_lossy().replace('\\', "/");
+                // Automation provenance is committed atomically inside the
+                // golden directory, but it is not Fern output and Crozier must
+                // not be expected to emit it.
+                if rel != ".crozier-fern-golden.json" {
+                    out.push(rel);
+                }
             }
         }
     }

@@ -16,7 +16,7 @@ bootstrap:
     @git config core.hooksPath .githooks && echo "enabled .githooks (visual-regression pre-push guard)"
 
 # Full quality gate. Fails on any issue. e2e is part of the gate, not opt-in.
-check: fmt-check lint test test-e2e supply-chain doc
+check: fmt-check lint test test-e2e test-fern-goldens supply-chain doc
     @echo "check: ok"
 
 # Format check (does not modify files).
@@ -142,6 +142,30 @@ fetch-corpus *args:
 # `--committed` to refresh only rows already vendored. Needs Docker + fern.
 fixtures-generate-corpus *args:
     ./scripts/generate-corpus-fixtures.sh {{args}}
+
+# Deterministic Fern golden refresh: resolve an exact generator tag, generate
+# every selected corpus independently, then aggregate all Crozier byte diffs.
+# `--fixture NAME` may be repeated; omitting it refreshes existing corpus goldens.
+fern-goldens *args:
+    ./scripts/fern-goldens run {{args}}
+
+# Phase recipes used by the workflow so successful goldens can be published
+# before generation/diff failures determine the final status.
+fern-goldens-generate *args:
+    ./scripts/fern-goldens generate {{args}}
+
+fern-goldens-compare:
+    ./scripts/fern-goldens compare
+
+fern-goldens-publish branch:
+    ./scripts/fern-goldens publish --branch "{{branch}}"
+
+fern-goldens-result *args:
+    ./scripts/fern-goldens result {{args}}
+
+# Process/filesystem/workflow-boundary coverage for the automation itself.
+test-fern-goldens:
+    python3 tests/fern_goldens_test.py
 
 # Coverage-growth aid: for each corpus, report which committed fixture files
 # crozier ALREADY reproduces byte-for-byte but are missing from its `matched` list
