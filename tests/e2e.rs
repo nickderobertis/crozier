@@ -9243,7 +9243,17 @@ fn select_diff_corpora(requested: Option<&str>) -> (Vec<&'static Corpus>, Vec<(S
             ));
             continue;
         };
-        if !fixture_dir(corpus.api).join("expected").is_dir() {
+        let expected = fixture_dir(corpus.api).join("expected");
+        if expected.is_symlink() {
+            if requested.is_some() {
+                failures.push((
+                    name.to_string(),
+                    "refusing to compare a symlinked expected/ golden tree".to_string(),
+                ));
+            }
+            continue;
+        }
+        if !expected.is_dir() {
             if requested.is_some() {
                 failures.push((
                     name.to_string(),
@@ -9523,6 +9533,23 @@ fn aggregate_fixture_diff_includes_missing_unexpected_and_changed_files() {
     }));
 }
 
+#[cfg(unix)]
+#[test]
+fn aggregate_fixture_diff_refuses_to_follow_symlinks() {
+    use std::os::unix::fs::symlink;
+
+    let expected = tempfile::tempdir().expect("expected tempdir");
+    let generated = tempfile::tempdir().expect("generated tempdir");
+    let outside = tempfile::NamedTempFile::new().expect("outside file");
+    symlink(outside.path(), expected.path().join("outside-link")).expect("create symlink");
+
+    let error = fixture_differences(expected.path(), generated.path(), None).unwrap_err();
+    assert!(
+        error.contains("refusing to follow symbolic link"),
+        "{error}"
+    );
+}
+
 #[test]
 fn exact_comparison_scope_reports_unregistered_managed_fixtures() {
     let (selected, failures) =
@@ -9534,6 +9561,42 @@ fn exact_comparison_scope_reports_unregistered_managed_fixtures() {
     assert_eq!(failures.len(), 1, "{failures:?}");
     assert_eq!(failures[0].0, "new-unregistered-fixture");
     assert!(failures[0].1.contains("not registered"));
+}
+
+#[test]
+fn every_existing_manifest_golden_is_registered_for_aggregate_comparison() {
+    let registered: std::collections::HashSet<&str> = registered_diff_corpora()
+        .into_iter()
+        .map(|corpus| corpus.api)
+        .collect();
+    let mut missing = Vec::new();
+    for line in include_str!("fixtures/CORPUS.md").lines() {
+        let cells: Vec<&str> = line
+            .trim()
+            .trim_matches('|')
+            .split('|')
+            .map(str::trim)
+            .collect();
+        if cells
+            .first()
+            .is_none_or(|number| number.is_empty() || !number.chars().all(|c| c.is_ascii_digit()))
+        {
+            continue;
+        }
+        let name = cells[1].trim_matches('`');
+        let fixture = match name {
+            "fern-seed-query-parameters" => "query-parameters-openapi",
+            "fern-exhaustive" => "exhaustive",
+            name => name,
+        };
+        if fixture_dir(fixture).join("expected").is_dir() && !registered.contains(fixture) {
+            missing.push(fixture);
+        }
+    }
+    assert!(
+        missing.is_empty(),
+        "manifest fixtures with expected/ but no e2e Corpus registration: {missing:?}"
+    );
 }
 
 /// Every file under `root`, as `/`-separated paths relative to `root`, sorted.
@@ -9556,7 +9619,15 @@ fn try_walk_files(root: &Path) -> Result<Vec<String>, String> {
         }
         entries.sort();
         for path in entries {
-            if path.is_dir() {
+            let metadata = std::fs::symlink_metadata(&path)
+                .map_err(|error| format!("metadata {}: {error}", path.display()))?;
+            if metadata.file_type().is_symlink() {
+                return Err(format!(
+                    "refusing to follow symbolic link while walking {}",
+                    path.display()
+                ));
+            }
+            if metadata.is_dir() {
                 rec(base, &path, out)?;
             } else {
                 let rel = path.strip_prefix(base).map_err(|error| {
@@ -9578,6 +9649,12 @@ fn try_walk_files(root: &Path) -> Result<Vec<String>, String> {
         Ok(())
     }
     let mut out = Vec::new();
+    if root.is_symlink() {
+        return Err(format!(
+            "refusing to follow symbolic link while walking {}",
+            root.display()
+        ));
+    }
     if root.is_dir() {
         rec(root, root, &mut out)?;
     }

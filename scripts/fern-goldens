@@ -276,11 +276,11 @@ def select_rows(root: Path, rows: list[CorpusRow], requested: list[str]) -> list
                 seen.add(row.fixture)
         return selected
 
-    selected = [
-        row
-        for row in rows
-        if (root / "tests" / "fixtures" / row.fixture / "expected").is_dir()
-    ]
+    selected = []
+    for row in rows:
+        expected = root / "tests" / "fixtures" / row.fixture / "expected"
+        if expected.is_dir() and not expected.is_symlink():
+            selected.append(row)
     if not selected:
         raise GoldensError(
             "no existing corpus goldens selected; pass --fixture NAME to generate a new fixture"
