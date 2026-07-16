@@ -339,8 +339,12 @@ def fetch_spec(root: Path, row: CorpusRow, *, force: bool) -> Path:
         raise GoldensError(
             f"spec fetch failed: {detail or f'fetch-corpus exited {result.returncode}'}"
         )
-    suffix = Path(urlsplit(row.url).path).suffix.lower()
-    destination = root / ".local" / "corpus" / row.name / f"openapi{suffix}"
+    paths = [line.strip() for line in result.stdout.splitlines() if line.strip()]
+    if len(paths) != 1:
+        raise GoldensError(
+            "fetch-corpus returned success without exactly one spec path"
+        )
+    destination = Path(paths[0])
     if not destination.is_file() or destination.stat().st_size == 0:
         raise GoldensError(f"fetch-corpus returned success without {destination}")
     return destination

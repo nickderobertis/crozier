@@ -83,30 +83,36 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             #!/usr/bin/env python3
             import os
             import pathlib
+            import subprocess
             import sys
 
             args = sys.argv[1:]
             if "fetch-corpus" in args:
                 fixture = args[args.index("--fixture") + 1]
                 root = pathlib.Path(os.environ["CROZIER_FERN_GOLDENS_ROOT"])
-                manifest = root / "tests" / "fixtures" / "CORPUS.md"
-                row = next(
-                    line for line in manifest.read_text(encoding="utf-8").splitlines()
-                    if f"`{fixture}`" in line and line.lstrip().startswith("|")
-                )
-                url = [cell.strip() for cell in row.strip().strip("|").split("|")][3]
-                suffix = pathlib.PurePosixPath(url).suffix.lower()
-                destination = root / ".local" / "corpus" / fixture / f"openapi{suffix}"
                 with (root / ".fetch-calls").open("a", encoding="utf-8") as calls:
                     calls.write(" ".join(args[args.index("fetch-corpus"):]) + "\n")
-                if fixture in os.environ.get("FAIL_FETCH", "").split(","):
-                    print("synthetic fetch failure", file=sys.stderr)
-                    raise SystemExit(22)
-                if "--if-missing" not in args or not destination.is_file():
-                    destination.parent.mkdir(parents=True, exist_ok=True)
-                    destination.write_text('{"openapi":"3.0.3"}\n', encoding="utf-8")
-                print(destination)
-                raise SystemExit(0)
+                command = [
+                    root / "scripts" / "fetch-corpus.sh",
+                    *args[args.index("fetch-corpus") + 1:],
+                ]
+                result = subprocess.run(
+                    command,
+                    cwd=root,
+                    text=True,
+                    capture_output=True,
+                    check=False,
+                )
+                stdout = result.stdout
+                reported_name = os.environ.get("FETCH_REPORTED_NAME")
+                if result.returncode == 0 and reported_name:
+                    fetched = pathlib.Path(stdout.strip())
+                    reported = fetched.with_name(reported_name)
+                    fetched.replace(reported)
+                    stdout = f"{reported}\n"
+                sys.stdout.write(stdout)
+                sys.stderr.write(result.stderr)
+                raise SystemExit(result.returncode)
 
             root = pathlib.Path(os.environ["CROZIER_FERN_GOLDENS_ROOT"])
             managed = os.environ.get("CROZIER_DIFF_CORPORA", "").split(",")
@@ -387,6 +393,27 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             (self.root / ".local" / "corpus" / "alpha" / "openapi.yaml").is_file()
         )
         self.assertTrue(all("fetch-corpus --fixture alpha" in call for call in self.fetch_calls()))
+
+    def test_generation_uses_the_path_reported_by_fetch_corpus(self) -> None:
+        self.run_tool(
+            "generate",
+            "--version",
+            "4.9.0",
+            "--fixture",
+            "alpha",
+            check=True,
+            FETCH_REPORTED_NAME="authoritative-spec.yaml",
+        )
+
+        reported = (
+            self.root
+            / ".local"
+            / "corpus"
+            / "alpha"
+            / "authoritative-spec.yaml"
+        )
+        self.assertTrue(reported.is_file())
+        self.assertIn(str(reported), self.calls()[0])
 
     def test_incomplete_exact_state_is_not_treated_as_current(self) -> None:
         self.run_tool(
