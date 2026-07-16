@@ -235,15 +235,25 @@ def expected_state(row: CorpusRow, version: str) -> bytes:
     state = {
         "fern_python_sdk_version": version,
         "corpus_spec_name": row.name,
+        "corpus_spec_ref": row.ref,
         "corpus_spec_url": row.url,
     }
     return (json.dumps(state, indent=2) + "\n").encode()
 
 
 def is_current(root: Path, row: CorpusRow, version: str) -> bool:
-    state = root / "tests" / "fixtures" / row.fixture / "expected" / STATE_FILE
+    expected = root / "tests" / "fixtures" / row.fixture / "expected"
+    state = expected / STATE_FILE
     try:
-        return state.read_bytes() == expected_state(row, version)
+        return (
+            not expected.is_symlink()
+            and (expected / "src").is_dir()
+            and state.read_bytes() == expected_state(row, version)
+            and any(
+                path.is_file() and path.name != STATE_FILE
+                for path in expected.rglob("*")
+            )
+        )
     except OSError:
         return False
 
@@ -540,12 +550,7 @@ def publish(root: Path, branch: str) -> int:
         if row is None:
             raise GoldensError(f"successful fixture is no longer in CORPUS.md: {fixture}")
         expected = root / "tests" / "fixtures" / fixture / "expected"
-        state = expected / STATE_FILE
-        if (
-            not expected.is_dir()
-            or not state.is_file()
-            or state.read_bytes() != expected_state(row, version)
-        ):
+        if not is_current(root, row, version):
             raise GoldensError(f"successful fixture has no complete golden/state: {fixture}")
         paths.append(f"tests/fixtures/{fixture}/expected")
     if not paths:

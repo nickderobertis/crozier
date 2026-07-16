@@ -127,13 +127,18 @@ class FernGoldensBoundaryTests(unittest.TestCase):
     def tearDown(self) -> None:
         self.temporary.cleanup()
 
-    def write_manifest(self, *, alpha_url: str = "https://example.test/alpha/openapi.json") -> None:
+    def write_manifest(
+        self,
+        *,
+        alpha_ref: str = "1",
+        alpha_url: str = "https://example.test/alpha/openapi.json",
+    ) -> None:
         manifest = f"""\
         # Corpus
 
         | # | name | method | source | pinned ref | license | decision | shapes |
         |---:|---|---|---|---|---|---|---|
-        | 1 | `alpha` | test | {alpha_url} | `1` | MIT | link-ok | alpha |
+        | 1 | `alpha` | test | {alpha_url} | `{alpha_ref}` | MIT | link-ok | alpha |
         | 2 | `beta` | test | https://example.test/beta/openapi.json | `1` | MIT | link-ok | beta |
         | 3 | `new-fixture` | test | https://example.test/new-fixture/openapi.json | `1` | MIT | link-ok | new |
 
@@ -193,6 +198,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         self.assertIn("1 generated, 0 current, 0 failed", first.stdout)
         self.assertEqual(self.state("alpha")["fern_python_sdk_version"], "4.9.0")
         self.assertEqual(self.state("alpha")["corpus_spec_name"], "alpha")
+        self.assertEqual(self.state("alpha")["corpus_spec_ref"], "1")
         self.assertEqual(
             self.state("alpha")["corpus_spec_url"],
             "https://example.test/alpha/openapi.json",
@@ -230,7 +236,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             (self.root / ".local" / "fern-goldens" / "generated-goldens.tar.gz").exists()
         )
 
-    def test_latest_tag_and_spec_identity_change_regenerate(self) -> None:
+    def test_latest_tag_and_every_spec_identity_change_regenerate(self) -> None:
         latest = self.run_tool("latest-version", check=True)
         self.assertEqual(latest.stdout, "4.10.0\n")
         self.run_tool("generate", "--fixture", "alpha", check=True)
@@ -242,10 +248,40 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             self.state("alpha")["corpus_spec_url"],
             "https://example.test/alpha/replacement.yaml",
         )
+        self.write_manifest(
+            alpha_ref="2",
+            alpha_url="https://example.test/alpha/replacement.yaml",
+        )
+        self.run_tool("generate", "--fixture", "alpha", check=True)
+        self.assertEqual(len(self.calls()), 3)
+        self.assertEqual(self.state("alpha")["corpus_spec_ref"], "2")
         self.assertTrue(
             (self.root / ".local" / "corpus" / "alpha" / "openapi.json").is_file()
         )
         self.assertTrue(all("fetch-corpus --fixture alpha" in call for call in self.fetch_calls()))
+
+    def test_incomplete_exact_state_is_not_treated_as_current(self) -> None:
+        self.run_tool(
+            "generate", "--version", "4.9.0", "--fixture", "alpha", check=True
+        )
+        generated = (
+            self.root
+            / "tests"
+            / "fixtures"
+            / "alpha"
+            / "expected"
+            / "src"
+            / "fern"
+            / "version.py"
+        )
+        generated.unlink()
+
+        repaired = self.run_tool(
+            "generate", "--version", "4.9.0", "--fixture", "alpha", check=True
+        )
+        self.assertIn("1 generated, 0 current", repaired.stdout)
+        self.assertEqual(len(self.calls()), 2)
+        self.assertTrue(generated.is_file())
 
     def test_shared_fetch_command_uses_canonical_cache_and_reuses_it(self) -> None:
         destination = Path(self.temporary.name) / "corpus-cache"
