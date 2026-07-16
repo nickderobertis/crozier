@@ -83,6 +83,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             #!/usr/bin/env python3
             import os
             import pathlib
+            import signal
             import sys
 
             args = sys.argv[1:]
@@ -102,33 +103,39 @@ class FernGoldensBoundaryTests(unittest.TestCase):
                 raise SystemExit(0)
 
             root = pathlib.Path(os.environ["CROZIER_FERN_GOLDENS_ROOT"])
-            managed = os.environ.get("CROZIER_DIFF_CORPORA", "").split(",")
+            fixture = os.environ.get("CROZIER_DIFF_CORPUS", "")
             expected_managed = sorted(
                 path.name
                 for path in (root / "tests" / "fixtures").iterdir()
                 if (path / "expected").is_dir()
             )
-            if managed != expected_managed:
-                print(f"exact managed-corpus filter was not set: {managed}")
+            if fixture not in expected_managed:
+                print(f"exact per-corpus filter was not set: {fixture!r}")
                 raise SystemExit(8)
-            (root / ".compare-scope").write_text(",".join(managed), encoding="utf-8")
+            if os.environ.get("CROZIER_DIFF_SUMMARY_ONLY") != "1":
+                print("comparison did not request bounded summary mode")
+                raise SystemExit(9)
+            with (root / ".compare-calls").open("a", encoding="utf-8") as calls:
+                calls.write(fixture + "\n")
             mode = os.environ.get("COMPARE_MODE", "green")
-            if mode == "infrastructure":
+            if mode == "terminated" and fixture == "alpha":
+                os.kill(os.getpid(), signal.SIGTERM)
+            if mode == "infrastructure" and fixture == "alpha":
                 print("comparison crashed")
                 raise SystemExit(7)
             if mode == "diff":
-                print("=== alpha ===\n--- src/fern/a.py ---\n- Fern\n+ Crozier")
-                print("=== beta ===\n--- src/fern/b.py ---\n- Fern\n+ Crozier")
+                print(f"=== {fixture} ===\n--- src/fern/{fixture}.py ---")
+                print("  Normalized text differs; unified diff omitted in summary mode.")
                 print("0 comparison generation failure(s) across the reported corpora.")
                 print("0 comparison processing failure(s) across the reported corpora.")
-                print("2 differing file(s) across the reported corpora.")
-            elif mode == "generation-failure":
-                print("=== alpha ===\n  Crozier generation failed: synthetic")
+                print("1 differing file(s) across the reported corpora.")
+            elif mode == "generation-failure" and fixture == "alpha":
+                print(f"=== {fixture} ===\n  Crozier generation failed: synthetic")
                 print("1 comparison generation failure(s) across the reported corpora.")
                 print("0 comparison processing failure(s) across the reported corpora.")
                 print("0 differing file(s) across the reported corpora.")
-            elif mode == "processing-failure":
-                print("=== new-fixture ===\n  Comparison setup failed: not registered")
+            elif mode == "processing-failure" and fixture == "new-fixture":
+                print(f"=== {fixture} ===\n  Comparison setup failed: not registered")
                 print("0 comparison generation failure(s) across the reported corpora.")
                 print("1 comparison processing failure(s) across the reported corpora.")
                 print("0 differing file(s) across the reported corpora.")
@@ -214,6 +221,10 @@ class FernGoldensBoundaryTests(unittest.TestCase):
 
     def fetch_calls(self) -> list[str]:
         path = self.root / ".fetch-calls"
+        return path.read_text(encoding="utf-8").splitlines() if path.exists() else []
+
+    def compare_calls(self) -> list[str]:
+        path = self.root / ".compare-calls"
         return path.read_text(encoding="utf-8").splitlines() if path.exists() else []
 
     def state(self, fixture: str) -> dict[str, str]:
@@ -479,12 +490,20 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         self.assertEqual(green.returncode, 0)
         self.assertNotIn("comparison generation failure(s)", green.stdout)
         self.assertEqual(green.stdout.count("Fern comparison summary:"), 1)
+        self.assertEqual(green.stdout.count("\n"), 1)
+        self.assertIn("comparing 1/2 alpha", green.stderr)
+        self.assertIn("comparing 2/2 beta", green.stderr)
+        self.assertNotIn("compared 2/2 beta", green.stdout + green.stderr)
 
         differing = self.run_tool("compare", COMPARE_MODE="diff")
         self.assertEqual(differing.returncode, 1)
-        self.assertIn("=== alpha ===", differing.stdout)
-        self.assertIn("=== beta ===", differing.stdout)
         self.assertIn("2 differing files", differing.stdout)
+        comparison_log = (
+            self.root / ".local" / "fern-goldens" / "comparison.log"
+        ).read_text(encoding="utf-8")
+        self.assertIn("=== alpha ===", comparison_log)
+        self.assertIn("=== beta ===", comparison_log)
+        self.assertIn("unified diff omitted in summary mode", comparison_log)
 
         failed = self.run_tool("compare", COMPARE_MODE="generation-failure")
         self.assertEqual(failed.returncode, 1)
@@ -506,8 +525,8 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         self.assertEqual(compared.returncode, 1)
         self.assertIn("1 comparison processing failures", compared.stdout)
         self.assertEqual(
-            (self.root / ".compare-scope").read_text(encoding="utf-8"),
-            "alpha,beta,new-fixture",
+            self.compare_calls()[-3:],
+            ["alpha", "beta", "new-fixture"],
         )
 
     def test_publish_success_before_red_then_fixed_current_rerun_is_green(self) -> None:
@@ -524,8 +543,10 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         self.assertEqual(generation.returncode, 0)
         self.assertEqual(self.state("alpha")["fern_python_sdk_version"], "4.9.0")
         self.assertEqual(self.state("beta")["fern_python_sdk_version"], "4.9.0")
-        comparison = self.run_tool("compare", COMPARE_MODE="diff")
-        self.assertEqual(comparison.returncode, 1)
+        report = self.root / ".local" / "fern-goldens"
+        self.assertTrue((report / "generation-summary.txt").is_file())
+        self.assertTrue((report / "generated-goldens.tar.gz").is_file())
+        self.assertEqual(self.compare_calls(), [])
         self.run_tool("publish", "--branch", "goldens/test", check=True)
         remote_subject = subprocess.run(
             ["git", f"--git-dir={remote}", "log", "-1", "--format=%s", "goldens/test"],
@@ -534,13 +555,19 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             check=True,
         ).stdout.strip()
         self.assertEqual(remote_subject, "test(fixtures): refresh Fern goldens at 4.9.0")
+        comparison = self.run_tool("compare", COMPARE_MODE="diff")
+        self.assertEqual(comparison.returncode, 1)
         red = self.run_tool(
             "result",
             "--generation",
             "success",
+            "--publication",
+            "success",
+            "--generation-evidence",
+            "success",
             "--comparison",
             "failure",
-            "--publication",
+            "--comparison-evidence",
             "success",
         )
         self.assertEqual(red.returncode, 1)
@@ -566,9 +593,13 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             "result",
             "--generation",
             "success",
+            "--publication",
+            "success",
+            "--generation-evidence",
+            "success",
             "--comparison",
             "success",
-            "--publication",
+            "--comparison-evidence",
             "success",
         )
         self.assertEqual(green.returncode, 0)
@@ -586,8 +617,8 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             FAIL_FIXTURES="beta",
         )
         self.assertEqual(generation.returncode, 1)
-        self.run_tool("compare", COMPARE_MODE="green", check=True)
         self.run_tool("publish", "--branch", "goldens/test", check=True)
+        self.run_tool("compare", COMPARE_MODE="green", check=True)
 
         alpha_state = subprocess.run(
             [
@@ -617,12 +648,66 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             "result",
             "--generation",
             "failure",
+            "--publication",
+            "success",
+            "--generation-evidence",
+            "success",
             "--comparison",
             "success",
-            "--publication",
+            "--comparison-evidence",
             "success",
         )
         self.assertEqual(final.returncode, 1)
+
+    def test_published_outputs_survive_terminated_comparison_process(self) -> None:
+        remote, _ = self.initialize_remote()
+        generation = self.run_tool(
+            "generate",
+            "--version",
+            "4.9.0",
+            "--fixture",
+            "alpha",
+            "--fixture",
+            "beta",
+            check=True,
+        )
+        self.assertIn("2 generated", generation.stdout)
+        report = self.root / ".local" / "fern-goldens"
+        self.assertTrue((report / "generation-summary.txt").is_file())
+        self.assertTrue((report / "generated-goldens.tar.gz").is_file())
+        self.assertEqual(self.compare_calls(), [])
+
+        self.run_tool("publish", "--branch", "goldens/test", check=True)
+        published_alpha = subprocess.run(
+            [
+                "git",
+                f"--git-dir={remote}",
+                "show",
+                f"goldens/test:tests/fixtures/alpha/expected/{STATE}",
+            ],
+            text=True,
+            capture_output=True,
+            check=True,
+        ).stdout
+        self.assertEqual(json.loads(published_alpha)["fern_python_sdk_version"], "4.9.0")
+
+        comparison = self.run_tool("compare", COMPARE_MODE="terminated")
+        self.assertEqual(comparison.returncode, 1)
+        self.assertIn("1 comparison processing failures", comparison.stdout)
+        self.assertIn("terminated by signal 15", comparison.stderr)
+        self.assertEqual(self.compare_calls(), ["alpha", "beta"])
+        still_published = subprocess.run(
+            [
+                "git",
+                f"--git-dir={remote}",
+                "show",
+                f"goldens/test:tests/fixtures/alpha/expected/{STATE}",
+            ],
+            text=True,
+            capture_output=True,
+            check=True,
+        ).stdout
+        self.assertEqual(still_published, published_alpha)
 
     def test_publish_refuses_remote_advance_without_commit_or_force(self) -> None:
         remote, baseline = self.initialize_remote()

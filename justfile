@@ -192,15 +192,19 @@ test-fern-goldens:
 fixtures-candidates corpus="":
     #!/usr/bin/env bash
     set -uo pipefail
-    out=$(CROZIER_CANDIDATES_CORPUS="{{corpus}}" \
-      cargo test --locked --test e2e -- --ignored --nocapture report_matched_candidates 2>&1)
-    if grep -q 'candidate file(s) across all corpora' <<<"$out"; then
+    out=$(mktemp "${TMPDIR:-/tmp}/crozier-fixtures-candidates.XXXXXX")
+    trap 'rm -f "$out"' EXIT
+    status=0
+    CROZIER_CANDIDATES_CORPUS="{{corpus}}" \
+      cargo test --locked --test e2e -- --ignored --nocapture report_matched_candidates \
+      >"$out" 2>&1 || status=$?
+    if [ "$status" -eq 0 ] && grep -q 'candidate file(s) across all corpora' "$out"; then
       # Quiet on success: print only the report the user asked for, not cargo's
       # build/test scaffolding — from the first corpus header through the summary.
-      awk '/^=== /{p=1} p; /candidate file\(s\) across all corpora/{p=0}' <<<"$out"
+      awk '/^=== /{p=1} p; /candidate file\(s\) across all corpora/{p=0}' "$out"
     else
       # Drift (test renamed → 0 tests run) or a failed self-check: surface it all.
-      echo "$out" >&2
+      cat "$out" >&2
       echo "fixtures-candidates: no report from report_matched_candidates — renamed/removed in tests/e2e.rs, or its self-check failed" >&2
       exit 1
     fi
@@ -217,15 +221,19 @@ fixtures-candidates corpus="":
 fixtures-diff corpus="" file="":
     #!/usr/bin/env bash
     set -uo pipefail
-    out=$(CROZIER_DIFF_CORPUS="{{corpus}}" CROZIER_DIFF_FILE="{{file}}" \
-      cargo test --locked --test e2e -- --ignored --nocapture report_fixture_diffs 2>&1)
-    if grep -q 'differing file(s) across the reported corpora' <<<"$out"; then
+    out=$(mktemp "${TMPDIR:-/tmp}/crozier-fixtures-diff.XXXXXX")
+    trap 'rm -f "$out"' EXIT
+    status=0
+    CROZIER_DIFF_CORPUS="{{corpus}}" CROZIER_DIFF_FILE="{{file}}" \
+      cargo test --locked --test e2e -- --ignored --nocapture report_fixture_diffs \
+      >"$out" 2>&1 || status=$?
+    if [ "$status" -eq 0 ] && grep -q 'differing file(s) across the reported corpora' "$out"; then
       # Quiet on success: print only the report (corpus headers, diffs, summary),
       # not cargo's build/test scaffolding.
-      awk '/^=== /{p=1} p; /differing file\(s\) across the reported corpora/{p=0}' <<<"$out"
+      awk '/^=== /{p=1} p; /differing file\(s\) across the reported corpora/{p=0}' "$out"
     else
       # Drift (test renamed → 0 tests run) or a bad-corpus/broken-walk assertion.
-      echo "$out" >&2
+      cat "$out" >&2
       echo "fixtures-diff: no report from report_fixture_diffs — renamed/removed in tests/e2e.rs, or the corpus filter matched nothing" >&2
       exit 1
     fi

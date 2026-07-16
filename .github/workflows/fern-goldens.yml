@@ -20,14 +20,20 @@ concurrency:
   group: fern-goldens-${{ github.repository }}-${{ github.ref }}
   cancel-in-progress: false
 
-# The workflow only reads the public corpus/generator distribution and writes a
-# normal commit to the branch selected in the workflow_dispatch UI.
+# Read-only is the workflow default. Only the generation/publication job can
+# write the selected branch with a normal commit.
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  refresh:
+  generate_publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      generation: ${{ steps.generation.outcome }}
+      publication: ${{ steps.publication.outcome }}
+      generation_evidence: ${{ steps.generation_evidence.outcome }}
     steps:
       - name: Require a branch dispatch
         env:
@@ -73,28 +79,9 @@ jobs:
           fi
           just fern-goldens-generate "${args[@]}"
 
-      - name: Compare every available golden without fail-fast
-        id: comparison
-        continue-on-error: true
-        run: just fern-goldens-compare
-
-      # Logs, aggregate summaries, a deterministic archive of successful output,
-      # and a patch are retained even when a sibling generation or comparison fails.
-      - name: Upload generation and comparison evidence
-        id: artifacts
-        if: always()
-        continue-on-error: true
-        uses: actions/upload-artifact@v4
-        with:
-          name: fern-goldens-${{ github.run_id }}-${{ github.run_attempt }}
-          path: .local/fern-goldens/
-          include-hidden-files: true
-          if-no-files-found: error
-          retention-days: 14
-
       # Publish complete successful fixtures regardless of sibling failures or
-      # Crozier differences. The tool stages only successful expected/ trees,
-      # verifies origin still equals this checkout, and performs a normal push.
+      # later comparison termination. The tool stages only successful expected/
+      # trees, verifies origin still equals this checkout, and performs a normal push.
       - name: Publish successful Fern goldens
         id: publication
         if: always()
@@ -106,21 +93,90 @@ jobs:
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           just fern-goldens-publish "$BRANCH"
 
-      # Defer the red status until evidence is uploaded and every safe successful
-      # output has had its normal fast-forward publication attempt.
-      - name: Apply final status
+      # Persist generation evidence before the comparison job starts. Artifact v4
+      # archives are immutable, so comparison gets a separate later artifact.
+      - name: Upload generation evidence
+        id: generation_evidence
         if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: fern-goldens-generation-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .local/fern-goldens/fern-version.txt
+            .local/fern-goldens/generated.txt
+            .local/fern-goldens/current.txt
+            .local/fern-goldens/generation-failures.txt
+            .local/fern-goldens/generation-summary.txt
+            .local/fern-goldens/generation-logs/
+            .local/fern-goldens/generated-goldens.tar.gz
+            .local/fern-goldens/fern-goldens.patch
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+
+  compare:
+    needs: generate_publish
+    if: always()
+    runs-on: ubuntu-latest
+    outputs:
+      comparison: ${{ steps.comparison.outcome }}
+      comparison_evidence: ${{ steps.comparison_evidence.outcome }}
+    steps:
+      # Resolve the branch again after publication so comparison sees the exact
+      # fast-forwarded goldens when publication succeeded.
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - uses: extractions/setup-just@v2
+
+      - name: Install pinned ruff
+        run: ./scripts/install-ruff.sh
+
+      - name: Compare every available golden without fail-fast
+        id: comparison
+        continue-on-error: true
+        run: just fern-goldens-compare
+
+      - name: Upload comparison evidence
+        id: comparison_evidence
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: fern-goldens-comparison-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .local/fern-goldens/comparison-summary.txt
+            .local/fern-goldens/comparison.log
+            .local/fern-goldens/comparison-fetch-failures.txt
+            .local/fern-goldens/comparison-processing-failures.txt
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+
+  final_status:
+    needs: [generate_publish, compare]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: extractions/setup-just@v2
+
+      # Defer red status until early publication, required evidence phases, and
+      # the isolated best-effort comparison have all had their attempt.
+      - name: Apply final status
         env:
-          GENERATION: ${{ steps.generation.outcome }}
-          COMPARISON: ${{ steps.comparison.outcome }}
-          PUBLICATION: ${{ steps.publication.outcome }}
-          ARTIFACTS: ${{ steps.artifacts.outcome }}
+          GENERATION: ${{ needs.generate_publish.outputs.generation }}
+          PUBLICATION: ${{ needs.generate_publish.outputs.publication }}
+          GENERATION_EVIDENCE: ${{ needs.generate_publish.outputs.generation_evidence }}
+          COMPARISON: ${{ needs.compare.outputs.comparison }}
+          COMPARISON_EVIDENCE: ${{ needs.compare.outputs.comparison_evidence }}
         run: |
-          if [ "$ARTIFACTS" != success ]; then
-            echo "::error::artifact publication did not succeed ($ARTIFACTS)" >&2
-            exit 1
-          fi
           just fern-goldens-result \
             --generation "$GENERATION" \
+            --publication "$PUBLICATION" \
+            --generation-evidence "$GENERATION_EVIDENCE" \
             --comparison "$COMPARISON" \
-            --publication "$PUBLICATION"
+            --comparison-evidence "$COMPARISON_EVIDENCE"
