@@ -93,14 +93,16 @@ jobs:
           FERN_VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.fern-version || '' }}
           FIXTURES: ${{ github.event_name == 'workflow_dispatch' && inputs.fixtures || '' }}
         run: |
-          args=()
+          # Unlike an empty array, "$@" expands safely to zero arguments under
+          # the macOS runner's Bash 3.2 when GitHub enables `set -u`.
+          set --
           if [ -n "$FERN_VERSION" ]; then
-            args+=(--version "$FERN_VERSION")
+            set -- "$@" --version "$FERN_VERSION"
           fi
           if [ -n "$FIXTURES" ]; then
-            args+=(--fixtures "$FIXTURES")
+            set -- "$@" --fixtures "$FIXTURES"
           fi
-          just fern-goldens-generate "${args[@]}"
+          just fern-goldens-generate "$@"
 
       # Publish complete successful fixtures regardless of sibling failures or
       # later comparison termination. The tool stages only successful expected/

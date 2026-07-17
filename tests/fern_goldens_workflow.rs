@@ -213,9 +213,13 @@ fn fern_goldens_workflow_is_valid_branch_safe_and_least_privilege() {
         .get("run")
         .and_then(Value::as_str)
         .expect("generation command");
-    assert!(generation_run.contains("args+=(--version \"$FERN_VERSION\")"));
-    assert!(generation_run.contains("args+=(--fixtures \"$FIXTURES\")"));
-    assert!(generation_run.contains("fern-goldens-generate \"${args[@]}\""));
+    assert!(generation_run.contains("set -- \"$@\" --version \"$FERN_VERSION\""));
+    assert!(generation_run.contains("set -- \"$@\" --fixtures \"$FIXTURES\""));
+    assert!(generation_run.contains("fern-goldens-generate \"$@\""));
+    assert!(
+        !generation_run.contains("${args[@]}"),
+        "Bash 3.2 treats an empty array expansion as unbound under set -u"
+    );
 
     let publication_env = nested_mapping(publication, "env");
     assert_eq!(
