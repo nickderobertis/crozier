@@ -4190,7 +4190,13 @@ fn member_fields(
         {
             let base_required: Vec<&str> = base.required.iter().map(String::as_str).collect();
             let base_name = member.reference.as_deref().map(ref_to_class);
-            append_member_fields(base, "", &base_required, base_name.as_deref(), &mut fields);
+            append_member_fields(
+                base,
+                discriminant,
+                &base_required,
+                base_name.as_deref(),
+                &mut fields,
+            );
         } else {
             append_member_fields(member, discriminant, &required, None, &mut fields);
         }

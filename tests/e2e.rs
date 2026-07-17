@@ -15857,6 +15857,24 @@ fn referenced_unknown_response_keeps_empty_body_guard() {
 }
 
 #[test]
+fn inherited_union_discriminants_are_not_duplicated_in_wrappers() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Exchange API, version: 1.0.0 }\npaths: {}\ncomponents:\n  schemas:\n    AbstractExchange:\n      type: object\n      required: [type]\n      properties:\n        type: { type: string, enum: [reqRespPair, unidirEvent] }\n    RequestResponsePair:\n      type: object\n      allOf:\n        - type: object\n          required: [request]\n          properties:\n            request: { type: string }\n        - { $ref: '#/components/schemas/AbstractExchange' }\n    UnidirectionalEvent:\n      type: object\n      allOf:\n        - type: object\n          required: [eventMessage]\n          properties:\n            eventMessage: { type: string }\n        - { $ref: '#/components/schemas/AbstractExchange' }\n    Exchange:\n      oneOf:\n        - { $ref: '#/components/schemas/RequestResponsePair' }\n        - { $ref: '#/components/schemas/UnidirectionalEvent' }\n      discriminator:\n        propertyName: type\n        mapping:\n          reqRespPair: '#/components/schemas/RequestResponsePair'\n          unidirEvent: '#/components/schemas/UnidirectionalEvent'\n",
+    );
+    let exchange = std::fs::read_to_string(out.join("src/acme/types/exchange.py"))
+        .expect("discriminated union is generated");
+    assert_eq!(
+        exchange.matches("\n    type:").count(),
+        2,
+        "each wrapper should contain only its literal discriminator: {exchange}"
+    );
+    assert!(
+        !exchange.contains("AbstractExchangeType"),
+        "the inherited enum discriminator must not be re-added: {exchange}"
+    );
+}
+
+#[test]
 fn binary_success_responses_stream_bytes() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/{id}/download:\n    \
