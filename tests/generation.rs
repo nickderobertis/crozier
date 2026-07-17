@@ -116,6 +116,7 @@ components:
         - red
         - green
     Shape:
+      description: A documented union.
       oneOf:
         - $ref: "#/components/schemas/Owner"
         - type: string
@@ -190,7 +191,9 @@ from .owner import Owner
 #[test]
 fn union_alias_and_scalar_alias_render() {
     let files = render(RICH_SPEC);
-    assert!(files["src/acme/types/shape.py"].contains("Shape = typing.Union[Owner, str]"));
+    let shape = &files["src/acme/types/shape.py"];
+    assert!(shape.contains("Shape = typing.Union[Owner, str]"));
+    assert!(!shape.contains("A documented union."), "{shape}");
     assert!(files["src/acme/types/alias.py"].contains("Alias = str"));
 }
 

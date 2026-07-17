@@ -2562,9 +2562,11 @@ fn render_type_decl(
             imports.cur_module = alias.module.clone();
             let target = render_type(&alias.target, &mut imports);
             let assignment = format!("{} = {}", alias.name, target.flat());
-            let docstring = alias
-                .docstring
-                .as_deref()
+            // Fern 5.20 drops descriptions from union aliases while preserving
+            // them for scalar and collection aliases.
+            let docstring = (!matches!(alias.target, TypeRef::Union(_)))
+                .then_some(alias.docstring.as_deref())
+                .flatten()
                 .map(|doc| format!("{}\n", render_docstring(doc, 0)))
                 .unwrap_or_default();
             if !forward.is_empty() {
