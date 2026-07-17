@@ -68,6 +68,21 @@ pub struct Environment {
     pub enum_name: String,
     /// The single emitted member: (member name, URL value).
     pub member: (String, String),
+    /// The original URL template, retained for constructor-time variable overrides.
+    pub url_template: String,
+    /// Server URL variables exposed as optional root-client constructor parameters.
+    pub variables: Vec<ServerUrlVariable>,
+}
+
+/// One variable from the first server URL template.
+#[derive(Debug, Clone)]
+pub struct ServerUrlVariable {
+    /// The OpenAPI placeholder spelling used by Python's `str.format`.
+    pub wire_name: String,
+    /// The generated Python constructor parameter spelling.
+    pub py_name: String,
+    /// The OpenAPI default, used in the generated parameter documentation.
+    pub default: String,
 }
 
 impl Environment {
@@ -114,6 +129,16 @@ fn environment_model(doc: &OpenApi, client_name: &str) -> Option<Environment> {
     Some(Environment {
         enum_name: format!("{client_name}Environment"),
         member: (member_name, resolve_server_url(first)),
+        url_template: first.url.clone(),
+        variables: first
+            .variables
+            .iter()
+            .map(|(name, variable)| ServerUrlVariable {
+                wire_name: name.clone(),
+                py_name: naming::to_snake_case(name),
+                default: variable.default.clone(),
+            })
+            .collect(),
     })
 }
 

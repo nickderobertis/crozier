@@ -3723,6 +3723,17 @@ paths:
         client.contains("def _get_base_url(*, base_url: typing.Optional[str] = None, environment:"),
         "{client}"
     );
+    assert!(
+        client.contains("region : typing.Optional[str]\n        Server URL variable for 'region'. Defaults to 'us-east'.")
+            && client.contains("version : typing.Optional[str]\n        Server URL variable for 'version'. Defaults to 'v2'.")
+            && client.contains("if region is not None or version is not None:")
+            && client.contains("_region = region if region is not None else \"us-east\"")
+            && client.contains("_version = version if version is not None else \"v2\"")
+            && client.contains(
+                "base_url = \"https://{region}.example.com/{version}\".format(region=_region, version=_version)"
+            ),
+        "all server variables should be documented and resolved together: {client}"
+    );
 }
 
 #[test]

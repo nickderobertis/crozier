@@ -16442,6 +16442,30 @@ fn relative_server_paths_use_the_default_environment_member() {
 }
 
 #[test]
+fn server_url_variables_are_exposed_by_the_root_client() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\nservers:\n  - url: https://api.example.com/{basePath}\n    variables:\n      basePath: { default: v1 }\npaths:\n  /widgets:\n    get:\n      operationId: listWidgets\n      responses:\n        '200': { description: OK }\n",
+    );
+    let client =
+        std::fs::read_to_string(out.join("src/acme/client.py")).expect("root client is generated");
+    assert!(
+        client.contains(
+            "base_path : typing.Optional[str]\n        Server URL variable for 'basePath'. Defaults to 'v1'."
+        ) && client.matches("base_path: typing.Optional[str] = None").count() == 2
+            && client.matches("if base_path is not None:").count() == 2
+            && client.matches("_base_path = base_path if base_path is not None else \"v1\"").count()
+                == 2
+            && client
+                .matches(
+                    "base_url = \"https://api.example.com/{basePath}\".format(basePath=_base_path)"
+                )
+                .count()
+                == 2,
+        "sync and async root clients should expose and apply the server URL variable: {client}"
+    );
+}
+
+#[test]
 fn multiline_parameter_docs_remain_indented() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    get:\n      \

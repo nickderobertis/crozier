@@ -4313,10 +4313,16 @@ fn root_client_class(
         "str"
     };
     let env_doc = e.as_ref().map_or_else(String::new, |e| e.doc.clone());
+    let server_variable_doc = e
+        .as_ref()
+        .map_or_else(String::new, |e| e.server_variable_doc.clone());
     let base_url_ctor = e.as_ref().map_or_else(
         || "        base_url: str,\n".to_string(),
         |e| e.ctor.clone(),
     );
+    let server_variable_init = e
+        .as_ref()
+        .map_or_else(String::new, |e| e.server_variable_init.clone());
     let wrapper_base_url = e.as_ref().map_or_else(
         || "base_url".to_string(),
         |_| "_get_base_url(base_url=base_url, environment=environment)".to_string(),
@@ -4390,7 +4396,9 @@ fn root_client_class(
         example_line: a.example_line,
         base_url_doc_ty: base_url_doc_ty.to_string(),
         env_doc,
+        server_variable_doc,
         base_url_ctor,
+        server_variable_init,
         wrapper_base_url,
         example_base_url: if e.is_some() {
             String::new()
@@ -4469,8 +4477,12 @@ struct RootClientView {
     base_url_doc_ty: String,
     /// The `environment` docstring `Parameters` block (empty without environments).
     env_doc: String,
+    /// Root-client parameter documentation for variables in the first server URL.
+    server_variable_doc: String,
     /// The `base_url` (and `environment`) constructor parameter line(s).
     base_url_ctor: String,
+    /// Constructor statements that apply explicitly supplied server URL variables.
+    server_variable_init: String,
     /// The value passed to the client wrapper's `base_url` (`base_url`, or a
     /// `_get_base_url(...)` call with environments).
     wrapper_base_url: String,
@@ -4501,12 +4513,67 @@ struct RootClientView {
 struct EnvClientParts {
     doc: String,
     ctor: String,
+    server_variable_doc: String,
+    server_variable_init: String,
 }
 
 impl EnvClientParts {
     fn new(e: &crate::ir::Environment) -> Self {
         let enum_name = &e.enum_name;
         let default = e.default_ref();
+        let server_variable_doc = e
+            .variables
+            .iter()
+            .map(|variable| {
+                format!(
+                    "    {} : typing.Optional[str]\n        Server URL variable for '{}'. Defaults to '{}'.\n\n",
+                    variable.py_name,
+                    variable.wire_name,
+                    python_doc_line(&variable.default)
+                )
+            })
+            .collect();
+        let variable_ctor: String = e
+            .variables
+            .iter()
+            .map(|variable| {
+                format!(
+                    "        {}: typing.Optional[str] = None,\n",
+                    variable.py_name
+                )
+            })
+            .collect();
+        let format_args = e
+            .variables
+            .iter()
+            .map(|variable| format!("{}=_{}", variable.wire_name, variable.py_name))
+            .collect::<Vec<_>>()
+            .join(", ");
+        let server_variable_init = if e.variables.is_empty() {
+            String::new()
+        } else {
+            let condition = e
+                .variables
+                .iter()
+                .map(|variable| format!("{} is not None", variable.py_name))
+                .collect::<Vec<_>>()
+                .join(" or ");
+            let defaults: String = e
+                .variables
+                .iter()
+                .map(|variable| {
+                    format!(
+                        "            _{name} = {name} if {name} is not None else \"{default}\"\n",
+                        name = variable.py_name,
+                        default = escape_py_str(&variable.default),
+                    )
+                })
+                .collect();
+            format!(
+                "        if {condition}:\n{defaults}            base_url = \"{url}\".format({format_args})\n",
+                url = escape_py_str(&e.url_template),
+            )
+        };
         EnvClientParts {
             // Fern's docstring here leaks the import statement onto the description
             // line and pads the block with blank lines; reproduced verbatim.
@@ -4514,8 +4581,10 @@ impl EnvClientParts {
                 "    environment : {enum_name}\n        The environment to use for requests from the client. from .environment import {enum_name}\n\n\n\n        Defaults to {default}\n\n\n\n"
             ),
             ctor: format!(
-                "        base_url: typing.Optional[str] = None,\n        environment: {enum_name} = {default},\n"
+                "        base_url: typing.Optional[str] = None,\n        environment: {enum_name} = {default},\n{variable_ctor}"
             ),
+            server_variable_doc,
+            server_variable_init,
         }
     }
 }
@@ -6971,7 +7040,9 @@ mod tests {
             example_line: "        token=\"YOUR_TOKEN\",\n".to_string(),
             base_url_doc_ty: "str".to_string(),
             env_doc: String::new(),
+            server_variable_doc: String::new(),
             base_url_ctor: "        base_url: str,\n".to_string(),
+            server_variable_init: String::new(),
             wrapper_base_url: "base_url".to_string(),
             example_base_url: "        base_url=\"https://yourhost.com/path/to/api\",\n"
                 .to_string(),
