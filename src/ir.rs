@@ -765,6 +765,8 @@ pub struct QueryParam {
     /// in the `params` dict — true for an object/union type carrying field aliases,
     /// as Fern wraps an object-typed query parameter.
     pub convert: bool,
+    /// Whether an array value is serialized as one comma-separated query value.
+    pub comma_separated: bool,
     /// The parameter's `example` as a Python literal; when set, the parameter is
     /// shown in a worked snippet even if optional (`example_literal`).
     pub example: Option<String>,
@@ -1676,6 +1678,7 @@ fn build_endpoint(
                 type_ref,
                 required: p.required == Some(true),
                 convert,
+                comma_separated: p.explode == Some(false),
                 example,
                 example_is_scalar,
                 docstring: declared_doc(p.description.as_deref()),

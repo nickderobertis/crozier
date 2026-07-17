@@ -382,6 +382,10 @@ pub struct Parameter {
     /// Whether the parameter is required.
     #[serde(default)]
     pub required: Option<bool>,
+    /// Whether an array parameter is exploded into repeated values. Fern treats
+    /// explicit `false` as a comma-separated transport value.
+    #[serde(default)]
+    pub explode: Option<bool>,
     /// Human-readable description, surfaced in the method docstring.
     #[serde(default)]
     pub description: Option<String>,

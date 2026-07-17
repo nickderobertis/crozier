@@ -15408,13 +15408,15 @@ fn array_item_enums_hoist_to_tag_types() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    \
          get:\n      operationId: listWidgets\n      tags: [widgets]\n      parameters:\n        - name: \
-         status\n          in: query\n          required: false\n          schema:\n            type: array\n            \
+         status\n          in: query\n          required: false\n          explode: false\n          schema:\n            type: array\n            \
          items: { type: string, enum: [active, archived] }\n      responses:\n        '200':\n          \
          description: OK\n          content:\n            application/json:\n              schema:\n                \
          type: array\n                items: { type: string, enum: [public, private] }\n",
     );
     let client = std::fs::read_to_string(out.join("src/acme/widgets/client.py"))
         .expect("widgets client is generated");
+    let raw = std::fs::read_to_string(out.join("src/acme/widgets/raw_client.py"))
+        .expect("widgets raw client is generated");
     assert!(
         client.contains(
             "from .types.list_widgets_request_status_item import ListWidgetsRequestStatusItem"
@@ -15432,6 +15434,10 @@ fn array_item_enums_hoist_to_tag_types() {
         "query array item enums should use the named enum in scalar-or-sequence params: {client}"
     );
     assert!(
+        raw.contains("\",\".join(map(str, status)) if isinstance(status"),
+        "explode=false query arrays should serialize as one comma-separated value: {raw}"
+    );
+    assert!(
         client.contains("typing.List[ListWidgetsResponseItem]"),
         "response array item enums should use the named enum in return types: {client}"
     );
@@ -15439,9 +15445,9 @@ fn array_item_enums_hoist_to_tag_types() {
         std::fs::read_to_string(out.join("reference.md")).expect("reference.md is generated");
     assert!(
         reference.contains(
-            "**status:** `typing.Optional[\n    typing.Union[\n        ListWidgetsRequestStatusItem,\n        typing.Sequence[ListWidgetsRequestStatusItem],\n    ]\n]`"
+            "**status:** `typing.Optional[typing.Union[ListWidgetsRequestStatusItem, typing.Sequence[ListWidgetsRequestStatusItem]]]`"
         ),
-        "reference tables should wrap scalar-or-sequence array query annotations: {reference}"
+        "reference tables should preserve Fern 5.20's flat scalar-or-sequence annotation: {reference}"
     );
 }
 

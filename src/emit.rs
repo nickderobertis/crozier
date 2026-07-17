@@ -3348,7 +3348,12 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
     if !ep.query_params.is_empty() {
         lines.push("            params={".to_string());
         for qp in &ep.query_params {
-            if qp.convert {
+            if qp.comma_separated {
+                lines.push(format!(
+                    "                \"{}\": \",\".join(map(str, {})) if isinstance({}, (list, tuple, set)) else {},",
+                    qp.wire_name, qp.py_name, qp.py_name, qp.py_name
+                ));
+            } else if qp.convert {
                 imports.add_core("serialization", "convert_and_respect_annotation_metadata");
                 // Fern converts collections per element: a query
                 // `Sequence[Model]` passes `annotation=Model`, while a direct
@@ -7967,6 +7972,7 @@ mod tests {
             type_ref: TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
             required: true,
             convert: false,
+            comma_separated: true,
             example: None,
             example_is_scalar: false,
             docstring: None,
@@ -7977,7 +7983,12 @@ mod tests {
             out.contains("tag: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None"),
             "{out}"
         );
-        assert!(out.contains("\"tag\": tag,"), "{out}");
+        assert!(
+            out.contains(
+                "\"tag\": \",\".join(map(str, tag)) if isinstance(tag, (list, tuple, set)) else tag,"
+            ),
+            "{out}"
+        );
     }
 
     #[test]
@@ -7991,6 +8002,7 @@ mod tests {
             type_ref: TypeRef::Primitive(Prim::Datetime),
             required: false,
             convert: false,
+            comma_separated: false,
             example: None,
             example_is_scalar: false,
             docstring: None,
@@ -8567,6 +8579,7 @@ mod tests {
                 type_ref: TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
                 required: true,
                 convert: false,
+                comma_separated: false,
                 example: None,
                 example_is_scalar: false,
                 docstring: Some("Tags to include.".to_string()),
@@ -8577,6 +8590,7 @@ mod tests {
                 type_ref: TypeRef::Primitive(Prim::Int),
                 required: false,
                 convert: false,
+                comma_separated: false,
                 example: Some("3".to_string()),
                 example_is_scalar: true,
                 docstring: Some("Maximum results.".to_string()),
@@ -8680,6 +8694,7 @@ mod tests {
                 type_ref: TypeRef::Primitive(Prim::Str),
                 required: false,
                 convert: false,
+                comma_separated: false,
                 example: Some("\"active\"".to_string()),
                 example_is_scalar: true,
                 docstring: None,
@@ -8690,6 +8705,7 @@ mod tests {
                 type_ref: TypeRef::Primitive(Prim::Str),
                 required: false,
                 convert: false,
+                comma_separated: false,
                 example: Some("\"name\"".to_string()),
                 example_is_scalar: true,
                 docstring: None,
@@ -8700,6 +8716,7 @@ mod tests {
                 type_ref: TypeRef::Primitive(Prim::Int),
                 required: false,
                 convert: false,
+                comma_separated: false,
                 example: Some("1".to_string()),
                 example_is_scalar: true,
                 docstring: None,
@@ -8737,6 +8754,7 @@ mod tests {
             type_ref: TypeRef::Primitive(Prim::Str),
             required: true,
             convert: false,
+            comma_separated: false,
             example: None,
             example_is_scalar: true,
             docstring: Some("Starting cursor.".to_string()),
