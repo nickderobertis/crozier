@@ -139,6 +139,7 @@ impl Imports {
             Some(tag) if tag.is_empty() => match &self.loc {
                 RefLoc::RootTypes => format!(".{m}"),
                 RefLoc::TagTypes(_) => format!("...types.{m}"),
+                RefLoc::Client(module) if module.is_empty() => format!(".types.{m}"),
                 RefLoc::Client(_) | RefLoc::Errors => format!("..types.{m}"),
                 RefLoc::PackageRoot => format!(".types.{m}"),
             },
@@ -905,6 +906,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         for decl in decls {
             let forward = forward_map.get(decl.name()).unwrap_or(&empty_forward);
             let repair = repair_map.get(decl.name());
+            let empty_namespace = ir.empty_endpoint_namespace && *module == "_";
             let location = if module.is_empty() {
                 RefLoc::RootTypes
             } else {
@@ -920,11 +922,17 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 repair,
             )?;
             files.push(GeneratedFile {
-                path: PathBuf::from(format!("src/{pkg}/{module}/types/{}.py", decl.module())),
+                path: if empty_namespace {
+                    PathBuf::from(format!("src/{pkg}/types/{}.py", decl.module()))
+                } else {
+                    PathBuf::from(format!("src/{pkg}/{module}/types/{}.py", decl.module()))
+                },
                 contents: file,
             });
         }
-        files.push(tag_types_init_file(&env, pkg, module, decls)?);
+        if !(ir.empty_endpoint_namespace && *module == "_") {
+            files.push(tag_types_init_file(&env, pkg, module, decls)?);
+        }
     }
 
     // Fern's static core runtime, emitted verbatim (see assets/README.md), plus
@@ -947,6 +955,9 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     // a comment-only header (four blank lines once stripped) — unless the tag owns
     // hoisted inline types, in which case it is a lazy loader re-exporting them.
     for module in &ir.endpoint_modules {
+        if ir.empty_endpoint_namespace && module == "_" {
+            continue;
+        }
         if let Some(decls) = tag_type_modules.get(module.as_str()) {
             files.push(tag_pkg_init_file(&env, pkg, module, decls)?);
         } else {
@@ -964,7 +975,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         .collect();
     let root_emittable = !root_eps.is_empty() && root_eps.iter().all(|e| e.emittable);
     if root_emittable {
-        files.push(raw_client_file(&env, pkg, "", &root_eps, &tag_map)?);
+        files.push(raw_client_file(&env, pkg, "", &root_eps, &tag_map, false)?);
     }
 
     // Per-tag `raw_client.py` and `client.py`, but only for modules whose every
@@ -979,7 +990,11 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             .filter(|e| &e.module == module)
             .collect();
         if !eps.is_empty() && eps.iter().all(|e| e.emittable) {
-            files.push(raw_client_file(&env, pkg, module, &eps, &tag_map)?);
+            if ir.empty_endpoint_namespace && module == "_" {
+                emittable_modules.push(module);
+                continue;
+            }
+            files.push(raw_client_file(&env, pkg, module, &eps, &tag_map, false)?);
             let cx = ClientCtx {
                 pkg,
                 client_name: &ir.client_name,
@@ -990,6 +1005,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 has_environment: ir.environment.is_some(),
                 tag_types: &tag_map,
                 global_headers: &ir.global_headers,
+                empty_namespace: false,
             };
             files.push(client_file(&env, &cx, &eps)?);
             emittable_modules.push(module);
@@ -1034,6 +1050,56 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     }
     if root_emittable || !emittable_modules.is_empty() {
         files.push(root_init_file(&env, pkg, ir, &emittable_modules)?);
+    }
+
+    // Fern treats a leading-dot operationId (`.GetThing`) as an explicit empty
+    // endpoint namespace. Its empty tag package lands at the package root and is
+    // emitted after the ordinary root surface, so `client.py` and `__init__.py`
+    // are intentionally overwritten by the tag-client variants. Preserve that
+    // observable (if unusual) file collision for compatibility.
+    let empty_namespace_eps: Vec<&Endpoint> = ir
+        .endpoints
+        .iter()
+        .filter(|endpoint| endpoint.module == "_")
+        .collect();
+    let empty_namespace_emittable = ir.empty_endpoint_namespace
+        && !empty_namespace_eps.is_empty()
+        && empty_namespace_eps
+            .iter()
+            .all(|endpoint| endpoint.emittable);
+    if empty_namespace_emittable {
+        let mut empty_namespace_tag_map = tag_map.clone();
+        for name in &ir.empty_namespace_types {
+            empty_namespace_tag_map.insert(name.clone(), String::new());
+        }
+        files.push(raw_client_file(
+            &env,
+            pkg,
+            "",
+            &empty_namespace_eps,
+            &empty_namespace_tag_map,
+            true,
+        )?);
+        let cx = ClientCtx {
+            pkg,
+            client_name: &ir.client_name,
+            module: "",
+            types: &ir.types,
+            tag_decls: &ir.tag_types,
+            auth: &ir.auth,
+            has_environment: ir.environment.is_some(),
+            tag_types: &empty_namespace_tag_map,
+            global_headers: &ir.global_headers,
+            empty_namespace: true,
+        };
+        files.push(client_file(&env, &cx, &empty_namespace_eps)?);
+        let empty_namespace_types: Vec<&TypeDecl> = ir
+            .tag_types
+            .iter()
+            .filter(|decl| decl.module == "_")
+            .map(|decl| &decl.decl)
+            .collect();
+        files.push(tag_pkg_init_file(&env, pkg, "", &empty_namespace_types)?);
     }
 
     // Generated `README.md` (usage examples from the first endpoint) and the
@@ -4259,6 +4325,7 @@ fn root_client_methods(
         has_environment: true,
         tag_types: tag_map,
         global_headers,
+        empty_namespace: false,
     };
     let mut method_imports = Imports::at(RefLoc::PackageRoot, tag_map);
     let methods = endpoints
@@ -4614,6 +4681,8 @@ struct ClientCtx<'a> {
     has_environment: bool,
     tag_types: &'a BTreeMap<String, String>,
     global_headers: &'a [GlobalHeader],
+    /// Whether this tag client is Fern's explicit empty dotted namespace.
+    empty_namespace: bool,
 }
 
 /// Assemble a per-tag `client.py`: the sync and async high-level clients that
@@ -4832,8 +4901,15 @@ fn client_stream_docstring(
         documentation: false,
         reference: false,
     };
-    if let Some(ex_lines) = build_example(ep, is_async, cx.module, cx.pkg, cx.client_name, &mut ctx)
-    {
+    if let Some(ex_lines) = build_example(
+        ep,
+        is_async,
+        cx.module,
+        cx.pkg,
+        cx.client_name,
+        &mut ctx,
+        cx.empty_namespace,
+    ) {
         lines.push(String::new());
         lines.push("        Examples".to_string());
         lines.push("        --------".to_string());
@@ -4942,8 +5018,15 @@ fn client_binary_stream_docstring(
         documentation: false,
         reference: false,
     };
-    if let Some(ex_lines) = build_example(ep, is_async, cx.module, cx.pkg, cx.client_name, &mut ctx)
-    {
+    if let Some(ex_lines) = build_example(
+        ep,
+        is_async,
+        cx.module,
+        cx.pkg,
+        cx.client_name,
+        &mut ctx,
+        cx.empty_namespace,
+    ) {
         lines.push(String::new());
         lines.push("        Examples".to_string());
         lines.push("        --------".to_string());
@@ -5014,8 +5097,15 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
     };
     // With an example, one blank line separates the `Returns` block from
     // `Examples`; without one, close straight after (like the raw docstring).
-    if let Some(ex_lines) = build_example(ep, is_async, cx.module, cx.pkg, cx.client_name, &mut ctx)
-    {
+    if let Some(ex_lines) = build_example(
+        ep,
+        is_async,
+        cx.module,
+        cx.pkg,
+        cx.client_name,
+        &mut ctx,
+        cx.empty_namespace,
+    ) {
         lines.push(String::new());
         lines.push("        Examples".to_string());
         lines.push("        --------".to_string());
@@ -5887,6 +5977,7 @@ fn build_example(
     pkg: &str,
     client_name: &str,
     ctx: &mut ExampleCtx,
+    empty_namespace: bool,
 ) -> Option<Vec<String>> {
     build_example_inner(
         ep,
@@ -5899,6 +5990,7 @@ fn build_example(
         false,
         None,
         false,
+        empty_namespace,
     )
 }
 
@@ -5929,6 +6021,7 @@ fn build_documentation_example(
         true,
         environment,
         reference,
+        false,
     )
 }
 
@@ -5947,6 +6040,7 @@ fn build_example_inner(
     documentation: bool,
     environment: Option<&crate::ir::Environment>,
     reference: bool,
+    empty_namespace: bool,
 ) -> Option<Vec<String>> {
     if matches!(ep.request_body, Some(RequestBody::Bytes { .. }))
         || !endpoint_has_worked_example(ep)
@@ -6277,7 +6371,13 @@ fn build_example_inner(
     };
     // The call, rendered at logical indent 0 (sync) or 4 (inside `main`, async).
     let call_indent = if is_async { 4 } else { 0 };
-    let receiver = if module.is_empty() {
+    let receiver = if empty_namespace {
+        format!(
+            "{}client..{}",
+            if is_async { "await " } else { "" },
+            ep.method_name
+        )
+    } else if module.is_empty() {
         format!(
             "{}client.{}",
             if is_async { "await " } else { "" },
@@ -6409,7 +6509,16 @@ fn build_example_inner(
     if !ctx.has_environment {
         client_args.push("    base_url=\"https://yourhost.com/path/to/api\",".to_string());
     }
-    let client_block = if client_args.is_empty() {
+    let client_block = if empty_namespace && !client_args.is_empty() {
+        vec![format!(
+            "client = {example_name}({} )",
+            client_args
+                .iter()
+                .map(|argument| argument.trim())
+                .collect::<Vec<_>>()
+                .join(" ")
+        )]
+    } else if client_args.is_empty() {
         vec![format!("client = {example_name}()")]
     } else {
         let mut block = vec![format!("client = {example_name}(")];
@@ -6433,12 +6542,16 @@ fn build_example_inner(
     out.push(String::new());
     out.extend(client_block);
     if is_async {
-        out.push(String::new());
-        out.push(String::new());
+        if !empty_namespace {
+            out.push(String::new());
+            out.push(String::new());
+        }
         out.push("async def main() -> None:".to_string());
         out.extend(call.split('\n').map(String::from));
-        out.push(String::new());
-        out.push(String::new());
+        if !empty_namespace {
+            out.push(String::new());
+            out.push(String::new());
+        }
         out.push("asyncio.run(main())".to_string());
     } else {
         out.extend(call.split('\n').map(String::from));
@@ -6636,8 +6749,11 @@ fn raw_client_file(
     module: &str,
     endpoints: &[&Endpoint],
     tag_types: &BTreeMap<String, String>,
+    empty_namespace: bool,
 ) -> Result<GeneratedFile> {
-    let loc = if module.is_empty() {
+    let loc = if empty_namespace {
+        RefLoc::Client(String::new())
+    } else if module.is_empty() {
         RefLoc::PackageRoot
     } else {
         RefLoc::Client(module.to_string())
@@ -6653,17 +6769,17 @@ fn raw_client_file(
     imports.add_core("http_response", "HttpResponse");
     imports.add_core("request_options", "RequestOptions");
 
-    let class_stem = if module.is_empty() {
+    let class_stem = if module.is_empty() && !empty_namespace {
         "FernApi".to_string()
     } else {
         naming::to_pascal_case(module)
     };
-    let sync_class = if module.is_empty() {
+    let sync_class = if module.is_empty() && !empty_namespace {
         format!("Raw{class_stem}")
     } else {
         format!("Raw{class_stem}Client")
     };
-    let async_class_name = if module.is_empty() {
+    let async_class_name = if module.is_empty() && !empty_namespace {
         format!("AsyncRaw{class_stem}")
     } else {
         format!("AsyncRaw{class_stem}Client")
@@ -7669,6 +7785,8 @@ mod tests {
             types: Vec::new(),
             tag_types: Vec::new(),
             endpoint_modules,
+            empty_endpoint_namespace: false,
+            empty_namespace_types: Vec::new(),
             endpoint_module_titles: Default::default(),
             endpoints,
             errors: Vec::new(),
@@ -8854,7 +8972,7 @@ mod tests {
         }];
         let mut ctx = example_ctx(&[], &[], &auth);
         ctx.global_headers = &global_headers;
-        let rendered = build_example(&ep, false, "widgets", "acme", "AcmeApi", &mut ctx)
+        let rendered = build_example(&ep, false, "widgets", "acme", "AcmeApi", &mut ctx, false)
             .expect("wildcard request has a worked example")
             .join("\n");
         let trace = rendered.find("trace=\"trace-1\"").unwrap();
@@ -8902,7 +9020,7 @@ mod tests {
             },
         ]));
         let mut ctx = example_ctx(&[], &[], &Auth::None);
-        let rendered = build_example(&ep, true, "widgets", "acme", "AcmeApi", &mut ctx)
+        let rendered = build_example(&ep, true, "widgets", "acme", "AcmeApi", &mut ctx, false)
             .expect("inline request has an async example")
             .join("\n");
         assert!(rendered.contains("import asyncio"), "{rendered}");
@@ -8958,7 +9076,7 @@ mod tests {
         ];
 
         let mut ctx = example_ctx(&[], &[], &Auth::None);
-        let rendered = build_example(&ep, false, "widgets", "acme", "AcmeApi", &mut ctx)
+        let rendered = build_example(&ep, false, "widgets", "acme", "AcmeApi", &mut ctx, false)
             .expect("bodyless query endpoint has a worked example")
             .join("\n");
         assert!(rendered.contains("where_=\"active\""), "{rendered}");
@@ -9034,6 +9152,7 @@ mod tests {
             has_environment: false,
             tag_types: &tags,
             global_headers: &[],
+            empty_namespace: false,
         };
         let mut imports = Imports::at(RefLoc::Client("events".to_string()), &tags);
         let raw_sync = raw_method(&ep, false, &mut imports);

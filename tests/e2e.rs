@@ -15141,6 +15141,36 @@ fn spaced_operation_id_generates_valid_python() {
 }
 
 #[test]
+fn empty_dotted_operation_namespace_overwrites_the_root_surface() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    get:\n      operationId: .ListWidgets\n      responses:\n        '200':\n          description: OK\n          content:\n            application/json:\n              schema:\n                type: object\n                properties:\n                  count: { type: integer }\n",
+    );
+    assert!(
+        !out.join("src/acme/_").exists(),
+        "an explicit empty namespace must not invent an underscore package"
+    );
+    let client =
+        std::fs::read_to_string(out.join("src/acme/client.py")).expect("root client is generated");
+    let raw = std::fs::read_to_string(out.join("src/acme/raw_client.py"))
+        .expect("root raw client is generated");
+    let init = std::fs::read_to_string(out.join("src/acme/__init__.py"))
+        .expect("package initializer is generated");
+    assert!(
+        client.contains("class Client:")
+            && client.contains("def listwidgets(")
+            && !client.contains("class AcmeApi:")
+            && raw.contains("class RawClient:")
+            && out
+                .join("src/acme/types/list_widgets_response.py")
+                .is_file()
+            && init.contains("ListWidgetsResponse")
+            && !init.contains("AcmeApi")
+            && !init.contains("__version__"),
+        "Fern's empty tag package should overwrite the ordinary root files: {client}\n{init}"
+    );
+}
+
+#[test]
 fn digit_leading_property_gets_f_prefix_and_alias() {
     // Issue #40 case 2: a property name starting with a digit is not a legal
     // identifier. Fern renames it `f_<name>` and keeps the wire name as an alias.

@@ -33,6 +33,12 @@ pub struct Ir {
     /// Endpoint client module (directory) names, one per operation group, in
     /// first-seen order.
     pub endpoint_modules: Vec<String>,
+    /// Whether any operation declares an explicit empty dotted namespace.
+    pub empty_endpoint_namespace: bool,
+    /// Hoisted type names owned by an explicit empty dotted operation namespace
+    /// (`.GetThing`). Fern conceptually calls the namespace `_`, but writes its
+    /// files at the package root.
+    pub empty_namespace_types: Vec<String>,
     /// The `reference.md` section title for each module, keyed by module name.
     /// Verbatim tag (`attachment-public`) for an underscore-style operationId,
     /// PascalCase tag (`Widgets`) for a camelCase one, PascalCase group when
@@ -1277,6 +1283,23 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
     // request/response bodies into their tags' own `types/` packages.
     let global = global_headers(doc);
     let (mut endpoints, mut tag_types) = endpoints(doc, &builder.types, &global);
+    let empty_endpoint_namespace = doc.paths.values().any(|item| {
+        item.operations().into_iter().any(|(_, operation)| {
+            operation
+                .operation_id
+                .as_deref()
+                .is_some_and(|id| id.trim().starts_with('.'))
+        })
+    });
+    let empty_namespace_types = if empty_endpoint_namespace {
+        tag_types
+            .iter()
+            .filter(|tag_type| tag_type.module == "_")
+            .map(|tag_type| tag_type.decl.name().to_string())
+            .collect()
+    } else {
+        Vec::new()
+    };
     let root_tag_types: Vec<TypeDecl> = tag_types
         .extract_if(.., |tag_type| tag_type.module.is_empty())
         .map(|tag_type| tag_type.decl)
@@ -1366,6 +1389,8 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         types: builder.types,
         tag_types,
         endpoint_modules: endpoint_modules(doc),
+        empty_endpoint_namespace,
+        empty_namespace_types,
         endpoint_module_titles: endpoint_module_titles(doc),
         endpoints,
         errors,
