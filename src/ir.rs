@@ -625,6 +625,16 @@ pub struct Endpoint {
     pub header_params: Vec<HeaderParam>,
     /// The JSON request body, when the operation has one crozier can emit.
     pub request_body: Option<RequestBody>,
+    /// The component type named by the request schema for reference docs. Fern
+    /// documents that model as one `request` parameter when the type remains
+    /// public, even though executable methods flatten object fields.
+    pub reference_body_type: Option<TypeRef>,
+    /// The request body's declared description, used by reference documentation
+    /// for opaque byte bodies whose generated method parameter has no description.
+    pub request_body_doc: Option<String>,
+    /// The selected request schema's description, used by reference documentation
+    /// for JSON bodies. Fern ignores the enclosing request-body description there.
+    pub request_body_schema_doc: Option<String>,
     /// Whether the operation carried the legacy OpenAPI Generator body-name hint.
     pub body_codegen_named: bool,
     /// Whether `requestBody.description` is explicitly present but empty. Fern
@@ -927,6 +937,10 @@ pub struct BodyField {
     /// rather than request media. Fern uses schema examples for scalar and
     /// container fields but still synthesizes nested model constructors.
     pub schema_body_example: bool,
+    /// Ordering used only by Fern's reference writer. Composed request objects
+    /// document base fields before derived fields, required before optional
+    /// within each declaration, even though method signatures use another order.
+    pub reference_order: usize,
 }
 
 /// A type hoisted out of an operation's inline request/response body. Unlike a
@@ -1858,6 +1872,25 @@ fn build_endpoint(
         query_params,
         header_params,
         request_body,
+        reference_body_type: op
+            .request_body
+            .as_ref()
+            .and_then(selected_json_request_media)
+            .and_then(|(_, media)| media.schema.as_ref())
+            .and_then(|schema| schema.reference.as_deref())
+            .map(ref_to_class)
+            .map(TypeRef::Named),
+        request_body_doc: op
+            .request_body
+            .as_ref()
+            .and_then(|body| declared_doc(body.description.as_deref())),
+        request_body_schema_doc: op
+            .request_body
+            .as_ref()
+            .and_then(selected_json_request_media)
+            .and_then(|(_, media)| media.schema.as_ref())
+            .filter(|schema| schema.reference.is_none())
+            .and_then(|schema| declared_doc(schema.description.as_deref())),
         body_codegen_named: op.codegen_request_body_name.is_some(),
         body_description_empty: op.request_body.as_ref().is_some_and(|body| {
             body.description
@@ -2753,10 +2786,8 @@ fn media_example<'a>(
     })
 }
 
-/// Select the example Fern uses in `reference.md`. Unlike generated method
-/// docstrings and README snippets, Fern's reference writer selects the second
-/// value when exactly two named examples are present; other cardinalities use
-/// the first value.
+/// Select the example Fern uses in `reference.md`. Fern 5.20 consistently uses
+/// the first resolvable named request example, just like its README writer.
 fn reference_body_example<'a>(
     doc: &'a OpenApi,
     body: &'a crate::openapi::RequestBody,
@@ -2767,17 +2798,10 @@ fn reference_body_example<'a>(
             .find(|(media_type, _)| is_json_like_media_type(media_type))
             .map(|(_, media)| media)
     })?;
-    let examples = &media.examples;
-    if examples.len() == 2 {
-        examples
-            .values()
-            .nth(1)
-            .and_then(|example| component_example_value(doc, example))
-    } else {
-        examples
-            .values()
-            .find_map(|example| component_example_value(doc, example))
-    }
+    media
+        .examples
+        .values()
+        .find_map(|example| component_example_value(doc, example))
 }
 
 fn is_json_like_media_type(media_type: &str) -> bool {
@@ -2821,7 +2845,7 @@ fn hoist_inline_object(
 ) -> Option<Vec<BodyField>> {
     let required: Vec<&str> = schema.required.iter().map(String::as_str).collect();
     let mut fields = Vec::new();
-    for (prop, prop_schema) in &schema.properties {
+    for (reference_order, (prop, prop_schema)) in schema.properties.iter().enumerate() {
         let spec_required = required.contains(&prop.as_str());
         let optional = is_optional(prop_schema) || !spec_required;
         let type_ref = hoister.prop_type_ref(ctx, prop, prop_schema);
@@ -2839,6 +2863,7 @@ fn hoist_inline_object(
             docstring: clean_doc(prop_schema.description.as_deref()),
             is_file: false,
             collision_prefix: Some(naming::field_name(ctx)),
+            reference_order,
         });
     }
     Some(fields)
@@ -3177,7 +3202,8 @@ fn hoist_form_object(
     schema
         .properties
         .iter()
-        .map(|(prop, prop_schema)| {
+        .enumerate()
+        .map(|(reference_order, (prop, prop_schema))| {
             let spec_required = required.contains(&prop.as_str());
             let is_file = prop_schema.ty.as_ref().and_then(|t| t.primary()) == Some("string")
                 && prop_schema.format.as_deref() == Some("binary");
@@ -3201,6 +3227,7 @@ fn hoist_form_object(
                 example: schema_example_literal(prop_schema),
                 media_example: false,
                 schema_body_example: false,
+                reference_order,
             }
         })
         .collect()
@@ -3239,7 +3266,42 @@ fn hoist_fields(class: &str, types: &[TypeDecl]) -> Option<Vec<BodyField>> {
     let mut fields = Vec::new();
     let mut seen = std::collections::HashSet::new();
     append_request_fields(obj, class, types, &mut seen, &mut fields);
+    let mut reference_names = Vec::new();
+    let mut reference_seen = std::collections::HashSet::new();
+    append_reference_field_names(obj, types, &mut reference_seen, &mut reference_names);
+    for field in &mut fields {
+        field.reference_order = reference_names
+            .iter()
+            .position(|name| name == &field.wire_name)
+            .unwrap_or(usize::MAX);
+    }
     Some(fields)
+}
+
+fn append_reference_field_names(
+    obj: &ObjectType,
+    types: &[TypeDecl],
+    seen: &mut std::collections::HashSet<String>,
+    out: &mut Vec<String>,
+) {
+    if !seen.insert(obj.name.clone()) {
+        return;
+    }
+    for base in &obj.bases {
+        if let Some(base_obj) = types.iter().find_map(|decl| match decl {
+            TypeDecl::Object(candidate) if candidate.name == *base => Some(candidate),
+            _ => None,
+        }) {
+            append_reference_field_names(base_obj, types, seen, out);
+        }
+    }
+    out.extend(
+        obj.fields
+            .iter()
+            .filter(|field| field.spec_required)
+            .chain(obj.fields.iter().filter(|field| !field.spec_required))
+            .map(|field| field.wire_name.clone()),
+    );
 }
 
 fn append_request_fields(
@@ -3266,6 +3328,7 @@ fn append_request_fields(
         example: f.example.clone(),
         media_example: false,
         schema_body_example: false,
+        reference_order: 0,
     }));
     for base in &obj.bases {
         if let Some(base_obj) = types.iter().find_map(|decl| match decl {

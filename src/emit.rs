@@ -1479,55 +1479,16 @@ fn is_complex_type(t: &TypeRef, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) -
     }
 }
 
-/// Whether a response type is a dictionary directly or through package-root alias
-/// indirection. Fern uses a placeholder in bodyless GET README snippets for map
-/// responses, including named map aliases such as APIs.guru's `ApIs`.
-fn resolves_to_dict(t: &TypeRef, types: &[TypeDecl]) -> bool {
-    fn resolve(t: &TypeRef, types: &[TypeDecl], seen: &mut BTreeSet<String>) -> bool {
-        match t {
-            TypeRef::Dict(..) => true,
-            TypeRef::Optional(inner) => resolve(inner, types, seen),
-            TypeRef::Named(name) if seen.insert(name.clone()) => types
-                .iter()
-                .find(|decl| decl.name() == name)
-                .is_some_and(|decl| match decl {
-                    TypeDecl::Alias(alias) => resolve(&alias.target, types, seen),
-                    _ => false,
-                }),
-            _ => false,
-        }
-    }
-
-    resolve(t, types, &mut BTreeSet::new())
-}
-
 /// Render an abbreviated call `<prefix>(...)` for the README snippets: empty parens
-/// when the body is not complex, else a `...` placeholder wrapped onto its own line
-/// when the flat form overflows. Fern's snippet writer targets an 80-column width
-/// here (not the project's ruff `line-length`), so bunq's 83-column raw-response call
-/// wraps while its 58-column error call stays flat.
+/// when the body is not complex, else a literal `...` placeholder. Fern 5.20 does
+/// not wrap these advanced README calls,
+/// even when a descriptive operation name makes the line unusually long.
 fn abbrev_call(indent: usize, prefix: &str, complex: bool) -> String {
     let pad = " ".repeat(indent);
     if !complex {
         return format!("{pad}{prefix}()");
     }
-    let flat = format!("{pad}{prefix}(...)");
-    if flat.len() <= 80 {
-        flat
-    } else if indent == 0
-        && prefix.starts_with("response = client.")
-        && prefix.len() > 80
-        && prefix
-            .strip_prefix("response = ")
-            .is_some_and(|call| format!("    {call}(...)").len() <= 80)
-    {
-        format!(
-            "response = (\n    {}(...)\n)",
-            prefix.strip_prefix("response = ").unwrap_or(prefix)
-        )
-    } else {
-        format!("{pad}{prefix}(\n{}...\n{pad})", " ".repeat(indent + 4))
-    }
+    format!("{pad}{prefix}(...)")
 }
 
 /// Whether an endpoint can anchor the README's representative calls. Fern skips
@@ -1580,33 +1541,28 @@ fn readme_endpoint(ir: &Ir) -> Option<&Endpoint> {
         .iter()
         .flat_map(|module| ir.endpoints.iter().filter(move |ep| &ep.module == module))
         .collect();
-    select_readme_endpoint(ir.endpoints.iter().filter(|e| e.module.is_empty()))
-        .filter(|e| e.http_method != "GET" || e.request_body.is_some())
-        .or_else(|| {
-            if grouped.is_empty() {
-                select_readme_endpoint(ir.endpoints.iter())
-            } else {
-                select_readme_endpoint(grouped.iter().copied())
-            }
-        })
+    if grouped.is_empty() {
+        select_readme_endpoint(ir.endpoints.iter().filter(|e| e.module.is_empty()))
+    } else {
+        select_readme_endpoint(grouped.iter().copied())
+    }
 }
 
 fn client_call_prefix(ep: &Endpoint) -> String {
+    let method = ep.method_name.trim_end_matches('_');
     if ep.module.is_empty() {
-        format!("client.{}", ep.method_name)
+        format!("client.{method}")
     } else {
-        format!("client.{}.{}", ep.module, ep.method_name)
+        format!("client.{}.{method}", ep.module)
     }
 }
 
 fn raw_client_call_prefix(ep: &Endpoint) -> String {
+    let method = ep.method_name.trim_end_matches('_');
     if ep.module.is_empty() {
-        format!("response = client.with_raw_response.{}", ep.method_name)
+        format!("response = client.with_raw_response.{method}")
     } else {
-        format!(
-            "response = client.{}.with_raw_response.{}",
-            ep.module, ep.method_name
-        )
+        format!("response = client.{}.with_raw_response.{method}", ep.module)
     }
 }
 
@@ -1632,13 +1588,8 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
             && (first.query_params.iter().any(|param| param.required)
                 || first.query_params.iter().any(|param| param.convert)
                 || first.header_params.iter().any(|param| param.required));
-    let has_map_response = first
-        .response
-        .as_ref()
-        .is_some_and(|response| resolves_to_dict(response, &ir.types));
     let complex = first.method_name != "_"
         && (has_required_non_body_params
-            || (first.request_body.is_none() && (first.http_method != "GET" || has_map_response))
             || (ir.openapi_31
                 && first.body_schema_implicit_object
                 && matches!(
@@ -1659,28 +1610,56 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
             types: &ir.types,
             tag_decls: &ir.tag_types,
             referenced: BTreeSet::new(),
+            referenced_doc_order: Vec::new(),
             referenced_tag: BTreeSet::new(),
+            referenced_tag_doc_order: Vec::new(),
             uses_datetime: false,
             auth: &ir.auth,
             has_environment: ir.environment.is_some(),
             global_headers: &ir.global_headers,
             building: Default::default(),
+            documentation: false,
+            reference: false,
         };
-        build_example(first, false, &first.module, pkg, &ir.client_name, &mut ctx)?.join("\n")
+        build_documentation_example(
+            first,
+            false,
+            &first.module,
+            pkg,
+            &ir.client_name,
+            &mut ctx,
+            None,
+            false,
+        )?
+        .join("\n")
     };
     let async_example = {
         let mut ctx = ExampleCtx {
             types: &ir.types,
             tag_decls: &ir.tag_types,
             referenced: BTreeSet::new(),
+            referenced_doc_order: Vec::new(),
             referenced_tag: BTreeSet::new(),
+            referenced_tag_doc_order: Vec::new(),
             uses_datetime: false,
             auth: &ir.auth,
             has_environment: ir.environment.is_some(),
             global_headers: &ir.global_headers,
             building: Default::default(),
+            documentation: false,
+            reference: false,
         };
-        build_example(first, true, &first.module, pkg, &ir.client_name, &mut ctx)?.join("\n")
+        build_documentation_example(
+            first,
+            true,
+            &first.module,
+            pkg,
+            &ir.client_name,
+            &mut ctx,
+            None,
+            false,
+        )?
+        .join("\n")
     };
 
     let contents = include_str!("../assets/scaffolding/README.md.tmpl")
@@ -1689,6 +1668,13 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
         .replace("@@PKG@@", pkg)
         .replace("@@CLIENT@@", &ir.client_name)
         .replace("@@ASYNC@@", &async_name)
+        .replace(
+            "@@ENV_DEFAULT@@",
+            &ir.environment.as_ref().map_or_else(
+                || format!("{}Environment.DEFAULT", ir.client_name),
+                crate::ir::Environment::default_ref,
+            ),
+        )
         .replace("@@ERR_CALL@@", &err_call)
         .replace("@@RAW_CALL@@", &raw_call)
         .replace("@@RETRY_CALL@@", &retry_call)
@@ -1718,8 +1704,6 @@ fn reference_file(
         .endpoints
         .iter()
         .filter(|e| e.module.is_empty() && e.emittable)
-        .filter(|e| !matches!(e.request_body, Some(RequestBody::Bytes { .. })))
-        .filter(|e| endpoint_has_worked_example(e))
         .collect();
     for ep in root_eps {
         any = true;
@@ -1732,8 +1716,6 @@ fn reference_file(
             .endpoints
             .iter()
             .filter(|e| &e.module == *module && e.emittable)
-            .filter(|e| !matches!(e.request_body, Some(RequestBody::Bytes { .. })))
-            .filter(|e| endpoint_has_worked_example(e))
             .collect();
         any = true;
         let title = ir
@@ -1787,8 +1769,10 @@ struct ReferenceEntryView {
     pkg: String,
     method: String,
     dots: &'static str,
+    return_type: String,
     description: Option<String>,
     example: String,
+    example_gap: &'static str,
     params: Vec<ParamRow>,
 }
 
@@ -1804,30 +1788,45 @@ fn reference_entry(
 ) -> Result<String> {
     let mut imports = Imports::at(RefLoc::Client(module.to_string()), tag_types);
     let mp = method_params(ep, &mut imports);
+    let has_args =
+        !mp.path.is_empty() || !mp.query.is_empty() || !mp.header.is_empty() || !mp.body.is_empty();
 
     // The example (sync form). Bytes bodies are filtered out before this point.
     let mut ctx = ExampleCtx {
         types: &ir.types,
         tag_decls: &ir.tag_types,
         referenced: BTreeSet::new(),
+        referenced_doc_order: Vec::new(),
         referenced_tag: BTreeSet::new(),
+        referenced_tag_doc_order: Vec::new(),
         uses_datetime: false,
         auth: &ir.auth,
         has_environment: ir.environment.is_some(),
         global_headers: &ir.global_headers,
         building: Default::default(),
+        documentation: false,
+        reference: false,
     };
-    let example = build_example_with_body_example(
+    let example = build_documentation_example(
         ep,
         false,
         module,
         pkg,
         &ir.client_name,
         &mut ctx,
-        ep.reference_body_example.as_ref(),
+        ir.environment.as_ref(),
+        true,
     )
-    .unwrap_or_default()
-    .join("\n");
+    .map_or_else(
+        || {
+            if has_args {
+                format!("{}(...)", client_call_prefix(ep))
+            } else {
+                format!("{}()", client_call_prefix(ep))
+            }
+        },
+        |lines| lines.join("\n"),
+    );
 
     // The parameter rows, in signature order, then `request_options`.
     let mut params: Vec<ParamRow> = Vec::new();
@@ -1837,33 +1836,68 @@ fn reference_entry(
         // `description` key); only an omitted (`None`) one gets the bare space.
         let suffix = reference_param_suffix(desc.as_deref());
         params.push(ParamRow {
-            name: name.clone(),
-            annot: ty.clone(),
+            name: name.trim_end_matches('_').to_string(),
+            annot: reference_param_annotation(&ty.replace("typing.Sequence[", "typing.List[")),
             suffix,
         });
     }
-    for dp in ordered_keyword_params(&mp.query, &mp.header, &mp.body) {
-        let suffix = reference_param_suffix(dp.description.as_deref());
-        let annot = reference_param_annotation(&dp.annotation);
-        params.push(ParamRow {
-            name: dp.name.clone(),
-            annot,
-            suffix,
-        });
-    }
-    let request_options_suffix = if ep.binary_response {
-        " — Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response."
+    let reference_body = if !ep.body_schema_dropped {
+        ep.reference_body_type.as_ref().map_or_else(
+            || mp.body,
+            |request| {
+                vec![DocParam {
+                    name: "request".to_string(),
+                    annotation: raw_type_str_ctx(request, &mut imports, true),
+                    default: None,
+                    description: None,
+                }]
+            },
+        )
     } else {
-        " — Request-specific configuration."
+        mp.body
     };
+    let mut reference_body = reference_body;
+    if let Some(RequestBody::Inline(fields)) = &ep.request_body {
+        reference_body.sort_by_key(|param| {
+            fields
+                .iter()
+                .find(|field| field.py_name == param.name)
+                .map_or(usize::MAX, |field| field.reference_order)
+        });
+    }
+    for dp in ordered_keyword_params(&mp.query, &mp.header, &reference_body) {
+        let is_body = reference_body.iter().any(|body| body.name == dp.name);
+        let annotation = if is_body {
+            dp.annotation.replace("typing.Sequence[", "typing.List[")
+        } else {
+            dp.annotation.clone()
+        };
+        let description = if is_body {
+            match &ep.request_body {
+                Some(RequestBody::Single(_)) => ep.request_body_schema_doc.as_deref(),
+                Some(RequestBody::Bytes { .. }) => ep.request_body_doc.as_deref(),
+                Some(RequestBody::Form(form)) => form
+                    .fields
+                    .iter()
+                    .find(|field| field.py_name == dp.name)
+                    .and_then(|field| field.docstring.as_deref()),
+                _ => dp.description.as_deref(),
+            }
+        } else {
+            dp.description.as_deref()
+        };
+        params.push(ParamRow {
+            name: dp.name.trim_end_matches('_').to_string(),
+            annot: reference_param_annotation(&annotation),
+            suffix: reference_param_suffix(description),
+        });
+    }
     params.push(ParamRow {
         name: "request_options".to_string(),
         annot: "typing.Optional[RequestOptions]".to_string(),
-        suffix: request_options_suffix.to_string(),
+        suffix: " — Request-specific configuration.".to_string(),
     });
 
-    let has_args =
-        !mp.path.is_empty() || !mp.query.is_empty() || !mp.header.is_empty() || !mp.body.is_empty();
     let view = ReferenceEntryView {
         client_prefix: if module.is_empty() {
             "client.".to_string()
@@ -1876,13 +1910,21 @@ fn reference_entry(
             format!("src/{pkg}/{module}/client.py")
         },
         pkg: pkg.to_string(),
-        method: ep.method_name.clone(),
+        method: ep.method_name.trim_end_matches('_').to_string(),
         dots: if has_args { "..." } else { "" },
+        return_type: reference_return_type(ep, &mp.inner),
         description: ep
             .docstring
             .as_ref()
             .map(|description| format!("{description}{}", ep.reference_description_suffix)),
         example,
+        example_gap: if !endpoint_has_worked_example(ep)
+            || matches!(ep.request_body, Some(RequestBody::Bytes { .. }))
+        {
+            ""
+        } else {
+            "\n"
+        },
         params,
     };
     let rendered = render(
@@ -1895,57 +1937,28 @@ fn reference_entry(
 }
 
 fn reference_param_annotation(annotation: &str) -> String {
-    // Fern recursively wraps a generated scalar-or-sequence type for array query
-    // params only when the annotation exceeds the reference writer's 80 columns.
-    // A moderately long union fits after the outer Optional breaks; a longer one
-    // needs its Union members broken as well.
+    let mut annotation = annotation.replace("dt.", "datetime.");
     if let Some(inner) = annotation
-        .strip_prefix("typing.Optional[typing.Union[")
-        .and_then(|s| s.strip_suffix("]]"))
+        .strip_prefix("typing.Optional[typing.Optional[")
+        .and_then(|value| value.strip_suffix("]]"))
     {
-        if let Some((item, sequence_item)) = inner.split_once(", typing.Sequence[") {
-            if sequence_item.strip_suffix(']') == Some(item)
-                && item.chars().next().is_some_and(char::is_uppercase)
-                && annotation.len() > 80
-                && 4 + "typing.Union[".len() + inner.len() + 1 > 80
-            {
-                if 8 + inner.len() <= 80 {
-                    return format!(
-                        "typing.Optional[\n    typing.Union[\n        {inner}\n    ]\n]"
-                    );
-                }
-                return format!(
-                    "typing.Optional[\n    typing.Union[\n        {item},\n        typing.Sequence[{item}],\n    ]\n]"
-                );
-            }
-        }
+        annotation = format!("typing.Optional[{inner}]");
     }
+    annotation
+}
 
-    // Fern's reference type writer wraps a long optional container at its outer
-    // brackets once the annotation itself exceeds 80 columns. Method signatures
-    // are formatted separately by Ruff and retain the ordinary one-line type.
-    if annotation.len() > 80 {
-        if let Some(inner) = annotation
-            .strip_prefix("typing.Optional[")
-            .and_then(|value| value.strip_suffix(']'))
-        {
-            return format!("typing.Optional[\n    {inner}\n]");
-        }
-        if let Some(inner) = annotation
-            .strip_prefix("typing.Sequence[")
-            .and_then(|value| value.strip_suffix(']'))
-        {
-            return format!("typing.Sequence[\n    {inner}\n]");
-        }
-    }
-
-    // Fern renders a `core.File` type in the reference parameter table with a
-    // leading `from __future__ import annotations` (an artifact of how it prints
-    // the forward-referenced file type); reproduce it so the table matches.
-    if annotation == "core.File" {
-        "from __future__ import annotations\n\ncore.File".to_string()
+fn reference_return_type(ep: &Endpoint, response: &str) -> String {
+    let rendered = if ep.binary_response {
+        "typing.Iterator[bytes]"
+    } else if ep.streaming {
+        "typing.Iterator[ServerSentEvent]"
     } else {
-        annotation.to_string()
+        response
+    };
+    if rendered == "None" {
+        String::new()
+    } else {
+        format!(" -> {rendered}")
     }
 }
 
@@ -4581,12 +4594,16 @@ fn client_stream_docstring(
         types: cx.types,
         tag_decls: cx.tag_decls,
         referenced: BTreeSet::new(),
+        referenced_doc_order: Vec::new(),
         referenced_tag: BTreeSet::new(),
+        referenced_tag_doc_order: Vec::new(),
         uses_datetime: false,
         auth: cx.auth,
         has_environment: cx.has_environment,
         global_headers: cx.global_headers,
         building: Default::default(),
+        documentation: false,
+        reference: false,
     };
     if let Some(ex_lines) = build_example(ep, is_async, cx.module, cx.pkg, cx.client_name, &mut ctx)
     {
@@ -4687,12 +4704,16 @@ fn client_binary_stream_docstring(
         types: cx.types,
         tag_decls: cx.tag_decls,
         referenced: BTreeSet::new(),
+        referenced_doc_order: Vec::new(),
         referenced_tag: BTreeSet::new(),
+        referenced_tag_doc_order: Vec::new(),
         uses_datetime: false,
         auth: cx.auth,
         has_environment: cx.has_environment,
         global_headers: cx.global_headers,
         building: Default::default(),
+        documentation: false,
+        reference: false,
     };
     if let Some(ex_lines) = build_example(ep, is_async, cx.module, cx.pkg, cx.client_name, &mut ctx)
     {
@@ -4753,12 +4774,16 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
         types: cx.types,
         tag_decls: cx.tag_decls,
         referenced: BTreeSet::new(),
+        referenced_doc_order: Vec::new(),
         referenced_tag: BTreeSet::new(),
+        referenced_tag_doc_order: Vec::new(),
         uses_datetime: false,
         auth: cx.auth,
         has_environment: cx.has_environment,
         global_headers: cx.global_headers,
         building: Default::default(),
+        documentation: false,
+        reference: false,
     };
     // With an example, one blank line separates the `Returns` block from
     // `Examples`; without one, close straight after (like the raw docstring).
@@ -4792,8 +4817,14 @@ enum Example {
     /// A list supplied verbatim by the spec — wraps at the snippet line limit and
     /// retains Python's trailing commas when exploded.
     ExplicitList(Vec<Example>),
+    /// A list rendered by `reference.md`, which always expands supplied and
+    /// synthesized values recursively and omits only the final comma.
+    ReferenceList(Vec<Example>),
     /// A dict with fixed string keys — explodes only when a value does.
     Dict(Vec<(String, Example)>),
+    /// A reference-documentation dict. Fern's reference writer expands map
+    /// examples even when every value would fit on one line.
+    ReferenceDict(Vec<(String, Example)>),
 }
 
 impl Example {
@@ -4807,7 +4838,9 @@ impl Example {
             Example::List(items) | Example::ExplicitList(items) => {
                 items.iter().any(Example::forces_multiline)
             }
+            Example::ReferenceList(items) => !items.is_empty(),
             Example::Dict(pairs) => pairs.iter().any(|(_, v)| v.forces_multiline()),
+            Example::ReferenceDict(pairs) => !pairs.is_empty(),
         }
     }
 
@@ -4826,7 +4859,7 @@ impl Example {
                     .join(", ");
                 format!("{name}({inner})")
             }
-            Example::List(items) | Example::ExplicitList(items) => {
+            Example::List(items) | Example::ExplicitList(items) | Example::ReferenceList(items) => {
                 format!(
                     "[{}]",
                     items
@@ -4836,7 +4869,7 @@ impl Example {
                         .join(", ")
                 )
             }
-            Example::Dict(pairs) => {
+            Example::Dict(pairs) | Example::ReferenceDict(pairs) => {
                 if pairs.is_empty() {
                     return "{}".to_string();
                 }
@@ -4930,6 +4963,26 @@ impl Example {
                     .join("\n");
                 format!("[\n{body}\n{pad}]")
             }
+            Example::ReferenceList(items) => {
+                if items.is_empty() {
+                    return "[]".to_string();
+                }
+                let pad = " ".repeat(indent);
+                let inner_pad = " ".repeat(indent + 4);
+                let body = items
+                    .iter()
+                    .enumerate()
+                    .map(|(index, item)| {
+                        let comma = if index + 1 == items.len() { "" } else { "," };
+                        format!(
+                            "{inner_pad}{}{comma}",
+                            item.render_at(indent + 4, indent + 4)
+                        )
+                    })
+                    .collect::<Vec<_>>()
+                    .join("\n");
+                format!("[\n{body}\n{pad}]")
+            }
             Example::Dict(pairs) => {
                 if !self.forces_multiline() {
                     return self.flat();
@@ -4942,6 +4995,26 @@ impl Example {
                         format!(
                             "{inner_pad}\"{k}\": {}",
                             v.render_at(indent + 4, indent + k.len() + 8)
+                        )
+                    })
+                    .collect::<Vec<_>>()
+                    .join("\n");
+                format!("{{\n{body}\n{pad}}}")
+            }
+            Example::ReferenceDict(pairs) => {
+                if pairs.is_empty() {
+                    return "{}".to_string();
+                }
+                let pad = " ".repeat(indent);
+                let inner_pad = " ".repeat(indent + 4);
+                let body = pairs
+                    .iter()
+                    .enumerate()
+                    .map(|(index, (key, value))| {
+                        let comma = if index + 1 == pairs.len() { "" } else { "," };
+                        format!(
+                            "{inner_pad}\"{key}\": {}{comma}",
+                            value.render_at(indent + 4, indent + key.len() + 8)
                         )
                     })
                     .collect::<Vec<_>>()
@@ -4961,9 +5034,13 @@ struct ExampleCtx<'a> {
     /// Generated type names referenced as constructors (drives the example's
     /// `from <pkg> import ...`).
     referenced: BTreeSet<String>,
+    /// First-use order retained for Fern's Markdown import writer.
+    referenced_doc_order: Vec<String>,
     /// Referenced hoisted tag-types as `(tag module, type name)` — imported from
     /// their tag package on a separate line above the main import.
     referenced_tag: BTreeSet<(String, String)>,
+    /// Tag-scoped first-use order retained for Markdown imports.
+    referenced_tag_doc_order: Vec<(String, String)>,
     /// Whether any value is a datetime/date (drives an `import datetime`).
     uses_datetime: bool,
     /// The auth model, for the credential argument in the client instantiation.
@@ -4979,6 +5056,12 @@ struct ExampleCtx<'a> {
     /// the stack (issue #84): a list of an ancestor type renders empty, matching
     /// Fern's `children=[]`.
     building: std::collections::HashSet<String>,
+    /// Whether values are being rendered for README/reference snippets rather
+    /// than executable method docstrings.
+    documentation: bool,
+    /// Whether the active Markdown snippet belongs to `reference.md`, whose
+    /// literal and parameter-order writer differs from README examples.
+    reference: bool,
 }
 
 /// The slot a string value sits in, which decides its placeholder text: a named
@@ -5050,7 +5133,9 @@ impl<'a> ExampleCtx<'a> {
             let mut value: String = serde_json::from_str(example).ok()?;
             self.uses_datetime = true;
             let constructor = if matches!(t, TypeRef::Primitive(Prim::Datetime)) {
-                value = value.replacen('T', " ", 1);
+                if !self.documentation {
+                    value = value.replacen('T', " ", 1);
+                }
                 if let Some(without_z) = value.strip_suffix('Z') {
                     value = format!("{without_z}+00:00");
                 }
@@ -5066,7 +5151,9 @@ impl<'a> ExampleCtx<'a> {
         }
         if self.example_is_scalar(t) {
             let literal = match t {
-                TypeRef::Primitive(Prim::Float) if example.parse::<i64>().is_ok() => {
+                TypeRef::Primitive(Prim::Float)
+                    if !self.documentation && example.parse::<i64>().is_ok() =>
+                {
                     format!("{example}.0")
                 }
                 TypeRef::Primitive(Prim::Bool) => match example {
@@ -5074,12 +5161,19 @@ impl<'a> ExampleCtx<'a> {
                     "false" => "False".to_string(),
                     _ => example.to_string(),
                 },
+                TypeRef::Primitive(Prim::Str | Prim::Bytes)
+                    if self.reference && example.starts_with('\'') && example.ends_with('\'') =>
+                {
+                    let inner = &example[1..example.len() - 1];
+                    format!("\"{}\"", inner.replace('"', "\\\""))
+                }
                 _ => example.to_string(),
             };
             return Some(Example::Atom(literal));
         }
         if example.starts_with('{') && self.resolves_to_any(t) {
-            return serde_json::from_str(example).ok().map(example_from_json);
+            let value = serde_json::from_str(example).ok()?;
+            return Some(example_from_json(value));
         }
         if let TypeRef::List(inner) | TypeRef::Set(inner) = t {
             let values: Vec<serde_json::Value> = serde_json::from_str(example).ok()?;
@@ -5100,7 +5194,11 @@ impl<'a> ExampleCtx<'a> {
                         .unwrap_or_else(|| example_from_json(value))
                 })
                 .collect();
-            return Some(Example::ExplicitList(items));
+            return Some(if self.documentation {
+                Example::ReferenceList(items)
+            } else {
+                Example::ExplicitList(items)
+            });
         }
         if let TypeRef::Union(variants) = t {
             let value: serde_json::Value = serde_json::from_str(example).ok()?;
@@ -5112,7 +5210,19 @@ impl<'a> ExampleCtx<'a> {
             return None;
         }
         if self.example_is_composite(t) && (example.starts_with('[') || example.starts_with('{')) {
-            return serde_json::from_str(example).ok().map(example_from_json);
+            let value = serde_json::from_str(example).ok()?;
+            if self.reference && matches!(t, TypeRef::Dict(_, _)) {
+                let serde_json::Value::Object(fields) = value else {
+                    return None;
+                };
+                return Some(Example::ReferenceDict(
+                    fields
+                        .into_iter()
+                        .map(|(key, value)| (key, example_from_json(value)))
+                        .collect(),
+                ));
+            }
+            return Some(example_from_json(value));
         }
         let TypeRef::Named(name) = t else {
             return None;
@@ -5201,10 +5311,15 @@ impl<'a> ExampleCtx<'a> {
     /// module (imported separately), a package-root type in the main import set.
     fn record_ref(&mut self, name: &str) {
         if let Some(tt) = self.tag_decls.iter().find(|tt| tt.decl.name() == name) {
-            self.referenced_tag
-                .insert((tt.module.clone(), name.to_string()));
+            let entry = (tt.module.clone(), name.to_string());
+            if self.referenced_tag.insert(entry.clone()) {
+                self.referenced_tag_doc_order.push(entry);
+            }
         } else {
-            self.referenced.insert(name.to_string());
+            let name = name.to_string();
+            if self.referenced.insert(name.clone()) {
+                self.referenced_doc_order.push(name);
+            }
         }
     }
 
@@ -5249,7 +5364,14 @@ impl<'a> ExampleCtx<'a> {
                 };
                 Example::Atom(format!("\"{s}\""))
             }
-            TypeRef::Primitive(Prim::Bytes) => Example::Atom("b\"string\"".to_string()),
+            TypeRef::Primitive(Prim::Bytes) => Example::Atom(
+                if self.reference {
+                    "\"string\""
+                } else {
+                    "b\"string\""
+                }
+                .to_string(),
+            ),
             TypeRef::Primitive(Prim::Int) => Example::Atom("1".to_string()),
             TypeRef::Primitive(Prim::Long) => Example::Atom("1000000".to_string()),
             TypeRef::Primitive(Prim::Float) => Example::Atom("1.1".to_string()),
@@ -5260,7 +5382,14 @@ impl<'a> ExampleCtx<'a> {
                     "datetime.datetime.fromisoformat".to_string(),
                     vec![(
                         None,
-                        Example::Atom("\"2024-01-15 09:30:00+00:00\"".to_string()),
+                        Example::Atom(
+                            if self.documentation {
+                                "\"2024-01-15T09:30:00+00:00\""
+                            } else {
+                                "\"2024-01-15 09:30:00+00:00\""
+                            }
+                            .to_string(),
+                        ),
                     )],
                 )
             }
@@ -5283,9 +5412,18 @@ impl<'a> ExampleCtx<'a> {
                 // The element inherits the list's slot, so a `List[str]` field's
                 // example uses the field name (`all_field=["all_field"]`).
                 if self.resolves_to_building(inner) {
-                    Example::List(vec![])
+                    if self.documentation {
+                        Example::ReferenceList(vec![])
+                    } else {
+                        Example::List(vec![])
+                    }
                 } else {
-                    Example::List(vec![self.value(inner, slot)])
+                    let items = vec![self.value(inner, slot)];
+                    if self.documentation {
+                        Example::ReferenceList(items)
+                    } else {
+                        Example::List(items)
+                    }
                 }
             }
             TypeRef::Dict(_, v) => {
@@ -5299,15 +5437,26 @@ impl<'a> ExampleCtx<'a> {
                         TypeRef::Optional(inner) if matches!(inner.as_ref(), TypeRef::Primitive(Prim::Any))
                     );
                 if directly_any {
-                    Example::Dict(vec![(
-                        "key".to_string(),
-                        Example::Atom("\"value\"".to_string()),
-                    )])
+                    let pairs = vec![("key".to_string(), Example::Atom("\"value\"".to_string()))];
+                    if self.reference {
+                        Example::ReferenceDict(pairs)
+                    } else {
+                        Example::Dict(pairs)
+                    }
                 } else if self.resolves_to_any(v) {
-                    Example::Dict(vec![])
+                    if self.reference {
+                        Example::ReferenceDict(vec![])
+                    } else {
+                        Example::Dict(vec![])
+                    }
                 } else {
                     let val = self.value(v, Slot::Map);
-                    Example::Dict(vec![("key".to_string(), val)])
+                    let pairs = vec![("key".to_string(), val)];
+                    if self.reference {
+                        Example::ReferenceDict(pairs)
+                    } else {
+                        Example::Dict(pairs)
+                    }
                 }
             }
             TypeRef::Union(variants) => self.union_value(variants, slot),
@@ -5363,10 +5512,15 @@ impl<'a> ExampleCtx<'a> {
                         let v = match example {
                             Some(example) if example_scalar(&ty) => Example::Atom(example),
                             Some(example) if example.starts_with(['{', '[']) => {
-                                serde_json::from_str(&example).map_or_else(
-                                    |_| self.value(&ty, Slot::Named(&wire)),
-                                    example_from_json,
-                                )
+                                if self.reference {
+                                    self.value_from_example(&ty, &example)
+                                        .unwrap_or_else(|| self.value(&ty, Slot::Named(&wire)))
+                                } else {
+                                    serde_json::from_str(&example).map_or_else(
+                                        |_| self.value(&ty, Slot::Named(&wire)),
+                                        example_from_json,
+                                    )
+                                }
                             }
                             None => self.value(&ty, Slot::Named(&wire)),
                             Some(_) => self.value(&ty, Slot::Named(&wire)),
@@ -5391,7 +5545,7 @@ impl<'a> ExampleCtx<'a> {
             }
             Some(TypeDecl::DiscriminatedUnion(u)) => match u.members.first() {
                 Some(m) => {
-                    self.referenced.insert(m.class_name.clone());
+                    self.record_ref(&m.class_name);
                     // The discriminant field carries a default (`= "circle"`), so
                     // Fern's example omits it and sets only the required fields.
                     let mut args = Vec::new();
@@ -5507,10 +5661,55 @@ fn build_example(
     client_name: &str,
     ctx: &mut ExampleCtx,
 ) -> Option<Vec<String>> {
-    build_example_with_body_example(ep, is_async, module, pkg, client_name, ctx, None)
+    build_example_inner(
+        ep,
+        is_async,
+        module,
+        pkg,
+        client_name,
+        ctx,
+        None,
+        false,
+        None,
+        false,
+    )
 }
 
-fn build_example_with_body_example(
+#[allow(
+    clippy::too_many_arguments,
+    reason = "documentation example emission also selects the README/reference writer"
+)]
+fn build_documentation_example(
+    ep: &Endpoint,
+    is_async: bool,
+    module: &str,
+    pkg: &str,
+    client_name: &str,
+    ctx: &mut ExampleCtx,
+    environment: Option<&crate::ir::Environment>,
+    reference: bool,
+) -> Option<Vec<String>> {
+    build_example_inner(
+        ep,
+        is_async,
+        module,
+        pkg,
+        client_name,
+        ctx,
+        reference
+            .then_some(ep.reference_body_example.as_ref())
+            .flatten(),
+        true,
+        environment,
+        reference,
+    )
+}
+
+#[allow(
+    clippy::too_many_arguments,
+    reason = "example emission needs endpoint, client, value context, and documentation-mode inputs"
+)]
+fn build_example_inner(
     ep: &Endpoint,
     is_async: bool,
     module: &str,
@@ -5518,6 +5717,9 @@ fn build_example_with_body_example(
     client_name: &str,
     ctx: &mut ExampleCtx,
     body_example: Option<&serde_json::Value>,
+    documentation: bool,
+    environment: Option<&crate::ir::Environment>,
+    reference: bool,
 ) -> Option<Vec<String>> {
     if matches!(ep.request_body, Some(RequestBody::Bytes { .. }))
         || !endpoint_has_worked_example(ep)
@@ -5525,12 +5727,17 @@ fn build_example_with_body_example(
         return None;
     }
 
+    ctx.documentation = documentation;
+    ctx.reference = reference;
     // The example call's keyword arguments, in signature order: path params,
     // required query/header params, then the request body (a single `request`, or
     // each required inlined field).
     let mut args: Vec<(Option<String>, Example)> = Vec::new();
     if !ep.markdown_response && !ep.wildcard_binary_response {
         for pp in &ep.path_params {
+            if reference && matches!(pp.type_ref, TypeRef::List(_) | TypeRef::Set(_)) {
+                continue;
+            }
             let v = if matches!(pp.type_ref, TypeRef::List(_) | TypeRef::Set(_)) {
                 // Fern's path placeholder stays a string even for the unusual array
                 // path parameters accepted by its OpenAPI importer.
@@ -5539,10 +5746,8 @@ fn build_example_with_body_example(
                 pp.example
                     .as_ref()
                     .filter(|_| !ep.binary_response && ctx.example_is_scalar(&pp.type_ref))
-                    .map_or_else(
-                        || ctx.value(&pp.type_ref, Slot::Named(&pp.wire_name)),
-                        |example| Example::Atom(example.clone()),
-                    )
+                    .and_then(|example| ctx.value_from_example(&pp.type_ref, example))
+                    .unwrap_or_else(|| ctx.value(&pp.type_ref, Slot::Named(&pp.wire_name)))
             };
             args.push((Some(pp.py_name.clone()), v));
         }
@@ -5575,10 +5780,15 @@ fn build_example_with_body_example(
         } else if let TypeRef::List(inner) = &qp.type_ref {
             Example::List(vec![ctx.value(inner, Slot::Named(&qp.wire_name))])
         } else if let TypeRef::Dict(_, value) = &qp.type_ref {
-            Example::Dict(vec![(
+            let pairs = vec![(
                 qp.wire_name.clone(),
                 ctx.value(value, Slot::Named(&qp.wire_name)),
-            )])
+            )];
+            if reference {
+                Example::ReferenceDict(pairs)
+            } else {
+                Example::Dict(pairs)
+            }
         } else {
             ctx.value(&qp.type_ref, Slot::Named(&qp.wire_name))
         };
@@ -5587,19 +5797,17 @@ fn build_example_with_body_example(
     for hp in ep
         .header_params
         .iter()
-        .filter(|header| !ep.wildcard_binary_response && header.required)
+        .filter(|header| !ep.wildcard_binary_response && header.required && !reference)
     {
         let v = hp
             .example
             .as_ref()
             .filter(|_| ctx.example_is_scalar(&hp.type_ref))
-            .map_or_else(
-                || ctx.value(&hp.type_ref, Slot::Named(&hp.wire_name)),
-                |example| Example::Atom(example.clone()),
-            );
+            .and_then(|example| ctx.value_from_example(&hp.type_ref, example))
+            .unwrap_or_else(|| ctx.value(&hp.type_ref, Slot::Named(&hp.wire_name)));
         args.push((Some(hp.py_name.clone()), v));
     }
-    if wildcard_request {
+    if wildcard_request && !reference {
         for hp in ep.header_params.iter().filter(|header| {
             !ep.wildcard_binary_response && !header.required && header.example.is_some()
         }) {
@@ -5607,10 +5815,8 @@ fn build_example_with_body_example(
                 .example
                 .as_ref()
                 .filter(|_| ctx.example_is_scalar(&hp.type_ref))
-                .map_or_else(
-                    || ctx.value(&hp.type_ref, Slot::Named(&hp.wire_name)),
-                    |example| Example::Atom(example.clone()),
-                );
+                .and_then(|example| ctx.value_from_example(&hp.type_ref, example))
+                .unwrap_or_else(|| ctx.value(&hp.type_ref, Slot::Named(&hp.wire_name)));
             args.push((Some(hp.py_name.clone()), value));
         }
         for qp in ep
@@ -5628,6 +5834,48 @@ fn build_example_with_body_example(
                 ctx.value(&qp.type_ref, Slot::Named(&qp.wire_name))
             };
             args.push((Some(qp.py_name.clone()), value));
+        }
+    }
+    if wildcard_request && reference {
+        for qp in ep
+            .query_params
+            .iter()
+            .filter(|qp| !ep.wildcard_binary_response && qp.required)
+        {
+            let value = if let Some(example) = qp.example.as_ref().filter(|_| qp.example_is_scalar)
+            {
+                ctx.value_from_example(&qp.type_ref, example)
+                    .unwrap_or_else(|| Example::Atom(example.clone()))
+            } else if let TypeRef::List(inner) = &qp.type_ref {
+                Example::List(vec![ctx.value(inner, Slot::Named(&qp.wire_name))])
+            } else {
+                ctx.value(&qp.type_ref, Slot::Named(&qp.wire_name))
+            };
+            args.push((Some(qp.py_name.clone()), value));
+        }
+        for hp in ep
+            .header_params
+            .iter()
+            .filter(|header| !ep.wildcard_binary_response && header.required)
+        {
+            let value = hp
+                .example
+                .as_ref()
+                .filter(|_| ctx.example_is_scalar(&hp.type_ref))
+                .and_then(|example| ctx.value_from_example(&hp.type_ref, example))
+                .unwrap_or_else(|| ctx.value(&hp.type_ref, Slot::Named(&hp.wire_name)));
+            args.push((Some(hp.py_name.clone()), value));
+        }
+        for hp in ep.header_params.iter().filter(|header| {
+            !ep.wildcard_binary_response && !header.required && header.example.is_some()
+        }) {
+            let value = hp
+                .example
+                .as_ref()
+                .filter(|_| ctx.example_is_scalar(&hp.type_ref))
+                .and_then(|example| ctx.value_from_example(&hp.type_ref, example))
+                .unwrap_or_else(|| ctx.value(&hp.type_ref, Slot::Named(&hp.wire_name)));
+            args.push((Some(hp.py_name.clone()), value));
         }
     }
     for qp in ep
@@ -5655,6 +5903,21 @@ fn build_example_with_body_example(
                 .unwrap_or_else(|| Example::Atom(example.to_string())),
         ));
     }
+    if reference && !wildcard_request {
+        for hp in ep
+            .header_params
+            .iter()
+            .filter(|header| !ep.wildcard_binary_response && header.required)
+        {
+            let value = hp
+                .example
+                .as_ref()
+                .filter(|_| ctx.example_is_scalar(&hp.type_ref))
+                .and_then(|example| ctx.value_from_example(&hp.type_ref, example))
+                .unwrap_or_else(|| ctx.value(&hp.type_ref, Slot::Named(&hp.wire_name)));
+            args.push((Some(hp.py_name.clone()), value));
+        }
+    }
     for hp in ep.header_params.iter().filter(|header| {
         !ep.wildcard_binary_response
             && !wildcard_request
@@ -5665,10 +5928,8 @@ fn build_example_with_body_example(
             .example
             .as_ref()
             .filter(|_| ctx.example_is_scalar(&hp.type_ref))
-            .map_or_else(
-                || ctx.value(&hp.type_ref, Slot::Named(&hp.wire_name)),
-                |example| Example::Atom(example.clone()),
-            );
+            .and_then(|example| ctx.value_from_example(&hp.type_ref, example))
+            .unwrap_or_else(|| ctx.value(&hp.type_ref, Slot::Named(&hp.wire_name)));
         args.push((Some(hp.py_name.clone()), value));
     }
     match &ep.request_body {
@@ -5763,12 +6024,19 @@ fn build_example_with_body_example(
         // A form body: required non-file fields only (a file cannot be shown as a
         // literal, so Fern omits it from the example).
         Some(RequestBody::Form(form)) => {
-            for f in form.fields.iter().filter(|f| f.spec_required && !f.is_file) {
-                let v = f
-                    .example
-                    .as_deref()
-                    .and_then(|example| ctx.value_from_example(&f.type_ref, example))
-                    .unwrap_or_else(|| ctx.value(&f.type_ref, Slot::Named(&f.wire_name)));
+            for f in form
+                .fields
+                .iter()
+                .filter(|f| f.spec_required && (documentation || !f.is_file))
+            {
+                let v = if documentation && f.is_file {
+                    Example::Atom(format!("\"example_{}\"", f.py_name))
+                } else {
+                    f.example
+                        .as_deref()
+                        .and_then(|example| ctx.value_from_example(&f.type_ref, example))
+                        .unwrap_or_else(|| ctx.value(&f.type_ref, Slot::Named(&f.wire_name)))
+                };
                 args.push((Some(f.py_name.clone()), v));
             }
         }
@@ -5825,11 +6093,26 @@ fn build_example_with_body_example(
     // `from <pkg> import <client + referenced types>`, alphabetical, wrapped at
     // the snippet's import width (80). Fern's examples are laid out by hand
     // (not `ruff format`) — see `Example::render` for why.
-    let mut names: Vec<String> = ctx.referenced.iter().cloned().collect();
-    names.push(example_name.clone());
-    names.sort();
+    let mut names: Vec<String> = if documentation && is_async {
+        Vec::new()
+    } else if documentation {
+        ctx.referenced_doc_order.clone()
+    } else {
+        ctx.referenced.iter().cloned().collect()
+    };
+    if documentation {
+        names.insert(0, example_name.clone());
+    } else {
+        names.push(example_name.clone());
+        names.sort();
+    }
     let import_flat = format!("from {pkg} import {}", names.join(", "));
-    let import_lines: Vec<String> = if import_flat.len() <= 80 {
+    let import_width = if documentation && !is_async {
+        usize::MAX
+    } else {
+        80
+    };
+    let import_lines: Vec<String> = if import_flat.len() <= import_width {
         vec![import_flat]
     } else {
         let mut v = vec![format!("from {pkg} import (")];
@@ -5843,13 +6126,29 @@ fn build_example_with_body_example(
     // as a separate group above the main import (`from fern.items import ...`).
     let mut tag_import_lines: Vec<String> = Vec::new();
     {
-        let mut by_module: BTreeMap<&str, Vec<&str>> = BTreeMap::new();
-        for (module, name) in &ctx.referenced_tag {
-            by_module.entry(module).or_default().push(name);
+        let mut by_module: Vec<(&str, Vec<&str>)> = Vec::new();
+        let tag_refs: Vec<(&String, &String)> = if documentation {
+            ctx.referenced_tag_doc_order
+                .iter()
+                .map(|(module, name)| (module, name))
+                .collect()
+        } else {
+            ctx.referenced_tag
+                .iter()
+                .map(|(module, name)| (module, name))
+                .collect()
+        };
+        for (module, name) in tag_refs {
+            if let Some((_, names)) = by_module.iter_mut().find(|(group, _)| *group == module) {
+                names.push(name);
+            } else {
+                by_module.push((module, vec![name]));
+            }
         }
         for (module, tag_names) in by_module {
             let flat = format!("from {pkg}.{module} import {}", tag_names.join(", "));
-            if flat.len() > 80 {
+            let import_width = if documentation { usize::MAX } else { 80 };
+            if flat.len() > import_width {
                 tag_import_lines.push(format!("from {pkg}.{module} import ("));
                 tag_import_lines.extend(tag_names.iter().map(|name| format!("    {name},")));
                 tag_import_lines.push(")".to_string());
@@ -5858,19 +6157,27 @@ fn build_example_with_body_example(
             }
         }
     }
-
     let mut client_args = Vec::new();
-    // Promoted global headers come first (`tenant="YOUR_TENANT"`), then the auth
-    // credential, then the hardcoded `base_url` (dropped when environments exist).
-    for h in ctx.global_headers {
-        client_args.push(format!(
-            "    {}=\"YOUR_{}\",",
-            h.py_name,
-            h.py_name.to_uppercase()
-        ));
-    }
-    for arg in auth_example_args(ctx.auth) {
-        client_args.push(format!("    {arg},"));
+    // Method docstrings follow constructor order (global headers, auth). Fern's
+    // Markdown snippets instead lead with auth and omit optional global headers.
+    if documentation {
+        for arg in documentation_auth_example_args(ctx.auth) {
+            client_args.push(format!("    {arg},"));
+        }
+        for h in ctx.global_headers.iter().filter(|header| header.required) {
+            client_args.push(format!("    {}=\"<{}>\",", h.py_name, h.wire_name));
+        }
+    } else {
+        for h in ctx.global_headers {
+            client_args.push(format!(
+                "    {}=\"YOUR_{}\",",
+                h.py_name,
+                h.py_name.to_uppercase()
+            ));
+        }
+        for arg in auth_example_args(ctx.auth) {
+            client_args.push(format!("    {arg},"));
+        }
     }
     if !ctx.has_environment {
         client_args.push("    base_url=\"https://yourhost.com/path/to/api\",".to_string());
@@ -5887,7 +6194,9 @@ fn build_example_with_body_example(
     let mut out: Vec<String> = Vec::new();
     if !preamble.is_empty() {
         out.extend(preamble);
-        out.push(String::new());
+        if !(documentation && is_async && !tag_import_lines.is_empty()) {
+            out.push(String::new());
+        }
     }
     if !tag_import_lines.is_empty() {
         out.extend(tag_import_lines);
@@ -5907,7 +6216,174 @@ fn build_example_with_body_example(
     } else {
         out.extend(call.split('\n').map(String::from));
     }
-    Some(out)
+    if documentation {
+        Some(format_documentation_example(
+            out,
+            is_async,
+            pkg,
+            environment,
+            reference,
+        ))
+    } else {
+        Some(out)
+    }
+}
+
+fn documentation_auth_example_args(auth: &Auth) -> Vec<String> {
+    match auth {
+        Auth::ApiKey { .. } => vec!["api_key=\"<value>\"".to_string()],
+        Auth::Bearer { .. } => vec!["token=\"<token>\"".to_string()],
+        Auth::Basic { .. } => vec![
+            "username=\"<username>\"".to_string(),
+            "password=\"<password>\"".to_string(),
+        ],
+        Auth::None => Vec::new(),
+    }
+}
+
+fn format_documentation_example(
+    lines: Vec<String>,
+    is_async: bool,
+    pkg: &str,
+    environment: Option<&crate::ir::Environment>,
+    reference: bool,
+) -> Vec<String> {
+    let client_index = lines
+        .iter()
+        .position(|line| line.starts_with("client = "))
+        .unwrap_or(0);
+    let imports: Vec<String> = lines[..client_index]
+        .iter()
+        .filter(|line| !line.is_empty())
+        .cloned()
+        .collect();
+    let mut out = Vec::new();
+    if is_async {
+        out.extend_from_slice(&lines[..client_index]);
+    } else {
+        let main_start = imports
+            .iter()
+            .position(|line| line.starts_with(&format!("from {pkg} import ")))
+            .unwrap_or(0);
+        let main_end = if imports[main_start].ends_with('(') {
+            imports[main_start..]
+                .iter()
+                .position(|line| line == ")")
+                .map_or(main_start, |offset| main_start + offset)
+        } else {
+            main_start
+        };
+        out.extend_from_slice(&imports[main_start..=main_end]);
+        if let Some(environment) = environment {
+            out.push(format!(
+                "from {pkg}.environment import {}",
+                environment.enum_name
+            ));
+        }
+        out.extend(
+            imports
+                .iter()
+                .enumerate()
+                .filter(|(index, line)| {
+                    (*index < main_start || *index > main_end) && !line.starts_with("import ")
+                })
+                .map(|(_, line)| line.clone()),
+        );
+        out.extend(
+            imports
+                .iter()
+                .filter(|line| line.starts_with("import "))
+                .cloned(),
+        );
+        out.push(String::new());
+    }
+    let mut body = lines[client_index..].to_vec();
+    if let Some(environment) = environment {
+        let default_arg = format!("    environment={},", environment.default_ref());
+        if body.first().is_some_and(|line| line.ends_with("()")) {
+            let class = body[0].trim_end_matches("()").to_string();
+            body.splice(0..1, [format!("{class}("), default_arg, ")".to_string()]);
+        } else if let Some(close) = body.iter().position(|line| line == ")") {
+            body.insert(close, default_arg);
+        }
+    }
+    if !is_async {
+        if body.first().is_some_and(|line| line.ends_with("()")) {
+            body.insert(1, String::new());
+        } else if let Some(close) = body.iter().position(|line| line == ")") {
+            if body.get(close + 1).is_some_and(|line| !line.is_empty()) {
+                body.insert(close + 1, String::new());
+            }
+        }
+    }
+    out.extend(body);
+    compact_documentation_values(out, reference)
+}
+
+fn compact_documentation_values(lines: Vec<String>, reference: bool) -> Vec<String> {
+    let mut compact = Vec::with_capacity(lines.len());
+    let mut index = 0;
+    while index < lines.len() {
+        if index + 2 < lines.len()
+            && lines[index].contains("datetime.")
+            && lines[index].trim_end().ends_with(".fromisoformat(")
+            && matches!(lines[index + 2].trim(), ")" | "),")
+        {
+            let value = lines[index + 1].trim().trim_end_matches(',');
+            let comma = if lines[index + 2].trim().ends_with(',') {
+                ","
+            } else {
+                ""
+            };
+            compact.push(format!("{}{value}){comma}", lines[index]));
+            index += 3;
+            continue;
+        }
+        let line = &lines[index];
+        let trimmed = line.trim();
+        if let Some((head, items)) = trimmed
+            .strip_suffix("],")
+            .and_then(|value| value.split_once("=["))
+            .filter(|(_, items)| !items.is_empty())
+        {
+            let indent = line.len() - line.trim_start().len();
+            compact.push(format!("{}{head}=[", " ".repeat(indent)));
+            let items: Vec<&str> = items.split(", ").collect();
+            compact.extend(items.iter().enumerate().map(|(index, item)| {
+                let comma = if index + 1 == items.len() { "" } else { "," };
+                format!("{}{item}{comma}", " ".repeat(indent + 4))
+            }));
+            compact.push(format!("{}],", " ".repeat(indent)));
+            index += 1;
+            continue;
+        }
+        if !reference {
+            if let Some((head, item)) = trimmed
+                .strip_suffix("},")
+                .and_then(|value| value.split_once("={"))
+                .filter(|(_, item)| *item == "\"key\": \"value\"")
+            {
+                let indent = line.len() - line.trim_start().len();
+                compact.push(format!("{}{head}={{", " ".repeat(indent)));
+                compact.push(format!("{}{item}", " ".repeat(indent + 4)));
+                compact.push(format!("{}}},", " ".repeat(indent)));
+                index += 1;
+                continue;
+            }
+        }
+        if line.trim_end().ends_with(".0,") {
+            compact.push(format!("{},", line.trim_end_matches(".0,")));
+        } else {
+            compact.push(line.clone());
+        }
+        index += 1;
+    }
+    for index in 0..compact.len().saturating_sub(1) {
+        if compact[index].trim_end().ends_with(',') && compact[index + 1].trim().starts_with(']') {
+            compact[index].pop();
+        }
+    }
+    compact
 }
 
 fn endpoint_has_worked_example(ep: &Endpoint) -> bool {
@@ -6162,9 +6638,8 @@ mod tests {
         example_from_json, field_decl, is_complex_type, natural_cmp, object_body_complex,
         raw_method, raw_type_str, readme_endpoint, readme_endpoint_eligible,
         reference_param_annotation, render, render_class_body, render_enum, render_type_decl,
-        resolves_to_container, resolves_to_dict, url_arg, ClientCtx, Example, ExampleCtx,
-        FieldView, Imports, ParamRow, RefLoc, ReferenceEntryView, RenderedField, RootClientView,
-        RootModuleView, Slot,
+        resolves_to_container, url_arg, ClientCtx, Example, ExampleCtx, FieldView, Imports,
+        ParamRow, RefLoc, ReferenceEntryView, RenderedField, RootClientView, RootModuleView, Slot,
     };
     use crate::ir::{
         AliasType, Auth, BodyField, DiscriminatedUnion, Endpoint, EnumMember, EnumType,
@@ -6303,8 +6778,10 @@ mod tests {
             pkg: "fern".to_string(),
             method: "get".to_string(),
             dots: "...",
+            return_type: " -> Widget".to_string(),
             description: None,
             example: "client.endpoints_urls.get()".to_string(),
+            example_gap: "\n",
             params: vec![ParamRow {
                 name: "id".to_string(),
                 annot: "str".to_string(),
@@ -6314,7 +6791,7 @@ mod tests {
         let out = render_tmpl("reference_entry.md", &view);
         assert!(out.contains(
             "<details><summary><code>client.endpoints_urls.\
-             <a href=\"src/fern/endpoints_urls/client.py\">get</a>(...)</code></summary>"
+             <a href=\"src/fern/endpoints_urls/client.py\">get</a>(...) -> Widget</code></summary>"
         ));
         // The param value line carries the suffix's trailing space, then the fixed
         // four-space line (driven by an expression, not fragile template whitespace).
@@ -6400,34 +6877,32 @@ mod tests {
     }
 
     #[test]
-    fn abbrev_call_renders_empty_inline_and_wrapped() {
+    fn abbrev_call_keeps_fern_520_placeholders_inline() {
         // No complex body → empty parens.
         assert_eq!(abbrev_call(4, "client.a.b", false), "    client.a.b()");
         // Complex + short → inline `...`.
         assert_eq!(abbrev_call(4, "client.a.b", true), "    client.a.b(...)");
-        // Complex + over the 80-col snippet width → exploded onto its own line.
-        let long = format!("client.tag.{}", "m".repeat(90));
-        let wrapped = abbrev_call(0, &long, true);
-        assert_eq!(wrapped, format!("{long}(\n    ...\n)"));
-        // A long root raw-response expression that fits when indented inside
-        // parentheses wraps the assignment, matching Ruff's 80-column layout.
+        // Fern 5.20 keeps even unusually long descriptive operation names flat.
+        let long = format!("client.tag.{}", "m".repeat(120));
+        assert_eq!(abbrev_call(0, &long, true), format!("{long}(...)"));
+        // Raw-response assignments follow the same literal placeholder rule.
         let root_raw =
             "response = client.with_raw_response.get_all_colors_of_the_default_color_name_list";
         assert_eq!(
             abbrev_call(0, root_raw, true),
-            "response = (\n    client.with_raw_response.get_all_colors_of_the_default_color_name_list(...)\n)"
+            "response = client.with_raw_response.get_all_colors_of_the_default_color_name_list(...)"
         );
         let nested_raw =
             "response = client.account_access.with_raw_response.create_account_access_consents";
         assert_eq!(
             abbrev_call(0, nested_raw, true),
-            "response = (\n    client.account_access.with_raw_response.create_account_access_consents(...)\n)"
+            "response = client.account_access.with_raw_response.create_account_access_consents(...)"
         );
         let fitting_prefix =
             "response = client.attachment_public.with_raw_response.create_attachment_public";
         assert_eq!(
             abbrev_call(0, fitting_prefix, true),
-            "response = client.attachment_public.with_raw_response.create_attachment_public(\n    ...\n)"
+            "response = client.attachment_public.with_raw_response.create_attachment_public(...)"
         );
     }
 
@@ -6654,19 +7129,6 @@ mod tests {
             &tag_types,
         ));
 
-        assert!(resolves_to_dict(
-            &TypeRef::Named("DictAlias".to_string()),
-            &types,
-        ));
-        assert!(!resolves_to_dict(
-            &TypeRef::Named("CyclicAlias".to_string()),
-            &types,
-        ));
-        assert!(!resolves_to_dict(
-            &TypeRef::Named("RequiredObject".to_string()),
-            &types,
-        ));
-
         let mut bytes = endpoint("/bytes", Vec::new(), None);
         bytes.request_body = Some(RequestBody::Bytes {
             content_type: "application/octet-stream".to_string(),
@@ -6689,6 +7151,7 @@ mod tests {
             example: None,
             media_example: false,
             schema_body_example: false,
+            reference_order: 0,
         }]));
         assert!(complex_body(&inline, &types, &tag_types));
 
@@ -6764,6 +7227,7 @@ mod tests {
             example: None,
             media_example: false,
             schema_body_example: false,
+            reference_order: 0,
         }]));
 
         assert!(complex_body(&ep, &[], &[]));
@@ -6917,6 +7381,9 @@ mod tests {
             query_params: Vec::new(),
             header_params: Vec::new(),
             request_body: None,
+            reference_body_type: None,
+            request_body_doc: None,
+            request_body_schema_doc: None,
             body_codegen_named: false,
             body_description_empty: false,
             body_description_missing: false,
@@ -6955,6 +7422,13 @@ mod tests {
     }
 
     fn ir_with(endpoints: Vec<Endpoint>) -> Ir {
+        let endpoint_modules = endpoints
+            .iter()
+            .filter(|endpoint| !endpoint.module.is_empty())
+            .map(|endpoint| endpoint.module.clone())
+            .collect::<std::collections::BTreeSet<_>>()
+            .into_iter()
+            .collect();
         Ir {
             openapi_31: false,
             package_name: "fern".to_string(),
@@ -6962,7 +7436,7 @@ mod tests {
             client_name: "FernApi".to_string(),
             types: Vec::new(),
             tag_types: Vec::new(),
-            endpoint_modules: Vec::new(),
+            endpoint_modules,
             endpoint_module_titles: Default::default(),
             endpoints,
             errors: Vec::new(),
@@ -7078,13 +7552,10 @@ mod tests {
     }
 
     #[test]
-    fn reference_wraps_long_optional_container_annotations() {
+    fn reference_normalizes_annotations_without_wrapping_long_names() {
         let long =
             "typing.Optional[typing.Sequence[PostMyNegotiationsIdCounterRequestOfferItemsItem]]";
-        assert_eq!(
-            reference_param_annotation(long),
-            "typing.Optional[\n    typing.Sequence[PostMyNegotiationsIdCounterRequestOfferItemsItem]\n]"
-        );
+        assert_eq!(reference_param_annotation(long), long);
         assert_eq!(
             reference_param_annotation("typing.Optional[typing.Sequence[str]]"),
             "typing.Optional[typing.Sequence[str]]"
@@ -7099,19 +7570,41 @@ mod tests {
             reference_param_annotation(
                 "typing.Optional[typing.Union[ResourceToImport, typing.Sequence[ResourceToImport]]]"
             ),
-            "typing.Optional[\n    typing.Union[ResourceToImport, typing.Sequence[ResourceToImport]]\n]"
+            "typing.Optional[typing.Union[ResourceToImport, typing.Sequence[ResourceToImport]]]"
         );
         assert_eq!(
             reference_param_annotation(
                 "typing.Optional[typing.Union[TypeConfigurationIdentifier, typing.Sequence[TypeConfigurationIdentifier]]]"
             ),
-            "typing.Optional[\n    typing.Union[\n        TypeConfigurationIdentifier,\n        typing.Sequence[TypeConfigurationIdentifier],\n    ]\n]"
+            "typing.Optional[typing.Union[TypeConfigurationIdentifier, typing.Sequence[TypeConfigurationIdentifier]]]"
         );
         assert_eq!(
             reference_param_annotation(
                 "typing.Optional[typing.Union[StackResourceDriftStatus, typing.Sequence[StackResourceDriftStatus]]]"
             ),
-            "typing.Optional[\n    typing.Union[\n        StackResourceDriftStatus, typing.Sequence[StackResourceDriftStatus]\n    ]\n]"
+            "typing.Optional[typing.Union[StackResourceDriftStatus, typing.Sequence[StackResourceDriftStatus]]]"
+        );
+        assert_eq!(
+            reference_param_annotation(
+                "typing.Optional[typing.Sequence[PostMyNegotiationsIdCounterRequestOfferItemsItemWithEnoughAdditionalContextToExceedTheReferenceWriterWidth]]"
+            ),
+            "typing.Optional[typing.Sequence[PostMyNegotiationsIdCounterRequestOfferItemsItemWithEnoughAdditionalContextToExceedTheReferenceWriterWidth]]"
+        );
+        assert_eq!(
+            reference_param_annotation(
+                "typing.Optional[typing.Union[TypeConfigurationIdentifierWithMoreContext, typing.Sequence[TypeConfigurationIdentifierWithMoreContext]]]"
+            ),
+            "typing.Optional[typing.Union[TypeConfigurationIdentifierWithMoreContext, typing.Sequence[TypeConfigurationIdentifierWithMoreContext]]]"
+        );
+        assert_eq!(
+            reference_param_annotation(
+                "typing.Optional[typing.Union[TypeConfigurationIdentifierWithEnoughAdditionalContext, typing.Sequence[TypeConfigurationIdentifierWithEnoughAdditionalContext]]]"
+            ),
+            "typing.Optional[typing.Union[TypeConfigurationIdentifierWithEnoughAdditionalContext, typing.Sequence[TypeConfigurationIdentifierWithEnoughAdditionalContext]]]"
+        );
+        assert_eq!(
+            reference_param_annotation("typing.Optional[typing.Optional[dt.date]]"),
+            "typing.Optional[datetime.date]"
         );
     }
 
@@ -7237,6 +7730,7 @@ mod tests {
                 media_example: false,
                 schema_body_example: false,
                 nullable: false,
+                reference_order: 0,
             },
             // An optional list → `Optional[Sequence[..]] = OMIT` in request context.
             BodyField {
@@ -7253,6 +7747,7 @@ mod tests {
                 media_example: false,
                 schema_body_example: false,
                 nullable: false,
+                reference_order: 1,
             },
             // A convert field → convert-wrapped json entry keyed by the wire name.
             BodyField {
@@ -7269,6 +7764,7 @@ mod tests {
                 media_example: false,
                 schema_body_example: false,
                 nullable: false,
+                reference_order: 2,
             },
         ]));
         let out = raw_method(&ep, false, &mut i);
@@ -7314,6 +7810,7 @@ mod tests {
                 media_example: false,
                 schema_body_example: true,
                 nullable: false,
+                reference_order: 0,
             },
             BodyField {
                 wire_name: "note".to_string(),
@@ -7329,6 +7826,7 @@ mod tests {
                 media_example: false,
                 schema_body_example: true,
                 nullable: false,
+                reference_order: 1,
             },
         ]));
         ep.body_schema_has_example = true;
@@ -7533,12 +8031,16 @@ mod tests {
             types,
             tag_decls,
             referenced: Default::default(),
+            referenced_doc_order: Default::default(),
             referenced_tag: Default::default(),
+            referenced_tag_doc_order: Default::default(),
             uses_datetime: false,
             auth,
             has_environment: false,
             global_headers: &[],
             building: Default::default(),
+            documentation: false,
+            reference: false,
         }
     }
 
@@ -8132,6 +8634,7 @@ mod tests {
                 example: Some("\"2024-01-15T09:30:00Z\"".to_string()),
                 media_example: false,
                 schema_body_example: false,
+                reference_order: 0,
             },
             BodyField {
                 wire_name: "metadata".to_string(),
@@ -8147,6 +8650,7 @@ mod tests {
                 example: Some(r#"{"source":"test"}"#.to_string()),
                 media_example: true,
                 schema_body_example: false,
+                reference_order: 1,
             },
         ]));
         let mut ctx = example_ctx(&[], &[], &Auth::None);
@@ -8260,6 +8764,7 @@ mod tests {
                 example: Some("\"open\"".to_string()),
                 media_example: false,
                 schema_body_example: false,
+                reference_order: 0,
             }],
             multipart: false,
         }));

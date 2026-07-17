@@ -4256,14 +4256,11 @@ components:
             && raw.matches("\"content-type\": \"application/json\"").count() == 2,
         "{raw}"
     );
-    let code = reference.find("code=\"ALT-1\"").expect("alternate code");
-    let note = reference
-        .find("note=\"Alternate\"")
-        .expect("alternate note");
     assert!(
-        code < note && reference.contains("price=15.0"),
+        reference.contains("price=0") && reference.contains("note=\"Primary\""),
         "{reference}"
     );
+    assert!(!reference.contains("code=\"ALT-1\""), "{reference}");
 }
 
 #[test]
@@ -4324,7 +4321,7 @@ components:
 }
 
 #[test]
-fn no_argument_binary_download_omits_examples_and_unused_error_parser() {
+fn no_argument_binary_download_omits_method_examples_but_stays_in_reference() {
     let files = render(
         r##"openapi: 3.0.3
 info: { title: Binary Probe, version: 1.0.0 }
@@ -4349,7 +4346,11 @@ paths:
     assert!(!client.contains("Examples\n"), "{client}");
     let reference = &files["reference.md"];
     assert!(reference.contains("## Archives"), "{reference}");
-    assert!(!reference.contains("download</a>"), "{reference}");
+    assert!(reference.contains("download</a>()"), "{reference}");
+    assert!(
+        reference.contains("client.archives.download()"),
+        "{reference}"
+    );
 }
 
 #[test]
@@ -4668,7 +4669,7 @@ paths:
 }
 
 #[test]
-fn readme_marks_bodyless_dictionary_get_as_complex() {
+fn readme_keeps_bodyless_dictionary_get_simple() {
     let files = render(
         r#"openapi: 3.0.3
 info: { title: Dictionary Readme, version: 1.0.0 }
@@ -4685,13 +4686,7 @@ paths:
 "#,
     );
     let readme = &files["README.md"];
-    assert!(
-        readme
-            .matches("client.settings(..., request_options={")
-            .count()
-            >= 2,
-        "{readme}"
-    );
+    assert!(readme.matches("client.settings()").count() >= 2, "{readme}");
 }
 
 #[test]
@@ -4912,7 +4907,7 @@ paths:
 }
 
 #[test]
-fn explicit_empty_operation_id_is_distinct_and_keeps_readme_calls_simple() {
+fn explicit_empty_operation_id_is_distinct_and_keeps_readme_body_fields() {
     let files = render(
         r#"openapi: 3.0.3
 info: { title: Empty Operation Id, version: 1.0.0 }
@@ -4940,8 +4935,10 @@ paths:
     assert!(client.contains("def _("), "{client}");
     assert!(client.contains("def get_widgets("), "{client}");
     let readme = &files["README.md"];
-    assert!(readme.contains("client._()"), "{readme}");
-    assert!(!readme.contains("client._(...)"), "{readme}");
+    assert!(
+        readme.contains("client._(\n    left=\"left\",\n    right=\"right\",\n)"),
+        "{readme}"
+    );
 }
 
 #[test]
